@@ -1,3 +1,4 @@
+3a764133 Send slack notification when main build fails (#4744)
 66cba2da Wait for ECS tasks to stop (#4741)
 f6f73e19 Add species nativity calculation to admin UI (#4739)
 fa54e04f Move species admin to a separate page (#4738)

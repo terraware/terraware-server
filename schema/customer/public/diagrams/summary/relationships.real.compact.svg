@@ -71,9 +71,9 @@
 <ellipse fill="none" stroke="black" cx="931.35" cy="-7001.28" rx="3.2" ry="3.2"/>
 </g>
 <!-- organizations -->
-<g id="node18" class="node">
+<g id="node19" class="node">
 <title>organizations</title>
-<g id="a_node18"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
+<g id="a_node19"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="611,-6071.28 611,-6283.28 785,-6283.28 785,-6071.28 611,-6071.28"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="611,-6261.28 611,-6283.28 785,-6283.28 785,-6261.28 611,-6261.28"/>
 <polygon fill="none" stroke="black" points="611,-6261.28 611,-6283.28 785,-6283.28 785,-6261.28 611,-6261.28"/>
@@ -829,6 +829,105 @@
 <polygon fill="black" stroke="black" points="1363.02,-5686.75 1370.76,-5690.87 1367.01,-5687.01 1371,-5687.28 1371,-5687.28 1371,-5687.28 1367.01,-5687.01 1371.24,-5683.69 1363.02,-5686.75 1363.02,-5686.75"/>
 <ellipse fill="none" stroke="black" cx="1359.82" cy="-5686.53" rx="3.2" ry="3.2"/>
 </g>
+<!-- project_internal_users -->
+<g id="node18" class="node">
+<title>project_internal_users</title>
+<g id="a_node18"><a xlink:href="../../tables/project_internal_users.html" xlink:title="project_internal_users" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1395,-6176.28 1395,-6344.28 1571,-6344.28 1571,-6176.28 1395,-6176.28"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1395,-6322.28 1395,-6344.28 1571,-6344.28 1571,-6322.28 1395,-6322.28"/>
+<polygon fill="none" stroke="black" points="1395,-6322.28 1395,-6344.28 1571,-6344.28 1571,-6322.28 1395,-6322.28"/>
+<text text-anchor="start" x="1400" y="-6331.48" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">project_internal_users</text>
+<text text-anchor="start" x="1532" y="-6330.48" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1395,-6300.28 1395,-6322.28 1571,-6322.28 1571,-6300.28 1395,-6300.28"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6317.28"/>
+<text text-anchor="start" x="1423" y="-6308.48" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="none" stroke="black" points="1395,-6278.28 1395,-6300.28 1571,-6300.28 1571,-6278.28 1395,-6278.28"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6295.28"/>
+<text text-anchor="start" x="1423" y="-6286.48" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>
+<polygon fill="none" stroke="black" points="1395,-6256.28 1395,-6278.28 1571,-6278.28 1571,-6256.28 1395,-6256.28"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6273.28"/>
+<text text-anchor="start" x="1423" y="-6264.48" font-family="Helvetica,sans-Serif" font-size="11.00">project_internal_role_id</text>
+<polygon fill="none" stroke="black" points="1395,-6234.28 1395,-6256.28 1571,-6256.28 1571,-6234.28 1395,-6234.28"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6251.28"/>
+<text text-anchor="start" x="1423" y="-6242.48" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<polygon fill="none" stroke="black" points="1395,-6212.28 1395,-6234.28 1571,-6234.28 1571,-6212.28 1395,-6212.28"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6229.28"/>
+<text text-anchor="start" x="1423" y="-6220.48" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<polygon fill="none" stroke="black" points="1395,-6194.28 1395,-6212.28 1571,-6212.28 1571,-6194.28 1395,-6194.28"/>
+<text text-anchor="start" x="1398" y="-6200.48" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1395,-6176.28 1395,-6194.28 1481,-6194.28 1481,-6176.28 1395,-6176.28"/>
+<polygon fill="none" stroke="black" points="1395,-6176.28 1395,-6194.28 1481,-6194.28 1481,-6176.28 1395,-6176.28"/>
+<text text-anchor="start" x="1398" y="-6182.48" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="transparent" points="1481,-6176.28 1481,-6194.28 1526,-6194.28 1526,-6176.28 1481,-6176.28"/>
+<polygon fill="none" stroke="black" points="1481,-6176.28 1481,-6194.28 1526,-6194.28 1526,-6176.28 1481,-6176.28"/>
+<text text-anchor="start" x="1516" y="-6182.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1526,-6176.28 1526,-6194.28 1571,-6194.28 1571,-6176.28 1526,-6176.28"/>
+<polygon fill="none" stroke="black" points="1526,-6176.28 1526,-6194.28 1571,-6194.28 1571,-6176.28 1526,-6176.28"/>
+<text text-anchor="start" x="1561" y="-6182.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- project_internal_users&#45;&gt;projects -->
+<g id="edge151" class="edge">
+<title>project_internal_users:w&#45;&gt;projects:e</title>
+<path fill="none" stroke="black" d="M1379.34,-6310.37C1315.3,-6301.93 1315.15,-6236.1 1292,-6166.28 1249.74,-6038.83 1273.84,-5091.73 1259,-4958.28 1233.93,-4732.74 1387.43,-4457.28 1160.5,-4457.28"/>
+<polygon fill="black" stroke="black" points="1386.02,-6310.78 1393.78,-6314.87 1390.01,-6311.03 1394,-6311.28 1394,-6311.28 1394,-6311.28 1390.01,-6311.03 1394.22,-6307.69 1386.02,-6310.78 1386.02,-6310.78"/>
+<ellipse fill="none" stroke="black" cx="1382.82" cy="-6310.59" rx="3.2" ry="3.2"/>
+</g>
+<!-- project_internal_roles -->
+<g id="node32" class="node">
+<title>project_internal_roles</title>
+<g id="a_node32"><a xlink:href="../../tables/project_internal_roles.html" xlink:title="project_internal_roles" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="991.5,-5508.28 991.5,-5588.28 1165.5,-5588.28 1165.5,-5508.28 991.5,-5508.28"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="991.5,-5566.28 991.5,-5588.28 1165.5,-5588.28 1165.5,-5566.28 991.5,-5566.28"/>
+<polygon fill="none" stroke="black" points="991.5,-5566.28 991.5,-5588.28 1165.5,-5588.28 1165.5,-5566.28 991.5,-5566.28"/>
+<text text-anchor="start" x="996.5" y="-5575.48" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">project_internal_roles</text>
+<text text-anchor="start" x="1126.5" y="-5574.48" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="991.5,-5544.28 991.5,-5566.28 1165.5,-5566.28 1165.5,-5544.28 991.5,-5544.28"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="996.5" y="-5561.28"/>
+<text text-anchor="start" x="1023.5" y="-5552.48" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="991.5,-5526.28 991.5,-5544.28 1165.5,-5544.28 1165.5,-5526.28 991.5,-5526.28"/>
+<text text-anchor="start" x="994.5" y="-5532.48" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="991.5,-5508.28 991.5,-5526.28 1067.5,-5526.28 1067.5,-5508.28 991.5,-5508.28"/>
+<polygon fill="none" stroke="black" points="991.5,-5508.28 991.5,-5526.28 1067.5,-5526.28 1067.5,-5508.28 991.5,-5508.28"/>
+<text text-anchor="start" x="994.5" y="-5514.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1067.5,-5508.28 1067.5,-5526.28 1111.5,-5526.28 1111.5,-5508.28 1067.5,-5508.28"/>
+<polygon fill="none" stroke="black" points="1067.5,-5508.28 1067.5,-5526.28 1111.5,-5526.28 1111.5,-5508.28 1067.5,-5508.28"/>
+<text text-anchor="start" x="1101.5" y="-5514.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1111.5,-5508.28 1111.5,-5526.28 1165.5,-5526.28 1165.5,-5508.28 1111.5,-5508.28"/>
+<polygon fill="none" stroke="black" points="1111.5,-5508.28 1111.5,-5526.28 1165.5,-5526.28 1165.5,-5508.28 1111.5,-5508.28"/>
+<text text-anchor="start" x="1146.5" y="-5514.48" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- project_internal_users&#45;&gt;project_internal_roles -->
+<g id="edge152" class="edge">
+<title>project_internal_users:w&#45;&gt;project_internal_roles:e</title>
+<path fill="none" stroke="black" d="M1379.31,-6266.43C1328.15,-6260.14 1316.11,-6219.65 1292,-6166.28 1240.3,-6051.87 1327.76,-5707.33 1259,-5602.28 1233.75,-5563.7 1212.61,-5555.28 1166.5,-5555.28"/>
+<polygon fill="black" stroke="black" points="1386.01,-6266.82 1393.79,-6270.87 1390.01,-6267.05 1394,-6267.28 1394,-6267.28 1394,-6267.28 1390.01,-6267.05 1394.21,-6263.69 1386.01,-6266.82 1386.01,-6266.82"/>
+<ellipse fill="none" stroke="black" cx="1382.82" cy="-6266.63" rx="3.2" ry="3.2"/>
+</g>
+<!-- project_internal_users&#45;&gt;users -->
+<g id="edge149" class="edge">
+<title>project_internal_users:w&#45;&gt;users:e</title>
+<path fill="none" stroke="black" d="M1379.46,-6244.6C1333.3,-6240.05 1315.95,-6212.65 1292,-6166.28 1251.63,-6088.12 1321.17,-5437.51 1259,-5375.28 1201.78,-5318.01 587.61,-5402.17 531,-5344.28 492.52,-5304.93 546.04,-3363.28 491,-3363.28"/>
+<polygon fill="black" stroke="black" points="1386.01,-6244.91 1393.83,-6248.88 1390,-6245.09 1394,-6245.28 1394,-6245.28 1394,-6245.28 1390,-6245.09 1394.17,-6241.68 1386.01,-6244.91 1386.01,-6244.91"/>
+<ellipse fill="none" stroke="black" cx="1382.81" cy="-6244.76" rx="3.2" ry="3.2"/>
+</g>
+<!-- project_internal_users&#45;&gt;users -->
+<g id="edge150" class="edge">
+<title>project_internal_users:w&#45;&gt;users:e</title>
+<path fill="none" stroke="black" d="M1379.59,-6222.9C1337.56,-6220.49 1316.53,-6206.21 1292,-6166.28 1244.51,-6088.96 1321.85,-5415.73 1259,-5350.28 1202.79,-5291.75 586.63,-5350.36 531,-5291.28 494.28,-5252.28 544.57,-3363.28 491,-3363.28"/>
+<polygon fill="black" stroke="black" points="1386,-6223.07 1393.9,-6226.88 1390,-6223.17 1394,-6223.28 1394,-6223.28 1394,-6223.28 1390,-6223.17 1394.1,-6219.68 1386,-6223.07 1386,-6223.07"/>
+<ellipse fill="none" stroke="black" cx="1382.8" cy="-6222.98" rx="3.2" ry="3.2"/>
+</g>
+<!-- project_internal_users&#45;&gt;users -->
+<g id="edge153" class="edge">
+<title>project_internal_users:w&#45;&gt;users:e</title>
+<path fill="none" stroke="black" d="M1379.61,-6288.41C1322.17,-6281 1316.25,-6227.54 1292,-6166.28 1270,-6110.7 1300.81,-5672 1259,-5629.28 1202.7,-5571.75 975.9,-5619.58 898,-5599.28 724.59,-5554.08 629.44,-5582.03 531,-5432.28 499.42,-5384.25 548.48,-3363.28 491,-3363.28"/>
+<polygon fill="black" stroke="black" points="1386.01,-6288.79 1393.78,-6292.87 1390.01,-6289.04 1394,-6289.28 1394,-6289.28 1394,-6289.28 1390.01,-6289.04 1394.22,-6285.69 1386.01,-6288.79 1386.01,-6288.79"/>
+<ellipse fill="none" stroke="black" cx="1382.82" cy="-6288.6" rx="3.2" ry="3.2"/>
+</g>
 <!-- countries -->
 <g id="node24" class="node">
 <title>countries</title>
@@ -954,105 +1053,6 @@
 <path fill="none" stroke="black" d="M595.42,-6139.82C547.01,-6136.66 531.17,-6118.28 476,-6118.28"/>
 <polygon fill="black" stroke="black" points="602,-6140.03 609.89,-6143.88 606,-6140.15 610,-6140.28 610,-6140.28 610,-6140.28 606,-6140.15 610.11,-6136.68 602,-6140.03 602,-6140.03"/>
 <ellipse fill="none" stroke="black" cx="598.81" cy="-6139.93" rx="3.2" ry="3.2"/>
-</g>
-<!-- project_internal_users -->
-<g id="node19" class="node">
-<title>project_internal_users</title>
-<g id="a_node19"><a xlink:href="../../tables/project_internal_users.html" xlink:title="project_internal_users" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1395,-6176.28 1395,-6344.28 1571,-6344.28 1571,-6176.28 1395,-6176.28"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1395,-6322.28 1395,-6344.28 1571,-6344.28 1571,-6322.28 1395,-6322.28"/>
-<polygon fill="none" stroke="black" points="1395,-6322.28 1395,-6344.28 1571,-6344.28 1571,-6322.28 1395,-6322.28"/>
-<text text-anchor="start" x="1400" y="-6331.48" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">project_internal_users</text>
-<text text-anchor="start" x="1532" y="-6330.48" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1395,-6300.28 1395,-6322.28 1571,-6322.28 1571,-6300.28 1395,-6300.28"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6317.28"/>
-<text text-anchor="start" x="1423" y="-6308.48" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="none" stroke="black" points="1395,-6278.28 1395,-6300.28 1571,-6300.28 1571,-6278.28 1395,-6278.28"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6295.28"/>
-<text text-anchor="start" x="1423" y="-6286.48" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>
-<polygon fill="none" stroke="black" points="1395,-6256.28 1395,-6278.28 1571,-6278.28 1571,-6256.28 1395,-6256.28"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6273.28"/>
-<text text-anchor="start" x="1423" y="-6264.48" font-family="Helvetica,sans-Serif" font-size="11.00">project_internal_role_id</text>
-<polygon fill="none" stroke="black" points="1395,-6234.28 1395,-6256.28 1571,-6256.28 1571,-6234.28 1395,-6234.28"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6251.28"/>
-<text text-anchor="start" x="1423" y="-6242.48" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
-<polygon fill="none" stroke="black" points="1395,-6212.28 1395,-6234.28 1571,-6234.28 1571,-6212.28 1395,-6212.28"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1400" y="-6229.28"/>
-<text text-anchor="start" x="1423" y="-6220.48" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="none" stroke="black" points="1395,-6194.28 1395,-6212.28 1571,-6212.28 1571,-6194.28 1395,-6194.28"/>
-<text text-anchor="start" x="1398" y="-6200.48" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1395,-6176.28 1395,-6194.28 1481,-6194.28 1481,-6176.28 1395,-6176.28"/>
-<polygon fill="none" stroke="black" points="1395,-6176.28 1395,-6194.28 1481,-6194.28 1481,-6176.28 1395,-6176.28"/>
-<text text-anchor="start" x="1398" y="-6182.48" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="transparent" points="1481,-6176.28 1481,-6194.28 1526,-6194.28 1526,-6176.28 1481,-6176.28"/>
-<polygon fill="none" stroke="black" points="1481,-6176.28 1481,-6194.28 1526,-6194.28 1526,-6176.28 1481,-6176.28"/>
-<text text-anchor="start" x="1516" y="-6182.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1526,-6176.28 1526,-6194.28 1571,-6194.28 1571,-6176.28 1526,-6176.28"/>
-<polygon fill="none" stroke="black" points="1526,-6176.28 1526,-6194.28 1571,-6194.28 1571,-6176.28 1526,-6176.28"/>
-<text text-anchor="start" x="1561" y="-6182.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- project_internal_users&#45;&gt;projects -->
-<g id="edge151" class="edge">
-<title>project_internal_users:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1379.34,-6310.37C1315.3,-6301.93 1315.15,-6236.1 1292,-6166.28 1249.74,-6038.83 1273.84,-5091.73 1259,-4958.28 1233.93,-4732.74 1387.43,-4457.28 1160.5,-4457.28"/>
-<polygon fill="black" stroke="black" points="1386.02,-6310.78 1393.78,-6314.87 1390.01,-6311.03 1394,-6311.28 1394,-6311.28 1394,-6311.28 1390.01,-6311.03 1394.22,-6307.69 1386.02,-6310.78 1386.02,-6310.78"/>
-<ellipse fill="none" stroke="black" cx="1382.82" cy="-6310.59" rx="3.2" ry="3.2"/>
-</g>
-<!-- project_internal_roles -->
-<g id="node32" class="node">
-<title>project_internal_roles</title>
-<g id="a_node32"><a xlink:href="../../tables/project_internal_roles.html" xlink:title="project_internal_roles" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="991.5,-5508.28 991.5,-5588.28 1165.5,-5588.28 1165.5,-5508.28 991.5,-5508.28"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="991.5,-5566.28 991.5,-5588.28 1165.5,-5588.28 1165.5,-5566.28 991.5,-5566.28"/>
-<polygon fill="none" stroke="black" points="991.5,-5566.28 991.5,-5588.28 1165.5,-5588.28 1165.5,-5566.28 991.5,-5566.28"/>
-<text text-anchor="start" x="996.5" y="-5575.48" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">project_internal_roles</text>
-<text text-anchor="start" x="1126.5" y="-5574.48" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="991.5,-5544.28 991.5,-5566.28 1165.5,-5566.28 1165.5,-5544.28 991.5,-5544.28"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="996.5" y="-5561.28"/>
-<text text-anchor="start" x="1023.5" y="-5552.48" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="991.5,-5526.28 991.5,-5544.28 1165.5,-5544.28 1165.5,-5526.28 991.5,-5526.28"/>
-<text text-anchor="start" x="994.5" y="-5532.48" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="991.5,-5508.28 991.5,-5526.28 1067.5,-5526.28 1067.5,-5508.28 991.5,-5508.28"/>
-<polygon fill="none" stroke="black" points="991.5,-5508.28 991.5,-5526.28 1067.5,-5526.28 1067.5,-5508.28 991.5,-5508.28"/>
-<text text-anchor="start" x="994.5" y="-5514.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1067.5,-5508.28 1067.5,-5526.28 1111.5,-5526.28 1111.5,-5508.28 1067.5,-5508.28"/>
-<polygon fill="none" stroke="black" points="1067.5,-5508.28 1067.5,-5526.28 1111.5,-5526.28 1111.5,-5508.28 1067.5,-5508.28"/>
-<text text-anchor="start" x="1101.5" y="-5514.48" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1111.5,-5508.28 1111.5,-5526.28 1165.5,-5526.28 1165.5,-5508.28 1111.5,-5508.28"/>
-<polygon fill="none" stroke="black" points="1111.5,-5508.28 1111.5,-5526.28 1165.5,-5526.28 1165.5,-5508.28 1111.5,-5508.28"/>
-<text text-anchor="start" x="1146.5" y="-5514.48" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- project_internal_users&#45;&gt;project_internal_roles -->
-<g id="edge152" class="edge">
-<title>project_internal_users:w&#45;&gt;project_internal_roles:e</title>
-<path fill="none" stroke="black" d="M1379.31,-6266.43C1328.15,-6260.14 1316.11,-6219.65 1292,-6166.28 1240.3,-6051.87 1327.76,-5707.33 1259,-5602.28 1233.75,-5563.7 1212.61,-5555.28 1166.5,-5555.28"/>
-<polygon fill="black" stroke="black" points="1386.01,-6266.82 1393.79,-6270.87 1390.01,-6267.05 1394,-6267.28 1394,-6267.28 1394,-6267.28 1390.01,-6267.05 1394.21,-6263.69 1386.01,-6266.82 1386.01,-6266.82"/>
-<ellipse fill="none" stroke="black" cx="1382.82" cy="-6266.63" rx="3.2" ry="3.2"/>
-</g>
-<!-- project_internal_users&#45;&gt;users -->
-<g id="edge149" class="edge">
-<title>project_internal_users:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1379.46,-6244.6C1333.3,-6240.05 1315.95,-6212.65 1292,-6166.28 1251.63,-6088.12 1321.17,-5437.51 1259,-5375.28 1201.78,-5318.01 587.61,-5402.17 531,-5344.28 492.52,-5304.93 546.04,-3363.28 491,-3363.28"/>
-<polygon fill="black" stroke="black" points="1386.01,-6244.91 1393.83,-6248.88 1390,-6245.09 1394,-6245.28 1394,-6245.28 1394,-6245.28 1390,-6245.09 1394.17,-6241.68 1386.01,-6244.91 1386.01,-6244.91"/>
-<ellipse fill="none" stroke="black" cx="1382.81" cy="-6244.76" rx="3.2" ry="3.2"/>
-</g>
-<!-- project_internal_users&#45;&gt;users -->
-<g id="edge150" class="edge">
-<title>project_internal_users:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1379.59,-6222.9C1337.56,-6220.49 1316.53,-6206.21 1292,-6166.28 1244.51,-6088.96 1321.85,-5415.73 1259,-5350.28 1202.79,-5291.75 586.63,-5350.36 531,-5291.28 494.28,-5252.28 544.57,-3363.28 491,-3363.28"/>
-<polygon fill="black" stroke="black" points="1386,-6223.07 1393.9,-6226.88 1390,-6223.17 1394,-6223.28 1394,-6223.28 1394,-6223.28 1390,-6223.17 1394.1,-6219.68 1386,-6223.07 1386,-6223.07"/>
-<ellipse fill="none" stroke="black" cx="1382.8" cy="-6222.98" rx="3.2" ry="3.2"/>
-</g>
-<!-- project_internal_users&#45;&gt;users -->
-<g id="edge153" class="edge">
-<title>project_internal_users:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1379.61,-6288.41C1322.17,-6281 1316.25,-6227.54 1292,-6166.28 1270,-6110.7 1300.81,-5672 1259,-5629.28 1202.7,-5571.75 975.9,-5619.58 898,-5599.28 724.59,-5554.08 629.44,-5582.03 531,-5432.28 499.42,-5384.25 548.48,-3363.28 491,-3363.28"/>
-<polygon fill="black" stroke="black" points="1386.01,-6288.79 1393.78,-6292.87 1390.01,-6289.04 1394,-6289.28 1394,-6289.28 1394,-6289.28 1390.01,-6289.04 1394.22,-6285.69 1386.01,-6288.79 1386.01,-6288.79"/>
-<ellipse fill="none" stroke="black" cx="1382.82" cy="-6288.6" rx="3.2" ry="3.2"/>
 </g>
 <!-- regions -->
 <g id="node20" class="node">
