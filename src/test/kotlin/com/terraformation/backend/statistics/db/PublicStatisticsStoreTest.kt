@@ -5,6 +5,8 @@ import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.statistics.PublicStatisticsModel
@@ -36,13 +38,83 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `counts organizations excluding ones tagged as internal or testing`() {
+  fun `excludes organizations tagged as testing`() {
     insertOrganization()
+    val testingOrganizationId = insertOrganization()
+    insertOrganizationInternalTag(testingOrganizationId, InternalTagIds.Testing)
+
+    assertEquals(1, store.fetchStatistics().totalOrganizations)
+  }
+
+  @Test
+  fun `excludes organizations with a terraformation owner`() {
+    insertOrganization()
+    val terraformationOrganizationId = insertOrganization()
+    addTerraformationOwner(terraformationOrganizationId)
+
+    assertEquals(1, store.fetchStatistics().totalOrganizations)
+  }
+
+  @Test
+  fun `matches terraformation owner email case-insensitively`() {
+    insertOrganization()
+    val terraformationOrganizationId = insertOrganization()
+    val userId = insertUser(email = "Owner@Terraformation.COM")
+    insertOrganizationUser(
+        userId = userId,
+        organizationId = terraformationOrganizationId,
+        role = Role.Owner,
+    )
+
+    assertEquals(1, store.fetchStatistics().totalOrganizations)
+  }
+
+  @Test
+  fun `excludes orgs that have terraformation owner and are tagged as both internal and testing`() {
+    insertOrganization()
+    val organizationId = insertOrganization()
+    addTerraformationOwner(organizationId)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Testing)
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Internal)
+
+    assertEquals(1, store.fetchStatistics().totalOrganizations)
+  }
+
+  @Test
+  fun `does not exclude terraformation-owned organizations tagged as internal`() {
     insertOrganization()
     val internalOrganizationId = insertOrganization()
-    val testingOrganizationId = insertOrganization()
+    addTerraformationOwner(internalOrganizationId)
     insertOrganizationInternalTag(internalOrganizationId, InternalTagIds.Internal)
-    insertOrganizationInternalTag(testingOrganizationId, InternalTagIds.Testing)
+
+    assertEquals(2, store.fetchStatistics().totalOrganizations)
+  }
+
+  @Test
+  fun `does not exclude organizations tagged as internal without a terraformation owner`() {
+    insertOrganization()
+    val internalOrganizationId = insertOrganization()
+    insertOrganizationInternalTag(internalOrganizationId, InternalTagIds.Internal)
+
+    assertEquals(2, store.fetchStatistics().totalOrganizations)
+  }
+
+  @Test
+  fun `does not exclude organizations whose terraformation user is not an owner`() {
+    insertOrganization()
+    val organizationId = insertOrganization()
+    val userId = insertUser(email = "admin@terraformation.com")
+    insertOrganizationUser(userId = userId, organizationId = organizationId, role = Role.Admin)
+
+    assertEquals(2, store.fetchStatistics().totalOrganizations)
+  }
+
+  @Test
+  fun `does not exclude organizations whose owner has a non-terraformation email`() {
+    insertOrganization()
+    val organizationId = insertOrganization()
+    val userId = insertUser(email = "owner@example.com")
+    insertOrganizationUser(userId = userId, organizationId = organizationId, role = Role.Owner)
 
     assertEquals(2, store.fetchStatistics().totalOrganizations)
   }
@@ -57,7 +129,7 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `sums distinct countries, excluding internal organizations`() {
+  fun `sums distinct countries, excluding excluded organizations`() {
     insertOrganization(countryCode = "US")
     val kenyaOrganizationId = insertOrganization(countryCode = "KE")
 
@@ -67,11 +139,11 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     insertOrganization(countryCode = null)
 
-    insertOrganization(countryCode = "MX")
-    insertOrganizationInternalTag(tagId = InternalTagIds.Internal)
+    val terraformationOrganizationId = insertOrganization(countryCode = "MX")
+    addTerraformationOwner(terraformationOrganizationId)
 
-    insertOrganization(countryCode = "SE")
-    insertOrganizationInternalTag(tagId = InternalTagIds.Testing)
+    val testingOrganizationId = insertOrganization(countryCode = "SE")
+    insertOrganizationInternalTag(testingOrganizationId, InternalTagIds.Testing)
 
     assertEquals(3, store.fetchStatistics().totalCountries)
   }
@@ -88,14 +160,14 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `sums planting site area excluding internal organizations`() {
+  fun `sums planting site area excluding excluded organizations`() {
     val organizationId = insertOrganization()
     insertPlantingSite(organizationId = organizationId, areaHa = BigDecimal(10))
     insertPlantingSite(organizationId = organizationId, areaHa = BigDecimal(5))
 
-    val internalOrganizationId = insertOrganization()
-    insertOrganizationInternalTag(internalOrganizationId, InternalTagIds.Internal)
-    insertPlantingSite(organizationId = internalOrganizationId, areaHa = BigDecimal(100))
+    val excludedOrganizationId = insertOrganization()
+    addTerraformationOwner(excludedOrganizationId)
+    insertPlantingSite(organizationId = excludedOrganizationId, areaHa = BigDecimal(100))
 
     assertEquals(
         0,
@@ -137,10 +209,10 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `excludes seeds from internal organizations`() {
-    val internalOrgId = insertOrganization()
-    insertOrganizationInternalTag(internalOrgId, InternalTagIds.Internal)
-    val facilityId = insertFacility(organizationId = internalOrgId, type = FacilityType.SeedBank)
+  fun `excludes seeds from excluded organizations`() {
+    val excludedOrgId = insertOrganization()
+    addTerraformationOwner(excludedOrgId)
+    val facilityId = insertFacility(organizationId = excludedOrgId, type = FacilityType.SeedBank)
     insertAccession(
         row = AccessionsRow(estSeedCount = 100),
         facilityId = facilityId,
@@ -151,7 +223,7 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `sums all seedling quantities excluding internal organizations`() {
+  fun `sums all seedling quantities excluding excluded organizations`() {
     val organizationId = insertOrganization()
     insertFacility(organizationId = organizationId, type = FacilityType.Nursery)
     insertSpecies(organizationId = organizationId)
@@ -163,12 +235,12 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         hardeningOffQuantity = 5,
     )
 
-    val internalOrgId = insertOrganization()
-    insertOrganizationInternalTag(internalOrgId, InternalTagIds.Internal)
-    insertFacility(organizationId = internalOrgId, type = FacilityType.Nursery)
-    insertSpecies(organizationId = internalOrgId)
+    val excludedOrgId = insertOrganization()
+    addTerraformationOwner(excludedOrgId)
+    insertFacility(organizationId = excludedOrgId, type = FacilityType.Nursery)
+    insertSpecies(organizationId = excludedOrgId)
     insertBatch(
-        organizationId = internalOrgId,
+        organizationId = excludedOrgId,
         germinatingQuantity = 100,
         activeGrowthQuantity = 100,
         readyQuantity = 100,
@@ -179,7 +251,7 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `counts plantings excluding internal organizations`() {
+  fun `counts plantings excluding excluded organizations`() {
     val organizationId = insertOrganization()
     insertSpecies()
     val facilityId = insertFacility(organizationId = organizationId, type = FacilityType.Nursery)
@@ -188,15 +260,24 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
     insertPlanting(numPlants = 10)
 
-    val internalOrgId = insertOrganization()
-    insertOrganizationInternalTag(internalOrgId, InternalTagIds.Internal)
-    val internalFacilityId =
-        insertFacility(organizationId = internalOrgId, type = FacilityType.Nursery)
-    val internalPlantingSiteId = insertPlantingSite(organizationId = internalOrgId)
-    val internalWithdrawalId = insertNurseryWithdrawal(facilityId = internalFacilityId)
-    insertDelivery(plantingSiteId = internalPlantingSiteId, withdrawalId = internalWithdrawalId)
+    val excludedOrgId = insertOrganization()
+    addTerraformationOwner(excludedOrgId)
+    val excludedFacilityId =
+        insertFacility(organizationId = excludedOrgId, type = FacilityType.Nursery)
+    val excludedPlantingSiteId = insertPlantingSite(organizationId = excludedOrgId)
+    val excludedWithdrawalId = insertNurseryWithdrawal(facilityId = excludedFacilityId)
+    insertDelivery(plantingSiteId = excludedPlantingSiteId, withdrawalId = excludedWithdrawalId)
     insertPlanting(numPlants = 5)
 
     assertEquals(10, store.fetchStatistics().totalPlantings)
+  }
+
+  /**
+   * Marks an organization as excluded from public statistics by giving it an owner whose email
+   * address is in the terraformation.com domain.
+   */
+  private fun addTerraformationOwner(organizationId: OrganizationId) {
+    val userId = insertUser()
+    insertOrganizationUser(userId = userId, organizationId = organizationId, role = Role.Owner)
   }
 }
