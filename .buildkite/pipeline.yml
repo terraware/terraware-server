@@ -297,3 +297,9 @@ steps:
       - *restore-build
       - *restore-dot-gradle
     command: .buildkite/scripts/deploy-docs.sh
+
+notify:
+  - slack:
+      channels:
+        - "#buildkite-builds"
+    if: build.state == "failed" && build.branch == "main"
