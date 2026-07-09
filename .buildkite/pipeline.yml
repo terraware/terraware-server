@@ -283,12 +283,24 @@ steps:
       - *load-secrets
     command: .buildkite/scripts/notify-pr.sh
 
+  - label: ":books: Generate and deploy unreleased commits log"
+    key: "generate-unreleased"
+    depends_on:
+      - "notify-pr"
+    branches:
+      - "main"
+    plugins:
+      - *shallow-clone
+      - *load-secrets
+    command: .buildkite/scripts/deploy-main-docs.sh
+
   - label: ":books: Generate and deploy docs"
     key: "generate-docs"
     depends_on:
-      - "docker"
-      - "notify-pr"
-    branches: "main"
+      - "deploy"
+      - "generate-unreleased"
+      - "release-notes"
+    if: "build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
       - *shallow-clone
       - *load-secrets
@@ -296,7 +308,7 @@ steps:
       - *restore-build-cache
       - *restore-build
       - *restore-dot-gradle
-    command: .buildkite/scripts/deploy-docs.sh
+    command: .buildkite/scripts/deploy-release-docs.sh
 
 notify:
   - slack:
