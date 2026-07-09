@@ -10,7 +10,9 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import org.jooq.Field
 import org.jooq.Record
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 
 /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
@@ -53,7 +55,8 @@ data class FacilityModel(
     val type: FacilityType,
 ) {
   constructor(
-      record: Record
+      record: Record,
+      locationField: Field<Geometry?> = FACILITIES.LOCATION,
   ) : this(
       buildCompletedDate = record[FACILITIES.BUILD_COMPLETED_DATE],
       buildStartedDate = record[FACILITIES.BUILD_STARTED_DATE],
@@ -71,7 +74,7 @@ data class FacilityModel(
       id = record[FACILITIES.ID] ?: throw IllegalArgumentException("ID is required"),
       lastNotificationDate = record[FACILITIES.LAST_NOTIFICATION_DATE],
       lastTimeseriesTime = record[FACILITIES.LAST_TIMESERIES_TIME],
-      location = record[FACILITIES.LOCATION] as? Point,
+      location = record[locationField] as? Point,
       maxIdleMinutes =
           record[FACILITIES.MAX_IDLE_MINUTES]
               ?: throw IllegalArgumentException("Max idle minutes is required"),
