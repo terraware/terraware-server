@@ -26,7 +26,7 @@ class UserInternalInterestsController(
   @ApiResponse200
   @GetMapping
   @Operation(summary = "Get the list of internal interests assigned to a user.")
-  fun getUserDeliverableCategories(
+  fun getUserInternalInterests(
       @PathVariable userId: UserId
   ): GetUserInternalInterestsResponsePayload {
     val internalInterests = userInternalInterestsStore.fetchForUser(userId)
@@ -37,7 +37,7 @@ class UserInternalInterestsController(
   @ApiResponse200
   @Operation(summary = "Update which internal interests are assigned to a user.")
   @PutMapping
-  fun updateUserDeliverableCategories(
+  fun updateUserInternalInterests(
       @PathVariable userId: UserId,
       @RequestBody payload: UpdateUserInternalInterestsRequestPayload,
   ): SimpleSuccessResponsePayload {
@@ -56,7 +56,7 @@ data class UpdateUserInternalInterestsRequestPayload(
         arraySchema =
             Schema(
                 description =
-                    "New set of category assignments. Existing assignments that aren't included " +
+                    "New set of interest assignments. Existing assignments that aren't included " +
                         "here will be removed from the user."
             )
     )
