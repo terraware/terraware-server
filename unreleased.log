@@ -1,3 +1,4 @@
+91bc30b7 Fix method names of Internal Interests endpoints (#4747)
 27b507eb Wrap facility location for multiset (#4746)
 9dbd40a2 SW-8597 Update excluded org definition (#4743)
 092a5faf SW-8597 Update queries used for public stats (#4742)
