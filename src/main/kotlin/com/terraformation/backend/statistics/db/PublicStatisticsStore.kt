@@ -37,7 +37,7 @@ class PublicStatisticsStore(
    * Maximum area of a planting site that we consider. Larger than this is probably just for
    * testing.
    */
-  private val MAX_SITE_AREA = BigDecimal("100000")
+  private val MAX_SITE_AREA_HA = BigDecimal("100000")
 
   /** Subquery selecting the IDs of organizations that are tagged as internal to Terraformation. */
   private val internalOrganizationIds =
@@ -94,7 +94,7 @@ class PublicStatisticsStore(
         .select(DSL.sum(PLANTING_SITES.AREA_HA))
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ORGANIZATION_ID.notIn(internalOrganizationIds))
-        .and(PLANTING_SITES.AREA_HA.le(MAX_SITE_AREA))
+        .and(PLANTING_SITES.AREA_HA.le(MAX_SITE_AREA_HA))
         .fetchOne(0, BigDecimal::class.java) ?: BigDecimal.ZERO
   }
 
