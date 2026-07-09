@@ -17,6 +17,8 @@ LAST_TAG=$(git tag --list --sort=creatordate 'v[0-9]*' | tail -n1)
 
 .buildkite/scripts/lib/fetch-tag.sh "$LAST_TAG"
 
-git log "${LAST_TAG}..HEAD" --oneline > "$TEMP_DIR/unreleased.log"
+git log "${LAST_TAG}..HEAD" --oneline > "docs/unreleased.log"
+
+rsync -a "docs/" "$TEMP_DIR/"
 
 deploy_docs "$TEMP_DIR"

@@ -286,7 +286,6 @@ steps:
   - label: ":books: Generate and deploy unreleased commits log"
     key: "generate-unreleased"
     depends_on:
-      - "docker"
       - "notify-pr"
     branches:
       - "main"
@@ -298,9 +297,9 @@ steps:
   - label: ":books: Generate and deploy docs"
     key: "generate-docs"
     depends_on:
-      - "docker"
+      - "deploy"
       - "generate-unreleased"
-      - "notify-pr"
+      - "release-notes"
     if: "build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
       - *shallow-clone
