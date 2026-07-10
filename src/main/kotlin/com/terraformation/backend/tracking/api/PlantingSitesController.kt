@@ -84,7 +84,12 @@ class PlantingSitesController(
           defaultValue = "false",
       )
       full: Boolean?,
-      @RequestParam includeZones: Boolean? = true,
+      @RequestParam
+      @Schema(
+          description =
+              "include the plantingZones variable in the response. Only used for backwards compatibility; should be false in all new calls of it."
+      )
+      includeZones: Boolean? = true,
       @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): ListPlantingSitesResponsePayload {
     val depth = if (full == true) PlantingSiteDepth.Plot else PlantingSiteDepth.Site
@@ -107,7 +112,12 @@ class PlantingSitesController(
   )
   fun getPlantingSite(
       @PathVariable id: PlantingSiteId,
-      @RequestParam includeZones: Boolean? = true,
+      @RequestParam
+      @Schema(
+          description =
+              "include the plantingZones variable in the response. Only used for backwards compatibility; should be false in all new calls of it."
+      )
+      includeZones: Boolean? = true,
       @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): GetPlantingSiteResponsePayload {
     val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot, simplified ?: true)
