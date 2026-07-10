@@ -76,6 +76,9 @@ agents:
   # Run all steps on the same kind of runner.
   queue: "x86-8core"
 
+env:
+  BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://$BUILDKITE_PLUGIN_S3_CACHE_BUCKET/artifacts/$BUILDKITE_PIPELINE_SLUG/$BUILDKITE_BUILD_ID"
+
 steps:
   - label: ":graphite: CI optimizer"
     key: "graphite-ci-optimizer"
@@ -103,17 +106,21 @@ steps:
       - artifacts#v1.9.4:
           upload: "build"
           compressed: "build.tgz"
+          s3-upload-acl: "private"
       - artifacts#v1.9.4:
           upload: ".gradle"
           compressed: "dot-gradle.tgz"
+          s3-upload-acl: "private"
       - artifacts#v1.9.4:
           upload: ".gradle-home/caches/build-cache-1"
           compressed: "build-cache.tgz"
+          s3-upload-acl: "private"
+      - artifacts#v1.9.4:
+          # We need to upload the test results as individual files so they can be consumed by the
+          # junit-annotate plugin.
+          upload: "build/test-results/**/*.xml"
+          s3-upload-acl: "private"
     command: .buildkite/scripts/build-and-test.sh
-    artifact_paths:
-      # We need to upload the test results as individual files so they can be consumed by the
-      # junit-annotate plugin.
-      - "build/test-results/**/*.xml"
 
   - label: ":junit: Run external service integration tests"
     key: "external-tests"
@@ -128,11 +135,12 @@ steps:
       - *restore-build
       - *restore-dot-gradle
       - *load-secrets
+      - artifacts#v1.9.4:
+          # We need to upload the test results as individual files so they can be consumed by the
+          # junit-annotate plugin.
+          upload: "build/test-results/**/*.xml"
+          s3-upload-acl: "private"
     command: .buildkite/scripts/run-external-tests.sh
-    artifact_paths:
-      # We need to upload the test results as individual files so they can be consumed by the
-      # junit-annotate plugin.
-      - "build/test-results/**/*.xml"
     env:
       TEST_S3_BUCKET_NAME: "terraformation-buildkite-test"
 
