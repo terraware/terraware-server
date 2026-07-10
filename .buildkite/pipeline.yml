@@ -77,7 +77,7 @@ agents:
   queue: "x86-8core"
 
 env:
-  BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://terraformation-buildkite-cache/artifacts/$BUILDKITE_PIPELINE_ID/$BUILDKITE_BUILD_ID"
+  BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://$BUILDKITE_PLUGIN_S3_CACHE_BUCKET/artifacts/$BUILDKITE_PIPELINE_ID/$BUILDKITE_BUILD_ID"
 
 steps:
   - label: ":graphite: CI optimizer"
