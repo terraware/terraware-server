@@ -76,6 +76,9 @@ agents:
   # Run all steps on the same kind of runner.
   queue: "x86-8core"
 
+env:
+  BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://terraformation-buildkite-cache/artifacts/$BUILDKITE_PIPELINE_ID/$BUILDKITE_BUILD_ID/$BUILDKITE_JOB_ID"
+
 steps:
   - label: ":graphite: CI optimizer"
     key: "graphite-ci-optimizer"
