@@ -41,7 +41,6 @@ import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
@@ -85,10 +84,11 @@ class PlantingSitesController(
           defaultValue = "false",
       )
       full: Boolean?,
-      @RequestParam //
-      includeStrata: Boolean? = true,
       @RequestParam
-      @Parameter(deprecated = true, description = "Deprecated. Use includeStrata instead.")
+      @Schema(
+          description =
+              "include the plantingZones variable in the response. Only used for backwards compatibility; should be false in all new calls of it."
+      )
       includeZones: Boolean? = true,
       @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): ListPlantingSitesResponsePayload {
@@ -101,7 +101,7 @@ class PlantingSitesController(
         } else {
           throw BadRequestException("One of organizationId or projectId must be specified")
         }
-    val payloads = models.map { PlantingSitePayload(it, includeStrata ?: includeZones ?: true) }
+    val payloads = models.map { PlantingSitePayload(it, includeZones ?: true) }
     return ListPlantingSitesResponsePayload(payloads)
   }
 
@@ -112,17 +112,16 @@ class PlantingSitesController(
   )
   fun getPlantingSite(
       @PathVariable id: PlantingSiteId,
-      @RequestParam //
-      includeStrata: Boolean? = true,
       @RequestParam
-      @Parameter(deprecated = true, description = "Deprecated. Use includeStrata instead.")
+      @Schema(
+          description =
+              "include the plantingZones variable in the response. Only used for backwards compatibility; should be false in all new calls of it."
+      )
       includeZones: Boolean? = true,
       @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): GetPlantingSiteResponsePayload {
     val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot, simplified ?: true)
-    return GetPlantingSiteResponsePayload(
-        PlantingSitePayload(model, includeStrata ?: includeZones ?: true)
-    )
+    return GetPlantingSiteResponsePayload(PlantingSitePayload(model, includeZones ?: true))
   }
 
   @Operation(
@@ -442,7 +441,7 @@ data class PlantingSitePayload(
 ) {
   constructor(
       model: ExistingPlantingSiteModel,
-      includeStrata: Boolean = true,
+      includeZones: Boolean = true,
   ) : this(
       adHocPlots = model.adHocPlots.map { MonitoringPlotPayload(it) },
       areaHa = model.areaHa,
@@ -455,7 +454,7 @@ data class PlantingSitePayload(
       latestObservationId = model.latestObservationId,
       name = model.name,
       organizationId = model.organizationId,
-      plantingZones = if (includeStrata) model.strata.map { PlantingZonePayload(it) } else null,
+      plantingZones = if (includeZones) model.strata.map { PlantingZonePayload(it) } else null,
       projectId = model.projectId,
       strata = model.strata.map { StratumResponsePayload(it) },
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
