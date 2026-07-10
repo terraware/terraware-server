@@ -74,7 +74,7 @@ common:
 
 agents:
   # Run all steps on the same kind of runner.
-  queue: "x86-8core"
+  queue: "arm-8core"
 
 env:
   BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://$BUILDKITE_PLUGIN_S3_CACHE_BUCKET/artifacts/$BUILDKITE_PIPELINE_SLUG/$BUILDKITE_BUILD_ID"
