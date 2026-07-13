@@ -109,7 +109,8 @@ class GbifStore(private val dslContext: DSLContext) {
    *
    * @param [vernacularNameLanguage] ISO 639-1 two-letter language code. If non-null, filter
    *   vernacular names to exclude names in languages other than this. Vernacular names without
-   *   langauge tags are always included.
+   *   langauge tags are always included. If no vernacular names exist in the requested language,
+   *   English names are returned.
    */
   fun fetchOneByScientificName(
       scientificName: String,
@@ -117,9 +118,9 @@ class GbifStore(private val dslContext: DSLContext) {
   ): GbifTaxonModel? {
     val languageCondition =
         if (vernacularNameLanguage != null) {
-          GBIF_VERNACULAR_NAMES.LANGUAGE.isNull.or(
-              GBIF_VERNACULAR_NAMES.LANGUAGE.eq(vernacularNameLanguage)
-          )
+          GBIF_VERNACULAR_NAMES.LANGUAGE.isNull
+              .or(GBIF_VERNACULAR_NAMES.LANGUAGE.eq(vernacularNameLanguage))
+              .or(GBIF_VERNACULAR_NAMES.LANGUAGE.eq("en"))
         } else {
           null
         }
@@ -164,6 +165,21 @@ class GbifStore(private val dslContext: DSLContext) {
         )
         .limit(1)
         .fetchOne { record ->
+          val vernacularNames = record[vernacularNamesMultiset]
+
+          val filteredVernacularNames =
+              if (vernacularNameLanguage != null) {
+                val filterLanguage =
+                    if (vernacularNames.any { it.language == vernacularNameLanguage }) {
+                      vernacularNameLanguage
+                    } else {
+                      "en"
+                    }
+                vernacularNames.filter { it.language == filterLanguage || it.language == null }
+              } else {
+                vernacularNames
+              }
+
           GbifTaxonModel(
               taxonId =
                   record[GBIF_TAXA.TAXON_ID]
@@ -174,7 +190,7 @@ class GbifStore(private val dslContext: DSLContext) {
               familyName =
                   record[GBIF_TAXA.FAMILY]
                       ?: throw IllegalArgumentException("Family name must be non-null"),
-              vernacularNames = record[vernacularNamesMultiset],
+              vernacularNames = filteredVernacularNames,
               threatStatus = record[GBIF_DISTRIBUTIONS.THREAT_STATUS],
           )
         }
