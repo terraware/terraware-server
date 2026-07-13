@@ -22,6 +22,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -60,94 +61,103 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteSpecies(any()) } returns true
   }
 
-  @Test
-  fun `createSpecies checks for problems with species data`() {
-    val speciesId =
-        service.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "Scientific name")
-        )
+  @Nested
+  inner class CreateSpecies {
+    @Test
+    fun `checks for problems with species data`() {
+      val speciesId =
+          service.createSpecies(
+              NewSpeciesModel(organizationId = organizationId, scientificName = "Scientific name")
+          )
 
-    verify { speciesChecker.checkSpecies(speciesId) }
+      verify { speciesChecker.checkSpecies(speciesId) }
+    }
   }
 
-  @Test
-  fun `updateSpecies checks for problems with species data`() {
-    val speciesId = insertSpecies("Old name")
-    val originalModel = speciesStore.fetchSpeciesById(speciesId)
+  @Nested
+  inner class UpdateSpecies {
+    @Test
+    fun `checks for problems with species data`() {
+      val speciesId = insertSpecies("Old name")
+      val originalModel = speciesStore.fetchSpeciesById(speciesId)
 
-    val updatedModel = service.updateSpecies(originalModel.copy(scientificName = "New name"))
+      val updatedModel = service.updateSpecies(originalModel.copy(scientificName = "New name"))
 
-    assertEquals("New name", updatedModel.scientificName)
+      assertEquals("New name", updatedModel.scientificName)
 
-    verify {
-      speciesChecker.recheckSpecies(
-          match { it.scientificName == "Old name" },
-          match { it.scientificName == "New name" },
+      verify {
+        speciesChecker.recheckSpecies(
+            match { it.scientificName == "Old name" },
+            match { it.scientificName == "New name" },
+        )
+      }
+
+      eventPublisher.assertEventPublished(
+          SpeciesEditedEvent(
+              species =
+                  ExistingSpeciesModel(
+                      averageWoodDensity = null,
+                      checkedTime = null,
+                      commonName = null,
+                      conservationCategory = null,
+                      createdTime = originalModel.createdTime,
+                      dbhSource = null,
+                      dbhValue = null,
+                      deletedTime = null,
+                      ecologicalRoleKnown = null,
+                      familyName = null,
+                      id = inserted.speciesId,
+                      initialScientificName = "Old name",
+                      modifiedTime = clock.instant(),
+                      organizationId = inserted.organizationId,
+                      scientificName = "New name",
+                  )
+          )
       )
     }
-
-    eventPublisher.assertEventPublished(
-        SpeciesEditedEvent(
-            species =
-                ExistingSpeciesModel(
-                    averageWoodDensity = null,
-                    checkedTime = null,
-                    commonName = null,
-                    conservationCategory = null,
-                    createdTime = originalModel.createdTime,
-                    dbhSource = null,
-                    dbhValue = null,
-                    deletedTime = null,
-                    ecologicalRoleKnown = null,
-                    familyName = null,
-                    id = inserted.speciesId,
-                    initialScientificName = "Old name",
-                    modifiedTime = clock.instant(),
-                    organizationId = inserted.organizationId,
-                    scientificName = "New name",
-                )
-        )
-    )
   }
 
-  @Test
-  fun `deleteSpecies throws exception if species is in use in accession`() {
-    val speciesId = insertSpecies("species name")
-    insertFacility()
-    insertAccession(speciesId = speciesId)
+  @Nested
+  inner class DeleteSpecies {
+    @Test
+    fun `throws exception if species is in use in accession`() {
+      val speciesId = insertSpecies("species name")
+      insertFacility()
+      insertAccession(speciesId = speciesId)
 
-    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
-  }
+      assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
+    }
 
-  @Test
-  fun `deleteSpecies throws exception if species is in use in batch`() {
-    val speciesId = insertSpecies("species name")
-    insertFacility()
-    insertBatch(speciesId = speciesId)
+    @Test
+    fun `throws exception if species is in use in batch`() {
+      val speciesId = insertSpecies("species name")
+      insertFacility()
+      insertBatch(speciesId = speciesId)
 
-    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
-  }
+      assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
+    }
 
-  @Test
-  fun `deleteSpecies throws exception if species is in use in observation`() {
-    val speciesId = insertSpecies("species name")
-    insertPlantingSite()
-    insertStratum()
-    insertSubstratum()
-    insertMonitoringPlot()
-    insertObservation()
-    insertObservationPlot()
-    insertRecordedPlant(speciesId = speciesId)
+    @Test
+    fun `throws exception if species is in use in observation`() {
+      val speciesId = insertSpecies("species name")
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      insertObservation()
+      insertObservationPlot()
+      insertRecordedPlant(speciesId = speciesId)
 
-    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
-  }
+      assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
+    }
 
-  @Test
-  fun `deleteSpecies deletes species when not in use`() {
-    val speciesId = insertSpecies("species name")
-    assertNotNull(speciesStore.fetchSpeciesById(speciesId))
+    @Test
+    fun `deletes species when not in use`() {
+      val speciesId = insertSpecies("species name")
+      assertNotNull(speciesStore.fetchSpeciesById(speciesId))
 
-    service.deleteSpecies(speciesId)
-    assertThrows<SpeciesNotFoundException> { speciesStore.fetchSpeciesById(speciesId) }
+      service.deleteSpecies(speciesId)
+      assertThrows<SpeciesNotFoundException> { speciesStore.fetchSpeciesById(speciesId) }
+    }
   }
 }
