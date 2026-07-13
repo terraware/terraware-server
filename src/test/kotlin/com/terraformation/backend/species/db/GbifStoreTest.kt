@@ -197,7 +197,40 @@ internal class GbifStoreTest : DatabaseTest() {
       val taxonId =
           insertTaxon(
               "Scientific name",
-              listOf("Common en" to "en", "Common xx" to "xx", "Common unknown" to null),
+              listOf(
+                  "Common es" to "es",
+                  "Common xx" to "xx",
+                  "Common unknown" to null,
+              ),
+              "Family",
+          )
+
+      val expected =
+          GbifTaxonModel(
+              taxonId,
+              "Scientific name",
+              "Family",
+              listOf(
+                  GbifVernacularNameModel("Common es", "es"),
+                  GbifVernacularNameModel("Common unknown", null),
+              ),
+              null,
+          )
+
+      val actual = store.fetchOneByScientificName("Scientific name", "es")
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `falls back to English if no vernacular names exist in requested language`() {
+      val taxonId =
+          insertTaxon(
+              "Scientific name",
+              listOf(
+                  "Common en" to "en",
+                  "Common xx" to "xx",
+                  "Common unknown" to null,
+              ),
               "Family",
           )
 
@@ -213,7 +246,7 @@ internal class GbifStoreTest : DatabaseTest() {
               null,
           )
 
-      val actual = store.fetchOneByScientificName("Scientific name", "en")
+      val actual = store.fetchOneByScientificName("Scientific name", "fr")
       assertEquals(expected, actual)
     }
 
