@@ -160,10 +160,11 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `sums planting site area excluding excluded organizations`() {
+  fun `sums planting site area excluding excluded organizations and large areas`() {
     val organizationId = insertOrganization()
     insertPlantingSite(organizationId = organizationId, areaHa = BigDecimal(10))
     insertPlantingSite(organizationId = organizationId, areaHa = BigDecimal(5))
+    insertPlantingSite(organizationId = organizationId, areaHa = BigDecimal("10001"))
 
     val excludedOrganizationId = insertOrganization()
     addTerraformationOwner(excludedOrganizationId)
@@ -209,7 +210,7 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `excludes seeds from excluded organizations`() {
+  fun `excludes seeds from excluded organizations and test accessions`() {
     val excludedOrgId = insertOrganization()
     addTerraformationOwner(excludedOrgId)
     val facilityId = insertFacility(organizationId = excludedOrgId, type = FacilityType.SeedBank)
@@ -218,12 +219,17 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         facilityId = facilityId,
         stateId = AccessionState.InStorage,
     )
+    insertAccession(
+        row = AccessionsRow(estSeedCount = 1_000_001),
+        facilityId = facilityId,
+        stateId = AccessionState.InStorage,
+    )
 
     assertEquals(0L, store.fetchStatistics().totalSeedsInStorage)
   }
 
   @Test
-  fun `sums all seedling quantities excluding excluded organizations`() {
+  fun `sums all seedling quantities excluding excluded organizations and test batches`() {
     val organizationId = insertOrganization()
     insertFacility(organizationId = organizationId, type = FacilityType.Nursery)
     insertSpecies(organizationId = organizationId)
@@ -233,6 +239,13 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         activeGrowthQuantity = 20,
         readyQuantity = 30,
         hardeningOffQuantity = 5,
+    )
+    insertBatch(
+        organizationId = organizationId,
+        germinatingQuantity = 1,
+        activeGrowthQuantity = 2,
+        readyQuantity = 3,
+        hardeningOffQuantity = 1_000_000,
     )
 
     val excludedOrgId = insertOrganization()
@@ -251,7 +264,7 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `counts plantings excluding excluded organizations`() {
+  fun `counts plantings excluding excluded organizations and test plantings`() {
     val organizationId = insertOrganization()
     insertSpecies()
     val facilityId = insertFacility(organizationId = organizationId, type = FacilityType.Nursery)
@@ -259,6 +272,9 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val withdrawalId1 = insertNurseryWithdrawal(facilityId = facilityId)
     insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
     insertPlanting(numPlants = 10)
+    val withdrawalId2 = insertNurseryWithdrawal(facilityId = facilityId)
+    insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
+    insertPlanting(numPlants = 500_001)
 
     val excludedOrgId = insertOrganization()
     addTerraformationOwner(excludedOrgId)
