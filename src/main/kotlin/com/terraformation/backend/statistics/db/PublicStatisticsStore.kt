@@ -43,7 +43,10 @@ class PublicStatisticsStore(
    * Maximum area of a planting site that we consider. Larger than this is probably just for
    * testing.
    */
-  private val MAX_SITE_AREA_HA = BigDecimal("100000")
+  private val MAX_SITE_AREA_HA = BigDecimal("10000")
+  private val MAX_SEEDS_IN_ACCESSION = 1_000_000
+  private val MAX_SEEDLINGS_IN_BATCH = 1_000_000
+  private val MAX_PLANTS_IN_PLANTING = 500_000
 
   private fun taggedOrganizationIds(internalTagId: InternalTagId) =
       DSL.select(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
@@ -110,46 +113,62 @@ class PublicStatisticsStore(
   }
 
   private fun sumPlantingSiteArea(): BigDecimal {
-    return dslContext
-        .select(DSL.sum(PLANTING_SITES.AREA_HA))
-        .from(PLANTING_SITES)
-        .where(PLANTING_SITES.ORGANIZATION_ID.notIn(excludedOrganizationIds))
-        .and(PLANTING_SITES.AREA_HA.le(MAX_SITE_AREA_HA))
-        .fetchOne(0, BigDecimal::class.java) ?: BigDecimal.ZERO
+    with(PLANTING_SITES) {
+      return dslContext
+          .select(DSL.sum(AREA_HA))
+          .from(PLANTING_SITES)
+          .where(ORGANIZATION_ID.notIn(excludedOrganizationIds))
+          .and(AREA_HA.le(MAX_SITE_AREA_HA))
+          .fetchOne(0, BigDecimal::class.java) ?: BigDecimal.ZERO
+    }
   }
 
   private fun sumSeedsInStorage(): Long {
-    return dslContext
-        .select(DSL.sum(ACCESSIONS.EST_SEED_COUNT))
-        .from(ACCESSIONS)
-        .join(FACILITIES)
-        .on(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
-        .where(FACILITIES.ORGANIZATION_ID.notIn(excludedOrganizationIds))
-        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.entries.filter { it.active }))
-        .fetchOne { (total) -> (total ?: BigDecimal.ZERO).toLong() } ?: 0L
+    with(ACCESSIONS) {
+      return dslContext
+          .select(DSL.sum(EST_SEED_COUNT))
+          .from(ACCESSIONS)
+          .join(FACILITIES)
+          .on(FACILITY_ID.eq(FACILITIES.ID))
+          .where(FACILITIES.ORGANIZATION_ID.notIn(excludedOrganizationIds))
+          .and(STATE_ID.`in`(AccessionState.entries.filter { it.active }))
+          .and(EST_SEED_COUNT.le(MAX_SEEDS_IN_ACCESSION))
+          .fetchOne { (total) -> (total ?: BigDecimal.ZERO).toLong() } ?: 0L
+    }
   }
 
   private fun sumSeedlingsInNurseries(): Long {
-    return dslContext
-        .select(
-            DSL.sum(
-                BATCHES.GERMINATING_QUANTITY.plus(BATCHES.ACTIVE_GROWTH_QUANTITY)
-                    .plus(BATCHES.READY_QUANTITY)
-                    .plus(BATCHES.HARDENING_OFF_QUANTITY)
-            )
-        )
-        .from(BATCHES)
-        .where(BATCHES.ORGANIZATION_ID.notIn(excludedOrganizationIds))
-        .fetchOne(0, Long::class.java) ?: 0L
+    with(BATCHES) {
+      return dslContext
+          .select(
+              DSL.sum(
+                  GERMINATING_QUANTITY.plus(ACTIVE_GROWTH_QUANTITY)
+                      .plus(READY_QUANTITY)
+                      .plus(HARDENING_OFF_QUANTITY)
+              )
+          )
+          .from(BATCHES)
+          .where(ORGANIZATION_ID.notIn(excludedOrganizationIds))
+          .and(
+              (GERMINATING_QUANTITY.plus(ACTIVE_GROWTH_QUANTITY)
+                      .plus(READY_QUANTITY)
+                      .plus(HARDENING_OFF_QUANTITY))
+                  .le(MAX_SEEDLINGS_IN_BATCH)
+          )
+          .fetchOne(0, Long::class.java) ?: 0L
+    }
   }
 
   private fun countPlantings(): Int {
-    return dslContext
-        .select(DSL.sum(PLANTINGS.NUM_PLANTS))
-        .from(PLANTINGS)
-        .join(PLANTING_SITES)
-        .on(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-        .where(PLANTING_SITES.ORGANIZATION_ID.notIn(excludedOrganizationIds))
-        .fetchOne(0, Int::class.java) ?: 0
+    with(PLANTINGS) {
+      return dslContext
+          .select(DSL.sum(NUM_PLANTS))
+          .from(PLANTINGS)
+          .join(PLANTING_SITES)
+          .on(PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+          .where(PLANTING_SITES.ORGANIZATION_ID.notIn(excludedOrganizationIds))
+          .and(NUM_PLANTS.le(MAX_PLANTS_IN_PLANTING))
+          .fetchOne(0, Int::class.java) ?: 0
+    }
   }
 }
