@@ -6104,7 +6104,7 @@ abstract class DatabaseBackedTest {
   fun insertExternalDatasetImport(
       type: ExternalDatasetType = ExternalDatasetType.GRIIS,
       importedTime: Instant = Instant.EPOCH,
-      lastPublicationDate: LocalDate = LocalDate.of(2026, 1, 1),
+      lastPublicationDate: LocalDate? = LocalDate.of(2026, 1, 1),
   ) {
     ExternalDatasetImportsRecord(
             externalDatasetTypeId = type,
