@@ -1,3 +1,4 @@
+8434256e Move GBIF insert function to DatabaseBackedTest (#4755)
 48a42ddf Add nested test classes to species tests (#4754)
 40f69cbf SW-8654 Fix delete seasons with withdrawals for request (#4753)
 bfa9da81 SW-8597 Add max values to public stats queries (#4752)
