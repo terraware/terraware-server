@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -256,6 +257,12 @@ class PlantingSeasonStore(
         parentStore.getPlantingSiteId(id) ?: throw PlantingSeasonNotFoundException(id)
     val organizationId =
         parentStore.getOrganizationId(id) ?: throw PlantingSeasonNotFoundException(id)
+
+    // Delete requests related to the season before the season to meet check constraint requirements
+    dslContext
+        .deleteFrom(PLANTING_DATE_REQUESTS)
+        .where(PLANTING_DATE_REQUESTS.scheduledPlantingDates.PLANTING_SEASON_ID.eq(id))
+        .execute()
 
     val rowsDeleted =
         dslContext.deleteFrom(PLANTING_SEASONS).where(PLANTING_SEASONS.ID.eq(id)).execute()
