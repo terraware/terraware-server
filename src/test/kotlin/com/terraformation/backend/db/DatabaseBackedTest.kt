@@ -147,6 +147,7 @@ import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileBatchStatus
 import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.GbifTaxonId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.GriisResourceId
 import com.terraformation.backend.db.default_schema.GrowthForm
@@ -253,6 +254,11 @@ import com.terraformation.backend.db.default_schema.tables.records.WcvpTaxaRecor
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_DISTRIBUTIONS
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAMES
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAME_WORDS
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_TAXA
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_VERNACULAR_NAMES
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
@@ -574,6 +580,8 @@ import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
+import com.terraformation.backend.species.db.GbifImporterTest
+import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.splat.CoordinateModel
 import com.terraformation.backend.splat.toMultiPointField
 import com.terraformation.backend.splat.toPointField
@@ -581,6 +589,7 @@ import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.util.removeDiacritics
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
 import java.net.URI
@@ -5914,6 +5923,70 @@ abstract class DatabaseBackedTest {
     CountryBotanicalCountriesRecord(countryCode, botanicalCountryCode).attach(dslContext).insert()
   }
 
+  fun insertGbifTaxon(
+      scientificName: String,
+      commonNames: Collection<Pair<String, String?>> = emptyList(),
+      familyName: String = scientificName.substringBefore(' '),
+      threatStatus: String? = null,
+      fullScientificName: String = scientificName,
+      acceptedNameUsageId: GbifTaxonId? = null,
+      taxonomicStatus: String = GbifStore.TAXONOMIC_STATUS_ACCEPTED,
+  ): GbifTaxonId {
+    val taxonId = GbifTaxonId(nextGbifTaxonId.getAndIncrement())
+
+    fun insertName(name: String, isScientific: Boolean) {
+      val nameId =
+          dslContext
+              .insertInto(GBIF_NAMES)
+              .set(GBIF_NAMES.TAXON_ID, taxonId)
+              .set(GBIF_NAMES.NAME, name)
+              .set(GBIF_NAMES.IS_SCIENTIFIC, isScientific)
+              .returning(GBIF_NAMES.ID)
+              .fetchOne(GBIF_NAMES.ID)!!
+
+      name.split(' ').forEach { word ->
+        dslContext
+            .insertInto(GBIF_NAME_WORDS)
+            .set(GBIF_NAME_WORDS.GBIF_NAME_ID, nameId)
+            .set(GBIF_NAME_WORDS.WORD, word.removeDiacritics().lowercase())
+            .execute()
+      }
+    }
+
+    dslContext
+        .insertInto(GBIF_TAXA)
+        .set(GBIF_TAXA.TAXON_ID, taxonId)
+        .set(GBIF_TAXA.SCIENTIFIC_NAME, fullScientificName)
+        .set(GBIF_TAXA.FAMILY, familyName)
+        .set(GBIF_TAXA.TAXON_RANK, "species")
+        .set(GBIF_TAXA.TAXONOMIC_STATUS, taxonomicStatus)
+        .set(GBIF_TAXA.ACCEPTED_NAME_USAGE_ID, acceptedNameUsageId)
+        .execute()
+
+    insertName(scientificName, true)
+
+    commonNames.forEach { (name, language) ->
+      dslContext
+          .insertInto(GBIF_VERNACULAR_NAMES)
+          .set(GBIF_VERNACULAR_NAMES.TAXON_ID, taxonId)
+          .set(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME, name)
+          .set(GBIF_VERNACULAR_NAMES.LANGUAGE, language)
+          .execute()
+
+      insertName(name, false)
+    }
+
+    if (threatStatus != null) {
+      dslContext
+          .insertInto(GBIF_DISTRIBUTIONS)
+          .set(GBIF_DISTRIBUTIONS.TAXON_ID, taxonId)
+          .set(GBIF_DISTRIBUTIONS.THREAT_STATUS, threatStatus)
+          .execute()
+    }
+
+    return taxonId
+  }
+
   private var nextGriisResourceSuffix: Int = 1
 
   fun insertGriisResource(
@@ -6273,6 +6346,16 @@ abstract class DatabaseBackedTest {
      * tests here run concurrently.
      */
     @JvmStatic protected val nextBalenaId = AtomicLong(1L)
+
+    /**
+     * Taxon IDs are defined in the GBIF dataset, not allocated locally by the database, but they
+     * are required to be unique in our data model. Use taxon IDs that are unique across threads to
+     * avoid database deadlocks if multiple of these tests are running concurrently and try to
+     * insert the same taxon ID at the same time.
+     *
+     * This starts at a high number to avoid colliding with the taxon IDs in [GbifImporterTest].
+     */
+    val nextGbifTaxonId = AtomicLong(1000000)
 
     private val imageName: DockerImageName =
         DockerImageName.parse("$POSTGRES_DOCKER_REPOSITORY:$POSTGRES_DOCKER_TAG")
