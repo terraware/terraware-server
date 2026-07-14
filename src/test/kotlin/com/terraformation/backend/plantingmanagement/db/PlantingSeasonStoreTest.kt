@@ -9,6 +9,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -744,7 +745,19 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class Delete {
     @Test
     fun `deletes the planting season row`() {
+      insertStratum()
+      insertSubstratum()
+      insertSpecies()
+      insertFacility()
       val id = insertPlantingSeason()
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies()
+      insertPlantingDateRequest()
+      insertNurseryWithdrawal(
+          purpose = WithdrawalPurpose.OutPlant,
+          plantingSeasonId = id,
+          scheduledPlantingDateRequestId = scheduledDateId,
+      )
 
       store.delete(id)
 
