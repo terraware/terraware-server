@@ -5,8 +5,10 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.ConservationCategory
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
+import com.terraformation.backend.species.db.ExternalDatasetStore
 import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
@@ -18,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.Size
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -26,7 +29,10 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RestController
 @RequestMapping("/api/v1/species/lookup")
-class SpeciesLookupController(private val gbifStore: GbifStore) {
+class SpeciesLookupController(
+    private val externalDatasetStore: ExternalDatasetStore,
+    private val gbifStore: GbifStore,
+) {
   @GetMapping("/names")
   @Operation(
       description =
@@ -86,7 +92,11 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
         gbifStore.fetchOneByScientificName(scientificName, language)
             ?: throw NotFoundException("$scientificName not found")
     val problem = gbifStore.checkScientificName(scientificName)
-    return SpeciesLookupDetailsResponsePayload(model, problem)
+    return SpeciesLookupDetailsResponsePayload(
+        model,
+        problem,
+        externalDatasetStore.getDatasetDate(ExternalDatasetType.GBIF),
+    )
   }
 }
 
@@ -125,8 +135,10 @@ data class SpeciesLookupDetailsResponsePayload(
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"),
     )
+    val commonNameSource: SpeciesDataSourcePayload,
     val conservationCategory: ConservationCategory?,
     val familyName: String,
+    val familyNameSource: SpeciesDataSourcePayload,
     @Schema(
         description =
             "If this is not the accepted name for the species, the type of problem the name has. " +
@@ -143,12 +155,16 @@ data class SpeciesLookupDetailsResponsePayload(
   constructor(
       model: GbifTaxonModel,
       problem: SpeciesProblemsRow?,
+      datasetDate: LocalDate,
   ) : this(
-      model.scientificName,
-      model.vernacularNames.map { SpeciesLookupCommonNamePayload(it) }.ifEmpty { null },
-      model.conservationCategory,
-      model.familyName,
-      problem?.typeId,
-      problem?.suggestedValue,
+      commonNames =
+          model.vernacularNames.map { SpeciesLookupCommonNamePayload(it) }.ifEmpty { null },
+      commonNameSource = SpeciesDataSourcePayload(datasetDate, ExternalDatasetType.GBIF),
+      conservationCategory = model.conservationCategory,
+      familyName = model.familyName,
+      familyNameSource = SpeciesDataSourcePayload(datasetDate, ExternalDatasetType.GBIF),
+      problemType = problem?.typeId,
+      scientificName = model.scientificName,
+      suggestedScientificName = problem?.suggestedValue,
   )
 }
