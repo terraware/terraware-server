@@ -79,9 +79,21 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
       listOf(
           timestampField("checkedTime", SPECIES.CHECKED_TIME),
           textField("commonName", SPECIES.COMMON_NAME),
+          enumField(
+              "commonNameSourceDataset",
+              SPECIES.COMMON_NAME_DATASET_TYPE_ID,
+              localize = false,
+          ),
+          dateField("commonNameSourceDate", SPECIES.COMMON_NAME_DATASET_DATE),
           enumField("conservationCategory", SPECIES.CONSERVATION_CATEGORY_ID, localize = false),
           timestampField("createdTime", SPECIES.CREATED_TIME),
           textField("familyName", SPECIES.FAMILY_NAME),
+          enumField(
+              "familyNameSourceDataset",
+              SPECIES.FAMILY_NAME_DATASET_TYPE_ID,
+              localize = false,
+          ),
+          dateField("familyNameSourceDate", SPECIES.FAMILY_NAME_DATASET_DATE),
           idWrapperField("id", SPECIES.ID) { SpeciesId(it) },
           timestampField("modifiedTime", SPECIES.MODIFIED_TIME),
           booleanField("rare", SPECIES.RARE),
