@@ -175,7 +175,7 @@ class SpeciesController(
   fun acceptProblemSuggestion(
       @PathVariable problemId: SpeciesProblemId
   ): GetSpeciesResponsePayload {
-    val updatedRow = speciesStore.acceptProblemSuggestion(problemId)
+    val updatedRow = speciesService.acceptProblemSuggestion(problemId)
     val remainingProblems = speciesStore.fetchProblemsBySpeciesId(updatedRow.id)
     return GetSpeciesResponsePayload(SpeciesResponseElement(updatedRow, remainingProblems))
   }

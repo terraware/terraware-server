@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
 import com.terraformation.backend.db.SpeciesProblemNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.EcosystemType
@@ -13,9 +12,7 @@ import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
-import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
@@ -818,42 +815,6 @@ class SpeciesStore(
           .set(SPECIES.CHECKED_TIME, clock.instant())
           .where(SPECIES.ID.eq(speciesId))
           .execute()
-    }
-  }
-
-  fun acceptProblemSuggestion(problemId: SpeciesProblemId): ExistingSpeciesModel {
-    val problem = fetchProblemById(problemId)
-    val speciesId = problem.speciesId ?: throw SpeciesProblemNotFoundException(problemId)
-    val existingSpecies = fetchSpeciesById(speciesId)
-
-    val fieldId = problem.fieldId ?: throw IllegalStateException("Species problem had no field")
-    val typeId = problem.typeId ?: throw IllegalStateException("Species problem had no type")
-
-    val correctedSpecies =
-        when (typeId) {
-          SpeciesProblemType.NameNotFound -> throw SpeciesProblemHasNoSuggestionException(problemId)
-          SpeciesProblemType.NameIsSynonym,
-          SpeciesProblemType.NameMisspelled -> {
-            // Only one field defined right now but use a "when" so this will break the build if
-            // we add a second field and forget to handle it here.
-            when (fieldId) {
-              SpeciesProblemField.ScientificName ->
-                  existingSpecies.copy(scientificName = problem.suggestedValue!!)
-            }
-          }
-        }
-
-    return try {
-      dslContext.transactionResult { _ ->
-        deleteProblem(problemId)
-        updateSpecies(correctedSpecies)
-      }
-    } catch (e: DuplicateKeyException) {
-      if (fieldId == SpeciesProblemField.ScientificName) {
-        throw ScientificNameExistsException(problem.suggestedValue)
-      } else {
-        throw e
-      }
     }
   }
 }
