@@ -385,6 +385,8 @@ class SpeciesStore(
       val rowWithNewValues =
           existingRow.copy(
               averageWoodDensity = model.averageWoodDensity,
+              commonNameDatasetDate = model.commonNameSource?.datasetDate,
+              commonNameDatasetTypeId = model.commonNameSource?.datasetType,
               commonName = model.commonName,
               conservationCategoryId = model.conservationCategory,
               dbhSource = model.dbhSource,
@@ -393,6 +395,8 @@ class SpeciesStore(
               deletedTime = null,
               ecologicalRoleKnown = model.ecologicalRoleKnown,
               familyName = model.familyName,
+              familyNameDatasetDate = model.familyNameSource?.datasetDate,
+              familyNameDatasetTypeId = model.familyNameSource?.datasetType,
               heightAtMaturitySource = model.heightAtMaturitySource,
               heightAtMaturityValue = model.heightAtMaturityValue,
               localUsesKnown = model.localUsesKnown,
@@ -419,6 +423,8 @@ class SpeciesStore(
               averageWoodDensity = model.averageWoodDensity,
               checkedTime = null,
               commonName = model.commonName,
+              commonNameDatasetDate = model.commonNameSource?.datasetDate,
+              commonNameDatasetTypeId = model.commonNameSource?.datasetType,
               conservationCategoryId = model.conservationCategory,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
@@ -426,6 +432,8 @@ class SpeciesStore(
               dbhValue = model.dbhValue,
               ecologicalRoleKnown = model.ecologicalRoleKnown,
               familyName = model.familyName,
+              familyNameDatasetDate = model.familyNameSource?.datasetDate,
+              familyNameDatasetTypeId = model.familyNameSource?.datasetType,
               heightAtMaturitySource = model.heightAtMaturitySource,
               heightAtMaturityValue = model.heightAtMaturityValue,
               initialScientificName = model.scientificName,
@@ -517,11 +525,15 @@ class SpeciesStore(
                 .update(SPECIES)
                 .set(AVERAGE_WOOD_DENSITY, model.averageWoodDensity)
                 .set(COMMON_NAME, model.commonName)
+                .set(COMMON_NAME_DATASET_DATE, model.commonNameSource?.datasetDate)
+                .set(COMMON_NAME_DATASET_TYPE_ID, model.commonNameSource?.datasetType)
                 .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
                 .set(DBH_SOURCE, model.dbhSource)
                 .set(DBH_VALUE, model.dbhValue)
                 .set(ECOLOGICAL_ROLE_KNOWN, model.ecologicalRoleKnown)
                 .set(FAMILY_NAME, model.familyName)
+                .set(FAMILY_NAME_DATASET_DATE, model.familyNameSource?.datasetDate)
+                .set(FAMILY_NAME_DATASET_TYPE_ID, model.familyNameSource?.datasetType)
                 .set(HEIGHT_AT_MATURITY_SOURCE, model.heightAtMaturitySource)
                 .set(HEIGHT_AT_MATURITY_VALUE, model.heightAtMaturityValue)
                 .set(LOCAL_USES_KNOWN, model.localUsesKnown)
@@ -578,6 +590,8 @@ class SpeciesStore(
                   .set(INITIAL_SCIENTIFIC_NAME, model.scientificName)
                   .set(AVERAGE_WOOD_DENSITY, model.averageWoodDensity)
                   .set(COMMON_NAME, model.commonName)
+                  .set(COMMON_NAME_DATASET_DATE, model.commonNameSource?.datasetDate)
+                  .set(COMMON_NAME_DATASET_TYPE_ID, model.commonNameSource?.datasetType)
                   .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
                   .set(CREATED_BY, currentUser().userId)
                   .set(CREATED_TIME, clock.instant())
@@ -585,6 +599,8 @@ class SpeciesStore(
                   .set(DBH_VALUE, model.dbhValue)
                   .set(ECOLOGICAL_ROLE_KNOWN, model.ecologicalRoleKnown)
                   .set(FAMILY_NAME, model.familyName)
+                  .set(FAMILY_NAME_DATASET_DATE, model.familyNameSource?.datasetDate)
+                  .set(FAMILY_NAME_DATASET_TYPE_ID, model.familyNameSource?.datasetType)
                   .set(HEIGHT_AT_MATURITY_SOURCE, model.heightAtMaturitySource)
                   .set(HEIGHT_AT_MATURITY_VALUE, model.heightAtMaturityValue)
                   .set(LOCAL_USES_KNOWN, model.localUsesKnown)
@@ -632,6 +648,8 @@ class SpeciesStore(
         existing.copy(
             averageWoodDensity = model.averageWoodDensity,
             commonName = model.commonName,
+            commonNameDatasetDate = model.commonNameSource?.datasetDate,
+            commonNameDatasetTypeId = model.commonNameSource?.datasetType,
             conservationCategoryId = model.conservationCategory,
             dbhSource = model.dbhSource,
             dbhValue = model.dbhValue,
@@ -639,6 +657,8 @@ class SpeciesStore(
             deletedTime = null,
             ecologicalRoleKnown = model.ecologicalRoleKnown,
             familyName = model.familyName,
+            familyNameDatasetDate = model.familyNameSource?.datasetDate,
+            familyNameDatasetTypeId = model.familyNameSource?.datasetType,
             heightAtMaturitySource = model.heightAtMaturitySource,
             heightAtMaturityValue = model.heightAtMaturityValue,
             localUsesKnown = model.localUsesKnown,

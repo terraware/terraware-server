@@ -8,22 +8,30 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.species.db.ExternalDatasetStore
+import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.species.model.SpeciesDataSourceModel
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -36,6 +44,10 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val eventPublisher = TestEventPublisher()
   override val user: TerrawareUser = mockUser()
 
+  private val externalDatasetStore: ExternalDatasetStore by lazy {
+    ExternalDatasetStore(dslContext)
+  }
+  private val gbifStore: GbifStore by lazy { GbifStore(dslContext) }
   private val speciesStore: SpeciesStore by lazy {
     SpeciesStore(
         clock,
@@ -48,8 +60,17 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val speciesChecker: SpeciesChecker = mockk()
   private val service: SpeciesService by lazy {
-    SpeciesService(dslContext, eventPublisher, speciesChecker, speciesStore)
+    SpeciesService(
+        dslContext,
+        eventPublisher,
+        externalDatasetStore,
+        gbifStore,
+        speciesChecker,
+        speciesStore,
+    )
   }
+
+  private val gbifImportedDate = LocalDate.of(2026, 2, 2)
 
   private lateinit var organizationId: OrganizationId
 
@@ -64,6 +85,14 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
     every { user.canDeleteSpecies(any()) } returns true
+
+    insertExternalDatasetImport(
+        type = ExternalDatasetType.GBIF,
+        importedTime =
+            ZonedDateTime.of(gbifImportedDate, LocalTime.of(5, 6, 7, 8), ZoneOffset.UTC)
+                .toInstant(),
+        lastPublicationDate = null,
+    )
   }
 
   @Nested
@@ -76,6 +105,38 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       verify { speciesChecker.checkSpecies(speciesId) }
+    }
+
+    @Test
+    fun `attributes common and family names to current dataset if they match`() {
+      insertGbifTaxon(
+          scientificName = "Scientific name",
+          commonNames = listOf("Common en" to "en"),
+          familyName = "Family",
+      )
+
+      val speciesId =
+          service.createSpecies(
+              NewSpeciesModel(
+                  commonName = "Common en",
+                  familyName = "Family",
+                  organizationId = organizationId,
+                  scientificName = "Scientific name",
+              )
+          )
+
+      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
+
+      assertEquals(
+          SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
+          speciesModel.commonNameSource,
+          "Common name source",
+      )
+      assertEquals(
+          SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
+          speciesModel.familyNameSource,
+          "Family name source",
+      )
     }
   }
 
@@ -118,6 +179,112 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
                       scientificName = "New name",
                   )
           )
+      )
+    }
+
+    @Test
+    fun `attributes common and family names to GBIF if they match`() {
+      val speciesId = insertSpecies(scientificName = "Scientific name")
+      insertGbifTaxon(
+          scientificName = "Scientific name",
+          commonNames = listOf("Common" to "en"),
+          familyName = "Family",
+      )
+
+      val originalModel = speciesStore.fetchSpeciesById(speciesId)
+      val updatedModel =
+          originalModel.copy(
+              commonName = "Common",
+              familyName = "Family",
+          )
+
+      service.updateSpecies(updatedModel)
+
+      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
+
+      assertEquals(
+          SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
+          speciesModel.commonNameSource,
+          "Common name source",
+      )
+      assertEquals(
+          SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
+          speciesModel.familyNameSource,
+          "Family name source",
+      )
+    }
+
+    @Test
+    fun `does not modify existing name sources if names have not changed`() {
+      val speciesId =
+          insertSpecies(
+              scientificName = "Scientific name",
+              commonName = "My common name",
+              commonNameDatasetDate = LocalDate.of(2026, 1, 1),
+              commonNameDatasetType = ExternalDatasetType.GBIF,
+              familyName = "MyFamily",
+              familyNameDatasetDate = LocalDate.of(2026, 1, 2),
+              familyNameDatasetType = ExternalDatasetType.GBIF,
+          )
+      insertGbifTaxon(
+          scientificName = "Scientific name",
+          commonNames = listOf("Common" to "en"),
+          familyName = "Family",
+      )
+
+      val originalModel = speciesStore.fetchSpeciesById(speciesId)
+      val updatedModel = originalModel.copy(localUsesKnown = "Edited value")
+
+      service.updateSpecies(updatedModel)
+
+      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
+
+      assertEquals(
+          SpeciesDataSourceModel(LocalDate.of(2026, 1, 1), ExternalDatasetType.GBIF),
+          speciesModel.commonNameSource,
+          "Common name source",
+      )
+      assertEquals(
+          SpeciesDataSourceModel(LocalDate.of(2026, 1, 2), ExternalDatasetType.GBIF),
+          speciesModel.familyNameSource,
+          "Family name source",
+      )
+    }
+
+    @Test
+    fun `recalculates name sources if scientific name has changed`() {
+      val speciesId =
+          insertSpecies(
+              scientificName = "Old name",
+              commonName = "Common name",
+              commonNameDatasetDate = LocalDate.of(2026, 1, 1),
+              commonNameDatasetType = ExternalDatasetType.GBIF,
+              familyNameDatasetDate = LocalDate.of(2026, 1, 2),
+              familyNameDatasetType = ExternalDatasetType.GBIF,
+              familyName = "Family",
+          )
+      insertGbifTaxon(
+          scientificName = "New name",
+          commonNames = listOf("Common name" to "en"),
+          familyName = "Family",
+      )
+
+      val originalModel = speciesStore.fetchSpeciesById(speciesId)
+      val updatedModel = originalModel.copy(scientificName = "New name")
+
+      service.updateSpecies(updatedModel)
+
+      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
+
+      assertEquals(
+          SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
+          speciesModel.commonNameSource,
+          "Common name source",
+      )
+      assertEquals(
+          SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
+          speciesModel.familyNameSource,
+          "Family name source",
       )
     }
   }
@@ -170,9 +337,15 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   inner class AcceptProblemSuggestion {
     @Test
     fun `updates species if name is synonym`() {
+      insertGbifTaxon("Correct name", listOf("Common" to "en"), "Family")
       val speciesId =
           service.createSpecies(
-              NewSpeciesModel(organizationId = organizationId, scientificName = "Incorrect name")
+              NewSpeciesModel(
+                  commonName = "Common",
+                  familyName = "Family",
+                  organizationId = organizationId,
+                  scientificName = "Incorrect name",
+              )
           )
 
       val problemsRow =
@@ -189,6 +362,12 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals("Correct name", updated.scientificName, "Scientific name")
       assertEquals("Incorrect name", updated.initialScientificName, "Initial scientific name")
+      assertEquals(
+          SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
+          updated.commonNameSource,
+          "Common name source",
+      )
+      assertEquals(updated.commonNameSource, updated.familyNameSource, "Family name source")
     }
 
     @Test
