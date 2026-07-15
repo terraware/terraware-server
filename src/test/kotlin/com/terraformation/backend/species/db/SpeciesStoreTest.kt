@@ -747,33 +747,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class AcceptProblemSuggestion {
-    @Test
-    fun `throws exception if suggested scientific name is already in use`() {
-      store.createSpecies(
-          NewSpeciesModel(organizationId = organizationId, scientificName = "Correct name")
-      )
-      val speciesIdWithOutdatedName =
-          store.createSpecies(
-              NewSpeciesModel(organizationId = organizationId, scientificName = "Outdated name")
-          )
-      val problemsRow =
-          SpeciesProblemsRow(
-              createdTime = Instant.EPOCH,
-              fieldId = SpeciesProblemField.ScientificName,
-              speciesId = speciesIdWithOutdatedName,
-              suggestedValue = "Correct name",
-              typeId = SpeciesProblemType.NameIsSynonym,
-          )
-      speciesProblemsDao.insert(problemsRow)
-
-      assertThrows<ScientificNameExistsException> {
-        store.acceptProblemSuggestion(problemsRow.id!!)
-      }
-    }
-  }
-
-  @Nested
   inner class FindAllSpeciesInUse {
     @Test
     fun `returns no species when none in use`() {

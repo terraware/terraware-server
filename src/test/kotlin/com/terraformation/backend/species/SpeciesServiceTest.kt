@@ -5,9 +5,13 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesProblemField
+import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
@@ -19,6 +23,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -158,6 +163,56 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       service.deleteSpecies(speciesId)
       assertThrows<SpeciesNotFoundException> { speciesStore.fetchSpeciesById(speciesId) }
+    }
+  }
+
+  @Nested
+  inner class AcceptProblemSuggestion {
+    @Test
+    fun `updates species if name is synonym`() {
+      val speciesId =
+          service.createSpecies(
+              NewSpeciesModel(organizationId = organizationId, scientificName = "Incorrect name")
+          )
+
+      val problemsRow =
+          SpeciesProblemsRow(
+              createdTime = Instant.EPOCH,
+              fieldId = SpeciesProblemField.ScientificName,
+              speciesId = speciesId,
+              suggestedValue = "Correct name",
+              typeId = SpeciesProblemType.NameIsSynonym,
+          )
+      speciesProblemsDao.insert(problemsRow)
+
+      val updated = service.acceptProblemSuggestion(problemsRow.id!!)
+
+      assertEquals("Correct name", updated.scientificName, "Scientific name")
+      assertEquals("Incorrect name", updated.initialScientificName, "Initial scientific name")
+    }
+
+    @Test
+    fun `throws exception if suggested scientific name is already in use`() {
+      service.createSpecies(
+          NewSpeciesModel(organizationId = organizationId, scientificName = "Correct name")
+      )
+      val speciesIdWithOutdatedName =
+          service.createSpecies(
+              NewSpeciesModel(organizationId = organizationId, scientificName = "Outdated name")
+          )
+      val problemsRow =
+          SpeciesProblemsRow(
+              createdTime = Instant.EPOCH,
+              fieldId = SpeciesProblemField.ScientificName,
+              speciesId = speciesIdWithOutdatedName,
+              suggestedValue = "Correct name",
+              typeId = SpeciesProblemType.NameIsSynonym,
+          )
+      speciesProblemsDao.insert(problemsRow)
+
+      assertThrows<ScientificNameExistsException> {
+        service.acceptProblemSuggestion(problemsRow.id!!)
+      }
     }
   }
 }
