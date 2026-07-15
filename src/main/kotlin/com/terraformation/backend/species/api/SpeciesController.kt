@@ -220,6 +220,7 @@ data class SpeciesProblemElement(
 data class SpeciesResponseElement(
     val averageWoodDensity: BigDecimal?,
     val commonName: String?,
+    val commonNameSource: SpeciesDataSourcePayload?,
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
@@ -232,6 +233,7 @@ data class SpeciesResponseElement(
     val ecologicalRoleKnown: String?,
     val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
+    val familyNameSource: SpeciesDataSourcePayload?,
     val growthForms: Set<GrowthForm>?,
     val heightAtMaturitySource: String?,
     val heightAtMaturityValue: BigDecimal?,
@@ -254,6 +256,7 @@ data class SpeciesResponseElement(
   ) : this(
       averageWoodDensity = model.averageWoodDensity,
       commonName = model.commonName,
+      commonNameSource = model.commonNameSource?.let { it.toPayload() },
       conservationCategory = model.conservationCategory,
       createdTime = model.createdTime,
       dbhSource = model.dbhSource,
@@ -261,6 +264,7 @@ data class SpeciesResponseElement(
       ecologicalRoleKnown = model.ecologicalRoleKnown,
       ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
       familyName = model.familyName,
+      familyNameSource = model.familyNameSource?.let { it.toPayload() },
       growthForms = model.growthForms,
       heightAtMaturitySource = model.heightAtMaturitySource,
       heightAtMaturityValue = model.heightAtMaturityValue,
