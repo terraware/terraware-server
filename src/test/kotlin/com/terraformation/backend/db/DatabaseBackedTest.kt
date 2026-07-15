@@ -1566,6 +1566,15 @@ abstract class DatabaseBackedTest {
       checkedTime: Instant? = null,
       initialScientificName: String = scientificName,
       commonName: String? = null,
+      commonNameDatasetDate: LocalDate? = null,
+      commonNameDatasetType: ExternalDatasetType? = commonNameDatasetDate?.let {
+        ExternalDatasetType.GBIF
+      },
+      familyName: String? = null,
+      familyNameDatasetDate: LocalDate? = null,
+      familyNameDatasetType: ExternalDatasetType? = familyNameDatasetDate?.let {
+        ExternalDatasetType.GBIF
+      },
       ecosystemTypes: Set<EcosystemType> = emptySet(),
       growthForms: Set<GrowthForm> = emptySet(),
       plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod> = emptySet(),
@@ -1580,11 +1589,16 @@ abstract class DatabaseBackedTest {
               .insertInto(SPECIES)
               .set(CHECKED_TIME, checkedTime)
               .set(COMMON_NAME, commonName)
+              .set(COMMON_NAME_DATASET_DATE, commonNameDatasetDate)
+              .set(COMMON_NAME_DATASET_TYPE_ID, commonNameDatasetType)
               .set(CONSERVATION_CATEGORY_ID, conservationCategory)
               .set(CREATED_BY, createdBy)
               .set(CREATED_TIME, createdTime)
               .set(DELETED_BY, if (deletedTime != null) createdBy else null)
               .set(DELETED_TIME, deletedTime)
+              .set(FAMILY_NAME, familyName)
+              .set(FAMILY_NAME_DATASET_DATE, familyNameDatasetDate)
+              .set(FAMILY_NAME_DATASET_TYPE_ID, familyNameDatasetType)
               .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
               .set(MODIFIED_BY, createdBy)
               .set(MODIFIED_TIME, modifiedTime)

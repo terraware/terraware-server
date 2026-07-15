@@ -5,16 +5,22 @@ import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
 import com.terraformation.backend.db.SpeciesProblemNotFoundException
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.species.db.ExternalDatasetStore
+import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.species.model.SpeciesDataSourceModel
 import jakarta.inject.Named
+import java.time.LocalDate
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
@@ -23,13 +29,43 @@ import org.springframework.dao.DuplicateKeyException
 class SpeciesService(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val externalDatasetStore: ExternalDatasetStore,
+    private val gbifStore: GbifStore,
     private val speciesChecker: SpeciesChecker,
     private val speciesStore: SpeciesStore,
 ) {
   /** Creates a new species and checks it for potential problems. */
   fun createSpecies(model: NewSpeciesModel): SpeciesId {
     return dslContext.transactionResult { _ ->
-      val speciesId = speciesStore.createSpecies(model)
+      val speciesDetails: GbifTaxonModel? by lazy {
+        gbifStore.fetchOneByScientificName(model.scientificName)
+      }
+      val gbifSource: SpeciesDataSourceModel by lazy {
+        SpeciesDataSourceModel(
+            externalDatasetStore.getDatasetDate(ExternalDatasetType.GBIF),
+            ExternalDatasetType.GBIF,
+        )
+      }
+      val commonNameSource =
+          if (
+              model.commonName != null &&
+                  speciesDetails?.vernacularNames?.any { it.name == model.commonName } == true
+          ) {
+            gbifSource
+          } else {
+            null
+          }
+      val familyNameSource =
+          if (model.familyName != null && speciesDetails?.familyName == model.familyName) {
+            gbifSource
+          } else {
+            null
+          }
+
+      val populatedModel =
+          model.copy(commonNameSource = commonNameSource, familyNameSource = familyNameSource)
+
+      val speciesId = speciesStore.createSpecies(populatedModel)
       speciesChecker.checkSpecies(speciesId)
       speciesId
     }
@@ -39,8 +75,9 @@ class SpeciesService(
   fun updateSpecies(model: ExistingSpeciesModel): ExistingSpeciesModel {
     return dslContext.transactionResult { _ ->
       val existingRow = speciesStore.fetchSpeciesById(model.id)
+      val modelWithSources = freshenNameSources(existingRow, model)
 
-      val updatedRow = speciesStore.updateSpecies(model)
+      val updatedRow = speciesStore.updateSpecies(modelWithSources)
       speciesChecker.recheckSpecies(existingRow, updatedRow)
 
       eventPublisher.publishEvent(SpeciesEditedEvent(species = updatedRow))
@@ -85,7 +122,7 @@ class SpeciesService(
     return try {
       dslContext.transactionResult { _ ->
         speciesStore.deleteProblem(problemId)
-        speciesStore.updateSpecies(correctedSpecies)
+        speciesStore.updateSpecies(freshenNameSources(existingSpecies, correctedSpecies))
       }
     } catch (e: DuplicateKeyException) {
       if (fieldId == SpeciesProblemField.ScientificName) {
@@ -94,5 +131,59 @@ class SpeciesService(
         throw e
       }
     }
+  }
+
+  /**
+   * Populates the sources of the common and family names as part of a species update.
+   *
+   * The basic approach is:
+   *
+   * - If the name is being set to null, clear its existing source, if any.
+   * - If both the name and the scientific name haven't changed and the name already has a source,
+   *   keep the existing source, even if the current version of the source no longer matches the
+   *   name.
+   * - If either the name in question or the scientific name has changed, recalculate its source.
+   *   This can cause an existing source to be cleared if the new name doesn't match the GBIF data.
+   */
+  private fun freshenNameSources(
+      changedFrom: ExistingSpeciesModel,
+      changedTo: ExistingSpeciesModel,
+  ): ExistingSpeciesModel {
+    val datasetDate: LocalDate by lazy {
+      externalDatasetStore.getDatasetDate(ExternalDatasetType.GBIF)
+    }
+    val speciesDetails: GbifTaxonModel? by lazy {
+      gbifStore.fetchOneByScientificName(changedTo.scientificName)
+    }
+
+    val commonNameSource =
+        when {
+          changedTo.commonName == null -> null
+
+          changedTo.commonName == changedFrom.commonName &&
+              changedTo.scientificName == changedFrom.scientificName &&
+              changedFrom.commonNameSource != null -> changedFrom.commonNameSource
+
+          speciesDetails?.vernacularNames?.any { it.name == changedTo.commonName } == true ->
+              SpeciesDataSourceModel(datasetDate, ExternalDatasetType.GBIF)
+
+          else -> null
+        }
+
+    val familyNameSource =
+        when {
+          changedTo.familyName == null -> null
+
+          changedTo.familyName == changedFrom.familyName &&
+              changedTo.scientificName == changedFrom.scientificName &&
+              changedFrom.familyNameSource != null -> changedFrom.familyNameSource
+
+          speciesDetails?.familyName == changedTo.familyName ->
+              SpeciesDataSourceModel(datasetDate, ExternalDatasetType.GBIF)
+
+          else -> null
+        }
+
+    return changedTo.copy(commonNameSource = commonNameSource, familyNameSource = familyNameSource)
   }
 }
