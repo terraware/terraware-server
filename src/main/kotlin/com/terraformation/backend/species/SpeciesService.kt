@@ -37,14 +37,19 @@ class SpeciesService(
   /** Creates a new species and checks it for potential problems. */
   fun createSpecies(model: NewSpeciesModel): SpeciesId {
     return dslContext.transactionResult { _ ->
-      val speciesDetails = gbifStore.fetchOneByScientificName(model.scientificName)
-      val datasetDate = externalDatasetStore.getDatasetDate(ExternalDatasetType.GBIF)
-      val gbifSource = SpeciesDataSourceModel(datasetDate, ExternalDatasetType.GBIF)
+      val speciesDetails: GbifTaxonModel? by lazy {
+        gbifStore.fetchOneByScientificName(model.scientificName)
+      }
+      val gbifSource: SpeciesDataSourceModel by lazy {
+        SpeciesDataSourceModel(
+            externalDatasetStore.getDatasetDate(ExternalDatasetType.GBIF),
+            ExternalDatasetType.GBIF,
+        )
+      }
       val commonNameSource =
           if (
-              speciesDetails != null &&
-                  model.commonName != null &&
-                  speciesDetails.vernacularNames.any { it.name == model.commonName }
+              model.commonName != null &&
+                  speciesDetails?.vernacularNames?.any { it.name == model.commonName } == true
           ) {
             gbifSource
           } else {
