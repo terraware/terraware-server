@@ -1,3 +1,4 @@
+000717ab Move SpeciesStore.acceptProblemSuggestion to SpeciesService (#4757)
 bdd8cc24 SW-8652 Tell client the source of species names (#4756)
 8434256e Move GBIF insert function to DatabaseBackedTest (#4755)
 48a42ddf Add nested test classes to species tests (#4754)
