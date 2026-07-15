@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -83,6 +84,10 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           projectModules.asMultiValueSublist(
               "projectModules",
               PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID),
+          ),
+          projectSpecies.asMultiValueSublist(
+              "projectSpecies",
+              PROJECTS.ID.eq(PROJECT_SPECIES.PROJECT_ID),
           ),
           projectVariables.asMultiValueSublist(
               "variables",

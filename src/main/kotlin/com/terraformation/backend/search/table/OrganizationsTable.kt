@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
@@ -81,6 +82,10 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               ORGANIZATIONS.ID.eq(PLANTING_SITE_SUMMARIES.ORGANIZATION_ID),
           ),
           projects.asMultiValueSublist("projects", ORGANIZATIONS.ID.eq(PROJECTS.ORGANIZATION_ID)),
+          projectSpecies.asMultiValueSublist(
+              "projectSpecies",
+              ORGANIZATIONS.ID.eq(PROJECT_SPECIES.ORGANIZATION_ID),
+          ),
           reports.asMultiValueSublist(
               "reports",
               ORGANIZATIONS.ID.eq(SEED_FUND_REPORTS.ORGANIZATION_ID),
