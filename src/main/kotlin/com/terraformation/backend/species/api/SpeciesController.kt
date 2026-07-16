@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
@@ -28,6 +29,7 @@ import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.ProjectSpeciesStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.ExistingSpeciesProjectModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
@@ -244,6 +246,25 @@ data class SpeciesProblemElement(
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+data class SpeciesProjectElement(
+    val calculatedNativity: SpeciesNativity?,
+    val calculatedNativitySource: SpeciesDataSourcePayload?,
+    val overriddenJustification: String?,
+    val overriddenNativity: SpeciesNativity?,
+    val projectId: ProjectId?,
+) {
+  constructor(
+      model: ExistingSpeciesProjectModel
+  ) : this(
+      calculatedNativity = model.calculatedNativity,
+      calculatedNativitySource = model.calculatedNativitySource?.toPayload(),
+      overriddenJustification = model.overriddenJustification,
+      overriddenNativity = model.overriddenNativity,
+      projectId = model.projectId,
+  )
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeciesResponseElement(
     val averageWoodDensity: BigDecimal?,
     val commonName: String?,
@@ -270,6 +291,7 @@ data class SpeciesResponseElement(
     val nativeEcosystem: String?,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
     val problems: List<SpeciesProblemElement>?,
+    val projects: List<SpeciesProjectElement>,
     val otherFacts: String?,
     val rare: Boolean?,
     val scientificName: String,
@@ -301,6 +323,7 @@ data class SpeciesResponseElement(
       nativeEcosystem = model.nativeEcosystem,
       plantMaterialSourcingMethods = model.plantMaterialSourcingMethods,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
+      projects = model.projects.map { SpeciesProjectElement(it) },
       otherFacts = model.otherFacts,
       rare = model.rare,
       scientificName = model.scientificName,

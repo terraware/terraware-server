@@ -5,15 +5,43 @@ import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.WoodDensityLevel
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import java.math.BigDecimal
 import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
+
+data class ExistingSpeciesProjectModel(
+    val calculatedNativity: SpeciesNativity?,
+    val calculatedNativitySource: SpeciesDataSourceModel?,
+    val overriddenJustification: String?,
+    val overriddenNativity: SpeciesNativity?,
+    val projectId: ProjectId?,
+) {
+  companion object {
+    fun of(record: Record) =
+        with(PROJECT_SPECIES) {
+          ExistingSpeciesProjectModel(
+              calculatedNativity = record[CALCULATED_NATIVITY_ID],
+              calculatedNativitySource =
+                  SpeciesDataSourceModel.of(
+                      record[CALCULATED_NATIVITY_DATASET_DATE],
+                      record[CALCULATED_NATIVITY_DATASET_TYPE_ID],
+                  ),
+              overriddenJustification = record[OVERRIDDEN_JUSTIFICATION],
+              overriddenNativity = record[OVERRIDDEN_NATIVITY_ID],
+              projectId = record[PROJECT_ID],
+          )
+        }
+  }
+}
 
 data class ExistingSpeciesModel(
     val averageWoodDensity: BigDecimal? = null,
@@ -39,6 +67,7 @@ data class ExistingSpeciesModel(
     val organizationId: OrganizationId,
     val otherFacts: String? = null,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod> = emptySet(),
+    val projects: List<ExistingSpeciesProjectModel> = emptyList(),
     val rare: Boolean? = null,
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior? = null,
@@ -52,6 +81,7 @@ data class ExistingSpeciesModel(
         ecosystemTypesMultiset: Field<Set<EcosystemType>>? = null,
         growthFormsMultiset: Field<Set<GrowthForm>>? = null,
         plantMaterialSourcingMethodsMultiset: Field<Set<PlantMaterialSourcingMethod>>? = null,
+        projectSpeciesMultiset: Field<List<ExistingSpeciesProjectModel>>? = null,
         successionalGroupsMultiset: Field<Set<SuccessionalGroup>>? = null,
     ): ExistingSpeciesModel =
         ExistingSpeciesModel(
@@ -88,6 +118,7 @@ data class ExistingSpeciesModel(
             otherFacts = record[SPECIES.OTHER_FACTS],
             plantMaterialSourcingMethods =
                 plantMaterialSourcingMethodsMultiset?.let { record[it] } ?: emptySet(),
+            projects = projectSpeciesMultiset?.let { record[it] } ?: emptyList(),
             rare = record[SPECIES.RARE],
             scientificName = record[SPECIES.SCIENTIFIC_NAME]!!,
             seedStorageBehavior = record[SPECIES.SEED_STORAGE_BEHAVIOR_ID],

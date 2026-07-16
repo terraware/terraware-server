@@ -22,6 +22,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosyste
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFormsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
@@ -41,6 +42,7 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.ExistingSpeciesProjectModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import jakarta.inject.Named
 import java.time.Clock
@@ -63,6 +65,26 @@ class SpeciesStore(
     private val speciesProblemsDao: SpeciesProblemsDao,
 ) {
   private val log = perClassLogger()
+
+  private val projectSpeciesMultiset: Field<List<ExistingSpeciesProjectModel>> =
+      with(PROJECT_SPECIES) {
+        DSL.multiset(
+                DSL.select(
+                        CALCULATED_NATIVITY_DATASET_DATE,
+                        CALCULATED_NATIVITY_DATASET_TYPE_ID,
+                        CALCULATED_NATIVITY_ID,
+                        OVERRIDDEN_JUSTIFICATION,
+                        OVERRIDDEN_NATIVITY_ID,
+                        PROJECT_ID,
+                    )
+                    .from(PROJECT_SPECIES)
+                    .where(SPECIES_ID.eq(SPECIES.ID))
+                    .orderBy(PROJECT_ID)
+            )
+            .convertFrom { result ->
+              result.map { record -> ExistingSpeciesProjectModel.of(record) }
+            }
+      }
 
   private val speciesEcosystemTypesMultiset: Field<Set<EcosystemType>> =
       DSL.multiset(
@@ -146,6 +168,7 @@ class SpeciesStore(
     return dslContext
         .select(
             SPECIES.asterisk(),
+            projectSpeciesMultiset,
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
@@ -160,6 +183,7 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
+              projectSpeciesMultiset,
               speciesSuccessionalGroupsMultiset,
           )
         } ?: throw SpeciesNotFoundException(speciesId)
@@ -171,6 +195,7 @@ class SpeciesStore(
     return dslContext
         .select(
             SPECIES.asterisk(),
+            projectSpeciesMultiset,
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
@@ -191,6 +216,7 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
+              projectSpeciesMultiset,
               speciesSuccessionalGroupsMultiset,
           )
         }
@@ -210,6 +236,7 @@ class SpeciesStore(
     return dslContext
         .select(
             SPECIES.asterisk(),
+            projectSpeciesMultiset,
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
@@ -245,6 +272,7 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
+              projectSpeciesMultiset,
               speciesSuccessionalGroupsMultiset,
           )
         }
@@ -278,6 +306,7 @@ class SpeciesStore(
     return dslContext
         .select(
             SPECIES.asterisk(),
+            projectSpeciesMultiset,
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
@@ -294,6 +323,7 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
+              projectSpeciesMultiset,
               speciesSuccessionalGroupsMultiset,
           )
         }

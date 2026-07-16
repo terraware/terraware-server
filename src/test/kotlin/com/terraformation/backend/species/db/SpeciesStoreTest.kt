@@ -10,12 +10,14 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
@@ -31,11 +33,14 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.ExistingSpeciesProjectModel
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.species.model.SpeciesDataSourceModel
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -502,6 +507,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchSpeciesById {
     @Test
     fun `returns species if it is not deleted`() {
+      val projectId = insertProject()
       val speciesId =
           store.createSpecies(
               NewSpeciesModel(
@@ -510,6 +516,13 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   scientificName = "test",
               )
           )
+      insertProjectSpecies(
+          calculatedNativity = SpeciesNativity.Unknown,
+          calculatedNativityDatasetDate = LocalDate.of(2026, 1, 1),
+          calculatedNativityDatasetType = ExternalDatasetType.GBIF,
+          overriddenNativityId = SpeciesNativity.Native,
+          speciesId = speciesId,
+      )
 
       val expected =
           ExistingSpeciesModel(
@@ -519,6 +532,20 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               initialScientificName = "test",
               modifiedTime = Instant.EPOCH,
               organizationId = organizationId,
+              projects =
+                  listOf(
+                      ExistingSpeciesProjectModel(
+                          calculatedNativity = SpeciesNativity.Unknown,
+                          calculatedNativitySource =
+                              SpeciesDataSourceModel(
+                                  LocalDate.of(2026, 1, 1),
+                                  ExternalDatasetType.GBIF,
+                              ),
+                          overriddenJustification = "Justification",
+                          overriddenNativity = SpeciesNativity.Native,
+                          projectId = projectId,
+                      )
+                  ),
               scientificName = "test",
           )
 
