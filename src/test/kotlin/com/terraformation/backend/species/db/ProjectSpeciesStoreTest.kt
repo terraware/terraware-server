@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.tables.records.ProjectSpeciesRecord
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.species.model.ProjectSpeciesOverride
 import java.time.Instant
@@ -29,7 +30,13 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
-  private val store: ProjectSpeciesStore by lazy { ProjectSpeciesStore(clock, dslContext) }
+  private val store: ProjectSpeciesStore by lazy {
+    ProjectSpeciesStore(
+        clock,
+        dslContext,
+        SpeciesNativityCalculator(dslContext),
+    )
+  }
 
   private lateinit var organizationId: OrganizationId
   private lateinit var projectId: ProjectId
@@ -39,7 +46,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun setUp() {
     organizationId = insertOrganization()
     projectId = insertProject()
-    speciesId = insertSpecies()
+    speciesId = insertSpecies(scientificName = "Scientific name")
 
     insertOrganizationUser(role = Role.Manager)
 
@@ -50,6 +57,120 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class AssignProjects {
     @Test
     fun `creates rows with only the ID columns populated`() {
+      store.assignProjects(mapOf(speciesId to setOf(projectId)))
+
+      assertTableEquals(ProjectSpeciesRecord(organizationId, projectId, speciesId))
+    }
+
+    @Test
+    fun `uses project locations to calculate species nativity`() {
+      val botanicalCountryCode1 = insertBotanicalCountry()
+      val botanicalCountryCode2 = insertBotanicalCountry()
+
+      val griisDate = LocalDate.of(2026, 1, 2)
+      val wcvpDate = LocalDate.of(2026, 2, 3)
+      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+      insertExternalDatasetImport(type = ExternalDatasetType.WCVP, lastPublicationDate = wcvpDate)
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+      insertWcvpTaxon(scientificName = "Scientific name")
+      insertWcvpDistribution(
+          botanicalCountryCode = botanicalCountryCode2,
+          speciesNativity = SpeciesNativity.Introduced,
+      )
+
+      val projectId1 =
+          insertProject(botanicalCountryCode = botanicalCountryCode1, countryCode = "KE")
+      val projectId2 =
+          insertProject(botanicalCountryCode = botanicalCountryCode2, countryCode = "GH")
+      // Project in a location where there are no listings for the species.
+      val projectId3 =
+          insertProject(botanicalCountryCode = botanicalCountryCode1, countryCode = "TZ")
+
+      store.assignProjects(mapOf(speciesId to setOf(projectId1, projectId2, projectId3)))
+
+      assertTableEquals(
+          listOf(
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  projectId = projectId1,
+                  speciesId = speciesId,
+                  calculatedNativityId = SpeciesNativity.Invasive,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityDatasetDate = griisDate,
+              ),
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  projectId = projectId2,
+                  speciesId = speciesId,
+                  calculatedNativityId = SpeciesNativity.Introduced,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.WCVP,
+                  calculatedNativityDatasetDate = wcvpDate,
+              ),
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  projectId = projectId3,
+                  speciesId = speciesId,
+                  calculatedNativityId = SpeciesNativity.Unknown,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `uses organization location to calculate species nativity if only one project`() {
+      insertBotanicalCountry()
+
+      dslContext
+          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
+          .apply {
+            botanicalCountryCode = inserted.botanicalCountryCode
+            countryCode = "KE"
+          }
+          .update()
+
+      insertExternalDatasetImport(
+          type = ExternalDatasetType.GRIIS,
+          lastPublicationDate = LocalDate.of(2026, 1, 2),
+      )
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      store.assignProjects(mapOf(speciesId to setOf(projectId)))
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              projectId = projectId,
+              speciesId = speciesId,
+              calculatedNativityId = SpeciesNativity.Invasive,
+              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              calculatedNativityDatasetDate = LocalDate.of(2026, 1, 2),
+          )
+      )
+    }
+
+    @Test
+    fun `does not use organization location to calculate species nativity if multiple projects`() {
+      insertBotanicalCountry()
+
+      dslContext
+          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
+          .apply {
+            botanicalCountryCode = inserted.botanicalCountryCode
+            countryCode = "KE"
+          }
+          .update()
+
+      insertExternalDatasetImport(
+          type = ExternalDatasetType.GRIIS,
+          lastPublicationDate = LocalDate.of(2026, 1, 2),
+      )
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      insertProject()
+
       store.assignProjects(mapOf(speciesId to setOf(projectId)))
 
       assertTableEquals(ProjectSpeciesRecord(organizationId, projectId, speciesId))
