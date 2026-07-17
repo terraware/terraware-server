@@ -228,14 +228,26 @@ class ProjectSpeciesStore(
     return dslContext
         .select(
             PROJECTS.ID,
-            DSL.coalesce(PROJECTS.BOTANICAL_COUNTRY_CODE, ORGANIZATIONS.BOTANICAL_COUNTRY_CODE),
-            DSL.coalesce(PROJECTS.COUNTRY_CODE, ORGANIZATIONS.COUNTRY_CODE),
+            DSL.case_()
+                .`when`(
+                    PROJECTS.BOTANICAL_COUNTRY_CODE.isNotNull.and(PROJECTS.COUNTRY_CODE.isNotNull),
+                    PROJECTS.BOTANICAL_COUNTRY_CODE,
+                )
+                .else_(ORGANIZATIONS.BOTANICAL_COUNTRY_CODE),
+            DSL.case_()
+                .`when`(
+                    PROJECTS.BOTANICAL_COUNTRY_CODE.isNotNull.and(PROJECTS.COUNTRY_CODE.isNotNull),
+                    PROJECTS.COUNTRY_CODE,
+                )
+                .else_(ORGANIZATIONS.COUNTRY_CODE),
         )
         .from(PROJECTS)
+        // Only fall back to org-level location if org has only one project and has both locations.
         .leftJoin(ORGANIZATIONS)
         .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+        .and(ORGANIZATIONS.BOTANICAL_COUNTRY_CODE.isNotNull)
+        .and(ORGANIZATIONS.COUNTRY_CODE.isNotNull)
         .and(
-            // Only fall back to org-level location if org has only one project.
             DSL.field(
                     DSL.selectCount()
                         .from(PROJECTS)
