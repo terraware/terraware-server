@@ -1,5 +1,6 @@
 package com.terraformation.backend.species
 
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesInUseException
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.species.db.ExternalDatasetStore
 import com.terraformation.backend.species.db.GbifStore
+import com.terraformation.backend.species.db.ProjectSpeciesStore
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
@@ -23,6 +25,7 @@ import jakarta.inject.Named
 import java.time.LocalDate
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
 
 @Named
@@ -31,6 +34,7 @@ class SpeciesService(
     private val eventPublisher: ApplicationEventPublisher,
     private val externalDatasetStore: ExternalDatasetStore,
     private val gbifStore: GbifStore,
+    private val projectSpeciesStore: ProjectSpeciesStore,
     private val speciesChecker: SpeciesChecker,
     private val speciesStore: SpeciesStore,
 ) {
@@ -130,6 +134,16 @@ class SpeciesService(
       } else {
         throw e
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: ProjectUpdatedEvent) {
+    if (
+        event.changedFrom.botanicalCountryCode != event.changedTo.botanicalCountryCode ||
+            event.changedFrom.countryCode != event.changedTo.countryCode
+    ) {
+      projectSpeciesStore.recalculateNativities(event.projectId)
     }
   }
 

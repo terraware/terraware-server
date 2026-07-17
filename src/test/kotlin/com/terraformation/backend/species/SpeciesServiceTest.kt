@@ -3,6 +3,9 @@ package com.terraformation.backend.species
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
+import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ScientificNameExistsException
@@ -10,13 +13,18 @@ import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
+import com.terraformation.backend.db.default_schema.tables.records.ProjectSpeciesRecord
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.ExternalDatasetStore
 import com.terraformation.backend.species.db.GbifStore
+import com.terraformation.backend.species.db.ProjectSpeciesStore
 import com.terraformation.backend.species.db.SpeciesChecker
+import com.terraformation.backend.species.db.SpeciesNativityCalculator
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -48,6 +56,13 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     ExternalDatasetStore(dslContext)
   }
   private val gbifStore: GbifStore by lazy { GbifStore(dslContext) }
+  private val projectSpeciesStore: ProjectSpeciesStore by lazy {
+    ProjectSpeciesStore(
+        clock,
+        dslContext,
+        SpeciesNativityCalculator(dslContext),
+    )
+  }
   private val speciesStore: SpeciesStore by lazy {
     SpeciesStore(
         clock,
@@ -65,6 +80,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         externalDatasetStore,
         gbifStore,
+        projectSpeciesStore,
         speciesChecker,
         speciesStore,
     )
@@ -392,6 +408,53 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<ScientificNameExistsException> {
         service.acceptProblemSuggestion(problemsRow.id!!)
       }
+    }
+  }
+
+  @Nested
+  inner class OnProjectUpdatedEvent {
+    @Test
+    fun `recalculates species nativity on location change`() {
+      // The recalculation logic is tested in ProjectSpeciesStoreTest; this is just to make sure the
+      // event triggers a recalculation at all.
+      insertProject()
+      insertSpecies()
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Invasive)
+
+      service.on(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = "US"),
+              changedTo = ProjectUpdatedEventValues(countryCode = null),
+              organizationId = organizationId,
+              projectId = inserted.projectId,
+          )
+      )
+
+      assertTableEquals(
+          ProjectSpeciesRecord(organizationId, inserted.projectId, inserted.speciesId)
+      )
+
+      assertIsEventListener<ProjectUpdatedEvent>(service)
+    }
+
+    @Test
+    fun `does not update species if location was unchanged`() {
+      insertProject()
+      insertSpecies()
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Invasive)
+
+      val before = dslContext.fetch(PROJECT_SPECIES)
+
+      service.on(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(description = "X"),
+              changedTo = ProjectUpdatedEventValues(description = "Y"),
+              organizationId = organizationId,
+              projectId = inserted.projectId,
+          )
+      )
+
+      assertTableEquals(before)
     }
   }
 }
