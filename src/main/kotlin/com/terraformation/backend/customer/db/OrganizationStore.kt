@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.OrganizationCreatedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.OrganizationLocationUpdatedEvent
 import com.terraformation.backend.customer.event.OrganizationRenamedEvent
 import com.terraformation.backend.customer.event.OrganizationRenamedEventValues
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
@@ -265,6 +266,19 @@ class OrganizationStore(
           OrganizationRenamedEvent(
               changedFrom = OrganizationRenamedEventValues(name = existingRow.name),
               changedTo = OrganizationRenamedEventValues(name = row.name),
+              organizationId = organizationId,
+          )
+      )
+    }
+
+    if (
+        existingRow.botanicalCountryCode != row.botanicalCountryCode ||
+            existingRow.countryCode != row.countryCode
+    ) {
+      publisher.publishEvent(
+          OrganizationLocationUpdatedEvent(
+              botanicalCountryCode = row.botanicalCountryCode,
+              countryCode = row.countryCode,
               organizationId = organizationId,
           )
       )
