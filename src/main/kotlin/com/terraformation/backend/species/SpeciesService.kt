@@ -1,5 +1,6 @@
 package com.terraformation.backend.species
 
+import com.terraformation.backend.customer.event.OrganizationLocationUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ScientificNameExistsException
@@ -11,6 +12,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.species.db.ExternalDatasetStore
 import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.species.db.ProjectSpeciesStore
@@ -134,6 +136,24 @@ class SpeciesService(
       } else {
         throw e
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: OrganizationLocationUpdatedEvent) {
+    // Organization location change should only trigger a project-level species nativity
+    // recaulcation if the organization has exactly one project and the project lacks a location.
+    val projects =
+        dslContext
+            .selectFrom(PROJECTS)
+            .where(PROJECTS.ORGANIZATION_ID.eq(event.organizationId))
+            .limit(2)
+            .fetch()
+    if (
+        projects.size == 1 &&
+            (projects[0].botanicalCountryCode == null || projects[0].countryCode == null)
+    ) {
+      projectSpeciesStore.recalculateNativities(projects[0].id!!)
     }
   }
 
