@@ -340,6 +340,137 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class RecalculateNativities {
+    @Test
+    fun `recalculates nativities for project species`() {
+      val botanicalCountryCode = insertBotanicalCountry()
+      val griisDate = LocalDate.of(2026, 1, 2)
+      val wcvpDate = LocalDate.of(2026, 2, 3)
+      insertExternalDatasetImport(
+          type = ExternalDatasetType.GRIIS,
+          lastPublicationDate = griisDate,
+      )
+      insertExternalDatasetImport(
+          type = ExternalDatasetType.WCVP,
+          lastPublicationDate = wcvpDate,
+      )
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      val wcvpSpeciesId = insertSpecies(scientificName = "Other name")
+      insertWcvpTaxon(scientificName = "Other name")
+      insertWcvpDistribution(
+          botanicalCountryCode = botanicalCountryCode,
+          speciesNativity = SpeciesNativity.Introduced,
+      )
+
+      insertProjectSpecies(
+          calculatedNativity = SpeciesNativity.Native,
+          calculatedNativityDatasetDate = wcvpDate,
+          calculatedNativityDatasetType = ExternalDatasetType.WCVP,
+          overriddenNativityId = SpeciesNativity.Introduced,
+      )
+
+      val locatedProjectId =
+          insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "KE")
+      insertProjectSpecies(
+          speciesId = speciesId,
+          calculatedNativity = SpeciesNativity.Native,
+          overriddenNativityId = SpeciesNativity.Introduced,
+      )
+      insertProjectSpecies(
+          speciesId = wcvpSpeciesId,
+          calculatedNativity = SpeciesNativity.Native,
+      )
+
+      store.recalculateNativities(locatedProjectId)
+
+      assertTableEquals(
+          listOf(
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = griisDate,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityId = SpeciesNativity.Invasive,
+                  organizationId = organizationId,
+                  projectId = locatedProjectId,
+                  speciesId = speciesId,
+              ),
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = wcvpDate,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.WCVP,
+                  calculatedNativityId = SpeciesNativity.Introduced,
+                  organizationId = organizationId,
+                  projectId = locatedProjectId,
+                  speciesId = wcvpSpeciesId,
+              ),
+              // Other project's species should be left alone.
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = wcvpDate,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.WCVP,
+                  calculatedNativityId = SpeciesNativity.Native,
+                  organizationId = organizationId,
+                  overriddenBy = inserted.userId,
+                  overriddenJustification = "Justification",
+                  overriddenNativityId = SpeciesNativity.Introduced,
+                  overriddenTime = Instant.EPOCH,
+                  projectId = projectId,
+                  speciesId = wcvpSpeciesId,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `sets nativity to unknown when species is not listed in the current location`() {
+      val botanicalCountryCode = insertBotanicalCountry()
+      val locatedProjectId =
+          insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "TZ")
+      insertProjectSpecies(
+          projectId = locatedProjectId,
+          speciesId = speciesId,
+          calculatedNativity = SpeciesNativity.Invasive,
+      )
+
+      store.recalculateNativities(locatedProjectId)
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              projectId = locatedProjectId,
+              speciesId = speciesId,
+              calculatedNativityId = SpeciesNativity.Unknown,
+          )
+      )
+    }
+
+    @Test
+    fun `clears nativities when the project has no location`() {
+      insertProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId,
+          calculatedNativity = SpeciesNativity.Invasive,
+          overriddenNativityId = SpeciesNativity.Introduced,
+      )
+
+      store.recalculateNativities(projectId)
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              projectId = projectId,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `is a no-op when the project has no species`() {
+      assertDoesNotThrow { store.recalculateNativities(projectId) }
+      assertTableEmpty(PROJECT_SPECIES)
+    }
+  }
+
+  @Nested
   inner class RemoveProjects {
     @Test
     fun `deletes requested associations`() {

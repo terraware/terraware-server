@@ -72,6 +72,54 @@ class ProjectSpeciesStore(
     }
   }
 
+  fun recalculateNativities(projectId: ProjectId) {
+    val speciesIds =
+        dslContext
+            .select(PROJECT_SPECIES.SPECIES_ID)
+            .from(PROJECT_SPECIES)
+            .where(PROJECT_SPECIES.PROJECT_ID.eq(projectId))
+            .fetch(PROJECT_SPECIES.SPECIES_ID.asNonNullable())
+    if (speciesIds.isEmpty()) {
+      return
+    }
+
+    val nativities = calculateNativities(mapOf(projectId to speciesIds))
+
+    with(PROJECT_SPECIES) {
+      val rows = speciesIds.map { speciesId ->
+        val sourcedNativity = nativities[speciesId to projectId]
+
+        DSL.row(
+            DSL.value(speciesId, SPECIES_ID.dataType),
+            DSL.value(sourcedNativity?.datasetDate, CALCULATED_NATIVITY_DATASET_DATE.dataType),
+            DSL.value(sourcedNativity?.datasetType, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType),
+            DSL.value(sourcedNativity?.speciesNativity, CALCULATED_NATIVITY_ID.dataType),
+        )
+      }
+
+      val updateValues = DSL.values(*(rows.toTypedArray()))
+
+      val speciesIdField = updateValues.field(0, SPECIES_ID.dataType)!!
+      val datasetDateField = updateValues.field(1, CALCULATED_NATIVITY_DATASET_DATE.dataType)!!
+      val datasetTypeField = updateValues.field(2, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType)!!
+      val nativityField = updateValues.field(3, CALCULATED_NATIVITY_ID.dataType)!!
+
+      dslContext
+          .update(PROJECT_SPECIES)
+          .set(CALCULATED_NATIVITY_DATASET_DATE, datasetDateField)
+          .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, datasetTypeField)
+          .set(CALCULATED_NATIVITY_ID, nativityField)
+          .set(OVERRIDDEN_BY, DSL.castNull(OVERRIDDEN_BY.dataType))
+          .set(OVERRIDDEN_NATIVITY_ID, DSL.castNull(OVERRIDDEN_NATIVITY_ID.dataType))
+          .set(OVERRIDDEN_JUSTIFICATION, DSL.castNull(OVERRIDDEN_JUSTIFICATION.dataType))
+          .set(OVERRIDDEN_TIME, DSL.castNull(OVERRIDDEN_TIME.dataType))
+          .from(updateValues)
+          .where(PROJECT_ID.eq(projectId))
+          .and(SPECIES_ID.eq(speciesIdField))
+          .execute()
+    }
+  }
+
   fun overridePerProjectData(overrides: List<ProjectSpeciesOverride>) {
     require(overrides.isNotEmpty()) { "No overrides specified" }
 
