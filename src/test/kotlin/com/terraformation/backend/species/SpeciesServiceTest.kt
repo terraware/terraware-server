@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.customer.event.OrganizationLocationUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -453,6 +454,54 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
               projectId = inserted.projectId,
           )
       )
+
+      assertTableEquals(before)
+    }
+  }
+
+  @Nested
+  inner class OnOrganizationLocationUpdatedEvent {
+    @Test
+    fun `recalculates species nativity on location change for single-project org`() {
+      // The recalculation logic is tested in ProjectSpeciesStoreTest; this is just to make sure the
+      // event triggers a recalculation at all.
+      insertProject()
+      insertSpecies()
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Invasive)
+
+      service.on(OrganizationLocationUpdatedEvent(null, null, organizationId))
+
+      assertTableEquals(
+          ProjectSpeciesRecord(organizationId, inserted.projectId, inserted.speciesId)
+      )
+
+      assertIsEventListener<OrganizationLocationUpdatedEvent>(service)
+    }
+
+    @Test
+    fun `does not update project species if project has a location`() {
+      insertProject(botanicalCountryCode = insertBotanicalCountry(), countryCode = "US")
+      insertSpecies()
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Invasive)
+
+      val before = dslContext.fetch(PROJECT_SPECIES)
+
+      service.on(OrganizationLocationUpdatedEvent(null, null, organizationId))
+
+      assertTableEquals(before)
+    }
+
+    @Test
+    fun `does not update project species in multi-project org`() {
+      insertProject()
+      insertSpecies()
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Invasive)
+      insertProject()
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Introduced)
+
+      val before = dslContext.fetch(PROJECT_SPECIES)
+
+      service.on(OrganizationLocationUpdatedEvent(null, null, organizationId))
 
       assertTableEquals(before)
     }
