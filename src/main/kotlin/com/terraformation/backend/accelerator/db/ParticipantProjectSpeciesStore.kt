@@ -184,6 +184,7 @@ class ParticipantProjectSpeciesStore(
         .join(PROJECTS)
         .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
         .where(PROJECTS.ID.eq(projectId))
+        .orderBy(PROJECTS.ID, SPECIES.ID)
         .fetch { SpeciesForParticipantProject.of(it) }
         .filter { user.canReadProject(it.project.id) }
   }
