@@ -249,6 +249,7 @@ import com.terraformation.backend.db.default_schema.tables.records.CountryBotani
 import com.terraformation.backend.db.default_schema.tables.records.ExternalDatasetImportsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
+import com.terraformation.backend.db.default_schema.tables.records.ProjectSpeciesRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -1646,6 +1647,36 @@ abstract class DatabaseBackedTest {
     }
 
     return actualSpeciesId.also { inserted.speciesIds.add(it) }
+  }
+
+  fun insertProjectSpecies(
+      calculatedNativity: SpeciesNativity? = null,
+      calculatedNativityDatasetDate: LocalDate? = calculatedNativity?.let { LocalDate.EPOCH },
+      calculatedNativityDatasetType: ExternalDatasetType? = calculatedNativity?.let {
+        ExternalDatasetType.GRIIS
+      },
+      organizationId: OrganizationId = inserted.organizationId,
+      projectId: ProjectId? = inserted.projectId,
+      overriddenNativityId: SpeciesNativity? = null,
+      overriddenBy: UserId? = overriddenNativityId?.let { inserted.userId },
+      overriddenJustification: String? = overriddenNativityId?.let { "Justification" },
+      overriddenTime: Instant? = overriddenNativityId?.let { Instant.EPOCH },
+      speciesId: SpeciesId = inserted.speciesId,
+  ) {
+    ProjectSpeciesRecord(
+            calculatedNativityDatasetDate = calculatedNativityDatasetDate,
+            calculatedNativityDatasetTypeId = calculatedNativityDatasetType,
+            calculatedNativityId = calculatedNativity,
+            organizationId = organizationId,
+            overriddenBy = overriddenBy,
+            overriddenJustification = overriddenJustification,
+            overriddenNativityId = overriddenNativityId,
+            overriddenTime = overriddenTime,
+            projectId = projectId,
+            speciesId = speciesId,
+        )
+        .attach(dslContext)
+        .insert()
   }
 
   fun insertSubmission(
