@@ -154,6 +154,7 @@ class ProjectSpeciesStore(
               .select(ID)
               .from(SPECIES)
               .where(ORGANIZATION_ID.eq(organizationId))
+              .and(DELETED_TIME.isNull)
               .fetch(ID.asNonNullable())
         }
     if (speciesIds.isEmpty()) {
@@ -282,6 +283,17 @@ class ProjectSpeciesStore(
                 .`in`(rows)
         )
         .execute()
+  }
+
+  /**
+   * Deletes the project associations and project- and org-level nativities for a species. This is
+   * called when a species is soft-deleted; we don't want it to continue to be associated with
+   * projects.
+   */
+  fun deleteForSpecies(speciesId: SpeciesId) {
+    requirePermissions { updateSpecies(speciesId) }
+
+    dslContext.deleteFrom(PROJECT_SPECIES).where(PROJECT_SPECIES.SPECIES_ID.eq(speciesId)).execute()
   }
 
   /**

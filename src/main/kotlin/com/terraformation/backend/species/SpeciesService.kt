@@ -106,7 +106,10 @@ class SpeciesService(
       throw SpeciesInUseException(speciesId)
     }
 
-    speciesStore.deleteSpecies(speciesId)
+    dslContext.transaction { _ ->
+      projectSpeciesStore.deleteForSpecies(speciesId)
+      speciesStore.deleteSpecies(speciesId)
+    }
   }
 
   fun acceptProblemSuggestion(problemId: SpeciesProblemId): ExistingSpeciesModel {
