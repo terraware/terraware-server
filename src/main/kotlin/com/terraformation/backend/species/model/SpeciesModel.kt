@@ -23,7 +23,7 @@ data class ExistingSpeciesProjectModel(
     val calculatedNativitySource: SpeciesDataSourceModel? = null,
     val overriddenJustification: String? = null,
     val overriddenNativity: SpeciesNativity? = null,
-    val projectId: ProjectId?,
+    val projectId: ProjectId? = null,
 ) {
   companion object {
     fun of(record: Record) =

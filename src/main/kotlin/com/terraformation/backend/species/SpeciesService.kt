@@ -75,6 +75,8 @@ class SpeciesService(
 
       if (model.projectIds.isNotEmpty()) {
         projectSpeciesStore.assignProjects(mapOf(speciesId to model.projectIds))
+      } else {
+        projectSpeciesStore.recalculateNativity(model.organizationId, speciesId)
       }
 
       speciesId

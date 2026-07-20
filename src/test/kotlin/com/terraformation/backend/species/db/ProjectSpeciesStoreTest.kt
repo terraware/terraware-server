@@ -643,6 +643,141 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class RecalculateNativity {
+    @Test
+    fun `sets organization-level nativity for a species not assigned to a project`() {
+      setOrganizationLocation()
+
+      val griisDate = LocalDate.of(2026, 1, 2)
+      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      store.recalculateNativity(organizationId, speciesId)
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              calculatedNativityDatasetDate = griisDate,
+              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              calculatedNativityId = SpeciesNativity.Invasive,
+              organizationId = organizationId,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `updates existing organization-level row`() {
+      setOrganizationLocation()
+
+      val griisDate = LocalDate.of(2026, 1, 2)
+      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      insertProjectSpecies(projectId = null, calculatedNativity = SpeciesNativity.Native)
+
+      store.recalculateNativity(organizationId, speciesId)
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              calculatedNativityDatasetDate = griisDate,
+              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              calculatedNativityId = SpeciesNativity.Invasive,
+              organizationId = organizationId,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `sets nativity to unknown when species is not listed in the current location`() {
+      setOrganizationLocation()
+
+      store.recalculateNativity(organizationId, speciesId)
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              calculatedNativityId = SpeciesNativity.Unknown,
+              organizationId = organizationId,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `does not insert a row when organization has no location`() {
+      store.recalculateNativity(organizationId, speciesId)
+
+      assertTableEmpty(PROJECT_SPECIES)
+    }
+
+    @Test
+    fun `is a no-op when the species is assigned to a project`() {
+      setOrganizationLocation()
+
+      insertExternalDatasetImport(
+          type = ExternalDatasetType.GRIIS,
+          lastPublicationDate = LocalDate.of(2026, 1, 2),
+      )
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      insertProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId,
+          calculatedNativity = SpeciesNativity.Native,
+      )
+
+      val before = dslContext.fetch(PROJECT_SPECIES)
+
+      store.recalculateNativity(organizationId, speciesId)
+
+      assertTableEquals(before)
+    }
+
+    @Test
+    fun `is a no-op when organization has more than one project`() {
+      setOrganizationLocation()
+
+      insertExternalDatasetImport(
+          type = ExternalDatasetType.GRIIS,
+          lastPublicationDate = LocalDate.of(2026, 1, 2),
+      )
+      insertGriisResource(countryCode = "KE")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      insertProject()
+
+      store.recalculateNativity(organizationId, speciesId)
+
+      assertTableEmpty(PROJECT_SPECIES)
+    }
+
+    @Test
+    fun `throws exception when user cannot update species`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.recalculateNativity(organizationId, speciesId)
+      }
+    }
+
+    private fun setOrganizationLocation() {
+      insertBotanicalCountry()
+
+      dslContext
+          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
+          .apply {
+            botanicalCountryCode = inserted.botanicalCountryCode
+            countryCode = "KE"
+          }
+          .update()
+    }
+  }
+
+  @Nested
   inner class RemoveProjects {
     @Test
     fun `deletes requested associations`() {
