@@ -79,11 +79,13 @@ class ProjectSpeciesStore(
             .onConflictDoNothing()
             .execute()
 
+        val speciesIdsWithAssignments = assignments.filterValues { it.isNotEmpty() }.keys
+
         dslContext
             .deleteFrom(PROJECT_SPECIES)
             .where(ORGANIZATION_ID.eq(organizationId))
             .and(PROJECT_ID.isNull)
-            .and(SPECIES_ID.`in`(assignments.keys))
+            .and(SPECIES_ID.`in`(speciesIdsWithAssignments))
             .execute()
       }
     }
