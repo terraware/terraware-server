@@ -160,12 +160,19 @@ fun List<CoordinateModel>?.toMultiPointField(): Field<Geometry?> =
       ) as Field<Geometry?>
     }
 
+data class SplatAnnotationMediaModel(
+    val fileId: FileId,
+    val contentType: String,
+    val position: Int,
+)
+
 data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
     val id: AnnotationId,
     val bodyText: String? = null,
     val cameraPosition: CoordinateModel? = null,
     val fileId: FileId,
     val label: String? = null,
+    val media: List<SplatAnnotationMediaModel> = emptyList(),
     val position: CoordinateModel,
     val title: String,
 ) {

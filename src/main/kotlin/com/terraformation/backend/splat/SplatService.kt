@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FILE_BATCH
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATION_MEDIA
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
@@ -40,6 +41,8 @@ import java.time.InstantSource
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.impl.DSL
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -683,15 +686,47 @@ class SplatService(
     }
   }
 
+  private val splatAnnotationMediaMultiset: Field<List<SplatAnnotationMediaModel>> =
+      with(SPLAT_ANNOTATION_MEDIA) {
+        DSL.multiset(
+                DSL.select(FILE_ID, POSITION, FILES.CONTENT_TYPE)
+                    .from(SPLAT_ANNOTATION_MEDIA)
+                    .join(FILES)
+                    .on(FILE_ID.eq(FILES.ID))
+                    .where(SPLAT_ANNOTATION_ID.eq(SPLAT_ANNOTATIONS.ID))
+                    .orderBy(POSITION)
+            )
+            .convertFrom { result ->
+              result.map { record ->
+                SplatAnnotationMediaModel(
+                    fileId = record[FILE_ID]!!,
+                    contentType = record[FILES.CONTENT_TYPE]!!,
+                    position = record[POSITION]!!,
+                )
+              }
+            }
+      }
+
   private fun listSplatAnnotations(
       fileId: FileId,
   ): List<ExistingSplatAnnotationModel> {
-    with(SPLAT_ANNOTATIONS) {
-      return dslContext
-          .select(ID, FILE_ID, TITLE, BODY_TEXT, LABEL, POSITION, CAMERA_POSITION)
+    return with(SPLAT_ANNOTATIONS) {
+      dslContext
+          .select(
+              ID,
+              FILE_ID,
+              TITLE,
+              BODY_TEXT,
+              LABEL,
+              POSITION,
+              CAMERA_POSITION,
+              splatAnnotationMediaMultiset,
+          )
           .from(SPLAT_ANNOTATIONS)
           .where(FILE_ID.eq(fileId))
-          .fetch { record -> SplatAnnotationModel.of(record) }
+          .fetch { record ->
+            SplatAnnotationModel.of(record).copy(media = record[splatAnnotationMediaMultiset])
+          }
     }
   }
 
