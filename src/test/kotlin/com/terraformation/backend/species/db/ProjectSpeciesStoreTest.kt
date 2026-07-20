@@ -209,6 +209,15 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `removes organization-level nativity on project assignment`() {
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Invasive, projectId = null)
+
+      store.assignProjects(mapOf(speciesId to setOf(projectId)))
+
+      assertTableEquals(ProjectSpeciesRecord(organizationId, projectId, speciesId))
+    }
+
+    @Test
     fun `throws exception when species and project are in different organizations`() {
       insertOrganization()
       insertOrganizationUser()
