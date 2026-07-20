@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
+import com.terraformation.backend.customer.event.OrganizationLocationUpdatedEvent
 import com.terraformation.backend.customer.event.OrganizationRenamedEvent
 import com.terraformation.backend.customer.event.OrganizationRenamedEventValues
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
@@ -422,11 +423,18 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(expected, actual)
 
-    publisher.assertEventPublished(
-        OrganizationRenamedEvent(
-            changedFrom = OrganizationRenamedEventValues(name = "Organization 1"),
-            changedTo = OrganizationRenamedEventValues(name = "New Name"),
-            organizationId = organizationId,
+    publisher.assertEventsPublished(
+        setOf(
+            OrganizationLocationUpdatedEvent(
+                botanicalCountryCode = botanicalCountryCode,
+                countryCode = "ZA",
+                organizationId = organizationId,
+            ),
+            OrganizationRenamedEvent(
+                changedFrom = OrganizationRenamedEventValues(name = "Organization 1"),
+                changedTo = OrganizationRenamedEventValues(name = "New Name"),
+                organizationId = organizationId,
+            ),
         )
     )
   }
