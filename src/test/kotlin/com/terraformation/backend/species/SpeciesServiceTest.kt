@@ -98,8 +98,8 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     every { speciesChecker.checkSpecies(any()) } just Runs
     every { speciesChecker.recheckSpecies(any(), any()) } just Runs
-    every { user.canCreateSpecies(organizationId) } returns true
-    every { user.canReadOrganization(organizationId) } returns true
+    every { user.canCreateSpecies(any()) } returns true
+    every { user.canReadOrganization(any()) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
     every { user.canDeleteSpecies(any()) } returns true
@@ -194,16 +194,21 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `assigns without nativity if project has no location`() {
-      every { user.canReadProject(any()) } returns true
+    fun `sets org-level nativity if org has location and fewer than two projects`() {
+      val botanicalCountryCode = insertBotanicalCountry()
+      val locatedOrganizationId =
+          insertOrganization(botanicalCountryCode = botanicalCountryCode, countryCode = "AR")
+      insertProject()
 
-      val projectId = insertProject()
+      val griisDate = LocalDate.of(2026, 1, 2)
+      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+      insertGriisResource(countryCode = "AR")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
 
       val speciesId =
           service.createSpecies(
               NewSpeciesModel(
-                  organizationId = organizationId,
-                  projectIds = setOf(projectId),
+                  organizationId = locatedOrganizationId,
                   scientificName = "Scientific name",
               )
           )
@@ -211,7 +216,13 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val speciesModel = speciesStore.fetchSpeciesById(speciesId)
 
       assertEquals(
-          listOf(ExistingSpeciesProjectModel(projectId = projectId)),
+          listOf(
+              ExistingSpeciesProjectModel(
+                  calculatedNativity = SpeciesNativity.Invasive,
+                  calculatedNativitySource =
+                      SpeciesDataSourceModel(griisDate, ExternalDatasetType.GRIIS),
+              )
+          ),
           speciesModel.projects,
           "Species project details",
       )

@@ -81,6 +81,50 @@ class ProjectSpeciesStore(
   }
 
   /**
+   * Recalculates the organization-level nativity for a species if the organization has fewer than
+   * two projects and the species is not assigned to a project.
+   */
+  fun recalculateNativity(organizationId: OrganizationId, speciesId: SpeciesId) {
+    requirePermissions { updateSpecies(speciesId) }
+
+    val numProjects = dslContext.fetchCount(PROJECTS, PROJECTS.ORGANIZATION_ID.eq(organizationId))
+    if (numProjects > 1) {
+      return
+    }
+
+    val numProjectAssignments =
+        dslContext.fetchCount(
+            PROJECT_SPECIES,
+            PROJECT_SPECIES.SPECIES_ID.eq(speciesId),
+            PROJECT_SPECIES.PROJECT_ID.isNotNull,
+        )
+    if (numProjectAssignments > 0) {
+      return
+    }
+
+    val sourcedNativity =
+        calculateOrganizationNativities(organizationId, setOf(speciesId))[speciesId]
+
+    if (sourcedNativity != null) {
+      with(PROJECT_SPECIES) {
+        dslContext
+            .insertInto(PROJECT_SPECIES)
+            .set(CALCULATED_NATIVITY_DATASET_DATE, sourcedNativity.datasetDate)
+            .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, sourcedNativity.datasetType)
+            .set(CALCULATED_NATIVITY_ID, sourcedNativity.speciesNativity)
+            .set(ORGANIZATION_ID, organizationId)
+            .set(SPECIES_ID, speciesId)
+            .onConflict(ORGANIZATION_ID, PROJECT_ID, SPECIES_ID)
+            .doUpdate()
+            .set(CALCULATED_NATIVITY_DATASET_DATE, sourcedNativity.datasetDate)
+            .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, sourcedNativity.datasetType)
+            .set(CALCULATED_NATIVITY_ID, sourcedNativity.speciesNativity)
+            .execute()
+      }
+    }
+  }
+
+  /**
    * Recalculates nativities for all the species in an organization if the organization has fewer
    * than two projects.
    */
