@@ -29,6 +29,7 @@ import com.terraformation.backend.species.db.SpeciesNativityCalculator
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.species.model.ExistingSpeciesProjectModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import com.terraformation.backend.species.model.SpeciesDataSourceModel
 import io.mockk.Runs
@@ -153,6 +154,66 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
           speciesModel.familyNameSource,
           "Family name source",
+      )
+    }
+
+    @Test
+    fun `sets nativity based on project location`() {
+      every { user.canReadProject(any()) } returns true
+
+      val botanicalCountryCode = insertBotanicalCountry()
+      val griisDate = LocalDate.of(2026, 1, 2)
+      val projectId = insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "AR")
+      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+      insertGriisResource(countryCode = "AR")
+      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+
+      val speciesId =
+          service.createSpecies(
+              NewSpeciesModel(
+                  organizationId = organizationId,
+                  projectIds = setOf(projectId),
+                  scientificName = "Scientific name",
+              )
+          )
+
+      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
+
+      assertEquals(
+          listOf(
+              ExistingSpeciesProjectModel(
+                  calculatedNativity = SpeciesNativity.Invasive,
+                  calculatedNativitySource =
+                      SpeciesDataSourceModel(griisDate, ExternalDatasetType.GRIIS),
+                  projectId = projectId,
+              )
+          ),
+          speciesModel.projects,
+          "Species project details",
+      )
+    }
+
+    @Test
+    fun `assigns without nativity if project has no location`() {
+      every { user.canReadProject(any()) } returns true
+
+      val projectId = insertProject()
+
+      val speciesId =
+          service.createSpecies(
+              NewSpeciesModel(
+                  organizationId = organizationId,
+                  projectIds = setOf(projectId),
+                  scientificName = "Scientific name",
+              )
+          )
+
+      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
+
+      assertEquals(
+          listOf(ExistingSpeciesProjectModel(projectId = projectId)),
+          speciesModel.projects,
+          "Species project details",
       )
     }
   }

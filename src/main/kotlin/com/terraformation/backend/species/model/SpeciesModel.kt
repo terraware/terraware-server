@@ -19,10 +19,10 @@ import org.jooq.Field
 import org.jooq.Record
 
 data class ExistingSpeciesProjectModel(
-    val calculatedNativity: SpeciesNativity?,
-    val calculatedNativitySource: SpeciesDataSourceModel?,
-    val overriddenJustification: String?,
-    val overriddenNativity: SpeciesNativity?,
+    val calculatedNativity: SpeciesNativity? = null,
+    val calculatedNativitySource: SpeciesDataSourceModel? = null,
+    val overriddenJustification: String? = null,
+    val overriddenNativity: SpeciesNativity? = null,
     val projectId: ProjectId?,
 ) {
   companion object {
@@ -149,6 +149,7 @@ data class NewSpeciesModel(
     val organizationId: OrganizationId,
     val otherFacts: String? = null,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod> = emptySet(),
+    val projectIds: Set<ProjectId> = emptySet(),
     val rare: Boolean? = null,
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior? = null,
