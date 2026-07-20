@@ -415,10 +415,15 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `deletes species when not in use`() {
       val speciesId = insertSpecies("species name")
+      insertProject()
+      insertProjectSpecies()
       assertNotNull(speciesStore.fetchSpeciesById(speciesId))
 
       service.deleteSpecies(speciesId)
+
       assertThrows<SpeciesNotFoundException> { speciesStore.fetchSpeciesById(speciesId) }
+
+      assertTableEmpty(PROJECT_SPECIES)
     }
   }
 
