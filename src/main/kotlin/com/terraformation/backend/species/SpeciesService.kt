@@ -145,15 +145,17 @@ class SpeciesService(
     // recaulcation if the organization has exactly one project and the project lacks a location.
     val projects =
         dslContext
-            .selectFrom(PROJECTS)
+            .select(PROJECTS.BOTANICAL_COUNTRY_CODE, PROJECTS.COUNTRY_CODE, PROJECTS.ID)
+            .from(PROJECTS)
             .where(PROJECTS.ORGANIZATION_ID.eq(event.organizationId))
             .limit(2)
             .fetch()
     if (
         projects.size == 1 &&
-            (projects[0].botanicalCountryCode == null || projects[0].countryCode == null)
+            (projects[0][PROJECTS.BOTANICAL_COUNTRY_CODE] == null ||
+                projects[0][PROJECTS.COUNTRY_CODE] == null)
     ) {
-      projectSpeciesStore.recalculateNativities(projects[0].id!!)
+      projectSpeciesStore.recalculateNativities(projects[0][PROJECTS.ID]!!)
     }
   }
 
