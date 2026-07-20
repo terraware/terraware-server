@@ -1,3 +1,4 @@
+d423ce30 SW-8671 Return project data in species API (#4763)
 85a67a47 SW-8671 Expose per-project species info in search API (#4762)
 a9e4fc98 SW-8671 Add project species assign/unassign to API (#4761)
 0ff6ebae SW-8627 Database schema for per-project species data (#4760)
