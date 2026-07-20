@@ -26,6 +26,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import com.terraformation.backend.util.nullIfEquals
@@ -89,25 +90,58 @@ class ProjectStore(
             organizationId = model.organizationId,
         )
 
-    try {
-      projectsDao.insert(row)
-    } catch (e: DuplicateKeyException) {
-      throw ProjectNameInUseException(model.name)
+    return dslContext.transactionResult { _ ->
+      val existingProjects = projectsDao.fetchByOrganizationId(model.organizationId)
+
+      try {
+        projectsDao.insert(row)
+      } catch (e: DuplicateKeyException) {
+        throw ProjectNameInUseException(model.name)
+      }
+
+      val projectId = row.id!!
+
+      eventPublisher.publishEvent(
+          ProjectCreatedEvent(
+              botanicalCountryCode = model.botanicalCountryCode,
+              countryCode = model.countryCode,
+              name = model.name,
+              organizationId = model.organizationId,
+              projectId = projectId,
+          )
+      )
+
+      // If we are transitioning from 1 project to 2 projects, the existing project should inherit
+      // the organization's location unless it already has its own.
+      if (existingProjects.size == 1) {
+        val existingProject = existingProjects.first()
+
+        val orgLocation =
+            with(ORGANIZATIONS) {
+              dslContext
+                  .select(BOTANICAL_COUNTRY_CODE, COUNTRY_CODE)
+                  .from(ORGANIZATIONS)
+                  .where(ID.eq(model.organizationId))
+                  .fetchSingleInto(ORGANIZATIONS)
+            }
+
+        if (
+            existingProject.botanicalCountryCode == null &&
+                existingProject.countryCode == null &&
+                orgLocation.botanicalCountryCode != null &&
+                orgLocation.countryCode != null
+        ) {
+          update(existingProject.id!!) {
+            it.copy(
+                botanicalCountryCode = orgLocation.botanicalCountryCode,
+                countryCode = orgLocation.countryCode,
+            )
+          }
+        }
+      }
+
+      projectId
     }
-
-    val projectId = row.id!!
-
-    eventPublisher.publishEvent(
-        ProjectCreatedEvent(
-            botanicalCountryCode = model.botanicalCountryCode,
-            countryCode = model.countryCode,
-            name = model.name,
-            organizationId = model.organizationId,
-            projectId = projectId,
-        )
-    )
-
-    return projectId
   }
 
   fun delete(projectId: ProjectId) {
