@@ -4,9 +4,11 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
@@ -15,7 +17,10 @@ import com.terraformation.backend.species.model.ProjectSpeciesOverride
 import com.terraformation.backend.species.model.SourcedSpeciesNativity
 import jakarta.inject.Named
 import java.time.InstantSource
+import java.time.LocalDate
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Row4
 import org.jooq.impl.DSL
 
 @Named
