@@ -84,6 +84,7 @@ class SearchTables(clock: Clock) {
   val projectInternalUsers = ProjectInternalUsersTable(this)
   val projectLandUseModelTypes = ProjectLandUseModelTypesTable(this)
   val projectModules = ProjectModulesTable(this)
+  val projectSpecies = ProjectSpeciesTable(this)
   val projectVariableValues = ProjectVariableValuesTable(this)
   val projectVariables = ProjectVariablesTable(this)
   val projects = ProjectsTable(this)

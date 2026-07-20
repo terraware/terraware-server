@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
@@ -50,6 +51,10 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
           participantProjectSpecies.asMultiValueSublist(
               "participantProjectSpecies",
               SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID),
+          ),
+          projectSpecies.asMultiValueSublist(
+              "projectSpecies",
+              SPECIES.ID.eq(PROJECT_SPECIES.SPECIES_ID),
           ),
           speciesEcosystemTypes.asMultiValueSublist(
               "ecosystemTypes",

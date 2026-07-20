@@ -773,6 +773,10 @@ val EMBEDDABLES =
             .withTables("accelerator.project_modules")
             .withColumns("project_id", "module_id"),
         EmbeddableDefinitionType()
+            .withName("project_species_key")
+            .withTables("project_species")
+            .withColumns("organization_id", "project_id", "species_id"),
+        EmbeddableDefinitionType()
             .withName("project_variable_id")
             .withTables("project_variables")
             .withColumns("project_id", "stable_id"),
