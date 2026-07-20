@@ -1,11 +1,13 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
@@ -13,6 +15,9 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.tables.records.ProjectSpeciesRecord
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
+import com.terraformation.backend.species.model.ProjectSpeciesOverride
+import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -23,7 +28,8 @@ import org.springframework.security.access.AccessDeniedException
 internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val store: ProjectSpeciesStore by lazy { ProjectSpeciesStore(dslContext) }
+  private val clock = TestClock()
+  private val store: ProjectSpeciesStore by lazy { ProjectSpeciesStore(clock, dslContext) }
 
   private lateinit var organizationId: OrganizationId
   private lateinit var projectId: ProjectId
@@ -36,6 +42,8 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     speciesId = insertSpecies()
 
     insertOrganizationUser(role = Role.Manager)
+
+    clock.instant = Instant.ofEpochSecond(1234)
   }
 
   @Nested
@@ -128,6 +136,84 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception when a project does not exist`() {
       assertThrows<ProjectNotFoundException> {
         store.assignProjects(mapOf(speciesId to setOf(ProjectId(999999))))
+      }
+    }
+  }
+
+  @Nested
+  inner class OverridePerProjectData {
+    @Test
+    fun `overrides nativity for org-level species`() {
+      store.overridePerProjectData(
+          listOf(
+              ProjectSpeciesOverride(
+                  overriddenJustification = "Justification",
+                  overriddenNativity = SpeciesNativity.Introduced,
+                  projectId = null,
+                  speciesId = speciesId,
+              )
+          )
+      )
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              overriddenBy = user.userId,
+              overriddenJustification = "Justification",
+              overriddenNativityId = SpeciesNativity.Introduced,
+              overriddenTime = clock.instant,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `overrides nativity for species in project`() {
+      insertProjectSpecies(calculatedNativity = SpeciesNativity.Unknown)
+
+      store.overridePerProjectData(
+          listOf(
+              ProjectSpeciesOverride(
+                  overriddenJustification = "Justification",
+                  overriddenNativity = SpeciesNativity.Introduced,
+                  projectId = projectId,
+                  speciesId = speciesId,
+              )
+          )
+      )
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              calculatedNativityDatasetDate = LocalDate.EPOCH,
+              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              calculatedNativityId = SpeciesNativity.Unknown,
+              organizationId = organizationId,
+              overriddenBy = user.userId,
+              overriddenJustification = "Justification",
+              overriddenNativityId = SpeciesNativity.Introduced,
+              overriddenTime = clock.instant,
+              projectId = projectId,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to update species`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.overridePerProjectData(
+            listOf(
+                ProjectSpeciesOverride(
+                    overriddenJustification = "Justification",
+                    overriddenNativity = SpeciesNativity.Introduced,
+                    projectId = projectId,
+                    speciesId = speciesId,
+                )
+            )
+        )
       }
     }
   }

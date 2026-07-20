@@ -1,5 +1,6 @@
 package com.terraformation.backend.species.db
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -8,13 +9,16 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.species.model.ProjectSpeciesOverride
 import jakarta.inject.Named
+import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.Row3
 import org.jooq.impl.DSL
 
 @Named
 class ProjectSpeciesStore(
+    private val clock: InstantSource,
     private val dslContext: DSLContext,
 ) {
   fun assignProjects(assignments: Map<SpeciesId, Set<ProjectId>>) {
@@ -32,6 +36,60 @@ class ProjectSpeciesStore(
         .valuesOfRows(rowsFor(organizationId, assignments))
         .onConflictDoNothing()
         .execute()
+  }
+
+  fun overridePerProjectData(overrides: List<ProjectSpeciesOverride>) {
+    require(overrides.isNotEmpty()) { "No overrides specified" }
+
+    require(overrides.distinctBy { it.speciesId to it.projectId }.size == overrides.size) {
+      "Duplicate species/project in overrides list"
+    }
+
+    val organizationId =
+        checkOrganization(
+            overrides
+                .groupingBy { it.speciesId }
+                .aggregate { _, accumulator, element, _ ->
+                  accumulator?.let { it + setOfNotNull(element.projectId) }
+                      ?: setOfNotNull(element.projectId)
+                }
+        )
+    val now = clock.instant()
+    val userId = currentUser().userId
+
+    val rows = overrides.map { override ->
+      DSL.row(
+          organizationId,
+          userId,
+          override.overriddenJustification,
+          override.overriddenNativity,
+          now,
+          override.projectId,
+          override.speciesId,
+      )
+    }
+
+    with(PROJECT_SPECIES) {
+      dslContext
+          .insertInto(
+              PROJECT_SPECIES,
+              ORGANIZATION_ID,
+              OVERRIDDEN_BY,
+              OVERRIDDEN_JUSTIFICATION,
+              OVERRIDDEN_NATIVITY_ID,
+              OVERRIDDEN_TIME,
+              PROJECT_ID,
+              SPECIES_ID,
+          )
+          .valuesOfRows(rows)
+          .onConflict(ORGANIZATION_ID, PROJECT_ID, SPECIES_ID)
+          .doUpdate()
+          .set(OVERRIDDEN_BY, DSL.excluded(OVERRIDDEN_BY))
+          .set(OVERRIDDEN_JUSTIFICATION, DSL.excluded(OVERRIDDEN_JUSTIFICATION))
+          .set(OVERRIDDEN_NATIVITY_ID, DSL.excluded(OVERRIDDEN_NATIVITY_ID))
+          .set(OVERRIDDEN_TIME, DSL.excluded(OVERRIDDEN_TIME))
+          .execute()
+    }
   }
 
   fun removeProjects(assignments: Map<SpeciesId, Set<ProjectId>>) {

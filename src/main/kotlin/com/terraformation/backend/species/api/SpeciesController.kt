@@ -31,6 +31,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.ExistingSpeciesProjectModel
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.species.model.ProjectSpeciesOverride
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -207,6 +208,15 @@ class SpeciesController(
       @RequestBody payload: AssignSpeciesToProjectsPayload
   ): SimpleSuccessResponsePayload {
     projectSpeciesStore.assignProjects(payload.toMap())
+    return SimpleSuccessResponsePayload()
+  }
+
+  @PostMapping("/projects/override")
+  @Operation(summary = "Overrides calculated per-project species data.")
+  fun overrideProjectSpeciesData(
+      @RequestBody payload: OverrideSpeciesProjectDataRequestPayload
+  ): SimpleSuccessResponsePayload {
+    projectSpeciesStore.overridePerProjectData(payload.overrides.map { it.toModel() })
     return SimpleSuccessResponsePayload()
   }
 
@@ -422,6 +432,21 @@ data class SpeciesProjectsPayload(
     val projectIds: Set<ProjectId>,
 )
 
+data class OverrideSpeciesProjectDataElement(
+    val overriddenJustification: String,
+    val overriddenNativity: SpeciesNativity,
+    val projectId: ProjectId?,
+    val speciesId: SpeciesId,
+) {
+  fun toModel() =
+      ProjectSpeciesOverride(
+          overriddenJustification = overriddenJustification,
+          overriddenNativity = overriddenNativity,
+          projectId = projectId,
+          speciesId = speciesId,
+      )
+}
+
 data class AssignSpeciesToProjectsPayload(
     @Schema(description = "The species to assign, each with the projects to associate it with.")
     val species: List<SpeciesProjectsPayload>,
@@ -433,6 +458,10 @@ data class AssignSpeciesToProjectsPayload(
             accumulator?.let { it + element.projectIds } ?: element.projectIds
           }
 }
+
+data class OverrideSpeciesProjectDataRequestPayload(
+    val overrides: List<OverrideSpeciesProjectDataElement>,
+)
 
 data class CreateSpeciesResponsePayload(val id: SpeciesId) : SuccessResponsePayload
 
