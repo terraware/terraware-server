@@ -20,6 +20,7 @@ import com.terraformation.backend.splat.CoordinateModel
 import com.terraformation.backend.splat.ExistingSplatAnnotationModel
 import com.terraformation.backend.splat.ObservationBirdnetResultModel
 import com.terraformation.backend.splat.ObservationSplatModel
+import com.terraformation.backend.splat.SplatAnnotationMediaModel
 import com.terraformation.backend.splat.SplatAnnotationModel
 import com.terraformation.backend.splat.SplatGenerationFailedException
 import com.terraformation.backend.splat.SplatInfoModel
@@ -241,12 +242,28 @@ data class CoordinatePayload(
   }
 }
 
+data class SplatAnnotationMediaPayload(
+    val contentType: String,
+    val fileId: FileId,
+    val position: Int,
+) {
+  companion object {
+    fun of(model: SplatAnnotationMediaModel) =
+        SplatAnnotationMediaPayload(
+            contentType = model.contentType,
+            fileId = model.fileId,
+            position = model.position,
+        )
+  }
+}
+
 data class SplatAnnotationPayload(
     val bodyText: String?,
     val cameraPosition: CoordinatePayload?,
     val fileId: FileId,
     val id: SplatAnnotationId,
     val label: String?,
+    val media: List<SplatAnnotationMediaPayload>,
     val position: CoordinatePayload,
     val title: String,
 ) {
@@ -258,6 +275,7 @@ data class SplatAnnotationPayload(
             fileId = model.fileId,
             id = model.id,
             label = model.label,
+            media = model.media.map { SplatAnnotationMediaPayload.of(it) },
             position = CoordinatePayload.of(model.position),
             title = model.title,
         )
