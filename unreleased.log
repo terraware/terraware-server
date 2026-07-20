@@ -1,3 +1,4 @@
+8ee95d89 SW-8673 Set calculated nativity on project assignment (#4765)
 392a9be9 SW-8671 Add endpoint to override species nativity (#4764)
 d423ce30 SW-8671 Return project data in species API (#4763)
 85a67a47 SW-8671 Expose per-project species info in search API (#4762)
