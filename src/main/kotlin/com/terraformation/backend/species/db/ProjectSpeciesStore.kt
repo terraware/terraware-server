@@ -4,9 +4,11 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
@@ -15,7 +17,10 @@ import com.terraformation.backend.species.model.ProjectSpeciesOverride
 import com.terraformation.backend.species.model.SourcedSpeciesNativity
 import jakarta.inject.Named
 import java.time.InstantSource
+import java.time.LocalDate
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Row4
 import org.jooq.impl.DSL
 
 @Named
@@ -85,39 +90,11 @@ class ProjectSpeciesStore(
 
     val nativities = calculateNativities(mapOf(projectId to speciesIds))
 
-    with(PROJECT_SPECIES) {
-      val rows = speciesIds.map { speciesId ->
-        val sourcedNativity = nativities[speciesId to projectId]
-
-        DSL.row(
-            DSL.value(speciesId, SPECIES_ID.dataType),
-            DSL.value(sourcedNativity?.datasetDate, CALCULATED_NATIVITY_DATASET_DATE.dataType),
-            DSL.value(sourcedNativity?.datasetType, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType),
-            DSL.value(sourcedNativity?.speciesNativity, CALCULATED_NATIVITY_ID.dataType),
-        )
-      }
-
-      val updateValues = DSL.values(*(rows.toTypedArray()))
-
-      val speciesIdField = updateValues.field(0, SPECIES_ID.dataType)!!
-      val datasetDateField = updateValues.field(1, CALCULATED_NATIVITY_DATASET_DATE.dataType)!!
-      val datasetTypeField = updateValues.field(2, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType)!!
-      val nativityField = updateValues.field(3, CALCULATED_NATIVITY_ID.dataType)!!
-
-      dslContext
-          .update(PROJECT_SPECIES)
-          .set(CALCULATED_NATIVITY_DATASET_DATE, datasetDateField)
-          .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, datasetTypeField)
-          .set(CALCULATED_NATIVITY_ID, nativityField)
-          .setNull(OVERRIDDEN_BY)
-          .setNull(OVERRIDDEN_NATIVITY_ID)
-          .setNull(OVERRIDDEN_JUSTIFICATION)
-          .setNull(OVERRIDDEN_TIME)
-          .from(updateValues)
-          .where(PROJECT_ID.eq(projectId))
-          .and(SPECIES_ID.eq(speciesIdField))
-          .execute()
+    val rows = speciesIds.map { speciesId ->
+      rowForUpdate(speciesId, nativities[speciesId to projectId])
     }
+
+    updateCalculatedNativities(rows, PROJECT_SPECIES.PROJECT_ID.eq(projectId))
   }
 
   fun overridePerProjectData(overrides: List<ProjectSpeciesOverride>) {
@@ -270,6 +247,48 @@ class ProjectSpeciesStore(
           }
         }
         .toMap()
+  }
+
+  private fun rowForUpdate(
+      speciesId: SpeciesId,
+      sourcedNativity: SourcedSpeciesNativity?,
+  ): Row4<SpeciesId?, LocalDate?, ExternalDatasetType?, SpeciesNativity?> {
+    return with(PROJECT_SPECIES) {
+      DSL.row(
+          DSL.value(speciesId, SPECIES_ID.dataType),
+          DSL.value(sourcedNativity?.datasetDate, CALCULATED_NATIVITY_DATASET_DATE.dataType),
+          DSL.value(sourcedNativity?.datasetType, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType),
+          DSL.value(sourcedNativity?.speciesNativity, CALCULATED_NATIVITY_ID.dataType),
+      )
+    }
+  }
+
+  private fun updateCalculatedNativities(
+      rows: List<Row4<SpeciesId?, LocalDate?, ExternalDatasetType?, SpeciesNativity?>>,
+      scopeCondition: Condition,
+  ): Int {
+    with(PROJECT_SPECIES) {
+      val updateValues = DSL.values(*(rows.toTypedArray()))
+
+      val speciesIdField = updateValues.field(0, SPECIES_ID.dataType)!!
+      val datasetDateField = updateValues.field(1, CALCULATED_NATIVITY_DATASET_DATE.dataType)!!
+      val datasetTypeField = updateValues.field(2, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType)!!
+      val nativityField = updateValues.field(3, CALCULATED_NATIVITY_ID.dataType)!!
+
+      return dslContext
+          .update(PROJECT_SPECIES)
+          .set(CALCULATED_NATIVITY_DATASET_DATE, datasetDateField)
+          .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, datasetTypeField)
+          .set(CALCULATED_NATIVITY_ID, nativityField)
+          .setNull(OVERRIDDEN_BY)
+          .setNull(OVERRIDDEN_NATIVITY_ID)
+          .setNull(OVERRIDDEN_JUSTIFICATION)
+          .setNull(OVERRIDDEN_TIME)
+          .from(updateValues)
+          .where(scopeCondition)
+          .and(SPECIES_ID.eq(speciesIdField))
+          .execute()
+    }
   }
 
   private fun getProjectLocations(projectIds: Set<ProjectId>): Map<ProjectId, ProjectLocation> {
