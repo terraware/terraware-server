@@ -89,7 +89,9 @@ class SpeciesController(
   )
   @Operation(summary = "Creates a new species.")
   @PostMapping
-  fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
+  fun createSpecies(
+      @RequestBody payload: CreateSpeciesRequestPayload
+  ): CreateSpeciesResponsePayload {
     try {
       val speciesId = speciesService.createSpecies(payload.toNew())
       return CreateSpeciesResponsePayload(speciesId)
@@ -125,7 +127,7 @@ class SpeciesController(
   @PutMapping("/{speciesId}")
   fun updateSpecies(
       @PathVariable speciesId: SpeciesId,
-      @RequestBody payload: SpeciesRequestPayload,
+      @RequestBody payload: UpdateSpeciesRequestPayload,
   ): SimpleSuccessResponsePayload {
     try {
       speciesService.updateSpecies(payload.toExisting(speciesId))
@@ -343,7 +345,64 @@ data class SpeciesResponseElement(
   )
 }
 
-data class SpeciesRequestPayload(
+data class CreateSpeciesRequestPayload(
+    val averageWoodDensity: BigDecimal?,
+    val commonName: String?,
+    @Schema(
+        description = "IUCN Red List conservation category code.",
+        externalDocs =
+            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"),
+    )
+    val conservationCategory: ConservationCategory?,
+    val dbhSource: String?,
+    val dbhValue: BigDecimal?,
+    val ecologicalRoleKnown: String?,
+    val ecosystemTypes: Set<EcosystemType>?,
+    val familyName: String?,
+    val growthForms: Set<GrowthForm>?,
+    val heightAtMaturitySource: String?,
+    val heightAtMaturityValue: BigDecimal?,
+    val localUsesKnown: String?,
+    val nativeEcosystem: String?,
+    @Schema(description = "Which organization's species list to update.")
+    val organizationId: OrganizationId,
+    val otherFacts: String?,
+    val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
+    val projectIds: Set<ProjectId>?,
+    val rare: Boolean?,
+    val scientificName: String,
+    val seedStorageBehavior: SeedStorageBehavior?,
+    val successionalGroups: Set<SuccessionalGroup>?,
+    val woodDensityLevel: WoodDensityLevel?,
+) {
+  fun toNew() =
+      NewSpeciesModel(
+          averageWoodDensity = averageWoodDensity,
+          commonName = commonName,
+          conservationCategory = conservationCategory,
+          dbhSource = dbhSource,
+          dbhValue = dbhValue,
+          ecologicalRoleKnown = ecologicalRoleKnown,
+          ecosystemTypes = ecosystemTypes ?: emptySet(),
+          familyName = familyName,
+          growthForms = growthForms ?: emptySet(),
+          heightAtMaturitySource = heightAtMaturitySource,
+          heightAtMaturityValue = heightAtMaturityValue,
+          localUsesKnown = localUsesKnown,
+          nativeEcosystem = nativeEcosystem,
+          rare = rare,
+          organizationId = organizationId,
+          otherFacts = otherFacts,
+          plantMaterialSourcingMethods = plantMaterialSourcingMethods ?: emptySet(),
+          projectIds = projectIds ?: emptySet(),
+          scientificName = scientificName,
+          seedStorageBehavior = seedStorageBehavior,
+          successionalGroups = successionalGroups ?: emptySet(),
+          woodDensityLevel = woodDensityLevel,
+      )
+}
+
+data class UpdateSpeciesRequestPayload(
     val averageWoodDensity: BigDecimal?,
     val commonName: String?,
     @Schema(
@@ -390,31 +449,6 @@ data class SpeciesRequestPayload(
           initialScientificName = scientificName,
           localUsesKnown = localUsesKnown,
           modifiedTime = Instant.EPOCH, // Dummy value; ignored on update
-          nativeEcosystem = nativeEcosystem,
-          rare = rare,
-          organizationId = organizationId,
-          otherFacts = otherFacts,
-          plantMaterialSourcingMethods = plantMaterialSourcingMethods ?: emptySet(),
-          scientificName = scientificName,
-          seedStorageBehavior = seedStorageBehavior,
-          successionalGroups = successionalGroups ?: emptySet(),
-          woodDensityLevel = woodDensityLevel,
-      )
-
-  fun toNew() =
-      NewSpeciesModel(
-          averageWoodDensity = averageWoodDensity,
-          commonName = commonName,
-          conservationCategory = conservationCategory,
-          dbhSource = dbhSource,
-          dbhValue = dbhValue,
-          ecologicalRoleKnown = ecologicalRoleKnown,
-          ecosystemTypes = ecosystemTypes ?: emptySet(),
-          familyName = familyName,
-          growthForms = growthForms ?: emptySet(),
-          heightAtMaturitySource = heightAtMaturitySource,
-          heightAtMaturityValue = heightAtMaturityValue,
-          localUsesKnown = localUsesKnown,
           nativeEcosystem = nativeEcosystem,
           rare = rare,
           organizationId = organizationId,

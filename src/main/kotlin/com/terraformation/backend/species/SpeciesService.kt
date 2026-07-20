@@ -73,6 +73,11 @@ class SpeciesService(
 
       val speciesId = speciesStore.createSpecies(populatedModel)
       speciesChecker.checkSpecies(speciesId)
+
+      if (model.projectIds.isNotEmpty()) {
+        projectSpeciesStore.assignProjects(mapOf(speciesId to model.projectIds))
+      }
+
       speciesId
     }
   }
