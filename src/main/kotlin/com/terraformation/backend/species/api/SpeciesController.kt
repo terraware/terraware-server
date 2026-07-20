@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
@@ -24,6 +25,7 @@ import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.species.SpeciesService
+import com.terraformation.backend.species.db.ProjectSpeciesStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
@@ -50,6 +52,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/species")
 @RestController
 class SpeciesController(
+    private val projectSpeciesStore: ProjectSpeciesStore,
     private val speciesService: SpeciesService,
     private val speciesStore: SpeciesStore,
 ) {
@@ -190,6 +193,30 @@ class SpeciesController(
   )
   fun deleteProblem(@PathVariable problemId: SpeciesProblemId): SimpleSuccessResponsePayload {
     speciesStore.deleteProblem(problemId)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @ApiResponse409("A species and project are in different organizations.")
+  @Operation(summary = "Associates species with projects.")
+  @PostMapping("/projects/assign")
+  fun assignSpeciesToProjects(
+      @RequestBody payload: AssignSpeciesToProjectsPayload
+  ): SimpleSuccessResponsePayload {
+    projectSpeciesStore.assignProjects(payload.toMap())
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @ApiResponse409("A species and project are in different organizations.")
+  @Operation(summary = "Removes species from projects.")
+  @PostMapping("/projects/unassign")
+  fun unassignSpeciesFromProjects(
+      @RequestBody payload: AssignSpeciesToProjectsPayload
+  ): SimpleSuccessResponsePayload {
+    projectSpeciesStore.removeProjects(payload.toMap())
     return SimpleSuccessResponsePayload()
   }
 }
@@ -365,6 +392,23 @@ data class SpeciesRequestPayload(
           successionalGroups = successionalGroups ?: emptySet(),
           woodDensityLevel = woodDensityLevel,
       )
+}
+
+data class SpeciesProjectsPayload(
+    val speciesId: SpeciesId,
+    val projectIds: Set<ProjectId>,
+)
+
+data class AssignSpeciesToProjectsPayload(
+    @Schema(description = "The species to assign, each with the projects to associate it with.")
+    val species: List<SpeciesProjectsPayload>,
+) {
+  fun toMap(): Map<SpeciesId, Set<ProjectId>> =
+      species
+          .groupingBy { it.speciesId }
+          .aggregate { _, accumulator, element, _ ->
+            accumulator?.let { it + element.projectIds } ?: element.projectIds
+          }
 }
 
 data class CreateSpeciesResponsePayload(val id: SpeciesId) : SuccessResponsePayload
