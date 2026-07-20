@@ -540,19 +540,6 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not update project species if project has a location`() {
-      insertProject(botanicalCountryCode = insertBotanicalCountry(), countryCode = "US")
-      insertSpecies()
-      insertProjectSpecies(calculatedNativity = SpeciesNativity.Invasive)
-
-      val before = dslContext.fetch(PROJECT_SPECIES)
-
-      service.on(OrganizationLocationUpdatedEvent(null, null, organizationId))
-
-      assertTableEquals(before)
-    }
-
-    @Test
     fun `does not update project species in multi-project org`() {
       insertProject()
       insertSpecies()

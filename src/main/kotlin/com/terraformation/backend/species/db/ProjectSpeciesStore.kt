@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.model.ProjectSpeciesOverride
 import com.terraformation.backend.species.model.SourcedSpeciesNativity
 import jakarta.inject.Named
@@ -29,6 +30,8 @@ class ProjectSpeciesStore(
     private val dslContext: DSLContext,
     private val speciesNativityCalculator: SpeciesNativityCalculator,
 ) {
+  private val log = perClassLogger()
+
   fun assignProjects(assignments: Map<SpeciesId, Set<ProjectId>>) {
     require(assignments.isNotEmpty()) { "No species assignments specified" }
 
@@ -74,6 +77,59 @@ class ProjectSpeciesStore(
           .valuesOfRows(rows)
           .onConflictDoNothing()
           .execute()
+    }
+  }
+
+  /**
+   * Recalculates nativities for all the species in an organization if the organization has fewer
+   * than two projects.
+   */
+  fun recalculateNativities(organizationId: OrganizationId) {
+    val numProjects = dslContext.fetchCount(PROJECTS, PROJECTS.ORGANIZATION_ID.eq(organizationId))
+    if (numProjects > 1) {
+      log.info(
+          "Organization $organizationId has $numProjects projects; not recalculating nativities"
+      )
+      return
+    }
+
+    val speciesIds =
+        with(SPECIES) {
+          dslContext
+              .select(ID)
+              .from(SPECIES)
+              .where(ORGANIZATION_ID.eq(organizationId))
+              .fetch(ID.asNonNullable())
+        }
+    if (speciesIds.isEmpty()) {
+      return
+    }
+
+    val nativities = calculateOrganizationNativities(organizationId, speciesIds)
+
+    val existingSpeciesIds =
+        dslContext
+            .select(PROJECT_SPECIES.SPECIES_ID)
+            .from(PROJECT_SPECIES)
+            .where(PROJECT_SPECIES.ORGANIZATION_ID.eq(organizationId))
+            .and(PROJECT_SPECIES.SPECIES_ID.`in`(speciesIds))
+            .fetchSet(PROJECT_SPECIES.SPECIES_ID.asNonNullable())
+
+    // Species that already have a project_species row (whether or not it's associated with a
+    // project) get their existing row's calculated nativity updated in place. This avoids inserting
+    // a redundant row with a null project ID for a species that's already tied to the org's single
+    // project.
+    val existingRows = existingSpeciesIds.map { speciesId ->
+      rowForUpdate(speciesId, nativities[speciesId])
+    }
+    if (existingRows.isNotEmpty()) {
+      updateCalculatedNativities(existingRows, PROJECT_SPECIES.ORGANIZATION_ID.eq(organizationId))
+    }
+
+    // Species that don't have a project_species row yet get a new row with no project ID.
+    val missingSpeciesIds = speciesIds.filterNot { it in existingSpeciesIds }
+    if (missingSpeciesIds.isNotEmpty()) {
+      insertCalculatedNativities(organizationId, missingSpeciesIds, nativities)
     }
   }
 
@@ -205,6 +261,29 @@ class ProjectSpeciesStore(
     return organizationIds.first()
   }
 
+  private fun calculateOrganizationNativities(
+      organizationId: OrganizationId,
+      speciesIds: Collection<SpeciesId>,
+  ): Map<SpeciesId, SourcedSpeciesNativity> {
+    val location = getOrganizationLocation(organizationId)
+    if (location.botanicalCountryCode == null || location.countryCode == null) {
+      return emptyMap()
+    }
+
+    val namesBySpeciesId = getSpeciesScientificNames(speciesIds)
+
+    val nativities =
+        speciesNativityCalculator.calculateNativities(
+            location.botanicalCountryCode,
+            location.countryCode,
+            namesBySpeciesId.values,
+        )
+
+    return speciesIds.associateWith { speciesId ->
+      nativities.getValue(namesBySpeciesId.getValue(speciesId))
+    }
+  }
+
   private fun calculateNativities(
       speciesIdsByProject: Map<ProjectId, Collection<SpeciesId>>
   ): Map<Pair<SpeciesId, ProjectId>, SourcedSpeciesNativity> {
@@ -288,6 +367,49 @@ class ProjectSpeciesStore(
           .where(scopeCondition)
           .and(SPECIES_ID.eq(speciesIdField))
           .execute()
+    }
+  }
+
+  private fun insertCalculatedNativities(
+      organizationId: OrganizationId,
+      speciesIds: Collection<SpeciesId>,
+      nativities: Map<SpeciesId, SourcedSpeciesNativity>,
+  ) {
+    val rows = speciesIds.map { speciesId ->
+      val sourcedNativity = nativities[speciesId]
+
+      DSL.row(
+          sourcedNativity?.datasetDate,
+          sourcedNativity?.datasetType,
+          sourcedNativity?.speciesNativity,
+          organizationId,
+          speciesId,
+      )
+    }
+
+    with(PROJECT_SPECIES) {
+      dslContext
+          .insertInto(
+              PROJECT_SPECIES,
+              CALCULATED_NATIVITY_DATASET_DATE,
+              CALCULATED_NATIVITY_DATASET_TYPE_ID,
+              CALCULATED_NATIVITY_ID,
+              ORGANIZATION_ID,
+              SPECIES_ID,
+          )
+          .valuesOfRows(rows)
+          .onConflictDoNothing()
+          .execute()
+    }
+  }
+
+  private fun getOrganizationLocation(organizationId: OrganizationId): ProjectLocation {
+    return with(ORGANIZATIONS) {
+      dslContext
+          .select(BOTANICAL_COUNTRY_CODE, COUNTRY_CODE)
+          .from(ORGANIZATIONS)
+          .where(ID.eq(organizationId))
+          .fetchSingle { ProjectLocation(it.value1(), it.value2()) }
     }
   }
 
