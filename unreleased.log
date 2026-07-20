@@ -1,3 +1,4 @@
+b9532128 SW-8673 Recalculate nativities on org location change (#4769)
 e31bfed9 SW-8673 Publish event on organization location change (#4768)
 434a5fb5 SW-8673 Recalculate nativities on project location change (#4767)
 c37e9c71 SW-8673 Recalculate nativities for project (#4766)
