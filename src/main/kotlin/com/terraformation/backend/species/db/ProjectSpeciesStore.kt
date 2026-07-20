@@ -63,20 +63,31 @@ class ProjectSpeciesStore(
       }
     }
 
-    with(PROJECT_SPECIES) {
-      dslContext
-          .insertInto(
-              PROJECT_SPECIES,
-              CALCULATED_NATIVITY_DATASET_DATE,
-              CALCULATED_NATIVITY_DATASET_TYPE_ID,
-              CALCULATED_NATIVITY_ID,
-              ORGANIZATION_ID,
-              PROJECT_ID,
-              SPECIES_ID,
-          )
-          .valuesOfRows(rows)
-          .onConflictDoNothing()
-          .execute()
+    dslContext.transaction { _ ->
+      with(PROJECT_SPECIES) {
+        dslContext
+            .insertInto(
+                PROJECT_SPECIES,
+                CALCULATED_NATIVITY_DATASET_DATE,
+                CALCULATED_NATIVITY_DATASET_TYPE_ID,
+                CALCULATED_NATIVITY_ID,
+                ORGANIZATION_ID,
+                PROJECT_ID,
+                SPECIES_ID,
+            )
+            .valuesOfRows(rows)
+            .onConflictDoNothing()
+            .execute()
+
+        val speciesIdsWithAssignments = assignments.filterValues { it.isNotEmpty() }.keys
+
+        dslContext
+            .deleteFrom(PROJECT_SPECIES)
+            .where(ORGANIZATION_ID.eq(organizationId))
+            .and(PROJECT_ID.isNull)
+            .and(SPECIES_ID.`in`(speciesIdsWithAssignments))
+            .execute()
+      }
     }
   }
 
