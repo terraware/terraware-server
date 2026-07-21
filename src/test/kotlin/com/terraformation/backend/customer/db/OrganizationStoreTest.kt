@@ -85,6 +85,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         createdTime = Instant.EPOCH,
         facilities = listOf(facilityModel),
         internalTags = setOf(InternalTagIds.Reporter),
+        speciesCheckedTime = Instant.EPOCH,
         timeZone = null,
         totalUsers = 0,
     )
@@ -98,7 +99,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     permissionStore = PermissionStore(dslContext)
     store = OrganizationStore(clock, dslContext, organizationsDao, publisher)
 
-    organizationId = insertOrganization(countryCode = "US", countrySubdivisionCode = "US-HI")
+    organizationId =
+        insertOrganization(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            speciesCheckedTime = Instant.EPOCH,
+        )
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     facilityId = insertFacility(location = point(1))
 
@@ -413,6 +419,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             createdTime = Instant.EPOCH,
             modifiedBy = newUserId,
             modifiedTime = newTime,
+            speciesCheckedTime = Instant.EPOCH,
         )
 
     every { user.userId } returns newUserId

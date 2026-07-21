@@ -236,7 +236,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `fetches projects`() {
       val currentUserId = user.userId
       val projectId1 = insertProject(description = "Description 1", name = "Project 1")
-      val projectId2 = insertProject(name = "Project 2")
+      val projectId2 = insertProject(name = "Project 2", speciesCheckedTime = Instant.EPOCH)
       insertOrganization()
       insertProject(name = "Other org project")
 
@@ -260,6 +260,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = currentUserId,
                   modifiedTime = Instant.EPOCH,
                   organizationId = organizationId,
+                  speciesCheckedTime = Instant.EPOCH,
               ),
           )
 
