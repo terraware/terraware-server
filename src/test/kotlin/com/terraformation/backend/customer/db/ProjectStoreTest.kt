@@ -30,6 +30,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternal
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
 import com.terraformation.backend.db.default_schema.tables.records.ProjectInternalUsersRecord
+import com.terraformation.backend.db.default_schema.tables.records.ProjectsRecord
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -110,6 +112,55 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Project name",
               organizationId = organizationId,
               projectId = newProjectId,
+          )
+      )
+    }
+
+    @Test
+    fun `first project inherits org location when second project created`() {
+      val newBotanicalCountryCode = insertBotanicalCountry()
+
+      dslContext
+          .fetchSingle(ORGANIZATIONS)
+          .apply {
+            botanicalCountryCode = newBotanicalCountryCode
+            countryCode = "US"
+          }
+          .update()
+
+      val projectId1 = insertProject()
+
+      val projectId2 =
+          store.create(
+              NewProjectModel(
+                  id = null,
+                  name = "Second project",
+                  organizationId = organizationId,
+              )
+          )
+
+      assertTableEquals(
+          listOf(
+              ProjectsRecord(
+                  botanicalCountryCode = newBotanicalCountryCode,
+                  countryCode = "US",
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  id = projectId1,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  name = "Project 1",
+                  organizationId = organizationId,
+              ),
+              ProjectsRecord(
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  id = projectId2,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  name = "Second project",
+                  organizationId = organizationId,
+              ),
           )
       )
     }
