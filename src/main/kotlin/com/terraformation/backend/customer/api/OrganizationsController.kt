@@ -387,6 +387,7 @@ data class OrganizationPayload(
                 "member of the organization but is able to read it thanks to a global role."
     )
     val role: Role?,
+    val speciesCheckedTime: Instant?,
     val tfContactUser: TerraformationContactUserPayload?,
     val timeZone: ZoneId?,
     @Schema(
@@ -412,6 +413,7 @@ data class OrganizationPayload(
       organizationType = model.organizationType,
       organizationTypeDetails = model.organizationTypeDetails,
       role = role,
+      speciesCheckedTime = model.speciesCheckedTime,
       tfContactUser = tfContactUser?.let { TerraformationContactUserPayload(it) },
       timeZone = model.timeZone,
       totalUsers = model.totalUsers,

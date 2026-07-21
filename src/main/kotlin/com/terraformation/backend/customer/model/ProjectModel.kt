@@ -21,6 +21,7 @@ data class ProjectModel<ID : ProjectId?>(
     val name: String,
     val organizationId: OrganizationId,
     val phase: AcceleratorPhase? = null,
+    val speciesCheckedTime: Instant? = null,
 ) {
   companion object {
     fun of(row: ProjectsRow): ExistingProjectModel {
@@ -36,6 +37,7 @@ data class ProjectModel<ID : ProjectId?>(
           row.name!!,
           row.organizationId!!,
           row.phaseId,
+          row.speciesCheckedTime,
       )
     }
 
@@ -52,6 +54,7 @@ data class ProjectModel<ID : ProjectId?>(
           name = record[PROJECTS.NAME]!!,
           organizationId = record[PROJECTS.ORGANIZATION_ID]!!,
           phase = record[PROJECTS.PHASE_ID],
+          speciesCheckedTime = record[PROJECTS.SPECIES_CHECKED_TIME],
       )
     }
   }
