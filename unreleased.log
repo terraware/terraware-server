@@ -1,3 +1,4 @@
+4e150970 SW-8693 Copy location from org on 2nd project creation (#4781)
 21331928 SW-8673 Delete per-project data when species deleted (#4780)
 febecade SW-8673 Replace org-level nativity with project-level (#4778)
 57e3bd5c SW-8673 Set org-level nativity at species creation (#4777)
