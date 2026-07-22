@@ -42,6 +42,8 @@ import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import com.terraformation.backend.seedbank.event.AccessionStateChangedEvent
 import com.terraformation.backend.seedbank.event.AccessionStateChangedEventValues
@@ -487,7 +489,13 @@ class AccessionStore(
       viabilityTestStore.updateViabilityTests(accessionId, existingTests, viabilityTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
-      insertQuantityHistory(existing, accession, updateContext?.remainingQuantityNotes)
+      insertQuantityHistory(
+          existing,
+          accession,
+          facilityId,
+          organizationId,
+          updateContext?.remainingQuantityNotes,
+      )
       insertStateHistory(existing, accession, facilityId, organizationId)
 
       val rowsUpdated =
@@ -821,6 +829,8 @@ class AccessionStore(
   private fun insertQuantityHistory(
       before: AccessionModel,
       after: AccessionModel,
+      facilityId: FacilityId,
+      organizationId: OrganizationId,
       notes: String? = null,
   ) {
     if (after.remaining != null && before.remaining != after.remaining) {
@@ -845,6 +855,22 @@ class AccessionStore(
             .set(REMAINING_QUANTITY, after.remaining.quantity)
             .set(REMAINING_UNITS_ID, after.remaining.units)
             .execute()
+      }
+
+      if (historyType == AccessionQuantityHistoryType.Observed) {
+        val accessionId =
+            before.id ?: throw IllegalArgumentException("Existing accession has no ID")
+
+        eventPublisher.publishEvent(
+            AccessionQuantityUpdatedEvent(
+                changedFrom = AccessionQuantityUpdatedEventValues(quantity = before.remaining),
+                changedTo = AccessionQuantityUpdatedEventValues(quantity = after.remaining),
+                notes = notes,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            )
+        )
       }
     }
   }
