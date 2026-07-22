@@ -27,6 +27,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoPersistentEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -264,6 +265,28 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
         )
     )
+    eventPublisher.assertEventNotPublished<AccessionPhotoReplacedEvent>()
+  }
+
+  @Test
+  fun `storePhoto reusing an existing filename publishes AccessionPhotoReplacedEvent`() {
+    val oldFileId = repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
+    eventPublisher.clear()
+
+    every { random.nextLong() } returns 1
+    val newFileId = repository.storePhoto(accessionId, sixPixelPng.inputStream(), metadata)
+
+    eventPublisher.assertEventPublished(
+        AccessionPhotoReplacedEvent(
+            filename = filename,
+            replacedFileId = oldFileId,
+            fileId = newFileId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
+    eventPublisher.assertEventNotPublished<AccessionPhotoAddedEvent>()
   }
 
   @Test

@@ -25,3 +25,18 @@ data class AccessionPhotoAddedEventV1(
 ) : EntityCreatedPersistentEvent, AccessionPhotoPersistentEvent
 
 typealias AccessionPhotoAddedEvent = AccessionPhotoAddedEventV1
+
+/**
+ * Published when a photo with an existing filename is re-uploaded. This creates a new file and
+ * deletes the file it replaced, so it is neither a plain creation nor a plain deletion.
+ */
+data class AccessionPhotoReplacedEventV1(
+    val filename: String,
+    val replacedFileId: FileId,
+    override val fileId: FileId,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : AccessionPhotoPersistentEvent
+
+typealias AccessionPhotoReplacedEvent = AccessionPhotoReplacedEventV1
