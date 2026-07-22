@@ -89,8 +89,8 @@ internal class TimeZonesTest {
   fun `includes city name if there are multiple cities in the same zone`() {
     val names = timeZones.getTimeZoneNames(Locale.ENGLISH)
 
-    assertEquals("Pacific Time - Los Angeles", names[ZoneId.of("America/Los_Angeles")])
-    assertEquals("Pacific Time - Vancouver", names[ZoneId.of("America/Vancouver")])
+    assertEquals("Central European Time - Paris", names[ZoneId.of("Europe/Paris")])
+    assertEquals("Central European Time - Berlin", names[ZoneId.of("Europe/Berlin")])
   }
 
   @Test
