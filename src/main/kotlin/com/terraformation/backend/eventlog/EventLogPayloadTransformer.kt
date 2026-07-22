@@ -30,6 +30,7 @@ import com.terraformation.backend.eventlog.api.PlantingSeasonSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonWithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.api.ProjectSubjectPayload
 import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
+import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
@@ -44,6 +45,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSchedul
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
@@ -136,6 +138,7 @@ class EventLogPayloadTransformer(
           PlantingSeasonWithdrawalSubjectPayload.forEvent(event, context)
       is ProjectPersistentEvent -> ProjectSubjectPayload.forEvent(event, context)
       is RecordedTreePersistentEvent -> RecordedTreeSubjectPayload.forEvent(event, context)
+      is ViabilityTestPersistentEvent -> ViabilityTestSubjectPayload.forEvent(event, context)
       is WithdrawalPersistentEvent -> WithdrawalSubjectPayload.forEvent(event, context)
       else -> {
         log.error("Cannot construct subject for event ${event.javaClass.name}")
