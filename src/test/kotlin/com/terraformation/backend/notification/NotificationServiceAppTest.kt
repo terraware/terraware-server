@@ -188,7 +188,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             BagStore(dslContext),
             facilitiesDao,
             GeolocationStore(dslContext, clock),
-            ViabilityTestStore(dslContext),
+            ViabilityTestStore(dslContext, parentStore, publisher),
             parentStore,
             WithdrawalStore(dslContext, clock, mockk(), parentStore, publisher),
             clock,
