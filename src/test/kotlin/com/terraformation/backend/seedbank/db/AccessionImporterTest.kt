@@ -81,7 +81,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         GeolocationStore(dslContext, clock),
         ViabilityTestStore(dslContext),
         parentStore,
-        WithdrawalStore(dslContext, clock, messages, parentStore),
+        WithdrawalStore(dslContext, clock, messages, parentStore, publisher),
         clock,
         publisher,
         messages,

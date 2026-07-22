@@ -190,7 +190,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext),
             parentStore,
-            WithdrawalStore(dslContext, clock, mockk(), parentStore),
+            WithdrawalStore(dslContext, clock, mockk(), parentStore, publisher),
             clock,
             publisher,
             mockk(),
