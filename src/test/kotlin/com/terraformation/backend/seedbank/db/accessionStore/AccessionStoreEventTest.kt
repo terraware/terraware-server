@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionStateChangedEvent
@@ -159,6 +160,25 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
               changedTo =
                   AccessionStateChangedEventValues(state = AccessionState.AwaitingProcessing),
               reason = "Accession has been checked in",
+              accessionId = accessionId,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
+    }
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `delete publishes AccessionDeletedEvent`() {
+      val accessionId = create(accessionModel()).id!!
+      publisher.clear()
+
+      store.delete(accessionId)
+
+      publisher.assertEventPublished(
+          AccessionDeletedEvent(
               accessionId = accessionId,
               facilityId = facilityId,
               organizationId = organizationId,

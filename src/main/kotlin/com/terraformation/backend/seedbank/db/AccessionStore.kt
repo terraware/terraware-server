@@ -42,6 +42,7 @@ import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
@@ -595,11 +596,25 @@ class AccessionStore(
   fun delete(accessionId: AccessionId) {
     requirePermissions { deleteAccession(accessionId) }
 
+    val accession = fetchOneById(accessionId)
+    val facilityId =
+        accession.facilityId ?: throw IllegalStateException("Accession has no facility ID")
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+
     dslContext.transaction { _ ->
       // Child tables will be cleaned up by integrity constraints, except for accession_photos;
       // that one needs to be cleared out beforehand since the actual photo files need to be
       // removed from the file store.
       dslContext.deleteFrom(ACCESSIONS).where(ACCESSIONS.ID.eq(accessionId)).execute()
+
+      eventPublisher.publishEvent(
+          AccessionDeletedEvent(
+              accessionId = accessionId,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
     }
   }
 
