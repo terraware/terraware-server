@@ -207,3 +207,30 @@ data class AccessionStateChangedEventV1(
 typealias AccessionStateChangedEvent = AccessionStateChangedEventV1
 
 typealias AccessionStateChangedEventValues = AccessionStateChangedEventV1.Values
+
+/** Published when the user manually edits an accession's remaining/observed quantity. */
+data class AccessionQuantityUpdatedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    val notes: String? = null,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : FieldsUpdatedPersistentEvent, AccessionPersistentEvent {
+  data class Values(
+      val quantity: SeedQuantityModel? = null,
+  )
+
+  override fun listUpdatedFields(messages: Messages) =
+      listOfNotNull(
+          createUpdatedField(
+              "quantity",
+              changedFrom.quantity?.toString(),
+              changedTo.quantity?.toString(),
+          )
+      )
+}
+
+typealias AccessionQuantityUpdatedEvent = AccessionQuantityUpdatedEventV1
+
+typealias AccessionQuantityUpdatedEventValues = AccessionQuantityUpdatedEventV1.Values
