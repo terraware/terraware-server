@@ -22,6 +22,8 @@ import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
@@ -737,5 +739,95 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
           event.facilityId == facilityId &&
           event.organizationId == organizationId
     }
+  }
+
+  @Test
+  fun `editing a withdrawal publishes WithdrawalUpdatedEvent with only the changed fields`() {
+    val initial =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 1, 1),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            staffResponsible = "staff 1",
+            withdrawn = grams(1),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+    val withdrawalId = afterInsert[0].id!!
+    eventPublisher.clear()
+
+    val desired = afterInsert[0].copy(notes = "updated notes")
+
+    store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
+
+    eventPublisher.assertEventPublished(
+        WithdrawalUpdatedEvent(
+            changedFrom = WithdrawalUpdatedEventValues(notes = "notes 1"),
+            changedTo = WithdrawalUpdatedEventValues(notes = "updated notes"),
+            withdrawalId = withdrawalId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
+  }
+
+  @Test
+  fun `editing only the withdrawn by user publishes WithdrawalUpdatedEvent with the user change`() {
+    val otherUserId = insertUser(firstName = "Other", lastName = "User")
+    insertOrganizationUser(otherUserId, organizationId)
+
+    val initial =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 1, 1),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            staffResponsible = "staff 1",
+            withdrawn = grams(1),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+    val withdrawalId = afterInsert[0].id!!
+    eventPublisher.clear()
+
+    val desired = afterInsert[0].copy(withdrawnByUserId = otherUserId)
+
+    store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
+
+    eventPublisher.assertEventPublished(
+        WithdrawalUpdatedEvent(
+            changedFrom = WithdrawalUpdatedEventValues(withdrawnByUserId = user.userId),
+            changedTo = WithdrawalUpdatedEventValues(withdrawnByUserId = otherUserId),
+            withdrawalId = withdrawalId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
+  }
+
+  @Test
+  fun `unchanged withdrawal does not publish WithdrawalUpdatedEvent`() {
+    val initial =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 1, 1),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            staffResponsible = "staff 1",
+            withdrawn = grams(1),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+    eventPublisher.clear()
+
+    store.updateWithdrawals(accessionId, afterInsert, afterInsert)
+
+    eventPublisher.assertEventNotPublished<WithdrawalUpdatedEvent>()
   }
 }
