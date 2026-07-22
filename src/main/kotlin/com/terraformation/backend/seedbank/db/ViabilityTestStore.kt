@@ -13,8 +13,11 @@ import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventValues
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -234,6 +237,11 @@ class ViabilityTestStore(
     val desired = desiredTests ?: emptyList()
     val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id }.toSet())
 
+    val facilityId =
+        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    val organizationId =
+        parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+
     if (deletedTestIds.isNotEmpty()) {
       dslContext
           .deleteFrom(VIABILITY_TESTS)
@@ -273,6 +281,67 @@ class ViabilityTestStore(
                     .set(TREATMENT_ID, desiredTest.treatment)
                     .where(ID.eq(testId))
                     .execute()
+              }
+
+              val changedFrom =
+                  ViabilityTestUpdatedEventValues(
+                      endDate = existingTest.endDate.nullIfEquals(desiredTest.endDate),
+                      notes = existingTest.notes.nullIfEquals(desiredTest.notes),
+                      seedsCompromised =
+                          existingTest.seedsCompromised.nullIfEquals(desiredTest.seedsCompromised),
+                      seedsEmpty = existingTest.seedsEmpty.nullIfEquals(desiredTest.seedsEmpty),
+                      seedsFilled = existingTest.seedsFilled.nullIfEquals(desiredTest.seedsFilled),
+                      seedsTested = existingTest.seedsTested.nullIfEquals(desiredTest.seedsTested),
+                      seedType = existingTest.seedType.nullIfEquals(desiredTest.seedType),
+                      startDate = existingTest.startDate.nullIfEquals(desiredTest.startDate),
+                      substrate = existingTest.substrate.nullIfEquals(desiredTest.substrate),
+                      totalSeedsGerminated =
+                          existingTest.totalSeedsGerminated.nullIfEquals(
+                              desiredTest.totalSeedsGerminated
+                          ),
+                      treatment = existingTest.treatment.nullIfEquals(desiredTest.treatment),
+                      viabilityPercent =
+                          existingTest.viabilityPercent.nullIfEquals(desiredTest.viabilityPercent),
+                  )
+              val changedTo =
+                  ViabilityTestUpdatedEventValues(
+                      endDate = desiredTest.endDate.nullIfEquals(existingTest.endDate),
+                      notes = desiredTest.notes.nullIfEquals(existingTest.notes),
+                      seedsCompromised =
+                          desiredTest.seedsCompromised.nullIfEquals(existingTest.seedsCompromised),
+                      seedsEmpty = desiredTest.seedsEmpty.nullIfEquals(existingTest.seedsEmpty),
+                      seedsFilled = desiredTest.seedsFilled.nullIfEquals(existingTest.seedsFilled),
+                      seedsTested = desiredTest.seedsTested.nullIfEquals(existingTest.seedsTested),
+                      seedType = desiredTest.seedType.nullIfEquals(existingTest.seedType),
+                      startDate = desiredTest.startDate.nullIfEquals(existingTest.startDate),
+                      substrate = desiredTest.substrate.nullIfEquals(existingTest.substrate),
+                      totalSeedsGerminated =
+                          desiredTest.totalSeedsGerminated.nullIfEquals(
+                              existingTest.totalSeedsGerminated
+                          ),
+                      treatment = desiredTest.treatment.nullIfEquals(existingTest.treatment),
+                      viabilityPercent =
+                          desiredTest.viabilityPercent.nullIfEquals(existingTest.viabilityPercent),
+                  )
+
+              // A change that only alters germination recording dates (without changing any
+              // aggregate value tracked above) produces an empty diff and is not logged; that is
+              // an accepted limitation of diffing the computed test results rather than the
+              // individual recordings.
+              if (
+                  changedFrom != ViabilityTestUpdatedEventValues() ||
+                      changedTo != ViabilityTestUpdatedEventValues()
+              ) {
+                eventPublisher.publishEvent(
+                    ViabilityTestUpdatedEvent(
+                        changedFrom = changedFrom,
+                        changedTo = changedTo,
+                        viabilityTestId = testId,
+                        accessionId = accessionId,
+                        facilityId = facilityId,
+                        organizationId = organizationId,
+                    )
+                )
               }
             }
 
