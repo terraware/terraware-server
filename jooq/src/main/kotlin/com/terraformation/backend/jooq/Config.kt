@@ -516,7 +516,10 @@ val ID_WRAPPERS =
                 ),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
-                IdWrapper("SplatAnnotationId", listOf("splat_annotations\\.id")),
+                IdWrapper(
+                    "SplatAnnotationId",
+                    listOf("splat_annotations\\.id", ".*\\.splat_annotation_id"),
+                ),
                 IdWrapper("SubLocationId", listOf("sub_locations\\.id", ".*\\.sub_location_id")),
                 IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
                 IdWrapper("TimeseriesId", listOf("timeseries\\.id", ".*\\.timeseries_id")),

@@ -259,6 +259,9 @@ COMMENT ON COLUMN splats.scene_bounds IS 'Bounding perimeter of the splat in car
 COMMENT ON COLUMN splats.sky_color IS 'Average color of the sky.';
 COMMENT ON COLUMN splats.sky_radius IS 'Size of the sky sphere.';
 
+COMMENT ON TABLE splat_annotation_media IS 'Media files (photos or videos) attached to splat annotations. Modeled for multiple media per annotation.';
+COMMENT ON COLUMN splat_annotation_media.position IS 'Display order of this media within its annotation, 0-based.';
+
 COMMENT ON TABLE splat_annotations IS 'Annotations that should be displayed inside splat models.';
 COMMENT ON COLUMN splat_annotations.camera_position IS 'Starting location of the camera in cartesian coordinates.';
 COMMENT ON COLUMN splat_annotations.position IS 'Position of the annotation in cartesian coordinates.';
