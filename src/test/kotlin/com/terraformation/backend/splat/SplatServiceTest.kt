@@ -2010,4 +2010,63 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
     }
   }
+
+  @Nested
+  inner class GetSplatInfoMedia {
+    @BeforeEach
+    fun setUp() {
+      insertOrganizationMediaFile(fileId = fileId)
+      insertSplat()
+    }
+
+    @Test
+    fun `returns media ordered by position and grouped per annotation`() {
+      val annotation1 = insertSplatAnnotation(title = "Annotation 1")
+      val annotation2 = insertSplatAnnotation(title = "Annotation 2")
+      val video = insertFile(contentType = "video/mp4")
+      val photo = insertFile(contentType = "image/jpeg")
+
+      insertSplatAnnotationMedia(splatAnnotationId = annotation1, fileId = video, position = 1)
+      insertSplatAnnotationMedia(splatAnnotationId = annotation1, fileId = photo, position = 0)
+
+      val info = service.getOrganizationSplatInfo(organizationId, fileId)
+
+      val media1 = info.annotations.first { it.id == annotation1 }.media
+      val media2 = info.annotations.first { it.id == annotation2 }.media
+
+      assertEquals(
+          listOf(
+              SplatAnnotationMediaModel(photo, "image/jpeg", 0),
+              SplatAnnotationMediaModel(video, "video/mp4", 1),
+          ),
+          media1,
+      )
+      assertEquals(emptyList<SplatAnnotationMediaModel>(), media2)
+    }
+
+    @Test
+    fun `returns media ordered by position and grouped per annotation via observation`() {
+      val annotation1 = insertSplatAnnotation(title = "Annotation 1")
+      val annotation2 = insertSplatAnnotation(title = "Annotation 2")
+      val video = insertFile(contentType = "video/mp4")
+      val photo = insertFile(contentType = "image/jpeg")
+
+      insertSplatAnnotationMedia(splatAnnotationId = annotation1, fileId = video, position = 1)
+      insertSplatAnnotationMedia(splatAnnotationId = annotation1, fileId = photo, position = 0)
+
+      val info = service.getObservationSplatInfo(observationId, fileId)
+
+      val media1 = info.annotations.first { it.id == annotation1 }.media
+      val media2 = info.annotations.first { it.id == annotation2 }.media
+
+      assertEquals(
+          listOf(
+              SplatAnnotationMediaModel(photo, "image/jpeg", 0),
+              SplatAnnotationMediaModel(video, "video/mp4", 1),
+          ),
+          media1,
+      )
+      assertEquals(emptyList<SplatAnnotationMediaModel>(), media2)
+    }
+  }
 }

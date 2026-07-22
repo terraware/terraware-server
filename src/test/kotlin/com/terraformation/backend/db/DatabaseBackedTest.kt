@@ -271,6 +271,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PL
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATION_MEDIA
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
@@ -3706,6 +3707,25 @@ abstract class DatabaseBackedTest {
     nextAnnotationNumber[fileId] = nextAnnotationNumber.getOrDefault(fileId, 1) + 1
 
     return id.also { inserted.splatAnnotationIds.add(it) }
+  }
+
+  fun insertSplatAnnotationMedia(
+      splatAnnotationId: SplatAnnotationId = inserted.splatAnnotationId,
+      fileId: FileId = inserted.fileId,
+      position: Int = 0,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = Instant.EPOCH,
+  ) {
+    with(SPLAT_ANNOTATION_MEDIA) {
+      dslContext
+          .insertInto(SPLAT_ANNOTATION_MEDIA)
+          .set(SPLAT_ANNOTATION_ID, splatAnnotationId)
+          .set(FILE_ID, fileId)
+          .set(POSITION, position)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, createdTime)
+          .execute()
+    }
   }
 
   fun insertObservationPlot(
