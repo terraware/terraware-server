@@ -175,6 +175,11 @@ com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCrea
 com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEventV1/withdrawalDate: LocalDate
 com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEventV1/withdrawalId: WithdrawalId
+com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/accessionId: AccessionId
+com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/accessionNumber: String
+com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/dataSource: DataSource
+com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/facilityId: FacilityId
+com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.BiomassDetailsCreatedEventV1/forestType: BiomassForestType
 com.terraformation.backend.tracking.event.BiomassDetailsCreatedEventV1/herbaceousCoverPercent: Int
 com.terraformation.backend.tracking.event.BiomassDetailsCreatedEventV1/monitoringPlotId: MonitoringPlotId
