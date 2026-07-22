@@ -47,6 +47,8 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdra
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestDeletedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
@@ -129,6 +131,36 @@ data class AccessionSubjectPayload(
           facilityId = event.facilityId,
           fullText = context.subjectFullText<AccessionSubjectPayload>(accessionNumber),
           shortText = context.subjectShortText<AccessionSubjectPayload>(),
+      )
+    }
+  }
+}
+
+@JsonTypeName("AccessionPhoto")
+data class AccessionPhotoSubjectPayload(
+    val accessionId: AccessionId,
+    override val deleted: Boolean?,
+    val facilityId: FacilityId,
+    val fileId: FileId,
+    override val fullText: String,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: AccessionPhotoPersistentEvent,
+        context: EventLogPayloadContext,
+    ): AccessionPhotoSubjectPayload {
+      val filename =
+          context.firstOrNull<AccessionPhotoAddedEvent> { it.fileId == event.fileId }?.filename
+              ?: event.fileId.toString()
+
+      return AccessionPhotoSubjectPayload(
+          accessionId = event.accessionId,
+          deleted = null,
+          facilityId = event.facilityId,
+          fileId = event.fileId,
+          fullText = context.subjectFullText<AccessionPhotoSubjectPayload>(filename),
+          shortText = context.subjectShortText<AccessionPhotoSubjectPayload>(),
       )
     }
   }
@@ -906,6 +938,7 @@ data class WithdrawalSubjectPayload(
  */
 enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   Accession(AccessionPersistentEvent::class),
+  AccessionPhoto(AccessionPhotoPersistentEvent::class),
   BiomassDetails(BiomassDetailsPersistentEvent::class),
   BiomassQuadrat(BiomassQuadratPersistentEvent::class),
   BiomassQuadratSpecies(BiomassQuadratSpeciesPersistentEvent::class),

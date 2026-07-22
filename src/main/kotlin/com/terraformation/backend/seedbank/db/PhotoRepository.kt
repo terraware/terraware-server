@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
@@ -18,6 +20,7 @@ import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
 import jakarta.inject.Named
 import java.io.IOException
 import java.io.InputStream
@@ -33,6 +36,7 @@ class PhotoRepository(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
+    private val parentStore: ParentStore,
     private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
@@ -52,7 +56,9 @@ class PhotoRepository(
     // the highest ID, which might not be the file we just stored (if there were two uploads in
     // progress at the same time).
     val filename = metadata.filename
-    fetchFilesRows(accessionId, filename)
+    val filesRows = fetchFilesRows(accessionId, filename)
+    val retainedId = filesRows.firstOrNull()?.id
+    filesRows
         .drop(1)
         .mapNotNull { it.id }
         .forEach { oldFileId ->
@@ -61,6 +67,27 @@ class PhotoRepository(
           accessionPhotosDao.deleteById(oldFileId)
           eventPublisher.publishEvent(FileReferenceDeletedEvent(oldFileId))
         }
+
+    // Only the invocation whose file was retained should announce the addition; a concurrent upload
+    // that lost the race had its file deleted above and must not publish an event for it.
+    if (retainedId == fileId) {
+      val facilityId =
+          parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+      val organizationId =
+          parentStore.getOrganizationId(accessionId)
+              ?: throw AccessionNotFoundException(accessionId)
+
+      eventPublisher.publishEvent(
+          AccessionPhotoAddedEvent(
+              filename = filename,
+              contentType = metadata.contentType,
+              fileId = fileId,
+              accessionId = accessionId,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
+    }
 
     return fileId
   }
