@@ -724,9 +724,7 @@ class SplatService(
           )
           .from(SPLAT_ANNOTATIONS)
           .where(FILE_ID.eq(fileId))
-          .fetch { record ->
-            SplatAnnotationModel.of(record).copy(media = record[splatAnnotationMediaMultiset])
-          }
+          .fetch { record -> SplatAnnotationModel.of(record, splatAnnotationMediaMultiset) }
     }
   }
 

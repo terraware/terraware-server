@@ -177,7 +177,10 @@ data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
     val title: String,
 ) {
   companion object {
-    fun of(record: Record): ExistingSplatAnnotationModel =
+    fun of(
+        record: Record,
+        mediaField: Field<List<SplatAnnotationMediaModel>>,
+    ): ExistingSplatAnnotationModel =
         with(SPLAT_ANNOTATIONS) {
           ExistingSplatAnnotationModel(
               id = record[ID]!!,
@@ -185,6 +188,7 @@ data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
               cameraPosition = CoordinateModel.of(record, CAMERA_POSITION),
               fileId = record[FILE_ID]!!,
               label = record[LABEL],
+              media = record[mediaField],
               position = CoordinateModel.of(record, POSITION)!!,
               title = record[TITLE]!!,
           )
