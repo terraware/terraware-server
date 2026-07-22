@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
@@ -179,3 +180,30 @@ data class AccessionUpdatedEventV1(
 typealias AccessionUpdatedEvent = AccessionUpdatedEventV1
 
 typealias AccessionUpdatedEventValues = AccessionUpdatedEventV1.Values
+
+/** Published when an accession's state changes, carrying the reason for the transition. */
+data class AccessionStateChangedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    val reason: String,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : FieldsUpdatedPersistentEvent, AccessionPersistentEvent {
+  data class Values(
+      val state: AccessionState? = null,
+  )
+
+  override fun listUpdatedFields(messages: Messages) =
+      listOfNotNull(
+          createUpdatedField(
+              "state",
+              changedFrom.state?.getDisplayName(currentLocale()),
+              changedTo.state?.getDisplayName(currentLocale()),
+          )
+      )
+}
+
+typealias AccessionStateChangedEvent = AccessionStateChangedEventV1
+
+typealias AccessionStateChangedEventValues = AccessionStateChangedEventV1.Values
