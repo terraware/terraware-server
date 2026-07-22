@@ -180,6 +180,10 @@ com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/accessionNumbe
 com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/dataSource: DataSource
 com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/facilityId: FacilityId
 com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.seedbank.event.AccessionUploadedEventV1/accessionId: AccessionId
+com.terraformation.backend.seedbank.event.AccessionUploadedEventV1/accessionNumber: String
+com.terraformation.backend.seedbank.event.AccessionUploadedEventV1/facilityId: FacilityId
+com.terraformation.backend.seedbank.event.AccessionUploadedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.BiomassDetailsCreatedEventV1/forestType: BiomassForestType
 com.terraformation.backend.tracking.event.BiomassDetailsCreatedEventV1/herbaceousCoverPercent: Int
 com.terraformation.backend.tracking.event.BiomassDetailsCreatedEventV1/monitoringPlotId: MonitoringPlotId
