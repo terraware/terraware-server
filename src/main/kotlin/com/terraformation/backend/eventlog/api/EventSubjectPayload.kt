@@ -48,6 +48,7 @@ import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
@@ -157,10 +158,12 @@ data class AccessionPhotoSubjectPayload(
                   .firstOrNull<AccessionPhotoReplacedEvent> { it.fileId == event.fileId }
                   ?.filename
               ?: event.fileId.toString()
+      val deleteEvent =
+          context.firstOrNull<AccessionPhotoDeletedEvent> { it.fileId == event.fileId }
 
       return AccessionPhotoSubjectPayload(
           accessionId = event.accessionId,
-          deleted = null,
+          deleted = if (deleteEvent != null) true else null,
           facilityId = event.facilityId,
           fileId = event.fileId,
           fullText = context.subjectFullText<AccessionPhotoSubjectPayload>(filename),
