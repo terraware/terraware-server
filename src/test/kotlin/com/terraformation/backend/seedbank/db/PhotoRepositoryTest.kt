@@ -4,10 +4,12 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -23,6 +25,8 @@ import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
+import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoPersistentEvent
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -70,6 +74,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   private lateinit var accessionId: AccessionId
+  private lateinit var facilityId: FacilityId
   private lateinit var organizationId: OrganizationId
   private lateinit var photoStorageUrl: URI
 
@@ -110,11 +115,12 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             dslContext,
             eventPublisher,
             fileService,
+            ParentStore(dslContext),
             thumbnailService,
         )
 
     organizationId = insertOrganization()
-    insertFacility()
+    facilityId = insertFacility()
     accessionId = insertAccession(number = accessionNumber)
   }
 
@@ -232,6 +238,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val onePixelFileId = onePixelPhotoRow.id!!
     val sixPixelFileId = sixPixelPhotoRow.id!!
 
+    eventPublisher.clear()
+
     repository.deletePhoto(accessionId, "1.jpg")
 
     eventPublisher.assertExactEventsPublished(setOf(FileReferenceDeletedEvent(onePixelFileId)))
@@ -240,6 +248,37 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
         accessionPhotosDao.findAll(),
         "Accession photos after deletion",
     )
+  }
+
+  @Test
+  fun `storePhoto with a new filename publishes AccessionPhotoAddedEvent`() {
+    val fileId = repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
+
+    eventPublisher.assertEventPublished(
+        AccessionPhotoAddedEvent(
+            filename = filename,
+            contentType = contentType,
+            fileId = fileId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
+  }
+
+  @Test
+  fun `deleteAllPhotos does not publish per-photo accession events`() {
+    every { user.canUpdateAccession(any()) } returns true
+
+    every { random.nextLong() } returns 1L
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "1.jpg"))
+    every { random.nextLong() } returns 2L
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "2.jpg"))
+    eventPublisher.clear()
+
+    repository.deleteAllPhotos(accessionId)
+
+    eventPublisher.assertEventNotPublished<AccessionPhotoPersistentEvent>()
   }
 
   @Test

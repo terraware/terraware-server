@@ -3,6 +3,7 @@ package com.terraformation.backend.eventlog
 import com.terraformation.backend.customer.db.SimpleUserStore
 import com.terraformation.backend.customer.event.OrganizationPersistentEvent
 import com.terraformation.backend.customer.event.ProjectPersistentEvent
+import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassDetailsSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
@@ -45,6 +46,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSchedul
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoPersistentEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
@@ -110,6 +112,7 @@ class EventLogPayloadTransformer(
   ): EventSubjectPayload? {
     return when (event) {
       is AccessionPersistentEvent -> AccessionSubjectPayload.forEvent(event, context)
+      is AccessionPhotoPersistentEvent -> AccessionPhotoSubjectPayload.forEvent(event, context)
       is BiomassDetailsPersistentEvent -> BiomassDetailsSubjectPayload.forEvent(event, context)
       is BiomassQuadratPersistentEvent -> BiomassQuadratSubjectPayload.forEvent(event, context)
       is BiomassQuadratSpeciesPersistentEvent ->
