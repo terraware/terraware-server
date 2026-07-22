@@ -14,9 +14,12 @@ import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.model.AccessionUpdateContext
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
+import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.seeds
+import java.time.Duration
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
@@ -266,6 +269,100 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
 
       assertEquals(1, createdEvents.size, "Number of ViabilityTestCreatedEvent published")
       assertEquals(test.id, createdEvents.first().viabilityTestId, "Viability test ID")
+    }
+
+    @Test
+    fun `editing a viability test publishes ViabilityTestUpdatedEvent`() {
+      val initial =
+          create()
+              .andUpdate { it.copy(remaining = seeds(100)) }
+              .andAdvanceClock(Duration.ofSeconds(1))
+              .andUpdate {
+                it.addViabilityTest(
+                    ViabilityTestModel(seedsTested = 1, testType = ViabilityTestType.Lab)
+                )
+              }
+      val testId = initial.viabilityTests[0].id!!
+      publisher.clear()
+
+      val desired =
+          initial.copy(
+              viabilityTests =
+                  listOf(
+                      ViabilityTestModel(
+                          id = testId,
+                          notes = "new notes",
+                          seedsTested = 5,
+                          testType = ViabilityTestType.Lab,
+                      )
+                  )
+          )
+      store.update(desired)
+
+      publisher.assertEventPublished { event ->
+        event is ViabilityTestUpdatedEvent &&
+            event.viabilityTestId == testId &&
+            event.accessionId == initial.id &&
+            event.facilityId == facilityId &&
+            event.organizationId == organizationId &&
+            event.changedFrom.seedsTested == 1 &&
+            event.changedTo.seedsTested == 5 &&
+            event.changedTo.notes == "new notes"
+      }
+    }
+
+    @Test
+    fun `editing recordings publishes ViabilityTestUpdatedEvent when total germinated changes but rounded percent is unchanged`() {
+      val startDate = LocalDate.of(2021, 4, 1)
+      val initial =
+          create()
+              .andUpdate { it.copy(remaining = seeds(500)) }
+              .andAdvanceClock(Duration.ofSeconds(1))
+              .andUpdate {
+                it.addViabilityTest(
+                    ViabilityTestModel(
+                        seedsTested = 200,
+                        startDate = startDate,
+                        testResults =
+                            listOf(
+                                ViabilityTestResultModel(
+                                    recordingDate = startDate,
+                                    seedsGerminated = 100,
+                                )
+                            ),
+                        testType = ViabilityTestType.Lab,
+                    )
+                )
+              }
+      val test = initial.viabilityTests[0]
+      val testId = test.id!!
+      // Both 100/200 and 101/200 round down to a viability percent of 50.
+      assertEquals(100, test.totalSeedsGerminated, "Initial total seeds germinated")
+      assertEquals(50, test.viabilityPercent, "Initial viability percent")
+      publisher.clear()
+
+      val desired =
+          initial.updateViabilityTest(testId) {
+            it.copy(
+                testResults =
+                    listOf(
+                        ViabilityTestResultModel(recordingDate = startDate, seedsGerminated = 101)
+                    )
+            )
+          }
+      store.update(desired)
+
+      publisher.assertEventPublished { event ->
+        event is ViabilityTestUpdatedEvent &&
+            event.viabilityTestId == testId &&
+            event.accessionId == initial.id &&
+            event.facilityId == facilityId &&
+            event.organizationId == organizationId &&
+            event.changedFrom.totalSeedsGerminated == 100 &&
+            event.changedTo.totalSeedsGerminated == 101 &&
+            event.changedFrom.viabilityPercent == null &&
+            event.changedTo.viabilityPercent == null
+      }
     }
   }
 }
