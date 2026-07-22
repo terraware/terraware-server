@@ -47,6 +47,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoPersistentEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
@@ -158,7 +159,16 @@ class EventLogPayloadTransformer(
       // Any fields-updated events that don't implement FieldsUpdatedPersistentEvent should be
       // handled here.
 
-      // (Currently there aren't any.)
+      // Replacing a photo creates a new file and deletes the one it replaced, so we render it as an
+      // update of the photo from the old file to the new one.
+      is AccessionPhotoReplacedEvent ->
+          listOf(
+              FieldUpdatedActionPayload(
+                  "photo",
+                  listOf(event.replacedFileId.toString()),
+                  listOf(event.fileId.toString()),
+              )
+          )
 
       // Events that can self-describe which fields were updated can be transformed generically.
       is FieldsUpdatedPersistentEvent ->

@@ -21,6 +21,7 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
 import jakarta.inject.Named
 import java.io.IOException
 import java.io.InputStream
@@ -45,6 +46,8 @@ class PhotoRepository(
   fun storePhoto(accessionId: AccessionId, data: InputStream, metadata: NewFileMetadata): FileId {
     requirePermissions { uploadPhoto(accessionId) }
 
+    val replacedFileId = fetchFilesRows(accessionId, metadata.filename).firstOrNull()?.id
+
     val fileId =
         fileService.storeFile("accession", data, metadata) { (fileId) ->
           accessionPhotosDao.insert(AccessionPhotosRow(accessionId = accessionId, fileId = fileId))
@@ -68,8 +71,10 @@ class PhotoRepository(
           eventPublisher.publishEvent(FileReferenceDeletedEvent(oldFileId))
         }
 
-    // Only the invocation whose file was retained should announce the addition; a concurrent upload
-    // that lost the race had its file deleted above and must not publish an event for it.
+    // Only the invocation whose file was retained should announce the change; a concurrent upload
+    // that lost the race had its file deleted above and must not publish an event for it. This also
+    // means concurrent same-filename uploads yield a single "old -> winner" replacement rather than
+    // duplicate events.
     if (retainedId == fileId) {
       val facilityId =
           parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
@@ -77,16 +82,29 @@ class PhotoRepository(
           parentStore.getOrganizationId(accessionId)
               ?: throw AccessionNotFoundException(accessionId)
 
-      eventPublisher.publishEvent(
-          AccessionPhotoAddedEvent(
-              filename = filename,
-              contentType = metadata.contentType,
-              fileId = fileId,
-              accessionId = accessionId,
-              facilityId = facilityId,
-              organizationId = organizationId,
-          )
-      )
+      if (replacedFileId != null) {
+        eventPublisher.publishEvent(
+            AccessionPhotoReplacedEvent(
+                filename = filename,
+                replacedFileId = replacedFileId,
+                fileId = fileId,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            )
+        )
+      } else {
+        eventPublisher.publishEvent(
+            AccessionPhotoAddedEvent(
+                filename = filename,
+                contentType = metadata.contentType,
+                fileId = fileId,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            )
+        )
+      }
     }
 
     return fileId
