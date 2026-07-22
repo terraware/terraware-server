@@ -23,3 +23,13 @@ data class AccessionCreatedEventV1(
 ) : EntityCreatedPersistentEvent, AccessionPersistentEvent
 
 typealias AccessionCreatedEvent = AccessionCreatedEventV1
+
+/** Published when an accession is created as part of a CSV import. */
+data class AccessionUploadedEventV1(
+    val accessionNumber: String,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : EntityCreatedPersistentEvent, AccessionPersistentEvent
+
+typealias AccessionUploadedEvent = AccessionUploadedEventV1
