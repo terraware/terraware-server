@@ -47,6 +47,7 @@ import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
@@ -832,6 +833,32 @@ data class RecordedTreeSubjectPayload(
   }
 }
 
+@JsonTypeName("Withdrawal")
+data class WithdrawalSubjectPayload(
+    val accessionId: AccessionId,
+    override val deleted: Boolean?,
+    val facilityId: FacilityId,
+    override val fullText: String,
+    override val shortText: String,
+    val withdrawalId: com.terraformation.backend.db.seedbank.WithdrawalId,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: WithdrawalPersistentEvent,
+        context: EventLogPayloadContext,
+    ): WithdrawalSubjectPayload {
+      return WithdrawalSubjectPayload(
+          accessionId = event.accessionId,
+          deleted = null,
+          facilityId = event.facilityId,
+          fullText = context.subjectFullText<WithdrawalSubjectPayload>(event.withdrawalId),
+          shortText = context.subjectShortText<WithdrawalSubjectPayload>(),
+          withdrawalId = event.withdrawalId,
+      )
+    }
+  }
+}
+
 /**
  * Types of subjects that can be returned by the event log query API. Each subject maps to an
  * interface that's implemented by events related to that subject.
@@ -859,4 +886,5 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingSeasonWithdrawal(PlantingSeasonWithdrawalCreatedEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
+  Withdrawal(WithdrawalPersistentEvent::class),
 }
