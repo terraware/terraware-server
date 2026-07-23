@@ -202,6 +202,10 @@ com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1/facilityId
 com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1/testType: ViabilityTestType
 com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1/viabilityTestId: ViabilityTestId
+com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventV1/accessionId: AccessionId
+com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventV1/facilityId: FacilityId
+com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventV1/viabilityTestId: ViabilityTestId
 com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1/accessionId: AccessionId
 com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1/date: LocalDate
 com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1/facilityId: FacilityId
