@@ -13,6 +13,7 @@ import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestDeletedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventValues
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
@@ -247,6 +248,17 @@ class ViabilityTestStore(
           .deleteFrom(VIABILITY_TESTS)
           .where(VIABILITY_TESTS.ID.`in`(deletedTestIds))
           .execute()
+
+      deletedTestIds.filterNotNull().forEach { deletedTestId ->
+        eventPublisher.publishEvent(
+            ViabilityTestDeletedEvent(
+                viabilityTestId = deletedTestId,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            )
+        )
+      }
     }
 
     desired

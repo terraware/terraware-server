@@ -48,6 +48,7 @@ import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestDeletedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
 import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
@@ -850,9 +851,14 @@ data class ViabilityTestSubjectPayload(
         event: ViabilityTestPersistentEvent,
         context: EventLogPayloadContext,
     ): ViabilityTestSubjectPayload {
+      val deleteEvent =
+          context.firstOrNull<ViabilityTestDeletedEvent> {
+            it.viabilityTestId == event.viabilityTestId
+          }
+
       return ViabilityTestSubjectPayload(
           accessionId = event.accessionId,
-          deleted = null,
+          deleted = if (deleteEvent != null) true else null,
           facilityId = event.facilityId,
           fullText = context.subjectFullText<ViabilityTestSubjectPayload>(event.viabilityTestId),
           shortText = context.subjectShortText<ViabilityTestSubjectPayload>(),

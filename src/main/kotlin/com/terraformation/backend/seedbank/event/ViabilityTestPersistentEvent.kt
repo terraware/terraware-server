@@ -9,6 +9,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
+import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.i18n.Messages
@@ -129,3 +130,13 @@ data class ViabilityTestUpdatedEventV1(
 typealias ViabilityTestUpdatedEvent = ViabilityTestUpdatedEventV1
 
 typealias ViabilityTestUpdatedEventValues = ViabilityTestUpdatedEventV1.Values
+
+/** Published when a viability test is deleted from an accession. */
+data class ViabilityTestDeletedEventV1(
+    override val viabilityTestId: ViabilityTestId,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : EntityDeletedPersistentEvent, ViabilityTestPersistentEvent
+
+typealias ViabilityTestDeletedEvent = ViabilityTestDeletedEventV1
