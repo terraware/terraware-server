@@ -4,9 +4,12 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionStateChangedEvent
+import com.terraformation.backend.seedbank.event.AccessionStateChangedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
+import com.terraformation.backend.seedbank.seeds
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -93,6 +96,49 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
       store.update(model)
 
       publisher.assertEventNotPublished<AccessionUpdatedEvent>()
+    }
+
+    @Test
+    fun `state transition publishes AccessionStateChangedEvent`() {
+      val model = create(accessionModel(remaining = seeds(10), state = AccessionState.Drying))
+      publisher.clear()
+
+      store.update(model.copy(state = AccessionState.InStorage))
+
+      publisher.assertEventPublished(
+          AccessionStateChangedEvent(
+              changedFrom = AccessionStateChangedEventValues(state = AccessionState.Drying),
+              changedTo = AccessionStateChangedEventValues(state = AccessionState.InStorage),
+              reason = "Accession has been edited",
+              accessionId = model.id!!,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
+    }
+  }
+
+  @Nested
+  inner class CheckIn {
+    @Test
+    fun `checkIn publishes AccessionStateChangedEvent`() {
+      val accessionId = create(accessionModel()).id!!
+      publisher.clear()
+
+      store.checkIn(accessionId)
+
+      publisher.assertEventPublished(
+          AccessionStateChangedEvent(
+              changedFrom =
+                  AccessionStateChangedEventValues(state = AccessionState.AwaitingCheckIn),
+              changedTo =
+                  AccessionStateChangedEventValues(state = AccessionState.AwaitingProcessing),
+              reason = "Accession has been checked in",
+              accessionId = accessionId,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
     }
   }
 
