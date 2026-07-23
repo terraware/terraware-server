@@ -14,6 +14,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
@@ -23,6 +24,7 @@ import java.time.Clock
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class WithdrawalStore(
@@ -30,6 +32,7 @@ class WithdrawalStore(
     private val clock: Clock,
     private val messages: Messages,
     private val parentStore: ParentStore,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   private val log = perClassLogger()
 
@@ -155,6 +158,8 @@ class WithdrawalStore(
 
     val organizationId =
         parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    val facilityId =
+        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
     // For any withdrawals where withdrawnByUserId is being changed, the current user must have
     // permission to read the user in question in the organization.
@@ -241,6 +246,23 @@ class WithdrawalStore(
             "Inserted withdrawal $newId for accession $accessionId with computed seed " +
                 "count ${withdrawal.withdrawn}"
         )
+
+        if (newId != null) {
+          eventPublisher.publishEvent(
+              WithdrawalCreatedEvent(
+                  purpose = withdrawal.purpose,
+                  date = withdrawal.date,
+                  withdrawnQuantity = withdrawal.withdrawn,
+                  batchId = withdrawal.batchId,
+                  notes = withdrawal.notes,
+                  staffResponsible = withdrawal.staffResponsible,
+                  withdrawalId = newId,
+                  accessionId = accessionId,
+                  facilityId = facilityId,
+                  organizationId = organizationId,
+              )
+          )
+        }
       }
 
       if (idsToDelete.isNotEmpty()) {
