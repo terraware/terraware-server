@@ -169,6 +169,7 @@ data class ProjectPayload(
     val name: String,
     val organizationId: OrganizationId,
     val phase: AcceleratorPhase?,
+    val speciesCheckedTime: Instant?,
 ) {
   constructor(
       model: ExistingProjectModel
@@ -184,6 +185,7 @@ data class ProjectPayload(
       name = model.name,
       organizationId = model.organizationId,
       phase = model.phase,
+      speciesCheckedTime = model.speciesCheckedTime,
   )
 }
 

@@ -102,6 +102,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
           timestampField("createdTime", ORGANIZATIONS.CREATED_TIME),
           idWrapperField("id", ORGANIZATIONS.ID) { OrganizationId(it) },
           textField("name", ORGANIZATIONS.NAME),
+          timestampField("speciesCheckedTime", ORGANIZATIONS.SPECIES_CHECKED_TIME),
           zoneIdField("timeZone", ORGANIZATIONS.TIME_ZONE),
       )
 

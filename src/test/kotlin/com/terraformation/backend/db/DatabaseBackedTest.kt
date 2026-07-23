@@ -922,6 +922,7 @@ abstract class DatabaseBackedTest {
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
       createdBy: UserId = inserted.userId,
+      speciesCheckedTime: Instant? = null,
       timeZone: ZoneId? = null,
   ): OrganizationId {
     return with(ORGANIZATIONS) {
@@ -935,6 +936,7 @@ abstract class DatabaseBackedTest {
           .set(NAME, name)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(SPECIES_CHECKED_TIME, speciesCheckedTime)
           .set(TIME_ZONE, timeZone)
           .returning(ID)
           .fetchOne(ID)!!
@@ -1012,6 +1014,7 @@ abstract class DatabaseBackedTest {
       phase: AcceleratorPhase? = null,
       botanicalCountryCode: String? = null,
       countryCode: String? = null,
+      speciesCheckedTime: Instant? = null,
   ): ProjectId {
     val row =
         ProjectsRow(
@@ -1025,6 +1028,7 @@ abstract class DatabaseBackedTest {
             name = name,
             organizationId = organizationId,
             phaseId = phase,
+            speciesCheckedTime = speciesCheckedTime,
         )
 
     projectsDao.insert(row)

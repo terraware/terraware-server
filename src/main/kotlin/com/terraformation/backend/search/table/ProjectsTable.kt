@@ -105,6 +105,7 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           timestampField("modifiedTime", PROJECTS.MODIFIED_TIME),
           textField("name", PROJECTS.NAME),
           enumField("phase", PROJECTS.PHASE_ID),
+          timestampField("speciesCheckedTime", PROJECTS.SPECIES_CHECKED_TIME),
       )
 
   override fun conditionForVisibility(): Condition {
