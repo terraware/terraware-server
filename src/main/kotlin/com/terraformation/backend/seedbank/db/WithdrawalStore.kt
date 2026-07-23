@@ -15,10 +15,13 @@ import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.time.Clock
 import org.jooq.DSLContext
@@ -274,7 +277,7 @@ class WithdrawalStore(
             .execute()
       }
 
-      idsToUpdate.forEach { withdrawalId ->
+      idsToUpdate.filterNotNull().forEach { withdrawalId ->
         val existing = existingById[withdrawalId]!!
         val desired = desiredById[withdrawalId]!!
 
@@ -306,6 +309,48 @@ class WithdrawalStore(
               .where(ID.eq(withdrawalId))
               .and(ACCESSION_ID.eq(accessionId))
               .execute()
+
+          val changedFrom =
+              WithdrawalUpdatedEventValues(
+                  date = existing.date.nullIfEquals(desired.date),
+                  withdrawnQuantity = existing.withdrawn.nullIfEquals(desired.withdrawn),
+                  purpose = existing.purpose.nullIfEquals(desired.purpose),
+                  destination = existing.destination.nullIfEquals(desired.destination),
+                  notes = existing.notes.nullIfEquals(desired.notes),
+                  staffResponsible =
+                      existing.staffResponsible.nullIfEquals(desired.staffResponsible),
+                  withdrawnByUserId = existing.withdrawnByUserId.nullIfEquals(withdrawnByUserId),
+              )
+          val changedTo =
+              WithdrawalUpdatedEventValues(
+                  date = desired.date.nullIfEquals(existing.date),
+                  withdrawnQuantity = desired.withdrawn.nullIfEquals(existing.withdrawn),
+                  purpose = desired.purpose.nullIfEquals(existing.purpose),
+                  destination = desired.destination.nullIfEquals(existing.destination),
+                  notes = desired.notes.nullIfEquals(existing.notes),
+                  staffResponsible =
+                      desired.staffResponsible.nullIfEquals(existing.staffResponsible),
+                  withdrawnByUserId = withdrawnByUserId.nullIfEquals(existing.withdrawnByUserId),
+              )
+
+          // The update path is also triggered by derived fields such as estimated
+          // count/weight that aren't represented in the event, so only publish when a
+          // user-meaningful field actually changed.
+          if (
+              changedFrom != WithdrawalUpdatedEventValues() ||
+                  changedTo != WithdrawalUpdatedEventValues()
+          ) {
+            eventPublisher.publishEvent(
+                WithdrawalUpdatedEvent(
+                    changedFrom = changedFrom,
+                    changedTo = changedTo,
+                    withdrawalId = withdrawalId,
+                    accessionId = accessionId,
+                    facilityId = facilityId,
+                    organizationId = organizationId,
+                )
+            )
+          }
         }
       }
     }
