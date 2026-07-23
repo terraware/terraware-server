@@ -43,6 +43,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
+import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
+import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
@@ -53,6 +55,7 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.seedbank.model.isV2Compatible
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Clock
@@ -547,6 +550,21 @@ class AccessionStore(
         throw DataAccessException("Unable to update accession $accessionId")
       }
 
+      val (changedFrom, changedTo) = accessionUpdatedEventValues(existing, accession)
+      if (
+          changedFrom != AccessionUpdatedEventValues() || changedTo != AccessionUpdatedEventValues()
+      ) {
+        eventPublisher.publishEvent(
+            AccessionUpdatedEvent(
+                changedFrom = changedFrom,
+                changedTo = changedTo,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            )
+        )
+      }
+
       if (
           accession.speciesId != null &&
               existing.speciesId != null &&
@@ -676,6 +694,80 @@ class AccessionStore(
               userId = userId,
           )
         }
+  }
+
+  private fun accessionUpdatedEventValues(
+      existing: AccessionModel,
+      updated: AccessionModel,
+  ): Pair<AccessionUpdatedEventValues, AccessionUpdatedEventValues> {
+    val changedFrom =
+        AccessionUpdatedEventValues(
+            bagNumbers = existing.bagNumbers.nullIfEquals(updated.bagNumbers),
+            collectedDate = existing.collectedDate.nullIfEquals(updated.collectedDate),
+            collectionSiteCity =
+                existing.collectionSiteCity.nullIfEquals(updated.collectionSiteCity),
+            collectionSiteCountryCode =
+                existing.collectionSiteCountryCode.nullIfEquals(updated.collectionSiteCountryCode),
+            collectionSiteCountrySubdivision =
+                existing.collectionSiteCountrySubdivision.nullIfEquals(
+                    updated.collectionSiteCountrySubdivision
+                ),
+            collectionSiteLandowner =
+                existing.collectionSiteLandowner.nullIfEquals(updated.collectionSiteLandowner),
+            collectionSiteName =
+                existing.collectionSiteName.nullIfEquals(updated.collectionSiteName),
+            collectionSiteNotes =
+                existing.collectionSiteNotes.nullIfEquals(updated.collectionSiteNotes),
+            collectionSource = existing.collectionSource.nullIfEquals(updated.collectionSource),
+            collectors = existing.collectors.nullIfEquals(updated.collectors),
+            dryingEndDate = existing.dryingEndDate.nullIfEquals(updated.dryingEndDate),
+            founderId = existing.founderId.nullIfEquals(updated.founderId),
+            geolocations = existing.geolocations.nullIfEquals(updated.geolocations),
+            numberOfTrees = existing.numberOfTrees.nullIfEquals(updated.numberOfTrees),
+            processingNotes = existing.processingNotes.nullIfEquals(updated.processingNotes),
+            projectId = existing.projectId.nullIfEquals(updated.projectId),
+            receivedDate = existing.receivedDate.nullIfEquals(updated.receivedDate),
+            speciesId = existing.speciesId.nullIfEquals(updated.speciesId),
+            subLocation = existing.subLocation.nullIfEquals(updated.subLocation),
+            subsetCount = existing.subsetCount.nullIfEquals(updated.subsetCount),
+            subsetWeightQuantity =
+                existing.subsetWeightQuantity.nullIfEquals(updated.subsetWeightQuantity),
+        )
+    val changedTo =
+        AccessionUpdatedEventValues(
+            bagNumbers = updated.bagNumbers.nullIfEquals(existing.bagNumbers),
+            collectedDate = updated.collectedDate.nullIfEquals(existing.collectedDate),
+            collectionSiteCity =
+                updated.collectionSiteCity.nullIfEquals(existing.collectionSiteCity),
+            collectionSiteCountryCode =
+                updated.collectionSiteCountryCode.nullIfEquals(existing.collectionSiteCountryCode),
+            collectionSiteCountrySubdivision =
+                updated.collectionSiteCountrySubdivision.nullIfEquals(
+                    existing.collectionSiteCountrySubdivision
+                ),
+            collectionSiteLandowner =
+                updated.collectionSiteLandowner.nullIfEquals(existing.collectionSiteLandowner),
+            collectionSiteName =
+                updated.collectionSiteName.nullIfEquals(existing.collectionSiteName),
+            collectionSiteNotes =
+                updated.collectionSiteNotes.nullIfEquals(existing.collectionSiteNotes),
+            collectionSource = updated.collectionSource.nullIfEquals(existing.collectionSource),
+            collectors = updated.collectors.nullIfEquals(existing.collectors),
+            dryingEndDate = updated.dryingEndDate.nullIfEquals(existing.dryingEndDate),
+            founderId = updated.founderId.nullIfEquals(existing.founderId),
+            geolocations = updated.geolocations.nullIfEquals(existing.geolocations),
+            numberOfTrees = updated.numberOfTrees.nullIfEquals(existing.numberOfTrees),
+            processingNotes = updated.processingNotes.nullIfEquals(existing.processingNotes),
+            projectId = updated.projectId.nullIfEquals(existing.projectId),
+            receivedDate = updated.receivedDate.nullIfEquals(existing.receivedDate),
+            speciesId = updated.speciesId.nullIfEquals(existing.speciesId),
+            subLocation = updated.subLocation.nullIfEquals(existing.subLocation),
+            subsetCount = updated.subsetCount.nullIfEquals(existing.subsetCount),
+            subsetWeightQuantity =
+                updated.subsetWeightQuantity.nullIfEquals(existing.subsetWeightQuantity),
+        )
+
+    return changedFrom to changedTo
   }
 
   /**
@@ -820,14 +912,40 @@ class AccessionStore(
       updateAccessionProject(accessionIds.first())
     }
 
-    with(ACCESSIONS) {
-      dslContext
-          .update(ACCESSIONS)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .set(PROJECT_ID, projectId)
-          .where(ID.`in`(accessionIds))
-          .execute()
+    dslContext.transaction { _ ->
+      val existingProjects =
+          with(ACCESSIONS) {
+            dslContext
+                .select(ID, FACILITY_ID, PROJECT_ID)
+                .from(ACCESSIONS)
+                .where(ID.`in`(accessionIds))
+                .fetch()
+          }
+
+      with(ACCESSIONS) {
+        dslContext
+            .update(ACCESSIONS)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(PROJECT_ID, projectId)
+            .where(ID.`in`(accessionIds))
+            .execute()
+      }
+
+      existingProjects.forEach { record ->
+        val oldProjectId = record[ACCESSIONS.PROJECT_ID]
+        if (oldProjectId != projectId) {
+          eventPublisher.publishEvent(
+              AccessionUpdatedEvent(
+                  changedFrom = AccessionUpdatedEventValues(projectId = oldProjectId),
+                  changedTo = AccessionUpdatedEventValues(projectId = projectId),
+                  accessionId = record[ACCESSIONS.ID]!!,
+                  facilityId = record[ACCESSIONS.FACILITY_ID]!!,
+                  organizationId = projectOrganizationId,
+              )
+          )
+        }
+      }
     }
   }
 

@@ -1,7 +1,11 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
+import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -38,6 +42,90 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
           )
       )
       publisher.assertEventNotPublished<AccessionCreatedEvent>()
+    }
+  }
+
+  @Nested
+  inner class Update {
+    @Test
+    fun `update publishes AccessionUpdatedEvent carrying only the changed field`() {
+      val model =
+          create(accessionModel(processingNotes = "old notes", state = AccessionState.Processing))
+      publisher.clear()
+
+      store.update(model.copy(processingNotes = "new notes"))
+
+      publisher.assertEventPublished(
+          AccessionUpdatedEvent(
+              changedFrom = AccessionUpdatedEventValues(processingNotes = "old notes"),
+              changedTo = AccessionUpdatedEventValues(processingNotes = "new notes"),
+              accessionId = model.id!!,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
+    }
+
+    @Test
+    fun `update publishes AccessionUpdatedEvent when a previously null field becomes populated`() {
+      val model = create(accessionModel(processingNotes = null, state = AccessionState.Processing))
+      publisher.clear()
+
+      store.update(model.copy(processingNotes = "notes"))
+
+      publisher.assertEventPublished(
+          AccessionUpdatedEvent(
+              changedFrom = AccessionUpdatedEventValues(processingNotes = null),
+              changedTo = AccessionUpdatedEventValues(processingNotes = "notes"),
+              accessionId = model.id!!,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
+    }
+
+    @Test
+    fun `update does not publish AccessionUpdatedEvent when no tracked field changed`() {
+      val model =
+          create(accessionModel(processingNotes = "notes", state = AccessionState.Processing))
+      publisher.clear()
+
+      store.update(model)
+
+      publisher.assertEventNotPublished<AccessionUpdatedEvent>()
+    }
+  }
+
+  @Nested
+  inner class AssignProject {
+    @Test
+    fun `assignProject publishes AccessionUpdatedEvent carrying only the project change`() {
+      val projectId: ProjectId = insertProject()
+      val accessionId = create(accessionModel()).id!!
+      publisher.clear()
+
+      store.assignProject(projectId, listOf(accessionId))
+
+      publisher.assertEventPublished(
+          AccessionUpdatedEvent(
+              changedFrom = AccessionUpdatedEventValues(projectId = null),
+              changedTo = AccessionUpdatedEventValues(projectId = projectId),
+              accessionId = accessionId,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
+    }
+
+    @Test
+    fun `assignProject does not publish for accessions whose project did not change`() {
+      val projectId: ProjectId = insertProject()
+      val model = create(accessionModel(projectId = projectId))
+      publisher.clear()
+
+      store.assignProject(projectId, listOf(model.id!!))
+
+      publisher.assertEventNotPublished<AccessionUpdatedEvent>()
     }
   }
 }
