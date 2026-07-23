@@ -189,6 +189,11 @@ com.terraformation.backend.seedbank.event.AccessionPhotoAddedEventV1/facilityId:
 com.terraformation.backend.seedbank.event.AccessionPhotoAddedEventV1/fileId: FileId
 com.terraformation.backend.seedbank.event.AccessionPhotoAddedEventV1/filename: String
 com.terraformation.backend.seedbank.event.AccessionPhotoAddedEventV1/organizationId: OrganizationId
+com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEventV1/accessionId: AccessionId
+com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEventV1/facilityId: FacilityId
+com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEventV1/fileId: FileId
+com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEventV1/filename: String
+com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEventV1/organizationId: OrganizationId
 com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEventV1/accessionId: AccessionId
 com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEventV1/facilityId: FacilityId
 com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEventV1/fileId: FileId
