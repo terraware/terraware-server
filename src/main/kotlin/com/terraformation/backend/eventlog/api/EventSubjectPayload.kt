@@ -47,6 +47,7 @@ import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
@@ -847,9 +848,12 @@ data class WithdrawalSubjectPayload(
         event: WithdrawalPersistentEvent,
         context: EventLogPayloadContext,
     ): WithdrawalSubjectPayload {
+      val deleteEvent =
+          context.firstOrNull<WithdrawalDeletedEvent> { it.withdrawalId == event.withdrawalId }
+
       return WithdrawalSubjectPayload(
           accessionId = event.accessionId,
-          deleted = null,
+          deleted = if (deleteEvent != null) true else null,
           facilityId = event.facilityId,
           fullText = context.subjectFullText<WithdrawalSubjectPayload>(event.withdrawalId),
           shortText = context.subjectShortText<WithdrawalSubjectPayload>(),

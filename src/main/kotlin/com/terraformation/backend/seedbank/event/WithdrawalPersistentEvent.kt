@@ -8,6 +8,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
+import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.i18n.Messages
@@ -88,3 +89,13 @@ data class WithdrawalUpdatedEventV1(
 typealias WithdrawalUpdatedEvent = WithdrawalUpdatedEventV1
 
 typealias WithdrawalUpdatedEventValues = WithdrawalUpdatedEventV1.Values
+
+/** Published when a withdrawal is deleted from an accession. */
+data class WithdrawalDeletedEventV1(
+    override val withdrawalId: WithdrawalId,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : EntityDeletedPersistentEvent, WithdrawalPersistentEvent
+
+typealias WithdrawalDeletedEvent = WithdrawalDeletedEventV1

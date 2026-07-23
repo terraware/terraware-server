@@ -15,6 +15,7 @@ import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
@@ -275,6 +276,17 @@ class WithdrawalStore(
             .where(ID.`in`(idsToDelete))
             .and(ACCESSION_ID.eq(accessionId))
             .execute()
+
+        idsToDelete.filterNotNull().forEach { withdrawalId ->
+          eventPublisher.publishEvent(
+              WithdrawalDeletedEvent(
+                  withdrawalId = withdrawalId,
+                  accessionId = accessionId,
+                  facilityId = facilityId,
+                  organizationId = organizationId,
+              )
+          )
+        }
       }
 
       idsToUpdate.filterNotNull().forEach { withdrawalId ->

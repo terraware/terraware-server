@@ -22,6 +22,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
+import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.grams
@@ -829,5 +830,31 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     store.updateWithdrawals(accessionId, afterInsert, afterInsert)
 
     eventPublisher.assertEventNotPublished<WithdrawalUpdatedEvent>()
+  }
+
+  @Test
+  fun `deleting a withdrawal publishes WithdrawalDeletedEvent`() {
+    val initial =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 1, 1),
+            purpose = WithdrawalPurpose.Other,
+            withdrawn = grams(1),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+    val withdrawalId = afterInsert[0].id!!
+    eventPublisher.clear()
+
+    store.updateWithdrawals(accessionId, afterInsert, emptyList())
+
+    eventPublisher.assertEventPublished(
+        WithdrawalDeletedEvent(
+            withdrawalId = withdrawalId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
   }
 }
