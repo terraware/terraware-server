@@ -62,6 +62,7 @@ spring:
       exception-override-class-name: "software.amazon.jdbc.util.HikariCPSQLException"
 
   flyway:
+    outOfOrder: true
     placeholders:
       jsonColumnType: "JSONB"
       uuidColumnType: "UUID"
