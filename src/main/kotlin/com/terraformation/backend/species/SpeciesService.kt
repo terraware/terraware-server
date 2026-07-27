@@ -91,10 +91,12 @@ class SpeciesService(
 
       val updatedRow = speciesStore.updateSpecies(modelWithSources)
       speciesChecker.recheckSpecies(existingRow, updatedRow)
+      resetNativitiesIfRenamed(existingRow, updatedRow)
+      val checkedRow = speciesStore.fetchSpeciesById(updatedRow.id)
 
-      eventPublisher.publishEvent(SpeciesEditedEvent(species = updatedRow))
+      eventPublisher.publishEvent(SpeciesEditedEvent(species = checkedRow))
 
-      updatedRow
+      checkedRow
     }
   }
 
@@ -137,7 +139,10 @@ class SpeciesService(
     return try {
       dslContext.transactionResult { _ ->
         speciesStore.deleteProblem(problemId)
-        speciesStore.updateSpecies(freshenNameSources(existingSpecies, correctedSpecies))
+        val updatedSpecies =
+            speciesStore.updateSpecies(freshenNameSources(existingSpecies, correctedSpecies))
+        resetNativitiesIfRenamed(existingSpecies, updatedSpecies)
+        speciesStore.fetchSpeciesById(updatedSpecies.id)
       }
     } catch (e: DuplicateKeyException) {
       if (fieldId == SpeciesProblemField.ScientificName) {
@@ -160,6 +165,15 @@ class SpeciesService(
             event.changedFrom.countryCode != event.changedTo.countryCode
     ) {
       projectSpeciesStore.recalculateNativities(event.projectId, autoAccept = true)
+    }
+  }
+
+  private fun resetNativitiesIfRenamed(
+      changedFrom: ExistingSpeciesModel,
+      changedTo: ExistingSpeciesModel,
+  ) {
+    if (changedFrom.scientificName != changedTo.scientificName) {
+      projectSpeciesStore.resetNativities(changedTo.id)
     }
   }
 

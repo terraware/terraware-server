@@ -88,6 +88,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private val gbifImportedDate = LocalDate.of(2026, 2, 2)
+  private val griisDate = LocalDate.of(2026, 1, 2)
 
   private lateinit var organizationId: OrganizationId
 
@@ -161,11 +162,8 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
       every { user.canReadProject(any()) } returns true
 
       val botanicalCountryCode = insertBotanicalCountry()
-      val griisDate = LocalDate.of(2026, 1, 2)
       val projectId = insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "AR")
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
-      insertGriisResource(countryCode = "AR")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+      insertGriisInvasiveListing()
 
       val speciesId =
           service.createSpecies(
@@ -195,10 +193,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           insertOrganization(botanicalCountryCode = botanicalCountryCode, countryCode = "AR")
       insertProject()
 
-      val griisDate = LocalDate.of(2026, 1, 2)
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
-      insertGriisResource(countryCode = "AR")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+      insertGriisInvasiveListing()
 
       val speciesId =
           service.createSpecies(
@@ -295,7 +290,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not modify existing name sources if names have not changed`() {
+    fun `does not modify existing name sources or nativity if names have not changed`() {
       val speciesId =
           insertSpecies(
               scientificName = "Scientific name",
@@ -311,6 +306,11 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           commonNames = listOf("Common" to "en"),
           familyName = "Family",
       )
+
+      insertProject()
+      insertProjectSpecies(speciesId = speciesId, calculatedNativity = SpeciesNativity.Invasive)
+
+      val projectSpeciesBefore = dslContext.fetch(PROJECT_SPECIES)
 
       val originalModel = speciesStore.fetchSpeciesById(speciesId)
       val updatedModel = originalModel.copy(localUsesKnown = "Edited value")
@@ -329,10 +329,13 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           speciesModel.familyNameSource,
           "Family name source",
       )
+      assertTableEquals(projectSpeciesBefore)
     }
 
     @Test
-    fun `recalculates name sources if scientific name has changed`() {
+    fun `recalculates name sources and nativity if scientific name has changed`() {
+      // The nativity recalculation logic is tested in ProjectSpeciesStoreTest; this is just to make
+      // sure a name change triggers a recalculation at all.
       val speciesId =
           insertSpecies(
               scientificName = "Old name",
@@ -347,6 +350,16 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           scientificName = "New name",
           commonNames = listOf("Common name" to "en"),
           familyName = "Family",
+      )
+
+      val botanicalCountryCode = insertBotanicalCountry()
+      insertGriisInvasiveListing(scientificName = "New name")
+
+      val projectId = insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "AR")
+      insertProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId,
+          calculatedNativity = SpeciesNativity.Unknown,
       )
 
       val originalModel = speciesStore.fetchSpeciesById(speciesId)
@@ -365,6 +378,16 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           SpeciesDataSourceModel(gbifImportedDate, ExternalDatasetType.GBIF),
           speciesModel.familyNameSource,
           "Family name source",
+      )
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              pendingNativityDatasetDate = griisDate,
+              pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              pendingNativityId = SpeciesNativity.Invasive,
+              projectId = projectId,
+              speciesId = speciesId,
+          )
       )
     }
   }
@@ -560,5 +583,12 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       assertTableEquals(before)
     }
+  }
+
+  /** Publishes a GRIIS listing of a species as invasive in Argentina. */
+  private fun insertGriisInvasiveListing(scientificName: String = "Scientific name") {
+    insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+    insertGriisResource(countryCode = "AR")
+    insertGriisTaxon(scientificName = scientificName, isInvasive = true)
   }
 }
