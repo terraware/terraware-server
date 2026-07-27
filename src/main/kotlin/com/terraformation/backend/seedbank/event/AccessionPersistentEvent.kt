@@ -9,6 +9,7 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
+import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.i18n.Messages
@@ -234,3 +235,12 @@ data class AccessionQuantityUpdatedEventV1(
 typealias AccessionQuantityUpdatedEvent = AccessionQuantityUpdatedEventV1
 
 typealias AccessionQuantityUpdatedEventValues = AccessionQuantityUpdatedEventV1.Values
+
+/** Published when an accession is deleted. */
+data class AccessionDeletedEventV1(
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : EntityDeletedPersistentEvent, AccessionPersistentEvent
+
+typealias AccessionDeletedEvent = AccessionDeletedEventV1
