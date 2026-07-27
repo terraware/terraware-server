@@ -1,3 +1,4 @@
+4f659eb1 Convert CSV line endings to CRLF in build process (#4803)
 90ef2f59 SW-7604 Backfill accession event log (#4802)
 386442d5 SW-7604 Accession photo deleted event log (#4801)
 333bf121 SW-7604 Accession photo replaced event log (#4800)
