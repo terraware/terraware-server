@@ -9,7 +9,10 @@ import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
+import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
+import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import java.time.LocalDate
 
 sealed interface ViabilityTestPersistentEvent : PersistentEvent {
@@ -35,3 +38,94 @@ data class ViabilityTestCreatedEventV1(
 ) : EntityCreatedPersistentEvent, ViabilityTestPersistentEvent
 
 typealias ViabilityTestCreatedEvent = ViabilityTestCreatedEventV1
+
+/**
+ * Published when the user edits an existing viability test, including its germination recordings.
+ */
+data class ViabilityTestUpdatedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val viabilityTestId: ViabilityTestId,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : FieldsUpdatedPersistentEvent, ViabilityTestPersistentEvent {
+  data class Values(
+      val endDate: LocalDate? = null,
+      val notes: String? = null,
+      val seedsCompromised: Int? = null,
+      val seedsEmpty: Int? = null,
+      val seedsFilled: Int? = null,
+      val seedsTested: Int? = null,
+      val seedType: ViabilityTestSeedType? = null,
+      val startDate: LocalDate? = null,
+      val substrate: ViabilityTestSubstrate? = null,
+      val totalSeedsGerminated: Int? = null,
+      val treatment: SeedTreatment? = null,
+      val viabilityPercent: Int? = null,
+  )
+
+  override fun listUpdatedFields(messages: Messages) =
+      listOfNotNull(
+          createUpdatedField(
+              "endDate",
+              changedFrom.endDate?.toString(),
+              changedTo.endDate?.toString(),
+          ),
+          createUpdatedField("notes", changedFrom.notes, changedTo.notes),
+          createUpdatedField(
+              "seedsCompromised",
+              changedFrom.seedsCompromised?.toString(),
+              changedTo.seedsCompromised?.toString(),
+          ),
+          createUpdatedField(
+              "seedsEmpty",
+              changedFrom.seedsEmpty?.toString(),
+              changedTo.seedsEmpty?.toString(),
+          ),
+          createUpdatedField(
+              "seedsFilled",
+              changedFrom.seedsFilled?.toString(),
+              changedTo.seedsFilled?.toString(),
+          ),
+          createUpdatedField(
+              "seedsTested",
+              changedFrom.seedsTested?.toString(),
+              changedTo.seedsTested?.toString(),
+          ),
+          createUpdatedField(
+              "seedType",
+              changedFrom.seedType?.getDisplayName(currentLocale()),
+              changedTo.seedType?.getDisplayName(currentLocale()),
+          ),
+          createUpdatedField(
+              "startDate",
+              changedFrom.startDate?.toString(),
+              changedTo.startDate?.toString(),
+          ),
+          createUpdatedField(
+              "substrate",
+              changedFrom.substrate?.getDisplayName(currentLocale()),
+              changedTo.substrate?.getDisplayName(currentLocale()),
+          ),
+          createUpdatedField(
+              "totalSeedsGerminated",
+              changedFrom.totalSeedsGerminated?.toString(),
+              changedTo.totalSeedsGerminated?.toString(),
+          ),
+          createUpdatedField(
+              "treatment",
+              changedFrom.treatment?.getDisplayName(currentLocale()),
+              changedTo.treatment?.getDisplayName(currentLocale()),
+          ),
+          createUpdatedField(
+              "viabilityPercent",
+              changedFrom.viabilityPercent?.toString(),
+              changedTo.viabilityPercent?.toString(),
+          ),
+      )
+}
+
+typealias ViabilityTestUpdatedEvent = ViabilityTestUpdatedEventV1
+
+typealias ViabilityTestUpdatedEventValues = ViabilityTestUpdatedEventV1.Values
