@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
@@ -12,8 +13,12 @@ import com.terraformation.backend.seedbank.event.AccessionStateChangedEventValue
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEvent
 import com.terraformation.backend.seedbank.model.AccessionUpdateContext
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.seeds
+import java.time.LocalDate
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -217,6 +222,50 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
       store.assignProject(projectId, listOf(model.id!!))
 
       publisher.assertEventNotPublished<AccessionUpdatedEvent>()
+    }
+  }
+
+  @Nested
+  inner class ViabilityTests {
+    @Test
+    fun `adding a viability test publishes ViabilityTestCreatedEvent`() {
+      val startDate = LocalDate.of(2021, 4, 1)
+      val initial = create().andUpdate { it.copy(remaining = seeds(100)) }
+      publisher.clear()
+
+      val updated = initial.andUpdate {
+        it.addViabilityTest(
+            ViabilityTestModel(
+                seedsTested = 5,
+                startDate = startDate,
+                testType = ViabilityTestType.Lab,
+            )
+        )
+      }
+      val test = updated.viabilityTests[0]
+
+      publisher.assertEventPublished { event ->
+        event is ViabilityTestCreatedEvent &&
+            event.viabilityTestId == test.id &&
+            event.testType == ViabilityTestType.Lab &&
+            event.seedsTested == 5 &&
+            event.startDate == startDate &&
+            event.accessionId == initial.id &&
+            event.facilityId == facilityId &&
+            event.organizationId == organizationId
+      }
+    }
+
+    @Test
+    fun `attaching a viability test to a new withdrawal publishes exactly one ViabilityTestCreatedEvent`() {
+      val createdEvents = mutableListOf<ViabilityTestCreatedEvent>()
+      publisher.register<ViabilityTestCreatedEvent> { createdEvents.add(it) }
+
+      val accession = createAccessionWithViabilityTest()
+      val test = accession.viabilityTests[0]
+
+      assertEquals(1, createdEvents.size, "Number of ViabilityTestCreatedEvent published")
+      assertEquals(test.id, createdEvents.first().viabilityTestId, "Viability test ID")
     }
   }
 }

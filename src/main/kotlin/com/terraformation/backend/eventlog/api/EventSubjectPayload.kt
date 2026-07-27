@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -47,6 +48,7 @@ import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
 import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
@@ -834,6 +836,32 @@ data class RecordedTreeSubjectPayload(
   }
 }
 
+@JsonTypeName("ViabilityTest")
+data class ViabilityTestSubjectPayload(
+    val accessionId: AccessionId,
+    override val deleted: Boolean?,
+    val facilityId: FacilityId,
+    override val fullText: String,
+    override val shortText: String,
+    val viabilityTestId: ViabilityTestId,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: ViabilityTestPersistentEvent,
+        context: EventLogPayloadContext,
+    ): ViabilityTestSubjectPayload {
+      return ViabilityTestSubjectPayload(
+          accessionId = event.accessionId,
+          deleted = null,
+          facilityId = event.facilityId,
+          fullText = context.subjectFullText<ViabilityTestSubjectPayload>(event.viabilityTestId),
+          shortText = context.subjectShortText<ViabilityTestSubjectPayload>(),
+          viabilityTestId = event.viabilityTestId,
+      )
+    }
+  }
+}
+
 @JsonTypeName("Withdrawal")
 data class WithdrawalSubjectPayload(
     val accessionId: AccessionId,
@@ -890,5 +918,6 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingSeasonWithdrawal(PlantingSeasonWithdrawalCreatedEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
+  ViabilityTest(ViabilityTestPersistentEvent::class),
   Withdrawal(WithdrawalPersistentEvent::class),
 }

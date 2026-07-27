@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -10,6 +12,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
+import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEvent
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import jakarta.inject.Named
@@ -17,9 +20,14 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
-class ViabilityTestStore(private val dslContext: DSLContext) {
+class ViabilityTestStore(
+    private val dslContext: DSLContext,
+    private val parentStore: ParentStore,
+    private val eventPublisher: ApplicationEventPublisher,
+) {
   fun fetchOneById(viabilityTestId: ViabilityTestId): ViabilityTestModel {
     requirePermissions { readViabilityTest(viabilityTestId) }
 
@@ -181,6 +189,27 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
         }
 
     calculatedTest.testResults?.forEach { insertTestResult(testId, it) }
+
+    val facilityId =
+        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    val organizationId =
+        parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+
+    eventPublisher.publishEvent(
+        ViabilityTestCreatedEvent(
+            testType = calculatedTest.testType,
+            seedsTested = calculatedTest.seedsTested,
+            substrate = calculatedTest.substrate,
+            treatment = calculatedTest.treatment,
+            startDate = calculatedTest.startDate,
+            endDate = calculatedTest.endDate,
+            seedType = calculatedTest.seedType,
+            viabilityTestId = testId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
 
     return calculatedTest.copy(id = testId)
   }
