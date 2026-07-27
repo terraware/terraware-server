@@ -21,6 +21,7 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
 import jakarta.inject.Named
 import java.io.IOException
@@ -150,11 +151,25 @@ class PhotoRepository(
   fun deletePhoto(accessionId: AccessionId, filename: String) {
     requirePermissions { updateAccession(accessionId) }
 
+    val facilityId =
+        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    val organizationId =
+        parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+
     fetchFilesRows(accessionId, filename)
         .mapNotNull { it.id }
         .forEach { fileId ->
           accessionPhotosDao.deleteById(fileId)
           eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
+          eventPublisher.publishEvent(
+              AccessionPhotoDeletedEvent(
+                  filename = filename,
+                  fileId = fileId,
+                  accessionId = accessionId,
+                  facilityId = facilityId,
+                  organizationId = organizationId,
+              )
+          )
         }
   }
 

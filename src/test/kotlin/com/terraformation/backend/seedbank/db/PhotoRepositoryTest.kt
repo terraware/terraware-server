@@ -26,6 +26,7 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
+import com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoPersistentEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
 import io.mockk.Runs
@@ -243,7 +244,18 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     repository.deletePhoto(accessionId, "1.jpg")
 
-    eventPublisher.assertExactEventsPublished(setOf(FileReferenceDeletedEvent(onePixelFileId)))
+    eventPublisher.assertExactEventsPublished(
+        setOf(
+            FileReferenceDeletedEvent(onePixelFileId),
+            AccessionPhotoDeletedEvent(
+                filename = "1.jpg",
+                fileId = onePixelFileId,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+    )
     assertEquals(
         listOf(AccessionPhotosRow(accessionId, sixPixelFileId)),
         accessionPhotosDao.findAll(),
@@ -287,6 +299,26 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
         )
     )
     eventPublisher.assertEventNotPublished<AccessionPhotoAddedEvent>()
+  }
+
+  @Test
+  fun `deletePhoto publishes AccessionPhotoDeletedEvent`() {
+    every { user.canUpdateAccession(any()) } returns true
+
+    val fileId = repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
+    eventPublisher.clear()
+
+    repository.deletePhoto(accessionId, filename)
+
+    eventPublisher.assertEventPublished(
+        AccessionPhotoDeletedEvent(
+            filename = filename,
+            fileId = fileId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
   }
 
   @Test

@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
+import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 
 sealed interface AccessionPhotoPersistentEvent : PersistentEvent {
@@ -40,3 +41,14 @@ data class AccessionPhotoReplacedEventV1(
 ) : AccessionPhotoPersistentEvent
 
 typealias AccessionPhotoReplacedEvent = AccessionPhotoReplacedEventV1
+
+/** Published when a photo is explicitly deleted from an accession. */
+data class AccessionPhotoDeletedEventV1(
+    val filename: String,
+    override val fileId: FileId,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : EntityDeletedPersistentEvent, AccessionPhotoPersistentEvent
+
+typealias AccessionPhotoDeletedEvent = AccessionPhotoDeletedEventV1
