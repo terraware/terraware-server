@@ -31,7 +31,7 @@ internal class BatchCsvValidatorTest {
   fun `accepts well-formed row`() {
     assertValidationResults(
         header +
-            "\nScientific name,Common name,1,2,3,2022-01-23,\"Valid Location\n  Valid Location 2 \""
+            "Scientific name,Common name,1,2,3,2022-01-23,\"Valid Location\n  Valid Location 2 \""
     )
   }
 
@@ -89,7 +89,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects row with missing or invalid date`() {
     assertValidationResults(
-        "$header\n" +
+        header +
             "Scientific name,,0,1,2,,\n" +
             "Scientific name,,0,1,2,Jan 18,\n" +
             "Scientific name,,0,1,2,2023-01-02,",
@@ -128,7 +128,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects rows with invalid scientific names`() {
     assertValidationResults(
-        "$header\n" +
+        header +
             "This name is way too long,,0,1,2,2022-01-01,\n" +
             "Short,,0,1,2,2022-01-01,\n" +
             "Bad character!,,0,1,2,2022-01-01,",
@@ -167,7 +167,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects rows with invalid seedling counts`() {
     assertValidationResults(
-        "$header\n" +
+        header +
             "Scientific name,,A,1,1,2022-01-01,\n" +
             "Scientific name,,-1,1,1,2022-01-01,\n" +
             "Scientific name,,1.5,1,1,2022-01-01,\n" +
@@ -266,7 +266,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects row with nonexistent sub-location`() {
     assertValidationResults(
-        "$header\nScientific name,,0,1,2,2021-02-03,Bogus Location",
+        "${header}Scientific name,,0,1,2,2021-02-03,Bogus Location",
         errors =
             setOf(
                 UploadProblemsRow(
@@ -286,7 +286,7 @@ internal class BatchCsvValidatorTest {
   fun `returns localized field names in problem data`() {
     Locales.GIBBERISH.use {
       assertValidationResults(
-          "$header\nThis name is way too long,,0,1,,2022-01-01,\n",
+          "${header}This name is way too long,,0,1,,2022-01-01,\n",
           setOf(
               UploadProblemsRow(
                   field = "Species (Scientific Name)".toGibberish(),
@@ -305,7 +305,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `accepts localized number formatting`() {
     Locales.GIBBERISH.use {
-      assertValidationResults("$header\nScientific name,,0,123&456,,2022-01-01,\n")
+      assertValidationResults("${header}Scientific name,,0,123&456,,2022-01-01,\n")
     }
   }
 
