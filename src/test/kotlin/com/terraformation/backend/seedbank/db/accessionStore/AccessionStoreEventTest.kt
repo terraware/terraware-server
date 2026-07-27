@@ -14,6 +14,7 @@ import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestDeletedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.model.AccessionUpdateContext
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
@@ -363,6 +364,24 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
             event.changedFrom.viabilityPercent == null &&
             event.changedTo.viabilityPercent == null
       }
+    }
+
+    @Test
+    fun `removing a viability test publishes ViabilityTestDeletedEvent`() {
+      val initial = createAccessionWithViabilityTest()
+      val testId = initial.viabilityTests[0].id!!
+      publisher.clear()
+
+      store.updateAndFetch(initial.copy(viabilityTests = emptyList()))
+
+      publisher.assertEventPublished(
+          ViabilityTestDeletedEvent(
+              viabilityTestId = testId,
+              accessionId = initial.id!!,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
     }
   }
 }
