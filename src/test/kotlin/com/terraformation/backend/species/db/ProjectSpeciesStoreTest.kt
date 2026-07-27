@@ -42,6 +42,9 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var projectId: ProjectId
   private lateinit var speciesId: SpeciesId
 
+  private val griisDate = LocalDate.of(2026, 1, 2)
+  private val wcvpDate = LocalDate.of(2026, 2, 3)
+
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
@@ -63,16 +66,12 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `uses project locations to calculate species nativity`() {
+    fun `uses project locations to calculate pending species nativity`() {
       val botanicalCountryCode1 = insertBotanicalCountry()
       val botanicalCountryCode2 = insertBotanicalCountry()
 
-      val griisDate = LocalDate.of(2026, 1, 2)
-      val wcvpDate = LocalDate.of(2026, 2, 3)
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+      insertGriisInvasiveListing()
       insertExternalDatasetImport(type = ExternalDatasetType.WCVP, lastPublicationDate = wcvpDate)
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
       insertWcvpTaxon(scientificName = "Scientific name")
       insertWcvpDistribution(
           botanicalCountryCode = botanicalCountryCode2,
@@ -95,46 +94,32 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   organizationId = organizationId,
                   projectId = projectId1,
                   speciesId = speciesId,
-                  calculatedNativityId = SpeciesNativity.Invasive,
-                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
-                  calculatedNativityDatasetDate = griisDate,
+                  pendingNativityId = SpeciesNativity.Invasive,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  pendingNativityDatasetDate = griisDate,
               ),
               ProjectSpeciesRecord(
                   organizationId = organizationId,
                   projectId = projectId2,
                   speciesId = speciesId,
-                  calculatedNativityId = SpeciesNativity.Introduced,
-                  calculatedNativityDatasetTypeId = ExternalDatasetType.WCVP,
-                  calculatedNativityDatasetDate = wcvpDate,
+                  pendingNativityId = SpeciesNativity.Introduced,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.WCVP,
+                  pendingNativityDatasetDate = wcvpDate,
               ),
               ProjectSpeciesRecord(
                   organizationId = organizationId,
                   projectId = projectId3,
                   speciesId = speciesId,
-                  calculatedNativityId = SpeciesNativity.Unknown,
+                  pendingNativityId = SpeciesNativity.Unknown,
               ),
           )
       )
     }
 
     @Test
-    fun `uses organization location to calculate species nativity if only one project`() {
-      insertBotanicalCountry()
-
-      dslContext
-          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
-          .apply {
-            botanicalCountryCode = inserted.botanicalCountryCode
-            countryCode = "KE"
-          }
-          .update()
-
-      insertExternalDatasetImport(
-          type = ExternalDatasetType.GRIIS,
-          lastPublicationDate = LocalDate.of(2026, 1, 2),
-      )
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+    fun `uses organization location to calculate pending species nativity if only one project`() {
+      setOrganizationLocation()
+      insertGriisInvasiveListing()
 
       store.assignProjects(mapOf(speciesId to setOf(projectId)))
 
@@ -143,31 +128,17 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               organizationId = organizationId,
               projectId = projectId,
               speciesId = speciesId,
-              calculatedNativityId = SpeciesNativity.Invasive,
-              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
-              calculatedNativityDatasetDate = LocalDate.of(2026, 1, 2),
+              pendingNativityId = SpeciesNativity.Invasive,
+              pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              pendingNativityDatasetDate = griisDate,
           )
       )
     }
 
     @Test
-    fun `does not use organization location to calculate species nativity if multiple projects`() {
-      insertBotanicalCountry()
-
-      dslContext
-          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
-          .apply {
-            botanicalCountryCode = inserted.botanicalCountryCode
-            countryCode = "KE"
-          }
-          .update()
-
-      insertExternalDatasetImport(
-          type = ExternalDatasetType.GRIIS,
-          lastPublicationDate = LocalDate.of(2026, 1, 2),
-      )
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+    fun `does not use organization location to calculate pending nativity if multiple projects`() {
+      setOrganizationLocation()
+      insertGriisInvasiveListing()
 
       insertProject()
 
@@ -349,22 +320,12 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class RecalculateNativities {
+  inner class RecalculateNativitiesForProject {
     @Test
-    fun `recalculates nativities for project species`() {
+    fun `accepts recalculated nativities when autoAccept is set`() {
       val botanicalCountryCode = insertBotanicalCountry()
-      val griisDate = LocalDate.of(2026, 1, 2)
-      val wcvpDate = LocalDate.of(2026, 2, 3)
-      insertExternalDatasetImport(
-          type = ExternalDatasetType.GRIIS,
-          lastPublicationDate = griisDate,
-      )
-      insertExternalDatasetImport(
-          type = ExternalDatasetType.WCVP,
-          lastPublicationDate = wcvpDate,
-      )
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+      insertGriisInvasiveListing()
+      insertExternalDatasetImport(type = ExternalDatasetType.WCVP, lastPublicationDate = wcvpDate)
 
       val wcvpSpeciesId = insertSpecies(scientificName = "Other name")
       insertWcvpTaxon(scientificName = "Other name")
@@ -387,12 +348,13 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           calculatedNativity = SpeciesNativity.Native,
           overriddenNativityId = SpeciesNativity.Introduced,
       )
+      // A species whose only existing nativity is a pending one should get an accepted nativity.
       insertProjectSpecies(
           speciesId = wcvpSpeciesId,
-          calculatedNativity = SpeciesNativity.Native,
+          pendingNativity = SpeciesNativity.Native,
       )
 
-      store.recalculateNativities(locatedProjectId)
+      store.recalculateNativities(locatedProjectId, autoAccept = true)
 
       assertTableEquals(
           listOf(
@@ -430,6 +392,53 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `leaves recalculated nativities pending by default`() {
+      val botanicalCountryCode = insertBotanicalCountry()
+      insertGriisInvasiveListing()
+
+      val locatedProjectId =
+          insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "KE")
+      insertProjectSpecies(projectId = locatedProjectId, speciesId = speciesId)
+
+      val otherSpeciesId = insertSpecies(scientificName = "Scientific name 2")
+      insertProjectSpecies(
+          projectId = locatedProjectId,
+          speciesId = otherSpeciesId,
+          calculatedNativity = SpeciesNativity.Native,
+          overriddenNativityId = SpeciesNativity.Introduced,
+      )
+
+      store.recalculateNativities(locatedProjectId)
+
+      assertTableEquals(
+          listOf(
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  pendingNativityDatasetDate = griisDate,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  pendingNativityId = SpeciesNativity.Invasive,
+                  projectId = locatedProjectId,
+                  speciesId = speciesId,
+              ),
+              // An existing nativity and override are left alone when autoAccept isn't set.
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = LocalDate.EPOCH,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityId = SpeciesNativity.Native,
+                  organizationId = organizationId,
+                  overriddenBy = inserted.userId,
+                  overriddenJustification = "Justification",
+                  overriddenNativityId = SpeciesNativity.Introduced,
+                  overriddenTime = Instant.EPOCH,
+                  pendingNativityId = SpeciesNativity.Unknown,
+                  projectId = locatedProjectId,
+                  speciesId = otherSpeciesId,
+              ),
+          )
+      )
+    }
+
+    @Test
     fun `sets nativity to unknown when species is not listed in the current location`() {
       val botanicalCountryCode = insertBotanicalCountry()
       val locatedProjectId =
@@ -440,32 +449,49 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           calculatedNativity = SpeciesNativity.Invasive,
       )
 
-      store.recalculateNativities(locatedProjectId)
+      store.recalculateNativities(locatedProjectId, autoAccept = true)
 
       assertTableEquals(
           ProjectSpeciesRecord(
+              calculatedNativityId = SpeciesNativity.Unknown,
               organizationId = organizationId,
               projectId = locatedProjectId,
               speciesId = speciesId,
-              calculatedNativityId = SpeciesNativity.Unknown,
           )
       )
     }
 
     @Test
-    fun `clears nativities when the project has no location`() {
-      insertProjectSpecies(
-          projectId = projectId,
-          speciesId = speciesId,
-          calculatedNativity = SpeciesNativity.Invasive,
-          overriddenNativityId = SpeciesNativity.Introduced,
+    fun `clears nativities and overrides when the project has no location`() {
+      insertProjectSpeciesWithAllNativities()
+
+      store.recalculateNativities(projectId, autoAccept = true)
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              projectId = projectId,
+              speciesId = speciesId,
+          )
       )
+    }
+
+    @Test
+    fun `clears pending nativity but retains existing values when the project has no location`() {
+      insertProjectSpeciesWithAllNativities()
 
       store.recalculateNativities(projectId)
 
       assertTableEquals(
           ProjectSpeciesRecord(
+              calculatedNativityDatasetDate = LocalDate.EPOCH,
+              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              calculatedNativityId = SpeciesNativity.Invasive,
               organizationId = organizationId,
+              overriddenBy = inserted.userId,
+              overriddenJustification = "Justification",
+              overriddenNativityId = SpeciesNativity.Introduced,
+              overriddenTime = Instant.EPOCH,
               projectId = projectId,
               speciesId = speciesId,
           )
@@ -482,12 +508,9 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class RecalculateNativitiesForOrganization {
     @Test
-    fun `recalculates nativities if organization has no projects`() {
+    fun `accepts recalculated nativity if organization has no projects`() {
       val botanicalCountryCode = insertBotanicalCountry()
-      val griisDate = LocalDate.of(2026, 1, 2)
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+      insertGriisInvasiveListing()
 
       val locatedOrganizationId =
           insertOrganization(botanicalCountryCode = botanicalCountryCode, countryCode = "KE")
@@ -499,7 +522,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overriddenNativityId = SpeciesNativity.Introduced,
       )
 
-      store.recalculateNativities(locatedOrganizationId)
+      store.recalculateNativities(locatedOrganizationId, autoAccept = true)
 
       assertTableEquals(
           ProjectSpeciesRecord(
@@ -514,22 +537,12 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `recalculates nativities based on organization location for organization with one project`() {
-      insertBotanicalCountry()
+    fun `recalculates nativities based on org location for organization with one project`() {
+      setOrganizationLocation()
+      insertGriisInvasiveListing()
 
-      dslContext
-          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
-          .apply {
-            botanicalCountryCode = inserted.botanicalCountryCode
-            countryCode = "KE"
-          }
-          .update()
-
-      val griisDate = LocalDate.of(2026, 1, 2)
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
-
+      // This species is already tied to the org's single project; it should be updated in place
+      // rather than getting an additional row with a null project ID.
       insertProjectSpecies(
           projectId = projectId,
           speciesId = speciesId,
@@ -537,10 +550,14 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overriddenNativityId = SpeciesNativity.Introduced,
       )
 
+      // This species already has an org-level row, which should be updated in place.
       val nonProjectSpeciesId = insertSpecies(scientificName = "Scientific 2")
       insertProjectSpecies(projectId = null)
 
-      store.recalculateNativities(organizationId)
+      // This species isn't listed in project_species yet; it should get a new null-project row.
+      val unlistedSpeciesId = insertSpecies(scientificName = "Scientific 3")
+
+      store.recalculateNativities(organizationId, autoAccept = true)
 
       assertTableEquals(
           listOf(
@@ -558,50 +575,6 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   speciesId = nonProjectSpeciesId,
                   calculatedNativityId = SpeciesNativity.Unknown,
               ),
-          )
-      )
-    }
-
-    @Test
-    fun `inserts rows for unlisted species without duplicating project-associated species`() {
-      insertBotanicalCountry()
-
-      dslContext
-          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
-          .apply {
-            botanicalCountryCode = inserted.botanicalCountryCode
-            countryCode = "KE"
-          }
-          .update()
-
-      val griisDate = LocalDate.of(2026, 1, 2)
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
-
-      // This species is already tied to the org's single project; it should be updated in place
-      // rather than getting an additional row with a null project ID.
-      insertProjectSpecies(
-          projectId = projectId,
-          speciesId = speciesId,
-          calculatedNativity = SpeciesNativity.Native,
-      )
-
-      // This species isn't listed in project_species yet; it should get a new null-project row.
-      val unlistedSpeciesId = insertSpecies(scientificName = "Scientific 2")
-
-      store.recalculateNativities(organizationId)
-
-      assertTableEquals(
-          listOf(
-              ProjectSpeciesRecord(
-                  organizationId = organizationId,
-                  projectId = projectId,
-                  speciesId = speciesId,
-                  calculatedNativityDatasetDate = griisDate,
-                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
-                  calculatedNativityId = SpeciesNativity.Invasive,
-              ),
               ProjectSpeciesRecord(
                   organizationId = organizationId,
                   projectId = null,
@@ -613,15 +586,53 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `clears nativities when organization has no location`() {
+    fun `leaves recalculated nativities pending by default`() {
+      setOrganizationLocation()
+      insertGriisInvasiveListing()
+
       insertProjectSpecies(
           projectId = projectId,
           speciesId = speciesId,
-          calculatedNativity = SpeciesNativity.Invasive,
+          calculatedNativity = SpeciesNativity.Native,
           overriddenNativityId = SpeciesNativity.Introduced,
       )
 
+      val unlistedSpeciesId = insertSpecies(scientificName = "Scientific 2")
+
       store.recalculateNativities(organizationId)
+
+      assertTableEquals(
+          listOf(
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = LocalDate.EPOCH,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityId = SpeciesNativity.Native,
+                  organizationId = organizationId,
+                  overriddenBy = inserted.userId,
+                  overriddenJustification = "Justification",
+                  overriddenNativityId = SpeciesNativity.Introduced,
+                  overriddenTime = Instant.EPOCH,
+                  pendingNativityDatasetDate = griisDate,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  pendingNativityId = SpeciesNativity.Invasive,
+                  projectId = projectId,
+                  speciesId = speciesId,
+              ),
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  pendingNativityId = SpeciesNativity.Unknown,
+                  projectId = null,
+                  speciesId = unlistedSpeciesId,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `clears nativities and overrides when organization has no location`() {
+      insertProjectSpeciesWithAllNativities()
+
+      store.recalculateNativities(organizationId, autoAccept = true)
 
       assertTableEquals(
           ProjectSpeciesRecord(
@@ -652,115 +663,115 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class RecalculateNativity {
+  inner class ResetNativities {
     @Test
-    fun `sets organization-level nativity for a species not assigned to a project`() {
-      setOrganizationLocation()
+    fun `leaves recalculated nativities pending for every project the species is assigned to`() {
+      val botanicalCountryCode = insertBotanicalCountry()
+      insertGriisInvasiveListing()
+      insertExternalDatasetImport(type = ExternalDatasetType.WCVP, lastPublicationDate = wcvpDate)
+      insertWcvpTaxon(scientificName = "Scientific name")
+      insertWcvpDistribution(
+          botanicalCountryCode = botanicalCountryCode,
+          speciesNativity = SpeciesNativity.Native,
+      )
 
-      val griisDate = LocalDate.of(2026, 1, 2)
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+      val griisProjectId =
+          insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "KE")
+      insertProjectSpecies(
+          projectId = griisProjectId,
+          speciesId = speciesId,
+          calculatedNativity = SpeciesNativity.Unknown,
+          overriddenNativityId = SpeciesNativity.Introduced,
+      )
 
-      store.recalculateNativity(organizationId, speciesId)
+      // Other species in the same project should be left alone.
+      val otherSpeciesId = insertSpecies(scientificName = "Other name")
+      insertProjectSpecies(
+          projectId = griisProjectId,
+          speciesId = otherSpeciesId,
+          calculatedNativity = SpeciesNativity.Native,
+          overriddenNativityId = SpeciesNativity.Introduced,
+      )
+
+      // The species doesn't have a nativity in this project yet.
+      val wcvpProjectId =
+          insertProject(botanicalCountryCode = botanicalCountryCode, countryCode = "GH")
+      insertProjectSpecies(projectId = wcvpProjectId, speciesId = speciesId)
+
+      store.resetNativities(speciesId)
 
       assertTableEquals(
-          ProjectSpeciesRecord(
-              calculatedNativityDatasetDate = griisDate,
-              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
-              calculatedNativityId = SpeciesNativity.Invasive,
-              organizationId = organizationId,
-              speciesId = speciesId,
+          listOf(
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  pendingNativityDatasetDate = griisDate,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  pendingNativityId = SpeciesNativity.Invasive,
+                  projectId = griisProjectId,
+                  speciesId = speciesId,
+              ),
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = LocalDate.EPOCH,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityId = SpeciesNativity.Native,
+                  organizationId = organizationId,
+                  overriddenBy = inserted.userId,
+                  overriddenJustification = "Justification",
+                  overriddenNativityId = SpeciesNativity.Introduced,
+                  overriddenTime = Instant.EPOCH,
+                  projectId = griisProjectId,
+                  speciesId = otherSpeciesId,
+              ),
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  pendingNativityDatasetDate = wcvpDate,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.WCVP,
+                  pendingNativityId = SpeciesNativity.Native,
+                  projectId = wcvpProjectId,
+                  speciesId = speciesId,
+              ),
           )
       )
     }
 
     @Test
-    fun `updates existing organization-level row`() {
+    fun `recalculates organization-level nativity when species has no project`() {
       setOrganizationLocation()
-
-      val griisDate = LocalDate.of(2026, 1, 2)
-      insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
-
-      insertProjectSpecies(projectId = null, calculatedNativity = SpeciesNativity.Native)
-
-      store.recalculateNativity(organizationId, speciesId)
-
-      assertTableEquals(
-          ProjectSpeciesRecord(
-              calculatedNativityDatasetDate = griisDate,
-              calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
-              calculatedNativityId = SpeciesNativity.Invasive,
-              organizationId = organizationId,
-              speciesId = speciesId,
-          )
-      )
-    }
-
-    @Test
-    fun `sets nativity to unknown when species is not listed in the current location`() {
-      setOrganizationLocation()
-
-      store.recalculateNativity(organizationId, speciesId)
-
-      assertTableEquals(
-          ProjectSpeciesRecord(
-              calculatedNativityId = SpeciesNativity.Unknown,
-              organizationId = organizationId,
-              speciesId = speciesId,
-          )
-      )
-    }
-
-    @Test
-    fun `does not insert a row when organization has no location`() {
-      store.recalculateNativity(organizationId, speciesId)
-
-      assertTableEmpty(PROJECT_SPECIES)
-    }
-
-    @Test
-    fun `is a no-op when the species is assigned to a project`() {
-      setOrganizationLocation()
-
-      insertExternalDatasetImport(
-          type = ExternalDatasetType.GRIIS,
-          lastPublicationDate = LocalDate.of(2026, 1, 2),
-      )
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
+      insertGriisInvasiveListing()
 
       insertProjectSpecies(
-          projectId = projectId,
+          projectId = null,
           speciesId = speciesId,
-          calculatedNativity = SpeciesNativity.Native,
+          calculatedNativity = SpeciesNativity.Unknown,
+          overriddenNativityId = SpeciesNativity.Introduced,
       )
 
-      val before = dslContext.fetch(PROJECT_SPECIES)
+      store.resetNativities(speciesId)
 
-      store.recalculateNativity(organizationId, speciesId)
-
-      assertTableEquals(before)
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              pendingNativityDatasetDate = griisDate,
+              pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              pendingNativityId = SpeciesNativity.Invasive,
+              speciesId = speciesId,
+          )
+      )
     }
 
     @Test
-    fun `is a no-op when organization has more than one project`() {
-      setOrganizationLocation()
+    fun `clears nativities when the project has no location`() {
+      insertProjectSpeciesWithAllNativities()
 
-      insertExternalDatasetImport(
-          type = ExternalDatasetType.GRIIS,
-          lastPublicationDate = LocalDate.of(2026, 1, 2),
+      store.resetNativities(speciesId)
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              projectId = projectId,
+              speciesId = speciesId,
+          )
       )
-      insertGriisResource(countryCode = "KE")
-      insertGriisTaxon(scientificName = "Scientific name", isInvasive = true)
-
-      insertProject()
-
-      store.recalculateNativity(organizationId, speciesId)
-
-      assertTableEmpty(PROJECT_SPECIES)
     }
 
     @Test
@@ -768,21 +779,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
-      assertThrows<AccessDeniedException> {
-        store.recalculateNativity(organizationId, speciesId)
-      }
-    }
-
-    private fun setOrganizationLocation() {
-      insertBotanicalCountry()
-
-      dslContext
-          .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
-          .apply {
-            botanicalCountryCode = inserted.botanicalCountryCode
-            countryCode = "KE"
-          }
-          .update()
+      assertThrows<AccessDeniedException> { store.resetNativities(speciesId) }
     }
   }
 
@@ -815,5 +812,36 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.removeProjects(mapOf(speciesId to setOf(projectId)))
       }
     }
+  }
+
+  /** Inserts a project species row that has accepted, overridden, and pending nativities. */
+  private fun insertProjectSpeciesWithAllNativities() {
+    insertProjectSpecies(
+        calculatedNativity = SpeciesNativity.Invasive,
+        overriddenNativityId = SpeciesNativity.Introduced,
+        pendingNativity = SpeciesNativity.Native,
+        projectId = projectId,
+        speciesId = speciesId,
+    )
+  }
+
+  /** Publishes a GRIIS listing of a species as invasive in Kenya. */
+  private fun insertGriisInvasiveListing(scientificName: String = "Scientific name") {
+    insertExternalDatasetImport(type = ExternalDatasetType.GRIIS, lastPublicationDate = griisDate)
+    insertGriisResource(countryCode = "KE")
+    insertGriisTaxon(scientificName = scientificName, isInvasive = true)
+  }
+
+  /** Gives the organization a location so its species' nativities can be calculated. */
+  private fun setOrganizationLocation() {
+    insertBotanicalCountry()
+
+    dslContext
+        .fetchSingle(ORGANIZATIONS, ORGANIZATIONS.ID.eq(organizationId))
+        .apply {
+          botanicalCountryCode = inserted.botanicalCountryCode
+          countryCode = "KE"
+        }
+        .update()
   }
 }

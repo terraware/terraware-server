@@ -1662,6 +1662,11 @@ abstract class DatabaseBackedTest {
       overriddenBy: UserId? = overriddenNativityId?.let { inserted.userId },
       overriddenJustification: String? = overriddenNativityId?.let { "Justification" },
       overriddenTime: Instant? = overriddenNativityId?.let { Instant.EPOCH },
+      pendingNativity: SpeciesNativity? = null,
+      pendingNativityDatasetDate: LocalDate? = pendingNativity?.let { LocalDate.EPOCH },
+      pendingNativityDatasetType: ExternalDatasetType? = pendingNativity?.let {
+        ExternalDatasetType.GRIIS
+      },
       speciesId: SpeciesId = inserted.speciesId,
   ) {
     ProjectSpeciesRecord(
@@ -1673,6 +1678,9 @@ abstract class DatabaseBackedTest {
             overriddenJustification = overriddenJustification,
             overriddenNativityId = overriddenNativityId,
             overriddenTime = overriddenTime,
+            pendingNativityDatasetDate = pendingNativityDatasetDate,
+            pendingNativityDatasetTypeId = pendingNativityDatasetType,
+            pendingNativityId = pendingNativity,
             projectId = projectId,
             speciesId = speciesId,
         )
