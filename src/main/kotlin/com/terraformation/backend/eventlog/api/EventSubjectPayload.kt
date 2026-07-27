@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -42,6 +43,8 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSchedul
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
@@ -87,6 +90,35 @@ sealed interface EventSubjectPayload {
       example = "Project",
   )
   val shortText: String
+}
+
+@JsonTypeName("Accession")
+data class AccessionSubjectPayload(
+    val accessionId: AccessionId,
+    override val deleted: Boolean?,
+    val facilityId: FacilityId,
+    override val fullText: String,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: AccessionPersistentEvent,
+        context: EventLogPayloadContext,
+    ): AccessionSubjectPayload {
+      val accessionNumber =
+          context
+              .firstOrNull<AccessionCreatedEvent> { it.accessionId == event.accessionId }
+              ?.accessionNumber ?: event.accessionId.toString()
+
+      return AccessionSubjectPayload(
+          accessionId = event.accessionId,
+          deleted = null,
+          facilityId = event.facilityId,
+          fullText = context.subjectFullText<AccessionSubjectPayload>(accessionNumber),
+          shortText = context.subjectShortText<AccessionSubjectPayload>(),
+      )
+    }
+  }
 }
 
 @JsonTypeName("BiomassDetails")
@@ -800,6 +832,7 @@ data class RecordedTreeSubjectPayload(
  * classes.
  */
 enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
+  Accession(AccessionPersistentEvent::class),
   BiomassDetails(BiomassDetailsPersistentEvent::class),
   BiomassQuadrat(BiomassQuadratPersistentEvent::class),
   BiomassQuadratSpecies(BiomassQuadratSpeciesPersistentEvent::class),

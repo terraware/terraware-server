@@ -41,6 +41,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
+import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
@@ -364,6 +365,16 @@ class AccessionStore(
               accession.viabilityTests,
           )
           withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
+
+          eventPublisher.publishEvent(
+              AccessionCreatedEvent(
+                  accessionNumber = accessionNumber,
+                  dataSource = accession.source ?: DataSource.Web,
+                  accessionId = accessionId,
+                  facilityId = facilityId,
+                  organizationId = organizationId,
+              )
+          )
 
           accessionId
         }
