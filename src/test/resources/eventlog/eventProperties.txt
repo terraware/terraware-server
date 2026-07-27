@@ -180,6 +180,10 @@ com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/accessionNumbe
 com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/dataSource: DataSource
 com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/facilityId: FacilityId
 com.terraformation.backend.seedbank.event.AccessionCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.seedbank.event.AccessionStateChangedEventV1/accessionId: AccessionId
+com.terraformation.backend.seedbank.event.AccessionStateChangedEventV1/facilityId: FacilityId
+com.terraformation.backend.seedbank.event.AccessionStateChangedEventV1/organizationId: OrganizationId
+com.terraformation.backend.seedbank.event.AccessionStateChangedEventV1/reason: String
 com.terraformation.backend.seedbank.event.AccessionUpdatedEventV1/accessionId: AccessionId
 com.terraformation.backend.seedbank.event.AccessionUpdatedEventV1/facilityId: FacilityId
 com.terraformation.backend.seedbank.event.AccessionUpdatedEventV1/organizationId: OrganizationId

@@ -43,6 +43,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
+import com.terraformation.backend.seedbank.event.AccessionStateChangedEvent
+import com.terraformation.backend.seedbank.event.AccessionStateChangedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
@@ -486,7 +488,7 @@ class AccessionStore(
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
       insertQuantityHistory(existing, accession, updateContext?.remainingQuantityNotes)
-      insertStateHistory(existing, accession)
+      insertStateHistory(existing, accession, facilityId, organizationId)
 
       val rowsUpdated =
           with(ACCESSIONS) {
@@ -774,7 +776,12 @@ class AccessionStore(
    * Records a history entry for a state transition if an accession's state has changed as the
    * result of a modification.
    */
-  private fun insertStateHistory(before: AccessionModel, after: AccessionModel) {
+  private fun insertStateHistory(
+      before: AccessionModel,
+      after: AccessionModel,
+      facilityId: FacilityId,
+      organizationId: OrganizationId,
+  ) {
     val accessionId = before.id ?: throw IllegalArgumentException("Existing accession has no ID")
 
     if (before.state != after.state) {
@@ -795,6 +802,17 @@ class AccessionStore(
               .set(UPDATED_TIME, clock.instant())
               .execute()
         }
+
+        eventPublisher.publishEvent(
+            AccessionStateChangedEvent(
+                changedFrom = AccessionStateChangedEventValues(state = before.state),
+                changedTo = AccessionStateChangedEventValues(state = stateTransition.newState),
+                reason = stateTransition.reason,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            )
+        )
       }
     }
   }
@@ -878,7 +896,11 @@ class AccessionStore(
           }
 
       if (rowsUpdated == 1) {
-        insertStateHistory(accession, checkedIn)
+        val facilityId =
+            accession.facilityId ?: throw IllegalStateException("Accession has no facility ID")
+        val organizationId =
+            parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+        insertStateHistory(accession, checkedIn, facilityId, organizationId)
       }
     }
 
