@@ -2,10 +2,12 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -19,6 +21,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
@@ -40,19 +43,28 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var store: WithdrawalStore
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
 
   private lateinit var accessionId: AccessionId
+  private lateinit var facilityId: FacilityId
   private lateinit var organizationId: OrganizationId
   private lateinit var speciesId: SpeciesId
 
   @BeforeEach
   fun setup() {
     organizationId = insertOrganization()
-    insertFacility()
+    facilityId = insertFacility()
     speciesId = insertSpecies()
     accessionId = insertAccession(stateId = AccessionState.InStorage)
 
-    store = WithdrawalStore(dslContext, clock, Messages(), ParentStore(dslContext))
+    store =
+        WithdrawalStore(
+            dslContext,
+            clock,
+            Messages(),
+            ParentStore(dslContext),
+            eventPublisher,
+        )
 
     clock.instant = Instant.ofEpochSecond(1000)
     every { user.canReadAccession(any()) } returns true
@@ -662,5 +674,68 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val actual = store.fetchHistory(accessionId)
 
     assertEquals(expected, actual, "descriptions should be based on purpose and quantity")
+  }
+
+  @Test
+  fun `creating a withdrawal publishes WithdrawalCreatedEvent`() {
+    val newWithdrawal =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 3, 4),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            staffResponsible = "staff 1",
+            withdrawn = seeds(3),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    val withdrawalId = store.fetchWithdrawals(accessionId).first().id!!
+
+    eventPublisher.assertEventPublished(
+        WithdrawalCreatedEvent(
+            purpose = WithdrawalPurpose.Other,
+            date = LocalDate.of(2021, 3, 4),
+            withdrawnQuantity = seeds(3),
+            batchId = null,
+            notes = "notes 1",
+            staffResponsible = "staff 1",
+            withdrawalId = withdrawalId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
+  }
+
+  @Test
+  fun `creating a nursery transfer publishes WithdrawalCreatedEvent with a batch ID`() {
+    insertSpecies()
+    insertFacility(type = FacilityType.Nursery)
+    val batchId = insertBatch()
+
+    val newWithdrawal =
+        WithdrawalModel(
+            batchId = batchId,
+            date = LocalDate.of(2021, 5, 6),
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Nursery,
+            staffResponsible = "staff 1",
+            withdrawn = seeds(1),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    val withdrawalId = store.fetchWithdrawals(accessionId).first().id!!
+
+    eventPublisher.assertEventPublished { event ->
+      event is WithdrawalCreatedEvent &&
+          event.withdrawalId == withdrawalId &&
+          event.batchId == batchId &&
+          event.purpose == WithdrawalPurpose.Nursery &&
+          event.accessionId == accessionId &&
+          event.facilityId == facilityId &&
+          event.organizationId == organizationId
+    }
   }
 }
