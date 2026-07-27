@@ -4,11 +4,14 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionStateChangedEvent
 import com.terraformation.backend.seedbank.event.AccessionStateChangedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
+import com.terraformation.backend.seedbank.model.AccessionUpdateContext
 import com.terraformation.backend.seedbank.seeds
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -110,6 +113,28 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
               changedFrom = AccessionStateChangedEventValues(state = AccessionState.Drying),
               changedTo = AccessionStateChangedEventValues(state = AccessionState.InStorage),
               reason = "Accession has been edited",
+              accessionId = model.id!!,
+              facilityId = facilityId,
+              organizationId = organizationId,
+          )
+      )
+    }
+
+    @Test
+    fun `manual remaining quantity edit publishes AccessionQuantityUpdatedEvent`() {
+      val model = create(accessionModel(state = AccessionState.Processing))
+      publisher.clear()
+
+      store.update(
+          model.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)),
+          AccessionUpdateContext(remainingQuantityNotes = "got more seeds"),
+      )
+
+      publisher.assertEventPublished(
+          AccessionQuantityUpdatedEvent(
+              changedFrom = AccessionQuantityUpdatedEventValues(quantity = null),
+              changedTo = AccessionQuantityUpdatedEventValues(quantity = seeds(10)),
+              notes = "got more seeds",
               accessionId = model.id!!,
               facilityId = facilityId,
               organizationId = organizationId,
