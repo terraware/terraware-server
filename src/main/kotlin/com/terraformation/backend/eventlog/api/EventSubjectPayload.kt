@@ -45,6 +45,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdated
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionPersistentEvent
+import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
@@ -108,7 +109,11 @@ data class AccessionSubjectPayload(
       val accessionNumber =
           context
               .firstOrNull<AccessionCreatedEvent> { it.accessionId == event.accessionId }
-              ?.accessionNumber ?: event.accessionId.toString()
+              ?.accessionNumber
+              ?: context
+                  .firstOrNull<AccessionUploadedEvent> { it.accessionId == event.accessionId }
+                  ?.accessionNumber
+              ?: event.accessionId.toString()
 
       return AccessionSubjectPayload(
           accessionId = event.accessionId,

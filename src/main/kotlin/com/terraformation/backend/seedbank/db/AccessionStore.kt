@@ -43,6 +43,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.event.AccessionCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
+import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -366,15 +367,27 @@ class AccessionStore(
           )
           withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
 
-          eventPublisher.publishEvent(
-              AccessionCreatedEvent(
-                  accessionNumber = accessionNumber,
-                  dataSource = accession.source ?: DataSource.Web,
-                  accessionId = accessionId,
-                  facilityId = facilityId,
-                  organizationId = organizationId,
-              )
-          )
+          val dataSource = accession.source ?: DataSource.Web
+          if (dataSource == DataSource.FileImport) {
+            eventPublisher.publishEvent(
+                AccessionUploadedEvent(
+                    accessionNumber = accessionNumber,
+                    accessionId = accessionId,
+                    facilityId = facilityId,
+                    organizationId = organizationId,
+                )
+            )
+          } else {
+            eventPublisher.publishEvent(
+                AccessionCreatedEvent(
+                    accessionNumber = accessionNumber,
+                    dataSource = dataSource,
+                    accessionId = accessionId,
+                    facilityId = facilityId,
+                    organizationId = organizationId,
+                )
+            )
+          }
 
           accessionId
         }
