@@ -3,6 +3,7 @@ import com.github.jk1.license.render.InventoryHtmlReportRenderer
 import com.terraformation.gradle.PostgresDockerConfigTask
 import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
+import org.apache.tools.ant.filters.FixCrLfFilter
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
@@ -231,6 +232,18 @@ tasks {
     dependsOn(renderGibberishTask)
     dependsOn(renderMjmlTask)
     exclude("**/*.mjml")
+
+    // We want the CSV files we serve to users to have DOS-style line endings. The copySpec
+    // structure here is to work around IDEA-296490.
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    with(
+        copySpec {
+          from("src/main/resources") {
+            include("csv/*.csv")
+            filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("crlf"))
+          }
+        }
+    )
   }
 
   generateJooqClasses {
