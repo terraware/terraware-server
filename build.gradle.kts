@@ -355,7 +355,6 @@ spotless {
     target("*.md", "buildSrc/*.md", "docs/*.md", "src/**/*.md")
     flexmark()
   }
-  /* Temporarily disable SQL migration formatting so it doesn't fire on the bulk rename.
   format("sql") {
     // Only apply to newly-added SQL files since editing existing ones will cause the checksums
     // to change which Flyway will detect as invalid edits of already-applied migrations.
@@ -365,7 +364,6 @@ spotless {
     endWithNewline()
     trimTrailingWhitespace()
   }
-  */
 }
 
 openApi {
