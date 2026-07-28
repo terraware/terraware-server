@@ -1,3 +1,4 @@
+832736bd Restore Spotless SQL format check (#4805)
 8be2983e Move numbered DB migrations to subdirectory (#4804)
 0626f22b Move to timestamp-based Flyway migrations (#4782)
 4f659eb1 Convert CSV line endings to CRLF in build process (#4803)
