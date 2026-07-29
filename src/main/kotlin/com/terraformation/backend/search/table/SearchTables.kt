@@ -25,6 +25,10 @@ import kotlin.reflect.full.declaredMemberProperties
  */
 @Named
 class SearchTables(clock: Clock) {
+  val acceleratorReportAutoCalculatedIndicators =
+      AcceleratorReportAutoCalculatedIndicatorsTable(this)
+  val acceleratorReportCommonIndicators = AcceleratorReportCommonIndicatorsTable(this)
+  val acceleratorReportProjectIndicators = AcceleratorReportProjectIndicatorsTable(this)
   val acceleratorReports = AcceleratorReportsTable(this)
   val accessionCollectors = AccessionCollectorsTable(this)
   val accessions = AccessionsTable(this, clock)

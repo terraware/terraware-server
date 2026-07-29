@@ -3,6 +3,9 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -23,7 +26,19 @@ class AcceleratorReportsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          acceleratorReportAutoCalculatedIndicators.asMultiValueSublist(
+              "autoCalculatedIndicators",
+              REPORTS.ID.eq(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID),
+          ),
+          acceleratorReportCommonIndicators.asMultiValueSublist(
+              "commonIndicators",
+              REPORTS.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID),
+          ),
           projects.asSingleValueSublist("project", REPORTS.PROJECT_ID.eq(PROJECTS.ID)),
+          acceleratorReportProjectIndicators.asMultiValueSublist(
+              "projectIndicators",
+              REPORTS.ID.eq(REPORT_PROJECT_INDICATORS.REPORT_ID),
+          ),
           users.asSingleValueSublist(
               "submittedBy",
               REPORTS.SUBMITTED_BY.eq(USERS.ID),

@@ -784,6 +784,18 @@ val EMBEDDABLES =
             .withTables("project_variables")
             .withColumns("project_id", "stable_id"),
         EmbeddableDefinitionType()
+            .withName("report_auto_calculated_indicator_id")
+            .withTables("accelerator.report_auto_calculated_indicators")
+            .withColumns("report_id", "auto_calculated_indicator_id"),
+        EmbeddableDefinitionType()
+            .withName("report_common_indicator_id")
+            .withTables("accelerator.report_common_indicators")
+            .withColumns("report_id", "common_indicator_id"),
+        EmbeddableDefinitionType()
+            .withName("report_project_indicator_id")
+            .withTables("accelerator.report_project_indicators")
+            .withColumns("report_id", "project_indicator_id"),
+        EmbeddableDefinitionType()
             .withName("scheduled_planting_date_species_id")
             .withTables("tracking.scheduled_planting_date_species")
             .withColumns("scheduled_planting_date_id", "species_id", "substratum_id"),
