@@ -29,7 +29,6 @@ import com.terraformation.backend.species.db.SpeciesNativityCalculator
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
-import com.terraformation.backend.species.model.ExistingSpeciesProjectModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import com.terraformation.backend.species.model.SpeciesDataSourceModel
 import io.mockk.Runs
@@ -158,7 +157,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `sets nativity based on project location`() {
+    fun `sets pending nativity based on project location`() {
       every { user.canReadProject(any()) } returns true
 
       val botanicalCountryCode = insertBotanicalCountry()
@@ -177,24 +176,20 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
               )
           )
 
-      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
-
-      assertEquals(
-          listOf(
-              ExistingSpeciesProjectModel(
-                  calculatedNativity = SpeciesNativity.Invasive,
-                  calculatedNativitySource =
-                      SpeciesDataSourceModel(griisDate, ExternalDatasetType.GRIIS),
-                  projectId = projectId,
-              )
-          ),
-          speciesModel.projects,
-          "Species project details",
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              pendingNativityDatasetDate = griisDate,
+              pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              pendingNativityId = SpeciesNativity.Invasive,
+              projectId = projectId,
+              speciesId = speciesId,
+          )
       )
     }
 
     @Test
-    fun `sets org-level nativity if org has location and fewer than two projects`() {
+    fun `sets pending org-level nativity if org has location and fewer than two projects`() {
       val botanicalCountryCode = insertBotanicalCountry()
       val locatedOrganizationId =
           insertOrganization(botanicalCountryCode = botanicalCountryCode, countryCode = "AR")
@@ -213,18 +208,14 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
               )
           )
 
-      val speciesModel = speciesStore.fetchSpeciesById(speciesId)
-
-      assertEquals(
-          listOf(
-              ExistingSpeciesProjectModel(
-                  calculatedNativity = SpeciesNativity.Invasive,
-                  calculatedNativitySource =
-                      SpeciesDataSourceModel(griisDate, ExternalDatasetType.GRIIS),
-              )
-          ),
-          speciesModel.projects,
-          "Species project details",
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = locatedOrganizationId,
+              pendingNativityDatasetDate = griisDate,
+              pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+              pendingNativityId = SpeciesNativity.Invasive,
+              speciesId = speciesId,
+          )
       )
     }
   }

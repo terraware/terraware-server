@@ -76,7 +76,7 @@ class SpeciesService(
       if (model.projectIds.isNotEmpty()) {
         projectSpeciesStore.assignProjects(mapOf(speciesId to model.projectIds))
       } else {
-        projectSpeciesStore.recalculateNativity(model.organizationId, speciesId)
+        projectSpeciesStore.resetNativities(speciesId)
       }
 
       speciesId
@@ -150,7 +150,7 @@ class SpeciesService(
 
   @EventListener
   fun on(event: OrganizationLocationUpdatedEvent) {
-    projectSpeciesStore.recalculateNativities(event.organizationId)
+    projectSpeciesStore.recalculateNativities(event.organizationId, autoAccept = true)
   }
 
   @EventListener
@@ -159,7 +159,7 @@ class SpeciesService(
         event.changedFrom.botanicalCountryCode != event.changedTo.botanicalCountryCode ||
             event.changedFrom.countryCode != event.changedTo.countryCode
     ) {
-      projectSpeciesStore.recalculateNativities(event.projectId)
+      projectSpeciesStore.recalculateNativities(event.projectId, autoAccept = true)
     }
   }
 

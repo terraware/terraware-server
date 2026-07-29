@@ -45,18 +45,18 @@ class ProjectSpeciesStore(
             .groupBy { (projectId, _) -> projectId }
             .mapValues { (_, projectAndSpecies) -> projectAndSpecies.map { it.second } }
 
-    val calculatedNativities: Map<Pair<SpeciesId, ProjectId>, SourcedSpeciesNativity> =
+    val pendingNativities: Map<Pair<SpeciesId, ProjectId>, SourcedSpeciesNativity> =
         calculateNativities(speciesIdsByProject)
 
     val rows = assignments.flatMap { (speciesId, projectIds) ->
       projectIds.map { projectId ->
-        val calculatedNativity = calculatedNativities[speciesId to projectId]
+        val pendingNativity = pendingNativities[speciesId to projectId]
 
         DSL.row(
-            calculatedNativity?.datasetDate,
-            calculatedNativity?.datasetType,
-            calculatedNativity?.speciesNativity,
             organizationId,
+            pendingNativity?.datasetDate,
+            pendingNativity?.datasetType,
+            pendingNativity?.speciesNativity,
             projectId,
             speciesId,
         )
@@ -68,10 +68,10 @@ class ProjectSpeciesStore(
         dslContext
             .insertInto(
                 PROJECT_SPECIES,
-                CALCULATED_NATIVITY_DATASET_DATE,
-                CALCULATED_NATIVITY_DATASET_TYPE_ID,
-                CALCULATED_NATIVITY_ID,
                 ORGANIZATION_ID,
+                PENDING_NATIVITY_DATASET_DATE,
+                PENDING_NATIVITY_DATASET_TYPE_ID,
+                PENDING_NATIVITY_ID,
                 PROJECT_ID,
                 SPECIES_ID,
             )
@@ -92,54 +92,76 @@ class ProjectSpeciesStore(
   }
 
   /**
-   * Recalculates the organization-level nativity for a species if the organization has fewer than
-   * two projects and the species is not assigned to a project.
+   * Recalculates the pending nativities of a single species everywhere it appears, using the
+   * location of each project it's assigned to, or the organization's location if it isn't assigned
+   * to any projects. The user will have to review the new values and approve or override them.
    */
-  fun recalculateNativity(organizationId: OrganizationId, speciesId: SpeciesId) {
+  fun resetNativities(speciesId: SpeciesId) {
     requirePermissions { updateSpecies(speciesId) }
 
-    val numProjects = dslContext.fetchCount(PROJECTS, PROJECTS.ORGANIZATION_ID.eq(organizationId))
-    if (numProjects > 1) {
-      return
-    }
+    val projectIds =
+        dslContext
+            .select(PROJECT_SPECIES.PROJECT_ID)
+            .from(PROJECT_SPECIES)
+            .where(PROJECT_SPECIES.SPECIES_ID.eq(speciesId))
+            .and(PROJECT_SPECIES.PROJECT_ID.isNotNull)
+            .fetchSet(PROJECT_SPECIES.PROJECT_ID.asNonNullable())
 
-    val numProjectAssignments =
-        dslContext.fetchCount(
-            PROJECT_SPECIES,
-            PROJECT_SPECIES.SPECIES_ID.eq(speciesId),
-            PROJECT_SPECIES.PROJECT_ID.isNotNull,
-        )
-    if (numProjectAssignments > 0) {
-      return
-    }
-
-    val sourcedNativity =
-        calculateOrganizationNativities(organizationId, setOf(speciesId))[speciesId]
-
-    if (sourcedNativity != null) {
+    dslContext.transaction { _ ->
       with(PROJECT_SPECIES) {
         dslContext
-            .insertInto(PROJECT_SPECIES)
-            .set(CALCULATED_NATIVITY_DATASET_DATE, sourcedNativity.datasetDate)
-            .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, sourcedNativity.datasetType)
-            .set(CALCULATED_NATIVITY_ID, sourcedNativity.speciesNativity)
-            .set(ORGANIZATION_ID, organizationId)
-            .set(SPECIES_ID, speciesId)
-            .onConflict(ORGANIZATION_ID, PROJECT_ID, SPECIES_ID)
-            .doUpdate()
-            .set(CALCULATED_NATIVITY_DATASET_DATE, sourcedNativity.datasetDate)
-            .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, sourcedNativity.datasetType)
-            .set(CALCULATED_NATIVITY_ID, sourcedNativity.speciesNativity)
+            .update(PROJECT_SPECIES)
+            .setNull(CALCULATED_NATIVITY_DATASET_DATE)
+            .setNull(CALCULATED_NATIVITY_DATASET_TYPE_ID)
+            .setNull(CALCULATED_NATIVITY_ID)
+            .setNull(OVERRIDDEN_BY)
+            .setNull(OVERRIDDEN_JUSTIFICATION)
+            .setNull(OVERRIDDEN_NATIVITY_ID)
+            .setNull(OVERRIDDEN_TIME)
+            .setNull(PENDING_NATIVITY_DATASET_DATE)
+            .setNull(PENDING_NATIVITY_DATASET_TYPE_ID)
+            .setNull(PENDING_NATIVITY_ID)
+            .where(SPECIES_ID.eq(speciesId))
             .execute()
+      }
+
+      if (projectIds.isEmpty()) {
+        val organizationId =
+            dslContext
+                .select(SPECIES.ORGANIZATION_ID)
+                .from(SPECIES)
+                .where(SPECIES.ID.eq(speciesId))
+                .fetchSingle { it.value1()!! }
+
+        val orgProjectCount =
+            dslContext.fetchCount(PROJECTS, PROJECTS.ORGANIZATION_ID.eq(organizationId))
+
+        if (orgProjectCount < 2) {
+          updateOrganizationNativity(organizationId, speciesId)
+        }
+      } else {
+        val nativities = calculateNativities(projectIds.associateWith { listOf(speciesId) })
+
+        projectIds.forEach { projectId ->
+          applyNativities(
+              listOf(rowForUpdate(speciesId, nativities[speciesId to projectId])),
+              PROJECT_SPECIES.PROJECT_ID.eq(projectId),
+              autoAccept = false,
+          )
+        }
       }
     }
   }
 
   /**
-   * Recalculates nativities for all the species in an organization if the organization has fewer
-   * than two projects.
+   * Recalculates the nativities for all the species in an organization if the organization has
+   * fewer than two projects.
+   *
+   * @param autoAccept If false, the recalculated nativities become pending ones for the user to
+   *   promote, and the rows' existing nativities and overrides are left alone. If true, the
+   *   recalculated nativities are accepted right away and any overrides are discarded.
    */
-  fun recalculateNativities(organizationId: OrganizationId) {
+  fun recalculateNativities(organizationId: OrganizationId, autoAccept: Boolean = false) {
     val numProjects = dslContext.fetchCount(PROJECTS, PROJECTS.ORGANIZATION_ID.eq(organizationId))
     if (numProjects > 1) {
       log.info(
@@ -172,24 +194,34 @@ class ProjectSpeciesStore(
             .fetchSet(PROJECT_SPECIES.SPECIES_ID.asNonNullable())
 
     // Species that already have a project_species row (whether or not it's associated with a
-    // project) get their existing row's calculated nativity updated in place. This avoids inserting
-    // a redundant row with a null project ID for a species that's already tied to the org's single
-    // project.
+    // project) get their existing row updated in place. This avoids inserting a redundant row with
+    // a null project ID for a species that's already tied to the org's single project.
     val existingRows = existingSpeciesIds.map { speciesId ->
       rowForUpdate(speciesId, nativities[speciesId])
     }
     if (existingRows.isNotEmpty()) {
-      updateCalculatedNativities(existingRows, PROJECT_SPECIES.ORGANIZATION_ID.eq(organizationId))
+      applyNativities(
+          existingRows,
+          PROJECT_SPECIES.ORGANIZATION_ID.eq(organizationId),
+          autoAccept,
+      )
     }
 
     // Species that don't have a project_species row yet get a new row with no project ID.
     val missingSpeciesIds = speciesIds.filterNot { it in existingSpeciesIds }
     if (missingSpeciesIds.isNotEmpty()) {
-      insertCalculatedNativities(organizationId, missingSpeciesIds, nativities)
+      insertNativities(organizationId, missingSpeciesIds, nativities, autoAccept)
     }
   }
 
-  fun recalculateNativities(projectId: ProjectId) {
+  /**
+   * Recalculates the nativities of all the species assigned to a project.
+   *
+   * @param autoAccept If false, the recalculated nativities become pending ones for the user to
+   *   promote, and the rows' existing nativities and overrides are left alone. If true, the
+   *   recalculated nativities are accepted right away and any overrides are discarded.
+   */
+  fun recalculateNativities(projectId: ProjectId, autoAccept: Boolean = false) {
     val speciesIds =
         dslContext
             .select(PROJECT_SPECIES.SPECIES_ID)
@@ -206,7 +238,7 @@ class ProjectSpeciesStore(
       rowForUpdate(speciesId, nativities[speciesId to projectId])
     }
 
-    updateCalculatedNativities(rows, PROJECT_SPECIES.PROJECT_ID.eq(projectId))
+    applyNativities(rows, PROJECT_SPECIES.PROJECT_ID.eq(projectId), autoAccept)
   }
 
   fun overridePerProjectData(overrides: List<ProjectSpeciesOverride>) {
@@ -328,6 +360,33 @@ class ProjectSpeciesStore(
     return organizationIds.first()
   }
 
+  private fun updateOrganizationNativity(
+      organizationId: OrganizationId,
+      speciesId: SpeciesId,
+  ) {
+    val sourcedNativity =
+        calculateOrganizationNativities(organizationId, setOf(speciesId))[speciesId]
+
+    if (sourcedNativity != null) {
+      dslContext.transaction { _ ->
+        with(PROJECT_SPECIES) {
+          dslContext
+              .insertInto(PROJECT_SPECIES, ORGANIZATION_ID, SPECIES_ID)
+              .values(organizationId, speciesId)
+              .onConflictDoNothing()
+              .execute()
+        }
+
+        applyNativities(
+            listOf(rowForUpdate(speciesId, sourcedNativity)),
+            PROJECT_SPECIES.ORGANIZATION_ID.eq(organizationId)
+                .and(PROJECT_SPECIES.PROJECT_ID.isNull),
+            autoAccept = false,
+        )
+      }
+    }
+  }
+
   private fun calculateOrganizationNativities(
       organizationId: OrganizationId,
       speciesIds: Collection<SpeciesId>,
@@ -402,66 +461,95 @@ class ProjectSpeciesStore(
     return with(PROJECT_SPECIES) {
       DSL.row(
           DSL.value(speciesId, SPECIES_ID.dataType),
-          DSL.value(sourcedNativity?.datasetDate, CALCULATED_NATIVITY_DATASET_DATE.dataType),
-          DSL.value(sourcedNativity?.datasetType, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType),
-          DSL.value(sourcedNativity?.speciesNativity, CALCULATED_NATIVITY_ID.dataType),
+          DSL.value(sourcedNativity?.datasetDate, PENDING_NATIVITY_DATASET_DATE.dataType),
+          DSL.value(sourcedNativity?.datasetType, PENDING_NATIVITY_DATASET_TYPE_ID.dataType),
+          DSL.value(sourcedNativity?.speciesNativity, PENDING_NATIVITY_ID.dataType),
       )
     }
   }
 
-  private fun updateCalculatedNativities(
+  /**
+   * Applies recalculated nativities to the existing rows matching [scopeCondition].
+   *
+   * @param autoAccept If false, the recalculated nativities become pending ones for the user to
+   *   promote, and the rows' existing nativities and overrides are left alone. If true, the
+   *   recalculated nativities are accepted right away and any overrides are discarded.
+   */
+  private fun applyNativities(
       rows: List<Row4<SpeciesId?, LocalDate?, ExternalDatasetType?, SpeciesNativity?>>,
       scopeCondition: Condition,
-  ): Int {
+      autoAccept: Boolean,
+  ) {
     with(PROJECT_SPECIES) {
       val updateValues = DSL.values(*(rows.toTypedArray()))
 
       val speciesIdField = updateValues.field(0, SPECIES_ID.dataType)!!
-      val datasetDateField = updateValues.field(1, CALCULATED_NATIVITY_DATASET_DATE.dataType)!!
-      val datasetTypeField = updateValues.field(2, CALCULATED_NATIVITY_DATASET_TYPE_ID.dataType)!!
-      val nativityField = updateValues.field(3, CALCULATED_NATIVITY_ID.dataType)!!
+      val datasetDateField = updateValues.field(1, PENDING_NATIVITY_DATASET_DATE.dataType)!!
+      val datasetTypeField = updateValues.field(2, PENDING_NATIVITY_DATASET_TYPE_ID.dataType)!!
+      val nativityField = updateValues.field(3, PENDING_NATIVITY_ID.dataType)!!
 
-      return dslContext
-          .update(PROJECT_SPECIES)
-          .set(CALCULATED_NATIVITY_DATASET_DATE, datasetDateField)
-          .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, datasetTypeField)
-          .set(CALCULATED_NATIVITY_ID, nativityField)
-          .setNull(OVERRIDDEN_BY)
-          .setNull(OVERRIDDEN_NATIVITY_ID)
-          .setNull(OVERRIDDEN_JUSTIFICATION)
-          .setNull(OVERRIDDEN_TIME)
-          .from(updateValues)
-          .where(scopeCondition)
-          .and(SPECIES_ID.eq(speciesIdField))
-          .execute()
+      val update =
+          if (autoAccept) {
+            dslContext
+                .update(PROJECT_SPECIES)
+                .set(CALCULATED_NATIVITY_DATASET_DATE, datasetDateField)
+                .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, datasetTypeField)
+                .set(CALCULATED_NATIVITY_ID, nativityField)
+                .setNull(OVERRIDDEN_BY)
+                .setNull(OVERRIDDEN_JUSTIFICATION)
+                .setNull(OVERRIDDEN_NATIVITY_ID)
+                .setNull(OVERRIDDEN_TIME)
+                .setNull(PENDING_NATIVITY_DATASET_DATE)
+                .setNull(PENDING_NATIVITY_DATASET_TYPE_ID)
+                .setNull(PENDING_NATIVITY_ID)
+          } else {
+            dslContext
+                .update(PROJECT_SPECIES)
+                .set(PENDING_NATIVITY_DATASET_DATE, datasetDateField)
+                .set(PENDING_NATIVITY_DATASET_TYPE_ID, datasetTypeField)
+                .set(PENDING_NATIVITY_ID, nativityField)
+          }
+
+      update.from(updateValues).where(scopeCondition).and(SPECIES_ID.eq(speciesIdField)).execute()
     }
   }
 
-  private fun insertCalculatedNativities(
+  /**
+   * Inserts organization-level rows for species that don't have any [PROJECT_SPECIES] rows yet.
+   * [autoAccept] chooses whether the nativities are accepted or pending, as in [applyNativities].
+   */
+  private fun insertNativities(
       organizationId: OrganizationId,
       speciesIds: Collection<SpeciesId>,
       nativities: Map<SpeciesId, SourcedSpeciesNativity>,
+      autoAccept: Boolean,
   ) {
     val rows = speciesIds.map { speciesId ->
       val sourcedNativity = nativities[speciesId]
 
       DSL.row(
+          organizationId,
           sourcedNativity?.datasetDate,
           sourcedNativity?.datasetType,
           sourcedNativity?.speciesNativity,
-          organizationId,
           speciesId,
       )
     }
 
     with(PROJECT_SPECIES) {
+      val datasetDateField =
+          if (autoAccept) CALCULATED_NATIVITY_DATASET_DATE else PENDING_NATIVITY_DATASET_DATE
+      val datasetTypeField =
+          if (autoAccept) CALCULATED_NATIVITY_DATASET_TYPE_ID else PENDING_NATIVITY_DATASET_TYPE_ID
+      val nativityField = if (autoAccept) CALCULATED_NATIVITY_ID else PENDING_NATIVITY_ID
+
       dslContext
           .insertInto(
               PROJECT_SPECIES,
-              CALCULATED_NATIVITY_DATASET_DATE,
-              CALCULATED_NATIVITY_DATASET_TYPE_ID,
-              CALCULATED_NATIVITY_ID,
               ORGANIZATION_ID,
+              datasetDateField,
+              datasetTypeField,
+              nativityField,
               SPECIES_ID,
           )
           .valuesOfRows(rows)
