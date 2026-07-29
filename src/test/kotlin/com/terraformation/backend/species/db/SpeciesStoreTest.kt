@@ -521,6 +521,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
           calculatedNativityDatasetDate = LocalDate.of(2026, 1, 1),
           calculatedNativityDatasetType = ExternalDatasetType.GBIF,
           overriddenNativityId = SpeciesNativity.Native,
+          pendingNativity = SpeciesNativity.Invasive,
+          pendingNativityDatasetDate = LocalDate.of(2026, 5, 5),
+          pendingNativityDatasetType = ExternalDatasetType.GRIIS,
           speciesId = speciesId,
       )
 
@@ -543,6 +546,12 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                               ),
                           overriddenJustification = "Justification",
                           overriddenNativity = SpeciesNativity.Native,
+                          pendingNativity = SpeciesNativity.Invasive,
+                          pendingNativitySource =
+                              SpeciesDataSourceModel(
+                                  LocalDate.of(2026, 5, 5),
+                                  ExternalDatasetType.GRIIS,
+                              ),
                           projectId = projectId,
                       )
                   ),
