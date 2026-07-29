@@ -34,6 +34,7 @@ import com.terraformation.backend.species.model.NewSpeciesModel
 import com.terraformation.backend.species.model.ProjectSpeciesOverride
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
@@ -198,6 +199,17 @@ class SpeciesController(
   )
   fun deleteProblem(@PathVariable problemId: SpeciesProblemId): SimpleSuccessResponsePayload {
     speciesStore.deleteProblem(problemId)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @Operation(summary = "Accepts the pending nativities for all species in an organization.")
+  @PostMapping("/projects/accept")
+  fun acceptPendingNativities(
+      @RequestBody payload: AcceptPendingNativitiesRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    projectSpeciesStore.acceptPendingNativities(payload.organizationId, payload.projectIds)
     return SimpleSuccessResponsePayload()
   }
 
@@ -500,6 +512,19 @@ data class OverrideSpeciesProjectDataElement(
           speciesId = speciesId,
       )
 }
+
+data class AcceptPendingNativitiesRequestPayload(
+    val organizationId: OrganizationId,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "If present, only accept pending nativities for species in the specified " +
+                        "projects. If absent, accept pending nativities across all projects."
+            )
+    )
+    val projectIds: Set<ProjectId>? = null,
+)
 
 data class AssignSpeciesToProjectsPayload(
     @Schema(description = "The species to assign, each with the projects to associate it with.")
