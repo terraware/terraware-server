@@ -2,6 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
@@ -34,6 +35,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     ProjectSpeciesStore(
         clock,
         dslContext,
+        ParentStore(dslContext),
         SpeciesNativityCalculator(dslContext),
     )
   }
@@ -54,6 +56,157 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertOrganizationUser(role = Role.Manager)
 
     clock.instant = Instant.ofEpochSecond(1234)
+  }
+
+  @Nested
+  inner class AcceptPendingNativities {
+    @Test
+    fun `accepts pending nativities of all the species in the organization`() {
+      val otherProjectId = insertProject()
+      val otherSpeciesId = insertSpecies(scientificName = "Other name")
+
+      insertProjectSpecies(
+          calculatedNativity = SpeciesNativity.Native,
+          overriddenNativityId = SpeciesNativity.Introduced,
+          pendingNativity = SpeciesNativity.Invasive,
+          pendingNativityDatasetDate = wcvpDate,
+          pendingNativityDatasetType = ExternalDatasetType.WCVP,
+          projectId = projectId,
+          speciesId = speciesId,
+      )
+      insertProjectSpecies(
+          pendingNativity = SpeciesNativity.Unknown,
+          projectId = otherProjectId,
+          speciesId = speciesId,
+      )
+      // Organization-level nativities are accepted too.
+      insertProjectSpecies(
+          pendingNativity = SpeciesNativity.Native,
+          projectId = null,
+          speciesId = otherSpeciesId,
+      )
+
+      val otherOrganizationId = insertOrganization()
+      val otherOrgProjectId = insertProject()
+      val otherOrgSpeciesId = insertSpecies(scientificName = "Other name")
+      insertProjectSpecies(pendingNativity = SpeciesNativity.Native)
+
+      store.acceptPendingNativities(organizationId)
+
+      assertTableEquals(
+          listOf(
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = wcvpDate,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.WCVP,
+                  calculatedNativityId = SpeciesNativity.Invasive,
+                  organizationId = organizationId,
+                  overriddenBy = inserted.userId,
+                  overriddenJustification = "Justification",
+                  overriddenNativityId = SpeciesNativity.Introduced,
+                  overriddenTime = Instant.EPOCH,
+                  projectId = projectId,
+                  speciesId = speciesId,
+              ),
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = LocalDate.EPOCH,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityId = SpeciesNativity.Unknown,
+                  organizationId = organizationId,
+                  projectId = otherProjectId,
+                  speciesId = speciesId,
+              ),
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = LocalDate.EPOCH,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityId = SpeciesNativity.Native,
+                  organizationId = organizationId,
+                  projectId = null,
+                  speciesId = otherSpeciesId,
+              ),
+              // Other orgs' nativities shouldn't be touched.
+              ProjectSpeciesRecord(
+                  organizationId = otherOrganizationId,
+                  pendingNativityDatasetDate = LocalDate.EPOCH,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  pendingNativityId = SpeciesNativity.Native,
+                  projectId = otherOrgProjectId,
+                  speciesId = otherOrgSpeciesId,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `only accepts pending nativities of species in the requested projects`() {
+      val otherProjectId = insertProject()
+
+      insertProjectSpecies(pendingNativity = SpeciesNativity.Invasive, projectId = projectId)
+      insertProjectSpecies(pendingNativity = SpeciesNativity.Native, projectId = otherProjectId)
+      insertProjectSpecies(pendingNativity = SpeciesNativity.Unknown, projectId = null)
+
+      store.acceptPendingNativities(organizationId, listOf(projectId))
+
+      assertTableEquals(
+          listOf(
+              ProjectSpeciesRecord(
+                  calculatedNativityDatasetDate = LocalDate.EPOCH,
+                  calculatedNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  calculatedNativityId = SpeciesNativity.Invasive,
+                  organizationId = organizationId,
+                  projectId = projectId,
+                  speciesId = speciesId,
+              ),
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  pendingNativityDatasetDate = LocalDate.EPOCH,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  pendingNativityId = SpeciesNativity.Native,
+                  projectId = otherProjectId,
+                  speciesId = speciesId,
+              ),
+              ProjectSpeciesRecord(
+                  organizationId = organizationId,
+                  pendingNativityDatasetDate = LocalDate.EPOCH,
+                  pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
+                  pendingNativityId = SpeciesNativity.Unknown,
+                  projectId = null,
+                  speciesId = speciesId,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `is a no-op when the organization has no species`() {
+      assertDoesNotThrow { store.acceptPendingNativities(organizationId) }
+      assertTableEmpty(PROJECT_SPECIES)
+    }
+
+    @Test
+    fun `throws exception if no permission to create species`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.acceptPendingNativities(organizationId) }
+    }
+
+    @Test
+    fun `throws exception if a project does not exist`() {
+      assertThrows<ProjectNotFoundException> {
+        store.acceptPendingNativities(organizationId, listOf(ProjectId(999999)))
+      }
+    }
+
+    @Test
+    fun `throws exception if a project is in a different organization`() {
+      insertOrganization()
+      insertOrganizationUser()
+      val otherProjectId = insertProject()
+
+      assertThrows<ProjectInDifferentOrganizationException> {
+        store.acceptPendingNativities(organizationId, listOf(otherProjectId))
+      }
+    }
   }
 
   @Nested

@@ -1,6 +1,7 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.asNonNullable
@@ -28,6 +29,7 @@ import org.jooq.impl.DSL
 class ProjectSpeciesStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val parentStore: ParentStore,
     private val speciesNativityCalculator: SpeciesNativityCalculator,
 ) {
   private val log = perClassLogger()
@@ -291,6 +293,40 @@ class ProjectSpeciesStore(
           .set(OVERRIDDEN_JUSTIFICATION, DSL.excluded(OVERRIDDEN_JUSTIFICATION))
           .set(OVERRIDDEN_NATIVITY_ID, DSL.excluded(OVERRIDDEN_NATIVITY_ID))
           .set(OVERRIDDEN_TIME, DSL.excluded(OVERRIDDEN_TIME))
+          .execute()
+    }
+  }
+
+  fun acceptPendingNativities(
+      organizationId: OrganizationId,
+      projectIds: Collection<ProjectId>? = null,
+  ) {
+    requirePermissions { createSpecies(organizationId) }
+
+    projectIds?.forEach { projectId ->
+      requirePermissions { readProject(projectId) }
+
+      if (parentStore.getOrganizationId(projectId) != organizationId) {
+        throw ProjectInDifferentOrganizationException()
+      }
+    }
+
+    with(PROJECT_SPECIES) {
+      dslContext
+          .update(PROJECT_SPECIES)
+          .set(CALCULATED_NATIVITY_DATASET_DATE, PENDING_NATIVITY_DATASET_DATE)
+          .set(CALCULATED_NATIVITY_DATASET_TYPE_ID, PENDING_NATIVITY_DATASET_TYPE_ID)
+          .set(CALCULATED_NATIVITY_ID, PENDING_NATIVITY_ID)
+          .setNull(PENDING_NATIVITY_DATASET_DATE)
+          .setNull(PENDING_NATIVITY_DATASET_TYPE_ID)
+          .setNull(PENDING_NATIVITY_ID)
+          .where(
+              listOfNotNull(
+                  ORGANIZATION_ID.eq(organizationId),
+                  PENDING_NATIVITY_ID.isNotNull,
+                  projectIds?.let { PROJECT_ID.`in`(it) },
+              )
+          )
           .execute()
     }
   }
