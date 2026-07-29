@@ -23,6 +23,8 @@ data class ExistingSpeciesProjectModel(
     val calculatedNativitySource: SpeciesDataSourceModel? = null,
     val overriddenJustification: String? = null,
     val overriddenNativity: SpeciesNativity? = null,
+    val pendingNativity: SpeciesNativity? = null,
+    val pendingNativitySource: SpeciesDataSourceModel? = null,
     val projectId: ProjectId? = null,
 ) {
   companion object {
@@ -37,6 +39,12 @@ data class ExistingSpeciesProjectModel(
                   ),
               overriddenJustification = record[OVERRIDDEN_JUSTIFICATION],
               overriddenNativity = record[OVERRIDDEN_NATIVITY_ID],
+              pendingNativity = record[PENDING_NATIVITY_ID],
+              pendingNativitySource =
+                  SpeciesDataSourceModel.of(
+                      record[PENDING_NATIVITY_DATASET_DATE],
+                      record[PENDING_NATIVITY_DATASET_TYPE_ID],
+                  ),
               projectId = record[PROJECT_ID],
           )
         }

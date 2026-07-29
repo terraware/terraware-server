@@ -75,6 +75,9 @@ class SpeciesStore(
                         CALCULATED_NATIVITY_ID,
                         OVERRIDDEN_JUSTIFICATION,
                         OVERRIDDEN_NATIVITY_ID,
+                        PENDING_NATIVITY_DATASET_DATE,
+                        PENDING_NATIVITY_DATASET_TYPE_ID,
+                        PENDING_NATIVITY_ID,
                         PROJECT_ID,
                     )
                     .from(PROJECT_SPECIES)

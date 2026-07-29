@@ -263,6 +263,14 @@ data class SpeciesProjectElement(
     val calculatedNativitySource: SpeciesDataSourcePayload?,
     val overriddenJustification: String?,
     val overriddenNativity: SpeciesNativity?,
+    @Schema(
+        description =
+            "Latest calculated nativity value for the species, if different from " +
+                "calculatedNativity. This nativity is considered 'pending' until it is accepted " +
+                "by the user."
+    )
+    val pendingNativity: SpeciesNativity?,
+    val pendingNativitySource: SpeciesDataSourcePayload?,
     val projectId: ProjectId?,
 ) {
   constructor(
@@ -272,6 +280,18 @@ data class SpeciesProjectElement(
       calculatedNativitySource = model.calculatedNativitySource?.toPayload(),
       overriddenJustification = model.overriddenJustification,
       overriddenNativity = model.overriddenNativity,
+      pendingNativity =
+          if (model.calculatedNativity != model.pendingNativity) {
+            model.pendingNativity
+          } else {
+            null
+          },
+      pendingNativitySource =
+          if (model.calculatedNativity != model.pendingNativity) {
+            model.pendingNativitySource?.toPayload()
+          } else {
+            null
+          },
       projectId = model.projectId,
   )
 }
