@@ -53,6 +53,12 @@ class ProjectSpeciesTable(tables: SearchTables) : SearchTable() {
           textField("overriddenJustification", PROJECT_SPECIES.OVERRIDDEN_JUSTIFICATION),
           enumField("overriddenNativity", PROJECT_SPECIES.OVERRIDDEN_NATIVITY_ID),
           timestampField("overriddenTime", PROJECT_SPECIES.OVERRIDDEN_TIME),
+          enumField("pendingNativity", PROJECT_SPECIES.PENDING_NATIVITY_ID),
+          enumField(
+              "pendingNativitySourceDataset",
+              PROJECT_SPECIES.PENDING_NATIVITY_DATASET_TYPE_ID,
+          ),
+          dateField("pendingNativitySourceDate", PROJECT_SPECIES.PENDING_NATIVITY_DATASET_DATE),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.species
