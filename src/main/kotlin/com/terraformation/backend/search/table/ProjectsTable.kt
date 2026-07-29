@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCEL
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VARIABLES
+import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
@@ -38,6 +39,10 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          acceleratorReports.asMultiValueSublist(
+              "acceleratorReports",
+              PROJECTS.ID.eq(REPORTS.PROJECT_ID),
+          ),
           accessions.asMultiValueSublist("accessions", PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID)),
           applications.asSingleValueSublist("application", PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID)),
           batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCHES.PROJECT_ID)),
