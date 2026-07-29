@@ -13,7 +13,7 @@ import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class ReportsTable(tables: SearchTables) : SearchTable() {
+class SeedFundReportsTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = SEED_FUND_REPORTS.ID
 
