@@ -34,10 +34,14 @@ class AcceleratorReportCommonIndicatorsTable(tables: SearchTables) : SearchTable
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          commonIndicators.asSingleValueSublist(
+              "indicator",
+              REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID),
+          ),
           acceleratorReports.asSingleValueSublist(
               "report",
               REPORT_COMMON_INDICATORS.REPORT_ID.eq(REPORTS.ID),
-          )
+          ),
       )
     }
   }

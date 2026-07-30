@@ -34,10 +34,14 @@ class AcceleratorReportProjectIndicatorsTable(tables: SearchTables) : SearchTabl
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          projectIndicators.asSingleValueSublist(
+              "indicator",
+              REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID),
+          ),
           acceleratorReports.asSingleValueSublist(
               "report",
               REPORT_PROJECT_INDICATORS.REPORT_ID.eq(REPORTS.ID),
-          )
+          ),
       )
     }
   }
