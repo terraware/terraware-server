@@ -1,3 +1,4 @@
+1ea1f86a Fix PlantingSeasonStoreTest failures (#4817)
 352d1a70 SW-8694 Add endpoint to accept pending nativities (#4810)
 0dc0c95a SW-8694 Include pending nativities in species API (#4809)
 b52970ff SW-8694 Expose pending nativities in search API (#4808)
