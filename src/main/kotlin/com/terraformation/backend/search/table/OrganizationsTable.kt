@@ -86,8 +86,8 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               "projectSpecies",
               ORGANIZATIONS.ID.eq(PROJECT_SPECIES.ORGANIZATION_ID),
           ),
-          reports.asMultiValueSublist(
-              "reports",
+          seedFundReports.asMultiValueSublist(
+              "seedFundReports",
               ORGANIZATIONS.ID.eq(SEED_FUND_REPORTS.ORGANIZATION_ID),
           ),
           species.asMultiValueSublist("species", ORGANIZATIONS.ID.eq(SPECIES.ORGANIZATION_ID)),
