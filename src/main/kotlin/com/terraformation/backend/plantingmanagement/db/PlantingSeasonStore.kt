@@ -322,6 +322,7 @@ class PlantingSeasonStore(
           .select(PLANTING_SEASONS.asterisk(), targetsMultiset)
           .from(PLANTING_SEASONS)
           .where(condition)
+          .orderBy(START_DATE, ID)
           .fetch { record ->
             ExistingPlantingSeasonModel(
                 endDate = record[END_DATE]!!,
