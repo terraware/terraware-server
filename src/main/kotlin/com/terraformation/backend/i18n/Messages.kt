@@ -34,6 +34,7 @@ import java.time.format.FormatStyle
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
+import org.locationtech.jts.geom.Point
 import org.springframework.context.support.ResourceBundleMessageSource
 
 /** Helper class to encapsulate notification message semantics */
@@ -106,6 +107,13 @@ class Messages {
   fun botanicalCountryName(value: String?): String? = value?.let {
     getMessageSource("i18n.BotanicalCountries").getMessage(it)
   }
+
+  fun coordinates(point: Point): String =
+      getMessage(
+          "coordinatesFormat",
+          "%.6f".format(point.coordinates[0].y),
+          "%.6f".format(point.coordinates[0].x),
+      )
 
   fun csvBadHeader() = getMessage("csvBadHeader")
 

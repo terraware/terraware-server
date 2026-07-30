@@ -73,6 +73,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesEditedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
@@ -114,6 +116,7 @@ import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
+import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
@@ -1428,6 +1431,13 @@ class ObservationStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(monitoringPlotId)
+            ?: throw PlotNotFoundException(monitoringPlotId)
+
     dslContext.transaction { _ ->
       val existingCoordinates =
           dslContext
@@ -1436,25 +1446,42 @@ class ObservationStore(
               .and(OBSERVED_PLOT_COORDINATES.MONITORING_PLOT_ID.eq(monitoringPlotId))
               .fetch()
 
-      val coordinateIdsToDelete =
-          existingCoordinates
-              .filter { existing ->
-                coordinates.none {
-                  it.position == existing.positionId && it.gpsCoordinates == existing.gpsCoordinates
-                }
-              }
-              .map { it.id!! }
+      val coordinatesToDelete = existingCoordinates.filter { existing ->
+        coordinates.none {
+          it.position == existing.positionId && it.gpsCoordinates == existing.gpsCoordinates
+        }
+      }
       val coordinatesToInsert = coordinates.filter { desired ->
         existingCoordinates.none {
           it.positionId == desired.position && it.gpsCoordinates == desired.gpsCoordinates
         }
       }
 
-      if (coordinateIdsToDelete.isNotEmpty()) {
+      if (coordinatesToDelete.isNotEmpty()) {
+        val coordinateIdsToDelete = coordinatesToDelete.map { it.id!! }
+
         dslContext
             .deleteFrom(OBSERVED_PLOT_COORDINATES)
             .where(OBSERVED_PLOT_COORDINATES.ID.`in`(coordinateIdsToDelete))
             .execute()
+
+        coordinatesToDelete
+            .filter { existing ->
+              coordinates.none { desired -> existing.positionId == desired.position }
+            }
+            .forEach { existing ->
+              eventPublisher.publishEvent(
+                  ObservationPlotCoordinatesEditedEvent(
+                      ObservationPlotCoordinatesEditedEventValues(existing.gpsCoordinates as Point),
+                      ObservationPlotCoordinatesEditedEventValues(null),
+                      monitoringPlotId,
+                      observationId,
+                      organizationId,
+                      plantingSiteId,
+                      existing.positionId!!,
+                  )
+              )
+            }
       }
 
       coordinatesToInsert.forEach { desired ->
@@ -1465,6 +1492,20 @@ class ObservationStore(
             .set(OBSERVED_PLOT_COORDINATES.POSITION_ID, desired.position)
             .set(OBSERVED_PLOT_COORDINATES.GPS_COORDINATES, desired.gpsCoordinates)
             .execute()
+
+        val existing = existingCoordinates.firstOrNull { it.positionId == desired.position }
+
+        eventPublisher.publishEvent(
+            ObservationPlotCoordinatesEditedEvent(
+                ObservationPlotCoordinatesEditedEventValues(existing?.gpsCoordinates as? Point),
+                ObservationPlotCoordinatesEditedEventValues(desired.gpsCoordinates),
+                monitoringPlotId,
+                observationId,
+                organizationId,
+                plantingSiteId,
+                desired.position,
+            )
+        )
       }
     }
   }
