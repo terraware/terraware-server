@@ -51,7 +51,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
   ): ObservationResultsModel {
     requirePermissions { readObservation(observationId) }
 
-    return fetchByCondition(OBSERVATIONS.ID.eq(observationId), depth, 1).first()
+    return fetchByCondition(OBSERVATIONS.ID.eq(observationId), depth, 1, true).first()
   }
 
   fun fetchByPlantingSiteId(
@@ -73,6 +73,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         ),
         depth,
         limit,
+        isAdHoc,
     )
   }
 
@@ -93,6 +94,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         ),
         depth,
         limit,
+        isAdHoc,
     )
   }
 
@@ -487,6 +489,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       condition: Condition,
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
       limit: Int?,
+      includeAdHoc: Boolean,
   ): List<ObservationResultsModel> {
     val queryDepth =
         if (depth == ObservationResultsDepth.Plant) {
@@ -495,7 +498,12 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
           ObservationResultsDepth.Plot
         }
 
-    val adHocPlotsField = adHocMonitoringPlotsMultiset(queryDepth)
+    val adHocPlotsField: Field<List<ObservationMonitoringPlotResultsModel>> =
+        if (includeAdHoc) {
+          adHocMonitoringPlotsMultiset(queryDepth)
+        } else {
+          DSL.multiset(DSL.selectOne()).convertFrom { emptyList() }
+        }
     val strataField = stratumMultiset(queryDepth)
     val plantingSiteSpeciesMultisetField = plantingSiteSpeciesMultiset()
 
