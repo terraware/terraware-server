@@ -57,6 +57,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
+import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.StratumHistoryId
@@ -109,6 +110,7 @@ class InsertedDatabaseIds {
   val projectIds = mutableListOf<ProjectId>()
   val projectIndicatorIds = mutableListOf<ProjectIndicatorId>()
   val projectReportConfigIds = mutableListOf<ProjectReportConfigId>()
+  val recordedPlantIds = mutableListOf<RecordedPlantId>()
   val recordedTreeIds = mutableListOf<RecordedTreeId>()
   val reportIds = mutableListOf<ReportId>()
   val scheduledPlantingDateIds = mutableListOf<ScheduledPlantingDateId>()
@@ -255,6 +257,9 @@ class InsertedDatabaseIds {
 
   val projectReportConfigId
     get() = projectReportConfigIds.last()
+
+  val recordedPlantId
+    get() = recordedPlantIds.last()
 
   val recordedTreeId
     get() = recordedTreeIds.last()
