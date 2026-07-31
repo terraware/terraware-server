@@ -64,6 +64,7 @@ import com.terraformation.backend.tracking.event.MonitoringSpeciesPersistentEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
@@ -352,6 +353,40 @@ data class ObservationPlotSubjectPayload(
           event.observationId,
           event.plantingSiteId,
           context.subjectShortText<ObservationPlotSubjectPayload>(),
+      )
+    }
+  }
+}
+
+@JsonTypeName("ObservationPlotCoordinates")
+data class ObservationPlotCoordinatesSubjectPayload(
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val plantingSiteId: PlantingSiteId,
+    val position: ObservationPlotPosition,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: ObservationPlotCoordinatesPersistentEvent,
+        context: EventLogPayloadContext,
+    ): ObservationPlotCoordinatesSubjectPayload {
+      val createEvent =
+          context.first<ObservationPlotCreatedEvent> {
+            it.observationId == event.observationId && it.monitoringPlotId == event.monitoringPlotId
+          }
+
+      return ObservationPlotCoordinatesSubjectPayload(
+          context.subjectFullText<ObservationPlotCoordinatesSubjectPayload>(
+              createEvent.plotNumber,
+              event.position.getDisplayName(currentUser().locale),
+          ),
+          event.monitoringPlotId,
+          event.observationId,
+          event.plantingSiteId,
+          event.position,
+          context.subjectShortText<ObservationPlotCoordinatesSubjectPayload>(),
       )
     }
   }
@@ -952,6 +987,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   BiomassSpecies(BiomassSpeciesPersistentEvent::class),
   MonitoringSpecies(MonitoringSpeciesPersistentEvent::class),
   ObservationPlot(ObservationPlotPersistentEvent::class),
+  ObservationPlotCoordinates(ObservationPlotCoordinatesPersistentEvent::class),
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
   PlantingDateRequest(PlantingDateRequestPersistentEvent::class),

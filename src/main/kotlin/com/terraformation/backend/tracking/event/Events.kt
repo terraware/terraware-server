@@ -370,6 +370,40 @@ typealias ObservationPlotEditedEvent = ObservationPlotEditedEventV1
 
 typealias ObservationPlotEditedEventValues = ObservationPlotEditedEventV1.Values
 
+sealed interface ObservationPlotCoordinatesPersistentEvent : PersistentEvent {
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+  val position: ObservationPlotPosition
+}
+
+data class ObservationPlotCoordinatesEditedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+) : FieldsUpdatedPersistentEvent, ObservationPlotCoordinatesPersistentEvent {
+  data class Values(val gpsCoordinates: Point? = null)
+
+  override fun listUpdatedFields(messages: Messages) =
+      listOfNotNull(
+          createUpdatedField(
+              "gpsCoordinates",
+              changedFrom.gpsCoordinates?.let { messages.coordinates(it) },
+              changedTo.gpsCoordinates?.let { messages.coordinates(it) },
+          )
+      )
+}
+
+typealias ObservationPlotCoordinatesEditedEvent = ObservationPlotCoordinatesEditedEventV1
+
+typealias ObservationPlotCoordinatesEditedEventValues =
+    ObservationPlotCoordinatesEditedEventV1.Values
+
 sealed interface BiomassDetailsPersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId
   val observationId: ObservationId
