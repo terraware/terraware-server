@@ -1,3 +1,4 @@
+05d0cae8 SW-8718 Skip querying ad-hoc results if not requested (#4819)
 65403010 SW-8487 Record optional coordinates edits in event log (#4818)
 60a7f026 SW-8713 Add indicators to search (#4816)
 e27dd001 SW-8713 Add report indicators to search (#4814)
