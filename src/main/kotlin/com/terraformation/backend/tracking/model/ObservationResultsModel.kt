@@ -169,6 +169,9 @@ data class ObservationMonitoringPlotResultsModel(
  * strata, planting sites).
  */
 interface BaseAggregatedMonitoringResult : BaseMonitoringResult {
+  /** True if at least one monitoring plot in the aggregated area has completed its observation. */
+  val anyPlotsCompleted: Boolean
+
   /**
    * Estimated number of plants in the region based on estimated planting density and area. Only
    * present if all observed substrata in the region have completed planting.
@@ -189,6 +192,7 @@ interface BaseAggregatedMonitoringResult : BaseMonitoringResult {
 }
 
 data class ObservationSubstratumResultsModel(
+    override val anyPlotsCompleted: Boolean,
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
@@ -207,6 +211,7 @@ data class ObservationSubstratumResultsModel(
 ) : BaseAggregatedMonitoringResult
 
 data class ObservationStratumResultsModel(
+    override val anyPlotsCompleted: Boolean,
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
@@ -231,6 +236,7 @@ data class ObservationStratumResultsModel(
 
 data class ObservationResultsModel(
     val adHocPlot: ObservationMonitoringPlotResultsModel?,
+    override val anyPlotsCompleted: Boolean,
     val areaHa: BigDecimal?,
     val biomassDetails: ExistingBiomassDetailsModel?,
     val completedTime: Instant?,

@@ -11,12 +11,10 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
-import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
-import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
+import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
@@ -108,6 +106,18 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       insertObservation(completedTime = Instant.ofEpochSecond(1))
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
+      // Partially completed observation
+      insertObservation()
+      insertObservationPlot()
+      insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertSpecies()
+      insertObservedPlotSpeciesTotals(totalLive = 1)
+      insertObservedSubstratumSpeciesTotals(totalLive = 1)
+      insertObservedStratumSpeciesTotals(totalLive = 1)
+      insertObservedSiteSpeciesTotals(totalLive = 1)
+      insertRecordedPlant(speciesId = inserted.speciesId)
+
       val plantResults =
           resultsStoreV2.fetchByOrganizationId(
               organizationId,
@@ -129,32 +139,94 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
           resultsStoreV2.fetchByOrganizationId(organizationId, depth = ObservationResultsDepth.Site)
 
       assertEquals(
-          emptyList<com.terraformation.backend.tracking.model.RecordedPlantModel>(),
-          plantResults[0].strata[0].substrata[0].monitoringPlots[0].plants,
+          listOf(
+              RecordedPlantModel(
+                  certainty = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1),
+                  id = inserted.recordedPlantId,
+                  speciesId = inserted.speciesId,
+                  speciesName = null,
+                  status = RecordedPlantStatus.Live,
+              )
+          ),
+          plantResults
+              .single { it.observationId == inserted.observationId }
+              .strata[0]
+              .substrata[0]
+              .monitoringPlots
+              .single { it.monitoringPlotId == inserted.monitoringPlotId }
+              .plants,
           "Plant depth contains plants",
       )
 
-      assertNull(
-          plotResults[0].strata[0].substrata[0].monitoringPlots[0].plants,
-          "Plot depth has plants = null",
-      )
+      val expectedPlotResults = plantResults.map { result ->
+        result.copy(
+            strata =
+                result.strata.map { stratum ->
+                  stratum.copy(
+                      substrata =
+                          stratum.substrata.map { substratum ->
+                            substratum.copy(
+                                monitoringPlots =
+                                    substratum.monitoringPlots.map { plot ->
+                                      plot.copy(plants = null)
+                                    }
+                            )
+                          }
+                  )
+                }
+        )
+      }
 
       assertEquals(
-          emptyList<ObservationMonitoringPlotResultsModel>(),
-          substratumResults[0].strata[0].substrata[0].monitoringPlots,
-          "Substratum depth contains empty list of monitoring plots",
+          expectedPlotResults,
+          plotResults,
+          "Plot-level results should have nulled-out plot-level plants list",
       )
 
-      assertEquals(
-          emptyList<ObservationSubstratumResultsModel>(),
-          stratumResults[0].strata[0].substrata,
-          "Stratum depth contains empty list of substrata",
-      )
+      val expectedSubstratumResults = expectedPlotResults.map { result ->
+        result.copy(
+            strata =
+                result.strata.map { stratum ->
+                  stratum.copy(
+                      substrata =
+                          stratum.substrata.map { substratum ->
+                            substratum.copy(monitoringPlots = emptyList())
+                          }
+                  )
+                }
+        )
+      }
 
       assertEquals(
-          emptyList<ObservationStratumResultsModel>(),
-          siteResults[0].strata,
-          "Site depth contains empty list of strata",
+          expectedSubstratumResults,
+          substratumResults,
+          "Substratum-level results should have empty plot lists",
+      )
+
+      val expectedStratumResults = expectedSubstratumResults.map { result ->
+        result.copy(
+            strata =
+                result.strata.map { stratum ->
+                  stratum.copy(substrata = emptyList())
+                }
+        )
+      }
+
+      assertEquals(
+          expectedStratumResults,
+          stratumResults,
+          "Stratum-level results should have empty substratum lists",
+      )
+
+      val expectedSiteResults = expectedStratumResults.map { result ->
+        result.copy(strata = emptyList())
+      }
+
+      assertEquals(
+          expectedSiteResults,
+          siteResults,
+          "Site-level results should have empty stratum lists",
       )
     }
 

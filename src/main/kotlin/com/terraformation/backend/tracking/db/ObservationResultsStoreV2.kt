@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.emptyMultiset
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -33,6 +34,7 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.Record3
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Polygon
 
@@ -223,6 +225,42 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
           depth,
       )
 
+  private data class AreaCompletionResults(
+      val anyPlotsCompleted: Boolean,
+      val areaCompletedTime: Instant?,
+  ) {
+    companion object {
+      fun of(record: Record3<Boolean?, Boolean?, Instant?>): AreaCompletionResults {
+        val (anyCompleted, allCompleted, maxCompletedTime) = record
+        return AreaCompletionResults(
+            anyCompleted == true,
+            if (allCompleted == true) maxCompletedTime else null,
+        )
+      }
+    }
+  }
+
+  /**
+   * Queries the completion status of a substratum in an observation. This is used when we aren't
+   * fetching plot-level results.
+   */
+  private val substratumCompletionMultiset: Field<List<AreaCompletionResults>> =
+      DSL.multiset(
+              DSL.select(
+                      DSL.boolOr(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull),
+                      DSL.boolAnd(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull),
+                      DSL.max(OBSERVATION_PLOTS.COMPLETED_TIME),
+                  )
+                  .from(OBSERVATION_PLOTS)
+                  .join(MONITORING_PLOT_HISTORIES)
+                  .on(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.eq(MONITORING_PLOT_HISTORIES.ID))
+                  .where(
+                      MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID)
+                  )
+                  .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+          )
+          .convertFrom { result -> result.map { AreaCompletionResults.of(it) } }
+
   /**
    * Substratum results. Plant density, plant density std dev, survival rate, and survival rate std
    * dev are read from [OBSERVATION_SUBSTRATUM_RESULTS].
@@ -230,8 +268,19 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
   private fun substrataMultiset(
       depth: ObservationResultsDepth
   ): Field<List<ObservationSubstratumResultsModel>> {
-    val plotsField = substratumMonitoringPlotsMultiset(depth)
+    val plotsField =
+        when (depth) {
+          ObservationResultsDepth.Plot,
+          ObservationResultsDepth.Plant -> substratumMonitoringPlotsMultiset(depth)
+          else -> emptyMultiset()
+        }
     val substratumSpeciesMultisetField = substratumSpeciesMultiset()
+    val substratumCompletionMultisetField =
+        when (depth) {
+          ObservationResultsDepth.Plot,
+          ObservationResultsDepth.Plant -> emptyMultiset()
+          else -> substratumCompletionMultiset
+        }
     return DSL.multiset(
             DSL.select(
                     SUBSTRATUM_HISTORIES.AREA_HA,
@@ -239,6 +288,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     SUBSTRATUM_HISTORIES.NAME,
                     SUBSTRATA.PLANTING_COMPLETED_TIME,
                     plotsField,
+                    substratumCompletionMultisetField,
                     substratumSpeciesMultisetField,
                     SUBSTRATUM_HISTORIES.stratumHistories.plantingSiteHistories.plantingSites
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
@@ -278,6 +328,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         .convertFrom { results ->
           results.map { record: Record ->
             val monitoringPlots = record[plotsField]
+            val completionResults = record[substratumCompletionMultisetField]?.firstOrNull()
 
             val areaHa = record[SUBSTRATUM_HISTORIES.AREA_HA]!!
             val survivalRateIncludesTempPlots =
@@ -286,7 +337,9 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
                         .asNonNullable()]
 
-            val anyCompleted = monitoringPlots.any { it.completedTime != null }
+            val anyCompleted =
+                completionResults?.let { it.anyPlotsCompleted }
+                    ?: monitoringPlots.any { it.completedTime != null }
             val species =
                 if (anyCompleted) {
                   record[substratumSpeciesMultisetField]
@@ -302,14 +355,13 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                           (it.totalLive + it.totalExisting) > 0
                     }
 
-            val isCompleted =
-                monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
             val completedTime =
-                if (isCompleted) {
-                  monitoringPlots.maxOf { it.completedTime!! }
-                } else {
-                  null
-                }
+                completionResults?.areaCompletedTime
+                    ?: if (monitoringPlots.all { it.completedTime != null }) {
+                      monitoringPlots.maxOfOrNull { it.completedTime!! }
+                    } else {
+                      null
+                    }
 
             val survivalRate = record[OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE]
             val survivalRateStdDev = record[OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE_STD_DEV]
@@ -325,6 +377,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 }
 
             ObservationSubstratumResultsModel(
+                anyPlotsCompleted = anyCompleted,
                 areaHa = areaHa,
                 completedTime = completedTime,
                 estimatedPlants = estimatedPlants,
@@ -346,14 +399,49 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
   }
 
   /**
+   * Queries the completion status of a stratum in an observation. This is used when we aren't
+   * fetching plot-level results.
+   */
+  private val stratumCompletionMultiset: Field<List<AreaCompletionResults>> =
+      DSL.multiset(
+              DSL.select(
+                      DSL.boolOr(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull),
+                      DSL.boolAnd(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull),
+                      DSL.max(OBSERVATION_PLOTS.COMPLETED_TIME),
+                  )
+                  .from(OBSERVATION_PLOTS)
+                  .join(MONITORING_PLOT_HISTORIES)
+                  .on(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.eq(MONITORING_PLOT_HISTORIES.ID))
+                  .join(SUBSTRATUM_HISTORIES)
+                  .on(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID))
+                  .where(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+                  .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+          )
+          .convertFrom { result -> result.map { AreaCompletionResults.of(it) } }
+
+  /**
    * Stratum results. Plant density, plant density std dev, survival rate, and survival rate std dev
    * are read from [OBSERVATION_STRATUM_RESULTS].
    */
   private fun stratumMultiset(
       depth: ObservationResultsDepth
   ): Field<List<ObservationStratumResultsModel>> {
-    val substrataField = substrataMultiset(depth)
+    val substrataField =
+        when (depth) {
+          ObservationResultsDepth.Plot,
+          ObservationResultsDepth.Plant,
+          ObservationResultsDepth.Substratum -> substrataMultiset(depth)
+          else -> emptyMultiset()
+        }
+
     val stratumSpeciesMultisetField = stratumSpeciesMultiset()
+    val stratumCompletionMultisetField =
+        when (depth) {
+          ObservationResultsDepth.Plot,
+          ObservationResultsDepth.Plant,
+          ObservationResultsDepth.Substratum -> emptyMultiset()
+          else -> stratumCompletionMultiset
+        }
 
     return DSL.multiset(
             DSL.select(
@@ -361,6 +449,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     STRATUM_HISTORIES.STRATUM_ID,
                     STRATUM_HISTORIES.NAME,
                     substrataField,
+                    stratumCompletionMultisetField,
                     stratumSpeciesMultisetField,
                     stratumPlantingCompletedField,
                     STRATUM_HISTORIES.plantingSiteHistories.plantingSites
@@ -411,9 +500,9 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
           results.map { record: Record ->
             val areaHa = record[STRATUM_HISTORIES.AREA_HA]!!
             val substrata = record[substrataField]
-            val anyCompleted = substrata.any { substratum ->
-              substratum.monitoringPlots.any { it.completedTime != null }
-            }
+            val completionResults = record[stratumCompletionMultisetField]?.firstOrNull()
+            val anyCompleted =
+                completionResults?.anyPlotsCompleted ?: substrata.any { it.anyPlotsCompleted }
             val species =
                 if (anyCompleted) {
                   record[stratumSpeciesMultisetField]
@@ -432,19 +521,13 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   null
                 }
 
-            val isCompleted =
-                substrata.isNotEmpty() &&
-                    substrata.all { substratum ->
-                      substratum.monitoringPlots.all { it.completedTime != null }
-                    }
             val completedTime =
-                if (isCompleted) {
-                  substrata.maxOf { substratum ->
-                    substratum.monitoringPlots.maxOf { it.completedTime!! }
-                  }
-                } else {
-                  null
-                }
+                completionResults?.areaCompletedTime
+                    ?: if (substrata.all { it.completedTime != null }) {
+                      substrata.maxOfOrNull { it.completedTime!! }
+                    } else {
+                      null
+                    }
 
             val survivalRate = record[OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE]
             val survivalRateStdDev = record[OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_STD_DEV]
@@ -461,6 +544,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 }
 
             ObservationStratumResultsModel(
+                anyPlotsCompleted = anyCompleted,
                 areaHa = areaHa,
                 completedTime = completedTime,
                 estimatedPlants = estimatedPlants,
@@ -491,7 +575,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       limit: Int?,
       includeAdHoc: Boolean,
   ): List<ObservationResultsModel> {
-    val queryDepth =
+    val adHocDepth =
         if (depth == ObservationResultsDepth.Plant) {
           ObservationResultsDepth.Plant
         } else {
@@ -500,11 +584,11 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
     val adHocPlotsField: Field<List<ObservationMonitoringPlotResultsModel>> =
         if (includeAdHoc) {
-          adHocMonitoringPlotsMultiset(queryDepth)
+          adHocMonitoringPlotsMultiset(adHocDepth)
         } else {
-          DSL.multiset(DSL.selectOne()).convertFrom { emptyList() }
+          emptyMultiset()
         }
-    val strataField = stratumMultiset(queryDepth)
+    val strataField = stratumMultiset(depth)
     val plantingSiteSpeciesMultisetField = plantingSiteSpeciesMultiset()
 
     val results =
@@ -542,11 +626,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
               val areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA]
 
               val strata = record[strataField]
-              val anyCompleted = strata.any { stratum ->
-                stratum.substrata.any { substratum ->
-                  substratum.monitoringPlots.any { it.completedTime != null }
-                }
-              }
+              val anyCompleted = strata.any { stratum -> stratum.anyPlotsCompleted }
               val species =
                   if (anyCompleted) {
                     record[plantingSiteSpeciesMultisetField]
@@ -580,6 +660,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
               ObservationResultsModel(
                   adHocPlot = record[adHocPlotsField].firstOrNull(),
+                  anyPlotsCompleted = anyCompleted,
                   areaHa = areaHa,
                   biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
                   completedTime = record[OBSERVATIONS.COMPLETED_TIME],

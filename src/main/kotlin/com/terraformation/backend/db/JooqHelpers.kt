@@ -24,3 +24,18 @@ fun Field<Geometry?>.asGeoJson(): Field<String?> =
  */
 fun Field<Geometry?>.forMultiset(): Field<Geometry?> =
     DSL.field("substring(ST_AsEWKB(?)::text, 3)", GeometryBinding.dataType, this)
+
+/**
+ * Returns a dummy multiset that evaluates to an empty list but doesn't actually query anything.
+ * This can be used when you want to conditionally include a multiset in a query, like:
+ *
+ *     val multisetField = if (shouldIncludeRealSubquery) {
+ *       DSL.multiset([real subquery goes here])
+ *     } else {
+ *       emptyMultiset()
+ *     }
+ *
+ * Then you can include `multisetField` in your select list and the resulting jOOQ query will have
+ * the same type signature whether the query has the real multiset or not.
+ */
+fun <T> emptyMultiset(): Field<List<T>> = DSL.multiset(DSL.selectOne()).convertFrom { emptyList() }

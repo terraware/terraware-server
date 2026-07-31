@@ -4291,7 +4291,7 @@ abstract class DatabaseBackedTest {
 
     recordedPlantsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!
+    return rowWithDefaults.id!!.also { inserted.recordedPlantIds.add(it) }
   }
 
   protected fun insertReport(
