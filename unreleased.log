@@ -1,3 +1,4 @@
+3858cb37 Don't rely on smart cast of Google email (#4824)
 7ac0a1c3 Update plugin com.diffplug.spotless to v8.9.0 (#4822)
 f26b9d87 SW-8718 Use cheaper completion subquery for subareas (#4820)
 05d0cae8 SW-8718 Skip querying ad-hoc results if not requested (#4819)
