@@ -54,6 +54,10 @@ class AcceleratorReportCommonIndicatorsTable(tables: SearchTables) : SearchTable
           timestampField("modifiedTime", REPORT_COMMON_INDICATORS.MODIFIED_TIME),
           textField("projectsComments", REPORT_COMMON_INDICATORS.PROJECTS_COMMENTS),
           enumField("status", REPORT_COMMON_INDICATORS.STATUS_ID),
+          uriField(
+              "supportingDocumentUrl",
+              REPORT_COMMON_INDICATORS.SUPPORTING_DOCUMENT_URL,
+          ),
           bigDecimalField("value", REPORT_COMMON_INDICATORS.VALUE),
       )
 

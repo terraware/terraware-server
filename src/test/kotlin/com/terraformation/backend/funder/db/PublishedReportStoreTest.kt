@@ -22,6 +22,7 @@ import com.terraformation.backend.funder.model.PublishedCumulativeIndicatorProgr
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -106,6 +107,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicatorId = projectIndicatorId,
           value = BigDecimal(10),
           status = ReportIndicatorStatus.OnTrack,
+          supportingDocumentUrl = URI("https://example.com/project"),
       )
 
       // Target for the report's year (2024) — should be included
@@ -142,6 +144,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectsComments = null,
               refId = "1.2.1",
               status = ReportIndicatorStatus.OnTrack,
+              supportingDocumentUrl = URI("https://example.com/project"),
               target = BigDecimal(100),
               unit = null,
               value = BigDecimal(10),
@@ -183,6 +186,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicatorId = commonIndicatorId,
           value = BigDecimal(20),
           status = ReportIndicatorStatus.Achieved,
+          supportingDocumentUrl = URI("https://example.com/common"),
       )
 
       // Target for the report's year (2024) — should be included
@@ -226,6 +230,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectsComments = null,
               refId = "1.1.1",
               status = ReportIndicatorStatus.Achieved,
+              supportingDocumentUrl = URI("https://example.com/common"),
               target = BigDecimal(200),
               unit = null,
               value = BigDecimal(20),
@@ -257,6 +262,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator = AutoCalculatedIndicator.SurvivalRate,
           value = BigDecimal(5),
           status = ReportIndicatorStatus.OnTrack,
+          supportingDocumentUrl = URI("https://example.com/auto-calc"),
       )
 
       // Target for the report's year (2024) — should be included
@@ -293,6 +299,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectsComments = null,
               refId = AutoCalculatedIndicator.SurvivalRate.refId,
               status = ReportIndicatorStatus.OnTrack,
+              supportingDocumentUrl = URI("https://example.com/auto-calc"),
               target = BigDecimal(300),
               unit = "%",
               value = BigDecimal(5),

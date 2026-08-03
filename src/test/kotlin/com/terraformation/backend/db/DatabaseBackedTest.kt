@@ -4416,6 +4416,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
+      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -4427,6 +4428,7 @@ abstract class DatabaseBackedTest {
             projectsComments = projectsComments,
             progressNotes = progressNotes,
             statusId = status,
+            supportingDocumentUrl = supportingDocumentUrl,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )
@@ -4442,6 +4444,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
+      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -4453,6 +4456,7 @@ abstract class DatabaseBackedTest {
             projectsComments = projectsComments,
             progressNotes = progressNotes,
             statusId = status,
+            supportingDocumentUrl = supportingDocumentUrl,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )
@@ -4471,6 +4475,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
+      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -4484,6 +4489,7 @@ abstract class DatabaseBackedTest {
             projectsComments = projectsComments,
             progressNotes = progressNotes,
             statusId = status,
+            supportingDocumentUrl = supportingDocumentUrl,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )
@@ -4802,6 +4808,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
+      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -4811,6 +4818,7 @@ abstract class DatabaseBackedTest {
             projectsComments = projectsComments,
             progressNotes = progressNotes,
             statusId = status,
+            supportingDocumentUrl = supportingDocumentUrl,
         )
 
     publishedReportProjectIndicatorsDao.insert(rowWithDefaults)
@@ -4824,6 +4832,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
+      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -4833,6 +4842,7 @@ abstract class DatabaseBackedTest {
             projectsComments = projectsComments,
             progressNotes = progressNotes,
             statusId = status,
+            supportingDocumentUrl = supportingDocumentUrl,
         )
 
     publishedReportCommonIndicatorsDao.insert(rowWithDefaults)
@@ -4848,6 +4858,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
+      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -4857,6 +4868,7 @@ abstract class DatabaseBackedTest {
             projectsComments = projectsComments,
             progressNotes = progressNotes,
             statusId = status,
+            supportingDocumentUrl = supportingDocumentUrl,
         )
 
     publishedReportAutoCalculatedIndicatorsDao.insert(rowWithDefaults)

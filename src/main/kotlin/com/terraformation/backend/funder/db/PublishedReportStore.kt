@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICA
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.UriConverter
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
@@ -159,6 +160,11 @@ class PublishedReportStore(
 
     val projectsCommentsField =
         publishedIndicatorTable.field("projects_comments", String::class.java)!!
+    val supportingDocumentUrlField =
+        publishedIndicatorTable.field(
+            "supporting_document_url",
+            SQLDataType.CLOB.asConvertedDataType(UriConverter()),
+        )!!
     val valueField = publishedIndicatorTable.field("value", BigDecimal::class.java)!!
 
     val targetTable = targetTableIndicatorIdField.table!!
@@ -289,6 +295,7 @@ class PublishedReportStore(
                     indicatorReferenceField,
                     indicatorTypeField,
                     statusField,
+                    supportingDocumentUrlField,
                     targetField,
                     valueField,
                     unitField,
@@ -340,6 +347,7 @@ class PublishedReportStore(
                 projectsComments = record[projectsCommentsField],
                 refId = record[indicatorReferenceField],
                 status = record[statusField],
+                supportingDocumentUrl = record[supportingDocumentUrlField],
                 target = record[targetField],
                 unit = record[unitField],
                 value = record[valueField],

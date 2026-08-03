@@ -19,6 +19,7 @@ import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -71,13 +72,20 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
         progressNotes = "Progress notes",
         projectsComments = "Project comments",
         status = ReportIndicatorStatus.OnTrack,
+        supportingDocumentUrl = URI("https://example.com/common"),
         value = 25,
     )
 
     val fields =
-        listOf("id", "modifiedTime", "projectsComments", "status", "value").map {
-          commonPrefix.resolve(it)
-        }
+        listOf(
+                "id",
+                "modifiedTime",
+                "projectsComments",
+                "status",
+                "supportingDocumentUrl",
+                "value",
+            )
+            .map { commonPrefix.resolve(it) }
 
     val expected =
         SearchResults(
@@ -87,6 +95,7 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
                     "modifiedTime" to "1970-01-01T00:16:40Z",
                     "projectsComments" to "Project comments",
                     "status" to "On-Track",
+                    "supportingDocumentUrl" to "https://example.com/common",
                     "value" to "25",
                 )
             )
@@ -104,14 +113,23 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
     insertReportProjectIndicator(
         indicatorId = indicatorId,
         status = ReportIndicatorStatus.Achieved,
+        supportingDocumentUrl = URI("https://example.com/project"),
         value = 40,
     )
 
-    val fields = listOf("id", "status", "value").map { projectPrefix.resolve(it) }
+    val fields =
+        listOf("id", "status", "supportingDocumentUrl", "value").map { projectPrefix.resolve(it) }
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "$indicatorId", "status" to "Achieved", "value" to "40"))
+            listOf(
+                mapOf(
+                    "id" to "$indicatorId",
+                    "status" to "Achieved",
+                    "supportingDocumentUrl" to "https://example.com/project",
+                    "value" to "40",
+                )
+            )
         )
 
     assertJsonEquals(
@@ -126,14 +144,21 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
         indicator = AutoCalculatedIndicator.TreesPlanted,
         overrideValue = 900,
         status = ReportIndicatorStatus.Unlikely,
+        supportingDocumentUrl = URI("https://example.com/auto-calc"),
         systemTime = Instant.ofEpochSecond(2000),
         systemValue = 1000,
     )
 
     val fields =
-        listOf("indicator", "status", "systemTime", "systemValue", "overrideValue").map {
-          autoCalculatedPrefix.resolve(it)
-        }
+        listOf(
+                "indicator",
+                "status",
+                "supportingDocumentUrl",
+                "systemTime",
+                "systemValue",
+                "overrideValue",
+            )
+            .map { autoCalculatedPrefix.resolve(it) }
 
     val expected =
         SearchResults(
@@ -141,6 +166,7 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "indicator" to "Trees Planted",
                     "status" to "Unlikely",
+                    "supportingDocumentUrl" to "https://example.com/auto-calc",
                     "systemTime" to "1970-01-01T00:33:20Z",
                     "systemValue" to "1,000",
                     "overrideValue" to "900",

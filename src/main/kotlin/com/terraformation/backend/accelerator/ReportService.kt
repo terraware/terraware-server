@@ -212,13 +212,16 @@ class ReportService(
         // Thus we only care about the current indicators if there's no corresponding auto calc.
         val pubAutoCalc =
             published.autoCalculatedIndicators.associate {
-              it.indicatorId to (it.value to it.progressNotes)
+              it.indicatorId to Triple(it.value, it.progressNotes, it.supportingDocumentUrl)
             }
         val hasAutoCalcChanged = pubAutoCalc.any { (indicator, pubData) ->
           val current = report.autoCalculatedIndicators.find { it.indicator == indicator }
           val currentValue = current?.let { it.entry.overrideValue ?: it.entry.systemValue }
           val currentProgressNotes = current?.entry?.progressNotes
-          currentValue != pubData.first || currentProgressNotes != pubData.second
+          val currentSupportingDocumentUrl = current?.entry?.supportingDocumentUrl
+          currentValue != pubData.first ||
+              currentProgressNotes != pubData.second ||
+              currentSupportingDocumentUrl != pubData.third
         }
         if (hasAutoCalcChanged) {
           changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
@@ -227,24 +230,38 @@ class ReportService(
         // publish for those
         val pubCommon =
             published.commonIndicators.associate {
-              it.indicatorId to (it.value to it.progressNotes)
+              it.indicatorId to Triple(it.value, it.progressNotes, it.supportingDocumentUrl)
             }
         val currentCommon =
             report.commonIndicators
                 .filter { it.indicator.isPublishable && it.entry.value != null }
-                .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
+                .associate {
+                  it.indicator.id to
+                      Triple(
+                          it.entry.value,
+                          it.entry.progressNotes,
+                          it.entry.supportingDocumentUrl,
+                      )
+                }
         if (currentCommon != pubCommon) {
           changed.add(PublishedReportComparedProps.CommonIndicators)
         }
 
         val pubProject =
             published.projectIndicators.associate {
-              it.indicatorId to (it.value to it.progressNotes)
+              it.indicatorId to Triple(it.value, it.progressNotes, it.supportingDocumentUrl)
             }
         val currentProject =
             report.projectIndicators
                 .filter { it.indicator.isPublishable && it.entry.value != null }
-                .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
+                .associate {
+                  it.indicator.id to
+                      Triple(
+                          it.entry.value,
+                          it.entry.progressNotes,
+                          it.entry.supportingDocumentUrl,
+                      )
+                }
         if (currentProject != pubProject) {
           changed.add(PublishedReportComparedProps.ProjectIndicators)
         }

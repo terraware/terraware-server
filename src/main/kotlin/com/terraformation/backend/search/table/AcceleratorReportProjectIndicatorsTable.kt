@@ -54,6 +54,10 @@ class AcceleratorReportProjectIndicatorsTable(tables: SearchTables) : SearchTabl
           timestampField("modifiedTime", REPORT_PROJECT_INDICATORS.MODIFIED_TIME),
           textField("projectsComments", REPORT_PROJECT_INDICATORS.PROJECTS_COMMENTS),
           enumField("status", REPORT_PROJECT_INDICATORS.STATUS_ID),
+          uriField(
+              "supportingDocumentUrl",
+              REPORT_PROJECT_INDICATORS.SUPPORTING_DOCUMENT_URL,
+          ),
           bigDecimalField("value", REPORT_PROJECT_INDICATORS.VALUE),
       )
 

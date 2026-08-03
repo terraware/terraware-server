@@ -6,6 +6,7 @@ import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import java.math.BigDecimal
+import java.net.URI
 
 data class PublishedCumulativeIndicatorProgressModel(
     val quarter: ReportQuarter,
@@ -27,6 +28,7 @@ data class PublishedReportIndicatorModel<ID : Any>(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI? = null,
     val target: BigDecimal?,
     val unit: String?,
     val value: BigDecimal?,

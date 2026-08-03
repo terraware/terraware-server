@@ -767,6 +767,7 @@ data class ReportCommonIndicatorPayload(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI?,
     val target: BigDecimal?,
     val value: BigDecimal?,
 ) {
@@ -790,6 +791,7 @@ data class ReportCommonIndicatorPayload(
       projectsComments = model.entry.projectsComments,
       refId = model.indicator.refId,
       status = model.entry.status,
+      supportingDocumentUrl = model.entry.supportingDocumentUrl,
       target = model.entry.target,
       value = model.entry.value,
   )
@@ -800,6 +802,7 @@ data class ReportCommonIndicatorEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI?,
     val value: BigDecimal?,
 ) {
   fun toModel() =
@@ -807,6 +810,7 @@ data class ReportCommonIndicatorEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
+          supportingDocumentUrl = supportingDocumentUrl,
           value = value,
       )
 }
@@ -836,6 +840,7 @@ data class ReportAutoCalculatedIndicatorPayload(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI?,
     val systemTime: Instant?,
     val systemValue: BigDecimal?,
     val target: BigDecimal?,
@@ -860,6 +865,7 @@ data class ReportAutoCalculatedIndicatorPayload(
       projectsComments = model.entry.projectsComments,
       refId = model.indicator.refId,
       status = model.entry.status,
+      supportingDocumentUrl = model.entry.supportingDocumentUrl,
       systemTime = model.entry.systemTime,
       systemValue = model.entry.systemValue,
       target = model.entry.target,
@@ -872,12 +878,14 @@ data class ReportAutoCalculatedIndicatorEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI?,
 ) {
   fun toModel() =
       ReportIndicatorEntryModel(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
+          supportingDocumentUrl = supportingDocumentUrl,
           value = overrideValue,
       )
 }
@@ -919,6 +927,7 @@ data class ReportProjectIndicatorPayload(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI?,
     val target: BigDecimal?,
     val unit: String?,
     val value: BigDecimal?,
@@ -943,6 +952,7 @@ data class ReportProjectIndicatorPayload(
       projectsComments = model.entry.projectsComments,
       refId = model.indicator.refId,
       status = model.entry.status,
+      supportingDocumentUrl = model.entry.supportingDocumentUrl,
       target = model.entry.target,
       unit = model.indicator.unit,
       value = model.entry.value,
@@ -954,6 +964,7 @@ data class ReportProjectIndicatorEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI?,
     val value: BigDecimal?,
 ) {
   fun toModel() =
@@ -961,6 +972,7 @@ data class ReportProjectIndicatorEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
+          supportingDocumentUrl = supportingDocumentUrl,
           value = value,
       )
 }
