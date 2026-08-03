@@ -60,11 +60,8 @@ class RemoteGoogleDriveWriter(
     // access. Documentation:
     // https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority
     val credentials =
-        if (config.report.googleEmail != null) {
-          serviceAccountCredentials.createDelegated(config.report.googleEmail)
-        } else {
-          serviceAccountCredentials
-        }
+        config.report.googleEmail?.let { serviceAccountCredentials.createDelegated(it) }
+            ?: serviceAccountCredentials
 
     Drive.Builder(
             NetHttpTransport(),
