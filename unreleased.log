@@ -1,3 +1,4 @@
+bc672361 Remove unnecessary Python types dependency (#4825)
 3858cb37 Don't rely on smart cast of Google email (#4824)
 7ac0a1c3 Update plugin com.diffplug.spotless to v8.9.0 (#4822)
 f26b9d87 SW-8718 Use cheaper completion subquery for subareas (#4820)
