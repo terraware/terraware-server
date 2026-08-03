@@ -17,7 +17,7 @@ common:
     manifest: *cache-gradle-home-manifest
 
   - &cache-gradle-home
-    cache#v1.11.1:
+    cache#v1.12.0:
       <<: *cache-gradle-home-args
 
   - _: &cache-node-modules-manifest
@@ -29,7 +29,7 @@ common:
     manifest: *cache-node-modules-manifest
 
   - &cache-node-modules
-    cache#v1.11.1:
+    cache#v1.12.0:
       <<: *cache-node-modules-args
 
   - &cache-pip-args
@@ -95,11 +95,11 @@ steps:
     key: "build-and-test"
     plugins:
       - *shallow-clone
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-gradle-home-args
           save:
             - file
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-node-modules-args
           save:
             - file
@@ -153,7 +153,7 @@ steps:
     if_changed: "scripts/**"
     plugins:
       - *shallow-clone
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-pip-args
           save:
             - "file"
@@ -181,7 +181,7 @@ steps:
       - *load-secrets
       - *cache-gradle-home
       - *cache-node-modules
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-common-args
           path: ".buildx-cache"
           manifest: *cache-buildx-manifest
@@ -199,7 +199,7 @@ steps:
     if_changed: *cache-gradle-home-manifest
     plugins:
       - *shallow-clone
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-gradle-home-args
           save: "pipeline"
           force: true
@@ -214,7 +214,7 @@ steps:
     if_changed: *cache-node-modules-manifest
     plugins:
       - *shallow-clone
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-node-modules-args
           save: "pipeline"
           force: true
@@ -230,7 +230,7 @@ steps:
     if_changed: "scripts/**"
     plugins:
       - *shallow-clone
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-pip-args
           save: "pipeline"
           force: true
@@ -247,7 +247,7 @@ steps:
     if_changed: *cache-buildx-manifest
     plugins:
       - *shallow-clone
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-common-args
           manifest: *cache-buildx-manifest
           path: ".buildx-cache"
