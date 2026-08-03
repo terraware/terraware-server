@@ -28,7 +28,6 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ReportConfigNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
-import com.terraformation.backend.db.UriConverter
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorClass
@@ -1338,7 +1337,7 @@ class ReportStore(
     val supportingDocumentUrlField =
         table.field(
             "supporting_document_url",
-            SQLDataType.CLOB.asConvertedDataType(UriConverter()),
+            REPORT_COMMON_INDICATORS.SUPPORTING_DOCUMENT_URL.dataType,
         )!!
     val statusField =
         table.field(

@@ -15,7 +15,6 @@ import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICA
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
-import com.terraformation.backend.db.UriConverter
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
@@ -163,7 +162,7 @@ class PublishedReportStore(
     val supportingDocumentUrlField =
         publishedIndicatorTable.field(
             "supporting_document_url",
-            SQLDataType.CLOB.asConvertedDataType(UriConverter()),
+            PUBLISHED_REPORT_COMMON_INDICATORS.SUPPORTING_DOCUMENT_URL.dataType,
         )!!
     val valueField = publishedIndicatorTable.field("value", BigDecimal::class.java)!!
 
