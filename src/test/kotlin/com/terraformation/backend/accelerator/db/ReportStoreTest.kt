@@ -284,7 +284,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId =
           insertProjectIndicator(
               category = IndicatorCategory.ProjectObjectives,
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               description = "Project Indicator description",
               frequency = IndicatorFrequency.Annual,
               name = "Project Indicator Name",
@@ -316,7 +316,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       ProjectIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
+                          classId = IndicatorClass.LifetimeCumulative,
                           description = "Project Indicator description",
                           frequency = IndicatorFrequency.Annual,
                           id = projectIndicatorId,
@@ -347,7 +347,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId1 =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.NotCumulative,
               description = "Climate common indicator description",
               frequency = IndicatorFrequency.BiAnnual,
               level = IndicatorLevel.Process,
@@ -420,7 +420,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Level,
+                          classId = IndicatorClass.NotCumulative,
                           description = "Project objectives indicator description",
                           id = commonIndicatorId3,
                           isPublishable = true,
@@ -439,7 +439,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.Climate,
-                          classId = IndicatorClass.Level,
+                          classId = IndicatorClass.NotCumulative,
                           description = "Climate common indicator description",
                           frequency = IndicatorFrequency.BiAnnual,
                           id = commonIndicatorId1,
@@ -468,7 +468,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.Community,
-                          classId = IndicatorClass.Level,
+                          classId = IndicatorClass.NotCumulative,
                           description = "Community indicator description",
                           id = commonIndicatorId2,
                           isPublishable = true,
@@ -1044,7 +1044,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       id = projectIndicatorId,
                       active = true,
                       category = IndicatorCategory.ProjectObjectives,
-                      classId = IndicatorClass.Level,
+                      classId = IndicatorClass.NotCumulative,
                       description = null,
                       isPublishable = true,
                       level = IndicatorLevel.Goal,
@@ -1099,7 +1099,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   CommonIndicatorModel(
                       id = commonIndicatorId,
                       category = IndicatorCategory.ProjectObjectives,
-                      classId = IndicatorClass.Level,
+                      classId = IndicatorClass.NotCumulative,
                       description = null,
                       isPublishable = true,
                       level = IndicatorLevel.Goal,
@@ -1245,29 +1245,29 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // multiple indicators should not interfere with each other's totals
       val projectIndicatorId1 =
           insertProjectIndicator(
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               name = "Project Indicator Name 1",
           )
       val projectIndicatorId2 =
           insertProjectIndicator(
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               name = "Project Indicator Name 2",
           )
       val otherProjectIndicatorId =
           insertProjectIndicator(
               projectId = otherProjectId,
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               name = "Other Project's Indicator",
           )
       val commonIndicatorId1 =
           insertCommonIndicator(
               name = "Common Indicator Name 1",
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
           )
       val commonIndicatorId2 =
           insertCommonIndicator(
               name = "Common Indicator Name 2",
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
           )
 
       // other project's indicators shouldn't affect total
@@ -1341,7 +1341,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       ProjectIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
+                          classId = IndicatorClass.LifetimeCumulative,
                           description = null,
                           id = projectIndicatorId1,
                           isPublishable = true,
@@ -1364,7 +1364,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       ProjectIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
+                          classId = IndicatorClass.LifetimeCumulative,
                           description = null,
                           id = projectIndicatorId2,
                           isPublishable = true,
@@ -1390,7 +1390,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
+                          classId = IndicatorClass.LifetimeCumulative,
                           description = null,
                           id = commonIndicatorId1,
                           isPublishable = true,
@@ -1412,7 +1412,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
+                          classId = IndicatorClass.LifetimeCumulative,
                           description = null,
                           id = commonIndicatorId2,
                           isPublishable = true,
@@ -1513,20 +1513,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherProjectConfigId = insertProjectReportConfig(projectId = otherProjectId)
       val configId = insertProjectReportConfig()
 
-      val cumulativeCommonIndicatorId =
+      val lifetimeCumulativeCommonIndicatorId =
           insertCommonIndicator(
-              name = "Cumulative Common Indicator",
-              classId = IndicatorClass.Cumulative,
+              name = "Lifetime Cumulative Common Indicator",
+              classId = IndicatorClass.LifetimeCumulative,
           )
-      val levelCommonIndicatorId =
-          insertCommonIndicator(name = "Level Common Indicator", classId = IndicatorClass.Level)
-      val cumulativeProjectIndicatorId =
+      val notCumulativeCommonIndicatorId =
+          insertCommonIndicator(
+              name = "Not Cumulative Common Indicator",
+              classId = IndicatorClass.NotCumulative,
+          )
+      val lifetimeCumulativeProjectIndicatorId =
           insertProjectIndicator(
-              name = "Cumulative Project Indicator",
-              classId = IndicatorClass.Cumulative,
+              name = "Lifetime Cumulative Project Indicator",
+              classId = IndicatorClass.LifetimeCumulative,
           )
-      val levelProjectIndicatorId =
-          insertProjectIndicator(name = "Level Project Indicator", classId = IndicatorClass.Level)
+      val notCumulativeProjectIndicatorId =
+          insertProjectIndicator(
+              name = "Not Cumulative Project Indicator",
+              classId = IndicatorClass.NotCumulative,
+          )
 
       // Q1 report - values contribute to Q3's currentYearProgress
       val q1ReportId =
@@ -1537,22 +1543,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertReportCommonIndicator(
           reportId = q1ReportId,
-          indicatorId = cumulativeCommonIndicatorId,
+          indicatorId = lifetimeCumulativeCommonIndicatorId,
           value = BigDecimal(11),
       )
       insertReportCommonIndicator(
           reportId = q1ReportId,
-          indicatorId = levelCommonIndicatorId,
+          indicatorId = notCumulativeCommonIndicatorId,
           value = BigDecimal(100),
       )
       insertReportProjectIndicator(
           reportId = q1ReportId,
-          indicatorId = cumulativeProjectIndicatorId,
+          indicatorId = lifetimeCumulativeProjectIndicatorId,
           value = BigDecimal(21),
       )
       insertReportProjectIndicator(
           reportId = q1ReportId,
-          indicatorId = levelProjectIndicatorId,
+          indicatorId = notCumulativeProjectIndicatorId,
           value = BigDecimal(100),
       )
       insertReportAutoCalculatedIndicator(
@@ -1576,22 +1582,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertReportCommonIndicator(
           reportId = q2ReportId,
-          indicatorId = cumulativeCommonIndicatorId,
+          indicatorId = lifetimeCumulativeCommonIndicatorId,
           value = BigDecimal(12),
       )
       insertReportCommonIndicator(
           reportId = q2ReportId,
-          indicatorId = levelCommonIndicatorId,
+          indicatorId = notCumulativeCommonIndicatorId,
           value = BigDecimal(200),
       )
       insertReportProjectIndicator(
           reportId = q2ReportId,
-          indicatorId = cumulativeProjectIndicatorId,
+          indicatorId = lifetimeCumulativeProjectIndicatorId,
           value = BigDecimal(22),
       )
       insertReportProjectIndicator(
           reportId = q2ReportId,
-          indicatorId = levelProjectIndicatorId,
+          indicatorId = notCumulativeProjectIndicatorId,
           value = BigDecimal(200),
       )
       insertReportAutoCalculatedIndicator(
@@ -1612,13 +1618,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.of(2025, 7, 1),
               endDate = LocalDate.of(2025, 9, 30),
           )
-      insertReportCommonIndicator(indicatorId = cumulativeCommonIndicatorId, value = BigDecimal(13))
-      insertReportCommonIndicator(indicatorId = levelCommonIndicatorId, value = BigDecimal(300))
+      insertReportCommonIndicator(
+          indicatorId = lifetimeCumulativeCommonIndicatorId,
+          value = BigDecimal(13),
+      )
+      insertReportCommonIndicator(
+          indicatorId = notCumulativeCommonIndicatorId,
+          value = BigDecimal(300),
+      )
       insertReportProjectIndicator(
-          indicatorId = cumulativeProjectIndicatorId,
+          indicatorId = lifetimeCumulativeProjectIndicatorId,
           value = BigDecimal(23),
       )
-      insertReportProjectIndicator(indicatorId = levelProjectIndicatorId, value = BigDecimal(300))
+      insertReportProjectIndicator(
+          indicatorId = notCumulativeProjectIndicatorId,
+          value = BigDecimal(300),
+      )
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           systemValue = BigDecimal(33),
@@ -1637,12 +1652,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertReportCommonIndicator(
           reportId = q4ReportId,
-          indicatorId = cumulativeCommonIndicatorId,
+          indicatorId = lifetimeCumulativeCommonIndicatorId,
           value = BigDecimal(14),
       )
       insertReportProjectIndicator(
           reportId = q4ReportId,
-          indicatorId = cumulativeProjectIndicatorId,
+          indicatorId = lifetimeCumulativeProjectIndicatorId,
           value = BigDecimal(24),
       )
       insertReportAutoCalculatedIndicator(
@@ -1664,7 +1679,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           endDate = LocalDate.of(2025, 3, 31),
       )
       insertReportCommonIndicator(
-          indicatorId = cumulativeCommonIndicatorId,
+          indicatorId = lifetimeCumulativeCommonIndicatorId,
           value = BigDecimal(888),
       )
 
@@ -1692,12 +1707,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           indicator =
                               CommonIndicatorModel(
                                   category = IndicatorCategory.ProjectObjectives,
-                                  classId = IndicatorClass.Cumulative,
+                                  classId = IndicatorClass.LifetimeCumulative,
                                   description = null,
-                                  id = cumulativeCommonIndicatorId,
+                                  id = lifetimeCumulativeCommonIndicatorId,
                                   isPublishable = true,
                                   level = IndicatorLevel.Goal,
-                                  name = "Cumulative Common Indicator",
+                                  name = "Lifetime Cumulative Common Indicator",
                                   precision = 0,
                                   refId = "1.1",
                                   tfOwner = "Carbon",
@@ -1728,12 +1743,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           indicator =
                               CommonIndicatorModel(
                                   category = IndicatorCategory.ProjectObjectives,
-                                  classId = IndicatorClass.Level,
+                                  classId = IndicatorClass.NotCumulative,
                                   description = null,
-                                  id = levelCommonIndicatorId,
+                                  id = notCumulativeCommonIndicatorId,
                                   isPublishable = true,
                                   level = IndicatorLevel.Goal,
-                                  name = "Level Common Indicator",
+                                  name = "Not Cumulative Common Indicator",
                                   precision = 0,
                                   refId = "1.1",
                                   tfOwner = "Carbon",
@@ -1752,12 +1767,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           indicator =
                               ProjectIndicatorModel(
                                   category = IndicatorCategory.ProjectObjectives,
-                                  classId = IndicatorClass.Cumulative,
+                                  classId = IndicatorClass.LifetimeCumulative,
                                   description = null,
-                                  id = cumulativeProjectIndicatorId,
+                                  id = lifetimeCumulativeProjectIndicatorId,
                                   isPublishable = true,
                                   level = IndicatorLevel.Goal,
-                                  name = "Cumulative Project Indicator",
+                                  name = "Lifetime Cumulative Project Indicator",
                                   precision = 0,
                                   projectId = projectId,
                                   refId = "1.1",
@@ -1789,12 +1804,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           indicator =
                               ProjectIndicatorModel(
                                   category = IndicatorCategory.ProjectObjectives,
-                                  classId = IndicatorClass.Level,
+                                  classId = IndicatorClass.NotCumulative,
                                   description = null,
-                                  id = levelProjectIndicatorId,
+                                  id = notCumulativeProjectIndicatorId,
                                   isPublishable = true,
                                   level = IndicatorLevel.Goal,
-                                  name = "Level Project Indicator",
+                                  name = "Not Cumulative Project Indicator",
                                   precision = 0,
                                   projectId = projectId,
                                   refId = "1.1",
@@ -1892,6 +1907,74 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `yearly cumulative indicators have current year progress but no previous year total`() {
+      insertProjectReportConfig()
+
+      val commonIndicatorId =
+          insertCommonIndicator(
+              name = "Yearly Cumulative Common Indicator",
+              classId = IndicatorClass.YearlyCumulative,
+          )
+      val projectIndicatorId =
+          insertProjectIndicator(
+              name = "Yearly Cumulative Project Indicator",
+              classId = IndicatorClass.YearlyCumulative,
+          )
+
+      // Previous year's values are only included in previousYearCumulativeTotal for lifetime
+      // cumulative indicators.
+      insertReport(endDate = LocalDate.of(2024, 12, 31))
+      insertReportCommonIndicator(indicatorId = commonIndicatorId, value = BigDecimal(10))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId, value = BigDecimal(11))
+
+      insertReport(
+          quarter = ReportQuarter.Q1,
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 3, 31),
+      )
+      insertReportCommonIndicator(indicatorId = commonIndicatorId, value = BigDecimal(20))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId, value = BigDecimal(21))
+
+      val reportId =
+          insertReport(
+              quarter = ReportQuarter.Q2,
+              startDate = LocalDate.of(2025, 4, 1),
+              endDate = LocalDate.of(2025, 6, 30),
+          )
+      insertReportCommonIndicator(indicatorId = commonIndicatorId, value = BigDecimal(30))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId, value = BigDecimal(31))
+
+      val report = store.fetchOne(reportId = reportId, includeIndicators = true)
+      val commonIndicator = report.commonIndicators.single()
+      val projectIndicator = report.projectIndicators.single()
+
+      assertNull(
+          commonIndicator.previousYearCumulativeTotal,
+          "Common indicator previous year cumulative total",
+      )
+      assertNull(
+          projectIndicator.previousYearCumulativeTotal,
+          "Project indicator previous year cumulative total",
+      )
+      assertEquals(
+          listOf(
+              CumulativeIndicatorProgressModel(ReportQuarter.Q1, BigDecimal(20)),
+              CumulativeIndicatorProgressModel(ReportQuarter.Q2, BigDecimal(30)),
+          ),
+          commonIndicator.currentYearProgress,
+          "Common indicator current year progress",
+      )
+      assertEquals(
+          listOf(
+              CumulativeIndicatorProgressModel(ReportQuarter.Q1, BigDecimal(21)),
+              CumulativeIndicatorProgressModel(ReportQuarter.Q2, BigDecimal(31)),
+          ),
+          projectIndicator.currentYearProgress,
+          "Project indicator current year progress",
+      )
+    }
+
+    @Test
     fun `returns report, with indicators optionally`() {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
@@ -1899,7 +1982,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId =
           insertProjectIndicator(
               category = IndicatorCategory.ProjectObjectives,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.NotCumulative,
               description = "Project Indicator description",
               frequency = IndicatorFrequency.MRVCycle,
               name = "Project Indicator Name",
@@ -1928,7 +2011,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       ProjectIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Level,
+                          classId = IndicatorClass.NotCumulative,
                           description = "Project Indicator description",
                           frequency = IndicatorFrequency.MRVCycle,
                           id = projectIndicatorId,
@@ -1955,7 +2038,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId1 =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               description = "Climate common indicator description",
               frequency = IndicatorFrequency.Annual,
               level = IndicatorLevel.Process,
@@ -2019,7 +2102,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Level,
+                          classId = IndicatorClass.NotCumulative,
                           description = "Project objectives indicator description",
                           id = commonIndicatorId3,
                           isPublishable = true,
@@ -2036,7 +2119,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.Climate,
-                          classId = IndicatorClass.Cumulative,
+                          classId = IndicatorClass.LifetimeCumulative,
                           description = "Climate common indicator description",
                           frequency = IndicatorFrequency.Annual,
                           id = commonIndicatorId1,
@@ -2065,7 +2148,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.Community,
-                          classId = IndicatorClass.Level,
+                          classId = IndicatorClass.NotCumulative,
                           description = "Community indicator description",
                           id = commonIndicatorId2,
                           isPublishable = false,
