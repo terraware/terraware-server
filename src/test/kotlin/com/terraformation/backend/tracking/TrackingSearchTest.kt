@@ -201,13 +201,13 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     // These population numbers are arbitrary; we just need them to be unique to test that the
     // searches are querying the right columns from the right tables.
-    insertPlantingSitePopulation(plantingSiteId, speciesId1, 2, 1)
-    insertPlantingSitePopulation(plantingSiteId, speciesId2, 4, 3)
-    insertStratumPopulation(stratumId2, speciesId1, 6, 5)
-    insertStratumPopulation(stratumId2, speciesId2, 8, 7)
-    insertSubstratumPopulation(substratumId3, speciesId1, 10, 9)
-    insertSubstratumPopulation(substratumId4, speciesId1, 12, 11)
-    insertSubstratumPopulation(substratumId4, speciesId2, 14, 13)
+    insertPlantingSitePopulation(plantingSiteId, speciesId1, 2)
+    insertPlantingSitePopulation(plantingSiteId, speciesId2, 4)
+    insertStratumPopulation(stratumId2, speciesId1, 6)
+    insertStratumPopulation(stratumId2, speciesId2, 8)
+    insertSubstratumPopulation(substratumId3, speciesId1, 10)
+    insertSubstratumPopulation(substratumId4, speciesId1, 12)
+    insertSubstratumPopulation(substratumId4, speciesId2, 14)
 
     val observationId1 =
         insertObservation(
@@ -774,7 +774,6 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "populations" to
                                                 listOf(
                                                     mapOf(
-                                                        "plantsSinceLastObservation" to "9",
                                                         "species_id" to "$speciesId1",
                                                         "totalPlants" to "10",
                                                     ),
@@ -852,12 +851,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "populations" to
                                                 listOf(
                                                     mapOf(
-                                                        "plantsSinceLastObservation" to "11",
                                                         "species_id" to "$speciesId1",
                                                         "totalPlants" to "12",
                                                     ),
                                                     mapOf(
-                                                        "plantsSinceLastObservation" to "13",
                                                         "species_id" to "$speciesId2",
                                                         "totalPlants" to "14",
                                                     ),
@@ -914,12 +911,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "populations" to
                                     listOf(
                                         mapOf(
-                                            "plantsSinceLastObservation" to "5",
                                             "species_id" to "$speciesId1",
                                             "totalPlants" to "6",
                                         ),
                                         mapOf(
-                                            "plantsSinceLastObservation" to "7",
                                             "species_id" to "$speciesId2",
                                             "totalPlants" to "8",
                                         ),
@@ -929,12 +924,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "populations" to
                         listOf(
                             mapOf(
-                                "plantsSinceLastObservation" to "1",
                                 "species_id" to "$speciesId1",
                                 "totalPlants" to "2",
                             ),
                             mapOf(
-                                "plantsSinceLastObservation" to "3",
                                 "species_id" to "$speciesId2",
                                 "totalPlants" to "4",
                             ),
@@ -1100,7 +1093,6 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "strata.substrata.name",
                 "strata.substrata.observedTime",
                 "strata.substrata.plantingCompletedTime",
-                "strata.substrata.populations.plantsSinceLastObservation",
                 "strata.substrata.populations.species_id",
                 "strata.substrata.populations.totalPlants",
                 "strata.substrata.monitoringPlots.histories.createdTime",
@@ -1117,10 +1109,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "strata.substrata.monitoringPlots.southwestLatitude",
                 "strata.substrata.monitoringPlots.southwestLongitude",
                 "strata.substrata.totalPlants",
-                "strata.populations.plantsSinceLastObservation",
                 "strata.populations.species_id",
                 "strata.populations.totalPlants",
-                "populations.plantsSinceLastObservation",
                 "populations.species_id",
                 "populations.totalPlants",
                 "project.createdTime",

@@ -57,18 +57,15 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
@@ -1543,7 +1540,6 @@ class ObservationStore(
         abandonPlots(observationId)
         updateObservationState(observationId, ObservationState.Abandoned)
         recordSubstratumDependencies(observationId)
-        resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
         recalculateSurvivalRates(observationId, observation.plantingSiteId)
         recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
       }
@@ -1561,8 +1557,6 @@ class ObservationStore(
     updateObservationState(observationId, ObservationState.Completed)
     if (!isAdHoc) {
       recordSubstratumDependencies(observationId)
-      // Ad-hoc observations do not reset unobserved populations
-      resetPlantPopulationSinceLastObservation(plantingSiteId)
       recalculateSurvivalRates(observationId, plantingSiteId)
       recalculateSurvivalRateResults(observationId, plantingSiteId)
     }
@@ -2912,36 +2906,6 @@ class ObservationStore(
         retainedPlotIds to deletedPlotIds
       }
     }
-  }
-
-  private fun resetPlantPopulationSinceLastObservation(plantingSiteId: PlantingSiteId) {
-    dslContext
-        .update(PLANTING_SITE_POPULATIONS)
-        .set(PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION, 0)
-        .where(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .execute()
-
-    dslContext
-        .update(STRATUM_POPULATIONS)
-        .set(STRATUM_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION, 0)
-        .where(
-            STRATUM_POPULATIONS.STRATUM_ID.`in`(
-                DSL.select(STRATA.ID).from(STRATA).where(STRATA.PLANTING_SITE_ID.eq(plantingSiteId))
-            )
-        )
-        .execute()
-
-    dslContext
-        .update(SUBSTRATUM_POPULATIONS)
-        .set(SUBSTRATUM_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION, 0)
-        .where(
-            SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.`in`(
-                DSL.select(SUBSTRATA.ID)
-                    .from(SUBSTRATA)
-                    .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
-            )
-        )
-        .execute()
   }
 
   /** Sets the statuses of the incomplete observation plots to be "Not Observed" */

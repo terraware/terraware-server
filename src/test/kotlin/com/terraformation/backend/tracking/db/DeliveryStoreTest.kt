@@ -22,8 +22,9 @@ import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import io.mockk.every
 import java.time.Instant
-import java.time.temporal.ChronoUnit
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -61,9 +62,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   inner class CreateDelivery {
     @Test
     fun `creates delivery with multiple plantings`() {
-      insertPlantingSitePopulation(plantingSiteId, speciesId1, 6, 5)
-      insertStratumPopulation(stratumId, speciesId1, 4, 3)
-      insertSubstratumPopulation(substratumId, speciesId1, 2, 1)
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 6)
+      insertStratumPopulation(stratumId, speciesId1, 4)
+      insertSubstratumPopulation(substratumId, speciesId1, 2)
 
       val deliveryId =
           store.createDelivery(
@@ -118,8 +119,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 21, 20),
-              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 20, 20),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 21),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 20),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
           "Planting site populations",
@@ -127,8 +128,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              StratumPopulationsRow(stratumId, speciesId1, 19, 18),
-              StratumPopulationsRow(stratumId, speciesId2, 20, 20),
+              StratumPopulationsRow(stratumId, speciesId1, 19),
+              StratumPopulationsRow(stratumId, speciesId2, 20),
           ),
           stratumPopulationsDao.findAll().toSet(),
           "Stratum populations",
@@ -136,8 +137,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              SubstratumPopulationsRow(substratumId, speciesId1, 17, 16),
-              SubstratumPopulationsRow(substratumId, speciesId2, 20, 20),
+              SubstratumPopulationsRow(substratumId, speciesId1, 17),
+              SubstratumPopulationsRow(substratumId, speciesId2, 20),
           ),
           substratumPopulationsDao.findAll().toSet(),
           "Substratum populations",
@@ -196,9 +197,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates reassignment plantings`() {
-      insertPlantingSitePopulation(plantingSiteId, speciesId1, 6, 5)
-      insertStratumPopulation(stratumId, speciesId1, 4, 3)
-      insertSubstratumPopulation(substratumId, speciesId1, 2, 1)
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 6)
+      insertStratumPopulation(stratumId, speciesId1, 4)
+      insertSubstratumPopulation(substratumId, speciesId1, 2)
 
       store.reassignDelivery(
           deliveryId,
@@ -271,8 +272,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 106, 105),
-              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 100, 100),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 106),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 100),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
           "Planting site populations",
@@ -280,8 +281,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              StratumPopulationsRow(stratumId, speciesId1, 104, 103),
-              StratumPopulationsRow(stratumId, speciesId2, 100, 100),
+              StratumPopulationsRow(stratumId, speciesId1, 104),
+              StratumPopulationsRow(stratumId, speciesId2, 100),
           ),
           stratumPopulationsDao.findAll().toSet(),
           "Stratum populations",
@@ -289,10 +290,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              SubstratumPopulationsRow(substratumId, speciesId1, 101, 100),
-              SubstratumPopulationsRow(substratumId, speciesId2, 98, 98),
-              SubstratumPopulationsRow(otherSubstratumId, speciesId1, 1, 1),
-              SubstratumPopulationsRow(otherSubstratumId, speciesId2, 2, 2),
+              SubstratumPopulationsRow(substratumId, speciesId1, 101),
+              SubstratumPopulationsRow(substratumId, speciesId2, 98),
+              SubstratumPopulationsRow(otherSubstratumId, speciesId1, 1),
+              SubstratumPopulationsRow(otherSubstratumId, speciesId2, 2),
           ),
           substratumPopulationsDao.findAll().toSet(),
           "Substratum populations",
@@ -542,13 +543,13 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           plantingTypeId = PlantingType.ReassignmentTo,
       )
 
-      insertPlantingSitePopulation(plantingSiteId, speciesId1, 10, 9)
-      insertPlantingSitePopulation(plantingSiteId, speciesId2, 9, 8)
-      insertStratumPopulation(stratumId, speciesId1, 8, 7)
-      insertStratumPopulation(stratumId, speciesId2, 6, 5)
-      insertSubstratumPopulation(substratumId, speciesId1, 7, 6)
-      insertSubstratumPopulation(substratumId, speciesId2, 5, 4)
-      insertSubstratumPopulation(otherSubstratumId, speciesId1, 3, 2)
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 10)
+      insertPlantingSitePopulation(plantingSiteId, speciesId2, 9)
+      insertStratumPopulation(stratumId, speciesId1, 8)
+      insertStratumPopulation(stratumId, speciesId2, 6)
+      insertSubstratumPopulation(substratumId, speciesId1, 7)
+      insertSubstratumPopulation(substratumId, speciesId2, 5)
+      insertSubstratumPopulation(otherSubstratumId, speciesId1, 3)
 
       val undoWithdrawalId =
           insertNurseryWithdrawal(
@@ -602,8 +603,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5, 4),
-              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
           "Planting site populations",
@@ -611,8 +612,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              StratumPopulationsRow(stratumId, speciesId1, 3, 2),
-              StratumPopulationsRow(stratumId, speciesId2, 4, 3),
+              StratumPopulationsRow(stratumId, speciesId1, 3),
+              StratumPopulationsRow(stratumId, speciesId2, 4),
           ),
           stratumPopulationsDao.findAll().toSet(),
           "Stratum populations",
@@ -620,9 +621,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              SubstratumPopulationsRow(substratumId, speciesId1, 3, 2),
-              SubstratumPopulationsRow(substratumId, speciesId2, 3, 2),
-              SubstratumPopulationsRow(otherSubstratumId, speciesId1, 2, 1),
+              SubstratumPopulationsRow(substratumId, speciesId1, 3),
+              SubstratumPopulationsRow(substratumId, speciesId2, 3),
+              SubstratumPopulationsRow(otherSubstratumId, speciesId1, 2),
           ),
           substratumPopulationsDao.findAll().toSet(),
           "Substratum populations",
@@ -635,8 +636,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       insertPlanting(numPlants = 5, speciesId = speciesId1)
       insertPlanting(numPlants = 2, speciesId = speciesId2)
 
-      insertPlantingSitePopulation(plantingSiteId, speciesId1, 10, 9)
-      insertPlantingSitePopulation(plantingSiteId, speciesId2, 9, 8)
+      insertPlantingSitePopulation(plantingSiteId, speciesId1, 10)
+      insertPlantingSitePopulation(plantingSiteId, speciesId2, 9)
 
       val undoWithdrawalId =
           insertNurseryWithdrawal(
@@ -674,40 +675,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5, 4),
-              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
-          ),
-          plantingSitePopulationsDao.findAll().toSet(),
-          "Planting site populations",
-      )
-    }
-
-    @Test
-    fun `does not update plants since last observation if undoing withdrawal older than last observation`() {
-      val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
-      insertPlanting(numPlants = 5, speciesId = speciesId1)
-      insertPlanting(numPlants = 2, speciesId = speciesId2)
-
-      insertPlantingSitePopulation(plantingSiteId, speciesId1, 100, 10)
-      insertPlantingSitePopulation(plantingSiteId, speciesId2, 90, 9)
-
-      clock.instant = clock.instant.plus(1, ChronoUnit.DAYS)
-      insertObservation(completedTime = clock.instant)
-
-      clock.instant = clock.instant.plus(1, ChronoUnit.DAYS)
-      val undoWithdrawalId =
-          insertNurseryWithdrawal(
-              createdTime = clock.instant,
-              purpose = WithdrawalPurpose.Undo,
-              undoesWithdrawalId = withdrawalId,
-          )
-
-      store.undoDelivery(deliveryId, undoWithdrawalId)
-
-      assertSetEquals(
-          setOf(
-              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 95, 10),
-              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 88, 9),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5),
+              PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
           "Planting site populations",

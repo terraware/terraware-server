@@ -9,7 +9,6 @@ import kotlin.math.roundToInt
 data class PlantingSiteReportedPlantTotals(
     val id: PlantingSiteId,
     val strata: List<Stratum>,
-    val plantsSinceLastObservation: Int,
     val species: List<Species>,
     val totalPlants: Int,
     val totalSpecies: Int,
@@ -30,7 +29,6 @@ data class PlantingSiteReportedPlantTotals(
 
   data class Stratum(
       val id: StratumId,
-      val plantsSinceLastObservation: Int,
       val substrata: List<Substratum>,
       val species: List<Species>,
       val targetPlants: Int,
@@ -49,7 +47,6 @@ data class PlantingSiteReportedPlantTotals(
 
   data class Substratum(
       val id: SubstratumId,
-      val plantsSinceLastObservation: Int,
       val species: List<Species>,
       val totalPlants: Int,
       val totalSpecies: Int,
@@ -57,7 +54,6 @@ data class PlantingSiteReportedPlantTotals(
 
   data class Species(
       val id: SpeciesId,
-      val plantsSinceLastObservation: Int,
       val totalPlants: Int,
   )
 }

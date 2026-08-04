@@ -171,14 +171,14 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       val stratumId2 = insertStratum()
       val substratumId21 = insertSubstratum()
 
-      insertSubstratumPopulation(substratumId11, speciesId1, 10, 1)
-      insertSubstratumPopulation(substratumId12, speciesId1, 20, 2)
-      insertSubstratumPopulation(substratumId12, speciesId2, 40, 4)
-      insertSubstratumPopulation(substratumId21, speciesId1, 80, 8)
+      insertSubstratumPopulation(substratumId11, speciesId1, 10)
+      insertSubstratumPopulation(substratumId12, speciesId1, 20)
+      insertSubstratumPopulation(substratumId12, speciesId2, 40)
+      insertSubstratumPopulation(substratumId21, speciesId1, 80)
 
       // Stratum populations should be completely replaced
-      insertStratumPopulation(stratumId1, speciesId1, 160, 16)
-      insertStratumPopulation(stratumId2, speciesId2, 320, 32)
+      insertStratumPopulation(stratumId1, speciesId1, 160)
+      insertStratumPopulation(stratumId2, speciesId2, 320)
 
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
 
@@ -201,19 +201,16 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               StratumPopulationsRecord(
                   stratumId = stratumId1,
-                  plantsSinceLastObservation = 3,
                   speciesId = speciesId1,
                   totalPlants = 30,
               ),
               StratumPopulationsRecord(
                   stratumId = stratumId1,
-                  plantsSinceLastObservation = 4,
                   speciesId = speciesId2,
                   totalPlants = 40,
               ),
               StratumPopulationsRecord(
                   stratumId = stratumId2,
-                  plantsSinceLastObservation = 8,
                   speciesId = speciesId1,
                   totalPlants = 80,
               ),

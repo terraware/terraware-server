@@ -1,0 +1,3 @@
+ALTER TABLE tracking.planting_site_populations DROP COLUMN plants_since_last_observation;
+ALTER TABLE tracking.stratum_populations DROP COLUMN plants_since_last_observation;
+ALTER TABLE tracking.substratum_populations DROP COLUMN plants_since_last_observation;

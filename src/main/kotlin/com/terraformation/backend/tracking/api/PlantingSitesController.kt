@@ -531,7 +531,6 @@ data class PlantingSiteHistoryPayload(
 
 data class SubstratumReportedPlantsResponsePayload(
     val id: SubstratumId,
-    val plantsSinceLastObservation: Int,
     val species: List<ReportedSpeciesPayload>,
     val totalPlants: Int,
     val totalSpecies: Int,
@@ -540,7 +539,6 @@ data class SubstratumReportedPlantsResponsePayload(
       substratumTotals: PlantingSiteReportedPlantTotals.Substratum
   ) : this(
       id = substratumTotals.id,
-      plantsSinceLastObservation = substratumTotals.plantsSinceLastObservation,
       species = substratumTotals.species.map { ReportedSpeciesPayload(it) },
       totalPlants = substratumTotals.totalPlants,
       totalSpecies = substratumTotals.totalSpecies,
@@ -549,7 +547,6 @@ data class SubstratumReportedPlantsResponsePayload(
 
 data class StratumReportedPlantsResponsePayload(
     val id: StratumId,
-    val plantsSinceLastObservation: Int,
     val substrata: List<SubstratumReportedPlantsResponsePayload>,
     val progressPercent: Int,
     val species: List<ReportedSpeciesPayload>,
@@ -560,7 +557,6 @@ data class StratumReportedPlantsResponsePayload(
       stratumTotals: PlantingSiteReportedPlantTotals.Stratum
   ) : this(
       id = stratumTotals.id,
-      plantsSinceLastObservation = stratumTotals.plantsSinceLastObservation,
       substrata = stratumTotals.substrata.map { SubstratumReportedPlantsResponsePayload(it) },
       progressPercent = stratumTotals.progressPercent,
       species = stratumTotals.species.map { ReportedSpeciesPayload(it) },
@@ -572,7 +568,6 @@ data class StratumReportedPlantsResponsePayload(
 // response payload
 data class PlantingSiteReportedPlantsPayload(
     val id: PlantingSiteId,
-    val plantsSinceLastObservation: Int,
     val progressPercent: Int?,
     val species: List<ReportedSpeciesPayload>,
     val strata: List<StratumReportedPlantsResponsePayload>,
@@ -582,7 +577,6 @@ data class PlantingSiteReportedPlantsPayload(
       totals: PlantingSiteReportedPlantTotals
   ) : this(
       id = totals.id,
-      plantsSinceLastObservation = totals.plantsSinceLastObservation,
       progressPercent = totals.progressPercent,
       species = totals.species.map { ReportedSpeciesPayload(it) },
       strata = totals.strata.map { StratumReportedPlantsResponsePayload(it) },
@@ -592,14 +586,12 @@ data class PlantingSiteReportedPlantsPayload(
 
 data class ReportedSpeciesPayload(
     val id: SpeciesId,
-    val plantsSinceLastObservation: Int,
     val totalPlants: Int,
 ) {
   constructor(
       species: PlantingSiteReportedPlantTotals.Species
   ) : this(
       id = species.id,
-      plantsSinceLastObservation = species.plantsSinceLastObservation,
       totalPlants = species.totalPlants,
   )
 }
