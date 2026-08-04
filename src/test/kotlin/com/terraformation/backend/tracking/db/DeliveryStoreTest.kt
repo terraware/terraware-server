@@ -9,13 +9,22 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.records.DeliveriesRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingSitePopulationsRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingsRecord
+import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsRecord
+import com.terraformation.backend.db.tracking.tables.records.SubstratumPopulationsRecord
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -194,6 +203,13 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       plantingsDao.fetchByDeliveryId(deliveryId).first { it.speciesId == speciesId2 }.id!!
     }
     private val otherSubstratumId: SubstratumId by lazy { insertSubstratum(stratumId = stratumId) }
+    private val otherPlantingSiteId: PlantingSiteId by lazy { insertPlantingSite() }
+    private val otherSiteStratumId: StratumId by lazy {
+      insertStratum(plantingSiteId = otherPlantingSiteId)
+    }
+    private val otherSiteSubstratumId: SubstratumId by lazy {
+      insertSubstratum(stratumId = otherSiteStratumId)
+    }
 
     @Test
     fun `creates reassignment plantings`() {
@@ -297,6 +313,135 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           ),
           substratumPopulationsDao.findAll().toSet(),
           "Substratum populations",
+      )
+    }
+
+    @Test
+    fun `creates a delivery at the destination site for a cross-site reassignment`() {
+      assertNotNull(species1PlantingId)
+
+      val plantingsBeforeReassignment = dslContext.fetch(PLANTINGS).onEach { it.id = null }
+
+      store.reassignDelivery(
+          deliveryId,
+          listOf(
+              DeliveryStore.Reassignment(
+                  fromPlantingId = species1PlantingId,
+                  numPlants = 30,
+                  notes = "moved sites",
+                  toSubstratumId = otherSiteSubstratumId,
+              )
+          ),
+      )
+
+      assertTableEquals(
+          DeliveriesRecord(
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              plantingSiteId = otherPlantingSiteId,
+              reassignedFromDeliveryId = deliveryId,
+              withdrawalId = withdrawalId,
+          ),
+          where = DELIVERIES.REASSIGNED_FROM_DELIVERY_ID.eq(deliveryId),
+      )
+
+      val reassignmentDeliveryId =
+          deliveriesDao.fetchByReassignedFromDeliveryId(deliveryId).single().id!!
+
+      assertTableEquals(
+          plantingsBeforeReassignment +
+              listOf(
+                  PlantingsRecord(
+                      createdBy = user.userId,
+                      createdTime = clock.instant,
+                      deliveryId = deliveryId,
+                      numPlants = -30,
+                      plantingSiteId = plantingSiteId,
+                      plantingTypeId = PlantingType.ReassignmentFrom,
+                      speciesId = speciesId1,
+                      substratumId = substratumId,
+                  ),
+                  PlantingsRecord(
+                      createdBy = user.userId,
+                      createdTime = clock.instant,
+                      deliveryId = reassignmentDeliveryId,
+                      notes = "moved sites",
+                      numPlants = 30,
+                      plantingSiteId = otherPlantingSiteId,
+                      plantingTypeId = PlantingType.ReassignmentTo,
+                      speciesId = speciesId1,
+                      substratumId = otherSiteSubstratumId,
+                  ),
+              ),
+      )
+    }
+
+    @Test
+    fun `reuses the destination delivery across two reassignment calls`() {
+      store.reassignDelivery(
+          deliveryId,
+          listOf(
+              DeliveryStore.Reassignment(
+                  fromPlantingId = species1PlantingId,
+                  numPlants = 10,
+                  toSubstratumId = otherSiteSubstratumId,
+              )
+          ),
+      )
+
+      store.reassignDelivery(
+          deliveryId,
+          listOf(
+              DeliveryStore.Reassignment(
+                  fromPlantingId = species2PlantingId,
+                  numPlants = 20,
+                  toSubstratumId = otherSiteSubstratumId,
+              )
+          ),
+      )
+
+      assertEquals(
+          1,
+          deliveriesDao.fetchByReassignedFromDeliveryId(deliveryId).size,
+          "Number of reassignment deliveries",
+      )
+    }
+
+    @Test
+    fun `moves populations between planting sites`() {
+      store.reassignDelivery(
+          deliveryId,
+          listOf(
+              DeliveryStore.Reassignment(
+                  fromPlantingId = species1PlantingId,
+                  numPlants = 30,
+                  toSubstratumId = otherSiteSubstratumId,
+              )
+          ),
+      )
+
+      assertTableEquals(
+          listOf(
+              PlantingSitePopulationsRecord(plantingSiteId, speciesId1, 70),
+              PlantingSitePopulationsRecord(plantingSiteId, speciesId2, 100),
+              PlantingSitePopulationsRecord(otherPlantingSiteId, speciesId1, 30),
+          )
+      )
+      assertTableEquals(
+          listOf(
+              StratumPopulationsRecord(stratumId, speciesId1, 70),
+              StratumPopulationsRecord(stratumId, speciesId2, 100),
+              StratumPopulationsRecord(otherSiteStratumId, speciesId1, 30),
+          )
+      )
+      assertTableEquals(
+          listOf(
+              SubstratumPopulationsRecord(substratumId, speciesId1, 70),
+              SubstratumPopulationsRecord(substratumId, speciesId2, 100),
+              SubstratumPopulationsRecord(otherSiteSubstratumId, speciesId1, 30),
+          )
       )
     }
 
@@ -454,6 +599,51 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                     notes = "notes 1",
                     toSubstratumId = otherSubstratumId,
                 ),
+            ),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if destination substratum is in another organization`() {
+      // Force the original delivery's planting site to be created by lazy evaluation
+      assertNotNull(species1PlantingId)
+
+      insertOrganization()
+      insertPlantingSite()
+      insertStratum()
+      val otherOrgSubstratumId = insertSubstratum()
+
+      assertThrows<CrossOrganizationReassignmentNotAllowedException> {
+        store.reassignDelivery(
+            deliveryId,
+            listOf(
+                DeliveryStore.Reassignment(
+                    fromPlantingId = species1PlantingId,
+                    numPlants = 1,
+                    toSubstratumId = otherOrgSubstratumId,
+                )
+            ),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to create deliveries at the destination site`() {
+      // Force the destination planting site to be created by lazy evaluation
+      assertNotNull(otherSiteSubstratumId)
+
+      every { user.canCreateDelivery(otherPlantingSiteId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.reassignDelivery(
+            deliveryId,
+            listOf(
+                DeliveryStore.Reassignment(
+                    fromPlantingId = species1PlantingId,
+                    numPlants = 1,
+                    toSubstratumId = otherSiteSubstratumId,
+                )
             ),
         )
       }

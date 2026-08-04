@@ -40,6 +40,15 @@ class CrossOrganizationDeliveryNotAllowedException(
             "are in different organizations"
     )
 
+class CrossOrganizationReassignmentNotAllowedException(
+    val plantingId: PlantingId,
+    val substratumId: SubstratumId,
+) :
+    MismatchedStateException(
+        "Cannot reassign planting $plantingId to substratum $substratumId because they are in " +
+            "different organizations"
+    )
+
 class DeliveryMissingSubstratumException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException(
         "Deliveries to planting site $plantingSiteId must include substratum IDs"
