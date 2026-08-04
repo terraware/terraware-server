@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
@@ -54,6 +55,33 @@ internal class PlantingSiteStoreDeleteTest : BasePlantingSiteStoreTest() {
       assertTableEmpty(RECORDED_PLANTS)
 
       eventPublisher.assertEventPublished(PlantingSiteDeletionStartedEvent(plantingSiteId))
+    }
+
+    @Test
+    fun `keeps reassignment deliveries at other sites when the origin site is deleted`() {
+      every { user.canDeletePlantingSite(any()) } returns true
+
+      val originSiteId = insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertNurseryWithdrawal()
+      val originDeliveryId = insertDelivery()
+      insertPlanting()
+
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      val destinationDeliveryId = insertDelivery(reassignedFromDeliveryId = originDeliveryId)
+      insertPlanting(plantingTypeId = PlantingType.ReassignmentTo)
+
+      val expected = dslContext.fetchSingle(DELIVERIES, DELIVERIES.ID.eq(destinationDeliveryId))
+      expected.reassignedFromDeliveryId = null
+
+      store.deletePlantingSite(originSiteId)
+
+      assertTableEquals(expected)
     }
 
     @Test
