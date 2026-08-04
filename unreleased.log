@@ -1,3 +1,4 @@
+80fee376 SW-8709 Added supporting document URL to report indicators (#4827)
 6e55abf0 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.50.0 (#4821)
 e7c41b8c Update dependency mypy to v2.3.0 (#4823)
 bc672361 Remove unnecessary Python types dependency (#4825)
