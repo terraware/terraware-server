@@ -446,6 +446,7 @@ COMMENT ON COLUMN tracking.deliveries.modified_by IS 'Which user most recently m
 COMMENT ON COLUMN tracking.deliveries.modified_time IS 'When the delivery was most recently modified.';
 COMMENT ON COLUMN tracking.deliveries.planting_site_id IS 'Which planting site received the delivery.';
 COMMENT ON COLUMN tracking.deliveries.reassigned_by IS 'Which user recorded the reassignment of plants in this delivery. Null if this delivery has no reassignment.';
+COMMENT ON COLUMN tracking.deliveries.reassigned_from_delivery_id IS 'If this delivery was created by reassigning plants from a delivery at another planting site, the ID of that delivery.';
 COMMENT ON COLUMN tracking.deliveries.reassigned_time IS 'When the reassignment was recorded. Null if this delivery has no reassignment.';
 COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal the plants came from.';
 
