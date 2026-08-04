@@ -54,24 +54,37 @@ class DeliveryStore(
           )
           .convertFrom { result -> result.map { PlantingModel(it) } }
 
+  private val reassignmentDeliveries = DELIVERIES.`as`("reassignment_deliveries")
+
+  private val reassignmentDeliveryIdsMultiset =
+      DSL.multiset(
+              DSL.select(reassignmentDeliveries.ID)
+                  .from(reassignmentDeliveries)
+                  .where(reassignmentDeliveries.REASSIGNED_FROM_DELIVERY_ID.eq(DELIVERIES.ID))
+                  .orderBy(reassignmentDeliveries.ID)
+          )
+          .convertFrom { result -> result.map { it[reassignmentDeliveries.ID]!! } }
+
   fun fetchOneById(deliveryId: DeliveryId): DeliveryModel {
     requirePermissions { readDelivery(deliveryId) }
 
     return dslContext
-        .select(DELIVERIES.asterisk(), plantingsMultiset)
+        .select(DELIVERIES.asterisk(), plantingsMultiset, reassignmentDeliveryIdsMultiset)
         .from(DELIVERIES)
         .where(DELIVERIES.ID.eq(deliveryId))
-        .fetchOne { DeliveryModel(it, plantingsMultiset) }
+        .fetchOne { DeliveryModel(it, plantingsMultiset, reassignmentDeliveryIdsMultiset) }
         ?: throw DeliveryNotFoundException(deliveryId)
   }
 
   fun fetchOneByWithdrawalId(withdrawalId: WithdrawalId): DeliveryModel? {
     val model =
         dslContext
-            .select(DELIVERIES.asterisk(), plantingsMultiset)
+            .select(DELIVERIES.asterisk(), plantingsMultiset, reassignmentDeliveryIdsMultiset)
             .from(DELIVERIES)
             .where(DELIVERIES.WITHDRAWAL_ID.eq(withdrawalId))
-            .fetchOne { DeliveryModel(it, plantingsMultiset) }
+            .orderBy(DELIVERIES.ID)
+            .limit(1)
+            .fetchOne { DeliveryModel(it, plantingsMultiset, reassignmentDeliveryIdsMultiset) }
 
     return if (model?.id != null && currentUser().canReadDelivery(model.id)) model else null
   }
