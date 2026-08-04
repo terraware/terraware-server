@@ -16,6 +16,7 @@ Run ./gradlew commands one at a time, serially, rather than launching multiple o
 - See the file docs/CONVENTIONS.md for coding conventions.
 - Always include trailing newlines in source files, including HTML and MJML files.
 - Avoid adding comments that say obvious things about what the code does.
+- The intended audience for comments is someone looking at the code in the future, long after your change has been merged. Don't write comments about how the code used to work or about why it was changed; future readers will care about the current behavior of the code, not its evolution over time.
 
 ## Workflow
 
