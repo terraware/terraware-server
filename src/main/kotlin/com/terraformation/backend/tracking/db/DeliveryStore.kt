@@ -376,54 +376,78 @@ class DeliveryStore(
       throw WithdrawalNotUndoException(undoWithdrawalId)
     }
 
+    val reassignmentDeliveries = originalDelivery.reassignmentDeliveryIds.map { fetchOneById(it) }
+
     return dslContext.transactionResult { _ ->
-      val deliveriesRow =
-          DeliveriesRow(
-              createdBy = userId,
-              createdTime = now,
-              modifiedBy = userId,
-              modifiedTime = now,
-              plantingSiteId = originalDelivery.plantingSiteId,
-              withdrawalId = undoWithdrawalId,
-          )
+      val undoDeliveryId = undoOneDelivery(originalDelivery, undoWithdrawalId, null, userId, now)
 
-      deliveriesDao.insert(deliveriesRow)
-      val undoDeliveryId = deliveriesRow.id!!
-
-      originalDelivery.plantings.forEach { originalPlanting ->
-        val plantingType =
-            when (originalPlanting.type) {
-              PlantingType.Delivery -> PlantingType.Undo
-              PlantingType.ReassignmentFrom -> PlantingType.ReassignmentTo
-              PlantingType.ReassignmentTo -> PlantingType.ReassignmentFrom
-              PlantingType.Undo ->
-                  throw UndoOfUndoNotAllowedException(originalDelivery.withdrawalId)
-            }
-
-        val newPlantingsRow =
-            PlantingsRow(
-                createdBy = userId,
-                createdTime = now,
-                deliveryId = undoDeliveryId,
-                numPlants = -originalPlanting.numPlants,
-                plantingSiteId = originalDelivery.plantingSiteId,
-                substratumId = originalPlanting.substratumId,
-                plantingTypeId = plantingType,
-                speciesId = originalPlanting.speciesId,
-            )
-
-        plantingsDao.insert(newPlantingsRow)
-
-        addToPopulations(
-            originalDelivery.plantingSiteId,
-            originalPlanting.substratumId,
-            originalPlanting.speciesId,
-            -originalPlanting.numPlants,
-        )
+      reassignmentDeliveries.forEach { reassignmentDelivery ->
+        undoOneDelivery(reassignmentDelivery, undoWithdrawalId, undoDeliveryId, userId, now)
       }
 
       undoDeliveryId
     }
+  }
+
+  private fun undoOneDelivery(
+      delivery: DeliveryModel,
+      undoWithdrawalId: WithdrawalId,
+      reassignedFromDeliveryId: DeliveryId?,
+      userId: UserId,
+      now: Instant,
+  ): DeliveryId {
+    val deliveriesRow =
+        DeliveriesRow(
+            createdBy = userId,
+            createdTime = now,
+            modifiedBy = userId,
+            modifiedTime = now,
+            plantingSiteId = delivery.plantingSiteId,
+            reassignedFromDeliveryId = reassignedFromDeliveryId,
+            withdrawalId = undoWithdrawalId,
+        )
+
+    deliveriesDao.insert(deliveriesRow)
+    val undoDeliveryId = deliveriesRow.id!!
+
+    delivery.plantings.forEach { originalPlanting ->
+      val plantingType =
+          when (originalPlanting.type) {
+            PlantingType.Delivery -> PlantingType.Undo
+            PlantingType.ReassignmentFrom -> PlantingType.ReassignmentTo
+            PlantingType.ReassignmentTo -> PlantingType.ReassignmentFrom
+            PlantingType.Undo -> throw UndoOfUndoNotAllowedException(delivery.withdrawalId)
+          }
+
+      plantingsDao.insert(
+          PlantingsRow(
+              createdBy = userId,
+              createdTime = now,
+              deliveryId = undoDeliveryId,
+              numPlants = -originalPlanting.numPlants,
+              plantingSiteId = delivery.plantingSiteId,
+              substratumId = originalPlanting.substratumId,
+              plantingTypeId = plantingType,
+              speciesId = originalPlanting.speciesId,
+          )
+      )
+
+      addToPopulations(
+          delivery.plantingSiteId,
+          originalPlanting.substratumId,
+          originalPlanting.speciesId,
+          -originalPlanting.numPlants,
+          deleteZeroedRows = false,
+      )
+    }
+
+    val speciesIds = delivery.plantings.map { it.speciesId }.toSet()
+    val substratumIds = delivery.plantings.mapNotNull { it.substratumId }.toSet()
+
+    deleteEmptySitePopulations(delivery.plantingSiteId, speciesIds)
+    deleteEmptySubstratumPopulations(substratumIds, speciesIds)
+
+    return undoDeliveryId
   }
 
   /**
