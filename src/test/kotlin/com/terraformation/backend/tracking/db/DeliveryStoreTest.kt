@@ -25,6 +25,9 @@ import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsR
 import com.terraformation.backend.db.tracking.tables.records.SubstratumPopulationsRecord
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -947,6 +950,65 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         store.undoDelivery(inserted.deliveryId, inserted.withdrawalId)
       }
+    }
+
+    @Test
+    fun `undoes deliveries at both sites of a cross-site reassignment`() {
+      val otherPlantingSiteId = insertPlantingSite()
+      val otherSiteStratumId = insertStratum(plantingSiteId = otherPlantingSiteId)
+      val otherSiteSubstratumId = insertSubstratum(stratumId = otherSiteStratumId)
+
+      val deliveryId =
+          store.createDelivery(withdrawalId, plantingSiteId, substratumId, mapOf(speciesId1 to 100))
+      val plantingId = plantingsDao.findAll().single().id!!
+
+      store.reassignDelivery(
+          deliveryId,
+          listOf(
+              DeliveryStore.Reassignment(
+                  fromPlantingId = plantingId,
+                  numPlants = 30,
+                  toSubstratumId = otherSiteSubstratumId,
+              )
+          ),
+      )
+
+      val deliveriesBeforeUndo = dslContext.fetch(DELIVERIES).onEach { it.id = null }
+
+      val undoWithdrawalId =
+          insertNurseryWithdrawal(
+              purpose = WithdrawalPurpose.Undo,
+              undoesWithdrawalId = withdrawalId,
+          )
+
+      val undoDeliveryId = store.undoDelivery(deliveryId, undoWithdrawalId)
+
+      assertTableEquals(
+          deliveriesBeforeUndo +
+              listOf(
+                  DeliveriesRecord(
+                      createdBy = user.userId,
+                      createdTime = clock.instant,
+                      modifiedBy = user.userId,
+                      modifiedTime = clock.instant,
+                      plantingSiteId = plantingSiteId,
+                      withdrawalId = undoWithdrawalId,
+                  ),
+                  DeliveriesRecord(
+                      createdBy = user.userId,
+                      createdTime = clock.instant,
+                      modifiedBy = user.userId,
+                      modifiedTime = clock.instant,
+                      plantingSiteId = otherPlantingSiteId,
+                      reassignedFromDeliveryId = undoDeliveryId,
+                      withdrawalId = undoWithdrawalId,
+                  ),
+              ),
+      )
+
+      assertTableEmpty(PLANTING_SITE_POPULATIONS)
+      assertTableEmpty(STRATUM_POPULATIONS)
+      assertTableEmpty(SUBSTRATUM_POPULATIONS)
     }
   }
 }
