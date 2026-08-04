@@ -1894,14 +1894,12 @@ class PlantingSiteStore(
                     STRATUM_ID,
                     SPECIES_ID,
                     TOTAL_PLANTS,
-                    PLANTS_SINCE_LAST_OBSERVATION,
                 )
                 .select(
                     DSL.select(
                             STRATA.ID,
                             PLANTING_SITE_POPULATIONS.SPECIES_ID,
                             PLANTING_SITE_POPULATIONS.TOTAL_PLANTS,
-                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
                         )
                         .from(PLANTING_SITE_POPULATIONS)
                         .join(STRATA)
@@ -1943,14 +1941,12 @@ class PlantingSiteStore(
                     SUBSTRATUM_ID,
                     SPECIES_ID,
                     TOTAL_PLANTS,
-                    PLANTS_SINCE_LAST_OBSERVATION,
                 )
                 .select(
                     DSL.select(
                             SUBSTRATA.ID,
                             PLANTING_SITE_POPULATIONS.SPECIES_ID,
                             PLANTING_SITE_POPULATIONS.TOTAL_PLANTS,
-                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
                         )
                         .from(PLANTING_SITE_POPULATIONS)
                         .join(SUBSTRATA)
@@ -2528,14 +2524,11 @@ class PlantingSiteStore(
 
     val speciesIdField =
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
-    val plantsSinceLastObservationField =
-        table.field("plants_since_last_observation", Int::class.java)!!
     val totalPlantsField = table.field("total_plants", Int::class.java)!!
 
     return DSL.multiset(
             DSL.select(
                     speciesIdField,
-                    plantsSinceLastObservationField,
                     totalPlantsField,
                 )
                 .from(table)
@@ -2545,7 +2538,6 @@ class PlantingSiteStore(
           result.map { record ->
             PlantingSiteReportedPlantTotals.Species(
                 id = record[speciesIdField],
-                plantsSinceLastObservation = record[plantsSinceLastObservationField],
                 totalPlants = record[totalPlantsField],
             )
           }
@@ -2569,13 +2561,11 @@ class PlantingSiteStore(
             .convertFrom { result ->
               result.map { record ->
                 val species = record[substratumSpeciesField]
-                val plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation }
                 val totalPlants = species.sumOf { it.totalPlants }
                 val totalSpecies = species.size
 
                 PlantingSiteReportedPlantTotals.Substratum(
                     record[SUBSTRATA.ID]!!,
-                    plantsSinceLastObservation = plantsSinceLastObservation,
                     species = species,
                     totalPlants = totalPlants,
                     totalSpecies = totalSpecies,
@@ -2604,13 +2594,11 @@ class PlantingSiteStore(
                         record[STRATA.TARGET_PLANTING_DENSITY.asNonNullable()]
 
                 val species = record[stratumSpeciesField]
-                val plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation }
                 val totalPlants = species.sumOf { it.totalPlants }
                 val totalSpecies = species.size
 
                 PlantingSiteReportedPlantTotals.Stratum(
                     id = record[STRATA.ID.asNonNullable()],
-                    plantsSinceLastObservation = plantsSinceLastObservation,
                     substrata = record[substrataField],
                     species = species,
                     targetPlants = targetPlants.toInt(),
@@ -2633,7 +2621,6 @@ class PlantingSiteStore(
           PlantingSiteReportedPlantTotals(
               id = record[PLANTING_SITES.ID]!!,
               strata = record[strataField],
-              plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation },
               species = record[siteSpeciesField],
               totalPlants = species.sumOf { it.totalPlants },
               totalSpecies = species.size,

@@ -14,10 +14,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTo
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
-import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
@@ -230,9 +227,9 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         speciesId = speciesId3,
         plotDensity = BigDecimal.valueOf(12).toPlantsPerHectare(),
     )
-    insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
-    insertStratumPopulation(totalPlants = 2, plantsSinceLastObservation = 2)
-    insertSubstratumPopulation(totalPlants = 1, plantsSinceLastObservation = 1)
+    insertPlantingSitePopulation(totalPlants = 3)
+    insertStratumPopulation(totalPlants = 2)
+    insertSubstratumPopulation(totalPlants = 1)
 
     val observedTime = Instant.ofEpochSecond(1)
     clock.instant = Instant.ofEpochSecond(123)
@@ -929,17 +926,17 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     assertTableEquals(
-        PlantingSitePopulationsRecord(plantingSiteId, inserted.speciesId, 3, 3),
+        PlantingSitePopulationsRecord(plantingSiteId, inserted.speciesId, 3),
         "Planting site total populations should be unchanged",
     )
 
     assertTableEquals(
-        StratumPopulationsRecord(inserted.stratumId, inserted.speciesId, 2, 2),
+        StratumPopulationsRecord(inserted.stratumId, inserted.speciesId, 2),
         "Stratum total populations should be unchanged",
     )
 
     assertTableEquals(
-        SubstratumPopulationsRecord(inserted.substratumId, inserted.speciesId, 1, 1),
+        SubstratumPopulationsRecord(inserted.substratumId, inserted.speciesId, 1),
         "Substratum total populations should be unchanged",
     )
   }
@@ -949,9 +946,9 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertSpecies()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
 
-    insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
-    insertStratumPopulation(totalPlants = 2, plantsSinceLastObservation = 2)
-    insertSubstratumPopulation(totalPlants = 1, plantsSinceLastObservation = 1)
+    insertPlantingSitePopulation(totalPlants = 3)
+    insertStratumPopulation(totalPlants = 2)
+    insertSubstratumPopulation(totalPlants = 1)
 
     val observedTime = Instant.ofEpochSecond(1)
     clock.instant = Instant.ofEpochSecond(123)
@@ -1000,17 +997,17 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS, "Observed site species should be empty")
 
     assertTableEquals(
-        PlantingSitePopulationsRecord(plantingSiteId, inserted.speciesId, 3, 0),
+        PlantingSitePopulationsRecord(plantingSiteId, inserted.speciesId, 3),
         "Planting site total plants should be unchanged",
     )
 
     assertTableEquals(
-        StratumPopulationsRecord(inserted.stratumId, inserted.speciesId, 2, 0),
+        StratumPopulationsRecord(inserted.stratumId, inserted.speciesId, 2),
         "Stratum total plants should be unchanged",
     )
 
     assertTableEquals(
-        SubstratumPopulationsRecord(inserted.substratumId, inserted.speciesId, 1, 0),
+        SubstratumPopulationsRecord(inserted.substratumId, inserted.speciesId, 1),
         "Substratum total plants should be unchanged",
     )
   }
@@ -1019,11 +1016,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
   fun `marks observation as completed if this was the last incomplete plot`() {
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
 
-    val speciesId = insertSpecies()
-    insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
-    insertStratumPopulation(totalPlants = 2, plantsSinceLastObservation = 2)
-    insertSubstratumPopulation(totalPlants = 1, plantsSinceLastObservation = 1)
-
     clock.instant = Instant.ofEpochSecond(123)
     store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
 
@@ -1031,24 +1023,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertEquals(ObservationState.Completed, observation.state, "Observation state")
     assertEquals(clock.instant, observation.completedTime, "Completed time")
-
-    assertEquals(
-        listOf(PlantingSitePopulationsRow(plantingSiteId, speciesId, 3, 0)),
-        plantingSitePopulationsDao.findAll(),
-        "Planting site plants since last observation should have been reset",
-    )
-
-    assertEquals(
-        listOf(StratumPopulationsRow(inserted.stratumId, speciesId, 2, 0)),
-        stratumPopulationsDao.findAll(),
-        "Stratum plants since last observation should have been reset",
-    )
-
-    assertEquals(
-        listOf(SubstratumPopulationsRow(inserted.substratumId, speciesId, 1, 0)),
-        substratumPopulationsDao.findAll(),
-        "Substratum plants since last observation should have been reset",
-    )
 
     eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
   }

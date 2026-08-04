@@ -24,7 +24,6 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
           PlantingSiteReportedPlantTotals(
               id = plantingSiteId,
               strata = emptyList(),
-              plantsSinceLastObservation = 0,
               species = emptyList(),
               totalPlants = 0,
               totalSpecies = 0,
@@ -39,19 +38,18 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
     fun `returns site-level totals for sites without strata`() {
       val plantingSiteId = insertPlantingSite()
       val speciesId1 = insertSpecies()
-      insertPlantingSitePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
+      insertPlantingSitePopulation(totalPlants = 10)
       val speciesId2 = insertSpecies()
-      insertPlantingSitePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertPlantingSitePopulation(totalPlants = 20)
 
       val expected =
           PlantingSiteReportedPlantTotals(
               id = plantingSiteId,
               strata = emptyList(),
-              plantsSinceLastObservation = 3,
               species =
                   listOf(
-                      PlantingSiteReportedPlantTotals.Species(speciesId1, 1, 10),
-                      PlantingSiteReportedPlantTotals.Species(speciesId2, 2, 20),
+                      PlantingSiteReportedPlantTotals.Species(speciesId1, 10),
+                      PlantingSiteReportedPlantTotals.Species(speciesId2, 20),
                   ),
               totalPlants = 30,
               totalSpecies = 2,
@@ -70,25 +68,25 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       val stratumId1 = insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
       val substratumId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 5)
-      insertStratumPopulation(plantsSinceLastObservation = 3, totalPlants = 10)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      insertSubstratumPopulation(totalPlants = 5)
+      insertStratumPopulation(totalPlants = 10)
+      insertPlantingSitePopulation(totalPlants = 10)
       val substratumId1b = insertSubstratum()
-      insertSubstratumPopulation(plantsSinceLastObservation = 1, totalPlants = 5)
+      insertSubstratumPopulation(totalPlants = 5)
       val speciesId2 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
-      insertStratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertSubstratumPopulation(totalPlants = 20)
+      insertStratumPopulation(totalPlants = 20)
 
       val stratumId2 =
           insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
       val substratumId2 = insertSubstratum()
-      insertSubstratumPopulation(plantsSinceLastObservation = 4, totalPlants = 50)
-      insertStratumPopulation(plantsSinceLastObservation = 4, totalPlants = 40)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
+      insertSubstratumPopulation(totalPlants = 50)
+      insertStratumPopulation(totalPlants = 40)
+      insertPlantingSitePopulation(totalPlants = 60)
       val speciesId3 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 8, totalPlants = 55)
-      insertStratumPopulation(plantsSinceLastObservation = 7, totalPlants = 70)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+      insertSubstratumPopulation(totalPlants = 55)
+      insertStratumPopulation(totalPlants = 70)
+      insertPlantingSitePopulation(totalPlants = 80)
 
       val emptyStratumId =
           insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
@@ -104,17 +102,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                   listOf(
                       PlantingSiteReportedPlantTotals.Stratum(
                           id = stratumId1,
-                          plantsSinceLastObservation = 5,
                           species =
                               listOf(
                                   PlantingSiteReportedPlantTotals.Species(
                                       id = speciesId1,
-                                      plantsSinceLastObservation = 3,
                                       totalPlants = 10,
                                   ),
                                   PlantingSiteReportedPlantTotals.Species(
                                       id = speciesId2,
-                                      plantsSinceLastObservation = 2,
                                       totalPlants = 20,
                                   ),
                               ),
@@ -125,12 +120,10 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                               listOf(
                                   PlantingSiteReportedPlantTotals.Substratum(
                                       id = substratumId1a,
-                                      plantsSinceLastObservation = 2,
                                       species =
                                           listOf(
                                               PlantingSiteReportedPlantTotals.Species(
                                                   id = speciesId1,
-                                                  plantsSinceLastObservation = 2,
                                                   totalPlants = 5,
                                               )
                                           ),
@@ -139,17 +132,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                   ),
                                   PlantingSiteReportedPlantTotals.Substratum(
                                       id = substratumId1b,
-                                      plantsSinceLastObservation = 3,
                                       species =
                                           listOf(
                                               PlantingSiteReportedPlantTotals.Species(
                                                   id = speciesId1,
-                                                  plantsSinceLastObservation = 1,
                                                   totalPlants = 5,
                                               ),
                                               PlantingSiteReportedPlantTotals.Species(
                                                   id = speciesId2,
-                                                  plantsSinceLastObservation = 2,
                                                   totalPlants = 20,
                                               ),
                                           ),
@@ -160,17 +150,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                       ),
                       PlantingSiteReportedPlantTotals.Stratum(
                           id = stratumId2,
-                          plantsSinceLastObservation = 11,
                           species =
                               listOf(
                                   PlantingSiteReportedPlantTotals.Species(
                                       id = speciesId2,
-                                      plantsSinceLastObservation = 4,
                                       totalPlants = 40,
                                   ),
                                   PlantingSiteReportedPlantTotals.Species(
                                       id = speciesId3,
-                                      plantsSinceLastObservation = 7,
                                       totalPlants = 70,
                                   ),
                               ),
@@ -181,17 +168,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                               listOf(
                                   PlantingSiteReportedPlantTotals.Substratum(
                                       id = substratumId2,
-                                      plantsSinceLastObservation = 12,
                                       species =
                                           listOf(
                                               PlantingSiteReportedPlantTotals.Species(
                                                   id = speciesId2,
-                                                  plantsSinceLastObservation = 4,
                                                   totalPlants = 50,
                                               ),
                                               PlantingSiteReportedPlantTotals.Species(
                                                   id = speciesId3,
-                                                  plantsSinceLastObservation = 8,
                                                   totalPlants = 55,
                                               ),
                                           ),
@@ -202,12 +186,10 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                       ),
                       PlantingSiteReportedPlantTotals.Stratum(
                           id = emptyStratumId,
-                          plantsSinceLastObservation = 0,
                           substrata =
                               listOf(
                                   PlantingSiteReportedPlantTotals.Substratum(
                                       id = emptySubstratumId,
-                                      plantsSinceLastObservation = 0,
                                       species = emptyList(),
                                       totalSpecies = 0,
                                       totalPlants = 0,
@@ -219,22 +201,18 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                           totalPlants = 0,
                       ),
                   ),
-              plantsSinceLastObservation = 17,
               species =
                   listOf(
                       PlantingSiteReportedPlantTotals.Species(
                           id = speciesId1,
-                          plantsSinceLastObservation = 3,
                           totalPlants = 10,
                       ),
                       PlantingSiteReportedPlantTotals.Species(
                           id = speciesId2,
-                          plantsSinceLastObservation = 6,
                           totalPlants = 60,
                       ),
                       PlantingSiteReportedPlantTotals.Species(
                           id = speciesId3,
-                          plantsSinceLastObservation = 8,
                           totalPlants = 80,
                       ),
                   ),
@@ -277,25 +255,25 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       val stratumId1 = insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
       val substratumId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 5)
-      insertStratumPopulation(plantsSinceLastObservation = 3, totalPlants = 10)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      insertSubstratumPopulation(totalPlants = 5)
+      insertStratumPopulation(totalPlants = 10)
+      insertPlantingSitePopulation(totalPlants = 10)
       val substratumId1b = insertSubstratum()
-      insertSubstratumPopulation(plantsSinceLastObservation = 1, totalPlants = 5)
+      insertSubstratumPopulation(totalPlants = 5)
       val speciesId2 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
-      insertStratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertSubstratumPopulation(totalPlants = 20)
+      insertStratumPopulation(totalPlants = 20)
 
       val stratumId2 =
           insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
       val substratumId2 = insertSubstratum()
-      insertSubstratumPopulation(plantsSinceLastObservation = 4, totalPlants = 50)
-      insertStratumPopulation(plantsSinceLastObservation = 4, totalPlants = 40)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
+      insertSubstratumPopulation(totalPlants = 50)
+      insertStratumPopulation(totalPlants = 40)
+      insertPlantingSitePopulation(totalPlants = 60)
       val speciesId3 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 8, totalPlants = 55)
-      insertStratumPopulation(plantsSinceLastObservation = 7, totalPlants = 70)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+      insertSubstratumPopulation(totalPlants = 55)
+      insertStratumPopulation(totalPlants = 70)
+      insertPlantingSitePopulation(totalPlants = 80)
 
       val emptyStratumId =
           insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
@@ -316,17 +294,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                       listOf(
                           PlantingSiteReportedPlantTotals.Stratum(
                               id = stratumId1,
-                              plantsSinceLastObservation = 5,
                               species =
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId1,
-                                          plantsSinceLastObservation = 3,
                                           totalPlants = 10,
                                       ),
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId2,
-                                          plantsSinceLastObservation = 2,
                                           totalPlants = 20,
                                       ),
                                   ),
@@ -337,12 +312,10 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = substratumId1a,
-                                          plantsSinceLastObservation = 2,
                                           species =
                                               listOf(
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId1,
-                                                      plantsSinceLastObservation = 2,
                                                       totalPlants = 5,
                                                   )
                                               ),
@@ -351,17 +324,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                       ),
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = substratumId1b,
-                                          plantsSinceLastObservation = 3,
                                           species =
                                               listOf(
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId1,
-                                                      plantsSinceLastObservation = 1,
                                                       totalPlants = 5,
                                                   ),
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId2,
-                                                      plantsSinceLastObservation = 2,
                                                       totalPlants = 20,
                                                   ),
                                               ),
@@ -372,17 +342,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                           ),
                           PlantingSiteReportedPlantTotals.Stratum(
                               id = stratumId2,
-                              plantsSinceLastObservation = 11,
                               species =
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId2,
-                                          plantsSinceLastObservation = 4,
                                           totalPlants = 40,
                                       ),
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId3,
-                                          plantsSinceLastObservation = 7,
                                           totalPlants = 70,
                                       ),
                                   ),
@@ -393,17 +360,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = substratumId2,
-                                          plantsSinceLastObservation = 12,
                                           species =
                                               listOf(
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId2,
-                                                      plantsSinceLastObservation = 4,
                                                       totalPlants = 50,
                                                   ),
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId3,
-                                                      plantsSinceLastObservation = 8,
                                                       totalPlants = 55,
                                                   ),
                                               ),
@@ -414,12 +378,10 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                           ),
                           PlantingSiteReportedPlantTotals.Stratum(
                               id = emptyStratumId,
-                              plantsSinceLastObservation = 0,
                               substrata =
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = emptySubstratumId,
-                                          plantsSinceLastObservation = 0,
                                           species = emptyList(),
                                           totalSpecies = 0,
                                           totalPlants = 0,
@@ -431,22 +393,18 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                               totalPlants = 0,
                           ),
                       ),
-                  plantsSinceLastObservation = 17,
                   species =
                       listOf(
                           PlantingSiteReportedPlantTotals.Species(
                               id = speciesId1,
-                              plantsSinceLastObservation = 3,
                               totalPlants = 10,
                           ),
                           PlantingSiteReportedPlantTotals.Species(
                               id = speciesId2,
-                              plantsSinceLastObservation = 6,
                               totalPlants = 60,
                           ),
                           PlantingSiteReportedPlantTotals.Species(
                               id = speciesId3,
-                              plantsSinceLastObservation = 8,
                               totalPlants = 80,
                           ),
                       ),
@@ -456,7 +414,6 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
               PlantingSiteReportedPlantTotals(
                   id = otherPlantingSiteId,
                   strata = emptyList(),
-                  plantsSinceLastObservation = 0,
                   species = emptyList(),
                   totalPlants = 0,
                   totalSpecies = 0,
@@ -479,25 +436,25 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       val stratumId1 = insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
       val substratumId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 5)
-      insertStratumPopulation(plantsSinceLastObservation = 3, totalPlants = 10)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      insertSubstratumPopulation(totalPlants = 5)
+      insertStratumPopulation(totalPlants = 10)
+      insertPlantingSitePopulation(totalPlants = 10)
       val substratumId1b = insertSubstratum()
-      insertSubstratumPopulation(plantsSinceLastObservation = 1, totalPlants = 5)
+      insertSubstratumPopulation(totalPlants = 5)
       val speciesId2 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
-      insertStratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertSubstratumPopulation(totalPlants = 20)
+      insertStratumPopulation(totalPlants = 20)
 
       val stratumId2 =
           insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
       val substratumId2 = insertSubstratum()
-      insertSubstratumPopulation(plantsSinceLastObservation = 4, totalPlants = 50)
-      insertStratumPopulation(plantsSinceLastObservation = 4, totalPlants = 40)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
+      insertSubstratumPopulation(totalPlants = 50)
+      insertStratumPopulation(totalPlants = 40)
+      insertPlantingSitePopulation(totalPlants = 60)
       val speciesId3 = insertSpecies()
-      insertSubstratumPopulation(plantsSinceLastObservation = 8, totalPlants = 55)
-      insertStratumPopulation(plantsSinceLastObservation = 7, totalPlants = 70)
-      insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+      insertSubstratumPopulation(totalPlants = 55)
+      insertStratumPopulation(totalPlants = 70)
+      insertPlantingSitePopulation(totalPlants = 80)
 
       val emptyStratumId =
           insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
@@ -518,17 +475,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                       listOf(
                           PlantingSiteReportedPlantTotals.Stratum(
                               id = stratumId1,
-                              plantsSinceLastObservation = 5,
                               species =
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId1,
-                                          plantsSinceLastObservation = 3,
                                           totalPlants = 10,
                                       ),
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId2,
-                                          plantsSinceLastObservation = 2,
                                           totalPlants = 20,
                                       ),
                                   ),
@@ -539,12 +493,10 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = substratumId1a,
-                                          plantsSinceLastObservation = 2,
                                           species =
                                               listOf(
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId1,
-                                                      plantsSinceLastObservation = 2,
                                                       totalPlants = 5,
                                                   )
                                               ),
@@ -553,17 +505,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                       ),
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = substratumId1b,
-                                          plantsSinceLastObservation = 3,
                                           species =
                                               listOf(
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId1,
-                                                      plantsSinceLastObservation = 1,
                                                       totalPlants = 5,
                                                   ),
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId2,
-                                                      plantsSinceLastObservation = 2,
                                                       totalPlants = 20,
                                                   ),
                                               ),
@@ -574,17 +523,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                           ),
                           PlantingSiteReportedPlantTotals.Stratum(
                               id = stratumId2,
-                              plantsSinceLastObservation = 11,
                               species =
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId2,
-                                          plantsSinceLastObservation = 4,
                                           totalPlants = 40,
                                       ),
                                       PlantingSiteReportedPlantTotals.Species(
                                           id = speciesId3,
-                                          plantsSinceLastObservation = 7,
                                           totalPlants = 70,
                                       ),
                                   ),
@@ -595,17 +541,14 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = substratumId2,
-                                          plantsSinceLastObservation = 12,
                                           species =
                                               listOf(
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId2,
-                                                      plantsSinceLastObservation = 4,
                                                       totalPlants = 50,
                                                   ),
                                                   PlantingSiteReportedPlantTotals.Species(
                                                       id = speciesId3,
-                                                      plantsSinceLastObservation = 8,
                                                       totalPlants = 55,
                                                   ),
                                               ),
@@ -616,12 +559,10 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                           ),
                           PlantingSiteReportedPlantTotals.Stratum(
                               id = emptyStratumId,
-                              plantsSinceLastObservation = 0,
                               substrata =
                                   listOf(
                                       PlantingSiteReportedPlantTotals.Substratum(
                                           id = emptySubstratumId,
-                                          plantsSinceLastObservation = 0,
                                           species = emptyList(),
                                           totalSpecies = 0,
                                           totalPlants = 0,
@@ -633,22 +574,18 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                               totalPlants = 0,
                           ),
                       ),
-                  plantsSinceLastObservation = 17,
                   species =
                       listOf(
                           PlantingSiteReportedPlantTotals.Species(
                               id = speciesId1,
-                              plantsSinceLastObservation = 3,
                               totalPlants = 10,
                           ),
                           PlantingSiteReportedPlantTotals.Species(
                               id = speciesId2,
-                              plantsSinceLastObservation = 6,
                               totalPlants = 60,
                           ),
                           PlantingSiteReportedPlantTotals.Species(
                               id = speciesId3,
-                              plantsSinceLastObservation = 8,
                               totalPlants = 80,
                           ),
                       ),
@@ -658,7 +595,6 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
               PlantingSiteReportedPlantTotals(
                   id = otherPlantingSiteId,
                   strata = emptyList(),
-                  plantsSinceLastObservation = 0,
                   species = emptyList(),
                   totalPlants = 0,
                   totalSpecies = 0,

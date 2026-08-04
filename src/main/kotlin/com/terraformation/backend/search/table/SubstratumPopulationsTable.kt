@@ -37,10 +37,6 @@ class SubstratumPopulationsTable(private val tables: SearchTables) : SearchTable
 
   override val fields: List<SearchField> =
       listOf(
-          integerField(
-              "plantsSinceLastObservation",
-              SUBSTRATUM_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
-          ),
           integerField("totalPlants", SUBSTRATUM_POPULATIONS.TOTAL_PLANTS),
       )
 

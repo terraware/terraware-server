@@ -17,7 +17,6 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.STRATA
@@ -31,7 +30,6 @@ import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import jakarta.inject.Named
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -263,12 +261,6 @@ class DeliveryStore(
       throw WithdrawalNotUndoException(undoWithdrawalId)
     }
 
-    // If the last observation of the planting site happened after the delivery, we don't want
-    // to update the site's "plants since last observation" totals.
-    val lastObservationTime = getLastObservationTime(originalDelivery.plantingSiteId)
-    val deliveryNewerThanLastObservation =
-        lastObservationTime == null || lastObservationTime < originalDelivery.createdTime
-
     return dslContext.transactionResult { _ ->
       val deliveriesRow =
           DeliveriesRow(
@@ -312,7 +304,6 @@ class DeliveryStore(
             originalPlanting.substratumId,
             originalPlanting.speciesId,
             -originalPlanting.numPlants,
-            if (deliveryNewerThanLastObservation) -originalPlanting.numPlants else 0,
         )
       }
 
@@ -345,7 +336,6 @@ class DeliveryStore(
                 STRATUM_ID,
                 SPECIES_ID,
                 TOTAL_PLANTS,
-                PLANTS_SINCE_LAST_OBSERVATION,
             )
             .select(
                 with(SUBSTRATUM_POPULATIONS) {
@@ -353,7 +343,6 @@ class DeliveryStore(
                           SUBSTRATA.STRATUM_ID,
                           SPECIES_ID,
                           DSL.sum(TOTAL_PLANTS).cast(SQLDataType.INTEGER),
-                          DSL.sum(PLANTS_SINCE_LAST_OBSERVATION).cast(SQLDataType.INTEGER),
                       )
                       .from(SUBSTRATUM_POPULATIONS)
                       .join(SUBSTRATA)
@@ -386,7 +375,6 @@ class DeliveryStore(
                 PLANTING_SITE_ID,
                 SPECIES_ID,
                 TOTAL_PLANTS,
-                PLANTS_SINCE_LAST_OBSERVATION,
             )
             .select(
                 with(STRATUM_POPULATIONS) {
@@ -394,7 +382,6 @@ class DeliveryStore(
                           DSL.value(plantingSiteId, PLANTING_SITE_ID),
                           SPECIES_ID,
                           DSL.sum(TOTAL_PLANTS).cast(SQLDataType.INTEGER),
-                          DSL.sum(PLANTS_SINCE_LAST_OBSERVATION).cast(SQLDataType.INTEGER),
                       )
                       .from(STRATUM_POPULATIONS)
                       .join(STRATA)
@@ -448,14 +435,12 @@ class DeliveryStore(
               SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID,
               SUBSTRATUM_POPULATIONS.SPECIES_ID,
               SUBSTRATUM_POPULATIONS.TOTAL_PLANTS,
-              SUBSTRATUM_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
           )
           .select(
               DSL.select(
                       PLANTINGS.SUBSTRATUM_ID,
                       PLANTINGS.SPECIES_ID,
                       sumField,
-                      DSL.value(0),
                   )
                   .from(PLANTINGS)
                   .join(SUBSTRATA)
@@ -481,7 +466,6 @@ class DeliveryStore(
       substratumId: SubstratumId?,
       speciesId: SpeciesId,
       numPlants: Int,
-      plantsSinceLastObservation: Int = numPlants,
   ) {
     with(PLANTING_SITE_POPULATIONS) {
       dslContext
@@ -489,13 +473,8 @@ class DeliveryStore(
           .set(PLANTING_SITE_ID, plantingSiteId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
-          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
-          .set(
-              PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
-          )
           .execute()
 
       if (numPlants < 0) {
@@ -517,7 +496,6 @@ class DeliveryStore(
       substratumId: SubstratumId,
       speciesId: SpeciesId,
       numPlants: Int,
-      plantsSinceLastObservation: Int = numPlants,
   ) {
     val stratumId =
         dslContext
@@ -532,13 +510,8 @@ class DeliveryStore(
           .set(SUBSTRATUM_ID, substratumId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
-          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
-          .set(
-              PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
-          )
           .execute()
 
       if (numPlants < 0) {
@@ -557,13 +530,8 @@ class DeliveryStore(
           .set(STRATUM_ID, stratumId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
-          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
-          .set(
-              PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
-          )
           .execute()
 
       if (numPlants < 0) {
@@ -619,14 +587,6 @@ class DeliveryStore(
         .from(WITHDRAWALS)
         .where(WITHDRAWALS.ID.eq(withdrawalId))
         .fetchOne(WITHDRAWALS.PURPOSE_ID) ?: throw WithdrawalNotFoundException(withdrawalId)
-  }
-
-  private fun getLastObservationTime(plantingSiteId: PlantingSiteId): Instant? {
-    return dslContext
-        .select(DSL.max(OBSERVATIONS.COMPLETED_TIME))
-        .from(OBSERVATIONS)
-        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
   }
 
   data class Reassignment(

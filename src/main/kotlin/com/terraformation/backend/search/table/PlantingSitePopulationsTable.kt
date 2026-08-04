@@ -32,10 +32,6 @@ class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTab
 
   override val fields: List<SearchField> =
       listOf(
-          integerField(
-              "plantsSinceLastObservation",
-              PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
-          ),
           integerField("totalPlants", PLANTING_SITE_POPULATIONS.TOTAL_PLANTS),
       )
 

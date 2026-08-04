@@ -3248,14 +3248,12 @@ abstract class DatabaseBackedTest {
       plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
-      plantsSinceLastObservation: Int = totalPlants,
   ) {
     plantingSitePopulationsDao.insert(
         PlantingSitePopulationsRow(
             plantingSiteId = plantingSiteId,
             speciesId = speciesId,
             totalPlants = totalPlants,
-            plantsSinceLastObservation = plantsSinceLastObservation,
         )
     )
   }
@@ -3276,14 +3274,12 @@ abstract class DatabaseBackedTest {
       substratumId: SubstratumId = inserted.substratumId,
       speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
-      plantsSinceLastObservation: Int = totalPlants,
   ) {
     substratumPopulationsDao.insert(
         SubstratumPopulationsRow(
             substratumId = substratumId,
             speciesId = speciesId,
             totalPlants = totalPlants,
-            plantsSinceLastObservation = plantsSinceLastObservation,
         )
     )
   }
@@ -3292,14 +3288,12 @@ abstract class DatabaseBackedTest {
       stratumId: StratumId = inserted.stratumId,
       speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
-      plantsSinceLastObservation: Int = totalPlants,
   ) {
     stratumPopulationsDao.insert(
         StratumPopulationsRow(
             stratumId = stratumId,
             speciesId = speciesId,
             totalPlants = totalPlants,
-            plantsSinceLastObservation = plantsSinceLastObservation,
         )
     )
   }
