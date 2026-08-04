@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.PublishedReportComparedProps
+import com.terraformation.backend.accelerator.model.ReportIndicatorEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
@@ -21,9 +22,12 @@ import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.funder.db.PublishedReportStore
+import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
+import java.math.BigDecimal
+import java.net.URI
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -212,13 +216,17 @@ class ReportService(
         // Thus we only care about the current indicators if there's no corresponding auto calc.
         val pubAutoCalc =
             published.autoCalculatedIndicators.associate {
-              it.indicatorId to (it.value to it.progressNotes)
+              it.indicatorId to ComparedIndicatorValues(it)
             }
-        val hasAutoCalcChanged = pubAutoCalc.any { (indicator, pubData) ->
+        val hasAutoCalcChanged = pubAutoCalc.any { (indicator, pubValues) ->
           val current = report.autoCalculatedIndicators.find { it.indicator == indicator }
-          val currentValue = current?.let { it.entry.overrideValue ?: it.entry.systemValue }
-          val currentProgressNotes = current?.entry?.progressNotes
-          currentValue != pubData.first || currentProgressNotes != pubData.second
+          // A missing current indicator compares as all-null values rather than as a missing
+          // entry, so build the values even when there's no current indicator.
+          ComparedIndicatorValues(
+              current?.let { it.entry.overrideValue ?: it.entry.systemValue },
+              current?.entry?.progressNotes,
+              current?.entry?.supportingDocumentUrl,
+          ) != pubValues
         }
         if (hasAutoCalcChanged) {
           changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
@@ -226,25 +234,21 @@ class ReportService(
         // only check common and project indicators with a non-null value, since that's all we
         // publish for those
         val pubCommon =
-            published.commonIndicators.associate {
-              it.indicatorId to (it.value to it.progressNotes)
-            }
+            published.commonIndicators.associate { it.indicatorId to ComparedIndicatorValues(it) }
         val currentCommon =
             report.commonIndicators
                 .filter { it.indicator.isPublishable && it.entry.value != null }
-                .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
+                .associate { it.indicator.id to ComparedIndicatorValues(it.entry) }
         if (currentCommon != pubCommon) {
           changed.add(PublishedReportComparedProps.CommonIndicators)
         }
 
         val pubProject =
-            published.projectIndicators.associate {
-              it.indicatorId to (it.value to it.progressNotes)
-            }
+            published.projectIndicators.associate { it.indicatorId to ComparedIndicatorValues(it) }
         val currentProject =
             report.projectIndicators
                 .filter { it.indicator.isPublishable && it.entry.value != null }
-                .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
+                .associate { it.indicator.id to ComparedIndicatorValues(it.entry) }
         if (currentProject != pubProject) {
           changed.add(PublishedReportComparedProps.ProjectIndicators)
         }
@@ -288,4 +292,19 @@ class ReportService(
 
     return row
   }
+}
+
+/** The indicator entry properties that are compared to detect unpublished changes. */
+private data class ComparedIndicatorValues(
+    val value: BigDecimal?,
+    val progressNotes: String?,
+    val supportingDocumentUrl: URI?,
+) {
+  constructor(
+      model: PublishedReportIndicatorModel<*>
+  ) : this(model.value, model.progressNotes, model.supportingDocumentUrl)
+
+  constructor(
+      entry: ReportIndicatorEntryModel
+  ) : this(entry.value, entry.progressNotes, entry.supportingDocumentUrl)
 }

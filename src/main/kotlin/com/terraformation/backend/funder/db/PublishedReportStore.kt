@@ -159,6 +159,11 @@ class PublishedReportStore(
 
     val projectsCommentsField =
         publishedIndicatorTable.field("projects_comments", String::class.java)!!
+    val supportingDocumentUrlField =
+        publishedIndicatorTable.field(
+            "supporting_document_url",
+            PUBLISHED_REPORT_COMMON_INDICATORS.SUPPORTING_DOCUMENT_URL.dataType,
+        )!!
     val valueField = publishedIndicatorTable.field("value", BigDecimal::class.java)!!
 
     val targetTable = targetTableIndicatorIdField.table!!
@@ -289,6 +294,7 @@ class PublishedReportStore(
                     indicatorReferenceField,
                     indicatorTypeField,
                     statusField,
+                    supportingDocumentUrlField,
                     targetField,
                     valueField,
                     unitField,
@@ -340,6 +346,7 @@ class PublishedReportStore(
                 projectsComments = record[projectsCommentsField],
                 refId = record[indicatorReferenceField],
                 status = record[statusField],
+                supportingDocumentUrl = record[supportingDocumentUrlField],
                 target = record[targetField],
                 unit = record[unitField],
                 value = record[valueField],

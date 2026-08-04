@@ -62,6 +62,10 @@ class AcceleratorReportAutoCalculatedIndicatorsTable(tables: SearchTables) : Sea
           bigDecimalField("overrideValue", REPORT_AUTO_CALCULATED_INDICATORS.OVERRIDE_VALUE),
           textField("projectsComments", REPORT_AUTO_CALCULATED_INDICATORS.PROJECTS_COMMENTS),
           enumField("status", REPORT_AUTO_CALCULATED_INDICATORS.STATUS_ID),
+          uriField(
+              "supportingDocumentUrl",
+              REPORT_AUTO_CALCULATED_INDICATORS.SUPPORTING_DOCUMENT_URL,
+          ),
           timestampField("systemTime", REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_TIME),
           bigDecimalField("systemValue", REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE),
       )

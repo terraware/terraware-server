@@ -18,6 +18,7 @@ import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJEC
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.UserId
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
@@ -33,6 +34,7 @@ data class ReportIndicatorEntryModel(
     val projectsComments: String? = null,
     val progressNotes: String? = null,
     val status: ReportIndicatorStatus? = null,
+    val supportingDocumentUrl: URI? = null,
     val target: BigDecimal? = null,
     val value: BigDecimal? = null,
 )
@@ -85,6 +87,7 @@ data class ReportCommonIndicatorModel(
                 },
             projectsComments = record[PROJECTS_COMMENTS],
             status = record[STATUS_ID],
+            supportingDocumentUrl = record[SUPPORTING_DOCUMENT_URL],
         )
       }
     }
@@ -139,6 +142,7 @@ data class ReportProjectIndicatorModel(
                 },
             projectsComments = record[PROJECTS_COMMENTS],
             status = record[STATUS_ID],
+            supportingDocumentUrl = record[SUPPORTING_DOCUMENT_URL],
         )
       }
     }
@@ -156,6 +160,7 @@ data class ReportAutoCalculatedIndicatorEntryModel(
     val progressNotes: String? = null,
     val projectsComments: String? = null,
     val status: ReportIndicatorStatus? = null,
+    val supportingDocumentUrl: URI? = null,
 ) {
   companion object {
     fun of(
@@ -178,6 +183,7 @@ data class ReportAutoCalculatedIndicatorEntryModel(
                 },
             projectsComments = record[PROJECTS_COMMENTS],
             status = record[STATUS_ID],
+            supportingDocumentUrl = record[SUPPORTING_DOCUMENT_URL],
         )
       }
     }

@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import org.springframework.core.io.InputStreamResource
@@ -119,6 +120,7 @@ data class PublishedReportIndicatorPayload(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
+    val supportingDocumentUrl: URI?,
     val target: BigDecimal?,
     val unit: String?,
     val value: BigDecimal?,
@@ -140,6 +142,7 @@ data class PublishedReportIndicatorPayload(
       projectsComments = model.projectsComments,
       refId = model.refId,
       status = model.status,
+      supportingDocumentUrl = model.supportingDocumentUrl,
       target = model.target,
       unit = model.unit,
       value = model.value,

@@ -304,6 +304,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           indicatorId = projectIndicatorId,
           status = ReportIndicatorStatus.OnTrack,
+          supportingDocumentUrl = URI("https://example.com/project-indicator"),
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -333,6 +334,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportIndicatorEntryModel(
                           target = BigDecimal(100),
                           status = ReportIndicatorStatus.OnTrack,
+                          supportingDocumentUrl = URI("https://example.com/project-indicator"),
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
@@ -385,6 +387,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = BigDecimal(45),
           projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
+          supportingDocumentUrl = URI("https://example.com/common-indicator"),
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -455,6 +458,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           value = BigDecimal(45),
                           projectsComments = "Almost at target",
                           progressNotes = "Not quite there yet",
+                          supportingDocumentUrl = URI("https://example.com/common-indicator"),
                           modifiedTime = Instant.ofEpochSecond(3000),
                           modifiedBy = user.userId,
                       ),
@@ -527,6 +531,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(7000),
           overrideValue = BigDecimal(800),
           status = ReportIndicatorStatus.Achieved,
+          supportingDocumentUrl = URI("https://example.com/auto-calc-indicator"),
           modifiedTime = Instant.ofEpochSecond(700),
           modifiedBy = user.userId,
       )
@@ -581,6 +586,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemTime = Instant.ofEpochSecond(7000),
                           overrideValue = BigDecimal(800),
                           status = ReportIndicatorStatus.Achieved,
+                          supportingDocumentUrl = URI("https://example.com/auto-calc-indicator"),
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
                       ),
@@ -2608,6 +2614,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = BigDecimal(45),
           projectsComments = "Existing indicator 1 notes",
           status = ReportIndicatorStatus.OnTrack,
+          supportingDocumentUrl = URI("https://example.com/existing-1"),
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
@@ -2623,6 +2630,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = null,
           projectsComments = "Existing indicator 2 notes",
           progressNotes = "Existing indicator 2 internal comment",
+          supportingDocumentUrl = URI("https://example.com/existing-2"),
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -2639,6 +2647,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected indicator notes",
           progressNotes = "Existing seeds collected indicator internal comment",
+          supportingDocumentUrl = URI("https://example.com/existing-seeds"),
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -2675,6 +2684,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           projectsComments = "New indicator 2 notes",
                           progressNotes = "New indicator 2 internal comment",
                           status = ReportIndicatorStatus.OnTrack,
+                          // A null supporting document URL clears the existing one
+                          supportingDocumentUrl = null,
 
                           // These fields are ignored
                           modifiedTime = Instant.EPOCH,
@@ -2685,6 +2696,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           value = BigDecimal(45),
                           projectsComments = "New indicator 3 notes",
                           progressNotes = "New indicator 3 internal comment",
+                          supportingDocumentUrl = URI("https://example.com/new-3"),
                       ),
               ),
           autoCalculatedIndicatorEntries =
@@ -2695,6 +2707,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = null,
                           projectsComments = "New species planted indicator notes",
                           progressNotes = "New species planted indicator internal comment",
+                          supportingDocumentUrl = URI("https://example.com/new-species"),
                       ),
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportIndicatorEntryModel(
@@ -2702,6 +2715,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportIndicatorStatus.Unlikely,
                           projectsComments = "New trees planted indicator notes",
                           progressNotes = "New trees planted indicator internal comment",
+                          supportingDocumentUrl = URI("https://example.com/new-trees"),
                       ),
               ),
           projectIndicatorEntries =
@@ -2711,6 +2725,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           value = BigDecimal(50),
                           projectsComments = "Project indicator notes",
                           progressNotes = "Project indicator internal comment",
+                          supportingDocumentUrl = URI("https://example.com/project"),
                       ),
               ),
       )
@@ -2723,6 +2738,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(45),
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing indicator 1 notes",
+                  supportingDocumentUrl = URI("https://example.com/existing-1"),
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
@@ -2733,6 +2749,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New indicator 2 notes",
                   progressNotes = "New indicator 2 internal comment",
+                  supportingDocumentUrl = null,
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2742,6 +2759,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(45),
                   projectsComments = "New indicator 3 notes",
                   progressNotes = "New indicator 3 internal comment",
+                  supportingDocumentUrl = URI("https://example.com/new-3"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2759,6 +2777,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected indicator notes",
                   progressNotes = "Existing seeds collected indicator internal comment",
+                  supportingDocumentUrl = URI("https://example.com/existing-seeds"),
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
               ),
@@ -2771,6 +2790,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = null,
                   projectsComments = "New species planted indicator notes",
                   progressNotes = "New species planted indicator internal comment",
+                  supportingDocumentUrl = URI("https://example.com/new-species"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2781,6 +2801,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportIndicatorStatus.Unlikely,
                   projectsComments = "New trees planted indicator notes",
                   progressNotes = "New trees planted indicator internal comment",
+                  supportingDocumentUrl = URI("https://example.com/new-trees"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2796,6 +2817,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(50),
                   projectsComments = "Project indicator notes",
                   progressNotes = "Project indicator internal comment",
+                  supportingDocumentUrl = URI("https://example.com/project"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -3088,6 +3110,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = BigDecimal(45),
           projectsComments = "Existing indicator 1 notes",
           status = ReportIndicatorStatus.OnTrack,
+          supportingDocumentUrl = URI("https://example.com/existing-1"),
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
@@ -3103,6 +3126,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = null,
           projectsComments = "Existing indicator 2 notes",
           progressNotes = "Existing indicator 2 internal comment",
+          supportingDocumentUrl = URI("https://example.com/existing-2"),
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -3119,6 +3143,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected indicator notes",
           progressNotes = "Existing seeds collected indicator internal comment",
+          supportingDocumentUrl = URI("https://example.com/existing-seeds"),
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -3160,6 +3185,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           value = BigDecimal(88),
                           projectsComments = "New indicator 2 notes",
                           status = ReportIndicatorStatus.OnTrack,
+                          supportingDocumentUrl = URI("https://example.com/new-2"),
 
                           // These fields are ignored
                           progressNotes = "Not permitted to write internal comment",
@@ -3170,6 +3196,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportIndicatorEntryModel(
                           value = null,
                           projectsComments = "New indicator 3 notes",
+                          supportingDocumentUrl = URI("https://example.com/new-3"),
                       ),
               ),
           autoCalculatedIndicatorEntries =
@@ -3178,6 +3205,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportIndicatorEntryModel(
                           projectsComments = "New species planted indicator notes",
                           status = null,
+                          supportingDocumentUrl = URI("https://example.com/new-species"),
 
                           // These fields are ignored
                           value = BigDecimal(4),
@@ -3189,6 +3217,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportIndicatorEntryModel(
                           projectsComments = "New trees planted indicator notes",
                           status = ReportIndicatorStatus.Unlikely,
+                          supportingDocumentUrl = URI("https://example.com/new-trees"),
 
                           // These fields are ignored
                           value = BigDecimal(45),
@@ -3203,6 +3232,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportIndicatorEntryModel(
                           value = BigDecimal(50),
                           projectsComments = "Project indicator notes",
+                          supportingDocumentUrl = URI("https://example.com/project"),
                       ),
               ),
       )
@@ -3215,6 +3245,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(45),
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing indicator 1 notes",
+                  supportingDocumentUrl = URI("https://example.com/existing-1"),
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
@@ -3225,6 +3256,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New indicator 2 notes",
                   progressNotes = "Existing indicator 2 internal comment",
+                  supportingDocumentUrl = URI("https://example.com/new-2"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -3232,6 +3264,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId3,
                   projectsComments = "New indicator 3 notes",
+                  supportingDocumentUrl = URI("https://example.com/new-3"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -3249,6 +3282,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected indicator notes",
                   progressNotes = "Existing seeds collected indicator internal comment",
+                  supportingDocumentUrl = URI("https://example.com/existing-seeds"),
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
               ),
@@ -3261,6 +3295,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   overrideValue = BigDecimal(15),
                   projectsComments = "New species planted indicator notes",
                   progressNotes = "Existing species planted indicator internal comment",
+                  supportingDocumentUrl = URI("https://example.com/new-species"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -3269,6 +3304,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   statusId = ReportIndicatorStatus.Unlikely,
                   projectsComments = "New trees planted indicator notes",
+                  supportingDocumentUrl = URI("https://example.com/new-trees"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -3283,6 +3319,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectIndicatorId = projectIndicatorId,
                   value = BigDecimal(50),
                   projectsComments = "Project indicator notes",
+                  supportingDocumentUrl = URI("https://example.com/project"),
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -3361,6 +3398,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = BigDecimal(2000),
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = BigDecimal(98),
+          supportingDocumentUrl = URI("https://example.com/seedlings"),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
       )
@@ -3397,6 +3435,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
+                  // Clearing the system and override values leaves the supporting document URL
+                  // untouched.
+                  supportingDocumentUrl = URI("https://example.com/seedlings"),
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
@@ -3453,6 +3494,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = BigDecimal(2000),
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = BigDecimal(98),
+          supportingDocumentUrl = URI("https://example.com/seedlings"),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
       )
@@ -3491,6 +3533,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
                   systemValue = BigDecimal(83),
                   systemTime = clock.instant,
+                  // Refreshing the system value preserves the supporting document URL even though
+                  // it clears the override value.
+                  supportingDocumentUrl = URI("https://example.com/seedlings"),
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
@@ -4479,6 +4524,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = BigDecimal(10),
           projectsComments = null,
           progressNotes = "Common Indicator 1 Progress notes",
+          supportingDocumentUrl = URI("https://example.com/common-1"),
       )
 
       insertReportCommonIndicatorTarget(
@@ -4528,6 +4574,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = BigDecimal(30),
           projectsComments = null,
           progressNotes = "Project Indicator 1 Progress notes",
+          supportingDocumentUrl = URI("https://example.com/project-1"),
       )
 
       insertReportProjectIndicatorTarget(
@@ -4591,6 +4638,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = BigDecimal(39),
           projectsComments = "Seedlings underperformance justification",
           progressNotes = "Seedlings progress notes",
+          supportingDocumentUrl = URI("https://example.com/seedlings"),
       )
 
       insertReportAutoCalculatedIndicatorTarget(
@@ -4871,6 +4919,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportIndicatorStatus.Achieved,
                   value = BigDecimal(10),
                   progressNotes = "Common Indicator 1 Progress notes",
+                  supportingDocumentUrl = URI("https://example.com/common-1"),
               ),
               PublishedReportCommonIndicatorsRecord(
                   reportId = reportId,
@@ -4891,6 +4940,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportIndicatorStatus.Achieved,
                   value = BigDecimal(30),
                   progressNotes = "Project Indicator 1 Progress notes",
+                  supportingDocumentUrl = URI("https://example.com/project-1"),
               ),
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
@@ -5056,6 +5106,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(10),
                   projectsComments = null,
                   progressNotes = "Common Indicator 1 Progress notes",
+                  supportingDocumentUrl = URI("https://example.com/common-1"),
               ),
               PublishedReportCommonIndicatorsRecord(
                   reportId = reportId,
@@ -5077,6 +5128,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(30),
                   projectsComments = null,
                   progressNotes = "Project Indicator 1 Progress notes",
+                  supportingDocumentUrl = URI("https://example.com/project-1"),
               ),
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
@@ -5098,6 +5150,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(49),
                   projectsComments = "Seedlings underperformance justification",
                   progressNotes = "Seedlings progress notes",
+                  supportingDocumentUrl = URI("https://example.com/seedlings"),
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,

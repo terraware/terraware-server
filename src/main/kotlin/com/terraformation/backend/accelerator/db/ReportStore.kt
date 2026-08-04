@@ -661,6 +661,7 @@ class ReportStore(
                         progressNotes = entry.progressNotes,
                         projectsComments = entry.projectsComments,
                         status = entry.status,
+                        supportingDocumentUrl = entry.supportingDocumentUrl,
                     )
               }
       val publishableCommonIndicator =
@@ -1333,6 +1334,11 @@ class ReportStore(
     val valueField = table.field("value", BigDecimal::class.java)!!
     val projectsCommentsField = table.field("projects_comments", String::class.java)!!
     val progressNotesField = table.field("progress_notes", String::class.java)
+    val supportingDocumentUrlField =
+        table.field(
+            "supporting_document_url",
+            REPORT_COMMON_INDICATORS.SUPPORTING_DOCUMENT_URL.dataType,
+        )!!
     val statusField =
         table.field(
             "status_id",
@@ -1354,6 +1360,7 @@ class ReportStore(
               .set(indicatorIdField, indicatorId)
               .set(valueField, entry.value)
               .set(projectsCommentsField, entry.projectsComments)
+              .set(supportingDocumentUrlField, entry.supportingDocumentUrl)
               .set(statusField, entry.status)
               .apply {
                 if (modifiedByField != null) {
@@ -1619,6 +1626,10 @@ class ReportStore(
               .set(
                   REPORT_AUTO_CALCULATED_INDICATORS.PROJECTS_COMMENTS,
                   entry.projectsComments,
+              )
+              .set(
+                  REPORT_AUTO_CALCULATED_INDICATORS.SUPPORTING_DOCUMENT_URL,
+                  entry.supportingDocumentUrl,
               )
               .set(REPORT_AUTO_CALCULATED_INDICATORS.STATUS_ID, entry.status)
               .set(REPORT_AUTO_CALCULATED_INDICATORS.MODIFIED_BY, currentUser().userId)

@@ -35,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.math.BigDecimal
+import java.net.URI
 import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneOffset
@@ -812,6 +813,85 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
               .unpublishedProperties,
           "AutoCalculatedIndicators should be flagged when progressNotes changed",
+      )
+    }
+
+    @Test
+    fun `identifies commonIndicators as changed when supportingDocumentUrl changed`() {
+      insertCommonIndicator(isPublishable = true)
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertPublishedReportCommonIndicator(
+          value = BigDecimal(10),
+          supportingDocumentUrl = URI("https://example.com/old"),
+      )
+      insertReportCommonIndicator(
+          value = BigDecimal(10),
+          supportingDocumentUrl = URI("https://example.com/new"),
+      )
+
+      assertEquals(
+          listOf(PublishedReportComparedProps.CommonIndicators),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "CommonIndicators should be flagged when supportingDocumentUrl changed",
+      )
+    }
+
+    @Test
+    fun `identifies projectIndicators as changed when supportingDocumentUrl changed`() {
+      insertProjectIndicator(isPublishable = true)
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertPublishedReportProjectIndicator(
+          value = BigDecimal(10),
+          supportingDocumentUrl = URI("https://example.com/old"),
+      )
+      insertReportProjectIndicator(
+          value = BigDecimal(10),
+          supportingDocumentUrl = URI("https://example.com/new"),
+      )
+
+      assertEquals(
+          listOf(PublishedReportComparedProps.ProjectIndicators),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "ProjectIndicators should be flagged when supportingDocumentUrl changed",
+      )
+    }
+
+    @Test
+    fun `identifies autoCalculatedIndicators as changed when supportingDocumentUrl changed`() {
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.Seedlings,
+          value = BigDecimal(40),
+          supportingDocumentUrl = URI("https://example.com/old"),
+      )
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.Seedlings,
+          systemValue = BigDecimal(40),
+          supportingDocumentUrl = URI("https://example.com/new"),
+      )
+
+      assertEquals(
+          listOf(PublishedReportComparedProps.AutoCalculatedIndicators),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "AutoCalculatedIndicators should be flagged when supportingDocumentUrl changed",
       )
     }
   }
