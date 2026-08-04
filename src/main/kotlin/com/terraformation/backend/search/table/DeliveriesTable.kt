@@ -36,6 +36,9 @@ class DeliveriesTable(private val tables: SearchTables) : SearchTable() {
     listOf(
         timestampField("createdTime", DELIVERIES.CREATED_TIME),
         idWrapperField("id", DELIVERIES.ID) { DeliveryId(it) },
+        idWrapperField("reassignedFromDeliveryId", DELIVERIES.REASSIGNED_FROM_DELIVERY_ID) {
+          DeliveryId(it)
+        },
         timestampField("reassignedTime", DELIVERIES.REASSIGNED_TIME),
     )
   }
