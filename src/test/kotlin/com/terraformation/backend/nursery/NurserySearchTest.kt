@@ -15,6 +15,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.search.AndNode
@@ -972,6 +973,39 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   ),
               )
           )
+
+      val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), orderBy)
+
+      assertJsonEquals(expected, actual)
+    }
+
+    @Test
+    fun `withdrawal delivery resolves the original delivery when a withdrawal spans two sites`() {
+      insertBatch()
+      val withdrawalId =
+          insertNurseryWithdrawal(
+              facilityId = facilityId,
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.of(2024, 1, 15),
+          )
+      insertBatchWithdrawal(readyQuantityWithdrawn = 1)
+
+      val originPlantingSiteId = insertPlantingSite()
+      val deliveryId =
+          insertDelivery(plantingSiteId = originPlantingSiteId, withdrawalId = withdrawalId)
+      val otherPlantingSiteId = insertPlantingSite()
+      insertDelivery(
+          row = DeliveriesRow(reassignedFromDeliveryId = deliveryId),
+          plantingSiteId = otherPlantingSiteId,
+          withdrawalId = withdrawalId,
+      )
+
+      val prefix = SearchFieldPrefix(searchTables.nurseryWithdrawals)
+      val fields = listOf("id", "delivery_id").map { prefix.resolve(it) }
+      val orderBy = listOf(SearchSortField(prefix.resolve("id")))
+
+      val expected =
+          SearchResults(listOf(mapOf("id" to "$withdrawalId", "delivery_id" to "$deliveryId")))
 
       val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), orderBy)
 
