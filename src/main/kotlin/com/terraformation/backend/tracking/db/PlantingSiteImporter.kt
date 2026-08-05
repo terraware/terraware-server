@@ -30,7 +30,7 @@ class PlantingSiteImporter(
   companion object {
     val substratumNameProperties = setOf("planting_1", "subzone", "substratum", "substrata")
     val substratumStableIdProperties = setOf("stable_sz", "stable_sub", "stable_ss")
-    val targetPlantingDensityProperties = setOf("plan_dens", "density")
+    val initialPlantingDensityProperties = setOf("plan_dens", "density")
     val stratumNameProperties = setOf("planting_z", "zone", "stratum", "strata")
     val stratumStableIdProperties = setOf("stable_z", "stable_zon", "stable_s", "stable_str")
 
@@ -304,23 +304,23 @@ class PlantingSiteImporter(
       val numTemporaryPlots = substratumFeatures.firstNotNullOfOrNull {
         it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
       }
-      val targetPlantingDensity =
+      val initialPlantingDensity =
           substratumFeatures.firstNotNullOfOrNull {
-            it.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
-          } ?: StratumModel.DEFAULT_TARGET_PLANTING_DENSITY
+            it.getProperty(initialPlantingDensityProperties)?.toBigDecimalOrNull()
+          } ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY
 
       if (errorMargin != null && variance != null) {
         StratumModel.create(
             boundary = stratumBoundary,
             errorMargin = errorMargin,
             exclusion = exclusion,
+            initialPlantingDensity = initialPlantingDensity,
             name = stratumName,
             numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
             substrata = substratumModels,
             stableId = stableIdsByStratum[stratumName]!!,
             studentsT = studentsT,
-            targetPlantingDensity = targetPlantingDensity,
             variance = variance,
         )
       } else {

@@ -9,8 +9,6 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
-import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
-import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
 import java.math.BigDecimal
@@ -213,8 +211,8 @@ private constructor(
   ) {
     var boundary: MultiPolygon = rectangle(width, height, x, y)
     var errorMargin: BigDecimal = StratumModel.DEFAULT_ERROR_MARGIN
+    var initialPlantingDensity: BigDecimal = StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY
     var studentsT: BigDecimal = StratumModel.DEFAULT_STUDENTS_T
-    var targetPlantingDensity: BigDecimal = StratumModel.DEFAULT_TARGET_PLANTING_DENSITY
     var variance: BigDecimal = StratumModel.DEFAULT_VARIANCE
 
     private var nextPermanentIndex = 1
@@ -228,13 +226,13 @@ private constructor(
           boundaryModifiedTime = Instant.EPOCH,
           errorMargin = errorMargin,
           id = StratumId(currentStratumId),
+          initialPlantingDensity = initialPlantingDensity,
           name = name,
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           substrata = substrata.ifEmpty { listOf(substratum()) },
           stableId = stableId,
           studentsT = studentsT,
-          targetPlantingDensity = targetPlantingDensity,
           variance = variance,
       )
     }

@@ -513,18 +513,18 @@ class AdminPlantingSitesController(
       @RequestParam studentsT: BigDecimal,
       @RequestParam numPermanent: Int,
       @RequestParam numTemporary: Int,
-      @RequestParam targetPlantingDensity: BigDecimal,
+      @RequestParam initialPlantingDensity: BigDecimal,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
       plantingSiteStore.updateStratum(stratumId) { row ->
         row.copy(
             errorMargin = errorMargin,
+            initialPlantingDensity = initialPlantingDensity,
             name = name,
             numPermanentPlots = numPermanent,
             numTemporaryPlots = numTemporary,
             studentsT = studentsT,
-            targetPlantingDensity = targetPlantingDensity,
             variance = variance,
         )
       }

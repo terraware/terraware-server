@@ -127,8 +127,8 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns stratum update for settings change`() {
     val newErrorMargin = BigDecimal(101)
+    val newInitialPlantingDensity = BigDecimal(1100)
     val newStudentsT = BigDecimal("1.646")
-    val newTargetPlantingDensity = BigDecimal(1100)
     val newVariance = BigDecimal(40001)
 
     val existing = existingSite {
@@ -137,8 +137,8 @@ class PlantingSiteEditCalculatorTest {
     val desired = newSite {
       stratum(numPermanent = 8, numTemporary = 3) {
         errorMargin = newErrorMargin
+        initialPlantingDensity = newInitialPlantingDensity
         studentsT = newStudentsT
-        targetPlantingDensity = newTargetPlantingDensity
         variance = newVariance
       }
     }

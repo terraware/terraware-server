@@ -32,6 +32,7 @@ data class StratumModel<
     val boundaryModifiedTime: TIMESTAMP,
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
     val id: SID,
+    val initialPlantingDensity: BigDecimal = DEFAULT_INITIAL_PLANTING_DENSITY,
     /** The time of the latest observation, if the stratum has completed observations */
     val latestObservationCompletedTime: Instant? = null,
     /** The ID of the latest observation, if the stratum has completed observations */
@@ -42,7 +43,6 @@ data class StratumModel<
     val substrata: List<SubstratumModel<SSID>>,
     val stableId: StableId,
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
-    val targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
     val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
   /**
@@ -390,7 +390,7 @@ data class StratumModel<
         errorMargin.equalsIgnoreScale(other.errorMargin) &&
         studentsT.equalsIgnoreScale(other.studentsT) &&
         variance.equalsIgnoreScale(other.variance) &&
-        targetPlantingDensity.equalsIgnoreScale(other.targetPlantingDensity) &&
+        initialPlantingDensity.equalsIgnoreScale(other.initialPlantingDensity) &&
         substrata.zip(other.substrata).all { (a, b) -> a.equals(b, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
   }
@@ -402,13 +402,13 @@ data class StratumModel<
           boundaryModifiedTime = null,
           errorMargin = errorMargin,
           id = null,
+          initialPlantingDensity = initialPlantingDensity,
           name = name,
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           substrata = substrata.map { it.toNew() },
           stableId = stableId,
           studentsT = studentsT,
-          targetPlantingDensity = targetPlantingDensity,
           variance = variance,
       )
 
@@ -424,8 +424,8 @@ data class StratumModel<
     const val DEFAULT_NUM_PERMANENT_PLOTS = 18
     const val DEFAULT_NUM_TEMPORARY_PLOTS = 6
 
-    /** Target planting density to use if not included in stratum properties. */
-    val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
+    /** Initial planting density to use if not included in stratum properties. */
+    val DEFAULT_INITIAL_PLANTING_DENSITY = BigDecimal(1500)
 
     fun create(
         boundary: MultiPolygon,
@@ -433,11 +433,11 @@ data class StratumModel<
         substrata: List<NewSubstratumModel>,
         exclusion: MultiPolygon? = null,
         errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+        initialPlantingDensity: BigDecimal = DEFAULT_INITIAL_PLANTING_DENSITY,
         numPermanentPlots: Int? = null,
         numTemporaryPlots: Int? = null,
         stableId: StableId = StableId(name),
         studentsT: BigDecimal = DEFAULT_STUDENTS_T,
-        targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
         variance: BigDecimal = DEFAULT_VARIANCE,
     ): NewStratumModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
@@ -454,13 +454,13 @@ data class StratumModel<
           boundaryModifiedTime = null,
           errorMargin = errorMargin,
           id = null,
+          initialPlantingDensity = initialPlantingDensity,
           name = name,
           numPermanentPlots = numPermanentPlots ?: defaultPermanentPlots,
           numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
           substrata = substrata,
           stableId = stableId,
           studentsT = studentsT,
-          targetPlantingDensity = targetPlantingDensity,
           variance = variance,
       )
     }

@@ -377,7 +377,7 @@ data class PlantingZonePayload(
       model.numPermanentPlots,
       model.numTemporaryPlots,
       model.substrata.map { PlantingSubzonePayload(it) },
-      model.targetPlantingDensity,
+      model.initialPlantingDensity,
   )
 }
 
@@ -392,28 +392,31 @@ data class StratumResponsePayload(
     )
     val boundaryModifiedTime: Instant,
     val id: StratumId,
+    val initialPlantingDensity: BigDecimal,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
     val name: String,
     val numPermanentPlots: Int,
     val numTemporaryPlots: Int,
     val substrata: List<SubstratumResponsePayload>,
-    val targetPlantingDensity: BigDecimal,
+    @Schema(deprecated = true, description = "Use initialPlantingDensity instead.")
+    val targetPlantingDensity: BigDecimal?,
 ) {
   constructor(
       model: ExistingStratumModel
   ) : this(
-      model.areaHa,
-      model.boundary,
-      model.boundaryModifiedTime,
-      model.id,
+      areaHa = model.areaHa,
+      boundary = model.boundary,
+      boundaryModifiedTime = model.boundaryModifiedTime,
+      id = model.id,
+      initialPlantingDensity = model.initialPlantingDensity,
       latestObservationCompletedTime = model.latestObservationCompletedTime,
       latestObservationId = model.latestObservationId,
-      model.name,
-      model.numPermanentPlots,
-      model.numTemporaryPlots,
-      model.substrata.map { SubstratumResponsePayload(it) },
-      model.targetPlantingDensity,
+      name = model.name,
+      numPermanentPlots = model.numPermanentPlots,
+      numTemporaryPlots = model.numTemporaryPlots,
+      substrata = model.substrata.map { SubstratumResponsePayload(it) },
+      targetPlantingDensity = model.initialPlantingDensity,
   )
 }
 
@@ -625,12 +628,14 @@ data class NewSubstratumPayload(
 data class NewStratumPayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry,
+    val initialPlantingDensity: BigDecimal?,
     @Schema(
         description =
             "Name of this stratum. Two strata in the same planting site may not have the same name."
     )
     val name: String,
     val substrata: List<NewSubstratumPayload>?,
+    @Schema(deprecated = true, description = "Use initialPlantingDensity instead.")
     val targetPlantingDensity: BigDecimal?,
 ) {
   fun validate() {
@@ -646,8 +651,10 @@ data class NewStratumPayload(
         boundary = boundary.toMultiPolygon(),
         exclusion = exclusion,
         name = name,
-        targetPlantingDensity =
-            targetPlantingDensity ?: StratumModel.DEFAULT_TARGET_PLANTING_DENSITY,
+        initialPlantingDensity =
+            initialPlantingDensity
+                ?: targetPlantingDensity
+                ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
         substrata = substrata?.map { it.toModel(name, exclusion) } ?: emptyList(),
     )
   }

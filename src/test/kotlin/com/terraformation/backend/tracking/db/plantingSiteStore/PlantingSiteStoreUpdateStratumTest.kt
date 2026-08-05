@@ -33,6 +33,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
               createdBy = createdBy,
               createdTime = createdTime,
               errorMargin = BigDecimal.TWO,
+              initialPlantingDensity = BigDecimal.ONE,
               plantingSiteId = plantingSiteId,
               modifiedBy = createdBy,
               modifiedTime = createdTime,
@@ -41,7 +42,6 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
               numTemporaryPlots = 2,
               stableId = StableId("initial"),
               studentsT = BigDecimal.ONE,
-              targetPlantingDensity = BigDecimal.ONE,
               variance = BigDecimal.ZERO,
           )
 
@@ -53,19 +53,19 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val newVariance = BigDecimal(12)
       val newPermanent = 13
       val newTemporary = 14
-      val newTargetPlantingDensity = BigDecimal(13)
+      val newInitialPlantingDensity = BigDecimal(13)
 
       val expected =
           initialRow.copy(
               errorMargin = newErrorMargin,
               id = stratumId,
+              initialPlantingDensity = newInitialPlantingDensity,
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
               name = newName,
               numPermanentPlots = newPermanent,
               numTemporaryPlots = newTemporary,
               studentsT = newStudentsT,
-              targetPlantingDensity = newTargetPlantingDensity,
               variance = newVariance,
           )
 
@@ -73,11 +73,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
         it.copy(
             // Editable
             errorMargin = newErrorMargin,
+            initialPlantingDensity = newInitialPlantingDensity,
             name = newName,
             numPermanentPlots = newPermanent,
             numTemporaryPlots = newTemporary,
             studentsT = newStudentsT,
-            targetPlantingDensity = newTargetPlantingDensity,
             variance = newVariance,
             // Not editable
             boundaryModifiedBy = user.userId,
