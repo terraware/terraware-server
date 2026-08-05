@@ -41,7 +41,7 @@ import org.springframework.web.multipart.MultipartFile
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/reports")
 @RestController
-class ReportsController(
+class AcceleratorReportsController(
     private val reportService: ReportService,
     private val reportStore: ReportStore,
 ) {
