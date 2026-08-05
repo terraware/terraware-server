@@ -933,6 +933,34 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns reports in descending start date order`() {
+      insertProjectReportConfig()
+
+      val q1ReportId =
+          insertReport(
+              quarter = ReportQuarter.Q1,
+              startDate = LocalDate.of(2030, Month.JANUARY, 1),
+              endDate = LocalDate.of(2030, Month.MARCH, 31),
+          )
+      val q3ReportId =
+          insertReport(
+              quarter = ReportQuarter.Q3,
+              startDate = LocalDate.of(2030, Month.JULY, 1),
+              endDate = LocalDate.of(2030, Month.SEPTEMBER, 30),
+          )
+      val q2ReportId =
+          insertReport(
+              quarter = ReportQuarter.Q2,
+              startDate = LocalDate.of(2030, Month.APRIL, 1),
+              endDate = LocalDate.of(2030, Month.JUNE, 30),
+          )
+
+      clock.instant = LocalDate.of(2031, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+
+      assertEquals(listOf(q3ReportId, q2ReportId, q1ReportId), store.fetch().map { it.id })
+    }
+
+    @Test
     fun `returns only visible reports`() {
       deleteOrganizationUser(organizationId = organizationId)
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
