@@ -625,6 +625,7 @@ data class NewAcceleratorReportConfigPayload(
           reportingStartDate = reportingStartDate,
       )
 }
+
 data class ReportYearsPayload(val startYear: Int, val endYear: Int)
 
 data class CreateAcceleratorReportConfigRequestPayload(
