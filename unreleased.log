@@ -1,3 +1,4 @@
+31239b0c Move migration to correct directory (#4842)
 6da1ab59 Fix Messages_en.properties sorting (#4836)
 35eda618 Try to reduce overexplaining in agent-generated comments (#4830)
 c7891a3d Get rid of "plants since last observation" (#4829)
