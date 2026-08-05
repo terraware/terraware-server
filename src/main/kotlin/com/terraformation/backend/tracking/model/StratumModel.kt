@@ -43,6 +43,7 @@ data class StratumModel<
     val substrata: List<SubstratumModel<SSID>>,
     val stableId: StableId,
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
+    val targetPlantDensity: BigDecimal? = null,
     val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
   /**
@@ -391,6 +392,7 @@ data class StratumModel<
         studentsT.equalsIgnoreScale(other.studentsT) &&
         variance.equalsIgnoreScale(other.variance) &&
         initialPlantingDensity.equalsIgnoreScale(other.initialPlantingDensity) &&
+        targetPlantDensity.equalsIgnoreScale(other.targetPlantDensity) &&
         substrata.zip(other.substrata).all { (a, b) -> a.equals(b, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
   }
@@ -409,6 +411,7 @@ data class StratumModel<
           substrata = substrata.map { it.toNew() },
           stableId = stableId,
           studentsT = studentsT,
+          targetPlantDensity = targetPlantDensity,
           variance = variance,
       )
 
@@ -438,6 +441,7 @@ data class StratumModel<
         numTemporaryPlots: Int? = null,
         stableId: StableId = StableId(name),
         studentsT: BigDecimal = DEFAULT_STUDENTS_T,
+        targetPlantDensity: BigDecimal? = null,
         variance: BigDecimal = DEFAULT_VARIANCE,
     ): NewStratumModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
@@ -461,6 +465,7 @@ data class StratumModel<
           substrata = substrata,
           stableId = stableId,
           studentsT = studentsT,
+          targetPlantDensity = targetPlantDensity,
           variance = variance,
       )
     }

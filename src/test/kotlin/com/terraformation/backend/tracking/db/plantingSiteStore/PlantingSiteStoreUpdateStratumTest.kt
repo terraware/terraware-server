@@ -54,6 +54,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val newPermanent = 13
       val newTemporary = 14
       val newInitialPlantingDensity = BigDecimal(13)
+      val newTargetPlantDensity = BigDecimal(15)
 
       val expected =
           initialRow.copy(
@@ -66,6 +67,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
               numPermanentPlots = newPermanent,
               numTemporaryPlots = newTemporary,
               studentsT = newStudentsT,
+              targetPlantDensity = newTargetPlantDensity,
               variance = newVariance,
           )
 
@@ -78,6 +80,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
             numPermanentPlots = newPermanent,
             numTemporaryPlots = newTemporary,
             studentsT = newStudentsT,
+            targetPlantDensity = newTargetPlantDensity,
             variance = newVariance,
             // Not editable
             boundaryModifiedBy = user.userId,

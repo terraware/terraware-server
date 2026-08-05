@@ -163,6 +163,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                                   ),
                               ),
                           studentsT = BigDecimal(5),
+                          targetPlantDensity = BigDecimal(8),
                           variance = BigDecimal(7),
                       ),
                       StratumModel.create(
@@ -243,6 +244,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   numTemporaryPlots = 4,
                   stableId = StableId("Stratum 1"),
                   studentsT = BigDecimal(5),
+                  targetPlantDensity = BigDecimal(8),
                   variance = BigDecimal(7),
               ),
               commonStrataRow.copy(

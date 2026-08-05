@@ -247,7 +247,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           insertStratum(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
-              initialPlantingDensity = BigDecimal.ONE,
+              initialPlantingDensity = BigDecimal.TWO,
+              targetPlantDensity = BigDecimal.ONE,
           )
       val substratumId11 = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId111 = insertMonitoringPlot(boundary = polygon(0.1))
@@ -367,7 +368,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
                           id = stratumId1,
-                          initialPlantingDensity = BigDecimal.ONE,
+                          initialPlantingDensity = BigDecimal.TWO,
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
                           name = "S1",
@@ -441,6 +442,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                   ),
                               ),
                           stableId = StableId("S1"),
+                          targetPlantDensity = BigDecimal.ONE,
                       ),
                       ExistingStratumModel(
                           areaHa = BigDecimal.TEN,

@@ -514,6 +514,7 @@ class AdminPlantingSitesController(
       @RequestParam numPermanent: Int,
       @RequestParam numTemporary: Int,
       @RequestParam initialPlantingDensity: BigDecimal,
+      @RequestParam targetPlantDensity: BigDecimal?,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
@@ -525,6 +526,7 @@ class AdminPlantingSitesController(
             numPermanentPlots = numPermanent,
             numTemporaryPlots = numTemporary,
             studentsT = studentsT,
+            targetPlantDensity = targetPlantDensity,
             variance = variance,
         )
       }

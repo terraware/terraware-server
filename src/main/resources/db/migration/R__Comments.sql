@@ -648,12 +648,14 @@ COMMENT ON COLUMN tracking.strata.boundary_modified_by IS 'Which user most recen
 COMMENT ON COLUMN tracking.strata.boundary_modified_time IS 'When the stratum''s boundary was most recently modified.';
 COMMENT ON COLUMN tracking.strata.created_by IS 'Which user created the stratum.';
 COMMENT ON COLUMN tracking.strata.created_time IS 'When the stratum was originally created.';
+COMMENT ON COLUMN tracking.strata.initial_planting_density IS 'Number of plants per hectare that should be planted in the stratum initially.';
 COMMENT ON COLUMN tracking.strata.modified_by IS 'Which user most recently modified the stratum.';
 COMMENT ON COLUMN tracking.strata.modified_time IS 'When the stratum was most recently modified.';
 COMMENT ON COLUMN tracking.strata.name IS 'Short name of this stratum. This is often just a single letter. Must be unique within a planting site.';
 COMMENT ON COLUMN tracking.strata.num_permanent_plots IS 'Number of permanent plots to assign to the next observation. This is typically derived from a statistical formula.';
 COMMENT ON COLUMN tracking.strata.planting_site_id IS 'Which planting site this stratum is part of.';
 COMMENT ON COLUMN tracking.strata.stable_id IS 'Stratum identifier that doesn''t change even if the stratum is renamed or edited. Defaults to the stratum name.';
+COMMENT ON COLUMN tracking.strata.target_plant_density IS 'Number of plants per hectare that the stratum should have after planting is fully completed. This may be less than the initial planting density to account for seedlings not surviving.';
 
 COMMENT ON TABLE tracking.plantings IS 'Details about plants that were planted or reassigned as part of a delivery. There is one plantings row per species in a delivery.';
 COMMENT ON COLUMN tracking.plantings.created_by IS 'Which user created the planting.';
