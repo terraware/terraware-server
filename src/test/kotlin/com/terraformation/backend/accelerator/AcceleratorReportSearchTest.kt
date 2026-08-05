@@ -223,7 +223,7 @@ class AcceleratorReportSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "id" to "$projectId",
                     "acceleratorReports" to
-                        listOf(mapOf("id" to "$reportId"), mapOf("id" to "$laterReportId")),
+                        listOf(mapOf("id" to "$laterReportId"), mapOf("id" to "$reportId")),
                 )
             )
         )
@@ -235,7 +235,7 @@ class AcceleratorReportSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `returns reports ordered by start date by default`() {
+  fun `returns reports ordered by descending start date by default`() {
     val secondQuarterReportId =
         insertReport(
             startDate = LocalDate.of(2026, 4, 1),
@@ -254,8 +254,8 @@ class AcceleratorReportSearchTest : DatabaseTest(), RunsAsUser {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "$firstQuarterReportId"),
                 mapOf("id" to "$secondQuarterReportId"),
+                mapOf("id" to "$firstQuarterReportId"),
             )
         )
 
