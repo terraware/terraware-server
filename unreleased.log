@@ -1,3 +1,4 @@
+67ea1449 Reversed report sort orders (#4844)
 aa215c10 Moved one report endpoints to separate controller (#4843)
 31239b0c Move migration to correct directory (#4842)
 6da1ab59 Fix Messages_en.properties sorting (#4836)
