@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
@@ -30,6 +31,7 @@ import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -162,7 +164,12 @@ class DeliveryStore(
     val now = clock.instant()
     val userId = currentUser().userId
 
-    val plantingSiteId = getPlantingSiteId(deliveryId)
+    val delivery =
+        deliveriesDao.fetchOneById(deliveryId) ?: throw DeliveryNotFoundException(deliveryId)
+    val plantingSiteId = delivery.plantingSiteId!!
+    val withdrawalId = delivery.withdrawalId!!
+    val organizationId = parentStore.getOrganizationId(plantingSiteId)
+
     val originalPlantingIds = reassignments.map { it.fromPlantingId }
     val originalPlantings =
         plantingsDao.fetchById(*originalPlantingIds.toTypedArray()).associateBy { it.id!! }
@@ -176,70 +183,111 @@ class DeliveryStore(
       throw ReassignmentOfUndoneWithdrawalNotAllowedException(deliveryId)
     }
 
-    val newPlantings = reassignments.flatMap { reassignment ->
-      val fromPlantingId = reassignment.fromPlantingId
+    dslContext.transaction { _ ->
+      val destinationDeliveryIds = mutableMapOf<PlantingSiteId, DeliveryId>()
 
-      requirePermissions { readPlanting(fromPlantingId) }
+      val newPlantings = reassignments.flatMap { reassignment ->
+        val fromPlantingId = reassignment.fromPlantingId
 
-      val originalPlanting =
-          originalPlantings[fromPlantingId] ?: throw PlantingNotFoundException(fromPlantingId)
-      val speciesId = originalPlanting.speciesId!!
+        requirePermissions { readPlanting(fromPlantingId) }
 
-      if (originalPlanting.deliveryId != deliveryId) {
-        throw CrossDeliveryReassignmentNotAllowedException(
-            fromPlantingId,
-            originalPlanting.deliveryId!!,
-            deliveryId,
+        val originalPlanting =
+            originalPlantings[fromPlantingId] ?: throw PlantingNotFoundException(fromPlantingId)
+        val speciesId = originalPlanting.speciesId!!
+
+        if (originalPlanting.deliveryId != deliveryId) {
+          throw CrossDeliveryReassignmentNotAllowedException(
+              fromPlantingId,
+              originalPlanting.deliveryId!!,
+              deliveryId,
+          )
+        }
+
+        if (originalPlanting.plantingTypeId != PlantingType.Delivery) {
+          throw ReassignmentOfReassignmentNotAllowedException(fromPlantingId)
+        }
+
+        // A unique constraint prevents us from having more than one ReassignmentFrom planting
+        // of a particular species on a delivery, so there's no need to scan for other
+        // reassignments to see if they add up to more than the original planting.
+        if (reassignment.numPlants > originalPlanting.numPlants!!) {
+          throw ReassignmentTooLargeException(fromPlantingId)
+        }
+
+        if (reassignment.toSubstratumId == originalPlanting.substratumId) {
+          throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
+        }
+
+        // Unique constraint will catch duplicate reassignments, but we can throw a more precise
+        // exception by checking for them explicitly.
+        if (deliveryPlantings.any { it.speciesId == speciesId && it.id != fromPlantingId }) {
+          throw ReassignmentExistsException(fromPlantingId)
+        }
+
+        val destinationSiteId =
+            parentStore.getPlantingSiteId(reassignment.toSubstratumId)
+                ?: throw SubstratumNotFoundException(reassignment.toSubstratumId)
+        val crossSite = destinationSiteId != plantingSiteId
+
+        if (crossSite) {
+          requirePermissions { createDelivery(destinationSiteId) }
+
+          if (parentStore.getOrganizationId(destinationSiteId) != organizationId) {
+            throw CrossOrganizationReassignmentNotAllowedException(
+                fromPlantingId,
+                reassignment.toSubstratumId,
+            )
+          }
+        }
+
+        val destinationDeliveryId =
+            if (crossSite) {
+              destinationDeliveryIds.getOrPut(destinationSiteId) {
+                getOrCreateReassignmentDelivery(
+                    deliveryId,
+                    withdrawalId,
+                    destinationSiteId,
+                    userId,
+                    now,
+                )
+              }
+            } else {
+              deliveryId
+            }
+
+        val skeletonRow =
+            PlantingsRow(
+                createdBy = userId,
+                createdTime = now,
+                speciesId = speciesId,
+            )
+
+        listOf(
+            ReassignmentPlanting(
+                skeletonRow.copy(
+                    deliveryId = deliveryId,
+                    numPlants = -reassignment.numPlants,
+                    plantingSiteId = plantingSiteId,
+                    plantingTypeId = PlantingType.ReassignmentFrom,
+                    substratumId = originalPlanting.substratumId,
+                ),
+                crossSite,
+            ),
+            ReassignmentPlanting(
+                skeletonRow.copy(
+                    deliveryId = destinationDeliveryId,
+                    notes = reassignment.notes,
+                    numPlants = reassignment.numPlants,
+                    plantingSiteId = destinationSiteId,
+                    plantingTypeId = PlantingType.ReassignmentTo,
+                    substratumId = reassignment.toSubstratumId,
+                ),
+                crossSite,
+            ),
         )
       }
 
-      if (originalPlanting.plantingTypeId != PlantingType.Delivery) {
-        throw ReassignmentOfReassignmentNotAllowedException(fromPlantingId)
-      }
-
-      // A unique constraint prevents us from having more than one ReassignmentFrom planting
-      // of a particular species on a delivery, so there's no need to scan for other
-      // reassignments to see if they add up to more than the original planting.
-      if (reassignment.numPlants > originalPlanting.numPlants!!) {
-        throw ReassignmentTooLargeException(fromPlantingId)
-      }
-
-      if (reassignment.toSubstratumId == originalPlanting.substratumId) {
-        throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
-      }
-
-      // Unique constraint will catch duplicate reassignments, but we can throw a more precise
-      // exception by checking for them explicitly.
-      if (deliveryPlantings.any { it.speciesId == speciesId && it.id != fromPlantingId }) {
-        throw ReassignmentExistsException(fromPlantingId)
-      }
-
-      val skeletonRow =
-          PlantingsRow(
-              createdBy = userId,
-              createdTime = now,
-              deliveryId = deliveryId,
-              plantingSiteId = plantingSiteId,
-              speciesId = speciesId,
-          )
-
-      listOf(
-          skeletonRow.copy(
-              numPlants = -reassignment.numPlants,
-              plantingTypeId = PlantingType.ReassignmentFrom,
-              substratumId = originalPlanting.substratumId,
-          ),
-          skeletonRow.copy(
-              notes = reassignment.notes,
-              numPlants = reassignment.numPlants,
-              plantingTypeId = PlantingType.ReassignmentTo,
-              substratumId = reassignment.toSubstratumId,
-          ),
-      )
-    }
-
-    dslContext.transaction { _ ->
-      plantingsDao.insert(newPlantings)
+      plantingsDao.insert(newPlantings.map { it.row })
 
       dslContext
           .update(DELIVERIES)
@@ -248,14 +296,68 @@ class DeliveryStore(
           .where(DELIVERIES.ID.eq(deliveryId))
           .execute()
 
-      newPlantings.forEach { planting ->
-        addToSubstratumPopulations(
-            planting.substratumId!!,
-            planting.speciesId!!,
-            planting.numPlants!!,
-        )
+      newPlantings.forEach { (planting, crossSite) ->
+        if (crossSite) {
+          val numPlants = planting.numPlants!!
+          val rowPlantingSiteId = planting.plantingSiteId!!
+
+          addToPopulations(
+              rowPlantingSiteId,
+              planting.substratumId,
+              planting.speciesId!!,
+              numPlants,
+          )
+        } else {
+          addToSubstratumPopulations(
+              planting.substratumId!!,
+              planting.speciesId!!,
+              planting.numPlants!!,
+              deleteZeroedRows = false,
+          )
+        }
       }
+
+      val sameSitePlantings = newPlantings.filterNot { it.crossSite }
+      deleteEmptySubstratumPopulations(
+          sameSitePlantings.map { it.row.substratumId!! }.toSet(),
+          sameSitePlantings.map { it.row.speciesId!! }.toSet(),
+      )
     }
+  }
+
+  private fun getOrCreateReassignmentDelivery(
+      originalDeliveryId: DeliveryId,
+      withdrawalId: WithdrawalId,
+      destinationSiteId: PlantingSiteId,
+      userId: UserId,
+      now: Instant,
+  ): DeliveryId {
+    val existingId =
+        dslContext
+            .select(DELIVERIES.ID)
+            .from(DELIVERIES)
+            .where(DELIVERIES.WITHDRAWAL_ID.eq(withdrawalId))
+            .and(DELIVERIES.PLANTING_SITE_ID.eq(destinationSiteId))
+            .fetchOne(DELIVERIES.ID)
+
+    if (existingId != null) {
+      return existingId
+    }
+
+    val deliveriesRow =
+        DeliveriesRow(
+            createdBy = userId,
+            createdTime = now,
+            modifiedBy = userId,
+            modifiedTime = now,
+            plantingSiteId = destinationSiteId,
+            reassignedFromDeliveryId = originalDeliveryId,
+            withdrawalId = withdrawalId,
+        )
+
+    deliveriesDao.insert(deliveriesRow)
+
+    return deliveriesRow.id!!
   }
 
   fun undoDelivery(deliveryId: DeliveryId, undoWithdrawalId: WithdrawalId): DeliveryId {
@@ -479,6 +581,7 @@ class DeliveryStore(
       substratumId: SubstratumId?,
       speciesId: SpeciesId,
       numPlants: Int,
+      deleteZeroedRows: Boolean = true,
   ) {
     with(PLANTING_SITE_POPULATIONS) {
       dslContext
@@ -490,10 +593,10 @@ class DeliveryStore(
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
           .execute()
 
-      if (numPlants < 0) {
+      if (numPlants < 0 && deleteZeroedRows) {
         dslContext
             .deleteFrom(PLANTING_SITE_POPULATIONS)
-            .where(PLANTING_SITE_ID.eq(PLANTING_SITE_ID))
+            .where(PLANTING_SITE_ID.eq(plantingSiteId))
             .and(SPECIES_ID.eq(speciesId))
             .and(TOTAL_PLANTS.le(0))
             .execute()
@@ -501,7 +604,12 @@ class DeliveryStore(
     }
 
     if (substratumId != null) {
-      addToSubstratumPopulations(substratumId, speciesId, numPlants)
+      addToSubstratumPopulations(
+          substratumId,
+          speciesId,
+          numPlants,
+          deleteZeroedRows,
+      )
     }
   }
 
@@ -509,6 +617,7 @@ class DeliveryStore(
       substratumId: SubstratumId,
       speciesId: SpeciesId,
       numPlants: Int,
+      deleteZeroedRows: Boolean = true,
   ) {
     val stratumId =
         dslContext
@@ -527,7 +636,7 @@ class DeliveryStore(
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
           .execute()
 
-      if (numPlants < 0) {
+      if (numPlants < 0 && deleteZeroedRows) {
         dslContext
             .deleteFrom(SUBSTRATUM_POPULATIONS)
             .where(SUBSTRATUM_ID.eq(substratumId))
@@ -547,7 +656,7 @@ class DeliveryStore(
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
           .execute()
 
-      if (numPlants < 0) {
+      if (numPlants < 0 && deleteZeroedRows) {
         dslContext
             .deleteFrom(STRATUM_POPULATIONS)
             .where(STRATUM_ID.eq(stratumId))
@@ -558,13 +667,52 @@ class DeliveryStore(
     }
   }
 
-  private fun getPlantingSiteId(deliveryId: DeliveryId): PlantingSiteId {
-    return with(DELIVERIES) {
+  /**
+   * Deletes a planting site's site-level population rows for species whose total plants are zero or
+   * negative.
+   */
+  private fun deleteEmptySitePopulations(
+      plantingSiteId: PlantingSiteId,
+      speciesIds: Set<SpeciesId>,
+  ) {
+    if (speciesIds.isNotEmpty()) {
       dslContext
-          .select(PLANTING_SITE_ID)
-          .from(DELIVERIES)
-          .where(ID.eq(deliveryId))
-          .fetchOne(PLANTING_SITE_ID) ?: throw DeliveryNotFoundException(deliveryId)
+          .deleteFrom(PLANTING_SITE_POPULATIONS)
+          .where(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(PLANTING_SITE_POPULATIONS.SPECIES_ID.`in`(speciesIds))
+          .and(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS.le(0))
+          .execute()
+    }
+  }
+
+  /**
+   * Deletes substratum- and stratum-level population rows for species whose total plants are zero
+   * or negative.
+   */
+  private fun deleteEmptySubstratumPopulations(
+      substratumIds: Set<SubstratumId>,
+      speciesIds: Set<SpeciesId>,
+  ) {
+    if (substratumIds.isNotEmpty() && speciesIds.isNotEmpty()) {
+      dslContext
+          .deleteFrom(SUBSTRATUM_POPULATIONS)
+          .where(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.`in`(substratumIds))
+          .and(SUBSTRATUM_POPULATIONS.SPECIES_ID.`in`(speciesIds))
+          .and(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS.le(0))
+          .execute()
+
+      dslContext
+          .deleteFrom(STRATUM_POPULATIONS)
+          .where(
+              STRATUM_POPULATIONS.STRATUM_ID.`in`(
+                  DSL.select(SUBSTRATA.STRATUM_ID)
+                      .from(SUBSTRATA)
+                      .where(SUBSTRATA.ID.`in`(substratumIds))
+              )
+          )
+          .and(STRATUM_POPULATIONS.SPECIES_ID.`in`(speciesIds))
+          .and(STRATUM_POPULATIONS.TOTAL_PLANTS.le(0))
+          .execute()
     }
   }
 
@@ -601,6 +749,8 @@ class DeliveryStore(
         .where(WITHDRAWALS.ID.eq(withdrawalId))
         .fetchOne(WITHDRAWALS.PURPOSE_ID) ?: throw WithdrawalNotFoundException(withdrawalId)
   }
+
+  private data class ReassignmentPlanting(val row: PlantingsRow, val crossSite: Boolean)
 
   data class Reassignment(
       val fromPlantingId: PlantingId,
