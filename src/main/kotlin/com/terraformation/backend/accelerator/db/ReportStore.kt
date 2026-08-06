@@ -1157,7 +1157,7 @@ class ReportStore(
             .leftJoin(PROJECT_ACCELERATOR_DETAILS)
             .on(REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
             .where(condition)
-            .orderBy(REPORTS.START_DATE)
+            .orderBy(REPORTS.START_DATE.desc())
             .fetch {
               ReportModel.of(
                   record = it,

@@ -67,7 +67,7 @@ class AcceleratorReportsTable(tables: SearchTables) : SearchTable() {
       )
 
   override val defaultOrderFields: List<OrderField<*>>
-    get() = listOf(REPORTS.START_DATE, REPORTS.ID)
+    get() = listOf(REPORTS.START_DATE.desc(), REPORTS.ID)
 
   override fun conditionForVisibility(): Condition {
     return if (currentUser().canReadAllAcceleratorDetails()) {
