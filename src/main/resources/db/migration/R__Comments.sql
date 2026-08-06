@@ -586,6 +586,8 @@ COMMENT ON COLUMN tracking.planting_site_notifications.notification_number IS 'N
 
 COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
 
+COMMENT ON TABLE tracking.planting_site_species_targets IS 'Which species are intended to be planted at each planting site.';
+
 COMMENT ON TABLE tracking.planting_site_survival_rate_calculations IS 'In progress survival rate calculations for planting sites.';
 
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one stratum.';
@@ -639,6 +641,8 @@ COMMENT ON COLUMN tracking.substrata.stable_id IS 'Substratum identifier that do
 COMMENT ON TABLE tracking.stratum_histories IS 'Versions of stratum maps over time. Each time a planting site map changes, its strata'' maps are inserted into this table.';
 
 COMMENT ON TABLE tracking.stratum_populations IS 'Total number of plants of each species in each stratum.';
+
+COMMENT ON TABLE tracking.stratum_species_targets IS 'Which species are intended to be planted in each stratum.';
 
 COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum''s planting site.';
 

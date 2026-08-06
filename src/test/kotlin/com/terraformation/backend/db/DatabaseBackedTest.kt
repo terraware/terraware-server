@@ -495,6 +495,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteSpeciesTargetsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteSurvivalRateCalculationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
@@ -511,6 +512,7 @@ import com.terraformation.backend.db.tracking.tables.daos.SimplifiedSubstratumHi
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.StratumHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.StratumPopulationsDao
+import com.terraformation.backend.db.tracking.tables.daos.StratumSpeciesTargetsDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstratumHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstratumPopulationsDao
@@ -546,6 +548,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteSpeciesTargetsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteSurvivalRateCalculationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
@@ -564,6 +567,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedSubstratumH
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumSpeciesTargetsRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumT0TempDensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
@@ -791,6 +795,7 @@ abstract class DatabaseBackedTest {
   protected val plantingSiteHistoriesDao: PlantingSiteHistoriesDao by lazyDao()
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
   protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
+  protected val plantingSiteSpeciesTargetsDao: PlantingSiteSpeciesTargetsDao by lazyDao()
   protected val plantingSiteSurvivalRateCalculationsDao: PlantingSiteSurvivalRateCalculationsDao by
       lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
@@ -872,6 +877,7 @@ abstract class DatabaseBackedTest {
   protected val splatsDao: SplatsDao by lazyDao()
   protected val stratumHistoriesDao: StratumHistoriesDao by lazyDao()
   protected val stratumPopulationsDao: StratumPopulationsDao by lazyDao()
+  protected val stratumSpeciesTargetsDao: StratumSpeciesTargetsDao by lazyDao()
   protected val strataDao: StrataDao by lazyDao()
   protected val subLocationsDao: SubLocationsDao by lazyDao()
   protected val submissionsDao: SubmissionsDao by lazyDao()
@@ -3262,6 +3268,20 @@ abstract class DatabaseBackedTest {
     )
   }
 
+  fun insertPlantingSiteSpeciesTarget(
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      speciesId: SpeciesId = inserted.speciesId,
+      targetPlants: Long? = null,
+  ) {
+    plantingSiteSpeciesTargetsDao.insert(
+        PlantingSiteSpeciesTargetsRow(
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
+            targetPlants = targetPlants,
+        )
+    )
+  }
+
   fun insertPlantingSiteSurvivalRateCalculation(
       plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       additionalCalculationRequested: Boolean = false,
@@ -3298,6 +3318,20 @@ abstract class DatabaseBackedTest {
             stratumId = stratumId,
             speciesId = speciesId,
             totalPlants = totalPlants,
+        )
+    )
+  }
+
+  fun insertStratumSpeciesTarget(
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      stratumId: StratumId = inserted.stratumId,
+      speciesId: SpeciesId = inserted.speciesId,
+  ) {
+    stratumSpeciesTargetsDao.insert(
+        StratumSpeciesTargetsRow(
+            plantingSiteId = plantingSiteId,
+            stratumId = stratumId,
+            speciesId = speciesId,
         )
     )
   }
