@@ -13,16 +13,19 @@ data class DeliveryModel(
     val id: DeliveryId,
     val plantings: List<PlantingModel>,
     val plantingSiteId: PlantingSiteId,
+    val reassignmentDeliveryIds: List<DeliveryId> = emptyList(),
     val withdrawalId: WithdrawalId,
 ) {
   constructor(
       record: Record,
       plantingsMultisetField: Field<List<PlantingModel>>,
+      reassignmentDeliveryIdsMultisetField: Field<List<DeliveryId>>,
   ) : this(
       record[DELIVERIES.CREATED_TIME]!!,
       record[DELIVERIES.ID]!!,
       record[plantingsMultisetField],
       record[DELIVERIES.PLANTING_SITE_ID]!!,
+      record[reassignmentDeliveryIdsMultisetField],
       record[DELIVERIES.WITHDRAWAL_ID]!!,
   )
 }

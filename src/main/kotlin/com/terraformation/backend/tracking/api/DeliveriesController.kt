@@ -87,6 +87,12 @@ data class DeliveryPayload(
     val id: DeliveryId,
     val plantings: List<PlantingPayload>,
     val plantingSiteId: PlantingSiteId,
+    @Schema(
+        description =
+            "IDs of deliveries created by reassigning plants from this delivery to substrata at " +
+                "other planting sites. Empty if this delivery has no cross-site reassignments."
+    )
+    val reassignmentDeliveryIds: List<DeliveryId>,
     val withdrawalId: WithdrawalId,
 ) {
   constructor(
@@ -95,6 +101,7 @@ data class DeliveryPayload(
       id = model.id,
       plantings = model.plantings.map { PlantingPayload(it) },
       plantingSiteId = model.plantingSiteId,
+      reassignmentDeliveryIds = model.reassignmentDeliveryIds,
       withdrawalId = model.withdrawalId,
   )
 }

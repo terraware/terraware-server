@@ -519,6 +519,45 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertNull(store.fetchOneByWithdrawalId(withdrawalId))
     }
+
+    @Test
+    fun `returns IDs of deliveries reassigned out of this one`() {
+      val otherPlantingSiteId = insertPlantingSite()
+      val originalDeliveryId =
+          insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+      insertPlanting(substratumId = substratumId, speciesId = speciesId1)
+      val reassignmentDeliveryId =
+          insertDelivery(
+              row = DeliveriesRow(reassignedFromDeliveryId = originalDeliveryId),
+              plantingSiteId = otherPlantingSiteId,
+              withdrawalId = withdrawalId,
+          )
+
+      assertEquals(
+          listOf(reassignmentDeliveryId),
+          store.fetchOneById(originalDeliveryId).reassignmentDeliveryIds,
+          "Reassignment delivery IDs on original delivery",
+      )
+      assertEquals(
+          emptyList<DeliveryId>(),
+          store.fetchOneById(reassignmentDeliveryId).reassignmentDeliveryIds,
+          "Reassignment delivery IDs on reassignment delivery",
+      )
+    }
+
+    @Test
+    fun `fetchOneByWithdrawalId returns the original delivery when a withdrawal spans two sites`() {
+      val otherPlantingSiteId = insertPlantingSite()
+      val originalDeliveryId =
+          insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
+      insertDelivery(
+          row = DeliveriesRow(reassignedFromDeliveryId = originalDeliveryId),
+          plantingSiteId = otherPlantingSiteId,
+          withdrawalId = withdrawalId,
+      )
+
+      assertEquals(originalDeliveryId, store.fetchOneByWithdrawalId(withdrawalId)?.id)
+    }
   }
 
   @Nested
