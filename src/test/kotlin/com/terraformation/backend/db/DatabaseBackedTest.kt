@@ -3199,6 +3199,7 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      reassignedFromDeliveryId: DeliveryId? = row.reassignedFromDeliveryId,
       withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId,
   ): DeliveryId {
     val rowWithDetails =
@@ -3208,6 +3209,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             plantingSiteId = plantingSiteId,
+            reassignedFromDeliveryId = reassignedFromDeliveryId,
             withdrawalId = withdrawalId,
         )
 

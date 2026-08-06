@@ -564,7 +564,14 @@ val ID_WRAPPERS =
                     "BiomassSpeciesId",
                     listOf("observation_biomass_species\\.id", ".*\\.biomass_species_id"),
                 ),
-                IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
+                IdWrapper(
+                    "DeliveryId",
+                    listOf(
+                        "deliveries\\.id",
+                        ".*\\.delivery_id",
+                        ".*\\.reassigned_from_delivery_id",
+                    ),
+                ),
                 IdWrapper("DraftPlantingSiteId", listOf("draft_planting_sites\\.id")),
                 IdWrapper(
                     "MonitoringPlotHistoryId",
