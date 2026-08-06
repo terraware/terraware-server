@@ -2829,6 +2829,7 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: StratumModel.DEFAULT_ERROR_MARGIN,
+      initialPlantingDensity: BigDecimal? = row.initialPlantingDensity,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -2837,7 +2838,6 @@ abstract class DatabaseBackedTest {
       numTemporaryPlots: Int = row.numTemporaryPlots ?: StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: Any = row.name ?: name,
       studentsT: BigDecimal = row.studentsT ?: StratumModel.DEFAULT_STUDENTS_T,
-      targetPlantingDensity: BigDecimal? = row.targetPlantingDensity,
       variance: BigDecimal = row.variance ?: StratumModel.DEFAULT_VARIANCE,
       insertHistory: Boolean = true,
       boundaryModifiedBy: UserId = row.boundaryModifiedBy ?: modifiedBy,
@@ -2852,6 +2852,7 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             errorMargin = errorMargin,
+            initialPlantingDensity = initialPlantingDensity,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
@@ -2860,7 +2861,6 @@ abstract class DatabaseBackedTest {
             plantingSiteId = plantingSiteId,
             stableId = StableId("$stableId"),
             studentsT = studentsT,
-            targetPlantingDensity = targetPlantingDensity,
             variance = variance,
         )
 

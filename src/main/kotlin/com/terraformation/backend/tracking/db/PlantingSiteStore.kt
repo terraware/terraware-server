@@ -866,12 +866,12 @@ class PlantingSiteStore(
                     }
                   }
                   .set(ERROR_MARGIN, edit.desiredModel.errorMargin)
+                  .set(INITIAL_PLANTING_DENSITY, edit.desiredModel.initialPlantingDensity)
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
                   .set(NUM_PERMANENT_PLOTS, edit.desiredModel.numPermanentPlots)
                   .set(STUDENTS_T, edit.desiredModel.studentsT)
-                  .set(TARGET_PLANTING_DENSITY, edit.desiredModel.targetPlantingDensity)
                   .set(VARIANCE, edit.desiredModel.variance)
                   .where(ID.eq(edit.existingModel.id))
                   .execute()
@@ -1107,13 +1107,13 @@ class PlantingSiteStore(
         dslContext
             .update(STRATA)
             .set(ERROR_MARGIN, edited.errorMargin)
+            .set(INITIAL_PLANTING_DENSITY, edited.initialPlantingDensity)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, edited.name)
             .set(NUM_PERMANENT_PLOTS, edited.numPermanentPlots)
             .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
             .set(STUDENTS_T, edited.studentsT)
-            .set(TARGET_PLANTING_DENSITY, edited.targetPlantingDensity)
             .set(VARIANCE, edited.variance)
             .where(ID.eq(stratumId))
             .execute()
@@ -1206,6 +1206,7 @@ class PlantingSiteStore(
             createdBy = userId,
             createdTime = now,
             errorMargin = stratum.errorMargin,
+            initialPlantingDensity = stratum.initialPlantingDensity,
             modifiedBy = userId,
             modifiedTime = now,
             name = stratum.name,
@@ -1214,7 +1215,6 @@ class PlantingSiteStore(
             plantingSiteId = plantingSiteId,
             stableId = stratum.stableId,
             studentsT = stratum.studentsT,
-            targetPlantingDensity = stratum.targetPlantingDensity,
             variance = stratum.variance,
         )
 
@@ -2369,6 +2369,7 @@ class PlantingSiteStore(
                     STRATA.BOUNDARY_MODIFIED_TIME,
                     STRATA.ERROR_MARGIN,
                     STRATA.ID,
+                    STRATA.INITIAL_PLANTING_DENSITY,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
                     STRATA.NAME,
@@ -2377,7 +2378,6 @@ class PlantingSiteStore(
                     STRATA.STABLE_ID,
                     substrataField,
                     STRATA.STUDENTS_T,
-                    STRATA.TARGET_PLANTING_DENSITY,
                     STRATA.VARIANCE,
                 )
                 .from(STRATA)
@@ -2397,6 +2397,7 @@ class PlantingSiteStore(
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
                 errorMargin = record[STRATA.ERROR_MARGIN]!!,
                 id = record[STRATA.ID]!!,
+                initialPlantingDensity = record[STRATA.INITIAL_PLANTING_DENSITY]!!,
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
                 name = record[STRATA.NAME]!!,
@@ -2405,7 +2406,6 @@ class PlantingSiteStore(
                 stableId = record[STRATA.STABLE_ID]!!,
                 studentsT = record[STRATA.STUDENTS_T]!!,
                 substrata = substrataField?.let { record[it] } ?: emptyList(),
-                targetPlantingDensity = record[STRATA.TARGET_PLANTING_DENSITY]!!,
                 variance = record[STRATA.VARIANCE]!!,
             )
           }
@@ -2579,7 +2579,7 @@ class PlantingSiteStore(
                 DSL.select(
                         STRATA.ID,
                         STRATA.AREA_HA,
-                        STRATA.TARGET_PLANTING_DENSITY,
+                        STRATA.INITIAL_PLANTING_DENSITY,
                         stratumSpeciesField,
                         substrataField,
                     )
@@ -2591,7 +2591,7 @@ class PlantingSiteStore(
               result.map { record ->
                 val targetPlants =
                     record[STRATA.AREA_HA.asNonNullable()] *
-                        record[STRATA.TARGET_PLANTING_DENSITY.asNonNullable()]
+                        record[STRATA.INITIAL_PLANTING_DENSITY.asNonNullable()]
 
                 val species = record[stratumSpeciesField]
                 val totalPlants = species.sumOf { it.totalPlants }

@@ -754,13 +754,13 @@ class StratumModelTest {
           boundaryModifiedTime = Instant.EPOCH,
           errorMargin = BigDecimal.ONE,
           id = StratumId(1),
+          initialPlantingDensity = BigDecimal.ONE,
           name = "name",
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           substrata = substrata,
           stableId = StableId("name"),
           studentsT = BigDecimal.ONE,
-          targetPlantingDensity = BigDecimal.ONE,
           variance = BigDecimal.ONE,
       )
 }

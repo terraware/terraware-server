@@ -45,7 +45,7 @@ class ShapefileGenerator(
       variance: BigDecimal? = StratumModel.DEFAULT_VARIANCE,
       permanentPlots: Int? = defaultPermanentPlots,
       temporaryPlots: Int? = defaultTemporaryPlots,
-      targetPlantingDensity: BigDecimal? = null,
+      initialPlantingDensity: BigDecimal? = null,
   ): ShapefileFeature {
     lastStratumName = stratum
 
@@ -62,7 +62,7 @@ class ShapefileGenerator(
                 variance?.let { "variance" to "$it" },
                 permanentPlots?.let { "permanent" to "$it" },
                 temporaryPlots?.let { "temporary" to "$it" },
-                targetPlantingDensity?.let { "density" to "$it" },
+                initialPlantingDensity?.let { "density" to "$it" },
             )
             .toMap(),
         crs,

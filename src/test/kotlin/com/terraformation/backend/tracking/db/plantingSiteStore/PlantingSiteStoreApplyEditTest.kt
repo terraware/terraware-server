@@ -94,8 +94,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `updates settings`() {
       val newErrorMargin = BigDecimal(101)
+      val newInitialPlantingDensity = BigDecimal(1100)
       val newStudentsT = BigDecimal("1.646")
-      val newTargetPlantingDensity = BigDecimal(1100)
       val newVariance = BigDecimal(40001)
 
       val (edited) =
@@ -105,8 +105,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   newSite {
                     stratum {
                       errorMargin = newErrorMargin
+                      initialPlantingDensity = newInitialPlantingDensity
                       studentsT = newStudentsT
-                      targetPlantingDensity = newTargetPlantingDensity
                       variance = newVariance
                     }
                   },
@@ -115,8 +115,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(newErrorMargin, edited.strata[0].errorMargin, "Error margin")
       assertEquals(newStudentsT, edited.strata[0].studentsT, "Student's t")
       assertEquals(
-          newTargetPlantingDensity,
-          edited.strata[0].targetPlantingDensity,
+          newInitialPlantingDensity,
+          edited.strata[0].initialPlantingDensity,
           "Target planting density",
       )
       assertEquals(newVariance, edited.strata[0].variance, "Variance")

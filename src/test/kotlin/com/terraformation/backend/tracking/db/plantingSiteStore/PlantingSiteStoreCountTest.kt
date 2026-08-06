@@ -65,7 +65,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
     fun `returns correct stratum-level and substratum-level totals`() {
       val plantingSiteId = insertPlantingSite()
 
-      val stratumId1 = insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val stratumId1 =
+          insertStratum(areaHa = BigDecimal(10), initialPlantingDensity = BigDecimal(2))
       val substratumId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
       insertSubstratumPopulation(totalPlants = 5)
@@ -78,7 +79,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertStratumPopulation(totalPlants = 20)
 
       val stratumId2 =
-          insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+          insertStratum(areaHa = BigDecimal(101), initialPlantingDensity = BigDecimal(4))
       val substratumId2 = insertSubstratum()
       insertSubstratumPopulation(totalPlants = 50)
       insertStratumPopulation(totalPlants = 40)
@@ -89,7 +90,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertPlantingSitePopulation(totalPlants = 80)
 
       val emptyStratumId =
-          insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+          insertStratum(areaHa = BigDecimal(50), initialPlantingDensity = BigDecimal(5))
       val emptySubstratumId = insertSubstratum()
 
       // Note that the stratum/substratum/site totals don't all add up correctly here; that's
@@ -252,7 +253,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
     fun `returns correct stratum-level and substratum-level totals`() {
       val plantingSiteId = insertPlantingSite()
 
-      val stratumId1 = insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val stratumId1 =
+          insertStratum(areaHa = BigDecimal(10), initialPlantingDensity = BigDecimal(2))
       val substratumId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
       insertSubstratumPopulation(totalPlants = 5)
@@ -265,7 +267,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertStratumPopulation(totalPlants = 20)
 
       val stratumId2 =
-          insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+          insertStratum(areaHa = BigDecimal(101), initialPlantingDensity = BigDecimal(4))
       val substratumId2 = insertSubstratum()
       insertSubstratumPopulation(totalPlants = 50)
       insertStratumPopulation(totalPlants = 40)
@@ -276,7 +278,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertPlantingSitePopulation(totalPlants = 80)
 
       val emptyStratumId =
-          insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+          insertStratum(areaHa = BigDecimal(50), initialPlantingDensity = BigDecimal(5))
       val emptySubstratumId = insertSubstratum()
 
       // planting site in the same organization with no plantings
@@ -433,7 +435,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       val projectId = insertProject()
       val plantingSiteId = insertPlantingSite(projectId = projectId)
 
-      val stratumId1 = insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val stratumId1 =
+          insertStratum(areaHa = BigDecimal(10), initialPlantingDensity = BigDecimal(2))
       val substratumId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
       insertSubstratumPopulation(totalPlants = 5)
@@ -446,7 +449,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertStratumPopulation(totalPlants = 20)
 
       val stratumId2 =
-          insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+          insertStratum(areaHa = BigDecimal(101), initialPlantingDensity = BigDecimal(4))
       val substratumId2 = insertSubstratum()
       insertSubstratumPopulation(totalPlants = 50)
       insertStratumPopulation(totalPlants = 40)
@@ -457,7 +460,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertPlantingSitePopulation(totalPlants = 80)
 
       val emptyStratumId =
-          insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+          insertStratum(areaHa = BigDecimal(50), initialPlantingDensity = BigDecimal(5))
       val emptySubstratumId = insertSubstratum()
 
       // planting site in the same project with no plantings

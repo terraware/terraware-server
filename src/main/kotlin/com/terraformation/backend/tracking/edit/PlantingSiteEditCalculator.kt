@@ -107,8 +107,8 @@ class PlantingSiteEditCalculator(
                       existingStratum.errorMargin == desiredStratum.errorMargin &&
                       existingStratum.name == desiredStratum.name &&
                       existingStratum.studentsT == desiredStratum.studentsT &&
-                      existingStratum.targetPlantingDensity ==
-                          desiredStratum.targetPlantingDensity &&
+                      existingStratum.initialPlantingDensity ==
+                          desiredStratum.initialPlantingDensity &&
                       existingStratum.variance == desiredStratum.variance &&
                       existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)
               ) {
