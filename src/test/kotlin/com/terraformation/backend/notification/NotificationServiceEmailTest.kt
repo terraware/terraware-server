@@ -149,6 +149,8 @@ import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTot
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
+import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
+import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
@@ -1897,6 +1899,65 @@ internal class NotificationServiceEmailTest {
     assertRecipientsEqual(setOf(supportContactEmail))
 
     assertIsEventListener<PlantingSiteMapEditedEvent>(service)
+  }
+
+  @Test
+  fun `stratumDensityUpdated with TF contacts`() {
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser1)
+    every { parentStore.isProjectInAccelerator(plantingSite.projectId) } returns true
+
+    service.on(
+        StratumDensityUpdatedEvent(
+            plantingSiteId = plantingSite.id,
+            stratumId = stratum.id,
+            stratumName = stratum.name,
+            initialPlantingDensityChange =
+                DensityChangedEventModel(
+                    previousDensity = BigDecimal("1500"),
+                    newDensity = BigDecimal("1750"),
+                ),
+            targetPlantDensityChange =
+                DensityChangedEventModel(previousDensity = null, newDensity = BigDecimal("1200")),
+        )
+    )
+
+    val message = sentMessageWithSubject("has made updates to density settings")
+    assertSubjectContains(organization.name, message = message)
+    assertSubjectContains(plantingSite.name, message = message)
+    assertBodyContains(plantingSite.name, message = message)
+    assertBodyContains(stratum.name, message = message)
+    assertBodyContains("Initial Planting Density", message = message)
+    assertBodyContains("1,500", message = message)
+    assertBodyContains("1,750", message = message)
+    assertBodyContains("Target Plant Density", message = message)
+    assertBodyContains("Not set", message = message)
+    assertBodyContains("1,200", message = message)
+
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
+
+    assertIsEventListener<StratumDensityUpdatedEvent>(service)
+  }
+
+  @Test
+  fun `stratumDensityUpdated does not notify anyone for non-accelerator project`() {
+    every { parentStore.isProjectInAccelerator(plantingSite.projectId) } returns false
+
+    service.on(
+        StratumDensityUpdatedEvent(
+            plantingSiteId = plantingSite.id,
+            stratumId = stratum.id,
+            stratumName = stratum.name,
+            initialPlantingDensityChange =
+                DensityChangedEventModel(
+                    previousDensity = BigDecimal("1500"),
+                    newDensity = BigDecimal("1750"),
+                ),
+        )
+    )
+
+    assertNoMessageSent()
   }
 
   @Test

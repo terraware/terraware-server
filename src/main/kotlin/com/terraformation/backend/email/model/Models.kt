@@ -17,6 +17,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
+import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
@@ -473,6 +474,18 @@ class PlantingSiteMapEdited(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "plantingSite/mapEdited"
+}
+
+class StratumDensityUpdated(
+    config: TerrawareServerConfig,
+    val initialPlantingDensityChange: DensityChangedEventModel?,
+    val organizationName: String,
+    val plantingSiteName: String,
+    val stratumName: String,
+    val targetPlantDensityChange: DensityChangedEventModel?,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "plantingSite/stratumDensityUpdated"
 }
 
 class CompletedSectionVariableUpdated(

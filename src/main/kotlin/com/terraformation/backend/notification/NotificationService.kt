@@ -107,6 +107,7 @@ import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.SplatGenerationCompleted
 import com.terraformation.backend.email.model.SplatGenerationFailed
 import com.terraformation.backend.email.model.SplatMarkedNeedsAttention
+import com.terraformation.backend.email.model.StratumDensityUpdated
 import com.terraformation.backend.email.model.T0DataSet
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
@@ -143,6 +144,7 @@ import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTot
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
+import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
@@ -815,6 +817,28 @@ class NotificationService(
             plantingSiteName = event.plantingSiteEdit.existingModel.name,
         ),
     )
+  }
+
+  @EventListener
+  fun on(event: StratumDensityUpdatedEvent) {
+    systemUser.run {
+      val (plantingSite, organization) = fetchSiteAndOrg(event.plantingSiteId)
+
+      if (parentStore.isProjectInAccelerator(plantingSite.projectId)) {
+        sendToOrganizationContact(
+            organization,
+            StratumDensityUpdated(
+                config = config,
+                initialPlantingDensityChange = event.initialPlantingDensityChange,
+                organizationName = organization.name,
+                plantingSiteName = plantingSite.name,
+                stratumName = event.stratumName,
+                targetPlantDensityChange = event.targetPlantDensityChange,
+            ),
+            fallBackToSupport = false,
+        )
+      }
+    }
   }
 
   @EventListener
