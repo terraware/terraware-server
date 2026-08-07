@@ -355,12 +355,12 @@ spotless {
     target("*.md", "buildSrc/*.md", "docs/*.md", "src/**/*.md")
     flexmark()
   }
-  format("sql") {
-    // Only apply to newly-added SQL files since editing existing ones will cause the checksums
-    // to change which Flyway will detect as invalid edits of already-applied migrations.
-    ratchetFrom("origin/main")
 
+  format("sql") {
     target("src/**/*.sql")
+    // Skip historical SQL files since some of them don't match Spotless formatting rules,
+    // but we can't edit them because it would cause their checksums to change.
+    targetExclude("src/main/resources/db/migration/numbered/**/*.sql")
     endWithNewline()
     trimTrailingWhitespace()
   }
