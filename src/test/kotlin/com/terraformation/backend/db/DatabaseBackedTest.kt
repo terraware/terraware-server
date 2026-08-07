@@ -2838,6 +2838,7 @@ abstract class DatabaseBackedTest {
       numTemporaryPlots: Int = row.numTemporaryPlots ?: StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: Any = row.name ?: name,
       studentsT: BigDecimal = row.studentsT ?: StratumModel.DEFAULT_STUDENTS_T,
+      targetPlantDensity: BigDecimal? = row.targetPlantDensity,
       variance: BigDecimal = row.variance ?: StratumModel.DEFAULT_VARIANCE,
       insertHistory: Boolean = true,
       boundaryModifiedBy: UserId = row.boundaryModifiedBy ?: modifiedBy,
@@ -2861,6 +2862,7 @@ abstract class DatabaseBackedTest {
             plantingSiteId = plantingSiteId,
             stableId = StableId("$stableId"),
             studentsT = studentsT,
+            targetPlantDensity = targetPlantDensity,
             variance = variance,
         )
 

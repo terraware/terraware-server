@@ -199,6 +199,7 @@
                 <th>Stratum ID</th>
                 <th>Name</th>
                 <th>Initial<br/>Density</th>
+                <th>Target<br/>Density</th>
                 <th>Variance</th>
                 <th>Error</th>
                 <th>Student's t</th>
@@ -218,6 +219,11 @@
                 <td>
                     <input type="number" required min="1" name="initialPlantingDensity" size="8"
                            th:value="${stratum.initialPlantingDensity}"
+                           th:form="|stratum-${stratum.id}|"/>
+                </td>
+                <td>
+                    <input type="number" min="1" name="targetPlantDensity" size="8"
+                           th:value="${stratum.targetPlantDensity}"
                            th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>

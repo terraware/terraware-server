@@ -1114,6 +1114,7 @@ class PlantingSiteStore(
             .set(NUM_PERMANENT_PLOTS, edited.numPermanentPlots)
             .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
             .set(STUDENTS_T, edited.studentsT)
+            .set(TARGET_PLANT_DENSITY, edited.targetPlantDensity)
             .set(VARIANCE, edited.variance)
             .where(ID.eq(stratumId))
             .execute()
@@ -1215,6 +1216,7 @@ class PlantingSiteStore(
             plantingSiteId = plantingSiteId,
             stableId = stratum.stableId,
             studentsT = stratum.studentsT,
+            targetPlantDensity = stratum.targetPlantDensity,
             variance = stratum.variance,
         )
 
@@ -2378,6 +2380,7 @@ class PlantingSiteStore(
                     STRATA.STABLE_ID,
                     substrataField,
                     STRATA.STUDENTS_T,
+                    STRATA.TARGET_PLANT_DENSITY,
                     STRATA.VARIANCE,
                 )
                 .from(STRATA)
@@ -2406,6 +2409,7 @@ class PlantingSiteStore(
                 stableId = record[STRATA.STABLE_ID]!!,
                 studentsT = record[STRATA.STUDENTS_T]!!,
                 substrata = substrataField?.let { record[it] } ?: emptyList(),
+                targetPlantDensity = record[STRATA.TARGET_PLANT_DENSITY],
                 variance = record[STRATA.VARIANCE]!!,
             )
           }

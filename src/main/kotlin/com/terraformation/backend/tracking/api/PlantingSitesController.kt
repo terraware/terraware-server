@@ -399,6 +399,11 @@ data class StratumResponsePayload(
     val numPermanentPlots: Int,
     val numTemporaryPlots: Int,
     val substrata: List<SubstratumResponsePayload>,
+    @Schema(
+        description =
+            "Number of plants per hectare that the stratum should have after planting is completed."
+    )
+    val targetPlantDensity: BigDecimal?,
     @Schema(deprecated = true, description = "Use initialPlantingDensity instead.")
     val targetPlantingDensity: BigDecimal?,
 ) {
@@ -416,6 +421,7 @@ data class StratumResponsePayload(
       numPermanentPlots = model.numPermanentPlots,
       numTemporaryPlots = model.numTemporaryPlots,
       substrata = model.substrata.map { SubstratumResponsePayload(it) },
+      targetPlantDensity = model.targetPlantDensity,
       targetPlantingDensity = model.initialPlantingDensity,
   )
 }
@@ -635,6 +641,11 @@ data class NewStratumPayload(
     )
     val name: String,
     val substrata: List<NewSubstratumPayload>?,
+    @Schema(
+        description =
+            "Number of plants per hectare that the stratum should have after planting is completed."
+    )
+    val targetPlantDensity: BigDecimal?,
     @Schema(deprecated = true, description = "Use initialPlantingDensity instead.")
     val targetPlantingDensity: BigDecimal?,
 ) {
@@ -656,6 +667,7 @@ data class NewStratumPayload(
                 ?: targetPlantingDensity
                 ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
         substrata = substrata?.map { it.toModel(name, exclusion) } ?: emptyList(),
+        targetPlantDensity = targetPlantDensity,
     )
   }
 }
