@@ -1,3 +1,5 @@
+06abefa3 Support building outside of git repos (#4851)
+39a8ff39 Skip Spotless SQL scan if not in git repo (#4850)
 3ca8ed49 Added units to auto-calculated and common indicator payloads (#4849)
 4e052480 SW-8737 Rename target planting density (#4845)
 c90c2941 SW-5189 Undo all deliveries when withdrawal is undone (#4840)
