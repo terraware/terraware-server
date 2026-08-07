@@ -50,6 +50,7 @@ import com.terraformation.backend.report.model.SeedFundReportModel
 import com.terraformation.backend.report.render.SeedFundReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
@@ -150,6 +151,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
+            PlantingSiteLocker(dslContext),
             plantingSitesDao,
             publisher,
             strataDao,

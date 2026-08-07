@@ -25,6 +25,7 @@ import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
@@ -110,6 +111,7 @@ class ObservationScenario(
                 identifierGenerator,
                 MonitoringPlotsDao(configuration),
                 parentStore,
+                PlantingSiteLocker(test.dslContext),
                 PlantingSitesDao(configuration),
                 eventPublisher,
                 StrataDao(configuration),
