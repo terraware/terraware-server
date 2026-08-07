@@ -517,8 +517,9 @@ VALUES (1, 'Known'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.indicator_classes (id, name)
-VALUES (1, 'Cumulative'),
-       (2, 'Level')
+VALUES (1, 'Lifetime Cumulative'),
+       (2, 'Not Cumulative'),
+       (3, 'Yearly Cumulative')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.indicator_frequencies (id, name)

@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.db
 
+import com.terraformation.backend.accelerator.model.CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.requirePermissions
@@ -221,7 +222,7 @@ class PublishedReportStore(
     val reportsForSum = REPORTS.`as`("reportsForSum")
     val sumAtPreviousYearEnd =
         DSL.`when`(
-            indicatorClassField.eq(IndicatorClass.Cumulative),
+            indicatorClassField.eq(IndicatorClass.LifetimeCumulative),
             DSL.select(DSL.sum(publishedValueForSumField))
                 .from(publishedIndicatorTableForSum)
                 .join(reportsForSum)
@@ -249,7 +250,7 @@ class PublishedReportStore(
 
     val currentYearProgressField: Field<List<PublishedCumulativeIndicatorProgressModel>> =
         DSL.`when`(
-            indicatorClassField.eq(IndicatorClass.Cumulative),
+            indicatorClassField.`in`(CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES),
             DSL.multiset(
                     DSL.select(
                             reportsForProgress.REPORT_QUARTER_ID,
@@ -334,7 +335,7 @@ class PublishedReportStore(
                 classId = record[indicatorClassField],
                 currentYearProgress =
                     record[currentYearProgressField].takeIf {
-                      record[indicatorClassField] == IndicatorClass.Cumulative
+                      record[indicatorClassField] in CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES
                     },
                 description = record[indicatorDescriptionField],
                 endOfProjectTarget = record[endTargetField],

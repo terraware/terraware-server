@@ -101,10 +101,10 @@ data class PublishedReportIndicatorPayload(
     val classId: IndicatorClass,
     @Schema(
         description =
-            "If the indicator is cumulative, the list of actual values for all quarters in the " +
-                "report's year. Note that only the report's quarter will be a published value, the " +
-                "rest will be current values whether or not they are the same as their published " +
-                "counterparts."
+            "If the indicator is lifetime or yearly cumulative, the list of actual values for all " +
+                "quarters in the report's year. Note that only the report's quarter will be a " +
+                "published value, the rest will be current values whether or not they are the " +
+                "same as their published counterparts."
     )
     val currentYearProgress: List<PublishedCumulativeIndicatorProgressPayload>?,
     val description: String?,
@@ -113,7 +113,8 @@ data class PublishedReportIndicatorPayload(
     val name: String,
     @Schema(
         description =
-            "If the indicator is cumulative, the cumulative total at the end of the previous year"
+            "If the indicator is lifetime cumulative, the cumulative total at the end of the " +
+                "previous year. Always null for yearly cumulative indicators."
     )
     val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,

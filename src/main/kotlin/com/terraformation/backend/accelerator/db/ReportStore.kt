@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEv
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.model.AutoCalculatedIndicatorTargetsModel
+import com.terraformation.backend.accelerator.model.CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES
 import com.terraformation.backend.accelerator.model.CommonIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.CumulativeIndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
@@ -1705,7 +1706,7 @@ class ReportStore(
     val reportsForSum = REPORTS.`as`("reportsForSum")
     val sumAtPreviousYearEnd =
         DSL.`when`(
-            COMMON_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            COMMON_INDICATORS.CLASS_ID.eq(IndicatorClass.LifetimeCumulative),
             DSL.select(DSL.sum(REPORT_COMMON_INDICATORS.VALUE))
                 .from(REPORT_COMMON_INDICATORS)
                 .join(reportsForSum)
@@ -1719,7 +1720,7 @@ class ReportStore(
     val rciForProgress = REPORT_COMMON_INDICATORS.`as`("rciForProgress")
     val currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>> =
         DSL.`when`(
-            COMMON_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            COMMON_INDICATORS.CLASS_ID.`in`(CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES),
             DSL.multiset(
                     DSL.select(
                             reportsForProgress.REPORT_QUARTER_ID,
@@ -1794,7 +1795,7 @@ class ReportStore(
     val reportsForSum = REPORTS.`as`("reportsForSum")
     val sumAtPreviousYearEnd =
         DSL.`when`(
-            PROJECT_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            PROJECT_INDICATORS.CLASS_ID.eq(IndicatorClass.LifetimeCumulative),
             DSL.select(DSL.sum(REPORT_PROJECT_INDICATORS.VALUE))
                 .from(REPORT_PROJECT_INDICATORS)
                 .join(reportsForSum)
@@ -1808,7 +1809,7 @@ class ReportStore(
     val rpiForProgress = REPORT_PROJECT_INDICATORS.`as`("rpiForProgress")
     val currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>> =
         DSL.`when`(
-            PROJECT_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            PROJECT_INDICATORS.CLASS_ID.`in`(CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES),
             DSL.multiset(
                     DSL.select(
                             reportsForProgress.REPORT_QUARTER_ID,
@@ -2174,7 +2175,7 @@ class ReportStore(
     val reportsForSum = REPORTS.`as`("reportsForSum")
     val sumAtPreviousYearEnd =
         DSL.`when`(
-            AUTO_CALCULATED_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            AUTO_CALCULATED_INDICATORS.CLASS_ID.eq(IndicatorClass.LifetimeCumulative),
             DSL.select(
                     DSL.sum(
                         DSL.coalesce(
@@ -2200,7 +2201,7 @@ class ReportStore(
     val effectiveValue = DSL.coalesce(raciForProgress.OVERRIDE_VALUE, raciForProgress.SYSTEM_VALUE)
     val currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>> =
         DSL.`when`(
-            AUTO_CALCULATED_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            AUTO_CALCULATED_INDICATORS.CLASS_ID.`in`(CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES),
             DSL.multiset(
                     DSL.select(
                             reportsForProgress.REPORT_QUARTER_ID,

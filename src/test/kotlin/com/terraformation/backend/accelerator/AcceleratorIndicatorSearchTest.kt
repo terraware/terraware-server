@@ -62,7 +62,7 @@ class AcceleratorIndicatorSearchTest : DatabaseTest(), RunsAsUser {
         insertCommonIndicator(
             active = true,
             category = IndicatorCategory.Climate,
-            classId = IndicatorClass.Cumulative,
+            classId = IndicatorClass.LifetimeCumulative,
             description = "Indicator description",
             frequency = IndicatorFrequency.Quarterly,
             isPublishable = true,
@@ -96,7 +96,7 @@ class AcceleratorIndicatorSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "active" to "true",
                     "category" to "Climate",
-                    "class" to "Cumulative",
+                    "class" to "Lifetime Cumulative",
                     "description" to "Indicator description",
                     "frequency" to "Quarterly",
                     "id" to "$indicatorId",
