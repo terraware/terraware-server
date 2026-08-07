@@ -755,6 +755,10 @@ val EMBEDDABLES =
             .withTables("tracking.planting_site_populations")
             .withColumns("planting_site_id", "species_id"),
         EmbeddableDefinitionType()
+            .withName("planting_site_species_target_id")
+            .withTables("tracking.planting_site_species_targets")
+            .withColumns("planting_site_id", "species_id"),
+        EmbeddableDefinitionType()
             .withName("substratum_population_id")
             .withTables("tracking.substratum_populations")
             .withColumns("substratum_id", "species_id"),
@@ -822,6 +826,10 @@ val EMBEDDABLES =
             .withName("species_plant_material_sourcing_method_id")
             .withTables("public.species_plant_material_sourcing_methods")
             .withColumns("species_id", "plant_material_sourcing_method_id"),
+        EmbeddableDefinitionType()
+            .withName("stratum_species_target_id")
+            .withTables("tracking.stratum_species_targets")
+            .withColumns("stratum_id", "species_id"),
         EmbeddableDefinitionType()
             .withName("variable_manifest_entry_id")
             .withTables("variable_manifest_entries")

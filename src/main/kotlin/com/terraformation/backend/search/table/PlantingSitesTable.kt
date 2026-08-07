@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_RE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SPECIES_TARGETS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.search.SearchTable
@@ -82,6 +83,10 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           strata.asMultiValueSublist(
               "plantingZones",
               PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
+          ),
+          plantingSiteSpeciesTargets.asMultiValueSublist(
+              "speciesTargets",
+              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID),
           ),
           strata.asMultiValueSublist(
               "strata",
