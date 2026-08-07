@@ -6,10 +6,10 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
@@ -33,12 +33,12 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         clock,
         TestSingletons.countryDetector,
         dslContext,
+        EntityLocker(dslContext),
         eventPublisher,
         mockGeometrySimplifier,
         identifierGenerator,
         monitoringPlotsDao,
         ParentStore(dslContext),
-        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         rateLimitedEventPublisher,
         strataDao,

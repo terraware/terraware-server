@@ -5,11 +5,11 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.BiomassStore
-import com.terraformation.backend.tracking.db.ObservationLocker
 import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 
@@ -18,7 +18,7 @@ abstract class BaseBiomassStoreTest : DatabaseTest(), RunsAsUser {
 
   protected val eventPublisher = TestEventPublisher()
   protected val store: BiomassStore by lazy {
-    BiomassStore(dslContext, eventPublisher, ObservationLocker(dslContext), ParentStore(dslContext))
+    BiomassStore(dslContext, EntityLocker(dslContext), eventPublisher, ParentStore(dslContext))
   }
 
   protected lateinit var organizationId: OrganizationId

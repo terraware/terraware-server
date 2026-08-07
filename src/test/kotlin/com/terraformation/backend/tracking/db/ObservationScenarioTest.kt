@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
@@ -68,9 +69,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     ObservationStore(
         clock,
         dslContext,
+        EntityLocker(dslContext),
         eventPublisher,
         jobScheduler,
-        ObservationLocker(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,

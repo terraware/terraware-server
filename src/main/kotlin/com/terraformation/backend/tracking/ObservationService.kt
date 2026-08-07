@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileBatchId
@@ -40,7 +41,6 @@ import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
-import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
@@ -99,12 +99,12 @@ class ObservationService(
     private val biomassStore: BiomassStore,
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val muxService: MuxService,
     private val observationMediaFilesDao: ObservationMediaFilesDao,
-    private val observationLocker: ObservationLocker,
     private val observationStore: ObservationStore,
     private val plantingSiteNotificationStore: PlantingSiteNotificationStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -119,7 +119,7 @@ class ObservationService(
     requirePermissions { manageObservation(observationId) }
 
     log.withMDC("observationId" to observationId) {
-      observationLocker.withLockedObservation(observationId) { observation ->
+      entityLocker.withLockedObservation(observationId) { observation ->
         if (observation.state != ObservationState.Upcoming) {
           throw ObservationAlreadyStartedException(observationId)
         }
@@ -496,7 +496,7 @@ class ObservationService(
       throw SpeciesInWrongOrganizationException(speciesId)
     }
 
-    observationLocker.withLockedObservation(observationId) { observation ->
+    entityLocker.withLockedObservation(observationId) { observation ->
       @Suppress("DEPRECATION")
       when (observation.observationType) {
         ObservationType.BiomassMeasurements ->
@@ -551,7 +551,7 @@ class ObservationService(
   ): ReplacementResult {
     requirePermissions { replaceObservationPlot(observationId) }
 
-    return observationLocker.withLockedObservation(observationId) { observation ->
+    return entityLocker.withLockedObservation(observationId) { observation ->
       if (observation.isAdHoc) {
         throw IllegalStateException("Ad-hoc observation plot cannot be replaced.")
       }
@@ -824,7 +824,7 @@ class ObservationService(
       throw PlotNotCompletedException(monitoringPlotId)
     }
 
-    return observationLocker.withLockedObservation(observationId) { _ -> func() }
+    return entityLocker.withLockedObservation(observationId) { _ -> func() }
   }
 
   fun deleteObservation(observationId: ObservationId) {

@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -18,7 +19,6 @@ import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsR
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.DeliveryStore
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -53,12 +53,12 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         clock,
         TestSingletons.countryDetector,
         dslContext,
+        EntityLocker(dslContext),
         eventPublisher,
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,

@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityStatus
@@ -34,10 +35,8 @@ import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.BiomassStore
-import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
@@ -60,19 +59,19 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
+  private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
-  private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
   private val jobScheduler: JobScheduler = mockk()
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
+        entityLocker,
         eventPublisher,
         jobScheduler,
-        observationLocker,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
@@ -86,12 +85,12 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         clock,
         CountryDetector(),
         dslContext,
+        entityLocker,
         eventPublisher,
         mockGeometrySimplifier,
         mockk(),
         monitoringPlotsDao,
         parentStore,
-        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -105,15 +104,15 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         ObservationResultsStoreV2(dslContext),
         ObservationService(
-            BiomassStore(dslContext, eventPublisher, observationLocker, parentStore),
+            BiomassStore(dslContext, entityLocker, eventPublisher, parentStore),
             clock,
             dslContext,
+            entityLocker,
             eventPublisher,
             mockk(),
             monitoringPlotsDao,
             mockk(),
             observationMediaFilesDao,
-            observationLocker,
             observationStore,
             PlantingSiteNotificationStore(clock, dslContext),
             plantingSiteStore,

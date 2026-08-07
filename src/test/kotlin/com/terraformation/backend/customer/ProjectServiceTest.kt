@@ -14,6 +14,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -32,7 +33,6 @@ import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
@@ -96,12 +96,12 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             clock,
             TestSingletons.countryDetector,
             dslContext,
+            EntityLocker(dslContext),
             publisher,
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            PlantingSiteLocker(dslContext),
             plantingSitesDao,
             publisher,
             strataDao,
