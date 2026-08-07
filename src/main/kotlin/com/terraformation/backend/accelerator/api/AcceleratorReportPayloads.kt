@@ -154,6 +154,7 @@ data class ReportCommonIndicatorPayload(
     val status: ReportIndicatorStatus?,
     val supportingDocumentUrl: URI?,
     val target: BigDecimal?,
+    val unit: String?,
     val value: BigDecimal?,
 ) {
   constructor(
@@ -178,6 +179,7 @@ data class ReportCommonIndicatorPayload(
       status = model.entry.status,
       supportingDocumentUrl = model.entry.supportingDocumentUrl,
       target = model.entry.target,
+      unit = model.indicator.unit,
       value = model.entry.value,
   )
 }
@@ -229,6 +231,7 @@ data class ReportAutoCalculatedIndicatorPayload(
     val systemTime: Instant?,
     val systemValue: BigDecimal?,
     val target: BigDecimal?,
+    val unit: String,
 ) {
   constructor(
       model: ReportAutoCalculatedIndicatorModel
@@ -254,6 +257,7 @@ data class ReportAutoCalculatedIndicatorPayload(
       systemTime = model.entry.systemTime,
       systemValue = model.entry.systemValue,
       target = model.entry.target,
+      unit = model.indicator.unit,
   )
 }
 
