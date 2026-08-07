@@ -46,6 +46,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
+            PlantingSiteLocker(dslContext),
             plantingSitesDao,
             eventPublisher,
             strataDao,

@@ -32,6 +32,7 @@ import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
+import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
@@ -85,6 +86,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
+        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,

@@ -16,6 +16,7 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteHistoryNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -50,6 +51,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
+        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,

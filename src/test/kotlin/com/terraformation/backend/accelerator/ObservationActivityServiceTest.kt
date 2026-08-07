@@ -37,6 +37,7 @@ import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
@@ -90,6 +91,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         mockk(),
         monitoringPlotsDao,
         parentStore,
+        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,

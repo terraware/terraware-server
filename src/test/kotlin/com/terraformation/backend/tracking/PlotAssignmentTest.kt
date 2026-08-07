@@ -14,6 +14,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -65,6 +66,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
+        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,

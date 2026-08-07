@@ -126,6 +126,7 @@ class PlantingSiteStore(
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
+    private val plantingSiteLocker: PlantingSiteLocker,
     private val plantingSitesDao: PlantingSitesDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val strataDao: StrataDao,
@@ -579,7 +580,7 @@ class PlantingSiteStore(
           countryDetector.getCountries(it).singleOrNull()
         }
 
-    return withLockedPlantingSite(plantingSiteId) {
+    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
       val existing = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val now = clock.instant()
       val userId = currentUser().userId
@@ -1102,7 +1103,7 @@ class PlantingSiteStore(
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
 
-    withLockedPlantingSite(initial.plantingSiteId!!) {
+    plantingSiteLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
       with(STRATA) {
         dslContext
             .update(STRATA)
@@ -1473,7 +1474,7 @@ class PlantingSiteStore(
       updatePlantingSite(plantingSiteId)
     }
 
-    return withLockedPlantingSite(plantingSiteId) {
+    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val stratum =
           plantingSite.findStratumWithMonitoringPlot(monitoringPlotId)
@@ -1536,7 +1537,7 @@ class PlantingSiteStore(
   fun ensurePermanentPlotsExist(plantingSiteId: PlantingSiteId): List<MonitoringPlotId> {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    return withLockedPlantingSite(plantingSiteId) {
+    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
       plantingSite.strata.flatMap { stratum ->
@@ -1743,7 +1744,7 @@ class PlantingSiteStore(
     val userId = currentUser().userId
     val now = clock.instant()
 
-    return withLockedPlantingSite(plantingSiteId) {
+    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val stratum =
           plantingSite.strata.singleOrNull { it.id == stratumId }
@@ -2630,30 +2631,6 @@ class PlantingSiteStore(
               totalSpecies = species.size,
           )
         }
-  }
-
-  /**
-   * Acquires a row lock on a planting site and executes a function in a transaction with the lock
-   * held.
-   */
-  private fun <T> withLockedPlantingSite(plantingSiteId: PlantingSiteId, func: () -> T): T {
-    requirePermissions { updatePlantingSite(plantingSiteId) }
-
-    return dslContext.transactionResult { _ ->
-      val rowsLocked =
-          dslContext
-              .selectOne()
-              .from(PLANTING_SITES)
-              .where(PLANTING_SITES.ID.eq(plantingSiteId))
-              .forUpdate()
-              .execute()
-
-      if (rowsLocked != 1) {
-        throw PlantingSiteNotFoundException(plantingSiteId)
-      }
-
-      func()
-    }
   }
 
   private fun insertPlantingSiteHistory(

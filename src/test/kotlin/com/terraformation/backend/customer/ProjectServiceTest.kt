@@ -32,6 +32,7 @@ import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
+import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
@@ -100,6 +101,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
+            PlantingSiteLocker(dslContext),
             plantingSitesDao,
             publisher,
             strataDao,
