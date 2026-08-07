@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -51,8 +52,8 @@ import org.springframework.context.ApplicationEventPublisher
 @Named
 class BiomassStore(
     private val dslContext: DSLContext,
+    private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
-    private val observationLocker: ObservationLocker,
     private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
@@ -475,7 +476,7 @@ class BiomassStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    observationLocker.withLockedObservation(observationId) { _ ->
+    entityLocker.withLockedObservation(observationId) { _ ->
       val existing =
           with(OBSERVATION_BIOMASS_DETAILS) {
             dslContext
@@ -559,7 +560,7 @@ class BiomassStore(
         parentStore.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
-    observationLocker.withLockedObservation(observationId) { _ ->
+    entityLocker.withLockedObservation(observationId) { _ ->
       val biomassSpeciesRecord =
           fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
 
@@ -611,7 +612,7 @@ class BiomassStore(
         parentStore.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
-    observationLocker.withLockedObservation(observationId) { _ ->
+    entityLocker.withLockedObservation(observationId) { _ ->
       val existing =
           with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
             dslContext
@@ -696,7 +697,7 @@ class BiomassStore(
         parentStore.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
-    observationLocker.withLockedObservation(observationId) { observation ->
+    entityLocker.withLockedObservation(observationId) { observation ->
       val biomassSpeciesRecord =
           fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
 
@@ -755,7 +756,7 @@ class BiomassStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    observationLocker.withLockedObservation(observationId) { observation ->
+    entityLocker.withLockedObservation(observationId) { observation ->
       val existing = fetchRecordedTree(observationId, recordedTreeId)
       val updated = updateFunc(existing)
       validateRecordedTreeUpdate(existing, updated)

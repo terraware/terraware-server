@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -26,8 +27,8 @@ internal class PlantingSiteSpeciesTargetStoreTest : DatabaseTest(), RunsAsDataba
   private val store: PlantingSiteSpeciesTargetStore by lazy {
     PlantingSiteSpeciesTargetStore(
         dslContext,
+        EntityLocker(dslContext),
         ParentStore(dslContext),
-        PlantingSiteLocker(dslContext),
     )
   }
 

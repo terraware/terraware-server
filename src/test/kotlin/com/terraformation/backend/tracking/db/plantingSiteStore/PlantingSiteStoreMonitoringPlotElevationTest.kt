@@ -8,13 +8,13 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.util.GeometrySimplifier
@@ -37,12 +37,12 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
         clock,
         TestSingletons.countryDetector,
         dslContext,
+        EntityLocker(dslContext),
         eventPublisher,
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
-        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,

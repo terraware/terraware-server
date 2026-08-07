@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -122,9 +123,9 @@ import org.springframework.context.event.EventListener
 class ObservationStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
     @Lazy private val jobScheduler: JobScheduler,
-    private val observationLocker: ObservationLocker,
     private val observationsDao: ObservationsDao,
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
@@ -562,7 +563,7 @@ class ObservationStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    observationLocker.withLockedObservation(observationId) { _ ->
+    entityLocker.withLockedObservation(observationId) { _ ->
       dslContext
           .update(OBSERVATIONS)
           .setNull(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
@@ -601,7 +602,7 @@ class ObservationStore(
       }
     }
 
-    observationLocker.withLockedObservation(observationId) { observation ->
+    entityLocker.withLockedObservation(observationId) { observation ->
       observation.validateStateTransition(newState)
 
       val maxCompletedTime =
@@ -631,7 +632,7 @@ class ObservationStore(
   fun recordObservationStart(observationId: ObservationId): ExistingObservationModel {
     requirePermissions { manageObservation(observationId) }
 
-    return observationLocker.withLockedObservation(observationId) { observation ->
+    return entityLocker.withLockedObservation(observationId) { observation ->
       val plantingSiteHistoryId =
           dslContext
               .select(DSL.max(PLANTING_SITE_HISTORIES.ID))
@@ -1194,7 +1195,7 @@ class ObservationStore(
         parentStore.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
-    observationLocker.withLockedObservation(observationId) { observation ->
+    entityLocker.withLockedObservation(observationId) { observation ->
       val existing =
           with(OBSERVATION_PLOTS) {
             val record =
@@ -1278,7 +1279,7 @@ class ObservationStore(
   ) {
     requirePermissions { updateObservationQuantities(observationId) }
 
-    observationLocker.withLockedObservation(observationId) { observation ->
+    entityLocker.withLockedObservation(observationId) { observation ->
       if (observation.observationType != ObservationType.Monitoring) {
         throw IllegalArgumentException("Observation type is not Monitoring")
       }
@@ -2494,8 +2495,8 @@ class ObservationStore(
     // Lock both observations in ID order to avoid deadlocks.
     val idsToLock = listOf(sourceObservationId, targetObservationId).sorted()
 
-    observationLocker.withLockedObservation(idsToLock[0]) {
-      observationLocker.withLockedObservation(idsToLock[1]) {
+    entityLocker.withLockedObservation(idsToLock[0]) {
+      entityLocker.withLockedObservation(idsToLock[1]) {
         val completedInSource =
             dslContext
                 .select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
@@ -2702,7 +2703,7 @@ class ObservationStore(
             .fetchOneInto(PlantingSitesRow::class.java)
             ?: throw PlantingSiteNotFoundException(plantingSiteId)
 
-    observationLocker.withLockedObservation(observationId) {
+    entityLocker.withLockedObservation(observationId) {
       dslContext
           .deleteFrom(OBSERVED_PLOT_SPECIES_TOTALS)
           .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
@@ -2861,7 +2862,7 @@ class ObservationStore(
       )
     }
 
-    return observationLocker.withLockedObservation(observationId) {
+    return entityLocker.withLockedObservation(observationId) {
       with(OBSERVATION_PLOTS) {
         val innerObservationPlots = OBSERVATION_PLOTS.`as`("inner")
 

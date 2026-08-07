@@ -7,14 +7,13 @@ import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -35,19 +34,19 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
-  private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
   private val jobScheduler: JobScheduler = mockk()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
+        entityLocker,
         eventPublisher,
         jobScheduler,
-        observationLocker,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
@@ -61,12 +60,12 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         clock,
         TestSingletons.countryDetector,
         dslContext,
+        entityLocker,
         eventPublisher,
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -81,12 +80,12 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         mockk(),
         clock,
         dslContext,
+        entityLocker,
         eventPublisher,
         mockk(),
         monitoringPlotsDao,
         mockk(),
         observationMediaFilesDao,
-        observationLocker,
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,

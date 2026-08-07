@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.Role
@@ -28,11 +29,9 @@ import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.BiomassStore
-import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
@@ -53,9 +52,9 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
+  private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val geometrySimplifier: GeometrySimplifier = mockk()
-  private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, eventPublisher, filesDao, InMemoryFileStore())
@@ -65,9 +64,9 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
     ObservationStore(
         clock,
         dslContext,
+        entityLocker,
         eventPublisher,
         mockk(),
-        observationLocker,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
@@ -81,12 +80,12 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         clock,
         TestSingletons.countryDetector,
         dslContext,
+        entityLocker,
         TestEventPublisher(),
         geometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -96,15 +95,15 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
 
   private val service: ObservationService by lazy {
     ObservationService(
-        BiomassStore(dslContext, eventPublisher, observationLocker, parentStore),
+        BiomassStore(dslContext, entityLocker, eventPublisher, parentStore),
         clock,
         dslContext,
+        entityLocker,
         eventPublisher,
         fileService,
         monitoringPlotsDao,
         mockk(),
         observationMediaFilesDao,
-        observationLocker,
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,

@@ -5,6 +5,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseBackedTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
@@ -22,10 +23,8 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.gis.CountryDetector
-import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
@@ -77,12 +76,12 @@ class ObservationScenario(
         test: DatabaseBackedTest,
         registerListeners: Boolean = true,
         clock: TestClock = TestClock(),
+        entityLocker: EntityLocker = EntityLocker(test.dslContext),
         eventPublisher: TestEventPublisher = TestEventPublisher(),
         geometrySimplifier: GeometrySimplifier = GeometrySimplifier(),
         identifierGenerator: IdentifierGenerator = IdentifierGenerator(clock, test.dslContext),
         observationResultsStoreV2: ObservationResultsStoreV2 =
             ObservationResultsStoreV2(test.dslContext),
-        observationLocker: ObservationLocker = ObservationLocker(test.dslContext),
         parentStore: ParentStore = ParentStore(test.dslContext),
         configuration: Configuration = test.dslContext.configuration(),
         jobScheduler: JobScheduler = mockk(),
@@ -91,9 +90,9 @@ class ObservationScenario(
             ObservationStore(
                 clock,
                 test.dslContext,
+                entityLocker,
                 eventPublisher,
                 jobScheduler,
-                observationLocker,
                 ObservationsDao(configuration),
                 ObservationPlotConditionsDao(configuration),
                 ObservationPlotsDao(configuration),
@@ -106,12 +105,12 @@ class ObservationScenario(
                 clock,
                 CountryDetector(),
                 test.dslContext,
+                entityLocker,
                 eventPublisher,
                 geometrySimplifier,
                 identifierGenerator,
                 MonitoringPlotsDao(configuration),
                 parentStore,
-                PlantingSiteLocker(test.dslContext),
                 PlantingSitesDao(configuration),
                 eventPublisher,
                 StrataDao(configuration),

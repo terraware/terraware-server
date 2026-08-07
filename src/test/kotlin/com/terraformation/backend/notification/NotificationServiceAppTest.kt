@@ -42,6 +42,7 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityType
@@ -103,7 +104,6 @@ import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.tracking.db.ObservationStore
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
@@ -229,12 +229,12 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             clock,
             TestSingletons.countryDetector,
             dslContext,
+            EntityLocker(dslContext),
             publisher,
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            PlantingSiteLocker(dslContext),
             plantingSitesDao,
             publisher,
             strataDao,

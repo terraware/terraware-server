@@ -7,10 +7,10 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import io.mockk.every
@@ -29,9 +29,9 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
     ObservationStore(
         clock,
         dslContext,
+        EntityLocker(dslContext),
         eventPublisher,
         jobScheduler,
-        ObservationLocker(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,

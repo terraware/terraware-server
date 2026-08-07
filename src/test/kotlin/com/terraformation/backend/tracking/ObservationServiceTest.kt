@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.IdentifierGenerator
@@ -69,13 +70,11 @@ import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
-import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
-import com.terraformation.backend.tracking.db.PlantingSiteLocker
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
@@ -147,18 +146,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = spyk(TestClock())
+  private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val fileStore = InMemoryFileStore()
   private val muxService: MuxService = mockk()
-  private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
   private val thumbnailService: ThumbnailService = mockk()
   private val biomassStore: BiomassStore by lazy {
-    BiomassStore(dslContext, eventPublisher, observationLocker, parentStore)
+    BiomassStore(dslContext, entityLocker, eventPublisher, parentStore)
   }
   private val jobScheduler: JobScheduler = mockk()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
@@ -167,9 +166,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         ObservationStore(
             clock,
             dslContext,
+            entityLocker,
             eventPublisher,
             jobScheduler,
-            observationLocker,
             observationsDao,
             observationPlotConditionsDao,
             observationPlotsDao,
@@ -184,12 +183,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         clock,
         TestSingletons.countryDetector,
         dslContext,
+        entityLocker,
         TestEventPublisher(),
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        PlantingSiteLocker(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -202,12 +201,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         biomassStore,
         clock,
         dslContext,
+        entityLocker,
         eventPublisher,
         fileService,
         monitoringPlotsDao,
         muxService,
         observationMediaFilesDao,
-        observationLocker,
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
@@ -2584,12 +2583,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               biomassStore,
               clock,
               dslContext,
+              entityLocker,
               eventPublisher,
               fileService,
               monitoringPlotsDao,
               muxService,
               observationMediaFilesDao,
-              observationLocker,
               spyStore,
               PlantingSiteNotificationStore(clock, dslContext),
               plantingSiteStore,

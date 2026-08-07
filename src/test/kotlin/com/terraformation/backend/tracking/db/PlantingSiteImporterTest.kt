@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
@@ -41,12 +42,12 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             clock,
             TestSingletons.countryDetector,
             dslContext,
+            EntityLocker(dslContext),
             eventPublisher,
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
-            PlantingSiteLocker(dslContext),
             plantingSitesDao,
             eventPublisher,
             strataDao,

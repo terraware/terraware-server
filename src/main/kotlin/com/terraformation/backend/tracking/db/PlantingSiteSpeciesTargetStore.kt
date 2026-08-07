@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -18,8 +19,8 @@ import org.jooq.impl.DSL
 @Named
 class PlantingSiteSpeciesTargetStore(
     private val dslContext: DSLContext,
+    private val entityLocker: EntityLocker,
     private val parentStore: ParentStore,
-    private val plantingSiteLocker: PlantingSiteLocker,
 ) {
   fun fetchByPlantingSiteId(plantingSiteId: PlantingSiteId): List<PlantingSiteSpeciesTargetModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
@@ -61,7 +62,7 @@ class PlantingSiteSpeciesTargetStore(
       throw SpeciesInWrongOrganizationException(model.speciesId)
     }
 
-    plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
+    entityLocker.withLockedPlantingSite(plantingSiteId) {
       val stratumIdsInSite = fetchStratumIds(plantingSiteId)
       model.stratumIds
           .firstOrNull { it !in stratumIdsInSite }

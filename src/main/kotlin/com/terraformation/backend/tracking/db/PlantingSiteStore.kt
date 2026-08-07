@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
@@ -121,12 +122,12 @@ class PlantingSiteStore(
     private val clock: InstantSource,
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
+    private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
     private val geometrySimplifier: GeometrySimplifier,
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
-    private val plantingSiteLocker: PlantingSiteLocker,
     private val plantingSitesDao: PlantingSitesDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val strataDao: StrataDao,
@@ -580,7 +581,7 @@ class PlantingSiteStore(
           countryDetector.getCountries(it).singleOrNull()
         }
 
-    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
+    return entityLocker.withLockedPlantingSite(plantingSiteId) {
       val existing = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val now = clock.instant()
       val userId = currentUser().userId
@@ -1103,7 +1104,7 @@ class PlantingSiteStore(
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
 
-    plantingSiteLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
+    entityLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
       with(STRATA) {
         dslContext
             .update(STRATA)
@@ -1474,7 +1475,7 @@ class PlantingSiteStore(
       updatePlantingSite(plantingSiteId)
     }
 
-    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
+    return entityLocker.withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val stratum =
           plantingSite.findStratumWithMonitoringPlot(monitoringPlotId)
@@ -1537,7 +1538,7 @@ class PlantingSiteStore(
   fun ensurePermanentPlotsExist(plantingSiteId: PlantingSiteId): List<MonitoringPlotId> {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
+    return entityLocker.withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
       plantingSite.strata.flatMap { stratum ->
@@ -1744,7 +1745,7 @@ class PlantingSiteStore(
     val userId = currentUser().userId
     val now = clock.instant()
 
-    return plantingSiteLocker.withLockedPlantingSite(plantingSiteId) {
+    return entityLocker.withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val stratum =
           plantingSite.strata.singleOrNull { it.id == stratumId }
