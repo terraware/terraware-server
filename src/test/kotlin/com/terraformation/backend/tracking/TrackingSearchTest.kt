@@ -149,6 +149,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     )
     insertPlantingDateRequestSpecies(speciesId = speciesId1, quantity = 18)
 
+    insertPlantingSiteSpeciesTarget(targetPlants = 101)
+    insertStratumSpeciesTarget()
+
     insertFacility(type = FacilityType.Nursery)
 
     val withdrawalId1 =
@@ -730,6 +733,19 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "status" to "Upcoming",
                             ),
                         ),
+                    "speciesTargets" to
+                        listOf(
+                            mapOf(
+                                "speciesId" to "$speciesId2",
+                                "stratumSpeciesTargets" to
+                                    listOf(
+                                        mapOf(
+                                            "stratumId" to "$stratumId2",
+                                        )
+                                    ),
+                                "targetPlants" to "101",
+                            ),
+                        ),
                     "strata" to
                         listOf(
                             mapOf(
@@ -1071,6 +1087,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.plantingDateRequests.withdrawals.id",
                 "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.quantity",
                 "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.species_scientificName",
+                "speciesTargets.speciesId",
+                "speciesTargets.targetPlants",
+                "speciesTargets.stratumSpeciesTargets.stratumId",
                 "strata.boundary",
                 "strata.boundaryModifiedTime",
                 "strata.createdTime",
