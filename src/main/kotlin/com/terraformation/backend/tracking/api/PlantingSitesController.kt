@@ -404,8 +404,6 @@ data class StratumResponsePayload(
             "Number of plants per hectare that the stratum should have after planting is completed."
     )
     val targetPlantDensity: BigDecimal?,
-    @Schema(deprecated = true, description = "Use initialPlantingDensity instead.")
-    val targetPlantingDensity: BigDecimal?,
 ) {
   constructor(
       model: ExistingStratumModel
@@ -422,7 +420,6 @@ data class StratumResponsePayload(
       numTemporaryPlots = model.numTemporaryPlots,
       substrata = model.substrata.map { SubstratumResponsePayload(it) },
       targetPlantDensity = model.targetPlantDensity,
-      targetPlantingDensity = model.initialPlantingDensity,
   )
 }
 
@@ -646,8 +643,6 @@ data class NewStratumPayload(
             "Number of plants per hectare that the stratum should have after planting is completed."
     )
     val targetPlantDensity: BigDecimal?,
-    @Schema(deprecated = true, description = "Use initialPlantingDensity instead.")
-    val targetPlantingDensity: BigDecimal?,
 ) {
   fun validate() {
     if (boundary !is MultiPolygon && boundary !is Polygon) {
@@ -663,9 +658,7 @@ data class NewStratumPayload(
         exclusion = exclusion,
         name = name,
         initialPlantingDensity =
-            initialPlantingDensity
-                ?: targetPlantingDensity
-                ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
+            initialPlantingDensity ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
         substrata = substrata?.map { it.toModel(name, exclusion) } ?: emptyList(),
         targetPlantDensity = targetPlantDensity,
     )
