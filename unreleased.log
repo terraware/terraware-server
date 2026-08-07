@@ -1,3 +1,4 @@
+3ca8ed49 Added units to auto-calculated and common indicator payloads (#4849)
 4e052480 SW-8737 Rename target planting density (#4845)
 c90c2941 SW-5189 Undo all deliveries when withdrawal is undone (#4840)
 5b0e3399 SW-5189 Allow cross-site planting reassignments (#4839)
