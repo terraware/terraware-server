@@ -1,3 +1,7 @@
+0daf2c80 SW-8743 Add planting site species targets to search API (#4857)
+f7b0e347 SW-8743 Add planting site species targets API endpoints (#4856)
+ea746877 SW-8743 Add planting site species targets tables (#4855)
+7cef0aff Move planting site locking function to separate class (#4854)
 88170113 SW-8750 Add stratum update API (#4853)
 28711619 SW-8741 Remove target planting density (#4847)
 58b22f7d SW-8742 Add target plant density (#4846)
