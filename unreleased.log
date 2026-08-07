@@ -1,3 +1,4 @@
+51968ffe SW-8752 Notify TF contacts about accelerator density edits (#4860)
 587097cc Combine PlantingSiteLocker and ObservationLocker (#4859)
 0daf2c80 SW-8743 Add planting site species targets to search API (#4857)
 f7b0e347 SW-8743 Add planting site species targets API endpoints (#4856)
