@@ -6,6 +6,8 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HI
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
+import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
@@ -147,6 +149,83 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       assertTableEquals(expectedSiteHistory, "Planting site histories should not be affected")
       assertTableEquals(expectedStratumHistory)
       assertTableEquals(expectedSubstratumHistory)
+    }
+
+    @Test
+    fun `publishes event if densities change`() {
+      insertPlantingSite()
+      val stratumId =
+          insertStratum(
+              name = "stratum",
+              initialPlantingDensity = BigDecimal(1500),
+              targetPlantDensity = null,
+          )
+
+      store.updateStratum(stratumId) {
+        it.copy(
+            initialPlantingDensity = BigDecimal("1750.0"),
+            targetPlantDensity = BigDecimal(1200),
+        )
+      }
+
+      eventPublisher.assertEventPublished(
+          StratumDensityUpdatedEvent(
+              plantingSiteId = inserted.plantingSiteId,
+              stratumId = stratumId,
+              stratumName = "stratum",
+              initialPlantingDensityChange =
+                  DensityChangedEventModel(
+                      previousDensity = BigDecimal(1500),
+                      newDensity = BigDecimal("1750.0"),
+                  ),
+              targetPlantDensityChange =
+                  DensityChangedEventModel(previousDensity = null, newDensity = BigDecimal(1200)),
+          )
+      )
+    }
+
+    @Test
+    fun `publishes event with no change for density that stayed the same`() {
+      insertPlantingSite()
+      val stratumId =
+          insertStratum(
+              name = "stratum",
+              initialPlantingDensity = BigDecimal(1500),
+              targetPlantDensity = BigDecimal(1200),
+          )
+
+      store.updateStratum(stratumId) { it.copy(targetPlantDensity = null) }
+
+      eventPublisher.assertEventPublished(
+          StratumDensityUpdatedEvent(
+              plantingSiteId = inserted.plantingSiteId,
+              stratumId = stratumId,
+              stratumName = "stratum",
+              targetPlantDensityChange =
+                  DensityChangedEventModel(previousDensity = BigDecimal(1200), newDensity = null),
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish event if densities are unchanged`() {
+      insertPlantingSite()
+      val stratumId =
+          insertStratum(
+              initialPlantingDensity = BigDecimal(1500),
+              targetPlantDensity = BigDecimal(1200),
+          )
+
+      store.updateStratum(stratumId) {
+        it.copy(
+            name = "renamed",
+            // Same values, different scales
+            initialPlantingDensity = BigDecimal("1500.00"),
+            targetPlantDensity = BigDecimal("1200.00"),
+        )
+      }
+
+      eventPublisher.assertEventNotPublished<StratumDensityUpdatedEvent>()
     }
 
     @Test

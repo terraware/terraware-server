@@ -472,6 +472,12 @@ data class StratumModel<
   }
 }
 
+/** A change to one of a stratum's planting density settings. */
+data class DensityChangedEventModel(
+    val previousDensity: BigDecimal?,
+    val newDensity: BigDecimal?,
+)
+
 typealias AnyStratumModel = StratumModel<out StratumId?, out SubstratumId?, out Instant?>
 
 typealias ExistingStratumModel = StratumModel<StratumId, SubstratumId, Instant>

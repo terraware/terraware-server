@@ -71,10 +71,12 @@ import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEven
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
+import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyStratumModel
 import com.terraformation.backend.tracking.model.AnySubstratumModel
+import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.ExistingSubstratumModel
@@ -1159,7 +1161,34 @@ class PlantingSiteStore(
         }
       }
     }
+
+    val initialPlantingDensityChange =
+        densityChange(initial.initialPlantingDensity, edited.initialPlantingDensity)
+    val targetPlantDensityChange =
+        densityChange(initial.targetPlantDensity, edited.targetPlantDensity)
+
+    if (initialPlantingDensityChange != null || targetPlantDensityChange != null) {
+      eventPublisher.publishEvent(
+          StratumDensityUpdatedEvent(
+              plantingSiteId = initial.plantingSiteId!!,
+              stratumId = stratumId,
+              stratumName = edited.name!!,
+              initialPlantingDensityChange = initialPlantingDensityChange,
+              targetPlantDensityChange = targetPlantDensityChange,
+          )
+      )
+    }
   }
+
+  private fun densityChange(
+      previousDensity: BigDecimal?,
+      newDensity: BigDecimal?,
+  ): DensityChangedEventModel? =
+      if (previousDensity.equalsIgnoreScale(newDensity)) {
+        null
+      } else {
+        DensityChangedEventModel(previousDensity, newDensity)
+      }
 
   /**
    * Marks a substratum as having completed planting or not. The "planting completed time" value,

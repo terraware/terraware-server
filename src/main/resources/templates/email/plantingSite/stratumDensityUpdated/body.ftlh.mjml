@@ -1,0 +1,42 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.StratumDensityUpdated" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03">
+                ${strings("notification.plantingSite.stratumDensityUpdated.email.body", plantingSiteName, stratumName)}
+                </mj-text>
+            <mj-raw>
+                <#if initialPlantingDensityChange??>
+            </mj-raw>
+                    <mj-text mj-class="text-body01-regular" padding-top="4px">
+                        <strong>${strings("stratum.initialPlantingDensity")}:</strong>
+                        <#if initialPlantingDensityChange.previousDensity??>${initialPlantingDensityChange.previousDensity}<#else>${strings("notSet")}</#if>
+                        &rarr;
+                        <#if initialPlantingDensityChange.newDensity??>${initialPlantingDensityChange.newDensity}<#else>${strings("notSet")}</#if>
+                    </mj-text>
+            <mj-raw>
+                </#if>
+                <#if targetPlantDensityChange??>
+            </mj-raw>
+                    <mj-text mj-class="text-body01-regular" padding-top="4px">
+                        <strong>${strings("stratum.targetPlantDensity")}:</strong>
+                        <#if targetPlantDensityChange.previousDensity??>${targetPlantDensityChange.previousDensity}<#else>${strings("notSet")}</#if>
+                        &rarr;
+                        <#if targetPlantDensityChange.newDensity??>${targetPlantDensityChange.newDensity}<#else>${strings("notSet")}</#if>
+                    </mj-text>
+            <mj-raw>
+                </#if>
+            </mj-raw>
+
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

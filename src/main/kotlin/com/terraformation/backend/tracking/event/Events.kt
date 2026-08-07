@@ -32,6 +32,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
@@ -164,6 +165,18 @@ data class PlantingSiteMapEditedEvent(
 data class PlantingSiteHistoryCreatedEvent(
     val plantingSiteId: PlantingSiteId,
     val plantingSiteHistoryId: PlantingSiteHistoryId,
+)
+
+/**
+ * Published when a stratum's initial planting density or target plant density is changed to a
+ * different value. The change fields are null for densities that didn't change.
+ */
+data class StratumDensityUpdatedEvent(
+    val plantingSiteId: PlantingSiteId,
+    val stratumId: StratumId,
+    val stratumName: String,
+    val initialPlantingDensityChange: DensityChangedEventModel? = null,
+    val targetPlantDensityChange: DensityChangedEventModel? = null,
 )
 
 data class T0PlotDataAssignedEvent(
