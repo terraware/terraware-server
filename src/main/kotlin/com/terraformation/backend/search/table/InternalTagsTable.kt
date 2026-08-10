@@ -19,7 +19,7 @@ class InternalTagsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          organizations.asMultiValueSublist(
+          organizationInternalTags.asMultiValueSublist(
               "organizationInternalTags",
               INTERNAL_TAGS.ID.eq(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID),
           ),
