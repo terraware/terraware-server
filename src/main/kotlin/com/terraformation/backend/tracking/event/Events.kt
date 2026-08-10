@@ -826,6 +826,7 @@ sealed interface RecordedTreePersistentEvent : PersistentEvent {
 
 data class RecordedTreeCreatedEventV1(
     val biomassSpeciesId: BiomassSpeciesId,
+    val boleHeightM: BigDecimal? = null,
     val description: String? = null,
     val diameterAtBreastHeightCm: BigDecimal? = null,
     val gpsCoordinates: Point? = null,
@@ -858,6 +859,7 @@ data class RecordedTreeUpdatedEventV1(
     override val recordedTreeId: RecordedTreeId,
 ) : FieldsUpdatedPersistentEvent, RecordedTreePersistentEvent {
   data class Values(
+      val boleHeightM: BigDecimal? = null,
       val description: String? = null,
       val diameterAtBreastHeightCm: BigDecimal? = null,
       val heightM: BigDecimal? = null,
@@ -869,6 +871,11 @@ data class RecordedTreeUpdatedEventV1(
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
+          createUpdatedField(
+              "boleHeightM",
+              messages.numericValueOrNull(changedFrom.boleHeightM),
+              messages.numericValueOrNull(changedTo.boleHeightM),
+          ),
           createUpdatedField("description", changedFrom.description, changedTo.description),
           createUpdatedField(
               "diameterAtBreastHeightCm",

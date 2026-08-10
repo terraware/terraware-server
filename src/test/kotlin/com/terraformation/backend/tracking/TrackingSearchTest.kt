@@ -263,6 +263,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertObservationPlotCondition(condition = ObservableCondition.Pests)
     insertObservationBiomassSpecies(isInvasive = true, scientificName = "Species 2")
     insertRecordedTree(
+        boleHeightM = BigDecimal("18.31"),
         description = "Tree description",
         diameterAtBreastHeightCm = BigDecimal("30.1"),
         heightM = BigDecimal("13.1"),
@@ -603,6 +604,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "recordedTrees" to
                                                 listOf(
                                                     mapOf(
+                                                        "boleHeight" to "18.31",
                                                         "description" to "Tree description",
                                                         "diameterAtBreastHeight" to "30.1",
                                                         "growthForm" to "Tree",
@@ -1021,6 +1023,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "observations.observationPlots.isPermanent",
                 "observations.observationPlots.monitoringPlot.id",
                 "observations.observationPlots.notes",
+                "observations.observationPlots.recordedTrees.boleHeight",
                 "observations.observationPlots.recordedTrees.description",
                 "observations.observationPlots.recordedTrees.diameterAtBreastHeight",
                 "observations.observationPlots.recordedTrees.growthForm",

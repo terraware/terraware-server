@@ -130,6 +130,8 @@ data class NewBiomassQuadratSpeciesPayload(
 }
 
 data class ExistingTreePayload(
+    @Schema(description = "Measured in meters.") //
+    val boleHeight: BigDecimal?,
     val description: String?,
     @Schema(description = "Measured in centimeters.") //
     val diameterAtBreastHeight: BigDecimal?,
@@ -156,6 +158,7 @@ data class ExistingTreePayload(
       model: ExistingRecordedTreeModel,
       species: Map<BiomassSpeciesKey, BiomassSpeciesModel>,
   ) : this(
+      boleHeight = model.boleHeightM,
       description = model.description,
       diameterAtBreastHeight = model.diameterAtBreastHeightCm,
       gpsCoordinates = model.gpsCoordinates,
@@ -224,6 +227,9 @@ data class NewShrubPayload(
 }
 
 data class NewTrunkPayload(
+    @Min(0)
+    @Schema(description = "Measured in meters.") //
+    val boleHeight: BigDecimal?,
     @Schema(description = "Measured in centimeters.") //
     val diameterAtBreastHeight: BigDecimal,
     @Schema(description = "Measured in meters.") //
@@ -245,6 +251,7 @@ data class NewTrunkPayload(
   ): NewRecordedTreeModel {
     return NewRecordedTreeModel(
         id = null,
+        boleHeightM = boleHeight,
         description = description,
         diameterAtBreastHeightCm = diameterAtBreastHeight,
         gpsCoordinates = gpsCoordinates,

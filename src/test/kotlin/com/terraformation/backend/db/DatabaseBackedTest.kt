@@ -4263,6 +4263,7 @@ abstract class DatabaseBackedTest {
           row.trunkNumber ?: nextTrunkNumber.getOrDefault(observationId to treeNumber, 1),
       treeGrowthForm: TreeGrowthForm = row.treeGrowthFormId ?: TreeGrowthForm.Tree,
       isDead: Boolean = row.isDead ?: false,
+      boleHeightM: BigDecimal? = row.boleHeightM,
       diameterAtBreastHeightCm: BigDecimal? = row.diameterAtBreastHeightCm,
       pointOfMeasurementM: BigDecimal? = row.pointOfMeasurementM,
       heightM: BigDecimal? = row.heightM,
@@ -4273,6 +4274,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             biomassSpeciesId = biomassSpeciesId,
+            boleHeightM = boleHeightM,
             description = description,
             diameterAtBreastHeightCm = diameterAtBreastHeightCm,
             heightM = heightM,

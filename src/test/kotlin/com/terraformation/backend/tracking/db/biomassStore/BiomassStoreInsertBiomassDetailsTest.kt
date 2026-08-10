@@ -168,6 +168,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                     NewRecordedTreeModel(
                         id = null,
                         isDead = true,
+                        boleHeightM = BigDecimal(8),
                         diameterAtBreastHeightCm = BigDecimal.TWO,
                         gpsCoordinates = null,
                         pointOfMeasurementM = BigDecimal.valueOf(1.3),
@@ -441,6 +442,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 biomassSpeciesId = biomassTreeSpeciesId3,
+                boleHeightM = BigDecimal(8),
                 diameterAtBreastHeightCm = BigDecimal.TWO,
                 heightM = BigDecimal.TEN,
                 pointOfMeasurementM = BigDecimal.valueOf(1.3),
@@ -501,6 +503,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             ),
             RecordedTreeCreatedEvent(
                 biomassSpeciesId = biomassTreeSpeciesId3,
+                boleHeightM = BigDecimal(8),
                 diameterAtBreastHeightCm = BigDecimal.TWO,
                 heightM = BigDecimal.TEN,
                 isDead = true,
