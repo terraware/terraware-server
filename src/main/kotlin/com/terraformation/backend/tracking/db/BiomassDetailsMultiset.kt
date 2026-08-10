@@ -97,6 +97,7 @@ internal val recordedTreesMultiset =
       DSL.multiset(
               DSL.select(
                       ID,
+                      BOLE_HEIGHT_M,
                       DESCRIPTION,
                       DIAMETER_AT_BREAST_HEIGHT_CM,
                       HEIGHT_M,

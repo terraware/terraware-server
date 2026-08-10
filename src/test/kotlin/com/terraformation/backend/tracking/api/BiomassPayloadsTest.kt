@@ -50,6 +50,7 @@ class BiomassPayloadsTest {
                   trunks =
                       listOf(
                           NewTrunkPayload(
+                              boleHeight = null,
                               description = "Single trunk description",
                               diameterAtBreastHeight = BigDecimal(7),
                               height = BigDecimal(16),
@@ -66,6 +67,7 @@ class BiomassPayloadsTest {
                   trunks =
                       listOf(
                           NewTrunkPayload(
+                              boleHeight = BigDecimal(3),
                               description = "Multi-trunk description 1",
                               diameterAtBreastHeight = BigDecimal(4),
                               height = BigDecimal(4),
@@ -74,6 +76,7 @@ class BiomassPayloadsTest {
                               treeCrownDiameter = null,
                           ),
                           NewTrunkPayload(
+                              boleHeight = null,
                               description = "Multi-trunk description 2",
                               diameterAtBreastHeight = BigDecimal(8),
                               height = BigDecimal(9),
@@ -129,6 +132,7 @@ class BiomassPayloadsTest {
               ),
               NewRecordedTreeModel(
                   id = null,
+                  boleHeightM = BigDecimal(3),
                   description = "Multi-trunk description 1",
                   diameterAtBreastHeightCm = BigDecimal(4),
                   gpsCoordinates = point(3),
@@ -294,6 +298,7 @@ class BiomassPayloadsTest {
                       ),
                       ExistingRecordedTreeModel(
                           id = RecordedTreeId(3),
+                          boleHeightM = BigDecimal(8),
                           description = "Multi-trunk description 1",
                           diameterAtBreastHeightCm = BigDecimal.TEN,
                           gpsCoordinates = point(2),
@@ -410,6 +415,7 @@ class BiomassPayloadsTest {
               trees =
                   listOf(
                       ExistingTreePayload(
+                          boleHeight = null,
                           description = null,
                           diameterAtBreastHeight = null,
                           gpsCoordinates = point(1),
@@ -428,6 +434,7 @@ class BiomassPayloadsTest {
                           trunkNumber = 1,
                       ),
                       ExistingTreePayload(
+                          boleHeight = null,
                           description = null,
                           diameterAtBreastHeight = BigDecimal.TWO,
                           gpsCoordinates = null,
@@ -446,6 +453,7 @@ class BiomassPayloadsTest {
                           trunkNumber = 1,
                       ),
                       ExistingTreePayload(
+                          boleHeight = BigDecimal(8),
                           description = "Multi-trunk description 1",
                           diameterAtBreastHeight = BigDecimal.TEN,
                           gpsCoordinates = point(2),
@@ -464,6 +472,7 @@ class BiomassPayloadsTest {
                           trunkNumber = 1,
                       ),
                       ExistingTreePayload(
+                          boleHeight = null,
                           description = "Multi-trunk description 2",
                           diameterAtBreastHeight = BigDecimal.TWO,
                           gpsCoordinates = point(2),

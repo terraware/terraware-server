@@ -68,6 +68,7 @@ class BiomassStore(
       dslContext
           .select(
               ID,
+              BOLE_HEIGHT_M,
               DESCRIPTION,
               DIAMETER_AT_BREAST_HEIGHT_CM,
               GPS_COORDINATES,
@@ -278,6 +279,7 @@ class BiomassStore(
                     treeGrowthFormId = treeModel.treeGrowthForm,
                     gpsCoordinates = treeModel.gpsCoordinates,
                     isDead = treeModel.isDead,
+                    boleHeightM = treeModel.boleHeightM,
                     diameterAtBreastHeightCm =
                         if (
                             treeModel.treeGrowthForm == TreeGrowthForm.Tree ||
@@ -319,6 +321,7 @@ class BiomassStore(
         eventPublisher.publishEvent(
             RecordedTreeCreatedEvent(
                 biomassSpeciesId = record.biomassSpeciesId!!,
+                boleHeightM = record.boleHeightM,
                 description = treeModel.description,
                 diameterAtBreastHeightCm = record.diameterAtBreastHeightCm,
                 gpsCoordinates = treeModel.gpsCoordinates,
@@ -768,6 +771,7 @@ class BiomassStore(
         with(RECORDED_TREES) {
           dslContext
               .update(RECORDED_TREES)
+              .set(BOLE_HEIGHT_M, updated.boleHeightM)
               .set(DESCRIPTION, updated.description)
               .set(DIAMETER_AT_BREAST_HEIGHT_CM, updated.diameterAtBreastHeightCm)
               .set(HEIGHT_M, updated.heightM)
@@ -831,7 +835,8 @@ class BiomassStore(
     when (existing.treeGrowthForm) {
       TreeGrowthForm.Shrub ->
           require(
-              updated.diameterAtBreastHeightCm == null &&
+              updated.boleHeightM == null &&
+                  updated.diameterAtBreastHeightCm == null &&
                   updated.heightM == null &&
                   updated.pointOfMeasurementM == null &&
                   updated.treeCrownDiameterCm == null

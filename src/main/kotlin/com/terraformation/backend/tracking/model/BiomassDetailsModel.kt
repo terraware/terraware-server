@@ -45,6 +45,7 @@ data class BiomassQuadratModel(
 
 data class RecordedTreeModel<TreeId : RecordedTreeId?>(
     val id: TreeId,
+    val boleHeightM: BigDecimal? = null,
     val description: String? = null,
     val diameterAtBreastHeightCm: BigDecimal? = null,
     val gpsCoordinates: Point?,
@@ -61,6 +62,7 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
 ) {
   fun toEventValues(other: RecordedTreeModel<*>) =
       RecordedTreeUpdatedEventValues(
+          boleHeightM = boleHeightM.nullIfEquals(other.boleHeightM),
           description = description.nullIfEquals(other.description),
           diameterAtBreastHeightCm =
               diameterAtBreastHeightCm.nullIfEquals(other.diameterAtBreastHeightCm),
@@ -75,8 +77,14 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
     if (speciesId == null && speciesName == null) {
       throw IllegalStateException("Tree $treeNumber: speciesId or speciesName missing")
     }
+    if (boleHeightM?.signum() == -1) {
+      throw IllegalStateException("Tree $treeNumber: boleHeight may not be negative")
+    }
     when (treeGrowthForm) {
       TreeGrowthForm.Shrub -> {
+        if (boleHeightM != null) {
+          throw IllegalStateException("Tree $treeNumber: boleHeight not allowed for Shrub")
+        }
         if (shrubDiameterCm == null) {
           throw IllegalStateException("Tree $treeNumber: shrubDiameter missing for Shrub")
         }
@@ -119,6 +127,7 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
     ): ExistingRecordedTreeModel {
       return with(RECORDED_TREES) {
         ExistingRecordedTreeModel(
+            boleHeightM = record[BOLE_HEIGHT_M],
             description = record[DESCRIPTION],
             diameterAtBreastHeightCm = record[DIAMETER_AT_BREAST_HEIGHT_CM],
             gpsCoordinates = record[gpsCoordinatesField] as? Point,

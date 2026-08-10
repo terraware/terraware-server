@@ -144,6 +144,7 @@ data class ObservationPlotUpdateOperationPayload(
 
 @JsonTypeName("RecordedTree")
 data class RecordedTreeUpdateOperationPayload(
+    val boleHeight: Optional<BigDecimal>?,
     val description: Optional<String>?,
     @Schema(description = "Only valid for Tree and Trunk growth forms.") //
     val diameterAtBreastHeight: BigDecimal?,
@@ -161,6 +162,7 @@ data class RecordedTreeUpdateOperationPayload(
 ) : ObservationUpdateOperationPayload {
   fun applyTo(model: ExistingRecordedTreeModel): ExistingRecordedTreeModel {
     return model.copy(
+        boleHeightM = boleHeight.patchNullable(model.boleHeightM),
         description = description.patchNullable(model.description),
         diameterAtBreastHeightCm = diameterAtBreastHeight ?: model.diameterAtBreastHeightCm,
         heightM = height ?: model.heightM,

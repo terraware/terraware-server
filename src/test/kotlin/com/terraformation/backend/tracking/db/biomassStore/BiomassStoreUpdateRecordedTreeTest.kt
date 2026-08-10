@@ -92,6 +92,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
 
     store.updateRecordedTree(inserted.observationId, inserted.recordedTreeId) {
       it.copy(
+          boleHeightM = BigDecimal(18),
           description = "New description",
           diameterAtBreastHeightCm = BigDecimal(4),
           heightM = BigDecimal(5),
@@ -103,6 +104,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
 
     val expected =
         before.copy().apply {
+          boleHeightM = BigDecimal(18)
           description = "New description"
           diameterAtBreastHeightCm = BigDecimal(4)
           heightM = BigDecimal(5)
@@ -126,6 +128,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
                 ),
             changedTo =
                 RecordedTreeUpdatedEventValues(
+                    boleHeightM = BigDecimal(18),
                     description = "New description",
                     diameterAtBreastHeightCm = BigDecimal(4),
                     heightM = BigDecimal(5),

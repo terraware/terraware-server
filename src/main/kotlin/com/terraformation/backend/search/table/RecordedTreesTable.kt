@@ -42,6 +42,7 @@ class RecordedTreesTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
+          bigDecimalField("boleHeight", RECORDED_TREES.BOLE_HEIGHT_M),
           textField("description", RECORDED_TREES.DESCRIPTION),
           bigDecimalField("diameterAtBreastHeight", RECORDED_TREES.DIAMETER_AT_BREAST_HEIGHT_CM),
           enumField("growthForm", RECORDED_TREES.TREE_GROWTH_FORM_ID),
