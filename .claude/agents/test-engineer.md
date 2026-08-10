@@ -436,16 +436,44 @@ internal class FooServiceTest : DatabaseTest(), RunsAsUser {
 
 ## Dos and Don'ts
 
-| Do                                                                | Don't                                                |
-|-------------------------------------------------------------------|------------------------------------------------------|
-| Test one behaviour per `@Test`                                    | Cram multiple unrelated assertions into one test     |
-| Use backtick test names that describe the scenario                | Use names like `test1` or `testCreate`               |
-| Assert on the actual persisted DB state                           | Only assert on return values                         |
-| Test permission-denied paths                                      | Assume the happy path is the only path               |
-| Use `by lazy` for stores/services                                 | Construct them in `@BeforeEach` (DAOs not ready yet) |
-| Use `TestEventPublisher` to assert events                         | Ignore side effects                                  |
-| Use `assertEquals(expected, actual, "field name")` with a message | Use bare `assertEquals` for everything               |
-| Check the `Inserted` helper for pre-existing insert utilities     | Create raw DB rows yourself                          |
+* Do: Test one behavior per `@Test`
+* Don't: Cram multiple unrelated assertions into one test
+
+
+* Do: Use backtick test names that describe the scenario
+* Don't: Use names like `test1` or `testCreate`
+
+
+* Do: Assert on the actual persisted DB state
+* Don't: Only assert on return values
+
+
+* Do: Test permission-denied paths
+* Don't: Assume the happy path is the only path
+
+
+* Do: Use `by lazy` for stores/services
+* Don't: Construct them in `@BeforeEach` (DAOs not ready yet)
+
+
+* Do: Use `TestEventPublisher` to assert events
+* Don't: Ignore side effects
+
+
+* Do: Check the `inserted` helper functions in `DatabaseBackedTest` for pre-existing insert utilities
+* Don't: Insert raw DB rows yourself
+
+
+* Do: Use `assertEquals(expected, actual, "field name")` with a message
+* Don't: Use bare `assertEquals` for everything
+
+
+* Do: Use Kotlin-native assertions like `assertInstanceOf<Foo>(obj)` where available
+* Don't: Use underlying Java functions like `assertInstanceOf(Foo::class.java, obj)`
+
+
+* Do: Use AssertJ when there isn't a JUnit assertion, like `assertThat(list).contains(item)`
+* Don't: Use `assertTrue` with a boolean expression that analyzes the result of an operation
 
 ## Reporting Results
 
