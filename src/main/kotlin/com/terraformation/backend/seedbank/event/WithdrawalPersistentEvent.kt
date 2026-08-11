@@ -8,8 +8,8 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
-import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
+import com.terraformation.backend.eventlog.FieldsCreatedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.UpgradableEvent
@@ -68,7 +68,19 @@ data class WithdrawalCreatedEventV2(
     override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
-) : EntityCreatedPersistentEvent, WithdrawalPersistentEvent
+) : FieldsCreatedPersistentEvent, WithdrawalPersistentEvent {
+  override fun listInitialFields(messages: Messages) =
+      listOfNotNull(
+          createInitialField("date", date.toString()),
+          createInitialField("purpose", purpose?.getDisplayName(currentLocale())),
+          createInitialField(
+              "withdrawnQuantity",
+              withdrawnQuantity?.let { messages.seedQuantity(it) },
+          ),
+          createInitialField("notes", notes),
+          createInitialField("staffResponsible", staffResponsible),
+      )
+}
 
 typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV2
 

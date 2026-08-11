@@ -128,10 +128,9 @@ class PersistentEventTest {
     val stringKeyPrefix = "eventSubject.${subjectName!!.name}.field"
 
     val expected =
-        valuesClasses
-            .flatMap { valuesClass ->
+        (valuesClasses.flatMap { valuesClass ->
               valuesClass.memberProperties.map { "$stringKeyPrefix.${it.name}" }
-            }
+            } + additionalFieldNames[subjectName].orEmpty().map { "$stringKeyPrefix.$it" })
             .sorted()
             .distinct()
             .joinToString("\n") { "$it=" }
@@ -219,6 +218,17 @@ class PersistentEventTest {
         TreeSet(stream.bufferedReader().readLines().filter { it.startsWith("com") })
       }
     }
+
+    /**
+     * Localizable field names that aren't properties of any of a subject's `Values` classes. Events
+     * can render their own top-level properties as updated or initial field values; those still
+     * need entries in the messages file, but they can't be discovered by scanning `Values`.
+     */
+    val additionalFieldNames =
+        mapOf(
+            EventSubjectName.Accession to setOf("notes"),
+            EventSubjectName.ViabilityTest to setOf("testType"),
+        )
 
     val eventSubjectFieldNames: Set<String> by lazy {
       ResourceBundle.getBundle("i18n.Messages", Locales.ENGLISH)

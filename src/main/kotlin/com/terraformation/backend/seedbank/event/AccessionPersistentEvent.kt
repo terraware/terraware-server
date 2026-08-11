@@ -228,7 +228,8 @@ data class AccessionQuantityUpdatedEventV1(
               "quantity",
               changedFrom.quantity?.let { messages.seedQuantity(it) },
               changedTo.quantity?.let { messages.seedQuantity(it) },
-          )
+          ),
+          createUpdatedField("notes", null, notes),
       )
 }
 

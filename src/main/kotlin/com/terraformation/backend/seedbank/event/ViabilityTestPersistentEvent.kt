@@ -8,8 +8,8 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
-import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
+import com.terraformation.backend.eventlog.FieldsCreatedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.i18n.Messages
@@ -36,7 +36,18 @@ data class ViabilityTestCreatedEventV1(
     override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
-) : EntityCreatedPersistentEvent, ViabilityTestPersistentEvent
+) : FieldsCreatedPersistentEvent, ViabilityTestPersistentEvent {
+  override fun listInitialFields(messages: Messages) =
+      listOfNotNull(
+          createInitialField("testType", testType.getDisplayName(currentLocale())),
+          createInitialField("seedsTested", seedsTested?.toString()),
+          createInitialField("substrate", substrate?.getDisplayName(currentLocale())),
+          createInitialField("treatment", treatment?.getDisplayName(currentLocale())),
+          createInitialField("startDate", startDate?.toString()),
+          createInitialField("endDate", endDate?.toString()),
+          createInitialField("seedType", seedType?.getDisplayName(currentLocale())),
+      )
+}
 
 typealias ViabilityTestCreatedEvent = ViabilityTestCreatedEventV1
 

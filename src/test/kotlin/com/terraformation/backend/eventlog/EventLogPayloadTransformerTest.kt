@@ -344,7 +344,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `renders Accession quantity update with localized quantities`() {
+  fun `renders Accession quantity update with localized quantities and notes`() {
     val accessionId = AccessionId(10)
     val facilityId = FacilityId(11)
 
@@ -365,6 +365,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             AccessionQuantityUpdatedEvent(
                 changedFrom = AccessionQuantityUpdatedEventValues(quantity = seeds(10)),
                 changedTo = AccessionQuantityUpdatedEventValues(quantity = seeds(8)),
+                notes = "Recounted by hand",
                 accessionId = accessionId,
                 facilityId = facilityId,
                 organizationId = organizationId,
@@ -395,6 +396,18 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         fieldName = "quantity",
                         changedFrom = listOf("10 seeds"),
                         changedTo = listOf("8 seeds"),
+                    ),
+                subject = subject,
+                timestamp = quantityEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "notes",
+                        changedFrom = null,
+                        changedTo = listOf("Recounted by hand"),
                     ),
                 subject = subject,
                 timestamp = quantityEntry.createdTime,
@@ -517,7 +530,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val expected =
         listOf(
             EventLogEntryPayload(
-                action = CreatedActionPayload(),
+                action =
+                    CreatedActionPayload(listOf(CreatedFieldPayload("date", listOf("2021-01-01")))),
                 subject = subject,
                 timestamp = createEntry.createdTime,
                 userId = knownUserId,
@@ -603,7 +617,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val expected =
         listOf(
             EventLogEntryPayload(
-                action = CreatedActionPayload(),
+                action =
+                    CreatedActionPayload(listOf(CreatedFieldPayload("test type", listOf("Lab")))),
                 subject = subject,
                 timestamp = createEntry.createdTime,
                 userId = knownUserId,
