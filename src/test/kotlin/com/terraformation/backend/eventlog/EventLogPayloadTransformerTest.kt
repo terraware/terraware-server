@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -397,6 +398,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `maps Withdrawal events to payloads`() {
     val accessionId = AccessionId(10)
+    val batchId = BatchId(12)
     val facilityId = FacilityId(11)
     val withdrawalId = WithdrawalId(20)
 
@@ -405,7 +407,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             knownUserId,
             WithdrawalCreatedEvent(
                 date = LocalDate.of(2021, 1, 1),
-                withdrawalId = withdrawalId,
+                batchId = batchId,
+                seedbankWithdrawalId = withdrawalId,
                 accessionId = accessionId,
                 facilityId = facilityId,
                 organizationId = organizationId,
@@ -417,7 +420,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             WithdrawalUpdatedEvent(
                 changedFrom = WithdrawalUpdatedEventValues(notes = "a"),
                 changedTo = WithdrawalUpdatedEventValues(notes = "b"),
-                withdrawalId = withdrawalId,
+                seedbankWithdrawalId = withdrawalId,
                 accessionId = accessionId,
                 facilityId = facilityId,
                 organizationId = organizationId,
@@ -427,7 +430,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         eventLogEntry(
             knownUserId,
             WithdrawalDeletedEvent(
-                withdrawalId = withdrawalId,
+                seedbankWithdrawalId = withdrawalId,
                 accessionId = accessionId,
                 facilityId = facilityId,
                 organizationId = organizationId,
@@ -437,6 +440,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val subject =
         WithdrawalSubjectPayload(
             accessionId = accessionId,
+            batchId = batchId,
             deleted = true,
             facilityId = facilityId,
             fullText = "Withdrawal 20",

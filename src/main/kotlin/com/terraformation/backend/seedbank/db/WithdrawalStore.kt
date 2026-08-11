@@ -260,7 +260,7 @@ class WithdrawalStore(
                   batchId = withdrawal.batchId,
                   notes = withdrawal.notes,
                   staffResponsible = withdrawal.staffResponsible,
-                  withdrawalId = newId,
+                  seedbankWithdrawalId = newId,
                   accessionId = accessionId,
                   facilityId = facilityId,
                   organizationId = organizationId,
@@ -280,7 +280,7 @@ class WithdrawalStore(
         idsToDelete.filterNotNull().forEach { withdrawalId ->
           eventPublisher.publishEvent(
               WithdrawalDeletedEvent(
-                  withdrawalId = withdrawalId,
+                  seedbankWithdrawalId = withdrawalId,
                   accessionId = accessionId,
                   facilityId = facilityId,
                   organizationId = organizationId,
@@ -356,7 +356,7 @@ class WithdrawalStore(
                 WithdrawalUpdatedEvent(
                     changedFrom = changedFrom,
                     changedTo = changedTo,
-                    withdrawalId = withdrawalId,
+                    seedbankWithdrawalId = withdrawalId,
                     accessionId = accessionId,
                     facilityId = facilityId,
                     organizationId = organizationId,

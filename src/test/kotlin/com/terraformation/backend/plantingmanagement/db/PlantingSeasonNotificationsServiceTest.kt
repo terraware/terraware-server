@@ -1023,7 +1023,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
             withdrawalDate = LocalDate.EPOCH,
-            withdrawalId = withdrawalId,
+            nurseryWithdrawalId = withdrawalId,
         )
 
     return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))

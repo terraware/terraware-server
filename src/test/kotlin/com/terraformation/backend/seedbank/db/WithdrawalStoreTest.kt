@@ -703,7 +703,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             batchId = null,
             notes = "notes 1",
             staffResponsible = "staff 1",
-            withdrawalId = withdrawalId,
+            seedbankWithdrawalId = withdrawalId,
             accessionId = accessionId,
             facilityId = facilityId,
             organizationId = organizationId,
@@ -733,7 +733,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     eventPublisher.assertEventPublished { event ->
       event is WithdrawalCreatedEvent &&
-          event.withdrawalId == withdrawalId &&
+          event.seedbankWithdrawalId == withdrawalId &&
           event.batchId == batchId &&
           event.purpose == WithdrawalPurpose.Nursery &&
           event.accessionId == accessionId &&
@@ -767,7 +767,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalUpdatedEvent(
             changedFrom = WithdrawalUpdatedEventValues(notes = "notes 1"),
             changedTo = WithdrawalUpdatedEventValues(notes = "updated notes"),
-            withdrawalId = withdrawalId,
+            seedbankWithdrawalId = withdrawalId,
             accessionId = accessionId,
             facilityId = facilityId,
             organizationId = organizationId,
@@ -803,7 +803,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalUpdatedEvent(
             changedFrom = WithdrawalUpdatedEventValues(withdrawnByUserId = user.userId),
             changedTo = WithdrawalUpdatedEventValues(withdrawnByUserId = otherUserId),
-            withdrawalId = withdrawalId,
+            seedbankWithdrawalId = withdrawalId,
             accessionId = accessionId,
             facilityId = facilityId,
             organizationId = organizationId,
@@ -850,7 +850,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     eventPublisher.assertEventPublished(
         WithdrawalDeletedEvent(
-            withdrawalId = withdrawalId,
+            seedbankWithdrawalId = withdrawalId,
             accessionId = accessionId,
             facilityId = facilityId,
             organizationId = organizationId,

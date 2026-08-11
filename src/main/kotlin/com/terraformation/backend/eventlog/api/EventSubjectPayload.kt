@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -54,6 +55,7 @@ import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestDeletedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
@@ -830,7 +832,7 @@ data class PlantingSeasonWithdrawalSubjectPayload(
           plantingSiteId = event.plantingSiteId,
           shortText = context.subjectShortText<PlantingSeasonWithdrawalSubjectPayload>(),
           withdrawalDate = event.withdrawalDate,
-          withdrawalId = event.withdrawalId,
+          withdrawalId = event.nurseryWithdrawalId,
       )
     }
   }
@@ -945,6 +947,12 @@ data class ViabilityTestSubjectPayload(
 @JsonTypeName("Withdrawal")
 data class WithdrawalSubjectPayload(
     val accessionId: AccessionId,
+    @Schema(
+        description =
+            "If this withdrawal was a transfer to a nursery, the ID of the batch that received " +
+                "the seeds."
+    )
+    val batchId: BatchId?,
     override val deleted: Boolean?,
     val facilityId: FacilityId,
     override val fullText: String,
@@ -956,16 +964,23 @@ data class WithdrawalSubjectPayload(
         event: WithdrawalPersistentEvent,
         context: EventLogPayloadContext,
     ): WithdrawalSubjectPayload {
+      val createEvent =
+          context.firstOrNull<WithdrawalCreatedEvent> {
+            it.seedbankWithdrawalId == event.seedbankWithdrawalId
+          }
       val deleteEvent =
-          context.firstOrNull<WithdrawalDeletedEvent> { it.withdrawalId == event.withdrawalId }
+          context.firstOrNull<WithdrawalDeletedEvent> {
+            it.seedbankWithdrawalId == event.seedbankWithdrawalId
+          }
 
       return WithdrawalSubjectPayload(
           accessionId = event.accessionId,
+          batchId = createEvent?.batchId,
           deleted = if (deleteEvent != null) true else null,
           facilityId = event.facilityId,
-          fullText = context.subjectFullText<WithdrawalSubjectPayload>(event.withdrawalId),
+          fullText = context.subjectFullText<WithdrawalSubjectPayload>(event.seedbankWithdrawalId),
           shortText = context.subjectShortText<WithdrawalSubjectPayload>(),
-          withdrawalId = event.withdrawalId,
+          withdrawalId = event.seedbankWithdrawalId,
       )
     }
   }
