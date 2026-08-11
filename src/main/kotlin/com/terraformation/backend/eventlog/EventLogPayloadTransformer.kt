@@ -205,9 +205,20 @@ class EventLogPayloadTransformer(
       subject: EventSubjectPayload,
       action: EventActionPayload,
   ): EventActionPayload =
-      if (action is FieldUpdatedActionPayload) {
-        action.copy(fieldName = messages.eventSubjectFieldName(subject::class, action.fieldName))
-      } else {
-        action
+      when (action) {
+        is FieldUpdatedActionPayload ->
+            action.copy(
+                fieldName = messages.eventSubjectFieldName(subject::class, action.fieldName)
+            )
+        is CreatedActionPayload ->
+            action.copy(
+                fields =
+                    action.fields.map {
+                      it.copy(
+                          fieldName = messages.eventSubjectFieldName(subject::class, it.fieldName)
+                      )
+                    }
+            )
+        is DeletedActionPayload -> action
       }
 }

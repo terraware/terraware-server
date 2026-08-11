@@ -118,8 +118,8 @@ data class WithdrawalUpdatedEventV2(
           createUpdatedField("date", changedFrom.date?.toString(), changedTo.date?.toString()),
           createUpdatedField(
               "withdrawnQuantity",
-              changedFrom.withdrawnQuantity?.toString(),
-              changedTo.withdrawnQuantity?.toString(),
+              changedFrom.withdrawnQuantity?.let { messages.seedQuantity(it) },
+              changedTo.withdrawnQuantity?.let { messages.seedQuantity(it) },
           ),
           createUpdatedField(
               "purpose",

@@ -43,6 +43,8 @@ import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
@@ -54,6 +56,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
+import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -338,6 +341,69 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     assertEquals(expected, transformer.eventsToPayloads(listOf(createEntry, updateEntry)))
+  }
+
+  @Test
+  fun `renders Accession quantity update with localized quantities`() {
+    val accessionId = AccessionId(10)
+    val facilityId = FacilityId(11)
+
+    val createEntry =
+        eventLogEntry(
+            knownUserId,
+            AccessionCreatedEvent(
+                accessionNumber = "XYZ-1",
+                dataSource = DataSource.Web,
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+    val quantityEntry =
+        eventLogEntry(
+            knownUserId,
+            AccessionQuantityUpdatedEvent(
+                changedFrom = AccessionQuantityUpdatedEventValues(quantity = seeds(10)),
+                changedTo = AccessionQuantityUpdatedEventValues(quantity = seeds(8)),
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+
+    val subject =
+        AccessionSubjectPayload(
+            accessionId = accessionId,
+            deleted = null,
+            facilityId = facilityId,
+            fullText = "Accession XYZ-1",
+            shortText = "Accession",
+        )
+
+    val expected =
+        listOf(
+            EventLogEntryPayload(
+                action = CreatedActionPayload(),
+                subject = subject,
+                timestamp = createEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "quantity",
+                        changedFrom = listOf("10 seeds"),
+                        changedTo = listOf("8 seeds"),
+                    ),
+                subject = subject,
+                timestamp = quantityEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+        )
+
+    assertEquals(expected, transformer.eventsToPayloads(listOf(createEntry, quantityEntry)))
   }
 
   @Test

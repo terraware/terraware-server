@@ -632,7 +632,7 @@ class Messages {
         else -> ", "
       }
 
-  private fun seedQuantity(quantity: SeedQuantityModel): String {
+  fun seedQuantity(quantity: SeedQuantityModel): String {
     val formattedNumber =
         NumberFormat.getInstance(currentLocale())
             .apply { maximumFractionDigits = 5 }
