@@ -858,7 +858,7 @@ class BatchStore(
                 plantingSeasonId = plantingSeasonId,
                 plantingSiteId = plantingSiteId,
                 withdrawalDate = withdrawal.withdrawnDate,
-                withdrawalId = withdrawalId,
+                nurseryWithdrawalId = withdrawalId,
             )
         )
       }

@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.event
 
+import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
@@ -11,19 +12,20 @@ import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
+import com.terraformation.backend.eventlog.UpgradableEvent
+import com.terraformation.backend.eventlog.db.EventUpgradeUtils
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import java.time.LocalDate
 
 sealed interface WithdrawalPersistentEvent : PersistentEvent {
-  val withdrawalId: WithdrawalId
+  val seedbankWithdrawalId: WithdrawalId
   val accessionId: AccessionId
   val facilityId: FacilityId
   val organizationId: OrganizationId
 }
 
-/** Published when a withdrawal is added to an accession. */
 data class WithdrawalCreatedEventV1(
     val purpose: WithdrawalPurpose? = null,
     val date: LocalDate,
@@ -31,19 +33,72 @@ data class WithdrawalCreatedEventV1(
     val batchId: BatchId? = null,
     val notes: String? = null,
     val staffResponsible: String? = null,
-    override val withdrawalId: WithdrawalId,
+    val withdrawalId: WithdrawalId,
+    val accessionId: AccessionId,
+    val facilityId: FacilityId,
+    val organizationId: OrganizationId,
+) : UpgradableEvent {
+  override fun toNextVersion(
+      eventLogId: EventLogId,
+      eventUpgradeUtils: EventUpgradeUtils,
+  ): WithdrawalCreatedEventV2 =
+      WithdrawalCreatedEventV2(
+          purpose = purpose,
+          date = date,
+          withdrawnQuantity = withdrawnQuantity,
+          batchId = batchId,
+          notes = notes,
+          staffResponsible = staffResponsible,
+          seedbankWithdrawalId = withdrawalId,
+          accessionId = accessionId,
+          facilityId = facilityId,
+          organizationId = organizationId,
+      )
+}
+
+/** Published when a withdrawal is added to an accession. */
+data class WithdrawalCreatedEventV2(
+    val purpose: WithdrawalPurpose? = null,
+    val date: LocalDate,
+    val withdrawnQuantity: SeedQuantityModel? = null,
+    val batchId: BatchId? = null,
+    val notes: String? = null,
+    val staffResponsible: String? = null,
+    override val seedbankWithdrawalId: WithdrawalId,
     override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
 ) : EntityCreatedPersistentEvent, WithdrawalPersistentEvent
 
-typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV1
+typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV2
+
+data class WithdrawalUpdatedEventV1(
+    val changedFrom: WithdrawalUpdatedEventV2.Values,
+    val changedTo: WithdrawalUpdatedEventV2.Values,
+    val withdrawalId: WithdrawalId,
+    val accessionId: AccessionId,
+    val facilityId: FacilityId,
+    val organizationId: OrganizationId,
+) : UpgradableEvent {
+  override fun toNextVersion(
+      eventLogId: EventLogId,
+      eventUpgradeUtils: EventUpgradeUtils,
+  ): WithdrawalUpdatedEventV2 =
+      WithdrawalUpdatedEventV2(
+          changedFrom = changedFrom,
+          changedTo = changedTo,
+          seedbankWithdrawalId = withdrawalId,
+          accessionId = accessionId,
+          facilityId = facilityId,
+          organizationId = organizationId,
+      )
+}
 
 /** Published when the user edits an existing withdrawal. */
-data class WithdrawalUpdatedEventV1(
+data class WithdrawalUpdatedEventV2(
     val changedFrom: Values,
     val changedTo: Values,
-    override val withdrawalId: WithdrawalId,
+    override val seedbankWithdrawalId: WithdrawalId,
     override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
@@ -86,16 +141,34 @@ data class WithdrawalUpdatedEventV1(
       )
 }
 
-typealias WithdrawalUpdatedEvent = WithdrawalUpdatedEventV1
+typealias WithdrawalUpdatedEvent = WithdrawalUpdatedEventV2
 
-typealias WithdrawalUpdatedEventValues = WithdrawalUpdatedEventV1.Values
+typealias WithdrawalUpdatedEventValues = WithdrawalUpdatedEventV2.Values
+
+data class WithdrawalDeletedEventV1(
+    val withdrawalId: WithdrawalId,
+    val accessionId: AccessionId,
+    val facilityId: FacilityId,
+    val organizationId: OrganizationId,
+) : UpgradableEvent {
+  override fun toNextVersion(
+      eventLogId: EventLogId,
+      eventUpgradeUtils: EventUpgradeUtils,
+  ): WithdrawalDeletedEventV2 =
+      WithdrawalDeletedEventV2(
+          seedbankWithdrawalId = withdrawalId,
+          accessionId = accessionId,
+          facilityId = facilityId,
+          organizationId = organizationId,
+      )
+}
 
 /** Published when a withdrawal is deleted from an accession. */
-data class WithdrawalDeletedEventV1(
-    override val withdrawalId: WithdrawalId,
+data class WithdrawalDeletedEventV2(
+    override val seedbankWithdrawalId: WithdrawalId,
     override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
 ) : EntityDeletedPersistentEvent, WithdrawalPersistentEvent
 
-typealias WithdrawalDeletedEvent = WithdrawalDeletedEventV1
+typealias WithdrawalDeletedEvent = WithdrawalDeletedEventV2

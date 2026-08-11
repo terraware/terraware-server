@@ -45,7 +45,7 @@ internal class BatchStoreWithdrawalSeasonEventTest : BatchStoreTest() {
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
             withdrawalDate = LocalDate.EPOCH,
-            withdrawalId = withdrawalId,
+            nurseryWithdrawalId = withdrawalId,
         )
     )
   }
@@ -66,7 +66,7 @@ internal class BatchStoreWithdrawalSeasonEventTest : BatchStoreTest() {
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
             withdrawalDate = LocalDate.EPOCH.plusDays(1),
-            withdrawalId = undo.id,
+            nurseryWithdrawalId = undo.id,
         )
     )
   }

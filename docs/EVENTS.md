@@ -116,6 +116,8 @@ Classes MUST be serializable and deserializable using Jackson.
 
 Classes MUST use a consistent set of property names for entity IDs. The names MUST be camelCase versions of the ID wrapper class names, e.g., `monitoringPlotId` for the ID of type `MonitoringPlotId`.
 
+When two schemas each have an ID wrapper class with the same name, the camelCase form would be ambiguous, so the property names MUST be prefixed with the schema names instead, e.g., `nurseryWithdrawalId` and `seedbankWithdrawalId` for the two classes named `WithdrawalId`. Pass the property name to the `IdWrapper` constructor in the jOOQ code generator config so that the names used to query the event log match the ones in the payloads.
+
 Classes MUST include ID properties for the subject and any entities that come above the subject in our entity hierarchy, up to and including the organization ID. For example, an event for an observation photo would have the photo's file ID, the monitoring plot ID, the observation ID, the planting site ID, and the organization ID. This is to support use cases like "get all the events related to observation 123."
 
 Classes SHOULD put information in top-level attributes instead of in nested objects, unless there's more than one instance of the same nested object such as a `List` or `Set`, or such as the `changedFrom` and `changedTo` values of an update event. Avoid embedding model objects in events; duplicate the model's fields in the event classes instead. This will allow the model to evolve without breaking backward compatibility with existing events in the database.

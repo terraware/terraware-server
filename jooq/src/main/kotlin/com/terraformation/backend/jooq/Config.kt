@@ -470,6 +470,7 @@ val ID_WRAPPERS =
                         "nursery\\..*\\..*_withdrawal_id",
                         "tracking\\..*\\.withdrawal_id",
                     ),
+                    eventLogPropertyName = "nurseryWithdrawalId",
                 ),
             ),
         "public" to
@@ -556,6 +557,7 @@ val ID_WRAPPERS =
                 IdWrapper(
                     "WithdrawalId",
                     listOf("seedbank\\.withdrawals\\.id", "seedbank\\..*\\.withdrawal_id"),
+                    eventLogPropertyName = "seedbankWithdrawalId",
                 ),
             ),
         "tracking" to

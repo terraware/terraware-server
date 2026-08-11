@@ -13,8 +13,8 @@ should still be created as tasks — mark them `completed` immediately if they d
 
 Steps:
 
-1. Determine the next migration number.
-2. Create the numbered migration file.
+1. Determine the migration's version timestamp.
+2. Create the migration file.
 3. Add enum values to R__TypeCodes.sql (if any enum tables).
 4. Add schema documentation to R__Comments.sql.
 5. Update Config.kt (EnumTable, IdWrapper, and/or Embeddable entries as needed).
@@ -23,18 +23,25 @@ Steps:
 8. Run `yarn translate` to generate translations (if Enums_en.properties was changed).
 9. Build, format, and test (`./gradlew generateJooqClasses`, `./gradlew spotlessApply`, `./gradlew test`).
 
-## Step 1: Determine the Next Migration Number
+## Step 1: Determine the Migration's Version Timestamp
 
-List the highest-numbered `.sql` file in `src/main/resources/db/migration/` to find the current
-maximum migration number, then add 1.
+Migration versions are timestamps, not sequence numbers. Run `date "+%Y%m%d.%H%M"` and use the
+result; local time is fine. The timestamp only needs to be granular enough that two people working
+in parallel are unlikely to pick the same one.
 
-Migrations are grouped into subdirectories in groups of 50 (e.g., `0400/` contains V400–V449,
-`0450/` contains V450–V499). Create a new subdirectory when crossing a 50-migration boundary.
+Don't look for the highest existing version and add to it. Flyway is configured to allow
+out-of-order migrations, so a new migration whose version predates an already-applied one is fine
+as long as the two don't depend on each other. If they do, renumber yours so the order is
+deterministic.
 
-## Step 2: Create the Numbered Migration File
+## Step 2: Create the Migration File
 
-Create `src/main/resources/db/migration/NNNN/VNNN__Description.sql` where `NNNN` is the
-directory (multiple of 50 rounded down) and `NNN` is the migration number.
+Create `src/main/resources/db/migration/<year>/<month>/V<timestamp>__Description.sql`, e.g.
+`src/main/resources/db/migration/2026/08/V20260811.1505__AddSomething.sql`. Create the year and
+month directories if they don't exist yet.
+
+The `numbered/` subdirectory holds the sequential migrations that predate this scheme. Don't add
+to it.
 
 Make sure and add a newline character at the end of the file.
 
