@@ -3,9 +3,11 @@ package com.terraformation.backend.eventlog.api
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -36,6 +38,8 @@ class EventLogController(
     val eventLogEntries =
         eventLogStore.fetchByIds(
             listOfNotNull(
+                payload.accessionId,
+                payload.facilityId,
                 payload.fileId,
                 payload.monitoringPlotId,
                 payload.observationId,
@@ -63,6 +67,8 @@ class EventLogController(
             "observation. The subjects property may be used to narrow the search further."
 )
 data class ListEventLogEntriesRequestPayload(
+    val accessionId: AccessionId? = null,
+    val facilityId: FacilityId? = null,
     val fileId: FileId? = null,
     val monitoringPlotId: MonitoringPlotId? = null,
     val observationId: ObservationId? = null,
