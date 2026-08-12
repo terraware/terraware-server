@@ -85,7 +85,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId =
           insertProjectIndicator(
               category = IndicatorCategory.Biodiversity,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.NotCumulative,
               description = "Project Indicator Description",
               name = "Project Indicator",
               refId = "1.2.1",
@@ -135,7 +135,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           PublishedReportIndicatorModel(
               category = IndicatorCategory.Biodiversity,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.NotCumulative,
               description = "Project Indicator Description",
               indicatorId = projectIndicatorId,
               level = IndicatorLevel.Output,
@@ -164,7 +164,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               description = "Common Indicator Description",
               name = "Common Indicator",
               refId = "1.1.1",
@@ -214,7 +214,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           PublishedReportIndicatorModel(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               currentYearProgress =
                   listOf(
                       PublishedCumulativeIndicatorProgressModel(
@@ -290,7 +290,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           PublishedReportIndicatorModel(
               category = AutoCalculatedIndicator.SurvivalRate.categoryId,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.NotCumulative,
               description = AutoCalculatedIndicator.SurvivalRate.description,
               indicatorId = AutoCalculatedIndicator.SurvivalRate,
               level = AutoCalculatedIndicator.SurvivalRate.levelId,
@@ -319,7 +319,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               description = "Cumulative Indicator Description",
               name = "Cumulative Indicator",
               refId = "1.1.1",
@@ -451,7 +451,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Cumulative,
+              classId = IndicatorClass.LifetimeCumulative,
               description = "Cumulative Indicator Description",
               name = "Cumulative Indicator",
               refId = "1.1.1",
@@ -535,12 +535,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertFundingEntityProject()
       insertProjectReportConfig()
 
-      val levelIndicatorId =
+      val notCumulativeIndicatorId =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Level,
-              description = "Level Indicator Description",
-              name = "Level Indicator",
+              classId = IndicatorClass.NotCumulative,
+              description = "Not Cumulative Indicator Description",
+              name = "Not Cumulative Indicator",
               refId = "1.1.1",
               level = IndicatorLevel.Output,
           )
@@ -553,7 +553,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertReportCommonIndicator(
           reportId = q1ReportId,
-          indicatorId = levelIndicatorId,
+          indicatorId = notCumulativeIndicatorId,
           value = BigDecimal(50),
       )
 
@@ -565,7 +565,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertReportCommonIndicator(
           reportId = q2ReportId,
-          indicatorId = levelIndicatorId,
+          indicatorId = notCumulativeIndicatorId,
           value = BigDecimal(60),
       )
 
@@ -577,7 +577,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       insertPublishedReportCommonIndicator(
           reportId = q2ReportId,
-          indicatorId = levelIndicatorId,
+          indicatorId = notCumulativeIndicatorId,
           value = BigDecimal(60),
           status = ReportIndicatorStatus.OnTrack,
       )
@@ -586,13 +586,120 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val indicator = reports.single().commonIndicators.single()
 
       assertEquals(
-          IndicatorClass.Level,
+          IndicatorClass.NotCumulative,
           indicator.classId,
-          "Indicator class should be Level for this test",
+          "Indicator class should be Not Cumulative for this test",
       )
       assertNull(
           indicator.currentYearProgress,
           "currentYearProgress is null for non-cumulative indicators",
+      )
+    }
+
+    @Test
+    fun `yearly cumulative indicator has currentYearProgress but no previousYearCumulativeTotal`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val indicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              classId = IndicatorClass.YearlyCumulative,
+              description = "Yearly Cumulative Indicator Description",
+              name = "Yearly Cumulative Indicator",
+              refId = "1.1.1",
+              level = IndicatorLevel.Output,
+          )
+
+      // Previous year's value is only included in previousYearCumulativeTotal for lifetime
+      // cumulative indicators.
+      val previousYearReportId =
+          insertReport(
+              startDate = LocalDate.of(2024, 10, 1),
+              endDate = LocalDate.of(2024, 12, 31),
+              quarter = ReportQuarter.Q4,
+          )
+      insertReportCommonIndicator(
+          reportId = previousYearReportId,
+          indicatorId = indicatorId,
+          value = BigDecimal(40),
+      )
+      insertPublishedReport(
+          reportId = previousYearReportId,
+          startDate = LocalDate.of(2024, 10, 1),
+          endDate = LocalDate.of(2024, 12, 31),
+          quarter = ReportQuarter.Q4,
+      )
+      insertPublishedReportCommonIndicator(
+          reportId = previousYearReportId,
+          indicatorId = indicatorId,
+          value = BigDecimal(40),
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      val q1ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              quarter = ReportQuarter.Q1,
+          )
+      insertReportCommonIndicator(
+          reportId = q1ReportId,
+          indicatorId = indicatorId,
+          value = BigDecimal(50),
+      )
+      insertPublishedReport(
+          reportId = q1ReportId,
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 3, 31),
+          quarter = ReportQuarter.Q1,
+      )
+      insertPublishedReportCommonIndicator(
+          reportId = q1ReportId,
+          indicatorId = indicatorId,
+          value = BigDecimal(50),
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      val q2ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 4, 1),
+              endDate = LocalDate.of(2025, 6, 30),
+              quarter = ReportQuarter.Q2,
+          )
+      insertReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = indicatorId,
+          value = BigDecimal(60),
+      )
+      insertPublishedReport(
+          reportId = q2ReportId,
+          startDate = LocalDate.of(2025, 4, 1),
+          endDate = LocalDate.of(2025, 6, 30),
+          quarter = ReportQuarter.Q2,
+      )
+      insertPublishedReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = indicatorId,
+          value = BigDecimal(60),
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      val indicator =
+          store
+              .fetchPublishedReports(projectId)
+              .single { it.quarter == ReportQuarter.Q2 }
+              .commonIndicators
+              .single()
+
+      assertNull(indicator.previousYearCumulativeTotal, "previousYearCumulativeTotal")
+      assertEquals(
+          listOf(
+              PublishedCumulativeIndicatorProgressModel(ReportQuarter.Q1, BigDecimal(50)),
+              PublishedCumulativeIndicatorProgressModel(ReportQuarter.Q2, BigDecimal(60)),
+          ),
+          indicator.currentYearProgress,
+          "currentYearProgress",
       )
     }
 
@@ -639,7 +746,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     commonIndicatorId1 =
         insertCommonIndicator(
             category = IndicatorCategory.Climate,
-            classId = IndicatorClass.Cumulative,
+            classId = IndicatorClass.LifetimeCumulative,
             description = "Common Indicator Description 1",
             name = "Common Indicator 1",
             refId = "1.1.2",
@@ -649,7 +756,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     commonIndicatorId2 =
         insertCommonIndicator(
             category = IndicatorCategory.Community,
-            classId = IndicatorClass.Cumulative,
+            classId = IndicatorClass.LifetimeCumulative,
             description = "Common Indicator Description 2",
             name = "Common Indicator 2",
             refId = "1.1.1",
@@ -659,7 +766,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     projectIndicatorId1 =
         insertProjectIndicator(
             category = IndicatorCategory.Biodiversity,
-            classId = IndicatorClass.Cumulative,
+            classId = IndicatorClass.LifetimeCumulative,
             description = "Project Indicator Description 1",
             name = "Project Indicator 1",
             refId = "1.2.1",
@@ -670,7 +777,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     projectIndicatorId2 =
         insertProjectIndicator(
             category = IndicatorCategory.ProjectObjectives,
-            classId = IndicatorClass.Cumulative,
+            classId = IndicatorClass.LifetimeCumulative,
             description = "Project Indicator Description 2",
             name = "Project Indicator 2",
             refId = "1.2.11",
@@ -890,7 +997,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               listOf(
                   PublishedReportIndicatorModel(
                       baseline = BigDecimal.valueOf(300),
-                      classId = IndicatorClass.Cumulative,
+                      classId = IndicatorClass.LifetimeCumulative,
                       category = AutoCalculatedIndicator.SeedsCollected.categoryId,
                       currentYearProgress =
                           listOf(
@@ -924,7 +1031,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   PublishedReportIndicatorModel(
                       baseline = BigDecimal.valueOf(200),
                       category = IndicatorCategory.Community,
-                      classId = IndicatorClass.Cumulative,
+                      classId = IndicatorClass.LifetimeCumulative,
                       currentYearProgress =
                           listOf(
                               PublishedCumulativeIndicatorProgressModel(
@@ -948,7 +1055,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   ),
                   PublishedReportIndicatorModel(
                       category = IndicatorCategory.Climate,
-                      classId = IndicatorClass.Cumulative,
+                      classId = IndicatorClass.LifetimeCumulative,
                       currentYearProgress =
                           listOf(
                               PublishedCumulativeIndicatorProgressModel(
@@ -985,7 +1092,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   PublishedReportIndicatorModel(
                       baseline = null,
                       category = IndicatorCategory.Biodiversity,
-                      classId = IndicatorClass.Cumulative,
+                      classId = IndicatorClass.LifetimeCumulative,
                       currentYearProgress =
                           listOf(
                               PublishedCumulativeIndicatorProgressModel(
@@ -1010,7 +1117,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   PublishedReportIndicatorModel(
                       baseline = BigDecimal.valueOf(210),
                       category = IndicatorCategory.ProjectObjectives,
-                      classId = IndicatorClass.Cumulative,
+                      classId = IndicatorClass.LifetimeCumulative,
                       currentYearProgress = emptyList(),
                       description = "Project Indicator Description 2",
                       endOfProjectTarget = BigDecimal.valueOf(220),

@@ -23,6 +23,14 @@ import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
 
+/**
+ * Indicator classes whose report entries include the current year's quarterly values. Only
+ * [IndicatorClass.LifetimeCumulative] also includes a cumulative total from previous years;
+ * [IndicatorClass.YearlyCumulative] indicators start over each year.
+ */
+val CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES =
+    setOf(IndicatorClass.LifetimeCumulative, IndicatorClass.YearlyCumulative)
+
 data class CumulativeIndicatorProgressModel(
     val quarter: ReportQuarter,
     val value: BigDecimal,
@@ -45,11 +53,14 @@ data class ReportCommonIndicatorModel(
     val baseline: BigDecimal? = null,
     val endOfProjectTarget: BigDecimal? = null,
     /**
-     * If the indicator is cumulative, the list of actual values for all quarters in the report's
-     * year
+     * If the indicator is lifetime or yearly cumulative, the list of actual values for all quarters
+     * in the report's year
      */
     val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
-    /** If the indicator is cumulative, the cumulative total at the end of the previous year */
+    /**
+     * If the indicator is lifetime cumulative, the cumulative total at the end of the previous
+     * year. Always null for yearly cumulative indicators, whose totals start over each year.
+     */
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
@@ -63,7 +74,7 @@ data class ReportCommonIndicatorModel(
           baseline = record[COMMON_INDICATOR_TARGETS.BASELINE],
           currentYearProgress =
               record[currentYearProgressField].takeIf {
-                indicator.classId == IndicatorClass.Cumulative
+                indicator.classId in CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES
               },
           endOfProjectTarget = record[COMMON_INDICATOR_TARGETS.END_TARGET],
           entry = entry(record),
@@ -100,11 +111,14 @@ data class ReportProjectIndicatorModel(
     val baseline: BigDecimal? = null,
     val endOfProjectTarget: BigDecimal? = null,
     /**
-     * If the indicator is cumulative, the list of actual values for all quarters in the report's
-     * year
+     * If the indicator is lifetime or yearly cumulative, the list of actual values for all quarters
+     * in the report's year
      */
     val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
-    /** If the indicator is cumulative, the cumulative total at the end of the previous year */
+    /**
+     * If the indicator is lifetime cumulative, the cumulative total at the end of the previous
+     * year. Always null for yearly cumulative indicators, whose totals start over each year.
+     */
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
@@ -118,7 +132,7 @@ data class ReportProjectIndicatorModel(
           baseline = record[PROJECT_INDICATOR_TARGETS.BASELINE],
           currentYearProgress =
               record[currentYearProgressField].takeIf {
-                indicator.classId == IndicatorClass.Cumulative
+                indicator.classId in CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES
               },
           endOfProjectTarget = record[PROJECT_INDICATOR_TARGETS.END_TARGET],
           entry = entry(record),
@@ -196,11 +210,14 @@ data class ReportAutoCalculatedIndicatorModel(
     val baseline: BigDecimal? = null,
     val endOfProjectTarget: BigDecimal? = null,
     /**
-     * If the indicator is cumulative, the list of actual values for all quarters in the report's
-     * year
+     * If the indicator is lifetime or yearly cumulative, the list of actual values for all quarters
+     * in the report's year
      */
     val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
-    /** If the indicator is cumulative, the cumulative total at the end of the previous year */
+    /**
+     * If the indicator is lifetime cumulative, the cumulative total at the end of the previous
+     * year. Always null for yearly cumulative indicators, whose totals start over each year.
+     */
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
@@ -215,7 +232,7 @@ data class ReportAutoCalculatedIndicatorModel(
           baseline = record[AUTO_CALCULATED_INDICATOR_TARGETS.BASELINE],
           currentYearProgress =
               record[currentYearProgressField].takeIf {
-                indicator.classId == IndicatorClass.Cumulative
+                indicator.classId in CURRENT_YEAR_PROGRESS_INDICATOR_CLASSES
               },
           endOfProjectTarget = record[AUTO_CALCULATED_INDICATOR_TARGETS.END_TARGET],
           entry = ReportAutoCalculatedIndicatorEntryModel.of(record, systemValueField),
