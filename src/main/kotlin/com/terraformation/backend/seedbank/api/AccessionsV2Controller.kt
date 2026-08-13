@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.UtcDefaultInstantDeserializer
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -328,6 +330,7 @@ data class CreateAccessionRequestPayloadV2(
     val bagNumbers: Set<String>? = null,
     @Schema(description = "Will be derived from collectedTime if present.", deprecated = true)
     val collectedDate: LocalDate? = null,
+    @JsonDeserialize(using = UtcDefaultInstantDeserializer::class)
     @Schema(description = "Date and time the seeds were collected.")
     val collectedTime: Instant? = null,
     val collectionSiteCity: String? = null,
