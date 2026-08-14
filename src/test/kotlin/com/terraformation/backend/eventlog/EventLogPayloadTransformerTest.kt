@@ -11,9 +11,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.DataSource
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
@@ -53,10 +55,12 @@ import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
+import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -404,7 +408,14 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         eventLogEntry(
             knownUserId,
             WithdrawalCreatedEvent(
+                purpose = WithdrawalPurpose.ViabilityTesting,
                 date = LocalDate.of(2021, 1, 1),
+                withdrawnQuantity = SeedQuantityModel(BigDecimal(300), SeedQuantityUnits.Seeds),
+                notes = "initial notes",
+                staffResponsible = "Some Person",
+                destination = "Lab",
+                viabilityTestId = ViabilityTestId(30),
+                withdrawnByUserId = knownUserId,
                 withdrawalId = withdrawalId,
                 accessionId = accessionId,
                 facilityId = facilityId,
@@ -447,7 +458,22 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val expected =
         listOf(
             EventLogEntryPayload(
-                action = CreatedActionPayload(),
+                action =
+                    CreatedActionPayload(
+                        listOf(
+                            CreatedFieldPayload("date", listOf("2021-01-01")),
+                            CreatedFieldPayload(
+                                "withdrawnQuantity",
+                                listOf("SeedQuantityModel(quantity=300, units=Seeds)"),
+                            ),
+                            CreatedFieldPayload("purpose", listOf("Viability Testing")),
+                            CreatedFieldPayload("destination", listOf("Lab")),
+                            CreatedFieldPayload("viabilityTestId", listOf("30")),
+                            CreatedFieldPayload("notes", listOf("initial notes")),
+                            CreatedFieldPayload("staffResponsible", listOf("Some Person")),
+                            CreatedFieldPayload("withdrawnByUserId", listOf("$knownUserId")),
+                        )
+                    ),
                 subject = subject,
                 timestamp = createEntry.createdTime,
                 userId = knownUserId,
