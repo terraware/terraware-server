@@ -703,6 +703,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             batchId = null,
             notes = "notes 1",
             staffResponsible = "staff 1",
+            destination = "dest 1",
+            withdrawnByUserId = user.userId,
             withdrawalId = withdrawalId,
             accessionId = accessionId,
             facilityId = facilityId,
