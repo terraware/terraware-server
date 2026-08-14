@@ -29,4 +29,5 @@ data class FieldUpdatedActionPayload(
     val fieldName: String,
     val changedFrom: List<String>?,
     val changedTo: List<String>?,
+    val notes: String? = null,
 ) : EventActionPayload

@@ -44,6 +44,8 @@ import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
@@ -307,6 +309,24 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 organizationId = organizationId,
             ),
         )
+    val quantityEntry =
+        eventLogEntry(
+            knownUserId,
+            AccessionQuantityUpdatedEvent(
+                changedFrom =
+                    AccessionQuantityUpdatedEventValues(
+                        quantity = SeedQuantityModel(BigDecimal(500), SeedQuantityUnits.Seeds)
+                    ),
+                changedTo =
+                    AccessionQuantityUpdatedEventValues(
+                        quantity = SeedQuantityModel(BigDecimal(300), SeedQuantityUnits.Seeds)
+                    ),
+                notes = "Recounted after drying",
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
 
     val subject =
         AccessionSubjectPayload(
@@ -338,9 +358,25 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 userId = knownUserId,
                 userName = "Known User",
             ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "quantity",
+                        changedFrom = listOf("SeedQuantityModel(quantity=500, units=Seeds)"),
+                        changedTo = listOf("SeedQuantityModel(quantity=300, units=Seeds)"),
+                        notes = "Recounted after drying",
+                    ),
+                subject = subject,
+                timestamp = quantityEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
         )
 
-    assertEquals(expected, transformer.eventsToPayloads(listOf(createEntry, updateEntry)))
+    assertEquals(
+        expected,
+        transformer.eventsToPayloads(listOf(createEntry, updateEntry, quantityEntry)),
+    )
   }
 
   @Test

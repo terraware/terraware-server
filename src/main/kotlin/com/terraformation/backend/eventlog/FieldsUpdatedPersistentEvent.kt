@@ -72,6 +72,13 @@ interface FieldsUpdatedPersistentEvent : EntityUpdatedPersistentEvent {
        * field is, e.g., a set of enum values. This value should be localized if applicable.
        */
       val changedTo: List<String>?,
+      /**
+       * User-entered notes about why the field changed, if the operation that changed it accepts
+       * notes. These describe the change rather than being a value of the field, so they travel
+       * alongside the values instead of being a field of their own; that keeps them attached to the
+       * change they explain, since each [UpdatedField] becomes a separate event log entry.
+       */
+      val notes: String? = null,
   )
 
   /**
@@ -83,9 +90,10 @@ interface FieldsUpdatedPersistentEvent : EntityUpdatedPersistentEvent {
       fieldName: String,
       changedFrom: List<String>?,
       changedTo: List<String>?,
+      notes: String? = null,
   ): UpdatedField? {
     return if (changedFrom != null || changedTo != null) {
-      UpdatedField(fieldName, changedFrom, changedTo)
+      UpdatedField(fieldName, changedFrom, changedTo, notes)
     } else {
       null
     }
@@ -100,11 +108,13 @@ interface FieldsUpdatedPersistentEvent : EntityUpdatedPersistentEvent {
       fieldName: String,
       changedFrom: String?,
       changedTo: String?,
+      notes: String? = null,
   ): UpdatedField? {
     return createUpdatedField(
         fieldName,
         changedFrom?.let { listOf(it) },
         changedTo?.let { listOf(it) },
+        notes,
     )
   }
 }

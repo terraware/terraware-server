@@ -228,6 +228,7 @@ data class AccessionQuantityUpdatedEventV1(
               "quantity",
               changedFrom.quantity?.toString(),
               changedTo.quantity?.toString(),
+              notes,
           )
       )
 }
