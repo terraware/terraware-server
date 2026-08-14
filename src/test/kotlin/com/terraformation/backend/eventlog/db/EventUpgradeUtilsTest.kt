@@ -19,10 +19,15 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.UpgradableEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1
+import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV2
+import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventV1
+import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventValues
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventV1
@@ -357,6 +362,113 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             changedFrom = changedFrom,
             changedTo = changedTo,
             withdrawalId = withdrawalId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = inserted.organizationId,
+        )
+  }
+
+  @Nested
+  inner class GetViabilityTestValuesMissingFromV1 {
+    private lateinit var accessionId: AccessionId
+    private lateinit var facilityId: FacilityId
+
+    @BeforeEach
+    fun setUpAccession() {
+      insertOrganization()
+      facilityId = insertFacility()
+      accessionId = insertAccession()
+    }
+
+    @Test
+    fun `uses the current viability test row when no later edit touched the fields`() {
+      val viabilityTestId =
+          insertViabilityTest(notes = "initial notes", staffResponsible = "Some Person")
+
+      testUpgrade(
+          createdEventV1(viabilityTestId),
+          createdEventV2(
+              viabilityTestId,
+              notes = "initial notes",
+              staffResponsible = "Some Person",
+          ),
+      )
+    }
+
+    @Test
+    fun `uses the value from before the earliest edit that changed the field`() {
+      val viabilityTestId = insertViabilityTest(notes = "current notes")
+      val createdEventLogId = insertEvent(createdEventV1(viabilityTestId))
+
+      insertEvent(
+          updatedEvent(
+              viabilityTestId,
+              changedFrom = ViabilityTestUpdatedEventValues(notes = "initial notes"),
+              changedTo = ViabilityTestUpdatedEventValues(notes = "middle notes"),
+          )
+      )
+      insertEvent(
+          updatedEvent(
+              viabilityTestId,
+              changedFrom = ViabilityTestUpdatedEventValues(notes = "middle notes"),
+              changedTo = ViabilityTestUpdatedEventValues(notes = "current notes"),
+          )
+      )
+
+      assertEquals(
+          "initial notes",
+          eventUpgradeUtils
+              .getViabilityTestValuesMissingFromV1(viabilityTestId, createdEventLogId)
+              .notes,
+      )
+    }
+
+    @Test
+    fun `returns nulls if the viability test has been deleted`() {
+      val viabilityTestId = insertViabilityTest(notes = "notes")
+      val createdEventLogId = insertEvent(createdEventV1(viabilityTestId))
+
+      viabilityTestsDao.deleteById(viabilityTestId)
+
+      assertEquals(
+          EventUpgradeUtils.ViabilityTestValuesMissingFromV1(null, null),
+          eventUpgradeUtils.getViabilityTestValuesMissingFromV1(viabilityTestId, createdEventLogId),
+      )
+    }
+
+    private fun createdEventV1(viabilityTestId: ViabilityTestId) =
+        ViabilityTestCreatedEventV1(
+            testType = ViabilityTestType.Lab,
+            viabilityTestId = viabilityTestId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = inserted.organizationId,
+        )
+
+    private fun createdEventV2(
+        viabilityTestId: ViabilityTestId,
+        notes: String? = null,
+        staffResponsible: String? = null,
+    ) =
+        ViabilityTestCreatedEventV2(
+            testType = ViabilityTestType.Lab,
+            notes = notes,
+            staffResponsible = staffResponsible,
+            viabilityTestId = viabilityTestId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = inserted.organizationId,
+        )
+
+    private fun updatedEvent(
+        viabilityTestId: ViabilityTestId,
+        changedFrom: ViabilityTestUpdatedEventValues,
+        changedTo: ViabilityTestUpdatedEventValues,
+    ) =
+        ViabilityTestUpdatedEventV1(
+            changedFrom = changedFrom,
+            changedTo = changedTo,
+            viabilityTestId = viabilityTestId,
             accessionId = accessionId,
             facilityId = facilityId,
             organizationId = inserted.organizationId,

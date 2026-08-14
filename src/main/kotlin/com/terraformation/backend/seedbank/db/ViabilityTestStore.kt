@@ -208,6 +208,8 @@ class ViabilityTestStore(
             startDate = calculatedTest.startDate,
             endDate = calculatedTest.endDate,
             seedType = calculatedTest.seedType,
+            notes = calculatedTest.notes,
+            staffResponsible = calculatedTest.staffResponsible,
             viabilityTestId = testId,
             accessionId = accessionId,
             facilityId = facilityId,
@@ -305,6 +307,8 @@ class ViabilityTestStore(
                       seedsFilled = existingTest.seedsFilled.nullIfEquals(desiredTest.seedsFilled),
                       seedsTested = existingTest.seedsTested.nullIfEquals(desiredTest.seedsTested),
                       seedType = existingTest.seedType.nullIfEquals(desiredTest.seedType),
+                      staffResponsible =
+                          existingTest.staffResponsible.nullIfEquals(desiredTest.staffResponsible),
                       startDate = existingTest.startDate.nullIfEquals(desiredTest.startDate),
                       substrate = existingTest.substrate.nullIfEquals(desiredTest.substrate),
                       totalSeedsGerminated =
@@ -325,6 +329,8 @@ class ViabilityTestStore(
                       seedsFilled = desiredTest.seedsFilled.nullIfEquals(existingTest.seedsFilled),
                       seedsTested = desiredTest.seedsTested.nullIfEquals(existingTest.seedsTested),
                       seedType = desiredTest.seedType.nullIfEquals(existingTest.seedType),
+                      staffResponsible =
+                          desiredTest.staffResponsible.nullIfEquals(existingTest.staffResponsible),
                       startDate = desiredTest.startDate.nullIfEquals(existingTest.startDate),
                       substrate = desiredTest.substrate.nullIfEquals(existingTest.substrate),
                       totalSeedsGerminated =
