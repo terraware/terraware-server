@@ -360,6 +360,7 @@ COMMENT ON TABLE nursery.batch_photos IS 'Information about photos of batches.';
 COMMENT ON COLUMN nursery.batch_photos.file_id IS 'File ID if the photo exists. Null if the photo has been deleted.';
 
 COMMENT ON TABLE nursery.batch_quantity_history IS 'Record of changes of seedling quantities in each nursery batch.';
+COMMENT ON COLUMN nursery.batch_quantity_history.accession_id IS 'If this change in quantity was due to a transfer of seeds from an accession, the accession''s ID. This may differ from the accession ID of the batch itself if seeds from more than one accession were added to the batch.';
 COMMENT ON COLUMN nursery.batch_quantity_history.batch_id IS 'Which batch''s quantities were changed.';
 COMMENT ON COLUMN nursery.batch_quantity_history.created_by IS 'Which user triggered the change in quantities. "Created" here refers to the history row, not the batch.';
 COMMENT ON COLUMN nursery.batch_quantity_history.created_time IS 'When the change in quantities happened. "Created" here refers to the history row, not the batch.';

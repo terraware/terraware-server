@@ -167,6 +167,19 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   }
 
   @Test
+  fun `records accession ID in initial quantity history row`() {
+    val seedBankFacilityId = insertFacility(type = FacilityType.SeedBank)
+    val accessionId = insertAccession(facilityId = seedBankFacilityId)
+
+    val batchId = store.create(makeNewBatchModel().copy(accessionId = accessionId)).id
+
+    assertEquals(
+        listOf(accessionId),
+        batchQuantityHistoryDao.fetchByBatchId(batchId).map { it.accessionId },
+    )
+  }
+
+  @Test
   fun `includes facility number in batch number`() {
     val secondFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 

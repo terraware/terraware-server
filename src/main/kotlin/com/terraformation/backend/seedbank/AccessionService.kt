@@ -3,12 +3,15 @@ package com.terraformation.backend.seedbank
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.nursery.db.BatchAtWrongFacilityException
+import com.terraformation.backend.nursery.db.BatchSpeciesMismatchException
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.model.ExistingBatchModel
@@ -75,20 +78,28 @@ class AccessionService(
   }
 
   /**
-   * Withdraws seeds from a seed bank and creates a new seedling batch at a nursery.
+   * Withdraws seeds from a seed bank and adds them to a seedling batch at a nursery.
    *
    * Withdrawal details are pulled from [batch], with the withdrawal quantity set to the sum of the
    * batch's germinating, active-growth, hardening-off and ready quantities.
    *
-   * @return The updated accession model and the newly-created batch with its ID populated.
+   * @param batchId If non-null, the seeds are added to the quantities of this existing batch, which
+   *   must be at the facility in [batch] and be of the same species as the accession. If null, a
+   *   new batch is created.
+   * @return The updated accession model and the batch the seeds were added to.
    */
   fun createNurseryTransfer(
       accessionId: AccessionId,
       batch: NewBatchModel,
       withdrawnByUserId: UserId? = null,
+      batchId: BatchId? = null,
   ): Pair<AccessionModel, ExistingBatchModel> {
     requirePermissions {
-      createBatch(batch.facilityId)
+      if (batchId != null) {
+        updateBatch(batchId)
+      } else {
+        createBatch(batch.facilityId)
+      }
       updateAccession(accessionId)
     }
 
@@ -109,24 +120,47 @@ class AccessionService(
     }
 
     val totalSeeds =
-        batch.germinatingQuantity +
-            batch.activeGrowthQuantity +
-            batch.hardeningOffQuantity +
-            batch.readyQuantity
+        if (batchId != null) {
+          batch.germinatingQuantity
+        } else {
+          batch.germinatingQuantity +
+              batch.activeGrowthQuantity +
+              batch.hardeningOffQuantity +
+              batch.readyQuantity
+        }
 
     if (totalSeeds <= 0) {
       throw IllegalArgumentException("Transfers must include at least 1 seed")
     }
 
-    val batchWithAccessionData =
-        batch.copy(
-            accessionId = accessionId,
-            projectId = accession.projectId,
-            speciesId = accession.speciesId,
-        )
+    val existingBatch = batchId?.let { batchStore.fetchOneById(it) }
+    if (existingBatch != null) {
+      if (existingBatch.facilityId != batch.facilityId) {
+        throw BatchAtWrongFacilityException(existingBatch.id, batch.facilityId)
+      }
+
+      if (existingBatch.speciesId != accession.speciesId) {
+        throw BatchSpeciesMismatchException(existingBatch.id, accession.speciesId)
+      }
+    }
 
     return dslContext.transactionResult { _ ->
-      val updatedBatch = batchStore.create(batchWithAccessionData)
+      val updatedBatch =
+          if (existingBatch != null) {
+            batchStore.addToExistingBatch(
+                accessionId = accessionId,
+                batchId = existingBatch.id,
+                germinatingQuantity = batch.germinatingQuantity,
+            )
+          } else {
+            batchStore.create(
+                batch.copy(
+                    accessionId = accessionId,
+                    projectId = accession.projectId,
+                    speciesId = accession.speciesId,
+                )
+            )
+          }
 
       val withdrawal =
           WithdrawalModel(

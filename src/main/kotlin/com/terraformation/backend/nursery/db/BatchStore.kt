@@ -257,6 +257,7 @@ class BatchStore(
       batchesDao.insert(rowWithDefaults)
 
       insertQuantityHistoryRow(
+          accessionId = newModel.accessionId,
           activeGrowthQuantity = rowWithDefaults.activeGrowthQuantity!!,
           batchId = rowWithDefaults.id!!,
           germinatingQuantity = rowWithDefaults.germinatingQuantity!!,
@@ -302,7 +303,12 @@ class BatchStore(
       batchDetailsHistorySubLocationsDao.insert(detailsHistorySubLocationsRows)
     }
 
-    return ExistingBatchModel(rowWithDefaults, newModel.subLocationIds, 0)
+    return ExistingBatchModel(
+        row = rowWithDefaults,
+        subLocationIds = newModel.subLocationIds,
+        totalWithdrawn = 0,
+        accessionNumber = rowWithDefaults.accessionId?.let { fetchAccessionNumber(it) },
+    )
   }
 
   fun getSpeciesSummary(speciesId: SpeciesId): SpeciesSummary {
@@ -470,6 +476,7 @@ class BatchStore(
       historyType: BatchQuantityHistoryType,
       withdrawalId: WithdrawalId? = null,
       notes: String? = null,
+      accessionId: AccessionId? = null,
   ) {
     if (germinating < 0 || activeGrowth < 0 || hardeningOff < 0 || ready < 0) {
       throw IllegalArgumentException("Quantities may not be negative")
@@ -499,6 +506,7 @@ class BatchStore(
             newVersion,
             withdrawalId,
             notes,
+            accessionId,
         )
         updateRates(batchId)
       }
@@ -521,6 +529,35 @@ class BatchStore(
               }
             }
       }
+    }
+  }
+
+  fun addToExistingBatch(
+      accessionId: AccessionId,
+      batchId: BatchId,
+      germinatingQuantity: Int,
+  ): ExistingBatchModel {
+    requirePermissions { updateBatch(batchId) }
+
+    if (germinatingQuantity < 0) {
+      throw IllegalArgumentException("Quantities may not be negative")
+    }
+
+    return dslContext.transactionResult { _ ->
+      retryVersionedBatchUpdate(batchId) { batch ->
+        updateQuantities(
+            accessionId = accessionId,
+            activeGrowth = batch.activeGrowthQuantity,
+            batchId = batchId,
+            germinating = batch.germinatingQuantity + germinatingQuantity,
+            hardeningOff = batch.hardeningOffQuantity,
+            historyType = BatchQuantityHistoryType.Computed,
+            ready = batch.readyQuantity,
+            version = batch.version,
+        )
+      }
+
+      fetchOneById(batchId)
     }
   }
 
@@ -1098,9 +1135,11 @@ class BatchStore(
       version: Int,
       withdrawalId: WithdrawalId? = null,
       notes: String? = null,
+      accessionId: AccessionId? = null,
   ) {
     batchQuantityHistoryDao.insert(
         BatchQuantityHistoryRow(
+            accessionId = accessionId,
             activeGrowthQuantity = activeGrowthQuantity,
             batchId = batchId,
             createdBy = currentUser().userId,
@@ -1337,6 +1376,7 @@ class BatchStore(
     val quantityHistory =
         dslContext
             .select(
+                BATCH_QUANTITY_HISTORY.ACCESSION_ID,
                 BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID,
                 BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY,
                 BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY,
@@ -1419,6 +1459,10 @@ class BatchStore(
           purpose == WithdrawalPurpose.NurseryTransfer &&
               current[BATCH_WITHDRAWALS.BATCH_ID] != batchId
       ) {
+        hasAdditionalIncomingTransfers = true
+      }
+
+      if (current[BATCH_QUANTITY_HISTORY.ACCESSION_ID] != null) {
         hasAdditionalIncomingTransfers = true
       }
 
