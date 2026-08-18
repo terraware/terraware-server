@@ -14,10 +14,6 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 /**
  * Renders polygonal geometry as a standalone SVG document, scaled to fit a canvas of a requested
  * size.
- *
- * The geometry is projected to Web Mercator before being measured so that shapes aren't stretched
- * horizontally at high latitudes. Aspect ratio is preserved, so a shape that is wider than it is
- * tall will be letterboxed vertically within the canvas.
  */
 @Named
 class GeometrySvgRenderer {
@@ -26,7 +22,7 @@ class GeometrySvgRenderer {
 
     /**
      * Blank space to leave between the edges of the canvas and the geometry's bounding box, in SVG
-     * user units. Needs to be at least half of [STROKE_WIDTH] so the outline isn't clipped.
+     * user units.
      */
     private const val PADDING = 2.0
 
@@ -39,11 +35,6 @@ class GeometrySvgRenderer {
 
     /** Number of decimal places to emit for coordinates. */
     private const val COORDINATE_SCALE = 2
-
-    private const val FILL_COLOR = "#2c8c4a"
-    private const val FILL_OPACITY = "0.35"
-    private const val STROKE_COLOR = "#2c8c4a"
-    private const val STROKE_WIDTH = "1.5"
   }
 
   /**
@@ -56,14 +47,7 @@ class GeometrySvgRenderer {
    */
   fun render(geometry: Geometry, width: Int = DEFAULT_SIZE, height: Int = DEFAULT_SIZE): String {
     val pathData = renderPathData(geometry, width, height)
-    val content =
-        if (pathData != null) {
-          """<path fill="$FILL_COLOR" fill-opacity="$FILL_OPACITY" fill-rule="evenodd" """ +
-              """stroke="$STROKE_COLOR" stroke-width="$STROKE_WIDTH" stroke-linejoin="round" """ +
-              """d="$pathData"/>"""
-        } else {
-          ""
-        }
+    val content = if (pathData != null) """<path fill-rule="evenodd" d="$pathData"/>""" else ""
 
     // Nothing user-supplied is interpolated into the document, so there is nothing to escape. If
     // that changes (a site name in a <title>, say), the value will need XML escaping.

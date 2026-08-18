@@ -104,6 +104,19 @@ class GeometrySvgRendererTest {
   }
 
   @Test
+  fun `emits no styling attributes`() {
+    val svg = renderer.render(rectangle(0.0, 0.0, 100.0, 100.0), 100, 100)
+
+    // Colors, opacities and stroke widths are the client's to choose.
+    assertEquals(
+        """<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" """ +
+            """viewBox="0 0 100 100"><path fill-rule="evenodd" """ +
+            """d="M2.00 98.00L98.00 98.00L98.00 2.00L2.00 2.00L2.00 98.00Z"/></svg>""",
+        svg,
+    )
+  }
+
+  @Test
   fun `renders interior rings as holes`() {
     val polygonWithHole =
         mercatorFactory.createPolygon(
