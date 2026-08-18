@@ -156,6 +156,9 @@ class OrganizationHasOtherUsersException(val organizationId: OrganizationId) :
 class OrganizationNotFoundException(val organizationId: OrganizationId) :
     EntityNotFoundException("Organization $organizationId not found")
 
+class PlantingSiteHasNoBoundaryException(val plantingSiteId: PlantingSiteId) :
+    MismatchedStateException("Planting site $plantingSiteId has no boundary")
+
 class PlantingSiteInUseException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException("Planting site $plantingSiteId is in use")
 

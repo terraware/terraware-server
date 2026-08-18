@@ -209,6 +209,15 @@ annotation class ApiResponse200Photo
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
+@ApiResponse(
+    responseCode = "200",
+    description = "The image was successfully generated.",
+    content = [Content(schema = Schema(type = "string"), mediaType = "image/svg+xml")],
+)
+annotation class ApiResponse200Svg
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
 @RequestBody(
     content =
         [

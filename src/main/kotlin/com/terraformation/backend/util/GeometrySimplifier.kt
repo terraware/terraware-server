@@ -2,8 +2,6 @@ package com.terraformation.backend.util
 
 import com.terraformation.backend.db.SRID
 import jakarta.inject.Named
-import org.geotools.geometry.jts.JTS
-import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 
@@ -21,21 +19,15 @@ class GeometrySimplifier {
    * the Web Mercator CRS. The results will be projected back to the original CRS
    */
   fun simplify(geometry: Geometry, tolerance: Double? = null): Geometry {
-    val geometryMercator = project(geometry, geometry.srid, SRID.SPHERICAL_MERCATOR)
+    val originalSrid = geometry.srid
+    val geometryMercator = geometry.projectTo(SRID.SPHERICAL_MERCATOR)
     val simplifiedGeometry =
         TopologyPreservingSimplifier.simplify(geometryMercator, tolerance ?: DEFAULT_TOLERANCE_M)
-    return project(simplifiedGeometry, SRID.SPHERICAL_MERCATOR, geometry.srid)
-  }
 
-  private fun project(geometry: Geometry, originalSrid: Int, targetSrid: Int): Geometry {
-    val crs = CRS.decode("EPSG:${originalSrid}", true)
-    val targetCrs = CRS.decode("EPSG:${targetSrid}", true)
+    // The simplifier builds its result with the input's GeometryFactory, whose SRID is the one the
+    // geometry had before it was projected.
+    simplifiedGeometry.srid = SRID.SPHERICAL_MERCATOR
 
-    if (crs == targetCrs) {
-      return geometry
-    } else {
-      val transform = CRS.findMathTransform(crs, targetCrs)
-      return JTS.transform(geometry, transform)
-    }
+    return simplifiedGeometry.projectTo(originalSrid)
   }
 }
