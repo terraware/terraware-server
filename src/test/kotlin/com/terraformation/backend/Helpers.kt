@@ -14,6 +14,8 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
+import kotlin.math.cos
+import kotlin.math.sin
 import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Coordinate
@@ -99,8 +101,14 @@ fun point(x: Number, y: Number = x, z: Number? = null, srid: Int = SRID.LONG_LAT
 }
 
 /** Creates a rectangular Polygon. */
-fun polygon(left: Number, bottom: Number, right: Number, top: Number): Polygon {
-  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+fun polygon(
+    left: Number,
+    bottom: Number,
+    right: Number,
+    top: Number,
+    srid: Int = SRID.LONG_LAT,
+): Polygon {
+  val geometryFactory = GeometryFactory(PrecisionModel(), srid)
   return geometryFactory.createPolygon(
       arrayOf(
           CoordinateXY(left.toDouble(), bottom.toDouble()),
@@ -117,9 +125,54 @@ fun polygon(scale: Number): Polygon {
   return polygon(0.0, 0.0, scale, scale)
 }
 
+/**
+ * Creates a Polygon with holes in it. The outer boundaries of [holes] become the interior rings of
+ * the result; any holes they have of their own are discarded.
+ */
+fun polygonWithHoles(shell: Polygon, holes: List<Polygon>): Polygon {
+  return shell.factory.createPolygon(
+      shell.exteriorRing,
+      holes.map { it.exteriorRing }.toTypedArray(),
+  )
+}
+
+/**
+ * Creates a regular polygon approximating a circle. Useful for exercising code whose behavior
+ * depends on how many vertices a geometry has.
+ *
+ * Unlike [rectangle], the radius is in the coordinate units of [srid] rather than in meters.
+ */
+fun circle(
+    radius: Number,
+    x: Number = 0,
+    y: Number = 0,
+    vertexCount: Int = 360,
+    srid: Int = SRID.LONG_LAT,
+): Polygon {
+  val coordinates =
+      (0..<vertexCount).map { index ->
+        val angle = 2.0 * Math.PI * index / vertexCount
+        CoordinateXY(
+            x.toDouble() + radius.toDouble() * cos(angle),
+            y.toDouble() + radius.toDouble() * sin(angle),
+        )
+      }
+
+  return GeometryFactory(PrecisionModel(), srid)
+      .createPolygon((coordinates + coordinates.first()).toTypedArray())
+}
+
 /** Wraps a Polygon in a MultiPolygon. */
 fun multiPolygon(polygon: Polygon): MultiPolygon {
   return polygon.factory.createMultiPolygon(arrayOf(polygon))
+}
+
+/**
+ * Combines Polygons into a MultiPolygon. The coordinate reference system is taken from the first
+ * polygon.
+ */
+fun multiPolygon(polygons: List<Polygon>): MultiPolygon {
+  return polygons.first().factory.createMultiPolygon(polygons.toTypedArray())
 }
 
 /** Creates a simple rectangular MultiPolygon. */
@@ -127,17 +180,30 @@ fun multiPolygon(scale: Number): MultiPolygon {
   return multiPolygon(polygon(scale))
 }
 
-/** Returns a rectangular MultiPolygon with position and size in meters. */
+/** Creates a MultiPolygon with no polygons in it. */
+fun emptyMultiPolygon(srid: Int = SRID.LONG_LAT): MultiPolygon {
+  return GeometryFactory(PrecisionModel(), srid).createMultiPolygon()
+}
+
+/**
+ * Returns a rectangular MultiPolygon with position and size in meters.
+ *
+ * @param x Distance in meters east of [origin].
+ * @param y Distance in meters north of [origin].
+ * @param origin Point the rectangle is positioned relative to. Pass a high-latitude point to
+ *   exercise code whose behavior depends on the distortion of geographic coordinates.
+ */
 fun rectangle(
     width: Number,
     height: Number = width,
     x: Number = 0,
     y: Number = 0,
+    origin: Point = point(1),
 ): MultiPolygon {
   return if (width == 0) {
-    GeometryFactory(PrecisionModel(), SRID.LONG_LAT).createMultiPolygon(emptyArray())
+    GeometryFactory(PrecisionModel(), origin.srid).createMultiPolygon(emptyArray())
   } else {
-    Turtle(point(1))
+    Turtle(origin)
         .makeMultiPolygon {
           north(y)
           east(x)
