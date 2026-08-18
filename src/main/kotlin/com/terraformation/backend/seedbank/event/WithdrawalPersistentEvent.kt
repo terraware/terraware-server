@@ -34,11 +34,11 @@ data class WithdrawalCreatedEventV1(
     val batchId: BatchId? = null,
     val notes: String? = null,
     val staffResponsible: String? = null,
-    val withdrawalId: WithdrawalId,
-    val accessionId: AccessionId,
-    val facilityId: FacilityId,
-    val organizationId: OrganizationId,
-) : UpgradableEvent {
+    override val withdrawalId: WithdrawalId,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : UpgradableEvent, WithdrawalPersistentEvent {
   override fun toNextVersion(
       eventLogId: EventLogId,
       eventUpgradeUtils: EventUpgradeUtils,
