@@ -34,11 +34,11 @@ data class ViabilityTestCreatedEventV1(
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val seedType: ViabilityTestSeedType? = null,
-    val viabilityTestId: ViabilityTestId,
-    val accessionId: AccessionId,
-    val facilityId: FacilityId,
-    val organizationId: OrganizationId,
-) : UpgradableEvent {
+    override val viabilityTestId: ViabilityTestId,
+    override val accessionId: AccessionId,
+    override val facilityId: FacilityId,
+    override val organizationId: OrganizationId,
+) : UpgradableEvent, ViabilityTestPersistentEvent {
   override fun toNextVersion(
       eventLogId: EventLogId,
       eventUpgradeUtils: EventUpgradeUtils,

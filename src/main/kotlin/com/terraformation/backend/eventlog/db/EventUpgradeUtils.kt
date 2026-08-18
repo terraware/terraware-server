@@ -13,8 +13,6 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.eventlog.UpgradableEvent
-import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1
-import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV2
 import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
