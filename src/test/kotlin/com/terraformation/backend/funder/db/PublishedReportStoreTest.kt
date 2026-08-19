@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
@@ -708,6 +709,36 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectId = insertProject()
 
       assertThrows<ProjectNotFoundException> { store.fetchPublishedReports(projectId) }
+    }
+  }
+
+  @Nested
+  inner class FetchOnePublishedReport {
+    @Test
+    fun `returns all published report data`() {
+      insertFullReportData()
+
+      assertEquals(expectedReport1(), store.fetchOnePublishedReport(reportId1))
+    }
+
+    @Test
+    fun `throws exception if report has not been published`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val reportId = insertReport()
+
+      assertThrows<ReportNotFoundException> { store.fetchOnePublishedReport(reportId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to read published report`() {
+      val otherProjectId = insertProject()
+      insertProjectReportConfig(projectId = otherProjectId)
+      val reportId = insertReport(projectId = otherProjectId)
+      insertPublishedReport(reportId = reportId, projectId = otherProjectId)
+
+      assertThrows<ReportNotFoundException> { store.fetchOnePublishedReport(reportId) }
     }
   }
 
