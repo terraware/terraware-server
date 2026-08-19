@@ -544,8 +544,10 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                                   LocalDate.of(2026, 1, 1),
                                   ExternalDatasetType.GBIF,
                               ),
+                          overriddenBy = user.userId,
                           overriddenJustification = "Justification",
                           overriddenNativity = SpeciesNativity.Native,
+                          overriddenTime = Instant.EPOCH,
                           pendingNativity = SpeciesNativity.Invasive,
                           pendingNativitySource =
                               SpeciesDataSourceModel(

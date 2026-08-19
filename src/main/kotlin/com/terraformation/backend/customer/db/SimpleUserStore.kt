@@ -15,6 +15,10 @@ import org.jooq.impl.DSL
 @Named
 class SimpleUserStore(private val dslContext: DSLContext, private val messages: Messages) {
   fun fetchSimpleUsersById(userIds: Collection<UserId>): Map<UserId, SimpleUserModel> {
+    if (userIds.isEmpty()) {
+      return emptyMap()
+    }
+
     return with(USERS) {
       val userInSameOrgCondition =
           if (currentUser() is SystemUser) {

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -21,8 +22,10 @@ import org.jooq.Record
 data class ExistingSpeciesProjectModel(
     val calculatedNativity: SpeciesNativity? = null,
     val calculatedNativitySource: SpeciesDataSourceModel? = null,
+    val overriddenBy: UserId? = null,
     val overriddenJustification: String? = null,
     val overriddenNativity: SpeciesNativity? = null,
+    val overriddenTime: Instant? = null,
     val pendingNativity: SpeciesNativity? = null,
     val pendingNativitySource: SpeciesDataSourceModel? = null,
     val projectId: ProjectId? = null,
@@ -37,8 +40,10 @@ data class ExistingSpeciesProjectModel(
                       record[CALCULATED_NATIVITY_DATASET_DATE],
                       record[CALCULATED_NATIVITY_DATASET_TYPE_ID],
                   ),
+              overriddenBy = record[OVERRIDDEN_BY],
               overriddenJustification = record[OVERRIDDEN_JUSTIFICATION],
               overriddenNativity = record[OVERRIDDEN_NATIVITY_ID],
+              overriddenTime = record[OVERRIDDEN_TIME],
               pendingNativity = record[PENDING_NATIVITY_ID],
               pendingNativitySource =
                   SpeciesDataSourceModel.of(
