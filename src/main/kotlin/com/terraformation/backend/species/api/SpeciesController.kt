@@ -9,6 +9,8 @@ import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.db.SimpleUserStore
+import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
@@ -23,6 +25,7 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.species.SpeciesService
@@ -57,6 +60,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class SpeciesController(
     private val projectSpeciesStore: ProjectSpeciesStore,
+    private val simpleUserStore: SimpleUserStore,
     private val speciesService: SpeciesService,
     private val speciesStore: SpeciesStore,
 ) {
@@ -74,10 +78,14 @@ class SpeciesController(
       inUse: Boolean?,
   ): ListSpeciesResponsePayload {
     val problems = speciesStore.findAllProblems(organizationId)
-    val elements =
-        speciesStore.findAllSpecies(organizationId, inUse ?: false).map {
-          SpeciesResponseElement(it, problems[it.id])
-        }
+    val species = speciesStore.findAllSpecies(organizationId, inUse ?: false)
+    val overriddenByUserIds = species.flatMap { model ->
+      model.projects.mapNotNull { it.overriddenBy }
+    }
+    val userModels = simpleUserStore.fetchSimpleUsersById(overriddenByUserIds)
+    val elements = species.map {
+      SpeciesResponseElement(it, problems[it.id], userModels)
+    }
     return ListSpeciesResponsePayload(elements)
   }
 
@@ -113,8 +121,10 @@ class SpeciesController(
   ): GetSpeciesResponsePayload {
     val speciesRow = speciesStore.fetchSpeciesById(speciesId)
     val problems = speciesStore.fetchProblemsBySpeciesId(speciesId)
+    val overriddenByUserIds = speciesRow.projects.mapNotNull { it.overriddenBy }
+    val userModels = simpleUserStore.fetchSimpleUsersById(overriddenByUserIds)
 
-    val element = SpeciesResponseElement(speciesRow, problems)
+    val element = SpeciesResponseElement(speciesRow, problems, userModels)
     return GetSpeciesResponsePayload(element)
   }
 
@@ -186,7 +196,11 @@ class SpeciesController(
   ): GetSpeciesResponsePayload {
     val updatedRow = speciesService.acceptProblemSuggestion(problemId)
     val remainingProblems = speciesStore.fetchProblemsBySpeciesId(updatedRow.id)
-    return GetSpeciesResponsePayload(SpeciesResponseElement(updatedRow, remainingProblems))
+    val overriddenByUserIds = updatedRow.projects.mapNotNull { it.overriddenBy }
+    val userModels = simpleUserStore.fetchSimpleUsersById(overriddenByUserIds)
+    return GetSpeciesResponsePayload(
+        SpeciesResponseElement(updatedRow, remainingProblems, userModels)
+    )
   }
 
   @ApiResponseSimpleSuccess
@@ -273,8 +287,11 @@ data class SpeciesProblemElement(
 data class SpeciesProjectElement(
     val calculatedNativity: SpeciesNativity?,
     val calculatedNativitySource: SpeciesDataSourcePayload?,
+    val overriddenBy: UserId?,
+    val overriddenByName: String?,
     val overriddenJustification: String?,
     val overriddenNativity: SpeciesNativity?,
+    val overriddenTime: Instant?,
     @Schema(
         description =
             "Latest calculated nativity value for the species, if different from " +
@@ -286,12 +303,16 @@ data class SpeciesProjectElement(
     val projectId: ProjectId?,
 ) {
   constructor(
-      model: ExistingSpeciesProjectModel
+      model: ExistingSpeciesProjectModel,
+      userModels: Map<UserId, SimpleUserModel>,
   ) : this(
       calculatedNativity = model.calculatedNativity,
       calculatedNativitySource = model.calculatedNativitySource?.toPayload(),
+      overriddenBy = model.overriddenBy,
+      overriddenByName = model.overriddenBy?.let { userModels[it]?.fullName },
       overriddenJustification = model.overriddenJustification,
       overriddenNativity = model.overriddenNativity,
+      overriddenTime = model.overriddenTime,
       pendingNativity =
           if (model.calculatedNativity != model.pendingNativity) {
             model.pendingNativity
@@ -346,6 +367,7 @@ data class SpeciesResponseElement(
   constructor(
       model: ExistingSpeciesModel,
       problems: List<SpeciesProblemsRow>?,
+      userModels: Map<UserId, SimpleUserModel>,
   ) : this(
       averageWoodDensity = model.averageWoodDensity,
       commonName = model.commonName,
@@ -367,7 +389,7 @@ data class SpeciesResponseElement(
       nativeEcosystem = model.nativeEcosystem,
       plantMaterialSourcingMethods = model.plantMaterialSourcingMethods,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
-      projects = model.projects.map { SpeciesProjectElement(it) },
+      projects = model.projects.map { SpeciesProjectElement(it, userModels) },
       otherFacts = model.otherFacts,
       rare = model.rare,
       scientificName = model.scientificName,

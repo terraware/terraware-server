@@ -261,7 +261,7 @@ data class SpeciesForParticipantProjectPayload(
   ) : this(
       participantProjectSpecies = ParticipantProjectSpeciesPayload(model.participantProjectSpecies),
       project = ProjectPayload(model.project),
-      species = SpeciesResponseElement(model.species, null),
+      species = SpeciesResponseElement(model.species, null, emptyMap()),
   )
 }
 
