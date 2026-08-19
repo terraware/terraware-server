@@ -3,8 +3,10 @@ package com.terraformation.backend.util
 import com.terraformation.backend.db.SRID
 import jakarta.inject.Named
 import java.util.Locale
+import kotlin.math.PI
 import kotlin.math.min
 import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.CoordinateFilter
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.LinearRing
@@ -35,6 +37,9 @@ class GeometrySvgRenderer {
 
     /** Number of decimal places to emit for coordinates. */
     private const val COORDINATE_SCALE = 2
+
+    /** Width of the world in Web Mercator, that is, the circumference of the equator in meters. */
+    private const val MERCATOR_WORLD_WIDTH = 2.0 * PI * 6378137.0
   }
 
   /**
@@ -64,7 +69,7 @@ class GeometrySvgRenderer {
       return null
     }
 
-    val mercator = geometry.projectTo(SRID.SPHERICAL_MERCATOR)
+    val mercator = geometry.projectTo(SRID.SPHERICAL_MERCATOR).unwrapAcrossAntimeridian()
     val envelope = mercator.envelopeInternal
 
     // Shrink the padding on very small canvases so there is still room to draw something.
@@ -111,6 +116,30 @@ class GeometrySvgRenderer {
               (0..<polygon.numInteriorRing).map { polygon.getInteriorRingN(it) }
       rings.joinToString(separator = " ") { subpath(it) }
     }
+  }
+
+  /**
+   * Shifts the western half of a geometry that straddles the antimeridian so that it is contiguous
+   * with the eastern half, extending past the eastern edge of the world instead of wrapping around
+   * to the western one.
+   */
+  private fun Geometry.unwrapAcrossAntimeridian(): Geometry {
+    if (envelopeInternal.width <= MERCATOR_WORLD_WIDTH / 2.0) {
+      return this
+    }
+
+    val unwrapped = copy()
+
+    unwrapped.apply(
+        CoordinateFilter { coordinate ->
+          if (coordinate.x < 0.0) {
+            coordinate.x += MERCATOR_WORLD_WIDTH
+          }
+        }
+    )
+    unwrapped.geometryChanged()
+
+    return unwrapped
   }
 
   private fun Geometry.polygons(): List<Polygon> =

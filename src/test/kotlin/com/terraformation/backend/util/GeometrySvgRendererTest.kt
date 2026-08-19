@@ -154,6 +154,37 @@ class GeometrySvgRendererTest {
   }
 
   @Test
+  fun `unwraps a boundary split across the antimeridian`() {
+    // Transforming to SRID 4326 leaves a site that straddles 180 degrees as two polygons, one on
+    // each side of the antimeridian. Rendered naively, the site's bounding box is nearly Earth-wide
+    // and the site collapses into slivers at the left and right edges of the canvas.
+    val crossing =
+        multiPolygon(
+            listOf(polygon(179.9, -16.0, 180.0, -15.9), polygon(-180.0, -16.0, -179.9, -15.9))
+        )
+    val equivalent =
+        multiPolygon(listOf(polygon(10.0, -16.0, 10.1, -15.9), polygon(10.1, -16.0, 10.2, -15.9)))
+
+    assertEquals(
+        pathData(renderer.render(equivalent, 100, 100)),
+        pathData(renderer.render(crossing, 100, 100)),
+        "Crossing the antimeridian should render the same as the equivalent site elsewhere",
+    )
+  }
+
+  @Test
+  fun `unwraps a single ring that crosses the antimeridian`() {
+    val crossing = polygon(179.9, -16.0, -179.9, -15.9)
+    val equivalent = polygon(10.0, -16.0, 10.2, -15.9)
+
+    assertEquals(
+        pathData(renderer.render(equivalent, 100, 100)),
+        pathData(renderer.render(crossing, 100, 100)),
+        "Crossing the antimeridian should render the same as the equivalent site elsewhere",
+    )
+  }
+
+  @Test
   fun `formats coordinates independently of the default locale`() {
     val originalLocale = Locale.getDefault()
 
