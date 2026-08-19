@@ -30,7 +30,9 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySub
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.db.AccessionStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
@@ -44,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/nursery/batches/{batchId}/history")
 class BatchesHistoryController(
+    private val accessionStore: AccessionStore,
     private val batchDetailsHistoryDao: BatchDetailsHistoryDao,
     private val batchDetailsHistorySubLocationsDao: BatchDetailsHistorySubLocationsDao,
     private val batchPhotosDao: BatchPhotosDao,
@@ -93,6 +96,9 @@ class BatchesHistoryController(
         }
 
     val quantityHistory = batchQuantityHistoryDao.fetchByBatchId(batchId)
+    val accessionNumbers =
+        accessionStore.fetchAccessionNumbers(quantityHistory.mapNotNull { it.accessionId })
+
     val quantityPayloads = quantityHistory.map { quantityHistoryRow ->
       val withdrawalId = quantityHistoryRow.withdrawalId
       val incomingBatchWithdrawal = incomingBatchWithdrawals[withdrawalId]
@@ -103,6 +109,14 @@ class BatchesHistoryController(
           outgoingBatchWithdrawal?.withdrawalId?.let { outgoingWithdrawals[it] }
 
       when {
+        quantityHistoryRow.historyTypeId == BatchQuantityHistoryType.Computed &&
+            quantityHistoryRow.accessionId != null -> {
+          BatchHistoryAddedFromAccessionPayload(
+              quantityHistoryRow,
+              accessionNumbers.getValue(quantityHistoryRow.accessionId!!),
+          )
+        }
+
         incomingBatchWithdrawal != null && incomingWithdrawal != null -> {
           BatchHistoryIncomingWithdrawalPayload(
               quantityHistoryRow,
@@ -173,6 +187,7 @@ sealed interface BatchHistoryPayloadCommonProps {
     allOf = [BatchHistoryPayloadCommonProps::class],
     oneOf =
         [
+            BatchHistoryAddedFromAccessionPayload::class,
             BatchHistoryDetailsEditedPayload::class,
             BatchHistoryIncomingWithdrawalPayload::class,
             BatchHistoryOutgoingWithdrawalPayload::class,
@@ -328,6 +343,35 @@ data class BatchHistoryStatusChangedPayload(
 
   val type
     @Schema(allowableValues = ["StatusChanged"]) get() = "StatusChanged"
+}
+
+@JsonTypeName("AddedFromAccession")
+@Schema(
+    allOf = [BatchHistoryPayloadCommonProps::class],
+    description = "A transfer from a seed bank that added germinating seedlings to this batch.",
+)
+data class BatchHistoryAddedFromAccessionPayload(
+    val accessionId: AccessionId,
+    val accessionNumber: String,
+    override val createdBy: UserId,
+    override val createdTime: Instant,
+    val germinatingQuantity: Int,
+    override val version: Int,
+) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
+  constructor(
+      historyRow: BatchQuantityHistoryRow,
+      accessionNumber: String,
+  ) : this(
+      accessionId = historyRow.accessionId!!,
+      accessionNumber = accessionNumber,
+      createdBy = historyRow.createdBy!!,
+      createdTime = historyRow.createdTime!!,
+      germinatingQuantity = historyRow.germinatingQuantity!!,
+      version = historyRow.version!!,
+  )
+
+  val type
+    @Schema(allowableValues = ["AddedFromAccession"]) get() = "AddedFromAccession"
 }
 
 @JsonTypeName("IncomingWithdrawal")

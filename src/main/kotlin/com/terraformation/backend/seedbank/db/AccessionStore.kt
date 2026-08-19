@@ -618,6 +618,44 @@ class AccessionStore(
     }
   }
 
+  fun fetchAccessionNumbers(accessionIds: Collection<AccessionId>): Map<AccessionId, String> {
+    if (accessionIds.isEmpty()) {
+      return emptyMap()
+    }
+
+    // The point of this taking a list of IDs is to avoid N+1 fetching, so we check permissions
+    // at the org level rather than at the individual accession level.
+    val organizationIdsAndNumbers =
+        dslContext
+            .select(
+                ACCESSIONS.ID,
+                ACCESSIONS.NUMBER,
+                ACCESSIONS.facilities.ORGANIZATION_ID,
+            )
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.ID.`in`(accessionIds))
+            .fetch()
+    val organizationIds = organizationIdsAndNumbers.map { it.value3()!! }.distinct()
+    when (organizationIds.size) {
+      0 -> throw AccessionNotFoundException(accessionIds.first())
+      1 -> requirePermissions { readOrganization(organizationIds.single()) }
+      else ->
+          throw IllegalArgumentException(
+              "Cannot fetch accession numbers across multiple organizations"
+          )
+    }
+
+    val result = organizationIdsAndNumbers.associate { it.value1()!! to it.value2()!! }
+
+    accessionIds.forEach { accessionId ->
+      if (accessionId !in result) {
+        throw AccessionNotFoundException(accessionId)
+      }
+    }
+
+    return result
+  }
+
   fun fetchHistory(accessionId: AccessionId): List<AccessionHistoryModel> {
     requirePermissions { readAccession(accessionId) }
 
