@@ -109,6 +109,7 @@ class AdminController(
     model.addAttribute("canUpdateDefaultVoters", currentUser().canUpdateDefaultVoters())
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
+    model.addAttribute("canViewSqlMap", GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute("organizations", organizations)
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
     model.addAttribute("splatterEnabled", config.splatter.enabled)

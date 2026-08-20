@@ -49,7 +49,7 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
       // Geometry values are returned in WKB (Well Known Binary) form, encoded in hexadecimal.
       val wkb = databaseObject?.data() ?: return null
 
-      return WKBReader(geometryFactory).read(WKBReader.hexToBytes(wkb))
+      return geometryFromWkbHex(wkb)
     }
 
     /**
@@ -107,5 +107,14 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
 
     /** DataType that can be used when constructing custom fields in queries. */
     val dataType = SQLDataType.GEOMETRY.asConvertedDataType(GeometryBinding())
+
+    /**
+     * Decodes a hex-encoded WKB (Well Known Binary) geometry value, as returned by PostGIS, into a
+     * JTS [Geometry]. A new [WKBReader] is created per call because [WKBReader] is not thread-safe.
+     */
+    fun geometryFromWkbHex(hex: String): Geometry {
+      val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+      return WKBReader(geometryFactory).read(WKBReader.hexToBytes(hex))
+    }
   }
 }

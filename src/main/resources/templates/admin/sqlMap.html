@@ -1,0 +1,247 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>SQL Query Map</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-flow: column;
+            height: 100%;
+        }
+
+        .controls {
+            flex: 0 0 auto;
+            padding: 8px;
+        }
+
+        .controls textarea {
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+
+        #map {
+            flex: 1 1 auto;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.29.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.29.0/mapbox-gl.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="controls">
+        <p>
+            Enter a SQL query that returns a geometry column and optionally other columns.
+            Additional columns appear in an on-click popup. Use a column alias of <code>label</code>
+            to label the map features.
+            <a id="populateExample" href="#">Example</a>
+        </p>
+
+        <form method="post" action="/admin/sqlMap">
+            <textarea id="query" name="query" rows="6" th:text="${query}"></textarea>
+            <br/>
+            <button type="submit">Run query</button>
+            <button type="button" id="cycleStyles">Light/Dark</button>
+        </form>
+
+        <p class="error" th:if="${errorMessage}" th:text="${errorMessage}">Error message</p>
+        <p th:if="${featureCollection != null}">
+            <span th:text="|${rowCount} feature(s).|">0 feature(s).</span>
+            <span th:if="${skippedNullGeometryCount > 0}"
+                  th:text="|${skippedNullGeometryCount} row(s) had a null geometry and were skipped.|"></span>
+            <span th:if="${rowLimitReached}">Row limit reached; results may be truncated.</span>
+        </p>
+    </div>
+
+    <div id="map" th:if="${featureCollection != null}"></div>
+
+    <script th:if="${featureCollection != null}" th:inline="javascript">
+        /*<![CDATA[*/
+        mapboxgl.accessToken = /*[[${mapboxToken}]]*/;
+
+        const featureCollection = /*[[${featureCollection}]]*/;
+
+        const styles = [
+            {base: 'mapbox://styles/mapbox/satellite-streets-v12', outlineColor: 'black'},
+            {base: 'mapbox://styles/mapbox/dark-v11'},
+        ];
+
+        let styleNumber = 0;
+        let currentStyle = styles[styleNumber];
+        let selectedFeatureId = null;
+
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: currentStyle.base,
+            center: [0, 0],
+            zoom: 1,
+        });
+
+        function fitMapToData() {
+            const bounds = new mapboxgl.LngLatBounds();
+            let hasCoordinates = false;
+
+            const extend = (coords) => {
+                if (typeof coords[0] === 'number') {
+                    const lng = coords[0];
+                    const lat = coords[1];
+                    if (Number.isFinite(lng) && Number.isFinite(lat)) {
+                        bounds.extend([lng, lat]);
+                        hasCoordinates = true;
+                    }
+                } else if (Array.isArray(coords)) {
+                    coords.forEach(extend);
+                }
+            };
+
+            featureCollection.features.forEach((feature) => {
+                if (feature.geometry && feature.geometry.coordinates) {
+                    extend(feature.geometry.coordinates);
+                }
+            });
+
+            if (hasCoordinates && !bounds.isEmpty()) {
+                map.fitBounds(bounds, {padding: 20, maxZoom: 16, duration: 0});
+            }
+        }
+
+        function initializeMapLayers() {
+            map.addSource('results', {
+                type: 'geojson',
+                data: featureCollection,
+                tolerance: 0,
+                generateId: true,
+            });
+
+            map.addLayer({
+                id: 'polygons',
+                type: 'fill',
+                source: 'results',
+                filter: ['==', ['geometry-type'], 'Polygon'],
+                paint: {
+                    'fill-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#33ffff', '#22aaaa'],
+                    'fill-opacity': ['case', ['boolean', ['feature-state', 'selected'], false], 0.8, 0.6],
+                    'fill-outline-color': currentStyle.outlineColor ?? '#33cccc',
+                },
+            });
+
+            map.addLayer({
+                id: 'lines',
+                type: 'line',
+                source: 'results',
+                filter: ['==', ['geometry-type'], 'LineString'],
+                paint: {
+                    'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#33ffff', currentStyle.outlineColor ?? 'yellow'],
+                    'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, 2],
+                },
+            });
+
+            map.addLayer({
+                id: 'points',
+                type: 'circle',
+                source: 'results',
+                filter: ['==', ['geometry-type'], 'Point'],
+                paint: {
+                    'circle-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#33ffff', 'orange'],
+                    'circle-radius': ['case', ['boolean', ['feature-state', 'selected'], false], 8, 5],
+                    'circle-stroke-color': currentStyle.outlineColor ?? 'orange',
+                    'circle-stroke-width': 1,
+                },
+            });
+
+            map.addLayer({
+                id: 'labels',
+                type: 'symbol',
+                source: 'results',
+                filter: ['has', 'label'],
+                layout: {
+                    'text-field': ['get', 'label'],
+                    'text-size': 12,
+                },
+                paint: {
+                    'text-color': 'white',
+                    'text-halo-color': 'black',
+                    'text-halo-width': 2,
+                },
+            });
+
+            const clickHandler = (e) => {
+                const feature = e.features[0];
+
+                if (selectedFeatureId !== null) {
+                    map.setFeatureState({
+                        source: 'results',
+                        id: selectedFeatureId
+                    }, {selected: false});
+                }
+                selectedFeatureId = feature.id;
+                map.setFeatureState({source: 'results', id: selectedFeatureId}, {selected: true});
+
+                const popupContent = document.createElement('div');
+
+                Object.entries(feature.properties).forEach(([key, value]) => {
+                    const row = document.createElement('div');
+                    row.textContent = `${key}: ${value}`;
+                    popupContent.appendChild(row);
+                });
+
+                new mapboxgl.Popup()
+                        .setLngLat(e.lngLat)
+                        .setDOMContent(popupContent)
+                        .addTo(map);
+            };
+
+            ['polygons', 'lines', 'points'].forEach((layerId) => {
+                map.on('click', layerId, clickHandler);
+                map.on('mouseenter', layerId, () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                map.on('mouseleave', layerId, () => {
+                    map.getCanvas().style.cursor = '';
+                });
+            });
+        }
+
+        map.on('style.load', () => {
+            selectedFeatureId = null;
+            initializeMapLayers();
+        });
+
+        map.on('load', () => {
+            map.resize();
+            fitMapToData();
+        });
+
+        document.getElementById('cycleStyles').addEventListener('click', () => {
+            styleNumber = (styleNumber + 1) % styles.length;
+            currentStyle = styles[styleNumber];
+            map.setStyle(currentStyle.base);
+        });
+        /*]]>*/
+    </script>
+
+    <script>
+        document.getElementById('populateExample').addEventListener('click', () => {
+            document.getElementById('query').value =
+                    'SELECT boundary, id, name AS label, organization_id\n' +
+                    'FROM tracking.planting_sites\n' +
+                    'ORDER BY created_time DESC\n' +
+                    'LIMIT 1';
+        });
+    </script>
+</div>
+
+</body>
+</html>
