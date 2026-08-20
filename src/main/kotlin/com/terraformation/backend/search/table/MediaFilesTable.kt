@@ -18,67 +18,89 @@ import com.terraformation.backend.search.field.CoordinateField.Companion.POINT
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.Condition
+import org.jooq.Field
 import org.jooq.OrderField
-import org.jooq.Record
 import org.jooq.Table
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 class MediaFilesTable(tables: SearchTables) : SearchTable() {
-  private val filesAlias = FILES.`as`("media_files_files")
-
   // Columns projected by both branches of the UNION ALL.
   private val orgBranch =
       DSL.select(
-              ORGANIZATION_MEDIA_FILES.FILE_ID.`as`("file_id"),
-              ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID.`as`("organization_id"),
-              ORGANIZATION_MEDIA_FILES.CAPTION.`as`("caption"),
-              DSL.castNull(OBSERVATION_MEDIA_FILES.OBSERVATION_ID.dataType).`as`("observation_id"),
-              DSL.castNull(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.dataType)
-                  .`as`("monitoring_plot_id"),
-              DSL.castNull(OBSERVATION_MEDIA_FILES.POSITION_ID.dataType).`as`("position_id"),
-              DSL.castNull(OBSERVATION_MEDIA_FILES.TYPE_ID.dataType).`as`("type_id"),
-              DSL.castNull(OBSERVATION_MEDIA_FILES.IS_ORIGINAL.dataType).`as`("is_original"),
+              ORGANIZATION_MEDIA_FILES.FILE_ID,
+              ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID,
+              ORGANIZATION_MEDIA_FILES.CAPTION,
+              DSL.castNull(OBSERVATION_MEDIA_FILES.OBSERVATION_ID).`as`("observation_id"),
+              DSL.castNull(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID).`as`("monitoring_plot_id"),
+              DSL.castNull(OBSERVATION_MEDIA_FILES.POSITION_ID).`as`("position_id"),
+              DSL.castNull(OBSERVATION_MEDIA_FILES.TYPE_ID).`as`("type_id"),
+              DSL.castNull(OBSERVATION_MEDIA_FILES.IS_ORIGINAL).`as`("is_original"),
           )
           .from(ORGANIZATION_MEDIA_FILES)
 
   private val observationBranch =
       DSL.select(
-              OBSERVATION_MEDIA_FILES.FILE_ID.`as`("file_id"),
-              MONITORING_PLOTS.ORGANIZATION_ID.`as`("organization_id"),
-              OBSERVATION_MEDIA_FILES.CAPTION.`as`("caption"),
-              OBSERVATION_MEDIA_FILES.OBSERVATION_ID.`as`("observation_id"),
-              OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.`as`("monitoring_plot_id"),
-              OBSERVATION_MEDIA_FILES.POSITION_ID.`as`("position_id"),
-              OBSERVATION_MEDIA_FILES.TYPE_ID.`as`("type_id"),
-              OBSERVATION_MEDIA_FILES.IS_ORIGINAL.`as`("is_original"),
+              OBSERVATION_MEDIA_FILES.FILE_ID,
+              MONITORING_PLOTS.ORGANIZATION_ID,
+              OBSERVATION_MEDIA_FILES.CAPTION,
+              OBSERVATION_MEDIA_FILES.OBSERVATION_ID,
+              OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID,
+              OBSERVATION_MEDIA_FILES.POSITION_ID,
+              OBSERVATION_MEDIA_FILES.TYPE_ID,
+              OBSERVATION_MEDIA_FILES.IS_ORIGINAL,
           )
           .from(OBSERVATION_MEDIA_FILES)
           .join(MONITORING_PLOTS)
           .on(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
 
-  private val unified = orgBranch.unionAll(observationBranch).asTable("media_files")
+  private val unioned = orgBranch.unionAll(observationBranch).asTable("media_files_union")
 
-  private val fileIdColumn = unified.field("file_id", ORGANIZATION_MEDIA_FILES.FILE_ID.dataType)!!
-  val organizationIdColumn =
-      unified.field("organization_id", ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID.dataType)!!
-  private val captionColumn = unified.field("caption", ORGANIZATION_MEDIA_FILES.CAPTION.dataType)!!
-  private val observationIdColumn =
-      unified.field("observation_id", OBSERVATION_MEDIA_FILES.OBSERVATION_ID.dataType)!!
-  private val monitoringPlotIdColumn =
-      unified.field("monitoring_plot_id", OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.dataType)!!
-  private val positionColumn =
-      unified.field("position_id", OBSERVATION_MEDIA_FILES.POSITION_ID.dataType)!!
-  private val typeColumn = unified.field("type_id", OBSERVATION_MEDIA_FILES.TYPE_ID.dataType)!!
-  private val isOriginalColumn =
-      unified.field("is_original", OBSERVATION_MEDIA_FILES.IS_ORIGINAL.dataType)!!
+  private val unionedFileId = unioned.column(ORGANIZATION_MEDIA_FILES.FILE_ID)
 
-  // Must reference the derived `unified` table, not ORGANIZATION_MEDIA_FILES.FILE_ID, because
-  // NestedQueryBuilder.filterResults uses primaryKey in SQL against fromTable. The cast is
-  // needed because Table.field(name) on a derived table returns Field, not TableField.
-  @Suppress("UNCHECKED_CAST")
-  override val primaryKey: TableField<out Record, out Any?> =
-      unified.field("file_id")!! as TableField<out Record, out Any?>
+  /**
+   * The two kinds of media file plus the other tables that hold their data. This is structured as a
+   * subquery so we don't have to thread unique table aliases down into the UNION query; it is
+   * isolated from the main query so can use the jOOQ fields directly.
+   */
+  override val fromTable =
+      DSL.select(
+              unionedFileId,
+              unioned.column(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID),
+              unioned.column(ORGANIZATION_MEDIA_FILES.CAPTION),
+              unioned.column(OBSERVATION_MEDIA_FILES.OBSERVATION_ID),
+              unioned.column(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID),
+              unioned.column(OBSERVATION_MEDIA_FILES.POSITION_ID),
+              unioned.column(OBSERVATION_MEDIA_FILES.TYPE_ID),
+              unioned.column(OBSERVATION_MEDIA_FILES.IS_ORIGINAL),
+              FILES.CONTENT_TYPE,
+              FILES.CREATED_TIME,
+              FILES.GEOLOCATION,
+              SPLATS.ASSET_STATUS_ID,
+              SPLATS.NEEDS_ATTENTION,
+          )
+          .from(unioned)
+          .join(FILES)
+          .on(unionedFileId.eq(FILES.ID))
+          .leftJoin(SPLATS)
+          .on(unionedFileId.eq(SPLATS.FILE_ID))
+          .asTable("media_files")
+
+  private val fileIdColumn = fromTable.column(ORGANIZATION_MEDIA_FILES.FILE_ID)
+  val organizationIdColumn = fromTable.column(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID)
+  private val captionColumn = fromTable.column(ORGANIZATION_MEDIA_FILES.CAPTION)
+  private val observationIdColumn = fromTable.column(OBSERVATION_MEDIA_FILES.OBSERVATION_ID)
+  private val monitoringPlotIdColumn = fromTable.column(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID)
+  private val positionColumn = fromTable.column(OBSERVATION_MEDIA_FILES.POSITION_ID)
+  private val typeColumn = fromTable.column(OBSERVATION_MEDIA_FILES.TYPE_ID)
+  private val isOriginalColumn = fromTable.column(OBSERVATION_MEDIA_FILES.IS_ORIGINAL)
+  private val contentTypeColumn = fromTable.column(FILES.CONTENT_TYPE)
+  private val createdTimeColumn = fromTable.column(FILES.CREATED_TIME)
+  private val geolocationColumn = fromTable.column(FILES.GEOLOCATION)
+  private val splatStatusColumn = fromTable.column(SPLATS.ASSET_STATUS_ID)
+  private val needsAttentionColumn = fromTable.column(SPLATS.NEEDS_ATTENTION)
+
+  override val primaryKey: Field<out Any?>
+    get() = fileIdColumn
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
@@ -108,29 +130,21 @@ class MediaFilesTable(tables: SearchTables) : SearchTable() {
             )
           },
           textField("caption", captionColumn),
-          textField("contentType", filesAlias.CONTENT_TYPE),
-          timestampField("createdTime", filesAlias.CREATED_TIME),
+          textField("contentType", contentTypeColumn),
+          timestampField("createdTime", createdTimeColumn),
           idWrapperField("fileId", fileIdColumn) { FileId(it) },
-          geometryField("gpsCoordinates", filesAlias.GEOLOCATION),
+          geometryField("gpsCoordinates", geolocationColumn),
           booleanField("isOriginal", isOriginalColumn),
-          coordinateField("latitude", filesAlias.GEOLOCATION, POINT, LATITUDE),
-          coordinateField("longitude", filesAlias.GEOLOCATION, POINT, LONGITUDE),
-          booleanField("needsAttention", SPLATS.NEEDS_ATTENTION),
+          coordinateField("latitude", geolocationColumn, POINT, LATITUDE),
+          coordinateField("longitude", geolocationColumn, POINT, LONGITUDE),
+          booleanField("needsAttention", needsAttentionColumn),
           nonLocalizableEnumField("position", positionColumn),
-          nonLocalizableEnumField("splatStatus", SPLATS.ASSET_STATUS_ID),
+          nonLocalizableEnumField("splatStatus", splatStatusColumn),
           nonLocalizableEnumField("type", typeColumn),
       )
 
   override val defaultOrderFields: List<OrderField<*>> =
-      listOf(filesAlias.CREATED_TIME.desc(), fileIdColumn)
-
-  override val fromTable
-    get() =
-        unified
-            .join(filesAlias)
-            .on(fileIdColumn.eq(filesAlias.ID))
-            .leftJoin(SPLATS)
-            .on(fileIdColumn.eq(SPLATS.FILE_ID))
+      listOf(createdTimeColumn.desc(), fileIdColumn)
 
   override fun conditionForVisibility(table: Table<*>): Condition {
     return table.column(organizationIdColumn).`in`(currentUser().organizationRoles.keys)
