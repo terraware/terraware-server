@@ -249,6 +249,11 @@ val ENUM_TABLES =
                     enumName = "SpeciesNativity",
                 ),
                 EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
+                EnumTable(
+                    "splat_additional_file_types",
+                    listOf("splat_additional_files\\.type_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("successional_groups"),
                 EnumTable(
                     "timeseries_types",
@@ -496,7 +501,7 @@ val ID_WRAPPERS =
                     listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id"),
                 ),
                 IdWrapper("FileBatchId", listOf("file_batches\\.id", ".*\\.file_batch_id")),
-                IdWrapper("FileId", listOf("files\\.id", ".*\\.file_id", ".*\\.data_file_id")),
+                IdWrapper("FileId", listOf("files\\.id", ".*\\.file_id", ".*\\.splat_file_id")),
                 IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
                 IdWrapper(
                     "GbifTaxonId",

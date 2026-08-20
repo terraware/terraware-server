@@ -673,6 +673,14 @@ VALUES (1, 'Name Misspelled'),
        (3, 'Name Is Synonym')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+-- These names are the values splatter expects in its request payloads.
+INSERT INTO splat_additional_file_types (id, name)
+VALUES (1, 'frames'),
+       (2, 'imu'),
+       (3, 'session-meta'),
+       (4, 'audio')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO successional_groups (id, name)
 VALUES (1, 'Pioneer'),
        (2, 'Early secondary'),
