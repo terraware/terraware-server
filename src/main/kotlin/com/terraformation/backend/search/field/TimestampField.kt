@@ -7,13 +7,12 @@ import java.time.Instant
 import java.time.format.DateTimeParseException
 import java.util.EnumSet
 import org.jooq.Condition
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 /** Search field for columns that have full timestamps. */
 class TimestampField(
     override val fieldName: String,
-    override val databaseField: TableField<*, Instant?>,
+    override val getDatabaseField: DatabaseFieldSupplier<Instant>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<Instant>() {
   override val localize: Boolean

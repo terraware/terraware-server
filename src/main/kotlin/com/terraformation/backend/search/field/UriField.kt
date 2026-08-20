@@ -6,13 +6,12 @@ import com.terraformation.backend.search.SearchTable
 import java.net.URI
 import java.util.EnumSet
 import org.jooq.Condition
-import org.jooq.Field
 import org.jooq.impl.DSL
 
 /** Search field for urls. */
 class UriField(
     override val fieldName: String,
-    override val databaseField: Field<URI?>,
+    override val getDatabaseField: DatabaseFieldSupplier<URI>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<URI>() {
   override val localize: Boolean

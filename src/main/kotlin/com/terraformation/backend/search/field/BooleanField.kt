@@ -9,14 +9,13 @@ import java.util.Locale
 import java.util.ResourceBundle
 import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
-import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
 
 /** Search field for columns with boolean values. */
 class BooleanField(
     override val fieldName: String,
-    override val databaseField: Field<Boolean?>,
+    override val getDatabaseField: DatabaseFieldSupplier<Boolean>,
     override val table: SearchTable,
     override val localize: Boolean = true,
     override val exportable: Boolean = true,
@@ -67,7 +66,7 @@ class BooleanField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      BooleanField(rawFieldName(), databaseField, table, false, false)
+      BooleanField(rawFieldName(), getDatabaseField, table, false, false)
     } else {
       null
     }

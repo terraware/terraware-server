@@ -7,13 +7,12 @@ import java.time.ZoneId
 import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Record
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 /** Search field for columns that hold time zone identifiers. */
 class ZoneIdField(
     override val fieldName: String,
-    override val databaseField: TableField<*, ZoneId?>,
+    override val getDatabaseField: DatabaseFieldSupplier<ZoneId>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<ZoneId>() {
   private val validZoneNames = ZoneId.getAvailableZoneIds()

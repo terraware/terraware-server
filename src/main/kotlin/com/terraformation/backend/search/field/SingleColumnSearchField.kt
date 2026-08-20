@@ -6,9 +6,13 @@ import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
 
-/** Base class for fields that map to a single database column. */
+/** Base class for fields that map to a single database column or expression. */
 abstract class SingleColumnSearchField<T : Any> : SearchField {
-  abstract val databaseField: Field<T?>
+  /** Returns the column or expression for a particular instance of this field's [table]. */
+  abstract val getDatabaseField: DatabaseFieldSupplier<T>
+
+  /** The column or expression on the instance of [table] that this field is bound to. */
+  val databaseField: Field<T?> by lazy { getDatabaseField(table.fromTable) }
 
   abstract fun getCondition(fieldNode: FieldNode): Condition?
 

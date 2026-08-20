@@ -9,7 +9,6 @@ import java.util.EnumSet
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
-import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
 
@@ -19,7 +18,7 @@ import org.jooq.impl.DSL
  */
 abstract class NumericSearchField<T : Number>(
     override val fieldName: String,
-    override val databaseField: Field<T?>,
+    override val getDatabaseField: DatabaseFieldSupplier<T>,
     override val table: SearchTable,
     override val localize: Boolean,
     override val exportable: Boolean,

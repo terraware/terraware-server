@@ -5,19 +5,18 @@ import com.terraformation.backend.search.SearchTable
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
-import org.jooq.Field
 
 /** Search field for columns with decimal values. */
 class BigDecimalField(
     fieldName: String,
-    databaseField: Field<BigDecimal?>,
+    getDatabaseField: DatabaseFieldSupplier<BigDecimal>,
     table: SearchTable,
     localize: Boolean = true,
     exportable: Boolean = true,
 ) :
     NumericSearchField<BigDecimal>(
         fieldName,
-        databaseField,
+        getDatabaseField,
         table,
         localize = localize,
         exportable = exportable,
@@ -34,7 +33,7 @@ class BigDecimalField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      BigDecimalField(rawFieldName(), databaseField, table, false, false)
+      BigDecimalField(rawFieldName(), getDatabaseField, table, false, false)
     } else {
       null
     }

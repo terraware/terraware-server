@@ -11,6 +11,7 @@ import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_TEMPLATE
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
@@ -39,19 +40,16 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
       listOf(
           timestampField("createdTime", DOCUMENTS.CREATED_TIME),
           idWrapperField("id", DOCUMENTS.ID) { DocumentId(it) },
-          idWrapperField(
-              "lastSavedVersionId",
-              with(DOCUMENT_SAVED_VERSIONS) {
-                DSL.field(
-                    DSL.select(ID)
-                        .from(DOCUMENT_SAVED_VERSIONS)
-                        .where(DOCUMENT_ID.eq(DOCUMENTS.ID))
-                        .orderBy(ID.desc())
-                        .limit(1)
-                )
-              },
-          ) {
-            DocumentSavedVersionId(it)
+          idWrapperField("lastSavedVersionId", ::DocumentSavedVersionId) { table ->
+            with(DOCUMENT_SAVED_VERSIONS) {
+              DSL.field(
+                  DSL.select(ID)
+                      .from(DOCUMENT_SAVED_VERSIONS)
+                      .where(DOCUMENT_ID.eq(table.column(DOCUMENTS.ID)))
+                      .orderBy(ID.desc())
+                      .limit(1)
+              )
+            }
           },
           timestampField("modifiedTime", DOCUMENTS.MODIFIED_TIME),
           textField("name", DOCUMENTS.NAME),

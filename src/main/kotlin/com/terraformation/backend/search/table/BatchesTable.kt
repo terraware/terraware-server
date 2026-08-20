@@ -14,6 +14,7 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.Condition
+import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.Table
@@ -46,7 +47,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
     }
   }
 
-  private val totalQuantityWithdrawnField =
+  private fun totalQuantityWithdrawnField(table: Table<*>): Field<Long?> =
       DSL.coalesce(
           DSL.field(
                   DSL.select(
@@ -58,7 +59,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
                           )
                       )
                       .from(BATCH_WITHDRAWALS)
-                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID))
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(table.column(BATCHES.ID)))
               )
               .cast(SQLDataType.BIGINT),
           DSL.value(0),
@@ -84,14 +85,15 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         dateField("seedsSownDate", BATCHES.SEEDS_SOWN_DATE),
         enumField("substrate", BATCHES.SUBSTRATE_ID),
         textField("substrateNotes", BATCHES.SUBSTRATE_NOTES),
-        integerField(
-            "totalQuantity",
-            BATCHES.READY_QUANTITY.plus(BATCHES.ACTIVE_GROWTH_QUANTITY)
-                .plus(BATCHES.HARDENING_OFF_QUANTITY),
-        ),
+        integerField("totalQuantity") { table ->
+          table
+              .column(BATCHES.READY_QUANTITY)
+              .plus(table.column(BATCHES.ACTIVE_GROWTH_QUANTITY))
+              .plus(table.column(BATCHES.HARDENING_OFF_QUANTITY))
+        },
         enumField("treatment", BATCHES.TREATMENT_ID),
         textField("treatmentNotes", BATCHES.TREATMENT_NOTES),
-        longField("totalQuantityWithdrawn", totalQuantityWithdrawnField, nullable = false),
+        longField("totalQuantityWithdrawn", ::totalQuantityWithdrawnField),
         integerField("version", BATCHES.VERSION, localize = false),
     )
   }
