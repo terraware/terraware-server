@@ -15,11 +15,14 @@ import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SplatAdditionalFileType
 import com.terraformation.backend.db.default_schema.tables.records.BirdnetResultsRecord
+import com.terraformation.backend.db.default_schema.tables.records.SplatAdditionalFilesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatsRecord
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ADDITIONAL_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
@@ -1426,6 +1429,95 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `includes additional files and their types in SQS message`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      insertSplatAdditionalFile(
+          splatFileId = orgFileId,
+          fileId = insertFile(storageUrl = "s3://bucket/frames.zip"),
+          type = SplatAdditionalFileType.Frames,
+      )
+      insertSplatAdditionalFile(
+          splatFileId = orgFileId,
+          fileId = insertFile(storageUrl = "s3://bucket/imu.json"),
+          type = SplatAdditionalFileType.Imu,
+      )
+
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.generateOrganizationMediaSplat(
+          organizationId = organizationId,
+          fileId = orgFileId,
+          force = true,
+          runBirdnet = false,
+      )
+
+      assertEquals(
+          listOf(
+              SplatterRequestFileLocation("bucket", "frames.zip", SplatAdditionalFileType.Frames),
+              SplatterRequestFileLocation("bucket", "imu.json", SplatAdditionalFileType.Imu),
+          ),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
+      )
+    }
+
+    @Test
+    fun `replaces the stored additional file of a type`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      insertSplatAdditionalFile(
+          splatFileId = orgFileId,
+          fileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json"),
+          type = SplatAdditionalFileType.Imu,
+      )
+      val newImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/new-imu.json")
+
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.generateOrganizationMediaSplat(
+          organizationId = organizationId,
+          fileId = orgFileId,
+          force = true,
+          runBirdnet = false,
+          additionalFiles = mapOf(newImuFileId to SplatAdditionalFileType.Imu),
+      )
+
+      assertTableEquals(
+          SplatAdditionalFilesRecord(
+              fileId = newImuFileId,
+              splatFileId = orgFileId,
+              typeId = SplatAdditionalFileType.Imu,
+          )
+      )
+      assertEquals(
+          listOf(
+              SplatterRequestFileLocation("bucket", "new-imu.json", SplatAdditionalFileType.Imu)
+          ),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
+      )
+    }
+
+    @Test
+    fun `sends no additional files when splat has none`() {
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.generateOrganizationMediaSplat(
+          organizationId = organizationId,
+          fileId = orgFileId,
+          runBirdnet = false,
+      )
+
+      assertEquals(
+          emptyList<SplatterRequestFileLocation>(),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
+      )
+    }
+
+    @Test
     fun `throws exception when user is not a member of the organization`() {
       deleteOrganizationUser()
 
@@ -1934,15 +2026,37 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `generates splat for a video that is part of a batch`() {
+    fun `generates splat with the additional files in a batch`() {
       val fileBatchId = insertFileBatch()
       val videoFileId =
           insertFile(
               contentType = "video/mp4",
               fileBatchId = fileBatchId,
+              fileName = "video.mp4",
               storageUrl = "s3://bucket/video.mp4",
           )
       insertOrganizationMediaFile(fileId = videoFileId)
+      val framesFileId =
+          insertFile(
+              contentType = "application/json",
+              fileBatchId = fileBatchId,
+              fileName = "frames.jsonl",
+              storageUrl = "s3://bucket/frames.jsonl",
+          )
+      val imuFileId =
+          insertFile(
+              contentType = "application/json",
+              fileBatchId = fileBatchId,
+              fileName = "imu.json",
+              storageUrl = "s3://bucket/imu.json",
+          )
+      val sessionMetaFileId =
+          insertFile(
+              contentType = "application/json",
+              fileBatchId = fileBatchId,
+              fileName = "session-meta.json",
+              storageUrl = "s3://bucket/session-meta.json",
+          )
 
       val messageSlot = slot<SplatterRequestMessage>()
       every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
@@ -1950,10 +2064,75 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
       dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
+
+      assertTableEquals(
+          listOf(
+              SplatAdditionalFilesRecord(
+                  fileId = framesFileId,
+                  splatFileId = videoFileId,
+                  typeId = SplatAdditionalFileType.Frames,
+              ),
+              SplatAdditionalFilesRecord(
+                  fileId = imuFileId,
+                  splatFileId = videoFileId,
+                  typeId = SplatAdditionalFileType.Imu,
+              ),
+              SplatAdditionalFilesRecord(
+                  fileId = sessionMetaFileId,
+                  splatFileId = videoFileId,
+                  typeId = SplatAdditionalFileType.SessionMeta,
+              ),
+          )
+      )
+
       assertEquals(
           SplatterRequestFileLocation("bucket", "video.mp4"),
           messageSlot.captured.input,
           "Request input file location",
+      )
+      assertEquals(
+          listOf(
+              SplatterRequestFileLocation(
+                  "bucket",
+                  "frames.jsonl",
+                  SplatAdditionalFileType.Frames,
+              ),
+              SplatterRequestFileLocation("bucket", "imu.json", SplatAdditionalFileType.Imu),
+              SplatterRequestFileLocation(
+                  "bucket",
+                  "session-meta.json",
+                  SplatAdditionalFileType.SessionMeta,
+              ),
+          ),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
+      )
+    }
+
+    @Test
+    fun `ignores batch files whose names are not additional file types`() {
+      val fileBatchId = insertFileBatch()
+      val videoFileId =
+          insertFile(
+              contentType = "video/mp4",
+              fileBatchId = fileBatchId,
+              fileName = "video.mp4",
+              storageUrl = "s3://bucket/video.mp4",
+          )
+      insertOrganizationMediaFile(fileId = videoFileId)
+      insertFile(contentType = "text/plain", fileBatchId = fileBatchId, fileName = "notes.txt")
+
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
+      assertTableEmpty(SPLAT_ADDITIONAL_FILES)
+      assertEquals(
+          emptyList<SplatterRequestFileLocation>(),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
       )
     }
 

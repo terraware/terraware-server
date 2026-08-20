@@ -11,11 +11,13 @@ import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SplatAdditionalFileType
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_BATCHES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ADDITIONAL_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATION_MEDIA
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -159,10 +161,11 @@ class SplatService(
       force: Boolean = false,
       params: SplatGenerationParams = SplatGenerationParams(),
       runBirdnet: Boolean = true,
+      additionalFiles: Map<FileId, SplatAdditionalFileType> = emptyMap(),
   ) {
     ensureOrganizationMediaFile(organizationId, fileId)
 
-    generateSplat(organizationId, fileId, force, params, runBirdnet)
+    generateSplat(organizationId, fileId, force, params, runBirdnet, additionalFiles)
   }
 
   fun readOrganizationSplat(organizationId: OrganizationId, fileId: FileId): SizedInputStream {
@@ -407,6 +410,7 @@ class SplatService(
       force: Boolean = false,
       params: SplatGenerationParams,
       runBirdnet: Boolean = false,
+      additionalFiles: Map<FileId, SplatAdditionalFileType> = emptyMap(),
   ) {
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
@@ -482,9 +486,25 @@ class SplatService(
       }
 
       if (rowsInserted == 1 || force) {
+        if (additionalFiles.isNotEmpty()) {
+          with(SPLAT_ADDITIONAL_FILES) {
+            dslContext.deleteFrom(SPLAT_ADDITIONAL_FILES).where(SPLAT_FILE_ID.eq(fileId)).execute()
+
+            additionalFiles.forEach { (additionalFileId, type) ->
+              dslContext
+                  .insertInto(SPLAT_ADDITIONAL_FILES)
+                  .set(FILE_ID, additionalFileId)
+                  .set(SPLAT_FILE_ID, fileId)
+                  .set(TYPE_ID, type)
+                  .execute()
+            }
+          }
+        }
+
         val requestMessage =
             SplatterRequestMessage(
                 abortAfter = params.abortAfter,
+                additionalFiles = listAdditionalFileLocations(fileId),
                 birdnetOutput = birdnetOutputLocation,
                 input =
                     SplatterRequestFileLocation(
@@ -513,6 +533,30 @@ class SplatService(
             "Splat record already exists for file $fileId; ignoring additional generation request"
         )
       }
+    }
+  }
+
+  private fun splatAdditionalFileType(fileName: String): SplatAdditionalFileType? {
+    val baseName = fileName.substringBeforeLast('.').lowercase()
+    return SplatAdditionalFileType.entries.firstOrNull { it.jsonValue == baseName }
+  }
+
+  private fun listAdditionalFileLocations(fileId: FileId): List<SplatterRequestFileLocation> {
+    return with(SPLAT_ADDITIONAL_FILES) {
+      dslContext
+          .select(FILES.STORAGE_URL, TYPE_ID)
+          .from(SPLAT_ADDITIONAL_FILES)
+          .join(FILES)
+          .on(FILE_ID.eq(FILES.ID))
+          .where(SPLAT_FILE_ID.eq(fileId))
+          .orderBy(FILE_ID)
+          .fetch { record ->
+            SplatterRequestFileLocation(
+                s3BucketName,
+                record[FILES.STORAGE_URL]!!.path.trimStart('/'),
+                record[TYPE_ID]!!,
+            )
+          }
     }
   }
 
@@ -553,7 +597,7 @@ class SplatService(
 
     val batchFiles =
         dslContext
-            .select(FILES.ID, FILES.CONTENT_TYPE)
+            .select(FILES.ID, FILES.CONTENT_TYPE, FILES.FILE_NAME)
             .from(FILES)
             .where(FILES.FILE_BATCH_ID.eq(event.fileBatchId))
             .fetch()
@@ -575,8 +619,26 @@ class SplatService(
             .where(ORGANIZATION_MEDIA_FILES.FILE_ID.eq(videoFileId))
             .fetchOne(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID) ?: return
 
+    val additionalFiles =
+        batchFiles
+            .filter { it[FILES.ID] != videoFileId }
+            .mapNotNull { record ->
+              val fileName = record[FILES.FILE_NAME]!!
+              val type = splatAdditionalFileType(fileName)
+              if (type == null) {
+                log.warn(
+                    "File batch ${event.fileBatchId} contains file $fileName with no recognized " +
+                        "splat additional file type; ignoring"
+                )
+                null
+              } else {
+                record[FILES.ID]!! to type
+              }
+            }
+            .toMap()
+
     try {
-      generateOrganizationMediaSplat(organizationId, videoFileId)
+      generateOrganizationMediaSplat(organizationId, videoFileId, additionalFiles = additionalFiles)
     } catch (e: Exception) {
       log.error(
           "Failed to auto-generate splat for file $videoFileId in batch ${event.fileBatchId}",

@@ -167,6 +167,7 @@ import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SpeciesNativity
+import com.terraformation.backend.db.default_schema.SplatAdditionalFileType
 import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
@@ -270,6 +271,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GR
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ADDITIONAL_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATION_MEDIA
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
@@ -3683,6 +3685,21 @@ abstract class DatabaseBackedTest {
           .set(SKY_COLOR, skyColor)
           .set(AVERAGE_CAMERA_HEIGHT, averageCameraHeight)
           .set(SPLAT_STORAGE_URL, splatStorageUrl)
+          .execute()
+    }
+  }
+
+  fun insertSplatAdditionalFile(
+      splatFileId: FileId = inserted.fileId,
+      fileId: FileId = inserted.fileId,
+      type: SplatAdditionalFileType = SplatAdditionalFileType.Frames,
+  ) {
+    with(SPLAT_ADDITIONAL_FILES) {
+      dslContext
+          .insertInto(SPLAT_ADDITIONAL_FILES)
+          .set(SPLAT_FILE_ID, splatFileId)
+          .set(FILE_ID, fileId)
+          .set(TYPE_ID, type)
           .execute()
     }
   }
