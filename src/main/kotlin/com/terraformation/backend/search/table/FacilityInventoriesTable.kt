@@ -31,11 +31,16 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          batches.asMultiValueSublist(
-              "batches",
-              FACILITY_INVENTORIES.FACILITY_ID.eq(BATCHES.FACILITY_ID)
-                  .and(FACILITY_INVENTORIES.SPECIES_ID.eq(BATCHES.SPECIES_ID)),
-          ),
+          batches.asMultiValueSublist("batches") { thisTable, otherTable ->
+            thisTable
+                .column(FACILITY_INVENTORIES.FACILITY_ID)
+                .eq(otherTable.column(BATCHES.FACILITY_ID))
+                .and(
+                    thisTable
+                        .column(FACILITY_INVENTORIES.SPECIES_ID)
+                        .eq(otherTable.column(BATCHES.SPECIES_ID))
+                )
+          },
           facilities.asSingleValueSublist(
               "facility",
               FACILITY_INVENTORIES.FACILITY_ID,

@@ -943,10 +943,17 @@ class NestedQueryBuilder(
    * rows the user is able to see, since inaccessible projects were filtered out already.
    */
   private fun joinFlattenedSublists(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
-    return flattenedSublists.fold(query) { joinedQuery, (_, sublist) ->
+    return flattenedSublists.fold(query) { joinedQuery, (parentTable, sublist) ->
       val sublistVisibilityCondition = sublist.searchTable.conditionForVisibility()
       val joinWithForeignKey =
-          joinedQuery.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
+          joinedQuery
+              .leftJoin(sublist.searchTable.fromTable)
+              .on(
+                  sublist.getConditionForMultiset(
+                      parentTable.fromTable,
+                      sublist.searchTable.fromTable,
+                  )
+              )
       if (sublistVisibilityCondition != null) {
         joinWithForeignKey.and(sublistVisibilityCondition)
       } else {
@@ -1156,7 +1163,15 @@ class NestedQueryBuilder(
             fullAlias.substring(0, lengthLimit - 10) + (fullAlias.hashCode() and 0x7fffffff)
           }
 
-      prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
+      val sublistField = prefix.sublistField
+      if (sublistField != null) {
+        addCondition(
+            sublistField.getConditionForMultiset(
+                prefix.parent!!.searchTable.fromTable,
+                sublistField.searchTable.fromTable,
+            )
+        )
+      }
 
       DSL.multiset(toSelectQuery()).`as`(alias)
     }
@@ -1351,8 +1366,15 @@ class NestedQueryBuilder(
     val referencedTables = referencedSublists.map { it.sublist.searchTable }.toSet()
 
     val joinedQuery =
-        referencedSublists.fold(selectFrom) { query, (_, sublist) ->
-          query.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
+        referencedSublists.fold(selectFrom) { query, (parentTable, sublist) ->
+          query
+              .leftJoin(sublist.searchTable.fromTable)
+              .on(
+                  sublist.getConditionForMultiset(
+                      parentTable.fromTable,
+                      sublist.searchTable.fromTable,
+                  )
+              )
         }
 
     return joinForVisibility(joinedQuery, referencedTables, rootPrefix.root)

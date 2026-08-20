@@ -39,28 +39,31 @@ class ObservationStratumResultTable(private val tables: SearchTables) : SearchTa
               OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID,
               STRATUM_HISTORIES.ID,
           ),
-          observationSubstratumResult.asMultiValueSublist(
-              "substratumResults",
-              OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(
-                      OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID
-                  )
-                  .and(
-                      DSL.exists(
-                          DSL.selectOne()
-                              .from(SUBSTRATUM_HISTORIES)
-                              .where(
-                                  SUBSTRATUM_HISTORIES.ID.eq(
-                                      OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
-                                  )
-                              )
-                              .and(
-                                  SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
-                                      OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
-                                  )
-                              )
-                      )
-                  ),
-          ),
+          observationSubstratumResult.asMultiValueSublist("substratumResults") {
+              thisTable,
+              otherTable ->
+            thisTable
+                .column(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID)
+                .eq(otherTable.column(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID))
+                .and(
+                    DSL.exists(
+                        DSL.selectOne()
+                            .from(SUBSTRATUM_HISTORIES)
+                            .where(
+                                SUBSTRATUM_HISTORIES.ID.eq(
+                                    otherTable.column(
+                                        OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
+                                    )
+                                )
+                            )
+                            .and(
+                                SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
+                                    thisTable.column(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID)
+                                )
+                            )
+                    )
+                )
+          },
       )
     }
   }

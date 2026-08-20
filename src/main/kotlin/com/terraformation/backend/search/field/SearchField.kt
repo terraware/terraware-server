@@ -11,6 +11,7 @@ import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.Table
+import org.jooq.impl.DSL
 import org.jooq.impl.QOM
 
 /**
@@ -28,6 +29,23 @@ fun <T> Table<*>.column(column: Field<T>): Field<T> {
     newColumn
   }
 }
+
+/**
+ * Returns a condition that matches a column of one table instance against a column of another.
+ * Composite columns are compared component by component.
+ */
+fun <T> columnsEqual(
+    leftTable: Table<*>,
+    leftColumn: Field<T>,
+    rightTable: Table<*>,
+    rightColumn: Field<T>,
+): Condition =
+    if (leftColumn.dataType.isEmbeddable) {
+      DSL.row(leftColumn.dataType.row!!.fields().map { leftTable.column(it) })
+          .eq(DSL.row(rightColumn.dataType.row!!.fields().map { rightTable.column(it) }))
+    } else {
+      leftTable.column(leftColumn).eq(rightTable.column(rightColumn))
+    }
 
 /**
  * Metadata about a field that can be included in accession search requests. This is used by

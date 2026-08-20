@@ -28,6 +28,7 @@ import com.terraformation.backend.search.field.UpperCaseTextField
 import com.terraformation.backend.search.field.UriField
 import com.terraformation.backend.search.field.WeightField
 import com.terraformation.backend.search.field.ZoneIdField
+import com.terraformation.backend.search.field.columnsEqual
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Clock
@@ -197,25 +198,25 @@ abstract class SearchTable {
       thisTableField: Field<T>,
       otherTableField: Field<T>,
       isTraversedForGetAllFields: Boolean = true,
-  ): SublistField {
-    return asMultiValueSublist(name, thisTableField.eq(otherTableField), isTraversedForGetAllFields)
-  }
+  ): SublistField =
+      asMultiValueSublist(name, isTraversedForGetAllFields) { thisTable, otherTable ->
+        columnsEqual(thisTable, thisTableField, otherTable, otherTableField)
+      }
 
   /**
-   * Returns a [SublistField] pointing to this table for use in cases where there can be multiple
-   * values. In other words, returns a [SublistField] that defines a 1:N relationship between this
-   * table and another one.
+   * Returns a [SublistField] for a 1:N relationship using a dynamically rendered join condition.
+   * See [SublistField.getConditionForMultiset].
    */
   fun asMultiValueSublist(
       name: String,
-      conditionForMultiset: Condition,
       isTraversedForGetAllFields: Boolean = true,
+      getConditionForMultiset: SublistField.GetConditionForMultiset,
   ): SublistField {
     return SublistField(
         name = name,
         searchTable = this,
         isMultiValue = true,
-        conditionForMultiset = conditionForMultiset,
+        getConditionForMultiset = getConditionForMultiset,
         isTraversedForGetAllFields = isTraversedForGetAllFields,
     )
   }
@@ -230,29 +231,25 @@ abstract class SearchTable {
       thisTableField: Field<T>,
       otherTableField: Field<T>,
       isTraversedForGetAllFields: Boolean = false,
-  ): SublistField {
-    return asSingleValueSublist(
-        name,
-        thisTableField.eq(otherTableField),
-        isTraversedForGetAllFields,
-    )
-  }
+  ): SublistField =
+      asSingleValueSublist(name, isTraversedForGetAllFields) { thisTable, otherTable ->
+        columnsEqual(thisTable, thisTableField, otherTable, otherTableField)
+      }
 
   /**
-   * Returns a [SublistField] pointing to this table for use in cases where there is only a single
-   * value. In other words, returns a [SublistField] that defines a 1:1 or N:1 relationship between
-   * another table and this one.
+   * Returns a [SublistField] for an N:1 or 1:1 relationship using a dynamically rendered join
+   * condition. See [SublistField.getConditionForMultiset].
    */
   fun asSingleValueSublist(
       name: String,
-      conditionForMultiset: Condition,
       isTraversedForGetAllFields: Boolean = false,
+      getConditionForMultiset: SublistField.GetConditionForMultiset,
   ): SublistField {
     return SublistField(
         name = name,
         searchTable = this,
         isMultiValue = false,
-        conditionForMultiset = conditionForMultiset,
+        getConditionForMultiset = getConditionForMultiset,
         isTraversedForGetAllFields = isTraversedForGetAllFields,
     )
   }

@@ -37,11 +37,16 @@ class InventoriesTable(private val tables: SearchTables) : SearchTable() {
               INVENTORIES.SPECIES_ID,
               SPECIES_PROJECTS.SPECIES_ID,
           ),
-          facilityInventories.asMultiValueSublist(
-              "facilityInventories",
-              INVENTORIES.ORGANIZATION_ID.eq(FACILITY_INVENTORIES.ORGANIZATION_ID)
-                  .and(INVENTORIES.SPECIES_ID.eq(FACILITY_INVENTORIES.SPECIES_ID)),
-          ),
+          facilityInventories.asMultiValueSublist("facilityInventories") { thisTable, otherTable ->
+            thisTable
+                .column(INVENTORIES.ORGANIZATION_ID)
+                .eq(otherTable.column(FACILITY_INVENTORIES.ORGANIZATION_ID))
+                .and(
+                    thisTable
+                        .column(INVENTORIES.SPECIES_ID)
+                        .eq(otherTable.column(FACILITY_INVENTORIES.SPECIES_ID))
+                )
+          },
       )
     }
   }

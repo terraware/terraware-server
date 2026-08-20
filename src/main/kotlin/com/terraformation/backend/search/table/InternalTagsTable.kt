@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.Table
@@ -20,10 +21,13 @@ class InternalTagsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          organizationInternalTags.asMultiValueSublist(
-              "organizationInternalTags",
-              INTERNAL_TAGS.ID.eq(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID),
-          ),
+          organizationInternalTags.asMultiValueSublist("organizationInternalTags") {
+              thisTable,
+              otherTable ->
+            thisTable
+                .column(INTERNAL_TAGS.ID)
+                .eq(otherTable.column(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID))
+          },
       )
     }
   }

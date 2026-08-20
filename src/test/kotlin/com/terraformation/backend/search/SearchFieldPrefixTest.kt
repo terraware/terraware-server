@@ -19,21 +19,23 @@ class SearchFieldPrefixTest {
           name = "accessions",
           searchTable = tables.accessions,
           isMultiValue = true,
-          conditionForMultiset = PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID),
+          getConditionForMultiset = { _, _ -> PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID) },
       )
   private val viabilityTestsField =
       SublistField(
           name = "viabilityTests",
           searchTable = tables.viabilityTests,
           isMultiValue = true,
-          conditionForMultiset = ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID),
+          getConditionForMultiset = { _, _ -> ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID) },
       )
   private val viabilityTestsResultsField =
       SublistField(
           name = "viabilityTestResults",
           searchTable = tables.viabilityTestResults,
           isMultiValue = true,
-          conditionForMultiset = VIABILITY_TESTS.ID.eq(VIABILITY_TEST_RESULTS.TEST_ID),
+          getConditionForMultiset = { _, _ ->
+            VIABILITY_TESTS.ID.eq(VIABILITY_TEST_RESULTS.TEST_ID)
+          },
       )
 
   @Test
