@@ -98,10 +98,29 @@ class SearchService(private val dslContext: DSLContext) {
       sortOrder: List<SearchSortField> = emptyList(),
       includeSortValues: Boolean = false,
   ): NestedQueryBuilder {
-    val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix, includeSortValues)
-    queryBuilder.addSelectFields(fields, criteria)
-    queryBuilder.addSortFields(sortOrder)
-    queryBuilder.addCondition(queryBuilder.filterResults(rootPrefix, criteria[rootPrefix]))
+    // Every table in the query gets an alias so the same table can appear more than once. The
+    // caller's paths are all rooted at the same table, so rebinding them onto an aliased copy of it
+    // gives us paths whose tables are aliased all the way down.
+    val aliasedRoot = SearchFieldPrefix(rootPrefix.root.withAlias("t"))
+    val aliasedRootPrefix = rootPrefix.withRoot(aliasedRoot)
+    val aliasedFields = fields.map { it.withRoot(aliasedRoot) }
+    val aliasedSortOrder = sortOrder.map {
+      SearchSortField(it.field.withRoot(aliasedRoot), it.direction)
+    }
+    val aliasedCriteria =
+        criteria
+            .map { (fieldPrefix, searchNode) ->
+              fieldPrefix.withRoot(aliasedRoot) to searchNode.withRoot(aliasedRoot)
+            }
+            .toMap()
+
+    val queryBuilder = NestedQueryBuilder(dslContext, aliasedRootPrefix, includeSortValues)
+
+    queryBuilder.addSelectFields(aliasedFields, aliasedCriteria)
+    queryBuilder.addSortFields(aliasedSortOrder)
+    queryBuilder.addCondition(
+        queryBuilder.filterResults(aliasedRootPrefix, aliasedCriteria[aliasedRootPrefix])
+    )
 
     return queryBuilder
   }
@@ -164,13 +183,20 @@ class SearchService(private val dslContext: DSLContext) {
       throw IllegalArgumentException("Fetching nested field values is not supported.")
     }
 
+    val aliasedRoot = SearchFieldPrefix(rootPrefix.root.withAlias("t"))
+    val aliasedFieldPath = fieldPath.withRoot(aliasedRoot)
+    val aliasedSortOrder = sortOrder.map {
+      SearchSortField(it.field.withRoot(aliasedRoot), it.direction)
+    }
+
     val offset = cursor?.toIntOrNull() ?: 0
     val partialCriteria = criteria.mapValues { it.value.toPartialSearch() }
-    val effectiveSortOrder = (sortOrder + SearchSortField(fieldPath)).distinctBy { it.field }
+    val effectiveSortOrder =
+        (aliasedSortOrder + SearchSortField(aliasedFieldPath)).distinctBy { it.field }
     val mapper = { queryBuilder: NestedQueryBuilder, record: Record ->
       SearchValuesResult(
-          value = fieldPath.searchField.computeValue(record),
-          sortValues = queryBuilder.getSortValues(record, sortOrder),
+          value = aliasedFieldPath.searchField.computeValue(record),
+          sortValues = queryBuilder.getSortValues(record, aliasedSortOrder),
       )
     }
 
