@@ -819,13 +819,9 @@ class NestedQueryBuilder(
   ) {
     val relativeField = fieldPath.relativeTo(prefix)
 
-    if (relativeField.searchField is AliasField && !relativeField.isNested) {
-      addFlattenedSublists(relativeField.searchField.targetPath.sublists)
-    }
+    addFlattenedSublists(relativeField)
 
     if (relativeField.isFlattened) {
-      addFlattenedSublists(relativeField.sublists)
-
       val searchField = fieldPath.searchField
       val fieldName = "$relativeField"
       scalarFields[fieldName] = searchField
@@ -859,15 +855,11 @@ class NestedQueryBuilder(
   private fun addSortField(sortField: SearchSortField) {
     val relativeField = sortField.field.relativeTo(prefix)
 
-    if (relativeField.searchField is AliasField && !relativeField.isNested) {
-      addFlattenedSublists(relativeField.searchField.targetPath.sublists)
-    }
+    addFlattenedSublists(relativeField)
 
     sortFields.add(sortField)
 
-    if (relativeField.isFlattened) {
-      addFlattenedSublists(relativeField.sublists)
-    } else if (relativeField.isNested) {
+    if (relativeField.isNested) {
       // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
       val sublistName = getSublistName(relativeField)
       getSublistQuery(relativeField).addSortField(sortField)
@@ -875,15 +867,24 @@ class NestedQueryBuilder(
     }
   }
 
-  private fun addFlattenedSublists(sublists: Collection<SublistField>) {
-    var parentTable = prefix.searchTable
+  private fun addFlattenedSublists(relativeField: SearchFieldPath) {
+    if (relativeField.isNested) {
+      return
+    }
 
-    sublists.forEach { sublist ->
-      if (sublist.isFlattened) {
-        flattenedSublists.add(ReferencedSublist(parentTable, sublist))
-        parentTable = sublist.searchTable
+    val referencedSublists =
+        relativeField.prefix.referencedSublists() +
+            if (relativeField.searchField is AliasField) {
+              relativeField.searchField.targetPath.prefix.referencedSublists()
+            } else {
+              emptyList()
+            }
+
+    referencedSublists.forEach { referencedSublist ->
+      if (referencedSublist.sublist.isFlattened) {
+        flattenedSublists.add(referencedSublist)
       } else {
-        throw IllegalArgumentException("BUG! Sublist $sublist is not flattened")
+        throw IllegalArgumentException("BUG! Sublist ${referencedSublist.sublist} is not flattened")
       }
     }
   }

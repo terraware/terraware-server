@@ -4,6 +4,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.field.AliasField
@@ -11,6 +12,21 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
+  @Test
+  fun `can select a flattened alias in a flattened sublist`() {
+    val prefix = SearchFieldPrefix(tables.facilities)
+
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf("accessions_speciesName" to "Kousa Dogwood"),
+                mapOf("accessions_speciesName" to "Other Dogwood"),
+            )
+        ),
+        searchService.search(prefix, listOf(prefix.resolve("accessions_speciesName")), emptyMap()),
+    )
+  }
+
   @Test
   fun `can query both an alias field and its target`() {
     val fields = listOf(bagNumberField, bagNumberFlattenedField)
