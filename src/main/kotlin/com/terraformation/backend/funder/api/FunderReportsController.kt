@@ -51,6 +51,17 @@ class FunderReportsController(
 ) {
   @ApiResponse200
   @ApiResponse404
+  @GetMapping("/{reportId}")
+  @Operation(summary = "Get one published report.")
+  fun getPublishedReport(
+      @PathVariable reportId: ReportId,
+  ): GetPublishedReportResponsePayload {
+    val report = publishedReportStore.fetchOneById(reportId)
+    return GetPublishedReportResponsePayload(PublishedReportPayload(report))
+  }
+
+  @ApiResponse200
+  @ApiResponse404
   @GetMapping("/projects/{projectId}")
   @Operation(summary = "Get the published reports for a specific project.")
   fun listPublishedReports(
@@ -192,6 +203,9 @@ data class PublishedReportPayload(
       startDate = model.startDate,
   )
 }
+
+data class GetPublishedReportResponsePayload(val report: PublishedReportPayload) :
+    SuccessResponsePayload
 
 data class ListPublishedReportsResponsePayload(val reports: List<PublishedReportPayload>) :
     SuccessResponsePayload

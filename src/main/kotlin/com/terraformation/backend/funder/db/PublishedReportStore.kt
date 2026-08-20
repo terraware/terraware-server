@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.model.CURRENT_YEAR_PROGRESS_INDICA
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.IndicatorCategoryConverter
 import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorClassConverter
@@ -53,6 +54,13 @@ class PublishedReportStore(
     requirePermissions { readPublishedReports(projectId) }
 
     return fetchByCondition(PUBLISHED_REPORTS.PROJECT_ID.eq(projectId))
+  }
+
+  fun fetchOneById(reportId: ReportId): PublishedReportModel {
+    requirePermissions { readPublishedReport(reportId) }
+
+    return fetchByCondition(PUBLISHED_REPORTS.REPORT_ID.eq(reportId)).firstOrNull()
+        ?: throw ReportNotFoundException(reportId)
   }
 
   fun fetchPublishedReportsByIds(
