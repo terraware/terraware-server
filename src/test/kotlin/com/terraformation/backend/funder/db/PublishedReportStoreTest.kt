@@ -713,12 +713,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class FetchOnePublishedReport {
+  inner class FetchOneById {
     @Test
     fun `returns all published report data`() {
       insertFullReportData()
 
-      assertEquals(expectedReport1(), store.fetchOnePublishedReport(reportId1))
+      assertEquals(expectedReport1(), store.fetchOneById(reportId1))
     }
 
     @Test
@@ -728,7 +728,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val reportId = insertReport()
 
-      assertThrows<ReportNotFoundException> { store.fetchOnePublishedReport(reportId) }
+      assertThrows<ReportNotFoundException> { store.fetchOneById(reportId) }
     }
 
     @Test
@@ -738,7 +738,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val reportId = insertReport(projectId = otherProjectId)
       insertPublishedReport(reportId = reportId, projectId = otherProjectId)
 
-      assertThrows<ReportNotFoundException> { store.fetchOnePublishedReport(reportId) }
+      assertThrows<ReportNotFoundException> { store.fetchOneById(reportId) }
     }
   }
 

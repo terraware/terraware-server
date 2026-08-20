@@ -53,10 +53,10 @@ class FunderReportsController(
   @ApiResponse404
   @GetMapping("/{reportId}")
   @Operation(summary = "Get one published report.")
-  fun getOnePublishedReport(
+  fun getPublishedReport(
       @PathVariable reportId: ReportId,
   ): GetPublishedReportResponsePayload {
-    val report = publishedReportStore.fetchOnePublishedReport(reportId)
+    val report = publishedReportStore.fetchOneById(reportId)
     return GetPublishedReportResponsePayload(PublishedReportPayload(report))
   }
 

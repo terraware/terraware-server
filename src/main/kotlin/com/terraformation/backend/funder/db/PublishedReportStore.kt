@@ -56,7 +56,7 @@ class PublishedReportStore(
     return fetchByCondition(PUBLISHED_REPORTS.PROJECT_ID.eq(projectId))
   }
 
-  fun fetchOnePublishedReport(reportId: ReportId): PublishedReportModel {
+  fun fetchOneById(reportId: ReportId): PublishedReportModel {
     requirePermissions { readPublishedReport(reportId) }
 
     return fetchByCondition(PUBLISHED_REPORTS.REPORT_ID.eq(reportId)).firstOrNull()
