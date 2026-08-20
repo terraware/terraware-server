@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.file.MEDIA_TYPE_SVG
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -65,8 +66,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-
-private const val SVG_MEDIA_TYPE = "image/svg+xml"
 
 /** Largest thumbnail canvas the server will render, to keep a single request cheap. */
 private const val MAX_THUMBNAIL_SIZE = 4096
@@ -167,7 +166,7 @@ class PlantingSitesController(
 
   @ApiResponse200Svg
   @ApiResponse409("The planting site does not have a boundary.")
-  @GetMapping("/{id}/thumbnail", produces = [SVG_MEDIA_TYPE])
+  @GetMapping("/{id}/thumbnail", produces = [MEDIA_TYPE_SVG])
   @Operation(
       summary = "Renders the outline of a planting site's boundary as an SVG image.",
       description =
@@ -191,7 +190,7 @@ class PlantingSitesController(
     val boundary = site.boundary ?: throw PlantingSiteHasNoBoundaryException(id)
 
     return ResponseEntity.ok()
-        .contentType(MediaType.valueOf(SVG_MEDIA_TYPE))
+        .contentType(MediaType.valueOf(MEDIA_TYPE_SVG))
         .body(geometrySvgRenderer.render(boundary, canvasWidth, canvasHeight))
   }
 

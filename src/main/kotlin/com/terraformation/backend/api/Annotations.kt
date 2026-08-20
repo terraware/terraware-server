@@ -1,6 +1,8 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.file.MEDIA_TYPE_HEIC
+import com.terraformation.backend.file.MEDIA_TYPE_SVG
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
@@ -212,7 +214,7 @@ annotation class ApiResponse200Photo
 @ApiResponse(
     responseCode = "200",
     description = "The image was successfully generated.",
-    content = [Content(schema = Schema(type = "string"), mediaType = "image/svg+xml")],
+    content = [Content(schema = Schema(type = "string"), mediaType = MEDIA_TYPE_SVG)],
 )
 annotation class ApiResponse200Svg
 
@@ -229,7 +231,7 @@ annotation class ApiResponse200Svg
                             contentType =
                                 "${MediaType.IMAGE_JPEG_VALUE}, " +
                                     "${MediaType.IMAGE_PNG_VALUE}, " +
-                                    "image/heic",
+                                    MEDIA_TYPE_HEIC,
                         )
                     ]
             )

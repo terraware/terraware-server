@@ -52,7 +52,7 @@ class GeometrySvgRenderer {
    */
   fun render(geometry: Geometry, width: Int = DEFAULT_SIZE, height: Int = DEFAULT_SIZE): String {
     val pathData = renderPathData(geometry, width, height)
-    val content = if (pathData != null) """<path fill-rule="evenodd" d="$pathData"/>""" else ""
+    val content = pathData?.let { """<path fill-rule="evenodd" d="$it"/>""" } ?: ""
 
     // Nothing user-supplied is interpolated into the document, so there is nothing to escape. If
     // that changes (a site name in a <title>, say), the value will need XML escaping.

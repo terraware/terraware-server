@@ -2,12 +2,16 @@ package com.terraformation.backend.file
 
 import org.springframework.http.MediaType
 
+const val MEDIA_TYPE_HEIC = "image/heic"
+
+const val MEDIA_TYPE_SVG = "image/svg+xml"
+
 /**
  * List of supported photo content types. We only support content types that are compatible with our
  * thumbnail generator.
  */
 val SUPPORTED_PHOTO_TYPES =
-    setOf(MediaType.valueOf("image/heic"), MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
+    setOf(MediaType.valueOf(MEDIA_TYPE_HEIC), MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
 
 /**
  * List of supported audiovisual media content types. We delegate video handling to Mux, which

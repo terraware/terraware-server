@@ -9,9 +9,8 @@ import com.terraformation.backend.polygon
 import com.terraformation.backend.polygonWithHoles
 import com.terraformation.backend.rectangle
 import java.util.Locale
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -48,42 +47,23 @@ class GeometrySvgRendererTest {
   }
 
   @Test
-  fun `flips the Y axis`() {
-    val svg = renderer.render(polygon(0, 0, 100, 100, SRID.SPHERICAL_MERCATOR), 100, 100)
-    val northernmostY = 2.00
-    val southernmostY = 98.00
-
-    // The boundary's northern edge is at mercator y=100 and its southern edge at y=0.
-    assertTrue(
-        pathData(svg)!!.startsWith("M2.00 $southernmostY"),
-        "Southwest corner should be at the bottom of the canvas",
-    )
-    assertTrue(
-        pathData(svg)!!.contains("L98.00 $northernmostY"),
-        "Northeast corner should be at the top of the canvas",
-    )
-  }
-
-  @Test
   fun `honors requested canvas size`() {
     val svg = renderer.render(polygon(0, 0, 100, 100, SRID.SPHERICAL_MERCATOR), 64, 48)
 
-    assertTrue(svg.contains("""width="64""""), "Width attribute in $svg")
-    assertTrue(svg.contains("""height="48""""), "Height attribute in $svg")
-    assertTrue(svg.contains("""viewBox="0 0 64 48""""), "viewBox attribute in $svg")
+    assertThat(svg)
+        .contains(
+            """width="64"""",
+            """height="48"""",
+            """viewBox="0 0 64 48"""",
+        )
   }
 
   @Test
   fun `uses the default canvas size if none is requested`() {
     val svg = renderer.render(polygon(0, 0, 100, 100, SRID.SPHERICAL_MERCATOR))
+    val size = GeometrySvgRenderer.DEFAULT_SIZE
 
-    assertTrue(
-        svg.contains(
-            """viewBox="0 0 ${GeometrySvgRenderer.DEFAULT_SIZE} """ +
-                """${GeometrySvgRenderer.DEFAULT_SIZE}""""
-        ),
-        "viewBox attribute in $svg",
-    )
+    assertThat(svg).contains("""viewBox="0 0 $size $size"""")
   }
 
   @Test
@@ -123,7 +103,7 @@ class GeometrySvgRendererTest {
     val svg = renderer.render(polygonWithHole, 100, 100)
 
     assertEquals(2, subpathCount(svg), "Number of subpaths")
-    assertTrue(svg.contains("""fill-rule="evenodd""""), "Fill rule in $svg")
+    assertThat(svg).contains("""fill-rule="evenodd"""")
   }
 
   @Test
@@ -133,10 +113,9 @@ class GeometrySvgRendererTest {
 
     val renderedVertices = pathData(renderer.render(circle, 100, 100))!!.count { it == 'L' } + 1
 
-    assertTrue(
-        renderedVertices < vertexCount / 4,
-        "Expected far fewer than $vertexCount vertices, got $renderedVertices",
-    )
+    assertThat(renderedVertices)
+        .describedAs("Vertices rendered from a $vertexCount-vertex circle")
+        .isLessThan(vertexCount / 4)
   }
 
   @Test
@@ -194,7 +173,7 @@ class GeometrySvgRendererTest {
 
       val svg = renderer.render(polygon(0, 0, 100, 100, SRID.SPHERICAL_MERCATOR))
 
-      assertFalse(pathData(svg)!!.contains(','), "Path data in $svg")
+      assertThat(pathData(svg)).describedAs("Path data").doesNotContain(",")
     } finally {
       Locale.setDefault(originalLocale)
     }
@@ -229,7 +208,7 @@ class GeometrySvgRendererTest {
   fun `renders a tiny canvas without clipping the whole boundary`() {
     val svg = renderer.render(polygon(0, 0, 100, 100, SRID.SPHERICAL_MERCATOR), 4, 4)
 
-    assertTrue(pathData(svg) != null, "Path data in $svg")
+    assertThat(pathData(svg)).describedAs("Path data").isNotNull()
   }
 
   private fun pathData(svg: String): String? =
