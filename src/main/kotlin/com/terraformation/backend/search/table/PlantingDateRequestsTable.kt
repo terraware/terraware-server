@@ -8,9 +8,11 @@ import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTI
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class PlantingDateRequestsTable(private val tables: SearchTables) : SearchTable() {
@@ -52,11 +54,18 @@ class PlantingDateRequestsTable(private val tables: SearchTables) : SearchTable(
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.plantingSeasons
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     return query
-        .join(PLANTING_SEASONS)
+        .join(SCHEDULED_PLANTING_DATES)
         .on(
-            PLANTING_DATE_REQUESTS.scheduledPlantingDates.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID)
+            table
+                .column(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID)
+                .eq(SCHEDULED_PLANTING_DATES.ID)
         )
+        .join(PLANTING_SEASONS)
+        .on(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID))
   }
 }
