@@ -1,17 +1,17 @@
 package com.terraformation.backend.db
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.Point
+import tools.jackson.core.exc.StreamReadException
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.module.kotlin.readValue
 
 internal class PointWithMDeserializerTest {
-  private val objectMapper = jacksonObjectMapper()
+  private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
 
   data class Payload(@JsonDeserialize(using = PointWithMDeserializer::class) val point: Point?)
 
@@ -40,12 +40,12 @@ internal class PointWithMDeserializerTest {
   @Test
   fun `rejects non-Point geometry type`() {
     val json = """{"point":{"type":"LineString","coordinates":[[1.0,2.0],[3.0,4.0]]}}"""
-    assertThrows<JsonProcessingException> { objectMapper.readValue<Payload>(json) }
+    assertThrows<StreamReadException> { objectMapper.readValue<Payload>(json) }
   }
 
   @Test
   fun `rejects point with fewer than 2 coordinates`() {
     val json = """{"point":{"type":"Point","coordinates":[1.0]}}"""
-    assertThrows<JsonProcessingException> { objectMapper.readValue<Payload>(json) }
+    assertThrows<StreamReadException> { objectMapper.readValue<Payload>(json) }
   }
 }

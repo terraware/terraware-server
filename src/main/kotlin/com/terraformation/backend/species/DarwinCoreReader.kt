@@ -1,13 +1,6 @@
 package com.terraformation.backend.species
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.fasterxml.jackson.annotation.JsonRootName
 import com.opencsv.CSVParser
 import com.terraformation.backend.util.ParsedCsvReader
 import java.io.FileNotFoundException
@@ -16,6 +9,12 @@ import java.time.LocalDate
 import java.util.Properties
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.dataformat.xml.XmlMapper
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 
 /**
  * Reads Darwin Core Archive zipfiles. These zipfiles are assumed to contain a master metadata file
@@ -129,7 +128,7 @@ class DarwinCoreReader(private val zipFile: ZipFile) {
         ?: throw FileNotFoundException("Archive does not contain the file $fileName")
   }
 
-  @JacksonXmlRootElement(localName = "eml", namespace = "http://rs.tdwg.org/dwc/text/")
+  @JsonRootName("eml", namespace = "http://rs.tdwg.org/dwc/text/")
   data class Eml(val dataset: Dataset)
 
   data class Dataset(
@@ -142,7 +141,7 @@ class DarwinCoreReader(private val zipFile: ZipFile) {
       val keyword: String,
   )
 
-  @JacksonXmlRootElement(localName = "archive", namespace = "http://rs.tdwg.org/dwc/text/")
+  @JsonRootName("archive", namespace = "http://rs.tdwg.org/dwc/text/")
   data class Archive(
       @JacksonXmlProperty(isAttribute = true) val metadata: String = "eml.xml",
       @JacksonXmlProperty(localName = "core") val core: FileDetails,
@@ -180,11 +179,10 @@ class DarwinCoreReader(private val zipFile: ZipFile) {
   companion object {
     private val xmlMapper: ObjectMapper by lazy {
       XmlMapper.builder()
-          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
           .defaultUseWrapper(false)
+          .addModule(KotlinModule.Builder().build())
           .build()
-          .registerKotlinModule()
-          .registerModule(JavaTimeModule())
     }
   }
 }

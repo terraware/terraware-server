@@ -10,7 +10,7 @@ import java.nio.file.StandardCopyOption
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
-import org.junit.Assume.assumeNotNull
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -28,7 +28,7 @@ class BotanicalCountryImporterTest : DatabaseTest() {
 
   @BeforeEach
   fun maybeSkipTest() {
-    assumeNotNull(System.getenv("TEST_BOTANICAL_IMPORTER"))
+    assumeTrue(System.getenv("TEST_BOTANICAL_IMPORTER") != null)
   }
 
   @Test

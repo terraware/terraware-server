@@ -648,7 +648,7 @@ import org.locationtech.jts.geom.Polygon
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
@@ -662,8 +662,8 @@ import org.springframework.test.context.transaction.InheritedTransactionRemover
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import org.testcontainers.containers.Network
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
 /**
@@ -6673,10 +6673,10 @@ abstract class DatabaseBackedTest {
     private val log = LoggerFactory.getLogger(DatabaseBackedTest::class.java)
 
     @Volatile
-    lateinit var postgresContainer: PostgreSQLContainer<*>
+    lateinit var postgresContainer: PostgreSQLContainer
       private set
 
-    private fun newPostgresContainer(): PostgreSQLContainer<*> =
+    private fun newPostgresContainer(): PostgreSQLContainer =
         PostgreSQLContainer(imageName)
             .withDatabaseName("terraware")
             .withExposedPorts(PostgreSQLContainer.POSTGRESQL_PORT)

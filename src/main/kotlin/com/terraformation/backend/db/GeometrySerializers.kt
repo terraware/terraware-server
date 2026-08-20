@@ -1,16 +1,16 @@
 package com.terraformation.backend.db
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.io.geojson.GeoJsonWriter
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueSerializer
 
 /**
  * Base class for serializing JTS Geometry objects into GeoJSON. This is just a wrapper around JTS's
  * own GeoJSON writer.
  */
-class GeometrySerializer : JsonSerializer<Geometry>() {
+class GeometrySerializer : ValueSerializer<Geometry>() {
   companion object {
     /**
      * Number of digits after the decimal point to render in coordinates.
@@ -45,7 +45,7 @@ class GeometrySerializer : JsonSerializer<Geometry>() {
   private val noCrsGeoJsonWriter =
       GeoJsonWriter(COORDINATE_VALUE_SCALE).apply { setEncodeCRS(false) }
 
-  override fun serialize(value: Geometry?, gen: JsonGenerator, serializers: SerializerProvider?) {
+  override fun serialize(value: Geometry?, gen: JsonGenerator, serializers: SerializationContext?) {
     if (value != null) {
       val writer = if (value.srid == SRID.LONG_LAT) noCrsGeoJsonWriter else geoJsonWriter
       gen.writeRawValue(writer.write(value))

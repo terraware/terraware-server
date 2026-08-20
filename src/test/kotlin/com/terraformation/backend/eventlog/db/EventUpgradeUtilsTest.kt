@@ -1,7 +1,5 @@
 package com.terraformation.backend.eventlog.db
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.event.OrganizationCreatedEventV1
 import com.terraformation.backend.customer.event.OrganizationRenamedEventV1
@@ -57,11 +55,12 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val objectMapper = jacksonObjectMapper()
   private val eventLogStore: EventLogStore by lazy {
     EventLogStore(clock, dslContext, objectMapper)
   }

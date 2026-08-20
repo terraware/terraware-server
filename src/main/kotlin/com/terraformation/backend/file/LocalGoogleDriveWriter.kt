@@ -1,8 +1,5 @@
 package com.terraformation.backend.file
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.log.perClassLogger
@@ -17,6 +14,9 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.readValue
 
 private const val FOLDER = "/google-drive"
 

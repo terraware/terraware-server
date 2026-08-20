@@ -114,7 +114,7 @@ class ObservationSplatsController(
           .readObservationSplat(observationId, fileId)
           .toResponseEntity(addHeaders = addImmutableCacheControlHeaders)
     } catch (_: SplatGenerationFailedException) {
-      ResponseEntity.unprocessableEntity()
+      ResponseEntity.unprocessableContent()
           .body(SimpleErrorResponsePayload(ErrorDetails("Splat generation failed.")))
     } catch (_: SplatNotReadyException) {
       ResponseEntity.accepted()

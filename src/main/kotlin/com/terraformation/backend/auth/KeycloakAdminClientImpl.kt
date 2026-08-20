@@ -185,29 +185,29 @@ class KeycloakAdminClientImpl(
   private class InMemoryAuthorizedClientRepository : OAuth2AuthorizedClientRepository {
     private val clients = ConcurrentHashMap<String, OAuth2AuthorizedClient>()
 
-    override fun <T : OAuth2AuthorizedClient?> loadAuthorizedClient(
+    override fun <T : OAuth2AuthorizedClient> loadAuthorizedClient(
         clientRegistrationId: String,
-        principal: Authentication?,
-        request: HttpServletRequest?,
-    ): T {
+        principal: Authentication,
+        request: HttpServletRequest,
+    ): T? {
       @Suppress("UNCHECKED_CAST")
-      return clients[clientRegistrationId] as T
+      return clients[clientRegistrationId] as? T
     }
 
     override fun saveAuthorizedClient(
         authorizedClient: OAuth2AuthorizedClient,
-        principal: Authentication?,
-        request: HttpServletRequest?,
-        response: HttpServletResponse?,
+        principal: Authentication,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
     ) {
       clients[authorizedClient.clientRegistration.registrationId] = authorizedClient
     }
 
     override fun removeAuthorizedClient(
         clientRegistrationId: String,
-        principal: Authentication?,
-        request: HttpServletRequest?,
-        response: HttpServletResponse?,
+        principal: Authentication,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
     ) {
       clients.remove(clientRegistrationId)
     }

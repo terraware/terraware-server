@@ -1,6 +1,5 @@
 package com.terraformation.backend.species.db
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.SpeciesNativity
@@ -23,6 +22,7 @@ import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class GriisImporterTest : DatabaseTest() {
   private val uriFetcher: UriFetcher = mockk()

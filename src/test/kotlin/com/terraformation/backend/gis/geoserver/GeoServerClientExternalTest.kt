@@ -1,6 +1,5 @@
 package com.terraformation.backend.gis.geoserver
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.dummyTerrawareServerConfig
@@ -9,6 +8,7 @@ import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 class GeoServerClientExternalTest {
   private lateinit var client: GeoServerClient
@@ -29,7 +29,7 @@ class GeoServerClientExternalTest {
                 )
         )
 
-    client = GeoServerClient(config, jacksonObjectMapper().registerModule(GeometryModule()))
+    client = GeoServerClient(config, jacksonMapperBuilder().addModule(GeometryModule()).build())
   }
 
   @Test

@@ -1,11 +1,11 @@
 package com.terraformation.backend.seedbank.api
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.readValue
 
 class CreateAccessionRequestPayloadV2Test {
   private val objectMapper = jacksonObjectMapper()

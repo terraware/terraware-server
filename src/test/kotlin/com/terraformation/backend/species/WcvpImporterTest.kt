@@ -18,9 +18,9 @@ import java.time.Instant
 import java.util.zip.ZipFile
 import kotlin.io.path.Path
 import kotlin.io.path.exists
-import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -40,7 +40,7 @@ class WcvpImporterTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun maybeSkipTest() {
-    assumeNotNull(System.getenv("TEST_WCVP_IMPORTER"))
+    assumeTrue(System.getenv("TEST_WCVP_IMPORTER") != null)
   }
 
   @Test

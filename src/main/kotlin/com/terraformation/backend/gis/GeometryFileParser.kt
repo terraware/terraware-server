@@ -1,7 +1,5 @@
 package com.terraformation.backend.gis
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.db.GeometryDeserializer
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.file.useAndDelete
@@ -37,6 +35,10 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.PrecisionModel
 import org.xml.sax.SAXException
+import tools.jackson.core.exc.StreamReadException
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.exc.MismatchedInputException
+import tools.jackson.module.kotlin.readValue
 
 /**
  * Reads geometry from the file formats the clients can upload: KML, KMZ, GeoJSON, and ZIP archives
@@ -136,8 +138,10 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
               .withAttribute(GeometryDeserializer.SKIP_VALIDATION, !validate)
               .readValue<Geometry?>(content)
               ?: throw InvalidGeometryFileException(message = "GeoJSON document is null")
-        } catch (e: JsonProcessingException) {
-          throw InvalidGeometryFileException(e, "Malformed or unreadable GeoJSON")
+        } catch (e: StreamReadException) {
+          throw InvalidGeometryFileException(e, "Unreadable GeoJSON")
+        } catch (e: MismatchedInputException) {
+          throw InvalidGeometryFileException(e, "Malformed GeoJSON")
         }
 
     return parsedFile(flattenCollections(geometry), GeometryFileFormat.GeoJSON)

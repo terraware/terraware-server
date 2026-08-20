@@ -1,7 +1,5 @@
 package com.terraformation.backend.plantingmanagement.db
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -47,11 +45,12 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val objectMapper = jacksonObjectMapper()
   private val eventLogStore: EventLogStore by lazy {
     EventLogStore(clock, dslContext, objectMapper)
   }

@@ -14,14 +14,14 @@ class CustomOAuth2AuthorizationRequestResolver(
   private val delegate =
       DefaultOAuth2AuthorizationRequestResolver(repo, authorizationRequestBaseUri)
 
-  override fun resolve(request: HttpServletRequest?): OAuth2AuthorizationRequest? {
+  override fun resolve(request: HttpServletRequest): OAuth2AuthorizationRequest? {
     val authorizationRequest = delegate.resolve(request) ?: return null
     return customizeAuthorizationRequest(authorizationRequest, request)
   }
 
   override fun resolve(
-      request: HttpServletRequest?,
-      clientRegistrationId: String?,
+      request: HttpServletRequest,
+      clientRegistrationId: String,
   ): OAuth2AuthorizationRequest? {
     val authorizationRequest = delegate.resolve(request, clientRegistrationId) ?: return null
     return customizeAuthorizationRequest(authorizationRequest, request)
