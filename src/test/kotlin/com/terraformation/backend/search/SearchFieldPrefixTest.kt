@@ -6,7 +6,8 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.search.table.SearchTables
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class SearchFieldPrefixTest {
@@ -18,21 +19,23 @@ class SearchFieldPrefixTest {
           name = "accessions",
           searchTable = tables.accessions,
           isMultiValue = true,
-          conditionForMultiset = PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID),
+          getConditionForMultiset = { _, _ -> PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID) },
       )
   private val viabilityTestsField =
       SublistField(
           name = "viabilityTests",
           searchTable = tables.viabilityTests,
           isMultiValue = true,
-          conditionForMultiset = ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID),
+          getConditionForMultiset = { _, _ -> ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID) },
       )
   private val viabilityTestsResultsField =
       SublistField(
           name = "viabilityTestResults",
           searchTable = tables.viabilityTestResults,
           isMultiValue = true,
-          conditionForMultiset = VIABILITY_TESTS.ID.eq(VIABILITY_TEST_RESULTS.TEST_ID),
+          getConditionForMultiset = { _, _ ->
+            VIABILITY_TESTS.ID.eq(VIABILITY_TEST_RESULTS.TEST_ID)
+          },
       )
 
   @Test

@@ -50,6 +50,10 @@ data class SearchFieldPrefix(
   val sublistField: SublistField?
     get() = sublists.lastOrNull()
 
+  /** The prefix of the table that contains [sublistField], or null if this is a root prefix. */
+  val parent: SearchFieldPrefix?
+    get() = if (isRoot) null else SearchFieldPrefix(root, sublists.dropLast(1))
+
   /**
    * Returns a chain of parent/child pairs for this prefix's sublists. The first sublist's parent is
    * [root].
