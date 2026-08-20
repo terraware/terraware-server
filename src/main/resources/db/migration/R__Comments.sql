@@ -251,13 +251,17 @@ COMMENT ON TABLE species_problems IS 'Problems found in species data. Rows are d
 
 COMMENT ON TABLE splats IS 'Information about 3D Gaussian splatting models generated from video files.';
 COMMENT ON COLUMN splats.camera_position IS 'Starting location of the camera in cartesian coordinates.';
-COMMENT ON COLUMN splats.data_file_id IS 'Optional file containing additional metadata that helps with generating the splat, such as pose priors from sensor data.';
 COMMENT ON COLUMN splats.ground_color IS 'Average color of the ground.';
 COMMENT ON COLUMN splats.ground_plane IS 'Ground plane of the splat in cartesian coordinates represented by 3 points in a MULTIPOINTZ.';
 COMMENT ON COLUMN splats.origin_position IS 'Center point of the splat in cartesian coordinates.';
 COMMENT ON COLUMN splats.scene_bounds IS 'Bounding perimeter of the splat in cartesian coordinates, defined as a PointZM such that XYZ is the center of the circle, and M is the radius. The circle lies on the ground plane.';
 COMMENT ON COLUMN splats.sky_color IS 'Average color of the sky.';
 COMMENT ON COLUMN splats.sky_radius IS 'Size of the sky sphere.';
+
+COMMENT ON TABLE splat_additional_file_types IS '(Enum) Kinds of supplementary input files that can accompany a splat''s video file.';
+
+COMMENT ON TABLE splat_additional_files IS 'Supplementary input files, such as pose priors from sensor data, that help with generating a splat.';
+COMMENT ON COLUMN splat_additional_files.splat_file_id IS 'Video file of the splat this file is an input for.';
 
 COMMENT ON TABLE splat_annotation_media IS 'Media files (photos or videos) attached to splat annotations. Modeled for multiple media per annotation.';
 COMMENT ON COLUMN splat_annotation_media.position IS 'Display order of this media within its annotation, 0-based.';

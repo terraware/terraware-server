@@ -1934,28 +1934,31 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `generates splat with JSON data file for a video plus JSON batch`() {
+    fun `generates splat for a video plus JSON batch`() {
       val fileBatchId = insertFileBatch()
-      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
-      insertOrganizationMediaFile(fileId = videoFileId)
-      val jsonFileId =
+      val videoFileId =
           insertFile(
-              contentType = "application/json",
+              contentType = "video/mp4",
               fileBatchId = fileBatchId,
-              storageUrl = "s3://bucket/data.json",
+              storageUrl = "s3://bucket/video.mp4",
           )
+      insertOrganizationMediaFile(fileId = videoFileId)
+      insertFile(
+          contentType = "application/json",
+          fileBatchId = fileBatchId,
+          storageUrl = "s3://bucket/data.json",
+      )
 
       val messageSlot = slot<SplatterRequestMessage>()
       every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
 
       service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
-      val splat = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
-      assertEquals(jsonFileId, splat.dataFileId, "Data file ID")
+      dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
       assertEquals(
-          SplatterRequestFileLocation("bucket", "data.json"),
-          messageSlot.captured.dataFile,
-          "Request data file location",
+          SplatterRequestFileLocation("bucket", "video.mp4"),
+          messageSlot.captured.input,
+          "Request input file location",
       )
     }
 
