@@ -7,6 +7,7 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.api.BatchPayload
 import com.terraformation.backend.nursery.model.NewBatchModel
@@ -35,9 +36,10 @@ class TransfersController(
   ): CreateNurseryTransferResponsePayload {
     val (accession, batch) =
         accessionService.createNurseryTransfer(
-            accessionId,
-            payload.toNewBatchModel(),
-            payload.withdrawnByUserId,
+            accessionId = accessionId,
+            batch = payload.toNewBatchModel(),
+            batchId = payload.batchId,
+            withdrawnByUserId = payload.withdrawnByUserId,
         )
     return CreateNurseryTransferResponsePayload(AccessionPayloadV2(accession), BatchPayload(batch))
   }
@@ -45,20 +47,30 @@ class TransfersController(
 
 data class CreateNurseryTransferRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL)
-    @Min(0) //
     @JsonAlias("notReadyQuantity")
+    @Min(0)
+    @Schema(description = "Ignored if batchId is specified.")
     val activeGrowthQuantity: Int,
+    @Schema(
+        description =
+            "If this transfer should add to an existing batch, the batch's ID. Default is to " +
+                "create a new batch. The batch must be at the facility specified by " +
+                "destinationFacilityId, and it must be of the same species as the accession."
+    )
+    val batchId: BatchId?,
     val date: LocalDate,
     val destinationFacilityId: FacilityId,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0) //
     val germinatingQuantity: Int,
     @Min(0) //
+    @Schema(description = "Ignored if batchId is specified.")
     val hardeningOffQuantity: Int? = 0,
     val notes: String? = null,
     val readyByDate: LocalDate? = null,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0) //
+    @Schema(description = "Ignored if batchId is specified.")
     val readyQuantity: Int,
     @Schema(
         description =
@@ -85,6 +97,6 @@ data class CreateNurseryTransferRequestPayload(
 data class CreateNurseryTransferResponsePayload(
     @Schema(description = "Updated accession that includes a withdrawal for the nursery transfer.")
     val accession: AccessionPayloadV2,
-    @Schema(description = "Details of newly-created seedling batch.") //
+    @Schema(description = "Details of the seedling batch the seeds were added to.")
     val batch: BatchPayload,
 ) : SuccessResponsePayload

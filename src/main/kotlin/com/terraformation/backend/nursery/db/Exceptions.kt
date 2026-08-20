@@ -4,8 +4,12 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EntityStaleException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
+
+class BatchAtWrongFacilityException(val batchId: BatchId, val facilityId: FacilityId) :
+    MismatchedStateException("Seedling batch $batchId is not at facility $facilityId")
 
 class BatchInventoryInsufficientException(val batchId: BatchId) :
     IllegalArgumentException("Withdrawal quantity can't be more than remaining quantity")
@@ -15,6 +19,9 @@ class BatchNotFoundException(val batchId: BatchId) :
 
 class BatchPhaseReversalNotAllowedException(val batchId: BatchId) :
     IllegalArgumentException("Cannot move quantity from further phase for batch $batchId")
+
+class BatchSpeciesMismatchException(val batchId: BatchId, val speciesId: SpeciesId) :
+    MismatchedStateException("Seedling batch $batchId is not of species $speciesId")
 
 class BatchStaleException(val batchId: BatchId, val requestedVersion: Int) :
     EntityStaleException("Seedling batch $batchId version $requestedVersion out of date")

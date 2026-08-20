@@ -563,6 +563,7 @@ class StratumModelTest {
       val square = stratum.findUnusedSquare(siteOrigin, 30)
       assertNotNull(square, "Unused square")
 
+      assertThat("foobar").contains("bar", "foo")
       assertThat(square!!.intersection(targetArea).area)
           .describedAs(
               "Area of the part of the square that is inside the only region the square should " +

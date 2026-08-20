@@ -15,6 +15,8 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.nursery.db.BatchAtWrongFacilityException
+import com.terraformation.backend.nursery.db.BatchSpeciesMismatchException
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.model.ExistingBatchModel
@@ -249,8 +251,22 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
             speciesId = SpeciesId(1),
         )
 
+    private val existingBatchId = BatchId(2)
+    private val existingBatchAccessionId = AccessionId(2)
+
     private val accessionSlot: CapturingSlot<AccessionModel> = slot()
     private val batchSlot: CapturingSlot<NewBatchModel> = slot()
+
+    private val transferredBatch =
+        NewBatchModel(
+            addedDate = LocalDate.EPOCH.plusDays(1),
+            facilityId = nurseryFacilityId,
+            germinatingQuantity = 10,
+            activeGrowthQuantity = 0,
+            readyQuantity = 0,
+            hardeningOffQuantity = 0,
+            speciesId = null,
+        )
 
     @BeforeEach
     fun setUp() {
@@ -289,6 +305,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
       every { user.canCreateBatch(nurseryFacilityId) } returns true
       every { user.canReadFacility(nurseryFacilityId) } returns true
+      every { user.canUpdateBatch(existingBatchId) } returns true
     }
 
     @Test
@@ -379,6 +396,72 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       assertEquals(grams(initialGrams - gramsPerSeed * (1 + 2 + 3 + 4)), accession.remaining)
+    }
+
+    @Test
+    fun `adds seeds to existing batch if batch ID is specified`() {
+      val existingBatch = makeExistingBatch()
+      val updatedBatch =
+          existingBatch.copy(
+              germinatingQuantity = 11,
+              activeGrowthQuantity = 22,
+              hardeningOffQuantity = 44,
+              readyQuantity = 33,
+              version = 2,
+          )
+
+      every { batchStore.fetchOneById(existingBatchId) } returns existingBatch
+      every {
+        batchStore.addToExistingBatch(
+            accessionId = accessionId,
+            batchId = existingBatchId,
+            germinatingQuantity = 10,
+        )
+      } returns updatedBatch
+
+      val (updatedAccession, batch) =
+          service.createNurseryTransfer(accessionId, transferredBatch, batchId = existingBatchId)
+
+      assertEquals(updatedBatch, batch, "Returned batch")
+      assertEquals(
+          existingBatchAccessionId,
+          batch.accessionId,
+          "Accession ID of batch should not have changed",
+      )
+      assertEquals(seeds(0), updatedAccession.remaining, "Seeds remaining")
+      assertEquals(existingBatchId, updatedAccession.withdrawals.single().batchId, "Batch ID")
+
+      verify(exactly = 0) { batchStore.create(any()) }
+    }
+
+    @Test
+    fun `throws exception if existing batch is at a different facility`() {
+      every { batchStore.fetchOneById(existingBatchId) } returns
+          makeExistingBatch(facilityId = FacilityId(3))
+
+      assertThrows<BatchAtWrongFacilityException> {
+        service.createNurseryTransfer(accessionId, transferredBatch, batchId = existingBatchId)
+      }
+    }
+
+    @Test
+    fun `throws exception if existing batch is of a different species`() {
+      every { batchStore.fetchOneById(existingBatchId) } returns
+          makeExistingBatch(speciesId = SpeciesId(1000))
+
+      assertThrows<BatchSpeciesMismatchException> {
+        service.createNurseryTransfer(accessionId, transferredBatch, batchId = existingBatchId)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update existing batch`() {
+      every { user.canReadBatch(existingBatchId) } returns true
+      every { user.canUpdateBatch(existingBatchId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        service.createNurseryTransfer(accessionId, transferredBatch, batchId = existingBatchId)
+      }
     }
 
     @Test
@@ -479,5 +562,30 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
         )
       }
     }
+
+    private fun makeExistingBatch(
+        facilityId: FacilityId = nurseryFacilityId,
+        speciesId: SpeciesId = accession.speciesId!!,
+    ) =
+        ExistingBatchModel(
+            accessionId = existingBatchAccessionId,
+            activeGrowthQuantity = 20,
+            addedDate = LocalDate.EPOCH,
+            batchNumber = "2",
+            facilityId = facilityId,
+            germinatingQuantity = 10,
+            hardeningOffQuantity = 40,
+            id = existingBatchId,
+            latestObservedActiveGrowthQuantity = 20,
+            latestObservedGerminatingQuantity = 10,
+            latestObservedHardeningOffQuantity = 40,
+            latestObservedReadyQuantity = 30,
+            latestObservedTime = Instant.EPOCH,
+            organizationId = organizationId,
+            readyQuantity = 30,
+            speciesId = speciesId,
+            totalWithdrawn = 0,
+            version = 1,
+        )
   }
 }

@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import io.mockk.every
 import org.junit.jupiter.api.Test
@@ -16,6 +17,21 @@ internal class BatchStorePermissionTest : BatchStoreTest() {
     every { user.canReadFacility(facilityId) } returns true
 
     assertThrows<AccessDeniedException> { store.create(makeNewBatchModel()) }
+  }
+
+  @Test
+  fun `addToExistingBatch throws exception if no permission to update batch`() {
+    val batchId = BatchId(1)
+
+    every { user.canUpdateBatch(batchId) } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.addToExistingBatch(
+          accessionId = AccessionId(1),
+          batchId = batchId,
+          germinatingQuantity = 1,
+      )
+    }
   }
 
   @Test
