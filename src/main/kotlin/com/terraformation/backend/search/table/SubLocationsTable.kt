@@ -8,8 +8,10 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class SubLocationsTable(tables: SearchTables) : SearchTable() {
@@ -35,7 +37,7 @@ class SubLocationsTable(tables: SearchTables) : SearchTable() {
           textField("name", SUB_LOCATIONS.NAME),
       )
 
-  override fun conditionForVisibility(): Condition {
-    return SUB_LOCATIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table.column(SUB_LOCATIONS.FACILITY_ID).`in`(currentUser().facilityRoles.keys)
   }
 }

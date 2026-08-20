@@ -13,9 +13,11 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -68,7 +70,7 @@ class AcceleratorReportsTable(tables: SearchTables) : SearchTable() {
   override val defaultOrderFields: List<OrderField<*>>
     get() = listOf(REPORTS.START_DATE.desc(), REPORTS.ID)
 
-  override fun conditionForVisibility(): Condition {
+  override fun conditionForVisibility(table: Table<*>): Condition {
     return if (currentUser().canReadAllAcceleratorDetails()) {
       DSL.trueCondition()
     } else {
@@ -78,7 +80,7 @@ class AcceleratorReportsTable(tables: SearchTables) : SearchTable() {
       DSL.exists(
           DSL.selectOne()
               .from(PROJECTS)
-              .where(REPORTS.PROJECT_ID.eq(PROJECTS.ID))
+              .where(table.column(REPORTS.PROJECT_ID).eq(PROJECTS.ID))
               .and(PROJECTS.ORGANIZATION_ID.`in`(organizationIds))
       )
     }

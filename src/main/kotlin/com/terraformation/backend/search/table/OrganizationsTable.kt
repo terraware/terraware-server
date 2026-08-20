@@ -22,8 +22,10 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SU
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -112,7 +114,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
           zoneIdField("timeZone", ORGANIZATIONS.TIME_ZONE),
       )
 
-  override fun conditionForVisibility(): Condition {
+  override fun conditionForVisibility(table: Table<*>): Condition {
     val acceleratorCondition =
         if (currentUser().canReadAllAcceleratorDetails()) {
           DSL.exists(
@@ -120,7 +122,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
                   .from(PROJECTS)
                   .leftJoin(APPLICATIONS)
                   .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
-                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                  .where(PROJECTS.ORGANIZATION_ID.eq(table.column(ORGANIZATIONS.ID)))
                   .and(PROJECTS.PHASE_ID.isNotNull.or(APPLICATIONS.ID.isNotNull))
           )
         } else {
@@ -129,7 +131,7 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
 
     return DSL.or(
         listOfNotNull(
-            ORGANIZATIONS.ID.`in`(currentUser().organizationRoles.keys),
+            table.column(ORGANIZATIONS.ID).`in`(currentUser().organizationRoles.keys),
             acceleratorCondition,
         )
     )

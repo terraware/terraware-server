@@ -9,9 +9,11 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -44,7 +46,7 @@ class EventsTable(tables: SearchTables) : SearchTable() {
           uriField("slidesUrl", EVENTS.SLIDES_URL),
       )
 
-  override fun conditionForVisibility(): Condition {
+  override fun conditionForVisibility(table: Table<*>): Condition {
     return if (currentUser().canReadAllAcceleratorDetails()) {
       DSL.trueCondition()
     } else {
@@ -53,7 +55,7 @@ class EventsTable(tables: SearchTables) : SearchTable() {
               .from(EVENT_PROJECTS)
               .join(PROJECTS)
               .on(EVENT_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
-              .where(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID))
+              .where(EVENT_PROJECTS.EVENT_ID.eq(table.column(EVENTS.ID)))
               .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
       )
     }

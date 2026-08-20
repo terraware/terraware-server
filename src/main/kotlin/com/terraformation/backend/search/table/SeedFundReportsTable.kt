@@ -8,8 +8,10 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -39,12 +41,12 @@ class SeedFundReportsTable(tables: SearchTables) : SearchTable() {
           integerField("year", SEED_FUND_REPORTS.YEAR),
       )
 
-  override fun conditionForVisibility(): Condition {
+  override fun conditionForVisibility(table: Table<*>): Condition {
     val user = currentUser()
     val organizationIds = user.organizationRoles.keys.filter { user.canListSeedFundReports(it) }
 
     return if (organizationIds.isNotEmpty()) {
-      SEED_FUND_REPORTS.ORGANIZATION_ID.`in`(organizationIds)
+      table.column(SEED_FUND_REPORTS.ORGANIZATION_ID).`in`(organizationIds)
     } else {
       DSL.falseCondition()
     }
