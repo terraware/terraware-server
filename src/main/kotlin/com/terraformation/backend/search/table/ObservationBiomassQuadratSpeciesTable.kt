@@ -54,10 +54,9 @@ class ObservationBiomassQuadratSpeciesTable(private val tables: SearchTables) : 
   override val fields: List<SearchField> =
       listOf(
           integerField("abundanceCount", OBSERVATION_BIOMASS_QUADRAT_SPECIES.ABUNDANCE_COUNT),
-          integerField(
-              "abundancePercent",
-              OBSERVATION_BIOMASS_QUADRAT_SPECIES.ABUNDANCE_COUNT.times(4),
-          ),
+          integerField("abundancePercent") { table ->
+            table.column(OBSERVATION_BIOMASS_QUADRAT_SPECIES.ABUNDANCE_COUNT).times(4)
+          },
           enumField("position", OBSERVATION_BIOMASS_QUADRAT_SPECIES.POSITION_ID),
       )
 

@@ -20,7 +20,7 @@ import org.jooq.impl.DSL
  */
 class NonLocalizableEnumField<T : EnumFromReferenceTable<*, T>>(
     override val fieldName: String,
-    override val databaseField: Field<T?>,
+    override val getDatabaseField: DatabaseFieldSupplier<T>,
     override val table: SearchTable,
     private val enumClass: Class<T>,
     override val exportable: Boolean = true,

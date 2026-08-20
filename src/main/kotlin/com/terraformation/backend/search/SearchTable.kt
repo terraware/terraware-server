@@ -9,6 +9,7 @@ import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.BigDecimalField
 import com.terraformation.backend.search.field.BooleanField
 import com.terraformation.backend.search.field.CoordinateField
+import com.terraformation.backend.search.field.DatabaseFieldSupplier
 import com.terraformation.backend.search.field.DateField
 import com.terraformation.backend.search.field.DoubleField
 import com.terraformation.backend.search.field.EnumField
@@ -28,6 +29,8 @@ import com.terraformation.backend.search.field.UpperCaseTextField
 import com.terraformation.backend.search.field.UriField
 import com.terraformation.backend.search.field.WeightField
 import com.terraformation.backend.search.field.ZoneIdField
+import com.terraformation.backend.search.field.column
+import com.terraformation.backend.search.field.columnSupplier
 import com.terraformation.backend.search.field.columnsEqual
 import java.math.BigDecimal
 import java.net.URI
@@ -286,69 +289,143 @@ abstract class SearchTable {
         ?: throw IllegalArgumentException("Sublist $relativePath not found")
   }
 
+  // Each of the field-definition helpers below comes in two flavors: one that takes a jOOQ column
+  // and one that takes a function to derive a jOOQ field from an instance of this table. Use the
+  // column flavor for fields that map directly to columns of this table, and the function flavor
+  // for fields whose values are computed by SQL expressions. See [DatabaseFieldSelector]. In the
+  // function flavors, the function is the last parameter so it can be passed as a trailing lambda.
+
   fun ageField(
       fieldName: String,
-      databaseField: TableField<*, LocalDate?>,
+      databaseField: Field<LocalDate?>,
       granularity: AgeField.AgeGranularity,
       clock: Clock,
-  ) = AgeField(fieldName, databaseField, this, true, true, granularity, clock)
+  ) = ageField(fieldName, granularity, clock, columnSupplier(databaseField))
+
+  fun ageField(
+      fieldName: String,
+      granularity: AgeField.AgeGranularity,
+      clock: Clock,
+      getDatabaseField: DatabaseFieldSupplier<LocalDate>,
+  ) = AgeField(fieldName, getDatabaseField, this, true, true, granularity, clock)
 
   fun bigDecimalField(fieldName: String, databaseField: Field<BigDecimal?>) =
-      BigDecimalField(fieldName, databaseField, this)
+      bigDecimalField(fieldName, columnSupplier(databaseField))
+
+  fun bigDecimalField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<BigDecimal>) =
+      BigDecimalField(fieldName, getDatabaseField, this)
 
   fun booleanField(fieldName: String, databaseField: Field<Boolean?>) =
-      BooleanField(fieldName, databaseField, this)
+      booleanField(fieldName, columnSupplier(databaseField))
+
+  fun booleanField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<Boolean>) =
+      BooleanField(fieldName, getDatabaseField, this)
 
   fun coordinateField(
       fieldName: String,
       databaseField: Field<Geometry?>,
       vertexIndex: Int,
       axis: CoordinateField.Companion.Axis,
-  ) = CoordinateField(fieldName, databaseField, vertexIndex, axis, this, true, true)
+  ) = coordinateField(fieldName, vertexIndex, axis, columnSupplier(databaseField))
+
+  fun coordinateField(
+      fieldName: String,
+      vertexIndex: Int,
+      axis: CoordinateField.Companion.Axis,
+      getDatabaseField: DatabaseFieldSupplier<Geometry>,
+  ) = CoordinateField(fieldName, getDatabaseField, vertexIndex, axis, this, true, true)
 
   fun dateField(fieldName: String, databaseField: Field<LocalDate?>) =
-      DateField(fieldName, databaseField, this)
+      dateField(fieldName, columnSupplier(databaseField))
+
+  fun dateField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<LocalDate>) =
+      DateField(fieldName, getDatabaseField, this)
 
   fun doubleField(fieldName: String, databaseField: Field<Double?>) =
-      DoubleField(fieldName, databaseField, this)
+      doubleField(fieldName, columnSupplier(databaseField))
+
+  fun doubleField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<Double>) =
+      DoubleField(fieldName, getDatabaseField, this)
 
   inline fun <E : Enum<E>, reified T : LocalizableEnum<E>> enumField(
       fieldName: String,
       databaseField: Field<T?>,
       localize: Boolean = true,
-  ) = EnumField(fieldName, databaseField, this, T::class.java, localize)
+  ) = enumField<E, T>(fieldName, localize, columnSupplier(databaseField))
 
-  fun geometryField(fieldName: String, databaseField: TableField<*, Geometry?>) =
-      GeometryField(fieldName, databaseField, this)
+  inline fun <E : Enum<E>, reified T : LocalizableEnum<E>> enumField(
+      fieldName: String,
+      localize: Boolean = true,
+      noinline getDatabaseField: DatabaseFieldSupplier<T>,
+  ) = EnumField(fieldName, getDatabaseField, this, T::class.java, localize)
+
+  fun geometryField(fieldName: String, databaseField: Field<Geometry?>) =
+      geometryField(fieldName, columnSupplier(databaseField))
+
+  fun geometryField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<Geometry>) =
+      GeometryField(fieldName, getDatabaseField, this)
 
   fun <T : Any> idWrapperField(fieldName: String, databaseField: Field<T?>, fromLong: (Long) -> T) =
-      IdWrapperField(fieldName, databaseField, this, fromLong)
+      idWrapperField(fieldName, fromLong, columnSupplier(databaseField))
 
-  fun stableIdField(
+  fun <T : Any> idWrapperField(
       fieldName: String,
-      databaseField: Field<StableId?>,
-  ) = StableIdField(fieldName, databaseField, this)
+      fromLong: (Long) -> T,
+      getDatabaseField: DatabaseFieldSupplier<T>,
+  ) = IdWrapperField(fieldName, getDatabaseField, this, fromLong)
+
+  fun stableIdField(fieldName: String, databaseField: Field<StableId?>) =
+      stableIdField(fieldName, columnSupplier(databaseField))
+
+  fun stableIdField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<StableId>) =
+      StableIdField(fieldName, getDatabaseField, this)
 
   fun integerField(fieldName: String, databaseField: Field<Int?>, localize: Boolean = true) =
-      IntegerField(fieldName, databaseField, this, localize)
+      integerField(fieldName, localize, columnSupplier(databaseField))
 
-  fun localDateTimeField(fieldName: String, databaseField: TableField<*, LocalDateTime?>) =
-      LocalDateTimeField(fieldName, databaseField, this)
+  fun integerField(
+      fieldName: String,
+      localize: Boolean = true,
+      getDatabaseField: DatabaseFieldSupplier<Int>,
+  ) = IntegerField(fieldName, getDatabaseField, this, localize)
+
+  fun localDateTimeField(fieldName: String, databaseField: Field<LocalDateTime?>) =
+      localDateTimeField(fieldName, columnSupplier(databaseField))
+
+  fun localDateTimeField(
+      fieldName: String,
+      getDatabaseField: DatabaseFieldSupplier<LocalDateTime>,
+  ) = LocalDateTimeField(fieldName, getDatabaseField, this)
 
   fun <T : Any> localizedTextField(
       fieldName: String,
       databaseField: Field<T?>,
       resourceBundleName: String,
       prefix: String? = null,
-  ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, prefix, this)
+  ) = localizedTextField(fieldName, resourceBundleName, prefix, columnSupplier(databaseField))
+
+  fun <T : Any> localizedTextField(
+      fieldName: String,
+      resourceBundleName: String,
+      prefix: String? = null,
+      getDatabaseField: DatabaseFieldSupplier<T>,
+  ) = LocalizedTextField(fieldName, getDatabaseField, resourceBundleName, prefix, this)
 
   fun longField(fieldName: String, databaseField: Field<Long?>, nullable: Boolean = true) =
-      LongField(fieldName, databaseField, this)
+      longField(fieldName, columnSupplier(databaseField))
+
+  fun longField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<Long>) =
+      LongField(fieldName, getDatabaseField, this)
 
   inline fun <reified T : EnumFromReferenceTable<*, T>> nonLocalizableEnumField(
       fieldName: String,
       databaseField: Field<T?>,
-  ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java)
+  ) = nonLocalizableEnumField<T>(fieldName, columnSupplier(databaseField))
+
+  inline fun <reified T : EnumFromReferenceTable<*, T>> nonLocalizableEnumField(
+      fieldName: String,
+      noinline getDatabaseField: DatabaseFieldSupplier<T>,
+  ) = NonLocalizableEnumField(fieldName, getDatabaseField, this, T::class.java)
 
   fun nullMessageField(
       original: SearchField,
@@ -360,16 +437,31 @@ abstract class SearchTable {
       fieldName: String,
       databaseField: Field<String?>,
       collation: String? = null,
-  ) = TextField(fieldName, databaseField, this, collation)
+  ) = textField(fieldName, collation, columnSupplier(databaseField))
 
-  fun timestampField(fieldName: String, databaseField: TableField<*, Instant?>) =
-      TimestampField(fieldName, databaseField, this)
+  fun textField(
+      fieldName: String,
+      collation: String? = null,
+      getDatabaseField: DatabaseFieldSupplier<String>,
+  ) = TextField(fieldName, getDatabaseField, this, collation)
+
+  fun timestampField(fieldName: String, databaseField: Field<Instant?>) =
+      timestampField(fieldName, columnSupplier(databaseField))
+
+  fun timestampField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<Instant>) =
+      TimestampField(fieldName, getDatabaseField, this)
 
   fun upperCaseTextField(fieldName: String, databaseField: Field<String?>) =
-      UpperCaseTextField(fieldName, databaseField, this)
+      upperCaseTextField(fieldName, columnSupplier(databaseField))
+
+  fun upperCaseTextField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<String>) =
+      UpperCaseTextField(fieldName, getDatabaseField, this)
 
   fun uriField(fieldName: String, databaseField: Field<URI?>) =
-      UriField(fieldName, databaseField, this)
+      uriField(fieldName, columnSupplier(databaseField))
+
+  fun uriField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<URI>) =
+      UriField(fieldName, getDatabaseField, this)
 
   /**
    * Returns an array of [SearchField]s for a seed quantity: one for each supported weight unit, one
@@ -383,58 +475,40 @@ abstract class SearchTable {
    */
   fun weightFields(
       fieldNamePrefix: String,
-      quantityField: TableField<*, BigDecimal?>,
-      unitsField: TableField<*, SeedQuantityUnits?>,
+      quantityField: Field<BigDecimal?>,
+      unitsField: Field<SeedQuantityUnits?>,
       gramsField: Field<BigDecimal?>,
   ): Array<SearchField> {
     fun String.uncapitalize() = replaceFirstChar { it.lowercaseChar() }
 
+    val getQuantityField = columnSupplier(quantityField)
+    val getUnitsField = columnSupplier(unitsField)
+    val getGramsField = columnSupplier(gramsField)
+
+    fun weightField(unitsName: String, units: SeedQuantityUnits) =
+        WeightField(
+            "$fieldNamePrefix$unitsName".uncapitalize(),
+            getQuantityField,
+            getUnitsField,
+            getGramsField,
+            units,
+            this,
+        )
+
     return arrayOf(
-        WeightField(
-            "${fieldNamePrefix}Grams".uncapitalize(),
-            quantityField,
-            unitsField,
-            gramsField,
-            SeedQuantityUnits.Grams,
-            this,
-        ),
-        WeightField(
-            "${fieldNamePrefix}Kilograms".uncapitalize(),
-            quantityField,
-            unitsField,
-            gramsField,
-            SeedQuantityUnits.Kilograms,
-            this,
-        ),
-        WeightField(
-            "${fieldNamePrefix}Milligrams".uncapitalize(),
-            quantityField,
-            unitsField,
-            gramsField,
-            SeedQuantityUnits.Milligrams,
-            this,
-        ),
-        WeightField(
-            "${fieldNamePrefix}Ounces".uncapitalize(),
-            quantityField,
-            unitsField,
-            gramsField,
-            SeedQuantityUnits.Ounces,
-            this,
-        ),
-        WeightField(
-            "${fieldNamePrefix}Pounds".uncapitalize(),
-            quantityField,
-            unitsField,
-            gramsField,
-            SeedQuantityUnits.Pounds,
-            this,
-        ),
-        bigDecimalField("${fieldNamePrefix}Quantity".uncapitalize(), quantityField),
-        enumField("${fieldNamePrefix}Units".uncapitalize(), unitsField),
+        weightField("Grams", SeedQuantityUnits.Grams),
+        weightField("Kilograms", SeedQuantityUnits.Kilograms),
+        weightField("Milligrams", SeedQuantityUnits.Milligrams),
+        weightField("Ounces", SeedQuantityUnits.Ounces),
+        weightField("Pounds", SeedQuantityUnits.Pounds),
+        bigDecimalField("${fieldNamePrefix}Quantity".uncapitalize(), getQuantityField),
+        enumField("${fieldNamePrefix}Units".uncapitalize(), getDatabaseField = getUnitsField),
     )
   }
 
-  fun zoneIdField(fieldName: String, databaseField: TableField<*, ZoneId?>) =
-      ZoneIdField(fieldName, databaseField, this)
+  fun zoneIdField(fieldName: String, databaseField: Field<ZoneId?>) =
+      zoneIdField(fieldName, columnSupplier(databaseField))
+
+  fun zoneIdField(fieldName: String, getDatabaseField: DatabaseFieldSupplier<ZoneId>) =
+      ZoneIdField(fieldName, getDatabaseField, this)
 }

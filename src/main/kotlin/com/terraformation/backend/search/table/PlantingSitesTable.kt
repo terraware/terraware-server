@@ -136,16 +136,17 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           longField("numStrata", PLANTING_SITE_SUMMARIES.NUM_STRATA),
           longField("numSubstrata", PLANTING_SITE_SUMMARIES.NUM_SUBSTRATA),
           zoneIdField("timeZone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
-          bigDecimalField(
-              "totalPlants",
-              DSL.field(
-                  DSL.select(DSL.sum(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS))
-                      .from(PLANTING_SITE_POPULATIONS)
-                      .where(
-                          PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)
-                      )
-              ),
-          ),
+          bigDecimalField("totalPlants") { table ->
+            DSL.field(
+                DSL.select(DSL.sum(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS))
+                    .from(PLANTING_SITE_POPULATIONS)
+                    .where(
+                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(
+                            table.column(PLANTING_SITE_SUMMARIES.ID)
+                        )
+                    )
+            )
+          },
       )
 
   override fun conditionForVisibility(table: Table<*>): Condition {

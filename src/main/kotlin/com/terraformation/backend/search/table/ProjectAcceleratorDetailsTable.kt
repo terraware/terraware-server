@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.Table
@@ -41,7 +42,9 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
             textField("dropboxFolderPath", DROPBOX_FOLDER_PATH),
             textField("failureRisk", FAILURE_RISK),
             textField("fileNaming", FILE_NAMING),
-            textField("googleFolderUrl", GOOGLE_FOLDER_URL.cast(String::class.java)),
+            textField("googleFolderUrl") { table ->
+              table.column(GOOGLE_FOLDER_URL).cast(String::class.java)
+            },
             textField("investmentThesis", INVESTMENT_THESIS),
             bigDecimalField("maxCarbonAccumulation", MAX_CARBON_ACCUMULATION),
             bigDecimalField("minCarbonAccumulation", MIN_CARBON_ACCUMULATION),

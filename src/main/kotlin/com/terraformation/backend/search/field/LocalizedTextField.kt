@@ -23,7 +23,7 @@ import org.jooq.impl.SQLDataType
 class LocalizedTextField<T : Any>(
     override val fieldName: String,
     /** The field that has the name of the string to look up in the resource bundle. */
-    override val databaseField: Field<T?>,
+    override val getDatabaseField: DatabaseFieldSupplier<T>,
     private val resourceBundleName: String,
     private val prefix: String?,
     override val table: SearchTable,

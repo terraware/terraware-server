@@ -10,6 +10,7 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
+import com.terraformation.backend.search.field.columnsEqual
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
@@ -56,30 +57,16 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
               "herbaceousCoverPercent",
               OBSERVATION_BIOMASS_DETAILS.HERBACEOUS_COVER_PERCENT,
           ),
-          integerField(
-              "numPlants",
-              DSL.field(
-                  DSL.selectCount()
-                      .from(RECORDED_TREES)
-                      .where(
-                          RECORDED_TREES.OBSERVATION_PLOT_ID.eq(
-                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID
-                          )
-                      )
-              ),
-          ),
-          integerField(
-              "numSpecies",
-              DSL.field(
-                  DSL.select(DSL.countDistinct(RECORDED_TREES.BIOMASS_SPECIES_ID))
-                      .from(RECORDED_TREES)
-                      .where(
-                          RECORDED_TREES.OBSERVATION_PLOT_ID.eq(
-                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID
-                          )
-                      )
-              ),
-          ),
+          integerField("numPlants") { table ->
+            DSL.field(DSL.selectCount().from(RECORDED_TREES).where(sameObservationPlot(table)))
+          },
+          integerField("numSpecies") { table ->
+            DSL.field(
+                DSL.select(DSL.countDistinct(RECORDED_TREES.BIOMASS_SPECIES_ID))
+                    .from(RECORDED_TREES)
+                    .where(sameObservationPlot(table))
+            )
+          },
           noWater(bigDecimalField("ph", OBSERVATION_BIOMASS_DETAILS.PH)),
           integerField("smallTreesCountHigh", OBSERVATION_BIOMASS_DETAILS.SMALL_TREES_COUNT_HIGH),
           integerField("smallTreesCountLow", OBSERVATION_BIOMASS_DETAILS.SMALL_TREES_COUNT_LOW),
@@ -112,4 +99,13 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
 
   private fun noWater(original: SearchField) =
       nullMessageField(original, "search.observationBiomassDetails.noWater")
+
+  /** Correlates a subquery on recorded trees with a row of this table. */
+  private fun sameObservationPlot(table: Table<*>) =
+      columnsEqual(
+          RECORDED_TREES,
+          RECORDED_TREES.OBSERVATION_PLOT_ID,
+          table,
+          OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID,
+      )
 }

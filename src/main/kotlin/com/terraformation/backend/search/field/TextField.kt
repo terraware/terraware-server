@@ -19,7 +19,7 @@ import org.jooq.impl.DSL
  */
 class TextField(
     override val fieldName: String,
-    override val databaseField: Field<String?>,
+    override val getDatabaseField: DatabaseFieldSupplier<String>,
     override val table: SearchTable,
     val collation: String? = null,
 ) : SingleColumnSearchField<String>() {

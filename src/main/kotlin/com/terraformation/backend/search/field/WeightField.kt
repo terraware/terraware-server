@@ -28,9 +28,9 @@ import org.jooq.impl.DSL
  */
 class WeightField(
     override val fieldName: String,
-    private val quantityField: Field<BigDecimal?>,
-    private val unitsField: Field<SeedQuantityUnits?>,
-    private val gramsField: Field<BigDecimal?>,
+    private val getQuantityField: DatabaseFieldSupplier<BigDecimal>,
+    private val getUnitsField: DatabaseFieldSupplier<SeedQuantityUnits>,
+    private val getGramsField: DatabaseFieldSupplier<BigDecimal>,
     private val desiredUnits: SeedQuantityUnits,
     override val table: SearchTable,
     override val localize: Boolean = true,
@@ -39,15 +39,20 @@ class WeightField(
   private val formatRegex = Regex("(\\d|\\d.*\\d)\\s*(\\D*)")
   private val numberFormats = ConcurrentHashMap<Locale, NumberFormat>()
 
-  override val selectFields: List<Field<*>> =
-      when (desiredUnits) {
-        SeedQuantityUnits.Milligrams,
-        SeedQuantityUnits.Kilograms,
-        SeedQuantityUnits.Grams -> listOf(gramsField)
-        SeedQuantityUnits.Ounces,
-        SeedQuantityUnits.Pounds -> listOf(quantityField, unitsField)
-        SeedQuantityUnits.Seeds -> noSeeds()
-      }
+  private val quantityField: Field<BigDecimal?> by lazy { getQuantityField(table.fromTable) }
+  private val unitsField: Field<SeedQuantityUnits?> by lazy { getUnitsField(table.fromTable) }
+  private val gramsField: Field<BigDecimal?> by lazy { getGramsField(table.fromTable) }
+
+  override val selectFields: List<Field<*>> by lazy {
+    when (desiredUnits) {
+      SeedQuantityUnits.Milligrams,
+      SeedQuantityUnits.Kilograms,
+      SeedQuantityUnits.Grams -> listOf(gramsField)
+      SeedQuantityUnits.Ounces,
+      SeedQuantityUnits.Pounds -> listOf(quantityField, unitsField)
+      SeedQuantityUnits.Seeds -> noSeeds()
+    }
+  }
 
   override val orderByField: Field<*>
     get() = gramsField
@@ -189,9 +194,9 @@ class WeightField(
     return if (localize) {
       WeightField(
           rawFieldName(),
-          quantityField,
-          unitsField,
-          gramsField,
+          getQuantityField,
+          getUnitsField,
+          getGramsField,
           desiredUnits,
           table,
           false,
