@@ -51,6 +51,17 @@ data class SearchFieldPrefix(
     get() = sublists.lastOrNull()
 
   /**
+   * Returns a chain of parent/child pairs for this prefix's sublists. The first sublist's parent is
+   * [root].
+   */
+  fun referencedSublists(): List<ReferencedSublist> {
+    var parentTable = root
+    return sublists.map { sublist ->
+      ReferencedSublist(parentTable, sublist).also { parentTable = sublist.searchTable }
+    }
+  }
+
+  /**
    * The search table of this prefix as a whole. This is the table of the last sublist, or the root
    * table if this is a root prefix and there thus aren't any sublists.
    */
