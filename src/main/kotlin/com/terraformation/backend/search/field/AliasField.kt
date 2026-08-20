@@ -1,6 +1,8 @@
 package com.terraformation.backend.search.field
 
 import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchFieldPrefix
+import com.terraformation.backend.search.SearchTable
 
 /**
  * An alternate name for another search field. Using an alias is equivalent to using the target
@@ -47,4 +49,9 @@ private constructor(
   }
 
   override fun rawFieldName() = if (localize) "$fieldName(raw)" else fieldName
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    // Resolve the target path again so it points at the new table's sublists, not the old ones.
+    return AliasField(fieldName, SearchFieldPrefix(newTable).resolve("$targetPath"))
+  }
 }

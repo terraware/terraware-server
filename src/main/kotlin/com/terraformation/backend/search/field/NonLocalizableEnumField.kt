@@ -65,4 +65,8 @@ class NonLocalizableEnumField<T : EnumFromReferenceTable<*, T>>(
   override fun computeValue(record: Record) = record[databaseField]?.jsonValue
 
   override fun raw(): SearchField? = null
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return NonLocalizableEnumField(fieldName, getDatabaseField, newTable, enumClass, exportable)
+  }
 }

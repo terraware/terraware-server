@@ -67,4 +67,8 @@ class UpperCaseTextField(
 
   // Text fields aren't localized.
   override fun raw(): SearchField? = null
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return UpperCaseTextField(fieldName, getDatabaseField, newTable)
+  }
 }

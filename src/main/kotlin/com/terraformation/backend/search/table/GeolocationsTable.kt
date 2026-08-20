@@ -92,6 +92,10 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
     // Geolocation fields are always machine-readable.
     override fun raw(): SearchField? = null
 
+    override fun withTable(newTable: SearchTable): SearchField {
+      return GeolocationField(fieldName, getLatitudeField, getLongitudeField, newTable)
+    }
+
     override fun toString() = fieldName
 
     override fun hashCode() = fieldName.hashCode()

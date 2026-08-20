@@ -24,4 +24,8 @@ class LongField(
       null
     }
   }
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return LongField(fieldName, getDatabaseField, newTable, localize, exportable)
+  }
 }

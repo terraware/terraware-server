@@ -15,4 +15,8 @@ class StableIdField(
 
   override fun getAllFieldNodeValues(fieldNode: FieldNode): List<StableId?> =
       fieldNode.values.filterNotNull().map { StableId(it) }
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return StableIdField(fieldName, getDatabaseField, newTable)
+  }
 }

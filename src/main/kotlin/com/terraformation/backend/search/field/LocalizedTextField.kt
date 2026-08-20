@@ -102,6 +102,18 @@ class LocalizedTextField<T : Any>(
   // Localized text fields are always localized and have no raw values.
   override fun raw(): SearchField? = null
 
+  override fun withTable(newTable: SearchTable): SearchField {
+    return LocalizedTextField(
+        fieldName,
+        getDatabaseField,
+        resourceBundleName,
+        prefix,
+        newTable,
+        localize,
+        exportable,
+    )
+  }
+
   private fun getLocalizedString(databaseValue: String): String {
     val locale = currentLocale()
     val stringsForLocale =
