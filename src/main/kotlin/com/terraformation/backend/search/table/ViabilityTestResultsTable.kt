@@ -5,8 +5,10 @@ import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_R
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class ViabilityTestResultsTable(private val tables: SearchTables) : SearchTable() {
@@ -34,7 +36,12 @@ class ViabilityTestResultsTable(private val tables: SearchTables) : SearchTable(
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.viabilityTests
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query.join(VIABILITY_TESTS).on(VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID))
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
+    return query
+        .join(VIABILITY_TESTS)
+        .on(table.column(VIABILITY_TEST_RESULTS.TEST_ID).eq(VIABILITY_TESTS.ID))
   }
 }

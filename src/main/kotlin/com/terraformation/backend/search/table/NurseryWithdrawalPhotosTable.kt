@@ -6,8 +6,10 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMAR
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class NurseryWithdrawalPhotosTable(private val tables: SearchTables) : SearchTable() {
@@ -36,9 +38,12 @@ class NurseryWithdrawalPhotosTable(private val tables: SearchTables) : SearchTab
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.nurseryWithdrawals
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     return query
         .join(WITHDRAWAL_SUMMARIES)
-        .on(WITHDRAWAL_SUMMARIES.ID.eq(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID))
+        .on(WITHDRAWAL_SUMMARIES.ID.eq(table.column(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID)))
   }
 }

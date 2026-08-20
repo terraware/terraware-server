@@ -5,8 +5,10 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GR
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class SpeciesGrowthFormsTable(private val tables: SearchTables) : SearchTable() {
@@ -29,7 +31,10 @@ class SpeciesGrowthFormsTable(private val tables: SearchTables) : SearchTable() 
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.species
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query.join(SPECIES).on(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(SPECIES.ID))
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
+    return query.join(SPECIES).on(table.column(SPECIES_GROWTH_FORMS.SPECIES_ID).eq(SPECIES.ID))
   }
 }

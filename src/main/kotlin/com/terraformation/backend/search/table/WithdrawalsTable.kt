@@ -5,8 +5,10 @@ import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
@@ -36,7 +38,10 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.accessions
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query.join(ACCESSIONS).on(WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID))
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
+    return query.join(ACCESSIONS).on(table.column(WITHDRAWALS.ACCESSION_ID).eq(ACCESSIONS.ID))
   }
 }

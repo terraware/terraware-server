@@ -101,8 +101,8 @@ abstract class SearchTable {
       javaClass.simpleName.substringBeforeLast("Table").replaceFirstChar { it.lowercaseChar() }
 
   /**
-   * Adds a LEFT JOIN clause to a query to connect this table to another table to calculate whether
-   * the user is allowed to see a row in this table.
+   * Adds a JOIN clause to a query to connect this table to another table to calculate whether the
+   * user is allowed to see a row in this table.
    *
    * This must join to the same table referenced by [inheritsVisibilityFrom].
    *
@@ -110,8 +110,15 @@ abstract class SearchTable {
    * already, e.g., if a table has a facility ID column, there's no need to join with another table
    * to get a facility ID. The default implementation is only valid if [inheritsVisibilityFrom]
    * returns null.
+   *
+   * @param table The instance of this table that the query is reading from. The table may be an
+   *   alias; implementations should look columns up using [column] rather than referring to the
+   *   jOOQ columns directly.
    */
-  open fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  open fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     if (inheritsVisibilityFrom == null) {
       return query
     } else {
@@ -120,6 +127,10 @@ abstract class SearchTable {
       )
     }
   }
+
+  /** Adds visibility JOIN clauses for the instance of this table that the query is reading from. */
+  fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> =
+      joinForVisibility(query, fromTable)
 
   /**
    * Returns a condition that restricts this table's values to ones the user has the ability to see.
