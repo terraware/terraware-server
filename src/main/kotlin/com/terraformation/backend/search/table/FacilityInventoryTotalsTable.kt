@@ -25,15 +25,18 @@ class FacilityInventoryTotalsTable(private val tables: SearchTables) : SearchTab
       listOf(
           facilities.asSingleValueSublist(
               "facility",
-              FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITIES.ID),
+              FACILITY_INVENTORY_TOTALS.FACILITY_ID,
+              FACILITIES.ID,
           ),
           facilityInventories.asMultiValueSublist(
               "facilityInventories",
-              FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITY_INVENTORIES.FACILITY_ID),
+              FACILITY_INVENTORY_TOTALS.FACILITY_ID,
+              FACILITY_INVENTORIES.FACILITY_ID,
           ),
           organizations.asSingleValueSublist(
               "organization",
-              FACILITY_INVENTORY_TOTALS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              FACILITY_INVENTORY_TOTALS.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
       )
     }

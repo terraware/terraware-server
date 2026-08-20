@@ -19,11 +19,13 @@ class PlantingSeasonAllocatedSpeciesTable(private val tables: SearchTables) : Se
       listOf(
           plantingSeasons.asSingleValueSublist(
               "plantingSeason",
-              PLANTING_SEASON_ALLOCATED_SPECIES.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID),
+              PLANTING_SEASON_ALLOCATED_SPECIES.PLANTING_SEASON_ID,
+              PLANTING_SEASONS.ID,
           ),
           species.asSingleValueSublist(
               "species",
-              PLANTING_SEASON_ALLOCATED_SPECIES.SPECIES_ID.eq(SPECIES.ID),
+              PLANTING_SEASON_ALLOCATED_SPECIES.SPECIES_ID,
+              SPECIES.ID,
           ),
       )
     }

@@ -23,15 +23,18 @@ class ObservationSiteResultTable(private val tables: SearchTables) : SearchTable
       listOf(
           observations.asSingleValueSublist(
               "observation",
-              OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+              OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
+              OBSERVATIONS.ID,
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           plantingSiteHistories.asSingleValueSublist(
               "plantingSiteHistory",
-              OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID),
+              OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID,
+              PLANTING_SITE_HISTORIES.ID,
           ),
           observationStratumResult.asMultiValueSublist(
               "stratumResults",

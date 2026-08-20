@@ -23,11 +23,12 @@ class NurserySpeciesProjectsTable(private val tables: SearchTables) : SearchTabl
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          projects.asSingleValueSublist("project", SPECIES_PROJECTS.PROJECT_ID.eq(PROJECTS.ID)),
-          species.asSingleValueSublist("species", SPECIES_PROJECTS.SPECIES_ID.eq(SPECIES.ID)),
+          projects.asSingleValueSublist("project", SPECIES_PROJECTS.PROJECT_ID, PROJECTS.ID),
+          species.asSingleValueSublist("species", SPECIES_PROJECTS.SPECIES_ID, SPECIES.ID),
           organizations.asSingleValueSublist(
               "organization",
-              SPECIES_PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              SPECIES_PROJECTS.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
       )
     }

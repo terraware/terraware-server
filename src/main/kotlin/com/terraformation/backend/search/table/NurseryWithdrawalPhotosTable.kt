@@ -19,7 +19,8 @@ class NurseryWithdrawalPhotosTable(private val tables: SearchTables) : SearchTab
       listOf(
           nurseryWithdrawals.asSingleValueSublist(
               "withdrawal",
-              WITHDRAWAL_PHOTOS.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID),
+              WITHDRAWAL_PHOTOS.WITHDRAWAL_ID,
+              WITHDRAWAL_SUMMARIES.ID,
           ),
       )
     }

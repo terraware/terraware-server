@@ -24,10 +24,11 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          projects.asSingleValueSublist("project", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)),
+          projects.asSingleValueSublist("project", DOCUMENTS.PROJECT_ID, PROJECTS.ID),
           documentTemplates.asSingleValueSublist(
               "documentTemplate",
-              DOCUMENT_TEMPLATES.ID.eq(DOCUMENTS.DOCUMENT_TEMPLATE_ID),
+              DOCUMENTS.DOCUMENT_TEMPLATE_ID,
+              DOCUMENT_TEMPLATES.ID,
           ),
       )
     }

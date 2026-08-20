@@ -21,15 +21,18 @@ class StratumPopulationsTable(private val tables: SearchTables) : SearchTable() 
       listOf(
           species.asSingleValueSublist(
               "species",
-              STRATUM_POPULATIONS.SPECIES_ID.eq(SPECIES.ID),
+              STRATUM_POPULATIONS.SPECIES_ID,
+              SPECIES.ID,
           ),
           strata.asSingleValueSublist(
               "plantingZone",
-              STRATUM_POPULATIONS.STRATUM_ID.eq(STRATA.ID),
+              STRATUM_POPULATIONS.STRATUM_ID,
+              STRATA.ID,
           ),
           strata.asSingleValueSublist(
               "stratum",
-              STRATUM_POPULATIONS.STRATUM_ID.eq(STRATA.ID),
+              STRATUM_POPULATIONS.STRATUM_ID,
+              STRATA.ID,
           ),
       )
     }

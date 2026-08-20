@@ -24,10 +24,11 @@ class ProjectDeliverablesTable(tables: SearchTables) : SearchTable() {
       listOf(
           deliverables.asSingleValueSublist(
               "deliverable",
-              DELIVERABLES.ID.eq(PROJECT_DELIVERABLES.DELIVERABLE_ID),
+              PROJECT_DELIVERABLES.DELIVERABLE_ID,
+              DELIVERABLES.ID,
           ),
-          modules.asSingleValueSublist("module", MODULES.ID.eq(PROJECT_DELIVERABLES.MODULE_ID)),
-          projects.asSingleValueSublist("project", PROJECTS.ID.eq(PROJECT_DELIVERABLES.PROJECT_ID)),
+          modules.asSingleValueSublist("module", PROJECT_DELIVERABLES.MODULE_ID, MODULES.ID),
+          projects.asSingleValueSublist("project", PROJECT_DELIVERABLES.PROJECT_ID, PROJECTS.ID),
       )
     }
   }

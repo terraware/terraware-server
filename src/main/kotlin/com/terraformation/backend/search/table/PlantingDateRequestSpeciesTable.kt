@@ -20,17 +20,18 @@ class PlantingDateRequestSpeciesTable(private val tables: SearchTables) : Search
       listOf(
           plantingDateRequests.asSingleValueSublist(
               "plantingDateRequest",
-              PLANTING_DATE_REQUEST_SPECIES.SCHEDULED_PLANTING_DATE_ID.eq(
-                  PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID
-              ),
+              PLANTING_DATE_REQUEST_SPECIES.SCHEDULED_PLANTING_DATE_ID,
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID,
           ),
           species.asSingleValueSublist(
               "species",
-              PLANTING_DATE_REQUEST_SPECIES.SPECIES_ID.eq(SPECIES.ID),
+              PLANTING_DATE_REQUEST_SPECIES.SPECIES_ID,
+              SPECIES.ID,
           ),
           substrata.asSingleValueSublist(
               "substratum",
-              PLANTING_DATE_REQUEST_SPECIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              PLANTING_DATE_REQUEST_SPECIES.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
       )
     }

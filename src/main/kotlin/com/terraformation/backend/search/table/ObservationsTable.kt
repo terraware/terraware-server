@@ -26,31 +26,38 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           observationBiomassDetails.asMultiValueSublist(
               "biomassDetails",
-              OBSERVATIONS.ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID),
+              OBSERVATIONS.ID,
+              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID,
           ),
           observationPlotResult.asMultiValueSublist(
               "plotResults",
-              OBSERVATIONS.ID.eq(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID),
+              OBSERVATIONS.ID,
+              OBSERVATION_PLOT_RESULTS.OBSERVATION_ID,
           ),
           observationPlots.asMultiValueSublist(
               "observationPlots",
-              OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID),
+              OBSERVATIONS.ID,
+              OBSERVATION_PLOTS.OBSERVATION_ID,
           ),
           observationSiteResult.asSingleValueSublist(
               "siteResult",
-              OBSERVATIONS.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID),
+              OBSERVATIONS.ID,
+              OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
           ),
           observationStratumResult.asMultiValueSublist(
               "stratumResults",
-              OBSERVATIONS.ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID),
+              OBSERVATIONS.ID,
+              OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
           ),
           observationSubstratumResult.asMultiValueSublist(
               "substratumResults",
-              OBSERVATIONS.ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID),
+              OBSERVATIONS.ID,
+              OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID,
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              OBSERVATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              OBSERVATIONS.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
       )
     }

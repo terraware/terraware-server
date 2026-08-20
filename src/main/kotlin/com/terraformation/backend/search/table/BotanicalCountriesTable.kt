@@ -17,9 +17,8 @@ class BotanicalCountriesTable(private val tables: SearchTables) : SearchTable() 
       listOf(
           countryBotanicalCountries.asMultiValueSublist(
               "countries",
-              BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(
-                  COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_CODE
-              ),
+              BOTANICAL_COUNTRIES.LEVEL3_CODE,
+              COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_CODE,
           ),
       )
     }

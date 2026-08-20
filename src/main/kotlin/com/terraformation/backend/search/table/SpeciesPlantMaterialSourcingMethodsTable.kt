@@ -18,7 +18,8 @@ class SpeciesPlantMaterialSourcingMethodsTable(private val tables: SearchTables)
       listOf(
           species.asSingleValueSublist(
               "species",
-              SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID.eq(SPECIES.ID),
+              SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID,
+              SPECIES.ID,
           ),
       )
     }

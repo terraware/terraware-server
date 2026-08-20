@@ -22,10 +22,11 @@ class ProjectIndicatorsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          projects.asSingleValueSublist("project", PROJECT_INDICATORS.PROJECT_ID.eq(PROJECTS.ID)),
+          projects.asSingleValueSublist("project", PROJECT_INDICATORS.PROJECT_ID, PROJECTS.ID),
           acceleratorReportProjectIndicators.asMultiValueSublist(
               "reportIndicators",
-              PROJECT_INDICATORS.ID.eq(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID),
+              PROJECT_INDICATORS.ID,
+              REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
           ),
       )
     }

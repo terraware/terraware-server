@@ -20,17 +20,18 @@ class ScheduledPlantingDateSpeciesTable(private val tables: SearchTables) : Sear
       listOf(
           plantingSeasonScheduledDates.asSingleValueSublist(
               "scheduledDate",
-              SCHEDULED_PLANTING_DATE_SPECIES.SCHEDULED_PLANTING_DATE_ID.eq(
-                  SCHEDULED_PLANTING_DATES.ID
-              ),
+              SCHEDULED_PLANTING_DATE_SPECIES.SCHEDULED_PLANTING_DATE_ID,
+              SCHEDULED_PLANTING_DATES.ID,
           ),
           species.asSingleValueSublist(
               "species",
-              SCHEDULED_PLANTING_DATE_SPECIES.SPECIES_ID.eq(SPECIES.ID),
+              SCHEDULED_PLANTING_DATE_SPECIES.SPECIES_ID,
+              SPECIES.ID,
           ),
           substrata.asSingleValueSublist(
               "substratum",
-              SCHEDULED_PLANTING_DATE_SPECIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              SCHEDULED_PLANTING_DATE_SPECIES.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
       )
     }

@@ -18,9 +18,8 @@ class AutoCalculatedIndicatorsTable(tables: SearchTables) : SearchTable() {
       listOf(
           acceleratorReportAutoCalculatedIndicators.asMultiValueSublist(
               "reportIndicators",
-              AUTO_CALCULATED_INDICATORS.ID.eq(
-                  REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID
-              ),
+              AUTO_CALCULATED_INDICATORS.ID,
+              REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
           )
       )
     }

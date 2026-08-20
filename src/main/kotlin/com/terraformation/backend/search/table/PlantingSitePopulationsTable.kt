@@ -20,11 +20,13 @@ class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTab
       listOf(
           species.asSingleValueSublist(
               "species",
-              PLANTING_SITE_POPULATIONS.SPECIES_ID.eq(SPECIES.ID),
+              PLANTING_SITE_POPULATIONS.SPECIES_ID,
+              SPECIES.ID,
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
       )
     }

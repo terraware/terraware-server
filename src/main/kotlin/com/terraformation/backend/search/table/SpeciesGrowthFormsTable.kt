@@ -16,7 +16,7 @@ class SpeciesGrowthFormsTable(private val tables: SearchTables) : SearchTable() 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          species.asSingleValueSublist("species", SPECIES_GROWTH_FORMS.SPECIES_ID.eq(SPECIES.ID)),
+          species.asSingleValueSublist("species", SPECIES_GROWTH_FORMS.SPECIES_ID, SPECIES.ID),
       )
     }
   }

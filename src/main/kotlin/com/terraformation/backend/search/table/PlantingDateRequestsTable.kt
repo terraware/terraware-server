@@ -22,19 +22,18 @@ class PlantingDateRequestsTable(private val tables: SearchTables) : SearchTable(
       listOf(
           plantingDateRequestSpecies.asMultiValueSublist(
               "plantingDateRequestSpecies",
-              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(
-                  PLANTING_DATE_REQUEST_SPECIES.SCHEDULED_PLANTING_DATE_ID
-              ),
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID,
+              PLANTING_DATE_REQUEST_SPECIES.SCHEDULED_PLANTING_DATE_ID,
           ),
           plantingSeasonScheduledDates.asSingleValueSublist(
               "scheduledPlantingDate",
-              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(SCHEDULED_PLANTING_DATES.ID),
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID,
+              SCHEDULED_PLANTING_DATES.ID,
           ),
           nurseryWithdrawals.asMultiValueSublist(
               "withdrawals",
-              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(
-                  WITHDRAWAL_SUMMARIES.SCHEDULED_PLANTING_DATE_REQUEST_ID
-              ),
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID,
+              WITHDRAWAL_SUMMARIES.SCHEDULED_PLANTING_DATE_REQUEST_ID,
           ),
       )
     }

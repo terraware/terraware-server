@@ -22,13 +22,18 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          users.asSingleValueSublist("createdBy", DRAFT_PLANTING_SITES.CREATED_BY.eq(USERS.ID)),
-          users.asSingleValueSublist("modifiedBy", DRAFT_PLANTING_SITES.MODIFIED_BY.eq(USERS.ID)),
+          users.asSingleValueSublist("createdBy", DRAFT_PLANTING_SITES.CREATED_BY, USERS.ID),
+          users.asSingleValueSublist("modifiedBy", DRAFT_PLANTING_SITES.MODIFIED_BY, USERS.ID),
           organizations.asSingleValueSublist(
               "organization",
-              DRAFT_PLANTING_SITES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              DRAFT_PLANTING_SITES.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
-          projects.asSingleValueSublist("project", DRAFT_PLANTING_SITES.PROJECT_ID.eq(PROJECTS.ID)),
+          projects.asSingleValueSublist(
+              "project",
+              DRAFT_PLANTING_SITES.PROJECT_ID,
+              PROJECTS.ID,
+          ),
       )
     }
   }

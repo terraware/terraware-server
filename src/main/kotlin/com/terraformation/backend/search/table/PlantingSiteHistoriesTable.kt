@@ -22,19 +22,23 @@ class PlantingSiteHistoriesTable(private val tables: SearchTables) : SearchTable
       listOf(
           monitoringPlotHistories.asMultiValueSublist(
               "monitoringPlotHistories",
-              PLANTING_SITE_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID),
+              PLANTING_SITE_HISTORIES.ID,
+              MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID,
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              PLANTING_SITE_HISTORIES.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           stratumHistories.asMultiValueSublist(
               "plantingZoneHistories",
-              PLANTING_SITE_HISTORIES.ID.eq(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID),
+              PLANTING_SITE_HISTORIES.ID,
+              STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID,
           ),
           stratumHistories.asMultiValueSublist(
               "stratumHistories",
-              PLANTING_SITE_HISTORIES.ID.eq(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID),
+              PLANTING_SITE_HISTORIES.ID,
+              STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID,
           ),
       )
     }
