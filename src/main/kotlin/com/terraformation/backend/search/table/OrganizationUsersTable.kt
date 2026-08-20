@@ -8,8 +8,10 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -36,13 +38,15 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = ORGANIZATION_USERS.ORGANIZATION_USER_ID
 
-  override fun conditionForVisibility(): Condition {
-    return ORGANIZATION_USERS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table
+        .column(ORGANIZATION_USERS.ORGANIZATION_ID)
+        .`in`(currentUser().organizationRoles.keys)
         .and(
             DSL.exists(
                 DSL.selectOne()
                     .from(USERS)
-                    .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
+                    .where(USERS.ID.eq(table.column(ORGANIZATION_USERS.USER_ID)))
                     .and(USERS.USER_TYPE_ID.eq(UserType.Individual))
             )
         )

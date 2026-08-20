@@ -15,8 +15,10 @@ import com.terraformation.backend.search.field.CoordinateField.Companion.LATITUD
 import com.terraformation.backend.search.field.CoordinateField.Companion.LONGITUDE
 import com.terraformation.backend.search.field.CoordinateField.Companion.POINT
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class FacilitiesTable(tables: SearchTables) : SearchTable() {
@@ -71,7 +73,7 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
           enumField("type", FACILITIES.TYPE_ID),
       )
 
-  override fun conditionForVisibility(): Condition {
-    return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table.column(FACILITIES.ID).`in`(currentUser().facilityRoles.keys)
   }
 }

@@ -26,9 +26,11 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SU
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -124,27 +126,32 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           enumField("phase", PROJECTS.PHASE_ID),
       )
 
-  override fun conditionForVisibility(): Condition {
+  override fun conditionForVisibility(table: Table<*>): Condition {
     val projects2 = PROJECTS.`as`("projects2")
     val acceleratorCondition =
         if (currentUser().canReadAllAcceleratorDetails()) {
-          PROJECTS.PHASE_ID.isNotNull.or(
-              DSL.exists(
-                  DSL.selectOne()
-                      .from(projects2)
-                      .leftJoin(APPLICATIONS)
-                      .on(projects2.ID.eq(APPLICATIONS.PROJECT_ID))
-                      .where(projects2.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-                      .and(projects2.PHASE_ID.isNotNull.or(APPLICATIONS.PROJECT_ID.isNotNull))
+          table
+              .column(PROJECTS.PHASE_ID)
+              .isNotNull
+              .or(
+                  DSL.exists(
+                      DSL.selectOne()
+                          .from(projects2)
+                          .leftJoin(APPLICATIONS)
+                          .on(projects2.ID.eq(APPLICATIONS.PROJECT_ID))
+                          .where(
+                              projects2.ORGANIZATION_ID.eq(table.column(PROJECTS.ORGANIZATION_ID))
+                          )
+                          .and(projects2.PHASE_ID.isNotNull.or(APPLICATIONS.PROJECT_ID.isNotNull))
+                  )
               )
-          )
         } else {
           null
         }
 
     return DSL.or(
         listOfNotNull(
-            PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys),
+            table.column(PROJECTS.ORGANIZATION_ID).`in`(currentUser().organizationRoles.keys),
             acceleratorCondition,
         )
     )

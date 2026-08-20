@@ -9,6 +9,7 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -39,7 +40,7 @@ class OrganizationInternalTagsTable(tables: SearchTables) : SearchTable() {
     )
   }
 
-  override fun conditionForVisibility(): Condition {
+  override fun conditionForVisibility(table: Table<*>): Condition {
     return if (currentUser().canReadInternalTags()) {
       DSL.trueCondition()
     } else {

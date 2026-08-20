@@ -18,9 +18,11 @@ import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -130,8 +132,10 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           ),
       )
 
-  override fun conditionForVisibility(): Condition {
-    return PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table
+        .column(PLANTING_SITE_SUMMARIES.ORGANIZATION_ID)
+        .`in`(currentUser().organizationRoles.keys)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

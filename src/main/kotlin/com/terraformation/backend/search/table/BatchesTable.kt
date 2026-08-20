@@ -12,9 +12,11 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -94,8 +96,8 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
     )
   }
 
-  override fun conditionForVisibility(): Condition {
-    return BATCHES.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table.column(BATCHES.FACILITY_ID).`in`(currentUser().facilityRoles.keys)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

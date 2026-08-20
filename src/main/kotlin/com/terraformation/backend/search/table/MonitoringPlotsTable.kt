@@ -12,8 +12,10 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.CoordinateField.Companion.LATITUDE
 import com.terraformation.backend.search.field.CoordinateField.Companion.LONGITUDE
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
@@ -78,8 +80,8 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           coordinateField("southwestLongitude", MONITORING_PLOTS.BOUNDARY, SOUTHWEST, LONGITUDE),
       )
 
-  override fun conditionForVisibility(): Condition {
-    return MONITORING_PLOTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table.column(MONITORING_PLOTS.ORGANIZATION_ID).`in`(currentUser().organizationRoles.keys)
   }
 
   companion object {
