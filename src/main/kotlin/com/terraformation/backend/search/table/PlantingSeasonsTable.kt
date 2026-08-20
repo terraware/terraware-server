@@ -24,7 +24,8 @@ class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           plantingSeasonAllocatedSpeciesTable.asMultiValueSublist(
               "allocatedSpecies",
-              PLANTING_SEASONS.ID.eq(PLANTING_SEASON_ALLOCATED_SPECIES.PLANTING_SEASON_ID),
+              PLANTING_SEASONS.ID,
+              PLANTING_SEASON_ALLOCATED_SPECIES.PLANTING_SEASON_ID,
           ),
           plantingDateRequests.asMultiValueSublist(
               "plantingDateRequests",
@@ -34,19 +35,23 @@ class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              PLANTING_SEASONS.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           plantingSeasonSpeciesTargets.asMultiValueSublist(
               "speciesTargets",
-              PLANTING_SEASONS.ID.eq(PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID),
+              PLANTING_SEASONS.ID,
+              PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID,
           ),
           plantingSeasonScheduledDates.asMultiValueSublist(
               "scheduledDates",
-              PLANTING_SEASONS.ID.eq(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID),
+              PLANTING_SEASONS.ID,
+              SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID,
           ),
           nurseryWithdrawals.asMultiValueSublist(
               "withdrawals",
-              PLANTING_SEASONS.ID.eq(WITHDRAWAL_SUMMARIES.PLANTING_SEASON_ID),
+              PLANTING_SEASONS.ID,
+              WITHDRAWAL_SUMMARIES.PLANTING_SEASON_ID,
           ),
       )
     }

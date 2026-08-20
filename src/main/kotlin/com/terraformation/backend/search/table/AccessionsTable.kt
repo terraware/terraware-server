@@ -42,31 +42,37 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
       listOf(
           countries.asSingleValueSublist(
               "collectionSiteCountry",
-              ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE.eq(COUNTRIES.CODE),
+              ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE,
+              COUNTRIES.CODE,
           ),
           accessionCollectors.asMultiValueSublist(
               "collectors",
-              ACCESSIONS.ID.eq(ACCESSION_COLLECTORS.ACCESSION_ID),
+              ACCESSIONS.ID,
+              ACCESSION_COLLECTORS.ACCESSION_ID,
           ),
-          bags.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
-          facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
+          bags.asMultiValueSublist("bags", ACCESSIONS.ID, BAGS.ACCESSION_ID),
+          facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID, FACILITIES.ID),
           geolocations.asMultiValueSublist(
               "geolocations",
-              ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID),
+              ACCESSIONS.ID,
+              GEOLOCATIONS.ACCESSION_ID,
           ),
-          projects.asSingleValueSublist("project", ACCESSIONS.PROJECT_ID.eq(PROJECTS.ID)),
-          species.asSingleValueSublist("species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)),
+          projects.asSingleValueSublist("project", ACCESSIONS.PROJECT_ID, PROJECTS.ID),
+          species.asSingleValueSublist("species", ACCESSIONS.SPECIES_ID, SPECIES.ID),
           subLocations.asSingleValueSublist(
               "subLocation",
-              ACCESSIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID),
+              ACCESSIONS.SUB_LOCATION_ID,
+              SUB_LOCATIONS.ID,
           ),
           viabilityTests.asMultiValueSublist(
               "viabilityTests",
-              ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID),
+              ACCESSIONS.ID,
+              VIABILITY_TESTS.ACCESSION_ID,
           ),
           withdrawals.asMultiValueSublist(
               "withdrawals",
-              ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID),
+              ACCESSIONS.ID,
+              WITHDRAWALS.ACCESSION_ID,
           ),
       )
     }

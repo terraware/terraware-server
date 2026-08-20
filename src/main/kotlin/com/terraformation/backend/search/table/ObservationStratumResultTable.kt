@@ -24,15 +24,18 @@ class ObservationStratumResultTable(private val tables: SearchTables) : SearchTa
       listOf(
           observations.asSingleValueSublist(
               "observation",
-              OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+              OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
+              OBSERVATIONS.ID,
           ),
           strata.asSingleValueSublist(
               "stratum",
-              OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(STRATA.ID),
+              OBSERVATION_STRATUM_RESULTS.STRATUM_ID,
+              STRATA.ID,
           ),
           stratumHistories.asSingleValueSublist(
               "stratumHistory",
-              OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID),
+              OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID,
+              STRATUM_HISTORIES.ID,
           ),
           observationSubstratumResult.asMultiValueSublist(
               "substratumResults",

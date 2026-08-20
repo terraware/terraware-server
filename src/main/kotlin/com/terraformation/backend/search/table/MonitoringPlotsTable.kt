@@ -25,23 +25,28 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
       listOf(
           monitoringPlotHistories.asMultiValueSublist(
               "histories",
-              MONITORING_PLOTS.ID.eq(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID),
+              MONITORING_PLOTS.ID,
+              MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              MONITORING_PLOTS.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           observationPlots.asMultiValueSublist(
               "observationPlots",
-              MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID),
+              MONITORING_PLOTS.ID,
+              OBSERVATION_PLOTS.MONITORING_PLOT_ID,
           ),
           substrata.asSingleValueSublist(
               "plantingSubzone",
-              MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              MONITORING_PLOTS.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
           substrata.asSingleValueSublist(
               "substratum",
-              MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              MONITORING_PLOTS.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
       )
     }

@@ -18,7 +18,8 @@ class SpeciesEcosystemTypesTable(private val tables: SearchTables) : SearchTable
       listOf(
           species.asSingleValueSublist(
               "species",
-              SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(SPECIES.ID),
+              SPECIES_ECOSYSTEM_TYPES.SPECIES_ID,
+              SPECIES.ID,
           ),
       )
     }

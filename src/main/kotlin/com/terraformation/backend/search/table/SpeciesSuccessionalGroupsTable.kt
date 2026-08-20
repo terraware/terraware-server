@@ -18,7 +18,8 @@ class SpeciesSuccessionalGroupsTable(private val tables: SearchTables) : SearchT
       listOf(
           species.asSingleValueSublist(
               "species",
-              SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID.eq(SPECIES.ID),
+              SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID,
+              SPECIES.ID,
           ),
       )
     }

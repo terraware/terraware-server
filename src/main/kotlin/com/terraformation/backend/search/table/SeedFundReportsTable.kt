@@ -22,10 +22,11 @@ class SeedFundReportsTable(tables: SearchTables) : SearchTable() {
       listOf(
           organizations.asSingleValueSublist(
               "organization",
-              SEED_FUND_REPORTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              SEED_FUND_REPORTS.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
-          users.asSingleValueSublist("lockedBy", SEED_FUND_REPORTS.LOCKED_BY.eq(USERS.ID)),
-          users.asSingleValueSublist("submittedBy", SEED_FUND_REPORTS.SUBMITTED_BY.eq(USERS.ID)),
+          users.asSingleValueSublist("lockedBy", SEED_FUND_REPORTS.LOCKED_BY, USERS.ID),
+          users.asSingleValueSublist("submittedBy", SEED_FUND_REPORTS.SUBMITTED_BY, USERS.ID),
       )
     }
   }

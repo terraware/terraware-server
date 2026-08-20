@@ -33,11 +33,13 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
       listOf(
           countries.asSingleValueSublist(
               "country",
-              PLANTING_SITE_SUMMARIES.COUNTRY_CODE.eq(COUNTRIES.CODE),
+              PLANTING_SITE_SUMMARIES.COUNTRY_CODE,
+              COUNTRIES.CODE,
           ),
           deliveries.asMultiValueSublist(
               "deliveries",
-              PLANTING_SITE_SUMMARIES.ID.eq(DELIVERIES.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              DELIVERIES.PLANTING_SITE_ID,
           ),
           monitoringPlots.asMultiValueSublist(
               "exteriorPlots",
@@ -46,7 +48,8 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           ),
           plantingSiteHistories.asMultiValueSublist(
               "histories",
-              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              PLANTING_SITE_HISTORIES.PLANTING_SITE_ID,
           ),
           monitoringPlots.asMultiValueSublist(
               "monitoringPlots",
@@ -55,11 +58,13 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           ),
           observations.asMultiValueSublist(
               "observations",
-              PLANTING_SITE_SUMMARIES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              OBSERVATIONS.PLANTING_SITE_ID,
           ),
           organizations.asSingleValueSublist(
               "organization",
-              PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              PLANTING_SITE_SUMMARIES.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
           plantingDateRequests.asMultiValueSublist(
               "plantingDateRequests",
@@ -69,27 +74,33 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           ),
           plantingSeasons.asMultiValueSublist(
               "plantingSeasons",
-              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              PLANTING_SEASONS.PLANTING_SITE_ID,
           ),
           plantingSitePopulations.asMultiValueSublist(
               "populations",
-              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID,
           ),
           projects.asSingleValueSublist(
               "project",
-              PLANTING_SITE_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID),
+              PLANTING_SITE_SUMMARIES.PROJECT_ID,
+              PROJECTS.ID,
           ),
           strata.asMultiValueSublist(
               "plantingZones",
-              PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              STRATA.PLANTING_SITE_ID,
           ),
           plantingSiteSpeciesTargets.asMultiValueSublist(
               "speciesTargets",
-              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID,
           ),
           strata.asMultiValueSublist(
               "strata",
-              PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID,
+              STRATA.PLANTING_SITE_ID,
           ),
       )
     }

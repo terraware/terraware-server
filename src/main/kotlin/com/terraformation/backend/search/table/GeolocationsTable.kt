@@ -22,7 +22,7 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          accessions.asSingleValueSublist("accession", GEOLOCATIONS.ACCESSION_ID.eq(ACCESSIONS.ID)),
+          accessions.asSingleValueSublist("accession", GEOLOCATIONS.ACCESSION_ID, ACCESSIONS.ID),
       )
     }
   }

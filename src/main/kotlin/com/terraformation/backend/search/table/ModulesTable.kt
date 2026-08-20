@@ -23,11 +23,12 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          deliverables.asMultiValueSublist("deliverables", MODULES.ID.eq(DELIVERABLES.MODULE_ID)),
-          events.asMultiValueSublist("events", MODULES.ID.eq(EVENTS.MODULE_ID)),
+          deliverables.asMultiValueSublist("deliverables", MODULES.ID, DELIVERABLES.MODULE_ID),
+          events.asMultiValueSublist("events", MODULES.ID, EVENTS.MODULE_ID),
           projectModules.asMultiValueSublist(
               "projectModules",
-              MODULES.ID.eq(PROJECT_MODULES.MODULE_ID),
+              MODULES.ID,
+              PROJECT_MODULES.MODULE_ID,
           ),
       )
     }

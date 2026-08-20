@@ -19,9 +19,10 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
       listOf(
           organizations.asSingleValueSublist(
               "organization",
-              ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              ORGANIZATION_USERS.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
-          users.asSingleValueSublist("user", ORGANIZATION_USERS.USER_ID.eq(USERS.ID)),
+          users.asSingleValueSublist("user", ORGANIZATION_USERS.USER_ID, USERS.ID),
       )
     }
   }

@@ -21,15 +21,18 @@ class SubstratumPopulationsTable(private val tables: SearchTables) : SearchTable
       listOf(
           species.asSingleValueSublist(
               "species",
-              SUBSTRATUM_POPULATIONS.SPECIES_ID.eq(SPECIES.ID),
+              SUBSTRATUM_POPULATIONS.SPECIES_ID,
+              SPECIES.ID,
           ),
           substrata.asSingleValueSublist(
               "plantingSubzone",
-              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
           substrata.asSingleValueSublist(
               "substratum",
-              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
       )
     }
