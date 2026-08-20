@@ -304,6 +304,32 @@ fun Geometry.differenceNullable(other: Geometry?): Geometry =
     if (other != null) difference(other) else this
 
 /**
+ * Reprojects this geometry to a different coordinate reference system.
+ *
+ * @throws FactoryException Either SRID doesn't identify a known coordinate reference system.
+ */
+fun Geometry.projectTo(targetSrid: Int): Geometry {
+  if (srid == targetSrid) {
+    return this
+  }
+
+  val sourceCrs = CRS.decode("EPSG:$srid", true)
+  val targetCrs = CRS.decode("EPSG:$targetSrid", true)
+
+  if (sourceCrs == targetCrs) {
+    return this
+  }
+
+  val transformed = JTS.transform(this, CRS.findMathTransform(sourceCrs, targetCrs))
+
+  // JTS.transform reuses the source geometry's factory, so the result would otherwise report the
+  // source SRID.
+  transformed.srid = targetSrid
+
+  return transformed
+}
+
+/**
  * Applies this `Optional` as a replacement for an existing value.
  *
  * This is primarily used with payloads for `PATCH` endpoints that can update nullable values. For

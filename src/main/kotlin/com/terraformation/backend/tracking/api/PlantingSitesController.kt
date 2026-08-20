@@ -2,10 +2,12 @@ package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse200Svg
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.db.PlantingSiteHasNoBoundaryException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -18,6 +20,7 @@ import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.file.MEDIA_TYPE_SVG
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -39,6 +42,7 @@ import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumModel
+import com.terraformation.backend.util.GeometrySvgRenderer
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -50,6 +54,8 @@ import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -58,12 +64,17 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+
+/** Largest thumbnail canvas the server will render, to keep a single request cheap. */
+private const val MAX_THUMBNAIL_SIZE = 4096
 
 @RequestMapping("/api/v1/tracking/sites")
 @RestController
 @TrackingEndpoint
 class PlantingSitesController(
+    private val geometrySvgRenderer: GeometrySvgRenderer,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteService: PlantingSiteService,
@@ -151,6 +162,36 @@ class PlantingSitesController(
             simplified ?: true,
         )
     return GetPlantingSiteHistoryResponsePayload(PlantingSiteHistoryPayload(model))
+  }
+
+  @ApiResponse200Svg
+  @ApiResponse409("The planting site does not have a boundary.")
+  @GetMapping("/{id}/thumbnail", produces = [MEDIA_TYPE_SVG])
+  @Operation(
+      summary = "Renders the outline of a planting site's boundary as an SVG image.",
+      description =
+          "The boundary is scaled to fit the requested canvas size with its aspect ratio " +
+              "preserved, so a site that is wider than it is tall will not fill the full height.",
+  )
+  @ResponseBody
+  fun getPlantingSiteThumbnail(
+      @PathVariable id: PlantingSiteId,
+      @RequestParam @Schema(minimum = "1", maximum = "4096") width: Int? = null,
+      @RequestParam @Schema(minimum = "1", maximum = "4096") height: Int? = null,
+  ): ResponseEntity<String> {
+    val canvasWidth = width ?: GeometrySvgRenderer.DEFAULT_SIZE
+    val canvasHeight = height ?: GeometrySvgRenderer.DEFAULT_SIZE
+
+    if (canvasWidth !in 1..MAX_THUMBNAIL_SIZE || canvasHeight !in 1..MAX_THUMBNAIL_SIZE) {
+      throw BadRequestException("Width and height must be between 1 and $MAX_THUMBNAIL_SIZE")
+    }
+
+    val site = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Site, simplified = true)
+    val boundary = site.boundary ?: throw PlantingSiteHasNoBoundaryException(id)
+
+    return ResponseEntity.ok()
+        .contentType(MediaType.valueOf(MEDIA_TYPE_SVG))
+        .body(geometrySvgRenderer.render(boundary, canvasWidth, canvasHeight))
   }
 
   @GetMapping("/reportedPlants")
