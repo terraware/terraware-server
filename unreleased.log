@@ -1,3 +1,4 @@
+2a4ca0a7 Implemented get one published report endpoint (#4873)
 a1f89428 SW-8701 Added planting site thumbnail endpoint (#4871)
 ccc136fa SW-8773 Include accession IDs in batch history API (#4875)
 d7197729 SW-8773 Support adding seeds to existing batches (#4874)
