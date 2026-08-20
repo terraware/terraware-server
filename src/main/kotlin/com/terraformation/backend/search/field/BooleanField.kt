@@ -72,6 +72,10 @@ class BooleanField(
     }
   }
 
+  override fun withTable(newTable: SearchTable): SearchField {
+    return BooleanField(fieldName, getDatabaseField, newTable, localize, exportable)
+  }
+
   private fun getString(value: Boolean): String {
     return if (localize) {
       val locale = currentLocale()

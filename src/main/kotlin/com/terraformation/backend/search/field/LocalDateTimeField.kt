@@ -60,6 +60,10 @@ class LocalDateTimeField(
   // Timestamp values are always machine-readable.
   override fun raw(): SearchField? = null
 
+  override fun withTable(newTable: SearchTable): SearchField {
+    return LocalDateTimeField(fieldName, getDatabaseField, newTable)
+  }
+
   companion object {
     private val OUTPUT_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
   }

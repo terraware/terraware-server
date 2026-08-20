@@ -34,4 +34,8 @@ class GeometryField(
 
   // Geometry values are already machine-readable.
   override fun raw(): SearchField? = null
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return GeometryField(fieldName, getGeometryField, newTable)
+  }
 }

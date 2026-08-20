@@ -97,6 +97,18 @@ class AgeField(
     }
   }
 
+  override fun withTable(newTable: SearchTable): SearchField {
+    return AgeField(
+        fieldName,
+        getDatabaseField,
+        newTable,
+        localize,
+        exportable,
+        granularity,
+        clock,
+    )
+  }
+
   /**
    * Returns the start and end of the range of dates that correspond to the given age, or null if
    * the age is null.

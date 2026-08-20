@@ -12,4 +12,8 @@ class IdWrapperField<T : Any>(
 ) : IdField<T>(fieldName, getDatabaseField, table) {
   override fun getAllFieldNodeValues(fieldNode: FieldNode): List<T?> =
       fieldNode.values.filterNotNull().map { fromLong(it.toLong()) }
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return IdWrapperField(fieldName, getDatabaseField, newTable, fromLong)
+  }
 }

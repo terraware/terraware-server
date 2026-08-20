@@ -41,4 +41,8 @@ class UriField(
 
   // URI fields are always raw.
   override fun raw(): SearchField? = null
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return UriField(fieldName, getDatabaseField, newTable)
+  }
 }

@@ -206,4 +206,17 @@ class WeightField(
       null
     }
   }
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return WeightField(
+        fieldName,
+        getQuantityField,
+        getUnitsField,
+        getGramsField,
+        desiredUnits,
+        newTable,
+        localize,
+        exportable,
+    )
+  }
 }
