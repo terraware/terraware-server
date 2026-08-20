@@ -1,2 +1,2 @@
-4d8cc067 SW-8799 Return override user ID/name and timestamp (#4872)
-1e00063e SW-7604 Add accession and facility event log filters (#4863)
+ccc136fa SW-8773 Include accession IDs in batch history API (#4875)
+d7197729 SW-8773 Support adding seeds to existing batches (#4874)
