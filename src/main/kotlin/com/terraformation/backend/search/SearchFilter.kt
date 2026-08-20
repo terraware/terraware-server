@@ -24,6 +24,12 @@ interface SearchNode {
   fun toPartialSearch(): SearchNode
 
   fun referencedSublists(): Set<ReferencedSublist>
+
+  /**
+   * Returns a copy of this node with all its field paths resolved against a different root prefix.
+   * The copy is recursive; child nodes are also reparented.
+   */
+  fun withRoot(newRoot: SearchFieldPrefix): SearchNode
 }
 
 data class OrNode(private val children: List<SearchNode>) : SearchNode {
@@ -45,6 +51,8 @@ data class OrNode(private val children: List<SearchNode>) : SearchNode {
   override fun referencedSublists(): Set<ReferencedSublist> {
     return children.flatMap { it.referencedSublists() }.toSet()
   }
+
+  override fun withRoot(newRoot: SearchFieldPrefix) = OrNode(children.map { it.withRoot(newRoot) })
 
   override fun toString(): String {
     return "OrNode(${children.joinToString()})"
@@ -71,6 +79,8 @@ data class AndNode(private val children: List<SearchNode>) : SearchNode {
     return children.flatMap { it.referencedSublists() }.toSet()
   }
 
+  override fun withRoot(newRoot: SearchFieldPrefix) = AndNode(children.map { it.withRoot(newRoot) })
+
   override fun toString(): String {
     return "AndNode(${children.joinToString()})"
   }
@@ -94,6 +104,8 @@ data class NotNode(val child: SearchNode) : SearchNode {
   override fun referencedSublists(): Set<ReferencedSublist> {
     return child.referencedSublists()
   }
+
+  override fun withRoot(newRoot: SearchFieldPrefix) = NotNode(child.withRoot(newRoot))
 
   override fun toString(): String {
     return "NotNode($child)"
@@ -130,6 +142,9 @@ data class FieldNode(
     }
   }
 
+  override fun withRoot(newRoot: SearchFieldPrefix) =
+      FieldNode(field.withRoot(newRoot), values, type)
+
   override fun toPartialSearch(): FieldNode {
     return if (type == SearchFilterType.PartialOrFuzzy && values.any { it != null }) {
       FieldNode(field, values.filterNotNull(), SearchFilterType.Partial)
@@ -158,6 +173,8 @@ class NoConditionNode : SearchNode {
   override fun referencedSublists(): Set<ReferencedSublist> {
     return emptySet()
   }
+
+  override fun withRoot(newRoot: SearchFieldPrefix) = this
 
   override fun equals(other: Any?): Boolean {
     return other is NoConditionNode

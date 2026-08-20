@@ -55,6 +55,18 @@ data class SearchFieldPrefix(
     get() = if (isRoot) null else SearchFieldPrefix(root, sublists.dropLast(1))
 
   /**
+   * Returns a copy of this prefix whose sublists start from a different root, e.g., a root whose
+   * table is aliased. Each of this prefix's sublists is looked up again by name on the
+   * corresponding table under [newRoot].
+   */
+  fun withRoot(newRoot: SearchFieldPrefix): SearchFieldPrefix {
+    return sublists.fold(newRoot) { prefix, sublist ->
+      prefix.withSublistOrNull(sublist.name, sublist.isFlattened)
+          ?: throw IllegalArgumentException("Sublist ${sublist.name} not found under $prefix")
+    }
+  }
+
+  /**
    * Returns a chain of parent/child pairs for this prefix's sublists. The first sublist's parent is
    * [root].
    */
@@ -219,6 +231,14 @@ class SearchFieldPath(val prefix: SearchFieldPrefix, val searchField: SearchFiel
         } else {
           prefix.searchTable
         }
+
+  /**
+   * Returns a copy of this path rooted at a different prefix, e.g., one whose tables are aliased.
+   */
+  fun withRoot(newRoot: SearchFieldPrefix): SearchFieldPath {
+    val newPrefix = prefix.withRoot(newRoot)
+    return SearchFieldPath(newPrefix, searchField.withTable(newPrefix.searchTable))
+  }
 
   /**
    * Strips sublists from the beginning of this path's prefix. Returns a copy of this path that's
