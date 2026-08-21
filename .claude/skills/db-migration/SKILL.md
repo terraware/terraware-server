@@ -7,14 +7,13 @@ description: Creates a new database migration file. Use this when modifying the 
 
 ## Instructions
 
-Create a separate `TaskCreate` for each applicable step below, then work through them in order,
-marking each `completed` before starting the next. Conditional steps (marked "if applicable")
+Create a separate `TaskCreate` for each applicable step below, then work through them in order, marking each `completed` before starting the next. Conditional steps (marked "if applicable")
 should still be created as tasks — mark them `completed` immediately if they don't apply.
 
 Steps:
 
-1. Determine the next migration number.
-2. Create the numbered migration file.
+1. Determine the migration's version timestamp.
+2. Create the migration file.
 3. Add enum values to R__TypeCodes.sql (if any enum tables).
 4. Add schema documentation to R__Comments.sql.
 5. Update Config.kt (EnumTable, IdWrapper, and/or Embeddable entries as needed).
@@ -23,18 +22,17 @@ Steps:
 8. Run `yarn translate` to generate translations (if Enums_en.properties was changed).
 9. Build, format, and test (`./gradlew generateJooqClasses`, `./gradlew spotlessApply`, `./gradlew test`).
 
-## Step 1: Determine the Next Migration Number
+## Step 1: Determine the Migration's Version Timestamp
 
-List the highest-numbered `.sql` file in `src/main/resources/db/migration/` to find the current
-maximum migration number, then add 1.
+Migration versions are timestamps, not sequence numbers. Run `date "+%Y%m%d.%H%M"` and use the result; local time is fine. The timestamp only needs to be granular enough that two people working in parallel are unlikely to pick the same one.
 
-Migrations are grouped into subdirectories in groups of 50 (e.g., `0400/` contains V400–V449,
-`0450/` contains V450–V499). Create a new subdirectory when crossing a 50-migration boundary.
+Don't look for the highest existing version and add to it. Flyway is configured to allow out-of-order migrations, so a new migration whose version predates an already-applied one is fine as long as the two don't depend on each other. If they do, renumber yours so the order is deterministic.
 
-## Step 2: Create the Numbered Migration File
+## Step 2: Create the Migration File
 
-Create `src/main/resources/db/migration/NNNN/VNNN__Description.sql` where `NNNN` is the
-directory (multiple of 50 rounded down) and `NNN` is the migration number.
+Create `src/main/resources/db/migration/<year>/<month>/V<timestamp>__Description.sql`, e.g. `src/main/resources/db/migration/2026/08/V20260811.1505__AddSomething.sql`. Create the year and month directories if they don't exist yet.
+
+The `numbered/` subdirectory holds the sequential migrations that predate this scheme. Don't add to it.
 
 Make sure and add a newline character at the end of the file.
 
@@ -115,8 +113,7 @@ CREATE INDEX ON schema_name.thing_other_things (other_thing_id);
 - Column names for timestamps end in `_time`; for dates end in `_date`.
 - Foreign key columns are named `{referenced_table_singular}_id` (or `created_by`, `modified_by`
   for user references in audit fields).
-- Always add an index on foreign key columns that aren't part of a primary key or unique constraint,
-  especially for the non-leading column in junction tables.
+- Always add an index on foreign key columns that aren't part of a primary key or unique constraint, especially for the non-leading column in junction tables.
 - Put named constraints (CHECK, UNIQUE) inside the CREATE TABLE body, after all column definitions.
 - It's fine to use PostgreSQL-only syntax; the server only runs on PostgreSQL.
 
@@ -125,8 +122,7 @@ CREATE INDEX ON schema_name.thing_other_things (other_thing_id);
 Add `INSERT` statements to `src/main/resources/db/migration/R__TypeCodes.sql`. Use
 `ON CONFLICT ... DO UPDATE` for idempotency (replayable migrations must be idempotent).
 
-Keep insertions alphabetically sorted by table name. Insert them in the correct order if there are
-foreign key dependencies between enum tables.
+Keep insertions alphabetically sorted by table name. Insert them in the correct order if there are foreign key dependencies between enum tables.
 
 ```sql
 INSERT INTO schema_name.thing_types (id, name)
@@ -148,8 +144,7 @@ ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
 
 ## Step 4: Add Schema Documentation to R__Comments.sql
 
-Add `COMMENT ON` statements to `src/main/resources/db/migration/R__Comments.sql`. Keep them
-sorted alphabetically by table/column name within each group. This file uses Markdown syntax.
+Add `COMMENT ON` statements to `src/main/resources/db/migration/R__Comments.sql`. Keep them sorted alphabetically by table/column name within each group. This file uses Markdown syntax.
 
 ```sql
 COMMENT ON TABLE schema_name.table_name IS 'Description of what this table stores.';
@@ -164,8 +159,7 @@ COMMENT ON TABLE schema_name.thing_types IS '(Enum) Types of things.';
 
 ## Step 5: Update Config.kt (if applicable)
 
-Edit `jooq/src/main/kotlin/com/terraformation/backend/jooq/Config.kt`. Keep all entries
-alphabetically sorted within their respective blocks.
+Edit `jooq/src/main/kotlin/com/terraformation/backend/jooq/Config.kt`. Keep all entries alphabetically sorted within their respective blocks.
 
 ### EnumTable (for enum/type code tables)
 
@@ -215,8 +209,7 @@ EnumTable(
 - `columnName`: The database column name.
 - `columnDataType`: The Kotlin type (e.g., `"Boolean"`, `"String"`, `"String?"`,
   `"OtherEnumType"`, `"OtherEnumType?"`).
-- `isTableEnum` (optional, default `false`): Set to `true` if `columnDataType` is itself an enum
-  table type (causes the converter to be applied).
+- `isTableEnum` (optional, default `false`): Set to `true` if `columnDataType` is itself an enum table type (causes the converter to be applied).
 
 **Custom enum class name (when the default derived name is wrong):**
 
@@ -260,19 +253,17 @@ EmbeddableDefinitionType()
 ## Step 6: Add Tables to SchemaDocsGenerator.kt
 
 Every new table must be listed in `tableSlices` in
-`src/test/kotlin/com/terraformation/backend/db/SchemaDocsGenerator.kt`. The test suite will fail
-if a table exists in the schema but isn't listed there.
+`src/test/kotlin/com/terraformation/backend/db/SchemaDocsGenerator.kt`. The test suite will fail if a table exists in the schema but isn't listed there.
 
 Add the table to the appropriate schema block in `tableSlices`. Every table should appear in `ALL`
-plus the schema slice(s) that are relevant:
+plus the schema slice (s) that are relevant:
 
 ```kotlin
 "thing_types" to setOf(ALL, ACCELERATOR),
 "things" to setOf(ALL, ACCELERATOR),
 ```
 
-Use whichever slices make sense for the data; a table can appear in multiple slices if it's relevant
-to multiple schemas.
+Use whichever slices make sense for the data; a table can appear in multiple slices if it's relevant to multiple schemas.
 
 Entries within each schema block are sorted alphabetically by table name.
 
@@ -299,8 +290,7 @@ The enum class name comes from `EnumTable.enumName`, which is derived from the t
 2. Converting to PascalCase
 3. Applying suffix corrections (`statuse` → `status`, `categorie` → `category`, etc.)
 
-The Kotlin enum value name is the PascalCase form of the name column value (spaces removed,
-each word capitalized).
+The Kotlin enum value name is the PascalCase form of the name column value (spaces removed, each word capitalized).
 
 For display names that could be ambiguous, add a comment above:
 
@@ -317,8 +307,7 @@ Enums with `isLocalizable = false` do NOT get entries in `Enums_en.properties`.
 yarn translate
 ```
 
-This updates the strings files for other languages. Only modify `Enums_en.properties` directly;
-let the translation tool update the other language files.
+This updates the strings files for other languages. Only modify `Enums_en.properties` directly; let the translation tool update the other language files.
 
 ## Step 9: Build, Format, and Test
 
