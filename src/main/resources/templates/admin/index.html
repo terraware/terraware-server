@@ -88,27 +88,33 @@
 
 </details>
 
-<details id="testing" class="section" th:if="${canSetTestClock}">
+<details id="testing" class="section" th:if="${canSetTestClock || canViewSqlMap}">
     <summary>Test Utilities</summary>
 
-    <p>
-        <a href="/admin/testClock">Test clock adjustment</a>
-    </p>
+    <th:block th:if="${canSetTestClock}">
+        <p>
+            <a href="/admin/testClock">Test clock adjustment</a>
+        </p>
 
-    <p>
-        <a href="/admin/convertApi">ConvertAPI integration</a>
-    </p>
+        <p>
+            <a href="/admin/convertApi">ConvertAPI integration</a>
+        </p>
 
-    <p>
-        <a href="/admin/mux">Mux integration</a>
-    </p>
+        <p>
+            <a href="/admin/mux">Mux integration</a>
+        </p>
 
-    <p>
-        <a href="/admin/eventLog">Event log</a>
-    </p>
+        <p>
+            <a href="/admin/eventLog">Event log</a>
+        </p>
 
-    <p th:if="${splatterEnabled}">
-        <a href="/admin/splats">Splats</a>
+        <p th:if="${splatterEnabled}">
+            <a href="/admin/splats">Splats</a>
+        </p>
+    </th:block>
+
+    <p th:if="${canViewSqlMap}">
+        <a href="/admin/sqlMap">SQL query map</a>
     </p>
 </details>
 
