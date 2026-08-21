@@ -20,24 +20,24 @@ import com.terraformation.backend.i18n.currentLocale
 import java.time.LocalDate
 
 sealed interface ViabilityTestPersistentEvent : PersistentEvent {
-  val viabilityTestId: ViabilityTestId
   val accessionId: AccessionId
   val facilityId: FacilityId
   val organizationId: OrganizationId
+  val viabilityTestId: ViabilityTestId
 }
 
 data class ViabilityTestCreatedEventV1(
-    val testType: ViabilityTestType,
-    val seedsTested: Int? = null,
-    val substrate: ViabilityTestSubstrate? = null,
-    val treatment: SeedTreatment? = null,
-    val startDate: LocalDate? = null,
-    val endDate: LocalDate? = null,
-    val seedType: ViabilityTestSeedType? = null,
-    override val viabilityTestId: ViabilityTestId,
     override val accessionId: AccessionId,
+    val endDate: LocalDate? = null,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
+    val seedsTested: Int? = null,
+    val seedType: ViabilityTestSeedType? = null,
+    val startDate: LocalDate? = null,
+    val substrate: ViabilityTestSubstrate? = null,
+    val testType: ViabilityTestType,
+    val treatment: SeedTreatment? = null,
+    override val viabilityTestId: ViabilityTestId,
 ) : UpgradableEvent, ViabilityTestPersistentEvent {
   override fun toNextVersion(
       eventLogId: EventLogId,
@@ -47,50 +47,50 @@ data class ViabilityTestCreatedEventV1(
         eventUpgradeUtils.getViabilityTestValuesMissingFromV1(viabilityTestId, eventLogId)
 
     return ViabilityTestCreatedEventV2(
-        testType = testType,
-        seedsTested = seedsTested,
-        substrate = substrate,
-        treatment = treatment,
-        startDate = startDate,
-        endDate = endDate,
-        seedType = seedType,
-        notes = missingValues.notes,
-        staffResponsible = missingValues.staffResponsible,
-        viabilityTestId = viabilityTestId,
         accessionId = accessionId,
+        endDate = endDate,
         facilityId = facilityId,
+        notes = missingValues.notes,
         organizationId = organizationId,
+        seedsTested = seedsTested,
+        seedType = seedType,
+        staffResponsible = missingValues.staffResponsible,
+        startDate = startDate,
+        substrate = substrate,
+        testType = testType,
+        treatment = treatment,
+        viabilityTestId = viabilityTestId,
     )
   }
 }
 
 /** Published when a viability test is added to an accession. */
 data class ViabilityTestCreatedEventV2(
-    val testType: ViabilityTestType,
-    val seedsTested: Int? = null,
-    val substrate: ViabilityTestSubstrate? = null,
-    val treatment: SeedTreatment? = null,
-    val startDate: LocalDate? = null,
-    val endDate: LocalDate? = null,
-    val seedType: ViabilityTestSeedType? = null,
-    val notes: String? = null,
-    val staffResponsible: String? = null,
-    override val viabilityTestId: ViabilityTestId,
     override val accessionId: AccessionId,
+    val endDate: LocalDate? = null,
     override val facilityId: FacilityId,
+    val notes: String? = null,
     override val organizationId: OrganizationId,
+    val seedsTested: Int? = null,
+    val seedType: ViabilityTestSeedType? = null,
+    val staffResponsible: String? = null,
+    val startDate: LocalDate? = null,
+    val substrate: ViabilityTestSubstrate? = null,
+    val testType: ViabilityTestType,
+    val treatment: SeedTreatment? = null,
+    override val viabilityTestId: ViabilityTestId,
 ) : FieldsCreatedPersistentEvent, ViabilityTestPersistentEvent {
   override fun listInitialFields(messages: Messages) =
       listOfNotNull(
-          createInitialField("testType", testType.jsonValue),
-          createInitialField("seedsTested", seedsTested?.toString()),
-          createInitialField("substrate", substrate?.jsonValue),
-          createInitialField("treatment", treatment?.jsonValue),
-          createInitialField("startDate", startDate?.toString()),
           createInitialField("endDate", endDate?.toString()),
-          createInitialField("seedType", seedType?.jsonValue),
           createInitialField("notes", notes),
+          createInitialField("seedsTested", seedsTested?.toString()),
+          createInitialField("seedType", seedType?.getDisplayName(currentLocale())),
           createInitialField("staffResponsible", staffResponsible),
+          createInitialField("startDate", startDate?.toString()),
+          createInitialField("substrate", substrate?.getDisplayName(currentLocale())),
+          createInitialField("testType", testType.getDisplayName(currentLocale())),
+          createInitialField("treatment", treatment?.getDisplayName(currentLocale())),
       )
 }
 
@@ -100,12 +100,12 @@ typealias ViabilityTestCreatedEvent = ViabilityTestCreatedEventV2
  * Published when the user edits an existing viability test, including its germination recordings.
  */
 data class ViabilityTestUpdatedEventV1(
+    override val accessionId: AccessionId,
     val changedFrom: Values,
     val changedTo: Values,
-    override val viabilityTestId: ViabilityTestId,
-    override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
+    override val viabilityTestId: ViabilityTestId,
 ) : FieldsUpdatedPersistentEvent, ViabilityTestPersistentEvent {
   data class Values(
       val endDate: LocalDate? = null,
@@ -195,10 +195,10 @@ typealias ViabilityTestUpdatedEventValues = ViabilityTestUpdatedEventV1.Values
 
 /** Published when a viability test is deleted from an accession. */
 data class ViabilityTestDeletedEventV1(
-    override val viabilityTestId: ViabilityTestId,
     override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
+    override val viabilityTestId: ViabilityTestId,
 ) : EntityDeletedPersistentEvent, ViabilityTestPersistentEvent
 
 typealias ViabilityTestDeletedEvent = ViabilityTestDeletedEventV1

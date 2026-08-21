@@ -570,13 +570,13 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 action =
                     CreatedActionPayload(
                         listOf(
-                            CreatedFieldPayload("testType", listOf("Lab")),
-                            CreatedFieldPayload("seedsTested", listOf("1")),
-                            CreatedFieldPayload("substrate", listOf("Agar")),
-                            CreatedFieldPayload("treatment", listOf("Soak")),
-                            CreatedFieldPayload("startDate", listOf("2021-01-01")),
                             CreatedFieldPayload("notes", listOf("initial notes")),
+                            CreatedFieldPayload("seedsTested", listOf("1")),
                             CreatedFieldPayload("staffResponsible", listOf("Some Person")),
+                            CreatedFieldPayload("startDate", listOf("2021-01-01")),
+                            CreatedFieldPayload("substrate", listOf("Agar")),
+                            CreatedFieldPayload("testType", listOf("Lab")),
+                            CreatedFieldPayload("treatment", listOf("Soak")),
                         )
                     ),
                 subject = subject,
