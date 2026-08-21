@@ -17,6 +17,8 @@ Steps:
 3. Add enum values to R__TypeCodes.sql (if any enum tables).
 4. Add schema documentation to R__Comments.sql.
 5. Update Config.kt (EnumTable, IdWrapper, and/or Embeddable entries as needed).
+6. Add tables to SchemaDocsGenerator.kt.
+7. Add enum display names to Enums_en.properties (if any localizable enums).
 8. Run `yarn translate` to generate translations (if Enums_en.properties was changed).
 9. Build, format, and test (`./gradlew generateJooqClasses`, `./gradlew spotlessApply`, `./gradlew test`).
 
