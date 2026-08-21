@@ -2146,6 +2146,110 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `ignores batch files whose types are ambiguous`() {
+      val fileBatchId = insertFileBatch()
+      val videoFileId =
+          insertFile(
+              contentType = "video/mp4",
+              fileBatchId = fileBatchId,
+              fileName = "video.mp4",
+              storageUrl = "s3://bucket/video.mp4",
+          )
+      insertOrganizationMediaFile(fileId = videoFileId)
+      insertFile(
+          contentType = "application/json",
+          fileBatchId = fileBatchId,
+          fileName = "imu.json",
+          storageUrl = "s3://bucket/imu.json",
+      )
+      insertFile(
+          contentType = "text/csv",
+          fileBatchId = fileBatchId,
+          fileName = "imu.csv",
+          storageUrl = "s3://bucket/imu.csv",
+      )
+      val framesFileId =
+          insertFile(
+              contentType = "application/json",
+              fileBatchId = fileBatchId,
+              fileName = "frames.jsonl",
+              storageUrl = "s3://bucket/frames.jsonl",
+          )
+
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
+      assertTableEquals(
+          SplatAdditionalFilesRecord(
+              fileId = framesFileId,
+              splatFileId = videoFileId,
+              typeId = SplatAdditionalFileType.Frames,
+          )
+      )
+      assertEquals(
+          listOf(
+              SplatterRequestFileLocation(
+                  "bucket",
+                  "frames.jsonl",
+                  SplatAdditionalFileType.Frames,
+              )
+          ),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
+      )
+    }
+
+    @Test
+    fun `detects additional file types in names with directory components`() {
+      val fileBatchId = insertFileBatch()
+      val videoFileId =
+          insertFile(
+              contentType = "video/mp4",
+              fileBatchId = fileBatchId,
+              fileName = "video.mp4",
+              storageUrl = "s3://bucket/video.mp4",
+          )
+      insertOrganizationMediaFile(fileId = videoFileId)
+      val imuFileId =
+          insertFile(
+              contentType = "application/json",
+              fileBatchId = fileBatchId,
+              fileName = "C:\\fakepath\\imu.json",
+              storageUrl = "s3://bucket/imu.json",
+          )
+      val framesFileId =
+          insertFile(
+              contentType = "application/json",
+              fileBatchId = fileBatchId,
+              fileName = "capture/frames.jsonl",
+              storageUrl = "s3://bucket/frames.jsonl",
+          )
+
+      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
+          mockk(relaxed = true)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      assertTableEquals(
+          listOf(
+              SplatAdditionalFilesRecord(
+                  fileId = imuFileId,
+                  splatFileId = videoFileId,
+                  typeId = SplatAdditionalFileType.Imu,
+              ),
+              SplatAdditionalFilesRecord(
+                  fileId = framesFileId,
+                  splatFileId = videoFileId,
+                  typeId = SplatAdditionalFileType.Frames,
+              ),
+          )
+      )
+    }
+
+    @Test
     fun `does nothing when batch has no organization video`() {
       val fileBatchId = insertFileBatch()
       insertFile(contentType = "application/json", fileBatchId = fileBatchId)
