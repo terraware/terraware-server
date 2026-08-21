@@ -8,11 +8,13 @@ import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
@@ -517,6 +519,12 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             knownUserId,
             ViabilityTestCreatedEvent(
                 testType = ViabilityTestType.Lab,
+                seedsTested = 1,
+                substrate = ViabilityTestSubstrate.Agar,
+                treatment = SeedTreatment.Soak,
+                startDate = LocalDate.of(2021, 1, 1),
+                notes = "initial notes",
+                staffResponsible = "Some Person",
                 viabilityTestId = viabilityTestId,
                 accessionId = accessionId,
                 facilityId = facilityId,
@@ -559,7 +567,18 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val expected =
         listOf(
             EventLogEntryPayload(
-                action = CreatedActionPayload(),
+                action =
+                    CreatedActionPayload(
+                        listOf(
+                            CreatedFieldPayload("notes", listOf("initial notes")),
+                            CreatedFieldPayload("seedsTested", listOf("1")),
+                            CreatedFieldPayload("staffResponsible", listOf("Some Person")),
+                            CreatedFieldPayload("startDate", listOf("2021-01-01")),
+                            CreatedFieldPayload("substrate", listOf("Agar")),
+                            CreatedFieldPayload("testType", listOf("Lab")),
+                            CreatedFieldPayload("treatment", listOf("Soak")),
+                        )
+                    ),
                 subject = subject,
                 timestamp = createEntry.createdTime,
                 userId = knownUserId,
@@ -612,16 +631,38 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             ),
         )
 
-    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(createEntry)) }
+    val testEntry =
+        eventLogEntry(
+            knownUserId,
+            ViabilityTestCreatedEvent(
+                testType = ViabilityTestType.Lab,
+                treatment = SeedTreatment.Soak,
+                viabilityTestId = ViabilityTestId(30),
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+
+    val payloads =
+        Locales.SPANISH.use { transformer.eventsToPayloads(listOf(createEntry, testEntry)) }
 
     assertEquals(
-        CreatedActionPayload(
-            listOf(
-                CreatedFieldPayload("date", listOf("2021-01-01")),
-                CreatedFieldPayload("purpose", listOf("Pruebas de viabilidad")),
-            )
+        listOf(
+            CreatedActionPayload(
+                listOf(
+                    CreatedFieldPayload("date", listOf("2021-01-01")),
+                    CreatedFieldPayload("purpose", listOf("Pruebas de viabilidad")),
+                )
+            ),
+            CreatedActionPayload(
+                listOf(
+                    CreatedFieldPayload("testType", listOf("Laboratorio")),
+                    CreatedFieldPayload("treatment", listOf("Remojar")),
+                )
+            ),
         ),
-        payloads.single().action,
+        payloads.map { it.action },
     )
   }
 
