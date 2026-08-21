@@ -21,75 +21,57 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import java.time.LocalDate
 
 sealed interface WithdrawalPersistentEvent : PersistentEvent {
-  val withdrawalId: WithdrawalId
   val accessionId: AccessionId
   val facilityId: FacilityId
   val organizationId: OrganizationId
+  val withdrawalId: WithdrawalId
 }
 
 data class WithdrawalCreatedEventV1(
-    val purpose: WithdrawalPurpose? = null,
-    val date: LocalDate,
-    val withdrawnQuantity: SeedQuantityModel? = null,
+    override val accessionId: AccessionId,
     val batchId: BatchId? = null,
+    val date: LocalDate,
+    override val facilityId: FacilityId,
     val notes: String? = null,
+    override val organizationId: OrganizationId,
+    val purpose: WithdrawalPurpose? = null,
     val staffResponsible: String? = null,
     override val withdrawalId: WithdrawalId,
-    override val accessionId: AccessionId,
-    override val facilityId: FacilityId,
-    override val organizationId: OrganizationId,
+    val withdrawnQuantity: SeedQuantityModel? = null,
 ) : UpgradableEvent, WithdrawalPersistentEvent {
   override fun toNextVersion(
       eventLogId: EventLogId,
       eventUpgradeUtils: EventUpgradeUtils,
-  ): WithdrawalCreatedEventV2 {
-    val missingValues = eventUpgradeUtils.getWithdrawalValuesMissingFromV1(withdrawalId, eventLogId)
-
-    return WithdrawalCreatedEventV2(
-        purpose = purpose,
-        date = date,
-        withdrawnQuantity = withdrawnQuantity,
-        batchId = batchId,
-        notes = notes,
-        staffResponsible = staffResponsible,
-        destination = missingValues.destination,
-        viabilityTestId = missingValues.viabilityTestId,
-        withdrawnByUserId = missingValues.withdrawnByUserId,
-        withdrawalId = withdrawalId,
-        accessionId = accessionId,
-        facilityId = facilityId,
-        organizationId = organizationId,
-    )
-  }
+  ): WithdrawalCreatedEventV2 = eventUpgradeUtils.withdrawalValuesMissingFromV1.upgrade(this)
 }
 
 /** Published when a withdrawal is added to an accession. */
 data class WithdrawalCreatedEventV2(
-    val purpose: WithdrawalPurpose? = null,
-    val date: LocalDate,
-    val withdrawnQuantity: SeedQuantityModel? = null,
-    val batchId: BatchId? = null,
-    val notes: String? = null,
-    val staffResponsible: String? = null,
-    val destination: String? = null,
-    val viabilityTestId: ViabilityTestId? = null,
-    val withdrawnByUserId: UserId? = null,
-    override val withdrawalId: WithdrawalId,
     override val accessionId: AccessionId,
+    val batchId: BatchId? = null,
+    val date: LocalDate,
+    val destination: String? = null,
     override val facilityId: FacilityId,
+    val notes: String? = null,
     override val organizationId: OrganizationId,
+    val purpose: WithdrawalPurpose? = null,
+    val staffResponsible: String? = null,
+    val viabilityTestId: ViabilityTestId? = null,
+    override val withdrawalId: WithdrawalId,
+    val withdrawnByUserId: UserId? = null,
+    val withdrawnQuantity: SeedQuantityModel? = null,
 ) : FieldsCreatedPersistentEvent, WithdrawalPersistentEvent {
   override fun listInitialFields(messages: Messages) =
       listOfNotNull(
-          createInitialField("date", date.toString()),
-          createInitialField("withdrawnQuantity", withdrawnQuantity?.toString()),
-          createInitialField("purpose", purpose?.jsonValue),
-          createInitialField("destination", destination),
           createInitialField("batchId", batchId?.toString()),
-          createInitialField("viabilityTestId", viabilityTestId?.toString()),
+          createInitialField("date", date.toString()),
+          createInitialField("destination", destination),
           createInitialField("notes", notes),
+          createInitialField("purpose", purpose?.getDisplayName(currentLocale())),
           createInitialField("staffResponsible", staffResponsible),
+          createInitialField("viabilityTestId", viabilityTestId?.toString()),
           createInitialField("withdrawnByUserId", withdrawnByUserId?.toString()),
+          createInitialField("withdrawnQuantity", withdrawnQuantity?.toString()),
       )
 }
 
@@ -97,38 +79,33 @@ typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV2
 
 /** Published when the user edits an existing withdrawal. */
 data class WithdrawalUpdatedEventV1(
+    override val accessionId: AccessionId,
     val changedFrom: Values,
     val changedTo: Values,
-    override val withdrawalId: WithdrawalId,
-    override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
+    override val withdrawalId: WithdrawalId,
 ) : FieldsUpdatedPersistentEvent, WithdrawalPersistentEvent {
   data class Values(
       val date: LocalDate? = null,
-      val withdrawnQuantity: SeedQuantityModel? = null,
-      val purpose: WithdrawalPurpose? = null,
       val destination: String? = null,
       val notes: String? = null,
+      val purpose: WithdrawalPurpose? = null,
       val staffResponsible: String? = null,
       val withdrawnByUserId: UserId? = null,
+      val withdrawnQuantity: SeedQuantityModel? = null,
   )
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
           createUpdatedField("date", changedFrom.date?.toString(), changedTo.date?.toString()),
-          createUpdatedField(
-              "withdrawnQuantity",
-              changedFrom.withdrawnQuantity?.toString(),
-              changedTo.withdrawnQuantity?.toString(),
-          ),
+          createUpdatedField("destination", changedFrom.destination, changedTo.destination),
+          createUpdatedField("notes", changedFrom.notes, changedTo.notes),
           createUpdatedField(
               "purpose",
               changedFrom.purpose?.getDisplayName(currentLocale()),
               changedTo.purpose?.getDisplayName(currentLocale()),
           ),
-          createUpdatedField("destination", changedFrom.destination, changedTo.destination),
-          createUpdatedField("notes", changedFrom.notes, changedTo.notes),
           createUpdatedField(
               "staffResponsible",
               changedFrom.staffResponsible,
@@ -139,6 +116,11 @@ data class WithdrawalUpdatedEventV1(
               changedFrom.withdrawnByUserId?.toString(),
               changedTo.withdrawnByUserId?.toString(),
           ),
+          createUpdatedField(
+              "withdrawnQuantity",
+              changedFrom.withdrawnQuantity?.toString(),
+              changedTo.withdrawnQuantity?.toString(),
+          ),
       )
 }
 
@@ -148,10 +130,10 @@ typealias WithdrawalUpdatedEventValues = WithdrawalUpdatedEventV1.Values
 
 /** Published when a withdrawal is deleted from an accession. */
 data class WithdrawalDeletedEventV1(
-    override val withdrawalId: WithdrawalId,
     override val accessionId: AccessionId,
     override val facilityId: FacilityId,
     override val organizationId: OrganizationId,
+    override val withdrawalId: WithdrawalId,
 ) : EntityDeletedPersistentEvent, WithdrawalPersistentEvent
 
 typealias WithdrawalDeletedEvent = WithdrawalDeletedEventV1

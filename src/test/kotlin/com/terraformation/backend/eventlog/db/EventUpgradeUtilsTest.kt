@@ -232,7 +232,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
               destination = "Greenhouse",
               withdrawnBy = otherUserId,
           )
-      val createdEventLogId = insertEvent(createdEventV1(withdrawalId))
+      insertEvent(createdEventV1(withdrawalId))
 
       insertEvent(
           updatedEvent(
@@ -251,9 +251,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           "Lab",
-          eventUpgradeUtils
-              .getWithdrawalValuesMissingFromV1(withdrawalId, createdEventLogId)
-              .destination,
+          upgrade(withdrawalId).destination,
           "Should use the changedFrom of the first edit, not the current row",
       )
     }
@@ -266,7 +264,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
               destination = "Greenhouse",
               withdrawnBy = user.userId,
           )
-      val createdEventLogId = insertEvent(createdEventV1(withdrawalId))
+      insertEvent(createdEventV1(withdrawalId))
 
       // Only touches withdrawnByUserId, so it says nothing about the destination.
       insertEvent(
@@ -284,11 +282,10 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       )
 
-      val values =
-          eventUpgradeUtils.getWithdrawalValuesMissingFromV1(withdrawalId, createdEventLogId)
+      val upgraded = upgrade(withdrawalId)
 
-      assertEquals("Lab", values.destination, "destination")
-      assertEquals(user.userId, values.withdrawnByUserId, "withdrawnByUserId")
+      assertEquals("Lab", upgraded.destination, "destination")
+      assertEquals(user.userId, upgraded.withdrawnByUserId, "withdrawnByUserId")
     }
 
     // A null changedFrom can mean either "this edit left the field alone" or "this edit gave the
@@ -297,7 +294,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `treats a field that an edit populated as null at creation time`() {
       val withdrawalId =
           insertSeedbankWithdrawal(batchId = null, destination = "Lab", withdrawnBy = user.userId)
-      val createdEventLogId = insertEvent(createdEventV1(withdrawalId))
+      insertEvent(createdEventV1(withdrawalId))
 
       insertEvent(
           updatedEvent(
@@ -308,9 +305,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertNull(
-          eventUpgradeUtils
-              .getWithdrawalValuesMissingFromV1(withdrawalId, createdEventLogId)
-              .destination,
+          upgrade(withdrawalId).destination,
           "Destination was empty at creation time even though the row has one now",
       )
     }
@@ -318,15 +313,15 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns nulls if the withdrawal has been deleted`() {
       val withdrawalId = insertSeedbankWithdrawal(batchId = null, destination = "Lab")
-      val createdEventLogId = insertEvent(createdEventV1(withdrawalId))
+      insertEvent(createdEventV1(withdrawalId))
 
       withdrawalsDao.deleteById(withdrawalId)
 
-      assertEquals(
-          EventUpgradeUtils.WithdrawalValuesMissingFromV1(null, null, null),
-          eventUpgradeUtils.getWithdrawalValuesMissingFromV1(withdrawalId, createdEventLogId),
-      )
+      assertEquals(createdEventV2(withdrawalId), upgrade(withdrawalId))
     }
+
+    private fun upgrade(withdrawalId: WithdrawalId) =
+        eventUpgradeUtils.withdrawalValuesMissingFromV1.upgrade(createdEventV1(withdrawalId))
 
     private fun createdEventV1(withdrawalId: WithdrawalId) =
         WithdrawalCreatedEventV1(
