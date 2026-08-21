@@ -537,7 +537,12 @@ class SplatService(
   }
 
   private fun splatAdditionalFileType(fileName: String): SplatAdditionalFileType? {
-    val baseName = fileName.substringBeforeLast('.').lowercase()
+    val baseName =
+        fileName
+            .substringAfterLast('/')
+            .substringAfterLast('\\')
+            .substringBeforeLast('.')
+            .lowercase()
     return SplatAdditionalFileType.entries.firstOrNull { it.jsonValue == baseName }
   }
 
@@ -633,6 +638,18 @@ class SplatService(
                 null
               } else {
                 record[FILES.ID]!! to type
+              }
+            }
+            .groupBy({ it.second }, { it.first })
+            .mapNotNull { (type, fileIds) ->
+              if (fileIds.size > 1) {
+                log.warn(
+                    "File batch ${event.fileBatchId} contains ${fileIds.size} files of splat " +
+                        "additional file type ${type.jsonValue}; ignoring all of them"
+                )
+                null
+              } else {
+                fileIds.first() to type
               }
             }
             .toMap()
