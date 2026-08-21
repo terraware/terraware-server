@@ -9,7 +9,11 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.eventlog.UpgradableEvent
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
+import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import org.jooq.DSLContext
 
 /**
@@ -21,6 +25,8 @@ class EventUpgradeUtils(
     val dslContext: DSLContext,
     val eventLogStore: EventLogStore,
 ) {
+  val withdrawalValuesMissingFromV1 = WithdrawalValuesMissingFromV1()
+
   fun getPreviousOrganizationName(
       organizationId: OrganizationId,
       beforeEventLogId: EventLogId,
@@ -46,5 +52,73 @@ class EventUpgradeUtils(
             ?.event
             ?.name
         ?: throw ProjectNotFoundException(projectId)
+  }
+
+  inner class WithdrawalValuesMissingFromV1 {
+    fun upgrade(original: WithdrawalCreatedEventV1): WithdrawalCreatedEventV2 {
+      val currentRow =
+          dslContext
+              .select(
+                  WITHDRAWALS.DESTINATION,
+                  WITHDRAWALS.VIABILITY_TEST_ID,
+                  WITHDRAWALS.WITHDRAWN_BY,
+              )
+              .from(WITHDRAWALS)
+              .where(WITHDRAWALS.ID.eq(original.withdrawalId))
+              .fetchOne()
+
+      // A withdrawal can't be edited before it exists, so every update event for it was published
+      // after the creation event being upgraded.
+      val laterEdits =
+          eventLogStore
+              .fetchByIds(
+                  listOf(original.withdrawalId),
+                  listOf(WithdrawalUpdatedEvent::class),
+              )
+              .map { it.event }
+
+      return WithdrawalCreatedEventV2(
+          accessionId = original.accessionId,
+          batchId = original.batchId,
+          date = original.date,
+          destination =
+              valueAtCreation(
+                  laterEdits,
+                  currentRow?.get(WITHDRAWALS.DESTINATION),
+                  { it.changedFrom.destination },
+                  { it.changedTo.destination },
+              ),
+          facilityId = original.facilityId,
+          notes = original.notes,
+          organizationId = original.organizationId,
+          purpose = original.purpose,
+          staffResponsible = original.staffResponsible,
+          // A withdrawal's viability test can't be changed after it's created, so the current row
+          // always has the creation-time value.
+          viabilityTestId = currentRow?.get(WITHDRAWALS.VIABILITY_TEST_ID),
+          withdrawalId = original.withdrawalId,
+          withdrawnByUserId =
+              valueAtCreation(
+                  laterEdits,
+                  currentRow?.get(WITHDRAWALS.WITHDRAWN_BY),
+                  { it.changedFrom.withdrawnByUserId },
+                  { it.changedTo.withdrawnByUserId },
+              ),
+          withdrawnQuantity = original.withdrawnQuantity,
+      )
+    }
+  }
+
+  private fun <T, V> valueAtCreation(
+      laterEdits: List<T>,
+      currentValue: V?,
+      getChangedFrom: (T) -> V?,
+      getChangedTo: (T) -> V?,
+  ): V? {
+    val firstEditOfField = laterEdits.firstOrNull {
+      getChangedFrom(it) != null || getChangedTo(it) != null
+    }
+
+    return if (firstEditOfField != null) getChangedFrom(firstEditOfField) else currentValue
   }
 }

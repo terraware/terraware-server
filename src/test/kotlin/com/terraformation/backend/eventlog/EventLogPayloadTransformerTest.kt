@@ -11,9 +11,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.DataSource
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
@@ -53,10 +55,12 @@ import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
+import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -404,7 +408,14 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         eventLogEntry(
             knownUserId,
             WithdrawalCreatedEvent(
+                purpose = WithdrawalPurpose.ViabilityTesting,
                 date = LocalDate.of(2021, 1, 1),
+                withdrawnQuantity = SeedQuantityModel(BigDecimal(300), SeedQuantityUnits.Seeds),
+                notes = "initial notes",
+                staffResponsible = "Some Person",
+                destination = "Lab",
+                viabilityTestId = ViabilityTestId(30),
+                withdrawnByUserId = knownUserId,
                 withdrawalId = withdrawalId,
                 accessionId = accessionId,
                 facilityId = facilityId,
@@ -447,7 +458,22 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val expected =
         listOf(
             EventLogEntryPayload(
-                action = CreatedActionPayload(),
+                action =
+                    CreatedActionPayload(
+                        listOf(
+                            CreatedFieldPayload("date", listOf("2021-01-01")),
+                            CreatedFieldPayload("destination", listOf("Lab")),
+                            CreatedFieldPayload("notes", listOf("initial notes")),
+                            CreatedFieldPayload("purpose", listOf("Viability Testing")),
+                            CreatedFieldPayload("staffResponsible", listOf("Some Person")),
+                            CreatedFieldPayload("viabilityTestId", listOf("30")),
+                            CreatedFieldPayload("withdrawnByUserId", listOf("$knownUserId")),
+                            CreatedFieldPayload(
+                                "withdrawnQuantity",
+                                listOf("SeedQuantityModel(quantity=300, units=Seeds)"),
+                            ),
+                        )
+                    ),
                 subject = subject,
                 timestamp = createEntry.createdTime,
                 userId = knownUserId,
@@ -563,6 +589,39 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expected,
         transformer.eventsToPayloads(listOf(createEntry, updateEntry, deleteEntry)),
+    )
+  }
+
+  // In English the display names happen to match the enums' database names, so this is the only
+  // coverage that distinguishes a localized value from a raw one.
+  @Test
+  fun `localizes enum values of Created actions`() {
+    val accessionId = AccessionId(10)
+    val facilityId = FacilityId(11)
+
+    val createEntry =
+        eventLogEntry(
+            knownUserId,
+            WithdrawalCreatedEvent(
+                purpose = WithdrawalPurpose.ViabilityTesting,
+                date = LocalDate.of(2021, 1, 1),
+                withdrawalId = WithdrawalId(20),
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+
+    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(createEntry)) }
+
+    assertEquals(
+        CreatedActionPayload(
+            listOf(
+                CreatedFieldPayload("date", listOf("2021-01-01")),
+                CreatedFieldPayload("purpose", listOf("Pruebas de viabilidad")),
+            )
+        ),
+        payloads.single().action,
     )
   }
 
