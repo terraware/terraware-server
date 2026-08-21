@@ -575,23 +575,6 @@ class SplatService(
             .where(ORGANIZATION_MEDIA_FILES.FILE_ID.eq(videoFileId))
             .fetchOne(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID) ?: return
 
-    if (batchFiles.size > 2) {
-      log.warn("File batch ${event.fileBatchId} contains more than two files; not generating splat")
-      return
-    }
-
-    val jsonFileId =
-        batchFiles
-            .firstOrNull { it[FILES.CONTENT_TYPE] == MediaType.APPLICATION_JSON_VALUE }
-            ?.value1()
-    if (jsonFileId == null) {
-      log.warn(
-          "File batch ${event.fileBatchId} contains an organization video but no JSON data file; " +
-              "not generating splat"
-      )
-      return
-    }
-
     try {
       generateOrganizationMediaSplat(organizationId, videoFileId)
     } catch (e: Exception) {

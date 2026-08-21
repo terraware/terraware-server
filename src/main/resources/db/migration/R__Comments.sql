@@ -260,7 +260,7 @@ COMMENT ON COLUMN splats.sky_radius IS 'Size of the sky sphere.';
 
 COMMENT ON TABLE splat_additional_file_types IS '(Enum) Kinds of supplementary input files that can accompany a splat''s video file.';
 
-COMMENT ON TABLE splat_additional_files IS 'Supplementary input files, such as pose priors from sensor data, that help with generating a splat.';
+COMMENT ON TABLE splat_additional_files IS 'Supplementary input files that help with generating a splat.';
 COMMENT ON COLUMN splat_additional_files.splat_file_id IS 'Video file of the splat this file is an input for.';
 
 COMMENT ON TABLE splat_annotation_media IS 'Media files (photos or videos) attached to splat annotations. Modeled for multiple media per annotation.';

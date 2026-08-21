@@ -1934,7 +1934,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `generates splat for a video plus JSON batch`() {
+    fun `generates splat for a video that is part of a batch`() {
       val fileBatchId = insertFileBatch()
       val videoFileId =
           insertFile(
@@ -1943,11 +1943,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               storageUrl = "s3://bucket/video.mp4",
           )
       insertOrganizationMediaFile(fileId = videoFileId)
-      insertFile(
-          contentType = "application/json",
-          fileBatchId = fileBatchId,
-          storageUrl = "s3://bucket/data.json",
-      )
 
       val messageSlot = slot<SplatterRequestMessage>()
       every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
@@ -1979,33 +1974,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val fileBatchId = insertFileBatch()
       insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
       insertFile(contentType = "application/json", fileBatchId = fileBatchId)
-
-      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
-
-      assertTableEmpty(SPLATS)
-      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
-    }
-
-    @Test
-    fun `does not generate splat when batch has more than two files`() {
-      val fileBatchId = insertFileBatch()
-      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
-      insertOrganizationMediaFile(fileId = videoFileId)
-      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
-      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
-
-      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
-
-      assertTableEmpty(SPLATS)
-      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
-    }
-
-    @Test
-    fun `does not generate splat when batch has no JSON data file`() {
-      val fileBatchId = insertFileBatch()
-      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
-      insertOrganizationMediaFile(fileId = videoFileId)
-      insertFile(contentType = "image/jpeg", fileBatchId = fileBatchId)
 
       service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
