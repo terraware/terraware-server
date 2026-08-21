@@ -570,13 +570,13 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 action =
                     CreatedActionPayload(
                         listOf(
-                            CreatedFieldPayload("testType", listOf("Lab")),
-                            CreatedFieldPayload("seedsTested", listOf("1")),
-                            CreatedFieldPayload("substrate", listOf("Agar")),
-                            CreatedFieldPayload("treatment", listOf("Soak")),
-                            CreatedFieldPayload("startDate", listOf("2021-01-01")),
                             CreatedFieldPayload("notes", listOf("initial notes")),
+                            CreatedFieldPayload("seedsTested", listOf("1")),
                             CreatedFieldPayload("staffResponsible", listOf("Some Person")),
+                            CreatedFieldPayload("startDate", listOf("2021-01-01")),
+                            CreatedFieldPayload("substrate", listOf("Agar")),
+                            CreatedFieldPayload("testType", listOf("Lab")),
+                            CreatedFieldPayload("treatment", listOf("Soak")),
                         )
                     ),
                 subject = subject,
@@ -631,16 +631,38 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             ),
         )
 
-    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(createEntry)) }
+    val testEntry =
+        eventLogEntry(
+            knownUserId,
+            ViabilityTestCreatedEvent(
+                testType = ViabilityTestType.Lab,
+                treatment = SeedTreatment.Soak,
+                viabilityTestId = ViabilityTestId(30),
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+
+    val payloads =
+        Locales.SPANISH.use { transformer.eventsToPayloads(listOf(createEntry, testEntry)) }
 
     assertEquals(
-        CreatedActionPayload(
-            listOf(
-                CreatedFieldPayload("date", listOf("2021-01-01")),
-                CreatedFieldPayload("purpose", listOf("Pruebas de viabilidad")),
-            )
+        listOf(
+            CreatedActionPayload(
+                listOf(
+                    CreatedFieldPayload("date", listOf("2021-01-01")),
+                    CreatedFieldPayload("purpose", listOf("Pruebas de viabilidad")),
+                )
+            ),
+            CreatedActionPayload(
+                listOf(
+                    CreatedFieldPayload("testType", listOf("Laboratorio")),
+                    CreatedFieldPayload("treatment", listOf("Remojar")),
+                )
+            ),
         ),
-        payloads.single().action,
+        payloads.map { it.action },
     )
   }
 
