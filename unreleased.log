@@ -1,3 +1,5 @@
+792fc223 SW-8811 Don't suggest colliding species renames (#4884)
+0da9b86e SW-8811 Make SpeciesCheckerTest database-backed (#4883)
 254cf4e9 Nudge agents toward using better assertions (#4882)
 a07d1c06 Add admin page to visualize geometry SQL queries (#4877)
 b2b5559c Update migration skill to reference timestamps (#4878)
