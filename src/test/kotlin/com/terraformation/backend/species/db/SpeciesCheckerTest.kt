@@ -33,7 +33,9 @@ internal class SpeciesCheckerTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesProblemsDao,
     )
   }
-  private val checker: SpeciesChecker by lazy { SpeciesChecker(gbifStore, speciesStore) }
+  private val checker: SpeciesChecker by lazy {
+    SpeciesChecker(gbifStore, speciesStore)
+  }
 
   private lateinit var organizationId: OrganizationId
 
@@ -95,6 +97,17 @@ internal class SpeciesCheckerTest : DatabaseTest(), RunsAsDatabaseUser {
       checker.checkSpecies(speciesId)
 
       assertTableEquals(expectedSpecies)
+      assertTableEmpty(SPECIES_PROBLEMS)
+    }
+
+    @Test
+    fun `does not suggest rename that would collide with existing species`() {
+      insertGbifTaxon(scientificName = "Correct species")
+      insertSpecies(scientificName = "Correct species")
+      val speciesId = insertSpecies("Correc species")
+
+      checker.checkSpecies(speciesId)
+
       assertTableEmpty(SPECIES_PROBLEMS)
     }
   }

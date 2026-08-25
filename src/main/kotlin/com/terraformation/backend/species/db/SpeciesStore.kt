@@ -345,6 +345,14 @@ class SpeciesStore(
     )
   }
 
+  fun exists(organizationId: OrganizationId, scientificName: String): Boolean {
+    return dslContext.fetchExists(
+        SPECIES,
+        SPECIES.ORGANIZATION_ID.eq(organizationId),
+        SPECIES.SCIENTIFIC_NAME.eq(scientificName),
+    )
+  }
+
   /**
    * Returns a list of IDs of species that haven't yet been checked for possible suggested edits.
    */

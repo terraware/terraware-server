@@ -32,7 +32,12 @@ class SpeciesChecker(
   }
 
   private fun createProblems(model: ExistingSpeciesModel) {
-    val problems = listOfNotNull(gbifStore.checkScientificName(model.scientificName))
+    val problems =
+        listOfNotNull(gbifStore.checkScientificName(model.scientificName)).filter { problem ->
+          // Don't suggest names that would collide with existing species names.
+          problem.suggestedValue == null ||
+              !speciesStore.exists(model.organizationId, problem.suggestedValue!!)
+        }
 
     speciesStore.updateProblems(model.id, problems)
   }
