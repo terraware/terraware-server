@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
+import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
@@ -26,6 +27,7 @@ import com.terraformation.backend.db.default_schema.tables.records.SpeciesSucces
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.file.FileStore
@@ -718,6 +720,30 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     )
 
     assertStatus(UploadStatus.Completed)
+  }
+
+  @Test
+  fun `importCsv removes suggested renames that would collide with newly-imported names`() {
+    insertSpecies(scientificName = "Noncolliding species")
+    insertSpeciesProblem()
+    val expectedProblems = dslContext.fetch(SPECIES_PROBLEMS)
+
+    insertGbifTaxon(scientificName = "Correct name")
+    insertSpecies(scientificName = "Correct nam")
+    insertSpeciesProblem(type = SpeciesProblemType.NameMisspelled, suggestedValue = "Correct name")
+
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nCorrect name,Common,Family,,true,Shrub,Recalcitrant,,,,,,,")
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl,
+        )
+
+    importer.importCsv(uploadId, false)
+
+    assertTableEquals(expectedProblems)
   }
 
   @Test

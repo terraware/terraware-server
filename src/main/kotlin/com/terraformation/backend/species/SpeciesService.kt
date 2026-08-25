@@ -71,6 +71,10 @@ class SpeciesService(
           model.copy(commonNameSource = commonNameSource, familyNameSource = familyNameSource)
 
       val speciesId = speciesStore.createSpecies(populatedModel)
+      speciesStore.removeCollidingSuggestedNames(
+          model.organizationId,
+          populatedModel.scientificName,
+      )
       speciesChecker.checkSpecies(speciesId)
 
       if (model.projectIds.isNotEmpty()) {
@@ -90,6 +94,7 @@ class SpeciesService(
       val modelWithSources = freshenNameSources(existingRow, model)
 
       val updatedRow = speciesStore.updateSpecies(modelWithSources)
+      speciesStore.removeCollidingSuggestedNames(existingRow.organizationId, model.scientificName)
       speciesChecker.recheckSpecies(existingRow, updatedRow)
       resetNativitiesIfRenamed(existingRow, updatedRow)
       val checkedRow = speciesStore.fetchSpeciesById(updatedRow.id)

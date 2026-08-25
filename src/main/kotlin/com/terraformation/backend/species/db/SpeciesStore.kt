@@ -613,6 +613,7 @@ class SpeciesStore(
       if (existingIdByCurrentName != null) {
         if (overwriteExisting || existingByCurrentName[DELETED_TIME] != null) {
           updateExisting(existingIdByCurrentName)
+          removeCollidingSuggestedNames(model.organizationId, model.scientificName)
         }
         existingIdByCurrentName
       } else {
@@ -662,6 +663,7 @@ class SpeciesStore(
           updateGrowthForms(newSpeciesId, model.growthForms)
           updatePlantMaterialSourcingMethods(newSpeciesId, model.plantMaterialSourcingMethods)
           updateSuccessionalGroups(newSpeciesId, model.successionalGroups)
+          removeCollidingSuggestedNames(model.organizationId, model.scientificName)
 
           newSpeciesId
         } else {
@@ -877,6 +879,22 @@ class SpeciesStore(
           .update(SPECIES)
           .set(SPECIES.CHECKED_TIME, clock.instant())
           .where(SPECIES.ID.eq(speciesId))
+          .execute()
+    }
+  }
+
+  fun removeCollidingSuggestedNames(organizationId: OrganizationId, scientificName: String) {
+    with(SPECIES_PROBLEMS) {
+      dslContext
+          .deleteFrom(SPECIES_PROBLEMS)
+          .where(
+              SPECIES_ID.`in`(
+                  DSL.select(SPECIES.ID)
+                      .from(SPECIES)
+                      .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
+              )
+          )
+          .and(SUGGESTED_VALUE.eq(scientificName))
           .execute()
     }
   }
