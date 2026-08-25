@@ -1,109 +1,133 @@
 package com.terraformation.backend.species.db
 
+import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
-import com.terraformation.backend.species.model.ExistingSpeciesModel
-import io.mockk.Runs
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.verify
+import com.terraformation.backend.db.default_schema.tables.records.SpeciesProblemsRecord
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import java.time.Instant
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-internal class SpeciesCheckerTest {
-  private val gbifStore: GbifStore = mockk()
-  private val speciesStore: SpeciesStore = mockk()
-  private val checker = SpeciesChecker(gbifStore, speciesStore)
+internal class SpeciesCheckerTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
-  private val organizationId = OrganizationId(1)
-  private val speciesId = SpeciesId(1)
-  private val nonexistentProblem =
-      SpeciesProblemsRow(
-          speciesId = speciesId,
+  private val clock = TestClock()
+  private val gbifStore: GbifStore by lazy { GbifStore(dslContext) }
+  private val speciesStore: SpeciesStore by lazy {
+    SpeciesStore(
+        clock,
+        dslContext,
+        speciesDao,
+        speciesEcosystemTypesDao,
+        speciesGrowthFormsDao,
+        speciesProblemsDao,
+    )
+  }
+  private val checker: SpeciesChecker by lazy { SpeciesChecker(gbifStore, speciesStore) }
+
+  private lateinit var organizationId: OrganizationId
+
+  private fun nonexistentProblem(speciesId: SpeciesId = inserted.speciesId) =
+      SpeciesProblemsRecord(
+          createdTime = clock.instant,
           fieldId = SpeciesProblemField.ScientificName,
+          speciesId = speciesId,
           typeId = SpeciesProblemType.NameNotFound,
-      )
-  private val skeletonSpecies =
-      ExistingSpeciesModel(
-          createdTime = Instant.EPOCH,
-          id = speciesId,
-          modifiedTime = Instant.EPOCH,
-          organizationId = organizationId,
-          scientificName = "Skeleton species",
       )
 
   @BeforeEach
   fun setUp() {
-    every { gbifStore.checkScientificName(any()) } returns null
-    every { gbifStore.checkScientificName("Bogus name") } returns nonexistentProblem
-    every { speciesStore.updateProblems(any(), any()) } just Runs
+    organizationId = insertOrganization()
+    insertOrganizationUser(role = Role.Admin)
   }
 
-  @Test
-  fun `checkAllUncheckedSpecies checks all unchecked species`() {
-    val bogusId = speciesId
-    val correctId = SpeciesId(2)
-    val uncheckedSpeciesIds = listOf(correctId, bogusId)
+  @Nested
+  inner class CheckAllUncheckedSpecies {
+    @Test
+    fun `checks all unchecked species`() {
+      insertGbifTaxon(scientificName = "Correct name")
+      val bogusId = insertSpecies(scientificName = "Bogus name")
+      insertSpecies(scientificName = "Correct name")
+      insertSpecies(scientificName = "Checked already", checkedTime = Instant.ofEpochSecond(30))
 
-    every { speciesStore.fetchUncheckedSpeciesIds(organizationId) } returns uncheckedSpeciesIds
-    every { speciesStore.fetchSpeciesById(correctId) } returns
-        skeletonSpecies.copy(id = correctId, scientificName = "Correct name")
-    every { speciesStore.fetchSpeciesById(bogusId) } returns
-        skeletonSpecies.copy(id = bogusId, scientificName = "Bogus name")
+      val expectedSpecies =
+          dslContext.fetch(SPECIES).onEach { it.checkedTime = it.checkedTime ?: clock.instant }
 
-    checker.checkAllUncheckedSpecies(organizationId)
+      checker.checkAllUncheckedSpecies(organizationId)
 
-    verify { gbifStore.checkScientificName("Correct name") }
-    verify { gbifStore.checkScientificName("Bogus name") }
-    verify { speciesStore.updateProblems(correctId, emptyList()) }
-    verify { speciesStore.updateProblems(bogusId, listOf(nonexistentProblem)) }
+      assertTableEquals(expectedSpecies)
+      assertTableEquals(nonexistentProblem(bogusId))
+    }
   }
 
-  @Test
-  fun `checkSpecies checks scientific name if species has not been checked`() {
-    every { speciesStore.fetchSpeciesById(speciesId) } returns
-        skeletonSpecies.copy(scientificName = "Bogus name")
+  @Nested
+  inner class CheckSpecies {
+    @Test
+    fun `checks scientific name if species has not been checked`() {
+      val speciesId = insertSpecies(scientificName = "Bogus name")
 
-    checker.checkSpecies(speciesId)
+      checker.checkSpecies(speciesId)
 
-    verify { gbifStore.checkScientificName("Bogus name") }
-    verify { speciesStore.updateProblems(speciesId, listOf(nonexistentProblem)) }
+      assertEquals(
+          listOf(Instant.EPOCH),
+          dslContext.fetchValues(SPECIES.CHECKED_TIME),
+          "Checked time",
+      )
+      assertTableEquals(nonexistentProblem())
+    }
+
+    @Test
+    fun `does nothing if species has already been checked`() {
+      val speciesId = insertSpecies("Bogus name", checkedTime = Instant.EPOCH)
+
+      val expectedSpecies = dslContext.fetch(SPECIES)
+
+      checker.checkSpecies(speciesId)
+
+      assertTableEquals(expectedSpecies)
+      assertTableEmpty(SPECIES_PROBLEMS)
+    }
   }
 
-  @Test
-  fun `checkSpecies does nothing if species has already been checked`() {
-    every { speciesStore.fetchSpeciesById(speciesId) } returns
-        skeletonSpecies.copy(scientificName = "Bogus name", checkedTime = Instant.EPOCH)
+  @Nested
+  inner class RecheckSpecies {
+    @Test
+    fun `checks scientific name again if it changed`() {
+      val speciesId = insertSpecies("Bogus name", checkedTime = Instant.EPOCH)
+      val after = speciesStore.fetchSpeciesById(speciesId)
+      val before = after.copy(scientificName = "Old name")
 
-    checker.checkSpecies(speciesId)
+      clock.instant = Instant.ofEpochSecond(30)
+      checker.recheckSpecies(before, after)
 
-    verify(exactly = 0) { gbifStore.checkScientificName(any()) }
-    verify(exactly = 0) { speciesStore.updateProblems(any(), any()) }
-  }
+      assertEquals(
+          listOf(clock.instant),
+          dslContext.fetchValues(SPECIES.CHECKED_TIME),
+          "Checked time",
+      )
+      assertTableEquals(nonexistentProblem())
+    }
 
-  @Test
-  fun `recheckSpecies checks scientific name again if it changed`() {
-    checker.recheckSpecies(
-        skeletonSpecies.copy(scientificName = "Correct name"),
-        skeletonSpecies.copy(scientificName = "Bogus name"),
-    )
+    @Test
+    fun `does not check scientific name again if it did not change`() {
+      val speciesId = insertSpecies("Bogus name", checkedTime = Instant.EPOCH)
+      val expectedSpecies = dslContext.fetch(SPECIES)
+      val model = speciesStore.fetchSpeciesById(speciesId)
 
-    verify { gbifStore.checkScientificName("Bogus name") }
-    verify { speciesStore.updateProblems(speciesId, listOf(nonexistentProblem)) }
-  }
+      checker.recheckSpecies(model, model.copy(familyName = "New family"))
 
-  @Test
-  fun `recheckSpecies does not check scientific name again if it did not change`() {
-    val model = skeletonSpecies.copy(scientificName = "Bogus name", familyName = "Old family")
-
-    checker.recheckSpecies(model, model.copy(familyName = "New family"))
-
-    verify(exactly = 0) { gbifStore.checkScientificName(any()) }
-    verify(exactly = 0) { speciesStore.updateProblems(any(), any()) }
+      assertTableEquals(expectedSpecies)
+      assertTableEmpty(SPECIES_PROBLEMS)
+    }
   }
 }
