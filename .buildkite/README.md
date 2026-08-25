@@ -54,12 +54,10 @@ https://buildkite.com/docs/pipelines/configure/managing-log-output
 
 ## Caching and artifacts
 
-We run Buildkite on ephemeral hosts that go away when they're idle. In addition, each step in a
-Buildkite pipeline runs in a clean copy of the checked-out repo (possibly on a different host).
-We therefore can't rely on the local filesystem for caching dependencies or for making build
-output available to later steps.
+We run Buildkite on ephemeral hosts that go away when they're idle, so we can't count on the
+host already having our code's dependencies on its local filesystem.
 
-To deal with this, we use two Buildkite features: caches and artifacts.
+To deal with this, we use Buildkite's caching feature.
 
 Caches persist between jobs and are keyed by a checksum of a list of manifest files. We use caches
 for downloaded dependencies. We use our own S3 bucket to store the caches.
@@ -77,9 +75,6 @@ manifest files changed. Note that `if_changed` needs the `BUILDKITE_GIT_DIFF_BAS
 in the upload step (see above) to work correctly on main; without it, the diff on a main build
 would compare main against itself and the promotion steps would never fire.
 
-Artifacts are per-job; we use them to pass data between steps. For example, the "build" directory
-gets bundled up in a compressed tarfile so it can be downloaded by later steps.
-
 ## Build environment
 
 As currently configured, our Buildkite builds run on EC2 instances in a dedicated VPC. The
@@ -96,7 +91,8 @@ To minimize costs, we don't currently run any of the steps in this pipeline in p
 we don't need to spin up multiple hosts to run a build. Linearity is enforced via "depends_on"
 directives in the build steps.
 
-Note that just because the steps are linear, there's no guarantee Buildkite will run them all
-on the same host. If there are multiple hosts available, any of them can be chosen to execute
-a step. In practice, steps usually do stick to the same host, but that's not guaranteed and
-shouldn't be relied upon.
+With a linear pipeline like ours, Buildkite will make an effort to run each step on the same
+host as the previous step, and we rely on that for performance, with each build step making use
+of the output of previous steps. This greatly speeds up builds at the cost of potential build
+failures if Buildkite decides to switch hosts in the middle of a build. In practice, that
+basically never happens.
