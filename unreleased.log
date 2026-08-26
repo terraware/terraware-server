@@ -1,3 +1,4 @@
+e46d48ea SW-8811 Remove existing colliding suggestions (#4887)
 792fc223 SW-8811 Don't suggest colliding species renames (#4884)
 0da9b86e SW-8811 Make SpeciesCheckerTest database-backed (#4883)
 254cf4e9 Nudge agents toward using better assertions (#4882)
