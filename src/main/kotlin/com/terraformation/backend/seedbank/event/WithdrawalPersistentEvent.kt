@@ -42,7 +42,7 @@ data class WithdrawalCreatedEventV1(
   override fun toNextVersion(
       eventLogId: EventLogId,
       eventUpgradeUtils: EventUpgradeUtils,
-  ): WithdrawalCreatedEventV2 = eventUpgradeUtils.withdrawalValuesMissingFromV1.upgrade(this)
+  ): WithdrawalCreatedEventV2 = eventUpgradeUtils.upgrade(this)
 }
 
 /** Published when a withdrawal is added to an accession. */

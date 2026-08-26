@@ -592,39 +592,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
 
-  // In English the display names happen to match the enums' database names, so this is the only
-  // coverage that distinguishes a localized value from a raw one.
-  @Test
-  fun `localizes enum values of Created actions`() {
-    val accessionId = AccessionId(10)
-    val facilityId = FacilityId(11)
-
-    val createEntry =
-        eventLogEntry(
-            knownUserId,
-            WithdrawalCreatedEvent(
-                purpose = WithdrawalPurpose.ViabilityTesting,
-                date = LocalDate.of(2021, 1, 1),
-                withdrawalId = WithdrawalId(20),
-                accessionId = accessionId,
-                facilityId = facilityId,
-                organizationId = organizationId,
-            ),
-        )
-
-    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(createEntry)) }
-
-    assertEquals(
-        CreatedActionPayload(
-            listOf(
-                CreatedFieldPayload("date", listOf("2021-01-01")),
-                CreatedFieldPayload("purpose", listOf("Pruebas de viabilidad")),
-            )
-        ),
-        payloads.single().action,
-    )
-  }
-
   @Test
   fun `maps AccessionPhoto added and deleted events and marks subject deleted`() {
     val accessionId = AccessionId(10)

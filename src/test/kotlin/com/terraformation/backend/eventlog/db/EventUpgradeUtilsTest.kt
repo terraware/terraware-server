@@ -207,7 +207,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
           insertSeedbankWithdrawal(
               batchId = null,
               destination = "Lab",
-              // The withdrawals_test_id_requires_purpose constraint ties the two together.
               purpose = WithdrawalPurpose.ViabilityTesting,
               viabilityTestId = viabilityTestId,
               withdrawnBy = otherUserId,
@@ -288,8 +287,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(user.userId, upgraded.withdrawnByUserId, "withdrawnByUserId")
     }
 
-    // A null changedFrom can mean either "this edit left the field alone" or "this edit gave the
-    // field its first value". Only the changedTo side tells them apart.
     @Test
     fun `treats a field that an edit populated as null at creation time`() {
       val withdrawalId =
@@ -311,7 +308,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns nulls if the withdrawal has been deleted`() {
+    fun `upgrades a deleted withdrawal`() {
       val withdrawalId = insertSeedbankWithdrawal(batchId = null, destination = "Lab")
       insertEvent(createdEventV1(withdrawalId))
 
@@ -321,16 +318,16 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     private fun upgrade(withdrawalId: WithdrawalId) =
-        eventUpgradeUtils.withdrawalValuesMissingFromV1.upgrade(createdEventV1(withdrawalId))
+        eventUpgradeUtils.upgrade(createdEventV1(withdrawalId))
 
     private fun createdEventV1(withdrawalId: WithdrawalId) =
         WithdrawalCreatedEventV1(
-            purpose = WithdrawalPurpose.Other,
-            date = withdrawalDate,
-            withdrawalId = withdrawalId,
             accessionId = accessionId,
+            date = withdrawalDate,
             facilityId = facilityId,
             organizationId = inserted.organizationId,
+            purpose = WithdrawalPurpose.Other,
+            withdrawalId = withdrawalId,
         )
 
     private fun createdEventV2(
@@ -340,15 +337,15 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
         withdrawnByUserId: UserId? = null,
     ) =
         WithdrawalCreatedEventV2(
-            purpose = WithdrawalPurpose.Other,
+            accessionId = accessionId,
             date = withdrawalDate,
             destination = destination,
+            facilityId = facilityId,
+            organizationId = inserted.organizationId,
+            purpose = WithdrawalPurpose.Other,
             viabilityTestId = viabilityTestId,
             withdrawnByUserId = withdrawnByUserId,
             withdrawalId = withdrawalId,
-            accessionId = accessionId,
-            facilityId = facilityId,
-            organizationId = inserted.organizationId,
         )
 
     private fun updatedEvent(

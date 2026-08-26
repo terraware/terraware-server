@@ -25,8 +25,6 @@ class EventUpgradeUtils(
     val dslContext: DSLContext,
     val eventLogStore: EventLogStore,
 ) {
-  val withdrawalValuesMissingFromV1 = WithdrawalValuesMissingFromV1()
-
   fun getPreviousOrganizationName(
       organizationId: OrganizationId,
       beforeEventLogId: EventLogId,
@@ -54,59 +52,53 @@ class EventUpgradeUtils(
         ?: throw ProjectNotFoundException(projectId)
   }
 
-  inner class WithdrawalValuesMissingFromV1 {
-    fun upgrade(original: WithdrawalCreatedEventV1): WithdrawalCreatedEventV2 {
-      val currentRow =
-          dslContext
-              .select(
-                  WITHDRAWALS.DESTINATION,
-                  WITHDRAWALS.VIABILITY_TEST_ID,
-                  WITHDRAWALS.WITHDRAWN_BY,
-              )
-              .from(WITHDRAWALS)
-              .where(WITHDRAWALS.ID.eq(original.withdrawalId))
-              .fetchOne()
+  fun upgrade(original: WithdrawalCreatedEventV1): WithdrawalCreatedEventV2 {
+    val currentRow =
+        dslContext
+            .select(
+                WITHDRAWALS.DESTINATION,
+                WITHDRAWALS.VIABILITY_TEST_ID,
+                WITHDRAWALS.WITHDRAWN_BY,
+            )
+            .from(WITHDRAWALS)
+            .where(WITHDRAWALS.ID.eq(original.withdrawalId))
+            .fetchOne()
 
-      // A withdrawal can't be edited before it exists, so every update event for it was published
-      // after the creation event being upgraded.
-      val laterEdits =
-          eventLogStore
-              .fetchByIds(
-                  listOf(original.withdrawalId),
-                  listOf(WithdrawalUpdatedEvent::class),
-              )
-              .map { it.event }
+    val laterEdits =
+        eventLogStore
+            .fetchByIds(
+                listOf(original.withdrawalId),
+                listOf(WithdrawalUpdatedEvent::class),
+            )
+            .map { it.event }
 
-      return WithdrawalCreatedEventV2(
-          accessionId = original.accessionId,
-          batchId = original.batchId,
-          date = original.date,
-          destination =
-              valueAtCreation(
-                  laterEdits,
-                  currentRow?.get(WITHDRAWALS.DESTINATION),
-                  { it.changedFrom.destination },
-                  { it.changedTo.destination },
-              ),
-          facilityId = original.facilityId,
-          notes = original.notes,
-          organizationId = original.organizationId,
-          purpose = original.purpose,
-          staffResponsible = original.staffResponsible,
-          // A withdrawal's viability test can't be changed after it's created, so the current row
-          // always has the creation-time value.
-          viabilityTestId = currentRow?.get(WITHDRAWALS.VIABILITY_TEST_ID),
-          withdrawalId = original.withdrawalId,
-          withdrawnByUserId =
-              valueAtCreation(
-                  laterEdits,
-                  currentRow?.get(WITHDRAWALS.WITHDRAWN_BY),
-                  { it.changedFrom.withdrawnByUserId },
-                  { it.changedTo.withdrawnByUserId },
-              ),
-          withdrawnQuantity = original.withdrawnQuantity,
-      )
-    }
+    return WithdrawalCreatedEventV2(
+        accessionId = original.accessionId,
+        batchId = original.batchId,
+        date = original.date,
+        destination =
+            valueAtCreation(
+                laterEdits,
+                currentRow?.get(WITHDRAWALS.DESTINATION),
+                { it.changedFrom.destination },
+                { it.changedTo.destination },
+            ),
+        facilityId = original.facilityId,
+        notes = original.notes,
+        organizationId = original.organizationId,
+        purpose = original.purpose,
+        staffResponsible = original.staffResponsible,
+        viabilityTestId = currentRow?.get(WITHDRAWALS.VIABILITY_TEST_ID),
+        withdrawalId = original.withdrawalId,
+        withdrawnByUserId =
+            valueAtCreation(
+                laterEdits,
+                currentRow?.get(WITHDRAWALS.WITHDRAWN_BY),
+                { it.changedFrom.withdrawnByUserId },
+                { it.changedTo.withdrawnByUserId },
+            ),
+        withdrawnQuantity = original.withdrawnQuantity,
+    )
   }
 
   private fun <T, V> valueAtCreation(
@@ -119,6 +111,6 @@ class EventUpgradeUtils(
       getChangedFrom(it) != null || getChangedTo(it) != null
     }
 
-    return if (firstEditOfField != null) getChangedFrom(firstEditOfField) else currentValue
+    return firstEditOfField?.let { getChangedFrom(it) } ?: currentValue
   }
 }
