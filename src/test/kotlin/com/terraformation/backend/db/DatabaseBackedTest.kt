@@ -167,6 +167,9 @@ import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SpeciesNativity
+import com.terraformation.backend.db.default_schema.SpeciesProblemField
+import com.terraformation.backend.db.default_schema.SpeciesProblemId
+import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
@@ -250,6 +253,7 @@ import com.terraformation.backend.db.default_schema.tables.records.ExternalDatas
 import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.records.ProjectSpeciesRecord
+import com.terraformation.backend.db.default_schema.tables.records.SpeciesProblemsRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -1692,6 +1696,27 @@ abstract class DatabaseBackedTest {
         )
         .attach(dslContext)
         .insert()
+  }
+
+  fun insertSpeciesProblem(
+      speciesId: SpeciesId = inserted.speciesId,
+      type: SpeciesProblemType = SpeciesProblemType.NameNotFound,
+      suggestedValue: String? = null,
+      createdTime: Instant = Instant.EPOCH,
+  ): SpeciesProblemId {
+    val record =
+        SpeciesProblemsRecord(
+                createdTime = createdTime,
+                fieldId = SpeciesProblemField.ScientificName,
+                speciesId = speciesId,
+                suggestedValue = suggestedValue,
+                typeId = type,
+            )
+            .attach(dslContext)
+
+    record.insert()
+
+    return record.id!!.also { inserted.speciesProblemIds.add(it) }
   }
 
   fun insertSubmission(

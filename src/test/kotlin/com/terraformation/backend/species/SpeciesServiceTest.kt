@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.records.ProjectSpeciesRecord
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.ExternalDatasetStore
 import com.terraformation.backend.species.db.GbifStore
@@ -215,6 +216,25 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           )
       )
     }
+
+    @Test
+    fun `removes suggested rename of existing species that would collide with new one`() {
+      insertSpecies(scientificName = "Other species")
+      insertSpeciesProblem()
+      val expectedProblems = dslContext.fetch(SPECIES_PROBLEMS)
+
+      insertSpecies(scientificName = "Correc name")
+      insertSpeciesProblem(
+          type = SpeciesProblemType.NameMisspelled,
+          suggestedValue = "Correct name",
+      )
+
+      service.createSpecies(
+          NewSpeciesModel(organizationId = organizationId, scientificName = "Correct name")
+      )
+
+      assertTableEquals(expectedProblems)
+    }
   }
 
   @Nested
@@ -391,6 +411,25 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
               speciesId = speciesId,
           )
       )
+    }
+
+    @Test
+    fun `removes suggestions that would collide with updated species name`() {
+      insertSpecies(scientificName = "Other name")
+      insertSpeciesProblem()
+      val expectedProblems = dslContext.fetch(SPECIES_PROBLEMS)
+
+      insertSpecies(scientificName = "Correc name")
+      insertSpeciesProblem(
+          type = SpeciesProblemType.NameMisspelled,
+          suggestedValue = "Correct name",
+      )
+      val speciesId = insertSpecies(scientificName = "Original name")
+
+      val initial = speciesStore.fetchSpeciesById(speciesId)
+      service.updateSpecies(initial.copy(scientificName = "Correct name"))
+
+      assertTableEquals(expectedProblems)
     }
   }
 

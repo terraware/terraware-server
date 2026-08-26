@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.TimeseriesId
@@ -117,6 +118,7 @@ class InsertedDatabaseIds {
   val seedbankWithdrawalIds = mutableListOf<WithdrawalId>()
   val seedFundReportIds = mutableListOf<SeedFundReportId>()
   val speciesIds = mutableListOf<SpeciesId>()
+  val speciesProblemIds = mutableListOf<SpeciesProblemId>()
   val splatAnnotationIds = mutableListOf<SplatAnnotationId>()
   val stratumHistoryIds = mutableListOf<StratumHistoryId>()
   val stratumHistoryIdsByStratumId = mutableMapOf<StratumId, MutableList<StratumHistoryId>>()
@@ -275,6 +277,9 @@ class InsertedDatabaseIds {
 
   val speciesId
     get() = speciesIds.last()
+
+  val speciesProblemId
+    get() = speciesProblemIds.last()
 
   val splatAnnotationId
     get() = splatAnnotationIds.last()
