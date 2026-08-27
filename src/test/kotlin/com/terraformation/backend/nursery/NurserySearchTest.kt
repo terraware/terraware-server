@@ -704,7 +704,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       val fields =
           listOf(
                   "batchWithdrawals.batch_species_scientificName",
-                  "delivery_id",
+                  "deliveries.id",
                   "destinationFacilityId",
                   "destinationName",
                   "facility_name",
@@ -772,7 +772,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                                   "batch_species_scientificName" to "Species 2",
                               ),
                           ),
-                      "delivery_id" to "$deliveryId",
+                      "deliveries" to
+                          listOf(
+                              mapOf("id" to "$deliveryId"),
+                          ),
                       "destinationName" to "Site 1",
                       "facility_name" to "Nursery",
                       "hasReassignments" to "true",

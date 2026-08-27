@@ -30,6 +30,13 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
               "batchWithdrawals",
               WITHDRAWAL_SUMMARIES.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID),
           ),
+          deliveries.asMultiValueSublist(
+              "deliveries",
+              WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID),
+          ),
+          // TEMPORARY for backward compatibility; withdrawals can now have multiple deliveries
+          // so it's no longer correct to use a single-value sublist. This can be removed once
+          // clients are updated to use the "deliveries" sublist instead.
           deliveries.asSingleValueSublist(
               "delivery",
               WITHDRAWAL_SUMMARIES.DELIVERY_ID.eq(DELIVERIES.ID),
