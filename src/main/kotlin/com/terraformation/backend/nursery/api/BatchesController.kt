@@ -230,20 +230,32 @@ class BatchesController(
   }
 }
 
+data class BatchAccessionPayload(
+    val accessionId: AccessionId?,
+    val accessionNumber: String?,
+)
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class BatchPayload(
     @Schema(
+        deprecated = true,
         description =
             "If this batch was created via a seed withdrawal, the ID of the seed accession it " +
-                "came from."
+                "came from. Use \"accessions\" instead of this.",
     )
     val accessionId: AccessionId?,
     @Schema(
+        deprecated = true,
         description =
             "If this batch was created via a seed withdrawal, the accession number associated to " +
-                "the seed accession it came from."
+                "the seed accession it came from. Use \"accessions\" instead of this.",
     )
     val accessionNumber: String?,
+    @Schema(
+        description =
+            "If this batch was created via a seed withdrawal, the list of accessions it came from."
+    )
+    val accessions: List<BatchAccessionPayload>,
     val activeGrowthQuantity: Int,
     val addedDate: LocalDate,
     val batchNumber: String,
@@ -284,8 +296,9 @@ data class BatchPayload(
   constructor(
       model: ExistingBatchModel
   ) : this(
-      accessionId = model.accessionId,
-      accessionNumber = model.accessionNumber,
+      accessionId = model.accessionNumbers.keys.firstOrNull(),
+      accessionNumber = model.accessionNumbers.values.firstOrNull(),
+      accessions = model.accessionNumbers.map { BatchAccessionPayload(it.key, it.value) },
       activeGrowthQuantity = model.activeGrowthQuantity,
       addedDate = model.addedDate,
       batchNumber = model.batchNumber,

@@ -134,12 +134,11 @@ class BatchStore(
     requirePermissions { readBatch(batchId) }
 
     val batchesRow = batchesDao.fetchOneById(batchId) ?: throw BatchNotFoundException(batchId)
+    val accessionNumbers = fetchAccessionNumbers(batchId)
     val subLocationIds = fetchSubLocationIds(batchId)
     val totalWithdrawn = getTotalWithdrawn(batchId)
 
-    val accessionNumber = batchesRow.accessionId?.let { fetchAccessionNumber(it) }
-
-    return ExistingBatchModel(batchesRow, subLocationIds, totalWithdrawn, accessionNumber)
+    return ExistingBatchModel(batchesRow, subLocationIds, totalWithdrawn, accessionNumbers)
   }
 
   fun fetchWithdrawalById(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
@@ -307,7 +306,7 @@ class BatchStore(
         row = rowWithDefaults,
         subLocationIds = newModel.subLocationIds,
         totalWithdrawn = 0,
-        accessionNumber = rowWithDefaults.accessionId?.let { fetchAccessionNumber(it) },
+        accessionNumbers = fetchAccessionNumbers(rowWithDefaults.id!!),
     )
   }
 
@@ -1329,12 +1328,17 @@ class BatchStore(
         .fetchSet(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID.asNonNullable())
   }
 
-  private fun fetchAccessionNumber(accessionId: AccessionId): String? {
+  private fun fetchAccessionNumbers(batchId: BatchId): Map<AccessionId, String> {
     return dslContext
-        .select(ACCESSIONS.NUMBER)
-        .from(ACCESSIONS)
-        .where(ACCESSIONS.ID.eq(accessionId))
-        .fetchOne(ACCESSIONS.NUMBER)
+        .select(ACCESSIONS.ID.asNonNullable(), ACCESSIONS.NUMBER.asNonNullable())
+        .from(BATCH_QUANTITY_HISTORY)
+        .join(ACCESSIONS)
+        .on(BATCH_QUANTITY_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
+        .where(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(batchId))
+        .orderBy(BATCH_QUANTITY_HISTORY.ID)
+        .fetch()
+        .distinct()
+        .associate { it.value1() to it.value2() }
   }
 
   private fun updateSubLocations(

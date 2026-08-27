@@ -242,6 +242,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
     private val accession =
         AccessionModel(
+            accessionNumber = "26-1-1-001",
             clock = clock,
             id = accessionId,
             facilityId = seedBankFacilityId,
@@ -278,7 +279,8 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       every { batchStore.create(capture(batchSlot)) } answers
           {
             ExistingBatchModel(
-                accessionId = batchSlot.captured.accessionId,
+                accessionNumbers =
+                    batchSlot.captured.accessionId?.let { mapOf(it to "dummy") } ?: emptyMap(),
                 addedDate = batchSlot.captured.addedDate,
                 batchNumber = "1",
                 facilityId = batchSlot.captured.facilityId,
@@ -354,7 +356,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       val (accession, batch) = service.createNurseryTransfer(accessionId, newBatch)
 
       // Verify that the accession values were propagated correctly
-      assertEquals(accessionId, batch.accessionId)
+      assertEquals(mapOf(accessionId to accession.accessionNumber), batch.accessionNumbers)
       assertEquals(accession.projectId, batch.projectId)
       assertEquals(accession.speciesId, batch.speciesId)
 
@@ -403,6 +405,11 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       val existingBatch = makeExistingBatch()
       val updatedBatch =
           existingBatch.copy(
+              accessionNumbers =
+                  mapOf(
+                      existingBatchAccessionId to "dummy",
+                      accessionId to accession.accessionNumber!!,
+                  ),
               germinatingQuantity = 11,
               activeGrowthQuantity = 22,
               hardeningOffQuantity = 44,
@@ -424,9 +431,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(updatedBatch, batch, "Returned batch")
       assertEquals(
-          existingBatchAccessionId,
-          batch.accessionId,
-          "Accession ID of batch should not have changed",
+          mapOf(existingBatchAccessionId to "dummy", accession.id to accession.accessionNumber),
+          batch.accessionNumbers,
+          "New accession ID/number should have been added to batch",
       )
       assertEquals(seeds(0), updatedAccession.remaining, "Seeds remaining")
       assertEquals(existingBatchId, updatedAccession.withdrawals.single().batchId, "Batch ID")
@@ -568,7 +575,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
         speciesId: SpeciesId = accession.speciesId!!,
     ) =
         ExistingBatchModel(
-            accessionId = existingBatchAccessionId,
+            accessionNumbers = mapOf(existingBatchAccessionId to "dummy"),
             activeGrowthQuantity = 20,
             addedDate = LocalDate.EPOCH,
             batchNumber = "2",

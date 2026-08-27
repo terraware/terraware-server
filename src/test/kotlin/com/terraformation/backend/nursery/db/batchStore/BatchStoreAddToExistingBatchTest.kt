@@ -23,8 +23,8 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
   @BeforeEach
   fun setUpTestBatch() {
     insertFacility(type = FacilityType.SeedBank)
-    originalAccessionId = insertAccession()
-    secondAccessionId = insertAccession()
+    originalAccessionId = insertAccession(number = "1")
+    secondAccessionId = insertAccession(number = "2")
 
     batch =
         store.create(
@@ -47,6 +47,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
 
     assertEquals(
         batch.copy(
+            accessionNumbers = mapOf(originalAccessionId to "1", secondAccessionId to "2"),
             germinatingQuantity = 110,
             lossRate = null,
             version = 2,

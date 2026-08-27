@@ -174,7 +174,11 @@ class AccessionService(
           )
       val updatedAccession = createWithdrawal(withdrawal)
 
-      updatedAccession to updatedBatch
+      updatedAccession to
+          updatedBatch.copy(
+              accessionNumbers =
+                  updatedBatch.accessionNumbers + mapOf(accessionId to accession.accessionNumber!!)
+          )
     }
   }
 
