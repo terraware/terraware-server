@@ -38,7 +38,6 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
               "inventory",
               SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
                   .and(SPECIES.ID.eq(INVENTORIES.SPECIES_ID)),
-              isRequired = false,
           ),
           nurserySpeciesProjects.asMultiValueSublist(
               "nurseryProjects",

@@ -39,11 +39,7 @@ class AcceleratorReportsTable(tables: SearchTables) : SearchTable() {
               "projectIndicators",
               REPORTS.ID.eq(REPORT_PROJECT_INDICATORS.REPORT_ID),
           ),
-          users.asSingleValueSublist(
-              "submittedBy",
-              REPORTS.SUBMITTED_BY.eq(USERS.ID),
-              isRequired = false,
-          ),
+          users.asSingleValueSublist("submittedBy", REPORTS.SUBMITTED_BY.eq(USERS.ID)),
       )
     }
   }

@@ -28,11 +28,7 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
               "organization",
               DRAFT_PLANTING_SITES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
           ),
-          projects.asSingleValueSublist(
-              "project",
-              DRAFT_PLANTING_SITES.PROJECT_ID.eq(PROJECTS.ID),
-              isRequired = false,
-          ),
+          projects.asSingleValueSublist("project", DRAFT_PLANTING_SITES.PROJECT_ID.eq(PROJECTS.ID)),
       )
     }
   }

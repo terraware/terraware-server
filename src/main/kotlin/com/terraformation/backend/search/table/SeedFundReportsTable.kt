@@ -24,16 +24,8 @@ class SeedFundReportsTable(tables: SearchTables) : SearchTable() {
               "organization",
               SEED_FUND_REPORTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
           ),
-          users.asSingleValueSublist(
-              "lockedBy",
-              SEED_FUND_REPORTS.LOCKED_BY.eq(USERS.ID),
-              isRequired = false,
-          ),
-          users.asSingleValueSublist(
-              "submittedBy",
-              SEED_FUND_REPORTS.SUBMITTED_BY.eq(USERS.ID),
-              isRequired = false,
-          ),
+          users.asSingleValueSublist("lockedBy", SEED_FUND_REPORTS.LOCKED_BY.eq(USERS.ID)),
+          users.asSingleValueSublist("submittedBy", SEED_FUND_REPORTS.SUBMITTED_BY.eq(USERS.ID)),
       )
     }
   }

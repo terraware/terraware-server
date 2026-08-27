@@ -43,7 +43,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
           countries.asSingleValueSublist(
               "collectionSiteCountry",
               ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE.eq(COUNTRIES.CODE),
-              isRequired = false,
           ),
           accessionCollectors.asMultiValueSublist(
               "collectors",
@@ -55,20 +54,11 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
               "geolocations",
               ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID),
           ),
-          projects.asSingleValueSublist(
-              "project",
-              ACCESSIONS.PROJECT_ID.eq(PROJECTS.ID),
-              isRequired = false,
-          ),
-          species.asSingleValueSublist(
-              "species",
-              ACCESSIONS.SPECIES_ID.eq(SPECIES.ID),
-              isRequired = false,
-          ),
+          projects.asSingleValueSublist("project", ACCESSIONS.PROJECT_ID.eq(PROJECTS.ID)),
+          species.asSingleValueSublist("species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)),
           subLocations.asSingleValueSublist(
               "subLocation",
               ACCESSIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID),
-              isRequired = false,
           ),
           viabilityTests.asMultiValueSublist(
               "viabilityTests",

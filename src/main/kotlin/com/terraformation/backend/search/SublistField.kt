@@ -58,13 +58,6 @@ data class SublistField(
     val isFlattened: Boolean = false,
 
     /**
-     * If true, this sublist always contains a value. For example, this is true for a single-value
-     * sublist that represents a parent-child relationship from the child's point of view. It is
-     * used to determine whether fields are nullable.
-     */
-    val isRequired: Boolean = false,
-
-    /**
      * True if this sublist represents a direct parent-to-child relationship. This value is used to
      * whether this sublist is traversed when enumerating all possible fields.
      *

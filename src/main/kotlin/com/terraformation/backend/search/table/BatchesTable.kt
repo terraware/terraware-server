@@ -26,17 +26,9 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          accessions.asSingleValueSublist(
-              "accession",
-              BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID),
-              isRequired = false,
-          ),
+          accessions.asSingleValueSublist("accession", BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID)),
           facilities.asSingleValueSublist("facility", BATCHES.FACILITY_ID.eq(FACILITIES.ID)),
-          projects.asSingleValueSublist(
-              "project",
-              BATCHES.PROJECT_ID.eq(PROJECTS.ID),
-              isRequired = false,
-          ),
+          projects.asSingleValueSublist("project", BATCHES.PROJECT_ID.eq(PROJECTS.ID)),
           species.asSingleValueSublist("species", BATCHES.SPECIES_ID.eq(SPECIES.ID)),
           batchSubLocations.asMultiValueSublist(
               "subLocations",

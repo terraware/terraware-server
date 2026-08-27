@@ -39,7 +39,6 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
           observationSiteResult.asSingleValueSublist(
               "siteResult",
               OBSERVATIONS.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID),
-              isRequired = false,
           ),
           observationStratumResult.asMultiValueSublist(
               "stratumResults",

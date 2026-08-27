@@ -45,7 +45,6 @@ class ObservationBiomassSpeciesTable(private val tables: SearchTables) : SearchT
           species.asSingleValueSublist(
               "species",
               OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID),
-              isRequired = false,
           ),
       )
     }

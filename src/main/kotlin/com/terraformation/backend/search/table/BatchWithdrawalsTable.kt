@@ -24,7 +24,6 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
           batches.asSingleValueSublist(
               "destinationBatch",
               BATCH_WITHDRAWALS.DESTINATION_BATCH_ID.eq(BATCHES.ID),
-              isRequired = false,
           ),
           nurseryWithdrawals.asSingleValueSublist(
               "withdrawal",
