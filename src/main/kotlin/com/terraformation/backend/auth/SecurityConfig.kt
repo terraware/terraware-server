@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
+import org.springframework.security.web.context.SecurityContextHolderFilter
 import org.springframework.security.web.header.writers.StaticHeadersWriter
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher
 import org.springframework.web.cors.CorsConfiguration
@@ -144,6 +145,10 @@ class SecurityConfig(
 
       // Allow clients to authenticate using JWT-encoded access tokens.
       oauth2ResourceServer { jwt {} }
+
+      // Add request ID to the logging context before any filters that would query the database so
+      // we can tag database queries with request IDs.
+      addFilterBefore<SecurityContextHolderFilter>(RequestIdFilter())
 
       // Add a request handling filter that uses the user ID from the OAuth2 authentication data to
       // look up a TerrawareUser. This needs to come after Spring has had a chance to authenticate

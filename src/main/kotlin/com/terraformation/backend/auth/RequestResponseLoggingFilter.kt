@@ -14,11 +14,8 @@ import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.ws.rs.core.MediaType
-import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
-import java.util.UUID
 import kotlin.math.min
-import org.apache.commons.codec.binary.Base32
 import org.slf4j.MDC
 import org.springframework.web.util.ContentCachingRequestWrapper
 import org.springframework.web.util.ContentCachingResponseWrapper
@@ -49,29 +46,12 @@ class RequestResponseLoggingFilter(
           MediaType.MULTIPART_FORM_DATA,
       )
 
-  /**
-   * Prefix to include in request IDs. [ServletRequest.getRequestId] doesn't return globally unique
-   * request IDs, and it's useful to be able to search for logs from a specific request.
-   */
-  private val requestIdPrefix: String by lazy {
-    val uuid = UUID.randomUUID()
-    val buffer = ByteBuffer.allocate(16)
-
-    buffer.putLong(uuid.mostSignificantBits)
-    buffer.putLong(uuid.leastSignificantBits)
-
-    Base32().encodeToString(buffer.array()).trimEnd('=')
-  }
-
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     val user = CurrentUserHolder.getCurrentUser()
     val oldMdc = MDC.getCopyOfContextMap()
-    val requestId = "${requestIdPrefix}_${request.requestId}"
 
     try {
       mdcPut("authId", user?.authId)
-      mdcPut("requestId", requestId)
-      request.setAttribute("terrawareRequestId", requestId)
 
       if (user is IndividualUser || user is FunderUser) {
         mdcPut("email", user.email)
