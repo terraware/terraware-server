@@ -39,15 +39,10 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               "botanicalCountry",
               ORGANIZATIONS.BOTANICAL_COUNTRY_CODE.eq(BOTANICAL_COUNTRIES.LEVEL3_CODE),
           ),
-          countries.asSingleValueSublist(
-              "country",
-              ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE),
-              isRequired = false,
-          ),
+          countries.asSingleValueSublist("country", ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           countrySubdivisions.asSingleValueSublist(
               "countrySubdivision",
               ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE.eq(COUNTRY_SUBDIVISIONS.CODE),
-              isRequired = false,
           ),
           draftPlantingSites.asMultiValueSublist(
               "draftPlantingSites",

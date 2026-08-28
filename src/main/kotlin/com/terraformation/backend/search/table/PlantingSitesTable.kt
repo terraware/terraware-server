@@ -78,7 +78,6 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           projects.asSingleValueSublist(
               "project",
               PLANTING_SITE_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID),
-              isRequired = false,
           ),
           strata.asMultiValueSublist(
               "plantingZones",

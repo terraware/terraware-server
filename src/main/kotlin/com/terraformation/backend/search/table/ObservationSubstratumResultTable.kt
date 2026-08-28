@@ -29,7 +29,6 @@ class ObservationSubstratumResultTable(private val tables: SearchTables) : Searc
           substrata.asSingleValueSublist(
               "substratum",
               OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
-              isRequired = false,
           ),
           substratumHistories.asSingleValueSublist(
               "substratumHistory",

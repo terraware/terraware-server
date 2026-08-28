@@ -198,14 +198,12 @@ abstract class SearchTable {
   fun asSingleValueSublist(
       name: String,
       conditionForMultiset: Condition,
-      isRequired: Boolean = true,
       isTraversedForGetAllFields: Boolean = false,
   ): SublistField {
     return SublistField(
         name = name,
         searchTable = this,
         isMultiValue = false,
-        isRequired = isRequired,
         conditionForMultiset = conditionForMultiset,
         isTraversedForGetAllFields = isTraversedForGetAllFields,
     )

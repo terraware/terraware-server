@@ -84,13 +84,8 @@ class MediaFilesTable(tables: SearchTables) : SearchTable() {
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
               monitoringPlotIdColumn.eq(MONITORING_PLOTS.ID),
-              isRequired = false,
           ),
-          observations.asSingleValueSublist(
-              "observation",
-              observationIdColumn.eq(OBSERVATIONS.ID),
-              isRequired = false,
-          ),
+          observations.asSingleValueSublist("observation", observationIdColumn.eq(OBSERVATIONS.ID)),
           organizations.asSingleValueSublist(
               "organization",
               organizationIdColumn.eq(ORGANIZATIONS.ID),

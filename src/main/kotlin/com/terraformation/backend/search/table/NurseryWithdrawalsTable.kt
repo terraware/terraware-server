@@ -33,7 +33,6 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
           deliveries.asSingleValueSublist(
               "delivery",
               WITHDRAWAL_SUMMARIES.DELIVERY_ID.eq(DELIVERIES.ID),
-              isRequired = false,
           ),
           facilities.asSingleValueSublist(
               "facility",

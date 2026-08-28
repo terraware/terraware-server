@@ -27,7 +27,6 @@ class ObservationPlotsTable(private val tables: SearchTables) : SearchTable() {
               OBSERVATION_PLOTS.OBSERVATION_PLOT_ID.eq(
                   OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID
               ),
-              isRequired = false,
           ),
           observationPlotConditions.asMultiValueSublist(
               "conditions",

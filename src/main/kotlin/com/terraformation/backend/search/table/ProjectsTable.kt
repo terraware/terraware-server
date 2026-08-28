@@ -72,7 +72,6 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           projectAcceleratorDetails.asSingleValueSublist(
               "acceleratorDetails",
               PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID),
-              isRequired = false,
           ),
           projectDeliverables.asMultiValueSublist(
               "projectDeliverables",

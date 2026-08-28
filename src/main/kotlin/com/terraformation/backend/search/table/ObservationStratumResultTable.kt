@@ -29,12 +29,10 @@ class ObservationStratumResultTable(private val tables: SearchTables) : SearchTa
           strata.asSingleValueSublist(
               "stratum",
               OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(STRATA.ID),
-              isRequired = false,
           ),
           stratumHistories.asSingleValueSublist(
               "stratumHistory",
               OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID),
-              isRequired = false,
           ),
           observationSubstratumResult.asMultiValueSublist(
               "substratumResults",
