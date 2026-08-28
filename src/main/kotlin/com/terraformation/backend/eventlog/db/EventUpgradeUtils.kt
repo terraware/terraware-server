@@ -9,8 +9,11 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.eventlog.UpgradableEvent
+import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
@@ -100,6 +103,48 @@ class EventUpgradeUtils(
         withdrawnQuantity = original.withdrawnQuantity,
     )
   }
+
+  fun getViabilityTestValuesMissingFromV1(
+      viabilityTestId: ViabilityTestId,
+      createdEventLogId: EventLogId,
+  ): ViabilityTestValuesMissingFromV1 {
+    val currentRow =
+        dslContext
+            .select(VIABILITY_TESTS.NOTES, VIABILITY_TESTS.STAFF_RESPONSIBLE)
+            .from(VIABILITY_TESTS)
+            .where(VIABILITY_TESTS.ID.eq(viabilityTestId))
+            .fetchOne()
+
+    val laterEdits =
+        eventLogStore
+            .fetchByIdsSince(
+                mapOf(viabilityTestId to createdEventLogId),
+                listOf(ViabilityTestUpdatedEvent::class),
+            )
+            .map { it.event }
+
+    return ViabilityTestValuesMissingFromV1(
+        notes =
+            valueAtCreation(
+                laterEdits,
+                currentRow?.get(VIABILITY_TESTS.NOTES),
+                { it.changedFrom.notes },
+                { it.changedTo.notes },
+            ),
+        staffResponsible =
+            valueAtCreation(
+                laterEdits,
+                currentRow?.get(VIABILITY_TESTS.STAFF_RESPONSIBLE),
+                { it.changedFrom.staffResponsible },
+                { it.changedTo.staffResponsible },
+            ),
+    )
+  }
+
+  data class ViabilityTestValuesMissingFromV1(
+      val notes: String?,
+      val staffResponsible: String?,
+  )
 
   private fun <T, V> valueAtCreation(
       laterEdits: List<T>,
