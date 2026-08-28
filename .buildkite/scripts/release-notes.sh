@@ -47,8 +47,6 @@ if [[ -n "${JIRA_BASE_URL:-}" && -n "${JIRA_USER_EMAIL:-}" && -n "${JIRA_API_TOK
         (grep -Eo 'SW-[0-9]+' || true) |
         sort -u)
 
-    # Let curl do the base64 encoding: GNU base64 line-wraps at 76 characters, and
-    # curl rejects header values that contain newlines.
     JIRA_AUTH="${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}"
 
     for issue in $JIRA_ISSUES; do
@@ -59,8 +57,7 @@ if [[ -n "${JIRA_BASE_URL:-}" && -n "${JIRA_USER_EMAIL:-}" && -n "${JIRA_API_TOK
             -H "Content-Type: application/json" \
             "${JIRA_BASE_URL}/rest/api/3/issue/${issue}/transitions") || true
 
-        # Find the transition ID for "Released to Production from Done". The "?" keeps
-        # jq from failing if Jira returns an error response with no transitions list.
+        # Find the transition ID for "Released to Production from Done"
         TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[]? | select(.name == "Released to Production from Done") | .id')
 
         if [[ -n "$TRANSITION_ID" ]]; then
