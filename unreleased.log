@@ -1,3 +1,4 @@
+a4c22307 SW-7604 Add ViabilityTestCreatedEventV2 with creation-time field values (#4870)
 8af1c850 SW-7604 Add WithdrawalCreatedEventV2 with creation-time field values (#4868)
 56957341 SW-8773 Return all accessions in batch details (#4892)
 d14bdcdc SW-8718 Tag database queries with request ID (#4889)
