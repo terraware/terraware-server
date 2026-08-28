@@ -111,6 +111,6 @@ class EventUpgradeUtils(
       getChangedFrom(it) != null || getChangedTo(it) != null
     }
 
-    return firstEditOfField?.let { getChangedFrom(it) } ?: currentValue
+    return if (firstEditOfField != null) getChangedFrom(firstEditOfField) else currentValue
   }
 }
