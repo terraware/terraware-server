@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.default_schema.SeedTreatment
+import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -16,13 +17,15 @@ import org.junit.jupiter.api.Test
 internal class BatchStoreFetchTest : BatchStoreTest() {
   @Test
   fun `returns model from database row`() {
-    val accessionNumber = "2023-01-01"
-    val accessionId = insertAccession(facilityId = facilityId, number = accessionNumber)
+    val accessionNumber1 = "2023-01-01"
+    val accessionNumber2 = "2023-01-02"
+    val accessionId1 = insertAccession(facilityId = facilityId, number = accessionNumber1)
+    val accessionId2 = insertAccession(facilityId = facilityId, number = accessionNumber2)
 
     val batchId =
         insertBatch(
             BatchesRow(
-                accessionId = accessionId,
+                accessionId = accessionId1,
                 germinationStartedDate = LocalDate.of(2023, 5, 15),
                 notes = "Notes",
                 seedsSownDate = LocalDate.of(2023, 5, 10),
@@ -39,6 +42,27 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
             readyQuantity = 256,
             speciesId = speciesId,
         )
+
+    insertSeedbankWithdrawal(
+        accessionId = accessionId1,
+        purpose = com.terraformation.backend.db.seedbank.WithdrawalPurpose.Nursery,
+        batchId = batchId,
+    )
+    insertBatchQuantityHistory(
+        accessionId = accessionId1,
+        historyType = BatchQuantityHistoryType.Computed,
+        version = 1,
+    )
+    insertSeedbankWithdrawal(
+        accessionId = accessionId2,
+        purpose = com.terraformation.backend.db.seedbank.WithdrawalPurpose.Nursery,
+        batchId = batchId,
+    )
+    insertBatchQuantityHistory(
+        accessionId = accessionId2,
+        historyType = BatchQuantityHistoryType.Computed,
+        version = 2,
+    )
 
     val subLocationId1 = insertSubLocation()
     insertBatchSubLocation()
@@ -62,8 +86,8 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
 
     val expected =
         ExistingBatchModel(
-            accessionId = accessionId,
-            accessionNumber = accessionNumber,
+            accessionNumbers =
+                mapOf(accessionId1 to accessionNumber1, accessionId2 to accessionNumber2),
             addedDate = LocalDate.EPOCH,
             batchNumber = "23-2-1-008",
             facilityId = facilityId,

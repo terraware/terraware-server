@@ -392,6 +392,8 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
+import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.keys.BATCHES_PKEY
@@ -408,6 +410,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistoryRecord
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.BagId
@@ -2320,6 +2323,42 @@ abstract class DatabaseBackedTest {
         )
 
     batchSubLocationsDao.insert(row)
+  }
+
+  fun insertBatchQuantityHistory(
+      accessionId: AccessionId? = null,
+      activeGrowthQuantity: Int = 0,
+      batchId: BatchId = inserted.batchId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = Instant.EPOCH,
+      germinatingQuantity: Int = 0,
+      hardeningOffQuantity: Int = 0,
+      historyType: BatchQuantityHistoryType = BatchQuantityHistoryType.Observed,
+      notes: String? = null,
+      readyQuantity: Int = 0,
+      version: Int = 1,
+      withdrawalId: WithdrawalId? = null,
+  ): BatchQuantityHistoryId {
+    val record =
+        BatchQuantityHistoryRecord(
+                accessionId = accessionId,
+                activeGrowthQuantity = activeGrowthQuantity,
+                batchId = batchId,
+                createdBy = createdBy,
+                createdTime = createdTime,
+                germinatingQuantity = germinatingQuantity,
+                hardeningOffQuantity = hardeningOffQuantity,
+                historyTypeId = historyType,
+                notes = notes,
+                readyQuantity = readyQuantity,
+                version = version,
+                withdrawalId = withdrawalId,
+            )
+            .attach(dslContext)
+
+    record.insert()
+
+    return record.id!!.also { inserted.batchQuantityHistoryIds.add(it) }
   }
 
   fun insertNurseryWithdrawal(

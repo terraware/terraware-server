@@ -67,8 +67,7 @@ data class NewBatchModel(
 }
 
 data class ExistingBatchModel(
-    val accessionId: AccessionId? = null,
-    val accessionNumber: String? = null,
+    val accessionNumbers: Map<AccessionId, String>,
     val activeGrowthQuantity: Int,
     val addedDate: LocalDate,
     val batchNumber: String,
@@ -104,10 +103,9 @@ data class ExistingBatchModel(
       row: BatchesRow,
       subLocationIds: Set<SubLocationId> = emptySet(),
       totalWithdrawn: Int,
-      accessionNumber: String? = null,
+      accessionNumbers: Map<AccessionId, String> = emptyMap(),
   ) : this(
-      accessionId = row.accessionId,
-      accessionNumber = accessionNumber,
+      accessionNumbers = accessionNumbers,
       addedDate = row.addedDate!!,
       batchNumber = row.batchNumber!!,
       facilityId = row.facilityId!!,
