@@ -1,3 +1,4 @@
+8af1c850 SW-7604 Add WithdrawalCreatedEventV2 with creation-time field values (#4868)
 56957341 SW-8773 Return all accessions in batch details (#4892)
 d14bdcdc SW-8718 Tag database queries with request ID (#4889)
 e4b3563d Split request ID tagging into a separate, earlier filter (#4888)
