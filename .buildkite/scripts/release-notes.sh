@@ -47,28 +47,33 @@ if [[ -n "${JIRA_BASE_URL:-}" && -n "${JIRA_USER_EMAIL:-}" && -n "${JIRA_API_TOK
         (grep -Eo 'SW-[0-9]+' || true) |
         sort -u)
 
-    JIRA_AUTH=$(echo -n "${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}" | base64)
+    JIRA_AUTH="${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}"
 
     for issue in $JIRA_ISSUES; do
         echo "Transitioning $issue..."
         # Get available transitions
         TRANSITIONS=$(curl -s \
-            -H "Authorization: Basic $JIRA_AUTH" \
+            -u "$JIRA_AUTH" \
             -H "Content-Type: application/json" \
-            "${JIRA_BASE_URL}/rest/api/3/issue/${issue}/transitions")
+            "${JIRA_BASE_URL}/rest/api/3/issue/${issue}/transitions") || true
 
         # Find the transition ID for "Released to Production from Done"
-        TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.name == "Released to Production from Done") | .id')
+        TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[]? | select(.name == "Released to Production from Done") | .id')
 
         if [[ -n "$TRANSITION_ID" ]]; then
-            curl -s -X POST \
-                -H "Authorization: Basic $JIRA_AUTH" \
+            HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+                -u "$JIRA_AUTH" \
                 -H "Content-Type: application/json" \
                 -d "{\"transition\": {\"id\": \"$TRANSITION_ID\"}}" \
-                "${JIRA_BASE_URL}/rest/api/3/issue/${issue}/transitions"
-            echo "Transitioned $issue"
+                "${JIRA_BASE_URL}/rest/api/3/issue/${issue}/transitions") || true
+
+            if [[ "$HTTP_CODE" == 2* ]]; then
+                echo "Transitioned $issue"
+            else
+                echo "Failed to transition $issue (HTTP $HTTP_CODE), continuing."
+            fi
         else
-            echo "No matching transition found for $issue, skipping."
+            echo "No matching transition found for $issue, skipping. Response: ${TRANSITIONS:0:200}"
         fi
     done
 else
