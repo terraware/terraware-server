@@ -80,11 +80,11 @@ steps:
     label: ":gradle: Compile"
     key: "build"
     plugins:
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-gradle-home-args
           save:
             - file
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-node-modules-args
           save:
             - file
@@ -128,7 +128,7 @@ steps:
         allow_failure: true
     if_changed: "scripts/**"
     plugins:
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-pip-args
           save:
             - "file"
@@ -154,7 +154,7 @@ steps:
     depends_on: "junit-annotate"
     plugins:
       - *load-secrets
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-common-args
           path: ".buildx-cache"
           manifest: *cache-buildx-manifest
@@ -169,7 +169,7 @@ steps:
     branches: "main"
     if_changed: *cache-gradle-home-manifest
     plugins:
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-gradle-home-args
           save: "pipeline"
           force: true
@@ -184,7 +184,7 @@ steps:
     branches: "main"
     if_changed: *cache-node-modules-manifest
     plugins:
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-node-modules-args
           save: "pipeline"
           force: true
@@ -200,7 +200,7 @@ steps:
     branches: "main"
     if_changed: "scripts/**"
     plugins:
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-pip-args
           save: "pipeline"
           force: true
@@ -217,7 +217,7 @@ steps:
     branches: "main"
     if_changed: *cache-buildx-manifest
     plugins:
-      - cache#v1.11.1:
+      - cache#v1.12.0:
           <<: *cache-common-args
           manifest: *cache-buildx-manifest
           path: ".buildx-cache"
