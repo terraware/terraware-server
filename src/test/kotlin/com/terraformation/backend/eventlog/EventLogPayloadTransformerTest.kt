@@ -164,8 +164,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 userName = "Former User",
             ),
             EventLogEntryPayload(
-                // A delete event marks the subject as deleted on the created action too, and only
-                // for the file it refers to.
                 action = CreatedActionPayload(),
                 subject = subject(deletedFileId, true),
                 timestamp = uploadDeletedEntry.createdTime,
