@@ -127,6 +127,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     SpeciesStore(
         clock,
         dslContext,
+        publisher,
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,

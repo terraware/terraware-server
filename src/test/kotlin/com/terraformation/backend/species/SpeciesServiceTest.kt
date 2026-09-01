@@ -30,6 +30,7 @@ import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesNativityCalculator
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
+import com.terraformation.backend.species.event.SpeciesImportedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import com.terraformation.backend.species.model.SpeciesDataSourceModel
@@ -71,6 +72,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     SpeciesStore(
         clock,
         dslContext,
+        eventPublisher,
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,
@@ -623,6 +625,40 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
       service.on(OrganizationLocationUpdatedEvent(null, null, organizationId))
 
       assertTableEquals(before)
+    }
+  }
+
+  @Nested
+  inner class OnSpeciesImportedEvent {
+    @Test
+    fun `resets nativities if species is newly imported`() {
+      insertBotanicalCountry(level3Code = "KEN")
+      organizationId =
+          insertOrganization(botanicalCountryCode = "KEN", countryCode = "KE", name = "Kenya Org")
+      val speciesId = insertSpecies()
+
+      service.on(SpeciesImportedEvent(alreadyExisted = false, speciesId = speciesId))
+
+      assertTableEquals(
+          ProjectSpeciesRecord(
+              organizationId = organizationId,
+              pendingNativityId = SpeciesNativity.Unknown,
+              speciesId = speciesId,
+          )
+      )
+
+      assertIsEventListener<SpeciesImportedEvent>(service)
+    }
+
+    @Test
+    fun `does not reset nativities on re-import of existing species`() {
+      insertBotanicalCountry(level3Code = "KEN")
+      insertOrganization(botanicalCountryCode = "KEN", countryCode = "KE", name = "Kenya Org")
+      val speciesId = insertSpecies()
+
+      service.on(SpeciesImportedEvent(alreadyExisted = true, speciesId = speciesId))
+
+      assertTableEmpty(PROJECT_SPECIES)
     }
   }
 
