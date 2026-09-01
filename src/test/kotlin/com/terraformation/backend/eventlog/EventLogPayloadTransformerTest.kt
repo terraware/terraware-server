@@ -81,6 +81,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private val fileId = FileId(1)
+  private val deletedFileId = FileId(7)
   private val monitoringPlotId = MonitoringPlotId(2)
   private val observationId = ObservationId(3)
   private val organizationId = OrganizationId(4)
@@ -100,7 +101,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `maps create and update events to payloads`() {
+  fun `maps create, update, and delete events to payloads`() {
     val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
     val editEntry =
         eventLogEntry(
@@ -115,12 +116,24 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 plantingSiteId = plantingSiteId,
             ),
         )
+    val uploadDeletedEntry = eventLogEntry(knownUserId, uploadedEvent(deletedFileId))
+    val deleteEntry =
+        eventLogEntry(
+            deletedUserId,
+            ObservationMediaFileDeletedEvent(
+                fileId = deletedFileId,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+            ),
+        )
 
-    val subject =
+    fun subject(subjectFileId: FileId, deleted: Boolean?) =
         ObservationPlotMediaSubjectPayload(
-            deleted = null,
-            fileId = fileId,
-            fullText = "Photo $fileId",
+            deleted = deleted,
+            fileId = subjectFileId,
+            fullText = "Photo $subjectFileId",
             isOriginal = true,
             mediaKind = MediaKind.Photo,
             monitoringPlotId = monitoringPlotId,
@@ -133,7 +146,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         listOf(
             EventLogEntryPayload(
                 action = CreatedActionPayload(),
-                subject = subject,
+                subject = subject(fileId, null),
                 timestamp = uploadEntry.createdTime,
                 userId = knownUserId,
                 userName = "Known User",
@@ -145,20 +158,39 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         changedFrom = listOf("before"),
                         changedTo = listOf("after"),
                     ),
-                subject = subject,
+                subject = subject(fileId, null),
                 timestamp = editEntry.createdTime,
+                userId = deletedUserId,
+                userName = "Former User",
+            ),
+            EventLogEntryPayload(
+                // A delete event marks the subject as deleted on the created action too, and only
+                // for the file it refers to.
+                action = CreatedActionPayload(),
+                subject = subject(deletedFileId, true),
+                timestamp = uploadDeletedEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action = DeletedActionPayload(),
+                subject = subject(deletedFileId, true),
+                timestamp = deleteEntry.createdTime,
                 userId = deletedUserId,
                 userName = "Former User",
             ),
         )
 
-    val actual = transformer.eventsToPayloads(listOf(uploadEntry, editEntry))
+    val actual =
+        transformer.eventsToPayloads(
+            listOf(uploadEntry, editEntry, uploadDeletedEntry, deleteEntry)
+        )
 
     assertEquals(expected, actual)
   }
 
   @Test
-  fun `localizes field names of FieldUpdated actions`() {
+  fun `localizes field names and special usernames`() {
     val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
     val editEntry =
         eventLogEntry(
@@ -183,66 +215,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         (payloads[1].action as FieldUpdatedActionPayload).fieldName,
         "Field name",
     )
-  }
-
-  @Test
-  fun `localizes special usernames of FieldUpdated actions`() {
-    val uploadEntry = eventLogEntry(deletedUserId, uploadedEvent())
-
-    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(uploadEntry)) }
-
-    assertEquals("Usuario anterior", payloads[0].userName, "Username of nonexistent user")
-  }
-
-  @Test
-  fun `marks subject as deleted in all events when delete event exists`() {
-    val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
-    val deleteEntry =
-        eventLogEntry(
-            deletedUserId,
-            ObservationMediaFileDeletedEvent(
-                fileId = fileId,
-                monitoringPlotId = monitoringPlotId,
-                observationId = observationId,
-                organizationId = organizationId,
-                plantingSiteId = plantingSiteId,
-            ),
-        )
-
-    val subject =
-        ObservationPlotMediaSubjectPayload(
-            deleted = true, // This will be set on the created action, not just the deleted one
-            fileId = fileId,
-            fullText = "Photo $fileId",
-            isOriginal = true,
-            mediaKind = MediaKind.Photo,
-            monitoringPlotId = monitoringPlotId,
-            observationId = observationId,
-            plantingSiteId = plantingSiteId,
-            shortText = "Photo",
-        )
-
-    val expected =
-        listOf(
-            EventLogEntryPayload(
-                action = CreatedActionPayload(),
-                subject = subject,
-                timestamp = uploadEntry.createdTime,
-                userId = knownUserId,
-                userName = "Known User",
-            ),
-            EventLogEntryPayload(
-                action = DeletedActionPayload(),
-                subject = subject,
-                timestamp = deleteEntry.createdTime,
-                userId = deletedUserId,
-                userName = "Former User",
-            ),
-        )
-
-    val actual = transformer.eventsToPayloads(listOf(uploadEntry, deleteEntry))
-
-    assertEquals(expected, actual)
+    assertEquals("Usuario anterior", payloads[1].userName, "Username of deleted user")
   }
 
   @Test
@@ -304,8 +277,18 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         eventLogEntry(
             knownUserId,
             AccessionUpdatedEvent(
-                changedFrom = AccessionUpdatedEventValues(collectionSiteName = "old"),
-                changedTo = AccessionUpdatedEventValues(collectionSiteName = "new"),
+                changedFrom =
+                    AccessionUpdatedEventValues(
+                        collectionSiteName = "old",
+                        subsetWeightQuantity =
+                            SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Grams),
+                    ),
+                changedTo =
+                    AccessionUpdatedEventValues(
+                        collectionSiteName = "new",
+                        subsetWeightQuantity =
+                            SeedQuantityModel(BigDecimal("1234.5"), SeedQuantityUnits.Grams),
+                    ),
                 accessionId = accessionId,
                 facilityId = facilityId,
                 organizationId = organizationId,
@@ -342,17 +325,32 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 userId = knownUserId,
                 userName = "Known User",
             ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "subset weight",
+                        changedFrom = listOf("1 gram"),
+                        changedTo = listOf("1,234.5 grams"),
+                    ),
+                subject = subject,
+                timestamp = updateEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
         )
 
-    assertEquals(expected, transformer.eventsToPayloads(listOf(createEntry, updateEntry)))
+    val actual =
+        Locales.ENGLISH.use { transformer.eventsToPayloads(listOf(createEntry, updateEntry)) }
+
+    assertEquals(expected, actual)
   }
 
   @Test
-  fun `renders Accession seed quantities as human-readable text`() {
+  fun `renders and localizes AccessionQuantityUpdatedEvent`() {
     val accessionId = AccessionId(10)
     val facilityId = FacilityId(11)
 
-    val quantityEntry =
+    val entry =
         eventLogEntry(
             knownUserId,
             AccessionQuantityUpdatedEvent(
@@ -369,36 +367,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 organizationId = organizationId,
             ),
         )
-    val subsetWeightEntry =
-        eventLogEntry(
-            knownUserId,
-            AccessionUpdatedEvent(
-                changedFrom =
-                    AccessionUpdatedEventValues(
-                        subsetWeightQuantity =
-                            SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Grams)
-                    ),
-                changedTo =
-                    AccessionUpdatedEventValues(
-                        subsetWeightQuantity =
-                            SeedQuantityModel(BigDecimal("1234.5"), SeedQuantityUnits.Grams)
-                    ),
-                accessionId = accessionId,
-                facilityId = facilityId,
-                organizationId = organizationId,
-            ),
-        )
 
-    val subject =
-        AccessionSubjectPayload(
-            accessionId = accessionId,
-            deleted = null,
-            facilityId = facilityId,
-            fullText = "Accession 10",
-            shortText = "Accession",
-        )
-
-    val expected =
+    assertEquals(
         listOf(
             EventLogEntryPayload(
                 action =
@@ -407,62 +377,31 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         changedFrom = listOf("10 seeds"),
                         changedTo = listOf("1 seed"),
                     ),
-                subject = subject,
-                timestamp = quantityEntry.createdTime,
+                subject =
+                    AccessionSubjectPayload(
+                        accessionId = accessionId,
+                        deleted = null,
+                        facilityId = facilityId,
+                        fullText = "Accession 10",
+                        shortText = "Accession",
+                    ),
+                timestamp = entry.createdTime,
                 userId = knownUserId,
                 userName = "Known User",
-            ),
-            EventLogEntryPayload(
-                action =
-                    FieldUpdatedActionPayload(
-                        fieldName = "subset weight",
-                        changedFrom = listOf("1 gram"),
-                        changedTo = listOf("1,234.5 grams"),
-                    ),
-                subject = subject,
-                timestamp = subsetWeightEntry.createdTime,
-                userId = knownUserId,
-                userName = "Known User",
-            ),
-        )
-
-    val actual =
-        Locales.ENGLISH.use {
-          transformer.eventsToPayloads(listOf(quantityEntry, subsetWeightEntry))
-        }
-
-    assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `localizes seed quantities`() {
-    val quantityEntry =
-        eventLogEntry(
-            knownUserId,
-            AccessionQuantityUpdatedEvent(
-                changedFrom =
-                    AccessionQuantityUpdatedEventValues(
-                        quantity = SeedQuantityModel(BigDecimal(10), SeedQuantityUnits.Seeds)
-                    ),
-                changedTo =
-                    AccessionQuantityUpdatedEventValues(
-                        quantity = SeedQuantityModel(BigDecimal(8), SeedQuantityUnits.Seeds)
-                    ),
-                accessionId = AccessionId(10),
-                facilityId = FacilityId(11),
-                organizationId = organizationId,
-            ),
-        )
-
-    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(quantityEntry)) }
+            )
+        ),
+        Locales.ENGLISH.use { transformer.eventsToPayloads(listOf(entry)) },
+        "English",
+    )
 
     assertEquals(
         FieldUpdatedActionPayload(
             fieldName = "cantidad",
             changedFrom = listOf("10 semillas"),
-            changedTo = listOf("8 semillas"),
+            changedTo = listOf("1 semilla"),
         ),
-        payloads.single().action,
+        Locales.SPANISH.use { transformer.eventsToPayloads(listOf(entry)) }.single().action,
+        "Spanish",
     )
   }
 
@@ -752,10 +691,12 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `maps AccessionPhoto added and deleted events and marks subject deleted`() {
+  fun `maps AccessionPhoto events to payloads`() {
     val accessionId = AccessionId(10)
     val facilityId = FacilityId(11)
     val photoFileId = FileId(60)
+    val newFileId = FileId(50)
+    val replacedFileId = FileId(49)
 
     val addEntry =
         eventLogEntry(
@@ -780,45 +721,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 organizationId = organizationId,
             ),
         )
-
-    val subject =
-        AccessionPhotoSubjectPayload(
-            accessionId = accessionId,
-            deleted = true,
-            facilityId = facilityId,
-            fileId = photoFileId,
-            fullText = "Photo new.jpg",
-            shortText = "Photo",
-        )
-
-    val expected =
-        listOf(
-            EventLogEntryPayload(
-                action = CreatedActionPayload(),
-                subject = subject,
-                timestamp = addEntry.createdTime,
-                userId = knownUserId,
-                userName = "Known User",
-            ),
-            EventLogEntryPayload(
-                action = DeletedActionPayload(),
-                subject = subject,
-                timestamp = deleteEntry.createdTime,
-                userId = knownUserId,
-                userName = "Known User",
-            ),
-        )
-
-    assertEquals(expected, transformer.eventsToPayloads(listOf(addEntry, deleteEntry)))
-  }
-
-  @Test
-  fun `maps AccessionPhotoReplaced event to a photo field update action`() {
-    val accessionId = AccessionId(10)
-    val facilityId = FacilityId(11)
-    val newFileId = FileId(50)
-    val replacedFileId = FileId(49)
-
     val replacedEntry =
         eventLogEntry(
             knownUserId,
@@ -832,8 +734,33 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             ),
         )
 
+    fun subject(subjectFileId: FileId, filename: String, deleted: Boolean?) =
+        AccessionPhotoSubjectPayload(
+            accessionId = accessionId,
+            deleted = deleted,
+            facilityId = facilityId,
+            fileId = subjectFileId,
+            fullText = "Photo $filename",
+            shortText = "Photo",
+        )
+
     val expected =
         listOf(
+            EventLogEntryPayload(
+                action = CreatedActionPayload(),
+                subject = subject(photoFileId, "new.jpg", true),
+                timestamp = addEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action = DeletedActionPayload(),
+                subject = subject(photoFileId, "new.jpg", true),
+                timestamp = deleteEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            // Replacing a photo is rendered as an update from the old file to the new one.
             EventLogEntryPayload(
                 action =
                     FieldUpdatedActionPayload(
@@ -841,25 +768,20 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         changedFrom = listOf(replacedFileId.toString()),
                         changedTo = listOf(newFileId.toString()),
                     ),
-                subject =
-                    AccessionPhotoSubjectPayload(
-                        accessionId = accessionId,
-                        deleted = null,
-                        facilityId = facilityId,
-                        fileId = newFileId,
-                        fullText = "Photo pic.jpg",
-                        shortText = "Photo",
-                    ),
+                subject = subject(newFileId, "pic.jpg", null),
                 timestamp = replacedEntry.createdTime,
                 userId = knownUserId,
                 userName = "Known User",
-            )
+            ),
         )
 
-    assertEquals(expected, transformer.eventsToPayloads(listOf(replacedEntry)))
+    assertEquals(
+        expected,
+        transformer.eventsToPayloads(listOf(addEntry, deleteEntry, replacedEntry)),
+    )
   }
 
-  private fun uploadedEvent(): ObservationMediaFileUploadedEvent =
+  private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =
       ObservationMediaFileUploadedEvent(
           caption = "caption",
           contentType = "image/png",
