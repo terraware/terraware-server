@@ -235,12 +235,6 @@ eventSubject.Project.field.name=name
 
 Run `yarn translate` to translate the English strings to other supported languages.
 
-### Field value localization
-
-Field values are localized by the `listUpdatedFields` and `listInitialFields` implementations on the event classes, which is why those methods are handed a `Messages` instance. Enums should be rendered with `getDisplayName(currentLocale())` and model objects with the appropriate `Messages` helper, e.g. `messages.seedQuantityOrNull(quantity)` for a `SeedQuantityModel`. Only call `toString()` on values whose string form is already locale-independent and human-readable, such as dates and IDs; calling it on a model object will leak the class's internal representation into the API payload.
-
-Field values are rendered when the event log is queried, not when the event is stored, so changing how a value is rendered also changes how existing events appear. No data migration is needed.
-
 ## How events are stored in the database
 
 You shouldn't need to interact with the event log at the SQL level if you're just adding new event types unless you need to backfill historical events for existing entities.
