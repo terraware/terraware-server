@@ -18,10 +18,10 @@ import java.time.LocalDate
 data class BatchWithdrawalModel(
     val batchId: BatchId,
     val destinationBatchId: BatchId? = null,
-    val germinatingQuantityWithdrawn: Int,
-    val activeGrowthQuantityWithdrawn: Int,
+    val germinatingQuantityWithdrawn: Int = 0,
+    val activeGrowthQuantityWithdrawn: Int = 0,
     val hardeningOffQuantityWithdrawn: Int = 0,
-    val readyQuantityWithdrawn: Int,
+    val readyQuantityWithdrawn: Int = 0,
 ) {
   val totalWithdrawn: Int
     get() =
