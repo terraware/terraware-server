@@ -29,6 +29,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileBatchFinishedUploadingEvent
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
@@ -1466,11 +1467,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `replaces the stored additional file of a type`() {
       insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
-      insertSplatAdditionalFile(
-          splatFileId = orgFileId,
-          fileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json"),
-          type = "imu",
-      )
+      val oldImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json")
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldImuFileId, type = "imu")
       val newImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/new-imu.json")
 
       val messageSlot = slot<SplatterRequestMessage>()
@@ -1496,6 +1494,36 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           messageSlot.captured.additionalFiles,
           "Request additional files",
       )
+
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(oldImuFileId))
+    }
+
+    @Test
+    fun `does not delete an additional file that is still used by the splat`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      val imuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/imu.json")
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = imuFileId, type = "imu")
+
+      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
+          mockk(relaxed = true)
+
+      service.generateOrganizationMediaSplat(
+          organizationId = organizationId,
+          fileId = orgFileId,
+          force = true,
+          runBirdnet = false,
+          additionalFiles = mapOf(imuFileId to "frames"),
+      )
+
+      assertTableEquals(
+          SplatAdditionalFilesRecord(
+              fileId = imuFileId,
+              splatFileId = orgFileId,
+              type = "frames",
+          )
+      )
+
+      eventPublisher.assertEventNotPublished(FileReferenceDeletedEvent(imuFileId))
     }
 
     @Test

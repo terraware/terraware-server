@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
@@ -26,6 +27,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileBatchFinishedUploadingEvent
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
@@ -486,10 +488,9 @@ class SplatService(
 
       if (rowsInserted == 1 || force) {
         if (additionalFiles.isNotEmpty()) {
-          with(SPLAT_ADDITIONAL_FILES) {
-            // TODO delete files too
-            dslContext.deleteFrom(SPLAT_ADDITIONAL_FILES).where(SPLAT_FILE_ID.eq(fileId)).execute()
+          deleteAdditionalFiles(fileId, retainedFileIds = additionalFiles.keys)
 
+          with(SPLAT_ADDITIONAL_FILES) {
             additionalFiles.forEach { (additionalFileId, type) ->
               dslContext
                   .insertInto(SPLAT_ADDITIONAL_FILES)
@@ -552,6 +553,31 @@ class SplatService(
           .replace(Regex("([A-Z]+)([A-Z][a-z])"), "$1-$2")
           .replace(Regex("([a-z0-9])([A-Z])"), "$1-$2")
           .lowercase()
+
+  /**
+   * Removes a splat's additional files from the database and, unless they're still needed, from the
+   * file store.
+   *
+   * @param retainedFileIds Files that are about to be inserted as additional files of the same
+   *   splat again. Their rows are still deleted, but the files themselves are left alone.
+   */
+  private fun deleteAdditionalFiles(
+      splatFileId: FileId,
+      retainedFileIds: Set<FileId> = emptySet(),
+  ) {
+    val deletedFileIds =
+        with(SPLAT_ADDITIONAL_FILES) {
+          dslContext
+              .deleteFrom(SPLAT_ADDITIONAL_FILES)
+              .where(SPLAT_FILE_ID.eq(splatFileId))
+              .returning(FILE_ID)
+              .fetch(FILE_ID.asNonNullable())
+        }
+
+    deletedFileIds
+        .filterNot { it in retainedFileIds }
+        .forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
+  }
 
   private fun listAdditionalFileLocations(fileId: FileId): List<SplatterRequestFileLocation> {
     return with(SPLAT_ADDITIONAL_FILES) {
