@@ -1949,7 +1949,17 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
-      dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
+      assertTableEquals(
+          SplatsRecord(
+              assetStatusId = AssetStatus.Preparing,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              fileId = videoFileId,
+              needsAttention = false,
+              organizationId = organizationId,
+              splatStorageUrl = URI("s3://bucket/video.sog"),
+          )
+      )
       assertEquals(
           SplatterRequestFileLocation("bucket", "video.mp4"),
           messageSlot.captured.input,
