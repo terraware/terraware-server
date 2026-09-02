@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
@@ -26,6 +27,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileBatchFinishedUploadingEvent
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
@@ -414,127 +416,162 @@ class SplatService(
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
             ?: throw FileNotFoundException(fileId)
-    val videoKey = videoUrl.path.trimStart('/')
-    val videoPath = fileStore.getPath(videoUrl)
-    val splatPath = Path(videoPath.pathString.substringBeforeLast('.') + splatFileExtension)
-    val splatUrl = fileStore.getUrl(splatPath)
-    val splatKey = splatUrl.path.trimStart('/')
-
+    val outputPathPrefix = fileStore.getPath(videoUrl).pathString.substringBeforeLast('.')
+    val splatUrl = fileStore.getUrl(Path(outputPathPrefix + splatFileExtension))
     val birdnetUrl =
         if (runBirdnet) {
-          val birdnetPath = Path(videoPath.pathString.substringBeforeLast('.') + "_birdnet.json")
-          fileStore.getUrl(birdnetPath)
+          fileStore.getUrl(Path(outputPathPrefix + "_birdnet.json"))
         } else {
           null
         }
 
-    val birdnetOutputLocation = birdnetUrl?.let {
-      val birdnetKey = it.path.trimStart('/')
-      SplatterRequestFileLocation(s3BucketName, birdnetKey)
-    }
+    val replacedFileIds = dslContext.transactionResult { _ ->
+      val splatIsNew = insertOrRestartSplat(fileId, organizationId, splatUrl, force)
 
-    dslContext.transaction { _ ->
-      val rowsInserted =
-          with(SPLATS) {
-            dslContext
-                .insertInto(SPLATS)
-                .set(ASSET_STATUS_ID, AssetStatus.Preparing)
-                .set(CREATED_BY, currentUser().userId)
-                .set(CREATED_TIME, clock.instant())
-                .set(FILE_ID, fileId)
-                .set(NEEDS_ATTENTION, false)
-                .set(ORGANIZATION_ID, organizationId)
-                .set(SPLAT_STORAGE_URL, splatUrl)
-                .onConflictDoNothing()
-                .execute()
-          }
-
-      if (rowsInserted == 0 && force) {
-        with(SPLATS) {
-          dslContext
-              .update(SPLATS)
-              .set(ASSET_STATUS_ID, AssetStatus.Preparing)
-              .where(FILE_ID.eq(fileId))
-              .execute()
-        }
+      if (birdnetUrl != null) {
+        insertOrRestartBirdnetResult(fileId, birdnetUrl, force)
       }
 
-      if (runBirdnet && birdnetUrl != null) {
-        val birdnetRowsInserted =
-            with(BIRDNET_RESULTS) {
-              dslContext
-                  .insertInto(BIRDNET_RESULTS)
-                  .set(ASSET_STATUS_ID, AssetStatus.Preparing)
-                  .set(CREATED_BY, currentUser().userId)
-                  .set(CREATED_TIME, clock.instant())
-                  .set(FILE_ID, fileId)
-                  .set(RESULTS_STORAGE_URL, birdnetUrl)
-                  .onConflictDoNothing()
-                  .execute()
-            }
-
-        if (birdnetRowsInserted == 0 && force) {
-          with(BIRDNET_RESULTS) {
-            dslContext
-                .update(BIRDNET_RESULTS)
-                .set(ASSET_STATUS_ID, AssetStatus.Preparing)
-                .where(FILE_ID.eq(fileId))
-                .execute()
-          }
-        }
-      }
-
-      if (rowsInserted == 1 || force) {
-        if (additionalFiles.isNotEmpty()) {
-          with(SPLAT_ADDITIONAL_FILES) {
-            // TODO delete files too
-            dslContext.deleteFrom(SPLAT_ADDITIONAL_FILES).where(SPLAT_FILE_ID.eq(fileId)).execute()
-
-            additionalFiles.forEach { (additionalFileId, type) ->
-              dslContext
-                  .insertInto(SPLAT_ADDITIONAL_FILES)
-                  .set(FILE_ID, additionalFileId)
-                  .set(SPLAT_FILE_ID, fileId)
-                  .set(TYPE, type)
-                  .execute()
-            }
-          }
-        }
-
-        val requestMessage =
-            SplatterRequestMessage(
-                abortAfter = params.abortAfter,
-                additionalFiles = listAdditionalFileLocations(fileId),
-                birdnetOutput = birdnetOutputLocation,
-                input =
-                    SplatterRequestFileLocation(
-                        s3BucketName,
-                        videoKey,
-                    ),
-                jobId = fileId.toString(),
-                output =
-                    SplatterRequestFileLocation(
-                        s3BucketName,
-                        splatKey,
-                    ),
-                responseQueueUrl = responseQueueUrl,
-                restartAt = params.restartAt,
-                restoreJob = params.restartAt != null,
-                stepArgs = params.stepArgs,
-            )
-
-        sqsTemplate.send(requestQueueUrl, requestMessage)
-
-        log.info(
-            "Requested splat generation for file $fileId${if (runBirdnet) " with BirdNet" else ""}"
-        )
-      } else {
+      if (!splatIsNew && !force) {
         log.info(
             "Splat record already exists for file $fileId; ignoring additional generation request"
         )
+
+        return@transactionResult emptyList()
+      }
+
+      val replacedFileIds = replaceAdditionalFiles(fileId, additionalFiles)
+
+      sqsTemplate.send(
+          requestQueueUrl,
+          SplatterRequestMessage(
+              abortAfter = params.abortAfter,
+              additionalFiles = listAdditionalFileLocations(fileId),
+              birdnetOutput = birdnetUrl?.let { fileLocation(it) },
+              input = fileLocation(videoUrl),
+              jobId = fileId.toString(),
+              output = fileLocation(splatUrl),
+              responseQueueUrl = responseQueueUrl,
+              restartAt = params.restartAt,
+              restoreJob = params.restartAt != null,
+              stepArgs = params.stepArgs,
+          ),
+      )
+
+      log.info(
+          "Requested splat generation for file $fileId${if (runBirdnet) " with BirdNet" else ""}"
+      )
+
+      replacedFileIds
+    }
+
+    publishAdditionalFilesDeleted(replacedFileIds)
+  }
+
+  /**
+   * Inserts a splat row, or moves an existing one back to [AssetStatus.Preparing] if [force] is
+   * true.
+   *
+   * @return True if there was no splat row for the file yet.
+   */
+  private fun insertOrRestartSplat(
+      fileId: FileId,
+      organizationId: OrganizationId,
+      splatUrl: URI,
+      force: Boolean,
+  ): Boolean {
+    val rowsInserted =
+        with(SPLATS) {
+          dslContext
+              .insertInto(SPLATS)
+              .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+              .set(CREATED_BY, currentUser().userId)
+              .set(CREATED_TIME, clock.instant())
+              .set(FILE_ID, fileId)
+              .set(NEEDS_ATTENTION, false)
+              .set(ORGANIZATION_ID, organizationId)
+              .set(SPLAT_STORAGE_URL, splatUrl)
+              .onConflictDoNothing()
+              .execute()
+        }
+
+    if (rowsInserted == 0 && force) {
+      with(SPLATS) {
+        dslContext
+            .update(SPLATS)
+            .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+            .where(FILE_ID.eq(fileId))
+            .execute()
+      }
+    }
+
+    return rowsInserted == 1
+  }
+
+  /**
+   * Inserts a BirdNet result row, or moves an existing one back to [AssetStatus.Preparing] if
+   * [force] is true.
+   */
+  private fun insertOrRestartBirdnetResult(fileId: FileId, birdnetUrl: URI, force: Boolean) {
+    val rowsInserted =
+        with(BIRDNET_RESULTS) {
+          dslContext
+              .insertInto(BIRDNET_RESULTS)
+              .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+              .set(CREATED_BY, currentUser().userId)
+              .set(CREATED_TIME, clock.instant())
+              .set(FILE_ID, fileId)
+              .set(RESULTS_STORAGE_URL, birdnetUrl)
+              .onConflictDoNothing()
+              .execute()
+        }
+
+    if (rowsInserted == 0 && force) {
+      with(BIRDNET_RESULTS) {
+        dslContext
+            .update(BIRDNET_RESULTS)
+            .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+            .where(FILE_ID.eq(fileId))
+            .execute()
       }
     }
   }
+
+  /**
+   * Makes [additionalFiles] the full set of additional files for a splat, replacing any previous
+   * ones. Does nothing if [additionalFiles] is empty.
+   *
+   * @return The previous additional files that nothing refers to any more; see
+   *   [deleteAdditionalFiles] for how the caller must dispose of them.
+   */
+  private fun replaceAdditionalFiles(
+      splatFileId: FileId,
+      additionalFiles: Map<FileId, SplatAdditionalFileType>,
+  ): List<FileId> {
+    if (additionalFiles.isEmpty()) {
+      return emptyList()
+    }
+
+    val replacedFileIds = deleteAdditionalFiles(splatFileId, retainedFileIds = additionalFiles.keys)
+
+    with(SPLAT_ADDITIONAL_FILES) {
+      additionalFiles.forEach { (additionalFileId, type) ->
+        dslContext
+            .insertInto(SPLAT_ADDITIONAL_FILES)
+            .set(FILE_ID, additionalFileId)
+            .set(SPLAT_FILE_ID, splatFileId)
+            .set(TYPE, type)
+            .onDuplicateKeyUpdate()
+            .set(TYPE, type)
+            .execute()
+      }
+    }
+
+    return replacedFileIds
+  }
+
+  private fun fileLocation(url: URI, type: SplatAdditionalFileType? = null) =
+      SplatterRequestFileLocation(s3BucketName, url.path.trimStart('/'), type)
 
   /**
    * Returns the additional file type from a content type's structured syntax suffix, or an empty
@@ -553,6 +590,58 @@ class SplatService(
           .replace(Regex("([a-z0-9])([A-Z])"), "$1-$2")
           .lowercase()
 
+  /**
+   * Announces that additional files are no longer referenced, which causes them to be deleted from
+   * the file store. Must be called after the database changes that dropped the references have
+   * committed, since deleting a file from the file store can't be rolled back.
+   *
+   * Each file is announced independently: the references are already gone, so a file store failure
+   * for one of them must not stop the others from being cleaned up.
+   */
+  private fun publishAdditionalFilesDeleted(fileIds: Collection<FileId>) {
+    fileIds.forEach { fileId ->
+      try {
+        eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
+      } catch (e: Exception) {
+        log.error("Unable to delete splat additional file $fileId", e)
+      }
+    }
+  }
+
+  /**
+   * Removes a splat's additional files from the database. Additional files are uploaded as
+   * organization media, so their organization media rows are deleted too.
+   *
+   * @param retainedFileIds Files that are about to be inserted as additional files of the same
+   *   splat again. Their rows are left in place for the insert to update.
+   * @return The files that nothing refers to any more. The caller must publish
+   *   [FileReferenceDeletedEvent] for each of them, but only once its transaction has committed:
+   *   the handler deletes the files from the file store, which a rollback can't undo.
+   */
+  private fun deleteAdditionalFiles(
+      splatFileId: FileId,
+      retainedFileIds: Set<FileId> = emptySet(),
+  ): List<FileId> {
+    val deletedFileIds =
+        with(SPLAT_ADDITIONAL_FILES) {
+          dslContext
+              .deleteFrom(SPLAT_ADDITIONAL_FILES)
+              .where(SPLAT_FILE_ID.eq(splatFileId))
+              .and(FILE_ID.notIn(retainedFileIds))
+              .returning(FILE_ID)
+              .fetch(FILE_ID.asNonNullable())
+        }
+
+    if (deletedFileIds.isNotEmpty()) {
+      dslContext
+          .deleteFrom(ORGANIZATION_MEDIA_FILES)
+          .where(ORGANIZATION_MEDIA_FILES.FILE_ID.`in`(deletedFileIds))
+          .execute()
+    }
+
+    return deletedFileIds
+  }
+
   private fun listAdditionalFileLocations(fileId: FileId): List<SplatterRequestFileLocation> {
     return with(SPLAT_ADDITIONAL_FILES) {
       dslContext
@@ -562,13 +651,7 @@ class SplatService(
           .on(FILE_ID.eq(FILES.ID))
           .where(SPLAT_FILE_ID.eq(fileId))
           .orderBy(FILE_ID)
-          .fetch { record ->
-            SplatterRequestFileLocation(
-                s3BucketName,
-                record[FILES.STORAGE_URL]!!.path.trimStart('/'),
-                record[TYPE]!!,
-            )
-          }
+          .fetch { record -> fileLocation(record[FILES.STORAGE_URL]!!, record[TYPE]!!) }
     }
   }
 

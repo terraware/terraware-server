@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.records.BirdnetResultsRecord
+import com.terraformation.backend.db.default_schema.tables.records.OrganizationMediaFilesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAdditionalFilesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatsRecord
@@ -29,6 +30,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileBatchFinishedUploadingEvent
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
@@ -1466,12 +1468,11 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `replaces the stored additional file of a type`() {
       insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
-      insertSplatAdditionalFile(
-          splatFileId = orgFileId,
-          fileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json"),
-          type = "imu",
-      )
+      val oldImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json")
+      insertOrganizationMediaFile(fileId = oldImuFileId)
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldImuFileId, type = "imu")
       val newImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/new-imu.json")
+      insertOrganizationMediaFile(fileId = newImuFileId)
 
       val messageSlot = slot<SplatterRequestMessage>()
       every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
@@ -1496,6 +1497,115 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           messageSlot.captured.additionalFiles,
           "Request additional files",
       )
+
+      assertTableEquals(
+          listOf(
+              OrganizationMediaFilesRecord(fileId = orgFileId, organizationId = organizationId),
+              OrganizationMediaFilesRecord(fileId = newImuFileId, organizationId = organizationId),
+          )
+      )
+
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(oldImuFileId))
+    }
+
+    @Test
+    fun `keeps deleting replaced additional files after one of them fails`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      val oldImuFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldImuFileId, type = "imu")
+      val oldFramesFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldFramesFileId, type = "frames")
+      val newImuFileId = insertOrganizationMediaFile(fileId = insertFile())
+
+      val attemptedFileIds = mutableListOf<FileId>()
+      eventPublisher.register<FileReferenceDeletedEvent> { event ->
+        attemptedFileIds.add(event.fileId)
+        throw RuntimeException("File store unavailable")
+      }
+
+      service.generateOrganizationMediaSplat(
+          organizationId = organizationId,
+          fileId = orgFileId,
+          force = true,
+          runBirdnet = false,
+          additionalFiles = mapOf(newImuFileId to "imu"),
+      )
+
+      assertEquals(
+          setOf(oldImuFileId, oldFramesFileId),
+          attemptedFileIds.toSet(),
+          "Files whose deletion was attempted",
+      )
+    }
+
+    @Test
+    fun `does not delete replaced additional files if the generation request fails`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      val oldImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json")
+      insertOrganizationMediaFile(fileId = oldImuFileId)
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldImuFileId, type = "imu")
+      val newImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/new-imu.json")
+      insertOrganizationMediaFile(fileId = newImuFileId)
+
+      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } throws
+          RuntimeException("Request queue unavailable")
+
+      assertThrows<RuntimeException> {
+        service.generateOrganizationMediaSplat(
+            organizationId = organizationId,
+            fileId = orgFileId,
+            force = true,
+            runBirdnet = false,
+            additionalFiles = mapOf(newImuFileId to "imu"),
+        )
+      }
+
+      assertTableEquals(
+          SplatAdditionalFilesRecord(
+              fileId = oldImuFileId,
+              splatFileId = orgFileId,
+              type = "imu",
+          ),
+          "Additional file should be restored by the rollback",
+      )
+
+      eventPublisher.assertEventNotPublished(FileReferenceDeletedEvent(oldImuFileId))
+    }
+
+    @Test
+    fun `does not delete an additional file that is still used by the splat`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      val imuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/imu.json")
+      insertOrganizationMediaFile(fileId = imuFileId)
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = imuFileId, type = "imu")
+
+      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
+          mockk(relaxed = true)
+
+      service.generateOrganizationMediaSplat(
+          organizationId = organizationId,
+          fileId = orgFileId,
+          force = true,
+          runBirdnet = false,
+          additionalFiles = mapOf(imuFileId to "imu"),
+      )
+
+      assertTableEquals(
+          SplatAdditionalFilesRecord(
+              fileId = imuFileId,
+              splatFileId = orgFileId,
+              type = "imu",
+          )
+      )
+
+      assertTableEquals(
+          listOf(
+              OrganizationMediaFilesRecord(fileId = orgFileId, organizationId = organizationId),
+              OrganizationMediaFilesRecord(fileId = imuFileId, organizationId = organizationId),
+          )
+      )
+
+      eventPublisher.assertEventNotPublished(FileReferenceDeletedEvent(imuFileId))
     }
 
     @Test
