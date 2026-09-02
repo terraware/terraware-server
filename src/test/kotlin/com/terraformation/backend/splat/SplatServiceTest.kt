@@ -605,6 +605,38 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `keeps deleting additional files after one of them fails`() {
+      val imuFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = imuFileId, type = "imu")
+      val framesFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = framesFileId, type = "frames")
+
+      val attemptedFileIds = mutableListOf<FileId>()
+      eventPublisher.register<FileReferenceDeletedEvent> { event ->
+        attemptedFileIds.add(event.fileId)
+        throw RuntimeException("File store unavailable")
+      }
+
+      service.deleteOrganizationSplat(organizationId, orgFileId)
+
+      assertEquals(
+          setOf(imuFileId, framesFileId),
+          attemptedFileIds.toSet(),
+          "Files whose deletion was attempted",
+      )
+
+      eventPublisher.assertEventPublished(
+          SplatDeletedEvent(
+              deletedByUserId = user.userId,
+              fileId = orgFileId,
+              organizationId = organizationId,
+              uploadedByUserId = user.userId,
+              videoUploadedTime = Instant.EPOCH,
+          )
+      )
+    }
+
+    @Test
     fun `throws exception if file does not belong to organization`() {
       val unassociatedFileId = insertFile()
       insertSplat(fileId = unassociatedFileId)

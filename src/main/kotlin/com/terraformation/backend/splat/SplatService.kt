@@ -255,7 +255,7 @@ class SplatService(
       unreferencedFileIds
     }
 
-    additionalFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
+    publishAdditionalFilesDeleted(additionalFileIds)
 
     eventPublisher.publishEvent(
         SplatDeletedEvent(
@@ -681,7 +681,7 @@ class SplatService(
         val additionalFileIds = deleteAdditionalFiles(event.fileId)
         splatsRecord.delete()
 
-        additionalFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
+        publishAdditionalFilesDeleted(additionalFileIds)
       }
     } catch (e: Exception) {
       log.error("Unable to delete splat for file ${event.fileId}", e)
