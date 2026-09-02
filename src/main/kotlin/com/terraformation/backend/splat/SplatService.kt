@@ -159,11 +159,10 @@ class SplatService(
       force: Boolean = false,
       params: SplatGenerationParams = SplatGenerationParams(),
       runBirdnet: Boolean = true,
-      dataFileId: FileId? = null,
   ) {
     ensureOrganizationMediaFile(organizationId, fileId)
 
-    generateSplat(organizationId, fileId, force, params, runBirdnet, dataFileId)
+    generateSplat(organizationId, fileId, force, params, runBirdnet)
   }
 
   fun readOrganizationSplat(organizationId: OrganizationId, fileId: FileId): SizedInputStream {
@@ -408,7 +407,6 @@ class SplatService(
       force: Boolean = false,
       params: SplatGenerationParams,
       runBirdnet: Boolean = false,
-      dataFileId: FileId? = null,
   ) {
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
@@ -432,13 +430,6 @@ class SplatService(
       SplatterRequestFileLocation(s3BucketName, birdnetKey)
     }
 
-    val dataFileLocation = dataFileId?.let { id ->
-      val dataFileUrl =
-          dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(id))
-              ?: throw FileNotFoundException(id)
-      SplatterRequestFileLocation(s3BucketName, dataFileUrl.path.trimStart('/'))
-    }
-
     dslContext.transaction { _ ->
       val rowsInserted =
           with(SPLATS) {
@@ -447,7 +438,6 @@ class SplatService(
                 .set(ASSET_STATUS_ID, AssetStatus.Preparing)
                 .set(CREATED_BY, currentUser().userId)
                 .set(CREATED_TIME, clock.instant())
-                .set(DATA_FILE_ID, dataFileId)
                 .set(FILE_ID, fileId)
                 .set(NEEDS_ATTENTION, false)
                 .set(ORGANIZATION_ID, organizationId)
@@ -496,7 +486,6 @@ class SplatService(
             SplatterRequestMessage(
                 abortAfter = params.abortAfter,
                 birdnetOutput = birdnetOutputLocation,
-                dataFile = dataFileLocation,
                 input =
                     SplatterRequestFileLocation(
                         s3BucketName,
@@ -586,25 +575,8 @@ class SplatService(
             .where(ORGANIZATION_MEDIA_FILES.FILE_ID.eq(videoFileId))
             .fetchOne(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID) ?: return
 
-    if (batchFiles.size > 2) {
-      log.warn("File batch ${event.fileBatchId} contains more than two files; not generating splat")
-      return
-    }
-
-    val jsonFileId =
-        batchFiles
-            .firstOrNull { it[FILES.CONTENT_TYPE] == MediaType.APPLICATION_JSON_VALUE }
-            ?.value1()
-    if (jsonFileId == null) {
-      log.warn(
-          "File batch ${event.fileBatchId} contains an organization video but no JSON data file; " +
-              "not generating splat"
-      )
-      return
-    }
-
     try {
-      generateOrganizationMediaSplat(organizationId, videoFileId, dataFileId = jsonFileId)
+      generateOrganizationMediaSplat(organizationId, videoFileId)
     } catch (e: Exception) {
       log.error(
           "Failed to auto-generate splat for file $videoFileId in batch ${event.fileBatchId}",

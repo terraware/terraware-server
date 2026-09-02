@@ -1934,28 +1934,36 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `generates splat with JSON data file for a video plus JSON batch`() {
+    fun `generates splat for a video that is part of a batch`() {
       val fileBatchId = insertFileBatch()
-      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
-      insertOrganizationMediaFile(fileId = videoFileId)
-      val jsonFileId =
+      val videoFileId =
           insertFile(
-              contentType = "application/json",
+              contentType = "video/mp4",
               fileBatchId = fileBatchId,
-              storageUrl = "s3://bucket/data.json",
+              storageUrl = "s3://bucket/video.mp4",
           )
+      insertOrganizationMediaFile(fileId = videoFileId)
 
       val messageSlot = slot<SplatterRequestMessage>()
       every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
 
       service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
-      val splat = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
-      assertEquals(jsonFileId, splat.dataFileId, "Data file ID")
+      assertTableEquals(
+          SplatsRecord(
+              assetStatusId = AssetStatus.Preparing,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              fileId = videoFileId,
+              needsAttention = false,
+              organizationId = organizationId,
+              splatStorageUrl = URI("s3://bucket/video.sog"),
+          )
+      )
       assertEquals(
-          SplatterRequestFileLocation("bucket", "data.json"),
-          messageSlot.captured.dataFile,
-          "Request data file location",
+          SplatterRequestFileLocation("bucket", "video.mp4"),
+          messageSlot.captured.input,
+          "Request input file location",
       )
     }
 
@@ -1976,33 +1984,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val fileBatchId = insertFileBatch()
       insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
       insertFile(contentType = "application/json", fileBatchId = fileBatchId)
-
-      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
-
-      assertTableEmpty(SPLATS)
-      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
-    }
-
-    @Test
-    fun `does not generate splat when batch has more than two files`() {
-      val fileBatchId = insertFileBatch()
-      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
-      insertOrganizationMediaFile(fileId = videoFileId)
-      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
-      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
-
-      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
-
-      assertTableEmpty(SPLATS)
-      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
-    }
-
-    @Test
-    fun `does not generate splat when batch has no JSON data file`() {
-      val fileBatchId = insertFileBatch()
-      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
-      insertOrganizationMediaFile(fileId = videoFileId)
-      insertFile(contentType = "image/jpeg", fileBatchId = fileBatchId)
 
       service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
