@@ -1,3 +1,4 @@
+71fa85d2 SW-8840 Calculate nativities on species import (#4897)
 22c26e12 Add multi-value sublist for withdrawal deliveries (#4893)
 95be82e0 Reuse working directory in CI steps (#4886)
 a9e10757 SW-8810 Fix Jira transition auth in release CI (#4894)
