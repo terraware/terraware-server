@@ -546,7 +546,7 @@ class SplatService(
       }
     }
 
-    replacedFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
+    publishAdditionalFilesDeleted(replacedFileIds)
   }
 
   /**
@@ -565,6 +565,24 @@ class SplatService(
           .replace(Regex("([A-Z]+)([A-Z][a-z])"), "$1-$2")
           .replace(Regex("([a-z0-9])([A-Z])"), "$1-$2")
           .lowercase()
+
+  /**
+   * Announces that additional files are no longer referenced, which causes them to be deleted from
+   * the file store. Must be called after the database changes that dropped the references have
+   * committed, since deleting a file from the file store can't be rolled back.
+   *
+   * Each file is announced independently: the references are already gone, so a file store failure
+   * for one of them must not stop the others from being cleaned up.
+   */
+  private fun publishAdditionalFilesDeleted(fileIds: Collection<FileId>) {
+    fileIds.forEach { fileId ->
+      try {
+        eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
+      } catch (e: Exception) {
+        log.error("Unable to delete splat additional file $fileId", e)
+      }
+    }
+  }
 
   /**
    * Removes a splat's additional files from the database. Additional files are uploaded as

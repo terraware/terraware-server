@@ -1509,6 +1509,36 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `keeps deleting replaced additional files after one of them fails`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      val oldImuFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldImuFileId, type = "imu")
+      val oldFramesFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldFramesFileId, type = "frames")
+      val newImuFileId = insertOrganizationMediaFile(fileId = insertFile())
+
+      val attemptedFileIds = mutableListOf<FileId>()
+      eventPublisher.register<FileReferenceDeletedEvent> { event ->
+        attemptedFileIds.add(event.fileId)
+        throw RuntimeException("File store unavailable")
+      }
+
+      service.generateOrganizationMediaSplat(
+          organizationId = organizationId,
+          fileId = orgFileId,
+          force = true,
+          runBirdnet = false,
+          additionalFiles = mapOf(newImuFileId to "imu"),
+      )
+
+      assertEquals(
+          setOf(oldImuFileId, oldFramesFileId),
+          attemptedFileIds.toSet(),
+          "Files whose deletion was attempted",
+      )
+    }
+
+    @Test
     fun `does not delete replaced additional files if the generation request fails`() {
       insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
       val oldImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json")
