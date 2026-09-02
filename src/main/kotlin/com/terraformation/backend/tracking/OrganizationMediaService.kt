@@ -38,22 +38,30 @@ class OrganizationMediaService(
 ) {
   private val log = perClassLogger()
 
+  /**
+   * Stores a media file for an organization.
+   *
+   * @param contentType Store the file with this content type rather than the one declared by the
+   *   client. The value is used as-is, so it may be a content type that wouldn't be accepted as an
+   *   upload, such as one of the `+`-suffixed types that identify additional splat inputs.
+   */
   fun upload(
       organizationId: OrganizationId,
       file: MultipartFile,
       caption: String?,
       fileBatchId: FileBatchId? = null,
+      contentType: String? = null,
   ): FileId {
     requirePermissions { createOrganizationMedia(organizationId) }
 
-    val contentType = file.getPlainContentType(SUPPORTED_ADDITIONAL_MEDIA_TYPES)
+    val fileContentType = contentType ?: file.getPlainContentType(SUPPORTED_ADDITIONAL_MEDIA_TYPES)
     val filename = file.getFilename("media")
 
     val fileId =
         fileService.storeFile(
             "organizationMedia",
             file.inputStream,
-            FileMetadata.of(contentType, filename, file.size),
+            FileMetadata.of(fileContentType, filename, file.size),
             fileBatchId = fileBatchId,
         ) { (fileId, _) ->
           dslContext
@@ -66,7 +74,7 @@ class OrganizationMediaService(
 
     log.info("Stored media file $fileId for organization $organizationId")
 
-    if (contentType.startsWith("video/")) {
+    if (fileContentType.startsWith("video/")) {
       eventPublisher.publishEvent(
           OrganizationVideoUploadedEvent(fileId, organizationId, fileBatchId)
       )

@@ -23,6 +23,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import io.mockk.every
 import io.mockk.mockk
+import jakarta.ws.rs.NotSupportedException
 import java.io.ByteArrayInputStream
 import java.net.URI
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -130,6 +131,43 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
       eventPublisher.assertEventPublished(
           OrganizationVideoUploadedEvent(fileId, organizationId, fileBatchId)
       )
+    }
+
+    @Test
+    fun `stores caller-supplied content type that is not an accepted upload type`() {
+      val multipartFile =
+          MockMultipartFile("file", "poses.json", "application/octet-stream", ByteArray(1))
+
+      val fileId =
+          service.upload(
+              organizationId,
+              multipartFile,
+              "caption",
+              contentType = "application/json+cameraPoses",
+          )
+
+      assertEquals("application/json+cameraPoses", filesDao.fetchOneById(fileId)!!.contentType)
+    }
+
+    @Test
+    fun `publishes OrganizationVideoUploadedEvent based on caller-supplied content type`() {
+      val multipartFile =
+          MockMultipartFile("file", "clip.bin", "application/octet-stream", ByteArray(1))
+
+      val fileId =
+          service.upload(organizationId, multipartFile, "caption", contentType = "video/mp4")
+
+      eventPublisher.assertEventPublished(OrganizationVideoUploadedEvent(fileId, organizationId))
+    }
+
+    @Test
+    fun `rejects unsupported content type when caller does not supply one`() {
+      val multipartFile =
+          MockMultipartFile("file", "poses.json", "application/octet-stream", ByteArray(1))
+
+      assertThrows<NotSupportedException> {
+        service.upload(organizationId, multipartFile, "caption")
+      }
     }
   }
 
