@@ -246,12 +246,16 @@ class SplatService(
   private fun deleteSplatRows(fileId: FileId, organizationId: OrganizationId) {
     val splatRecord = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
 
-    dslContext.transaction { _ ->
-      deleteAdditionalFiles(fileId)
+    val additionalFileIds = dslContext.transactionResult { _ ->
+      val unreferencedFileIds = deleteAdditionalFiles(fileId)
       dslContext.deleteFrom(SPLAT_ANNOTATIONS).where(SPLAT_ANNOTATIONS.FILE_ID.eq(fileId)).execute()
       dslContext.deleteFrom(BIRDNET_RESULTS).where(BIRDNET_RESULTS.FILE_ID.eq(fileId)).execute()
       dslContext.deleteFrom(SPLATS).where(SPLATS.FILE_ID.eq(fileId)).execute()
+
+      unreferencedFileIds
     }
+
+    additionalFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
 
     eventPublisher.publishEvent(
         SplatDeletedEvent(
@@ -674,8 +678,10 @@ class SplatService(
           // Not an error if there wasn't a job archive for the splat.
         }
 
-        deleteAdditionalFiles(event.fileId)
+        val additionalFileIds = deleteAdditionalFiles(event.fileId)
         splatsRecord.delete()
+
+        additionalFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
       }
     } catch (e: Exception) {
       log.error("Unable to delete splat for file ${event.fileId}", e)
