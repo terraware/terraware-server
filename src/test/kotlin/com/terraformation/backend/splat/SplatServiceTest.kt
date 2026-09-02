@@ -1509,6 +1509,40 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `does not delete replaced additional files if the generation request fails`() {
+      insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
+      val oldImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json")
+      insertOrganizationMediaFile(fileId = oldImuFileId)
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldImuFileId, type = "imu")
+      val newImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/new-imu.json")
+      insertOrganizationMediaFile(fileId = newImuFileId)
+
+      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } throws
+          RuntimeException("Request queue unavailable")
+
+      assertThrows<RuntimeException> {
+        service.generateOrganizationMediaSplat(
+            organizationId = organizationId,
+            fileId = orgFileId,
+            force = true,
+            runBirdnet = false,
+            additionalFiles = mapOf(newImuFileId to "imu"),
+        )
+      }
+
+      assertTableEquals(
+          SplatAdditionalFilesRecord(
+              fileId = oldImuFileId,
+              splatFileId = orgFileId,
+              type = "imu",
+          ),
+          "Additional file should be restored by the rollback",
+      )
+
+      eventPublisher.assertEventNotPublished(FileReferenceDeletedEvent(oldImuFileId))
+    }
+
+    @Test
     fun `does not delete an additional file that is still used by the splat`() {
       insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
       val imuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/imu.json")

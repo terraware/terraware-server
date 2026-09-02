@@ -435,7 +435,7 @@ class SplatService(
       SplatterRequestFileLocation(s3BucketName, birdnetKey)
     }
 
-    dslContext.transaction { _ ->
+    val replacedFileIds = dslContext.transactionResult { _ ->
       val rowsInserted =
           with(SPLATS) {
             dslContext
@@ -487,20 +487,26 @@ class SplatService(
       }
 
       if (rowsInserted == 1 || force) {
-        if (additionalFiles.isNotEmpty()) {
-          deleteAdditionalFiles(fileId, retainedFileIds = additionalFiles.keys)
+        val replacedFileIds =
+            if (additionalFiles.isNotEmpty()) {
+              val unreferencedFileIds =
+                  deleteAdditionalFiles(fileId, retainedFileIds = additionalFiles.keys)
 
-          with(SPLAT_ADDITIONAL_FILES) {
-            additionalFiles.forEach { (additionalFileId, type) ->
-              dslContext
-                  .insertInto(SPLAT_ADDITIONAL_FILES)
-                  .set(FILE_ID, additionalFileId)
-                  .set(SPLAT_FILE_ID, fileId)
-                  .set(TYPE, type)
-                  .execute()
+              with(SPLAT_ADDITIONAL_FILES) {
+                additionalFiles.forEach { (additionalFileId, type) ->
+                  dslContext
+                      .insertInto(SPLAT_ADDITIONAL_FILES)
+                      .set(FILE_ID, additionalFileId)
+                      .set(SPLAT_FILE_ID, fileId)
+                      .set(TYPE, type)
+                      .execute()
+                }
+              }
+
+              unreferencedFileIds
+            } else {
+              emptyList()
             }
-          }
-        }
 
         val requestMessage =
             SplatterRequestMessage(
@@ -529,12 +535,18 @@ class SplatService(
         log.info(
             "Requested splat generation for file $fileId${if (runBirdnet) " with BirdNet" else ""}"
         )
+
+        replacedFileIds
       } else {
         log.info(
             "Splat record already exists for file $fileId; ignoring additional generation request"
         )
+
+        emptyList()
       }
     }
+
+    replacedFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
   }
 
   /**
@@ -555,17 +567,20 @@ class SplatService(
           .lowercase()
 
   /**
-   * Removes a splat's additional files from the database and, unless they're still needed, from the
-   * file store. Additional files are uploaded as organization media, so their organization media
-   * rows are deleted too; otherwise they would keep the files alive in the file store.
+   * Removes a splat's additional files from the database. Additional files are uploaded as
+   * organization media, so their organization media rows are deleted too; otherwise they would keep
+   * the files alive in the file store.
    *
    * @param retainedFileIds Files that are about to be inserted as additional files of the same
    *   splat again. Their rows are still deleted, but the files themselves are left alone.
+   * @return The files that nothing refers to any more. The caller must publish
+   *   [FileReferenceDeletedEvent] for each of them, but only once its transaction has committed:
+   *   the handler deletes the files from the file store, which a rollback can't undo.
    */
   private fun deleteAdditionalFiles(
       splatFileId: FileId,
       retainedFileIds: Set<FileId> = emptySet(),
-  ) {
+  ): List<FileId> {
     val deletedFileIds =
         with(SPLAT_ADDITIONAL_FILES) {
           dslContext
@@ -582,9 +597,9 @@ class SplatService(
           .deleteFrom(ORGANIZATION_MEDIA_FILES)
           .where(ORGANIZATION_MEDIA_FILES.FILE_ID.`in`(unreferencedFileIds))
           .execute()
-
-      unreferencedFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
     }
+
+    return unreferencedFileIds
   }
 
   private fun listAdditionalFileLocations(fileId: FileId): List<SplatterRequestFileLocation> {
