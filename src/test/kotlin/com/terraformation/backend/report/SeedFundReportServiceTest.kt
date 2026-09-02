@@ -164,6 +164,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
         SpeciesStore(
             clock,
             dslContext,
+            publisher,
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,

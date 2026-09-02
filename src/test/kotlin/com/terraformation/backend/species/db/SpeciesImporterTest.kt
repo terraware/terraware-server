@@ -2,6 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UploadNotAwaitingActionException
@@ -39,6 +40,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.species.event.SpeciesImportedEvent
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -63,6 +65,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
   private val messages = Messages()
   private val scheduler: JobScheduler = mockk()
@@ -71,6 +74,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     SpeciesStore(
         clock,
         dslContext,
+        eventPublisher,
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,
@@ -349,6 +353,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     val newSpeciesId = speciesDao.findAll().map { it.id!! }.maxOf { it }
 
+    eventPublisher.assertExactEventsPublished(
+        listOf(SpeciesImportedEvent(alreadyExisted = false, speciesId = newSpeciesId))
+    )
+
     assertTableEquals(
         listOf(
             SpeciesRecord(
@@ -596,12 +604,14 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl,
         )
-    insertSpecies(
-        scientificName = "Existing name",
-        growthForms = setOf(GrowthForm.Shrub),
-        ecosystemTypes = setOf(EcosystemType.Mangroves),
-    )
-    insertSpecies(scientificName = "New name", initialScientificName = "Initial name")
+    val existingSpeciesId =
+        insertSpecies(
+            scientificName = "Existing name",
+            growthForms = setOf(GrowthForm.Shrub),
+            ecosystemTypes = setOf(EcosystemType.Mangroves),
+        )
+    val renamedSpeciesId =
+        insertSpecies(scientificName = "New name", initialScientificName = "Initial name")
 
     clock.instant = Instant.EPOCH + Duration.ofDays(1)
 
@@ -616,6 +626,13 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     assertTableEquals(expectedGrowthForms)
 
     assertStatus(UploadStatus.Completed)
+
+    eventPublisher.assertEventsPublished(
+        setOf(
+            SpeciesImportedEvent(alreadyExisted = true, speciesId = existingSpeciesId),
+            SpeciesImportedEvent(alreadyExisted = true, speciesId = renamedSpeciesId),
+        )
+    )
   }
 
   @Test
@@ -665,6 +682,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     assertTableEquals(SpeciesGrowthFormsRecord(speciesId1, GrowthForm.Shrub))
 
     assertStatus(UploadStatus.Completed)
+
+    eventPublisher.assertEventPublished(
+        SpeciesImportedEvent(alreadyExisted = false, speciesId = speciesId1)
+    )
   }
 
   @Test

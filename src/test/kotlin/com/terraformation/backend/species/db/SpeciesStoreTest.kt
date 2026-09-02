@@ -2,6 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -65,6 +66,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         SpeciesStore(
             clock,
             dslContext,
+            TestEventPublisher(),
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,

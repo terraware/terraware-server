@@ -254,6 +254,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
         SpeciesStore(
             clock,
             dslContext,
+            publisher,
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,

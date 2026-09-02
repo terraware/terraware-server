@@ -2,6 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -27,6 +28,7 @@ internal class SpeciesCheckerTest : DatabaseTest(), RunsAsDatabaseUser {
     SpeciesStore(
         clock,
         dslContext,
+        TestEventPublisher(),
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,

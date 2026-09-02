@@ -56,6 +56,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
   private val scheduler: JobScheduler = mockk()
   private val uploadService: UploadService = mockk()
@@ -70,7 +71,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         batchWithdrawalsDao,
         clock,
         dslContext,
-        TestEventPublisher(),
+        eventPublisher,
         facilitiesDao,
         IdentifierGenerator(clock, dslContext),
         parentStore,
@@ -86,6 +87,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     SpeciesStore(
         clock,
         dslContext,
+        eventPublisher,
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,

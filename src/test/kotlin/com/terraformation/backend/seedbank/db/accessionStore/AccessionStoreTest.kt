@@ -77,6 +77,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser 
         SpeciesStore(
             clock,
             dslContext,
+            publisher,
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,

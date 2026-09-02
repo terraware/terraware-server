@@ -18,6 +18,7 @@ import com.terraformation.backend.species.db.ProjectSpeciesStore
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
+import com.terraformation.backend.species.event.SpeciesImportedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.NewSpeciesModel
@@ -170,6 +171,13 @@ class SpeciesService(
             event.changedFrom.countryCode != event.changedTo.countryCode
     ) {
       projectSpeciesStore.recalculateNativities(event.projectId, autoAccept = true)
+    }
+  }
+
+  @EventListener
+  fun on(event: SpeciesImportedEvent) {
+    if (!event.alreadyExisted) {
+      projectSpeciesStore.resetNativities(event.speciesId)
     }
   }
 

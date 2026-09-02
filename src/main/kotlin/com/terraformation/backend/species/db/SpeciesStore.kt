@@ -41,6 +41,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
+import com.terraformation.backend.species.event.SpeciesImportedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.ExistingSpeciesProjectModel
 import com.terraformation.backend.species.model.NewSpeciesModel
@@ -52,6 +53,7 @@ import org.jooq.Field
 import org.jooq.TableField
 import org.jooq.TableRecord
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
@@ -59,6 +61,7 @@ import org.springframework.security.access.AccessDeniedException
 class SpeciesStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val speciesDao: SpeciesDao,
     private val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao,
     private val speciesGrowthFormsDao: SpeciesGrowthFormsDao,
@@ -611,10 +614,14 @@ class SpeciesStore(
       val existingIdByCurrentName = existingByCurrentName?.get(ID)
 
       if (existingIdByCurrentName != null) {
-        if (overwriteExisting || existingByCurrentName[DELETED_TIME] != null) {
+        val wasDeleted = existingByCurrentName[DELETED_TIME] != null
+        if (overwriteExisting || wasDeleted) {
           updateExisting(existingIdByCurrentName)
           removeCollidingSuggestedNames(model.organizationId, model.scientificName)
         }
+        eventPublisher.publishEvent(
+            SpeciesImportedEvent(alreadyExisted = !wasDeleted, existingIdByCurrentName)
+        )
         existingIdByCurrentName
       } else {
         val existingIdByInitialName =
@@ -665,11 +672,18 @@ class SpeciesStore(
           updateSuccessionalGroups(newSpeciesId, model.successionalGroups)
           removeCollidingSuggestedNames(model.organizationId, model.scientificName)
 
+          eventPublisher.publishEvent(
+              SpeciesImportedEvent(alreadyExisted = false, speciesId = newSpeciesId)
+          )
+
           newSpeciesId
         } else {
           if (overwriteExisting) {
             updateExisting(existingIdByInitialName)
           }
+          eventPublisher.publishEvent(
+              SpeciesImportedEvent(alreadyExisted = true, speciesId = existingIdByInitialName)
+          )
           existingIdByInitialName
         }
       }
