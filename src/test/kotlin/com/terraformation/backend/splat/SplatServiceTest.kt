@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.tables.records.SplatAddition
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatsRecord
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ADDITIONAL_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
@@ -513,6 +514,19 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `removes additional files from database and file store`() {
+      val additionalFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = fileId, fileId = additionalFileId, type = "imu")
+
+      service.deleteObservationSplat(observationId, fileId)
+
+      assertTableEmpty(SPLAT_ADDITIONAL_FILES)
+      assertTableEmpty(ORGANIZATION_MEDIA_FILES)
+
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(additionalFileId))
+    }
+
+    @Test
     fun `throws exception if splat does not exist for file`() {
       val fileWithoutSplat = insertFile()
       insertObservationMediaFile(fileId = fileWithoutSplat)
@@ -573,6 +587,21 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               videoUploadedTime = Instant.EPOCH,
           )
       )
+    }
+
+    @Test
+    fun `removes additional files from database and file store`() {
+      val additionalFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = orgFileId, fileId = additionalFileId, type = "imu")
+
+      service.deleteOrganizationSplat(organizationId, orgFileId)
+
+      assertTableEmpty(SPLAT_ADDITIONAL_FILES)
+      assertTableEquals(
+          OrganizationMediaFilesRecord(fileId = orgFileId, organizationId = organizationId)
+      )
+
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(additionalFileId))
     }
 
     @Test
@@ -1290,6 +1319,25 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       verify(exactly = 1) { fileStore.delete(jobArchiveUrl) }
 
       assertTableEmpty(SPLATS)
+    }
+
+    @Test
+    fun `deletes additional files when media file is deleted`() {
+      val url = URI("s3://bucket/file.sog")
+
+      every { fileStore.delete(any()) } just Runs
+
+      insertSplat(splatStorageUrl = url)
+      val additionalFileId = insertOrganizationMediaFile(fileId = insertFile())
+      insertSplatAdditionalFile(splatFileId = fileId, fileId = additionalFileId, type = "imu")
+
+      service.on(FileDeletionStartedEvent(fileId, "video/quicktime"))
+
+      assertTableEmpty(SPLATS)
+      assertTableEmpty(SPLAT_ADDITIONAL_FILES)
+      assertTableEmpty(ORGANIZATION_MEDIA_FILES)
+
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(additionalFileId))
     }
   }
 

@@ -247,6 +247,7 @@ class SplatService(
     val splatRecord = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
 
     dslContext.transaction { _ ->
+      deleteAdditionalFiles(fileId)
       dslContext.deleteFrom(SPLAT_ANNOTATIONS).where(SPLAT_ANNOTATIONS.FILE_ID.eq(fileId)).execute()
       dslContext.deleteFrom(BIRDNET_RESULTS).where(BIRDNET_RESULTS.FILE_ID.eq(fileId)).execute()
       dslContext.deleteFrom(SPLATS).where(SPLATS.FILE_ID.eq(fileId)).execute()
@@ -673,6 +674,7 @@ class SplatService(
           // Not an error if there wasn't a job archive for the splat.
         }
 
+        deleteAdditionalFiles(event.fileId)
         splatsRecord.delete()
       }
     } catch (e: Exception) {
