@@ -556,7 +556,8 @@ class SplatService(
 
   /**
    * Removes a splat's additional files from the database and, unless they're still needed, from the
-   * file store.
+   * file store. Additional files are uploaded as organization media, so their organization media
+   * rows are deleted too; otherwise they would keep the files alive in the file store.
    *
    * @param retainedFileIds Files that are about to be inserted as additional files of the same
    *   splat again. Their rows are still deleted, but the files themselves are left alone.
@@ -574,9 +575,16 @@ class SplatService(
               .fetch(FILE_ID.asNonNullable())
         }
 
-    deletedFileIds
-        .filterNot { it in retainedFileIds }
-        .forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
+    val unreferencedFileIds = deletedFileIds.filterNot { it in retainedFileIds }
+
+    if (unreferencedFileIds.isNotEmpty()) {
+      dslContext
+          .deleteFrom(ORGANIZATION_MEDIA_FILES)
+          .where(ORGANIZATION_MEDIA_FILES.FILE_ID.`in`(unreferencedFileIds))
+          .execute()
+
+      unreferencedFileIds.forEach { eventPublisher.publishEvent(FileReferenceDeletedEvent(it)) }
+    }
   }
 
   private fun listAdditionalFileLocations(fileId: FileId): List<SplatterRequestFileLocation> {

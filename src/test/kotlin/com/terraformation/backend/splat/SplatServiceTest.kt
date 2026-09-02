@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.records.BirdnetResultsRecord
+import com.terraformation.backend.db.default_schema.tables.records.OrganizationMediaFilesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAdditionalFilesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatsRecord
@@ -1468,8 +1469,10 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `replaces the stored additional file of a type`() {
       insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
       val oldImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json")
+      insertOrganizationMediaFile(fileId = oldImuFileId)
       insertSplatAdditionalFile(splatFileId = orgFileId, fileId = oldImuFileId, type = "imu")
       val newImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/new-imu.json")
+      insertOrganizationMediaFile(fileId = newImuFileId)
 
       val messageSlot = slot<SplatterRequestMessage>()
       every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
@@ -1495,6 +1498,13 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           "Request additional files",
       )
 
+      assertTableEquals(
+          listOf(
+              OrganizationMediaFilesRecord(fileId = orgFileId, organizationId = organizationId),
+              OrganizationMediaFilesRecord(fileId = newImuFileId, organizationId = organizationId),
+          )
+      )
+
       eventPublisher.assertEventPublished(FileReferenceDeletedEvent(oldImuFileId))
     }
 
@@ -1502,6 +1512,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `does not delete an additional file that is still used by the splat`() {
       insertSplat(fileId = orgFileId, assetStatus = AssetStatus.Ready)
       val imuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/imu.json")
+      insertOrganizationMediaFile(fileId = imuFileId)
       insertSplatAdditionalFile(splatFileId = orgFileId, fileId = imuFileId, type = "imu")
 
       every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
@@ -1520,6 +1531,13 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               fileId = imuFileId,
               splatFileId = orgFileId,
               type = "imu",
+          )
+      )
+
+      assertTableEquals(
+          listOf(
+              OrganizationMediaFilesRecord(fileId = orgFileId, organizationId = organizationId),
+              OrganizationMediaFilesRecord(fileId = imuFileId, organizationId = organizationId),
           )
       )
 
