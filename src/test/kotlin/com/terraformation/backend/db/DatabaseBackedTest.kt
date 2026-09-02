@@ -274,6 +274,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GR
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ADDITIONAL_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATION_MEDIA
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
@@ -3747,6 +3748,21 @@ abstract class DatabaseBackedTest {
           .set(SKY_COLOR, skyColor)
           .set(AVERAGE_CAMERA_HEIGHT, averageCameraHeight)
           .set(SPLAT_STORAGE_URL, splatStorageUrl)
+          .execute()
+    }
+  }
+
+  fun insertSplatAdditionalFile(
+      splatFileId: FileId = inserted.fileId,
+      fileId: FileId = inserted.fileId,
+      type: String = "frames",
+  ) {
+    with(SPLAT_ADDITIONAL_FILES) {
+      dslContext
+          .insertInto(SPLAT_ADDITIONAL_FILES)
+          .set(SPLAT_FILE_ID, splatFileId)
+          .set(FILE_ID, fileId)
+          .set(TYPE, type)
           .execute()
     }
   }
