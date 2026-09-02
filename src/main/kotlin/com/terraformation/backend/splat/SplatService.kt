@@ -548,9 +548,7 @@ class SplatService(
           SPLAT_ADDITIONAL_FILES.SPLAT_FILE_ID.eq(splatFileId),
       )
 
-  /**
-   * Attaches [additionalFiles] to a splat. These are immutable for the splat's lifetime.
-   */
+  /** Attaches [additionalFiles] to a splat. These are immutable for the splat's lifetime. */
   private fun insertAdditionalFiles(
       splatFileId: FileId,
       additionalFiles: Map<FileId, SplatAdditionalFileType>,
