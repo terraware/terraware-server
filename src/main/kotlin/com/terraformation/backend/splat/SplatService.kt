@@ -568,8 +568,7 @@ class SplatService(
 
   /**
    * Removes a splat's additional files from the database. Additional files are uploaded as
-   * organization media, so their organization media rows are deleted too; otherwise they would keep
-   * the files alive in the file store.
+   * organization media, so their organization media rows are deleted too.
    *
    * @param retainedFileIds Files that are about to be inserted as additional files of the same
    *   splat again. Their rows are still deleted, but the files themselves are left alone.
