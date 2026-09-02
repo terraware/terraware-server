@@ -205,3 +205,9 @@ data class SplatGenerationParams(
     val restartAt: String? = null,
     val stepArgs: Map<String, List<String>> = emptyMap(),
 )
+
+/**
+ * Identifies the role a non-video file plays in a splat generation request, e.g., `imu` or
+ * `session-meta`. Derived from the file's content type suffix and passed through to splatter.
+ */
+typealias SplatAdditionalFileType = String

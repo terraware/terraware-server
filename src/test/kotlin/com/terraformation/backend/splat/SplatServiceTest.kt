@@ -2053,8 +2053,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           insertFile(
               contentType = "application/json+sessionMeta",
               fileBatchId = fileBatchId,
-              fileName = "sessionMeta.json",
-              storageUrl = "s3://bucket/sessionMeta.json",
+              fileName = "capture-3.json",
+              storageUrl = "s3://bucket/capture-3.json",
           )
 
       val messageSlot = slot<SplatterRequestMessage>()
@@ -2108,7 +2108,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               SplatterRequestFileLocation("bucket", "imu.json", "imu"),
               SplatterRequestFileLocation(
                   "bucket",
-                  "sessionMeta.json",
+                  "capture-3.json",
                   "session-meta",
               ),
           ),
@@ -2260,50 +2260,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(SplatterRequestFileLocation("bucket", "additional.json", expectedType)),
           messageSlot.captured.additionalFiles,
           "Request additional files",
-      )
-    }
-
-    @Test
-    fun `derives additional file types from content types rather than file names`() {
-      val fileBatchId = insertFileBatch()
-      val videoFileId =
-          insertFile(
-              contentType = "video/mp4",
-              fileBatchId = fileBatchId,
-              fileName = "video.mp4",
-              storageUrl = "s3://bucket/video.mp4",
-          )
-      insertOrganizationMediaFile(fileId = videoFileId)
-      val imuFileId =
-          insertFile(
-              contentType = "application/json+imu",
-              fileBatchId = fileBatchId,
-              fileName = "capture/frames.jsonl",
-              storageUrl = "s3://bucket/frames.jsonl",
-          )
-      val framesFileId =
-          insertFile(
-              contentType = "application/json+frames",
-              fileBatchId = fileBatchId,
-              fileName = "C:\\fakepath\\imu.json",
-              storageUrl = "s3://bucket/imu.json",
-          )
-
-      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
-
-      assertTableEquals(
-          listOf(
-              SplatAdditionalFilesRecord(
-                  fileId = imuFileId,
-                  splatFileId = videoFileId,
-                  type = "imu",
-              ),
-              SplatAdditionalFilesRecord(
-                  fileId = framesFileId,
-                  splatFileId = videoFileId,
-                  type = "frames",
-              ),
-          )
       )
     }
 

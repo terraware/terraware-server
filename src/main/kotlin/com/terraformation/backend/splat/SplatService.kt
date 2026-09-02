@@ -160,7 +160,7 @@ class SplatService(
       force: Boolean = false,
       params: SplatGenerationParams = SplatGenerationParams(),
       runBirdnet: Boolean = true,
-      additionalFiles: Map<FileId, String> = emptyMap(),
+      additionalFiles: Map<FileId, SplatAdditionalFileType> = emptyMap(),
   ) {
     ensureOrganizationMediaFile(organizationId, fileId)
 
@@ -409,7 +409,7 @@ class SplatService(
       force: Boolean = false,
       params: SplatGenerationParams,
       runBirdnet: Boolean = false,
-      additionalFiles: Map<FileId, String> = emptyMap(),
+      additionalFiles: Map<FileId, SplatAdditionalFileType> = emptyMap(),
   ) {
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
@@ -536,7 +536,15 @@ class SplatService(
     }
   }
 
-  private fun splatAdditionalFileType(fileContentType: String): String =
+  /**
+   * Returns the additional file type from a content type's structured syntax suffix, or an empty
+   * string if it doesn't have one. For example, `application/json+sessionMeta` becomes
+   * `session-meta`.
+   *
+   * Suffixes may be camel case; the regexes convert them to hyphen-delimited lowercase. Note that
+   * multiple sequential uppercase letters are kept together intentionally.
+   */
+  private fun splatAdditionalFileType(fileContentType: String): SplatAdditionalFileType =
       fileContentType
           .substringBefore(';')
           .trim()
