@@ -1512,14 +1512,14 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           fileId = orgFileId,
           force = true,
           runBirdnet = false,
-          additionalFiles = mapOf(imuFileId to "frames"),
+          additionalFiles = mapOf(imuFileId to "imu"),
       )
 
       assertTableEquals(
           SplatAdditionalFilesRecord(
               fileId = imuFileId,
               splatFileId = orgFileId,
-              type = "frames",
+              type = "imu",
           )
       )
 
