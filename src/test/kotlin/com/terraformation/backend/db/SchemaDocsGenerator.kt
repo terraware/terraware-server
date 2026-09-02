@@ -357,7 +357,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "species_problem_types" to setOf(ALL, SPECIES),
                   "species_problems" to setOf(ALL, SPECIES),
                   "species_successional_groups" to setOf(ALL, SPECIES),
-                  "splat_additional_file_types" to setOf(ALL),
                   "splat_additional_files" to setOf(ALL),
                   "splat_annotation_media" to setOf(ALL),
                   "splat_annotations" to setOf(ALL),

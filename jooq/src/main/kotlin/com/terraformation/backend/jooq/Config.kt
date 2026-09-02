@@ -249,11 +249,6 @@ val ENUM_TABLES =
                     enumName = "SpeciesNativity",
                 ),
                 EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
-                EnumTable(
-                    "splat_additional_file_types",
-                    listOf("splat_additional_files\\.type_id"),
-                    isLocalizable = false,
-                ),
                 EnumTable("successional_groups"),
                 EnumTable(
                     "timeseries_types",
