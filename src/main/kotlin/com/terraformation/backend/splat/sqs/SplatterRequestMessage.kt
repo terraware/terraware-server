@@ -1,12 +1,11 @@
 package com.terraformation.backend.splat.sqs
 
-import com.terraformation.backend.db.default_schema.SplatAdditionalFileType
 import java.net.URI
 
 data class SplatterRequestFileLocation(
     val bucket: String,
     val key: String,
-    val type: SplatAdditionalFileType? = null,
+    val type: String? = null,
 )
 
 data class SplatterRequestMessage(

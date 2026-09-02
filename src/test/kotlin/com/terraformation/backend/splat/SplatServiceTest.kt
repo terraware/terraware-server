@@ -15,7 +15,6 @@ import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.default_schema.SplatAdditionalFileType
 import com.terraformation.backend.db.default_schema.tables.records.BirdnetResultsRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAdditionalFilesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
@@ -57,6 +56,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -1434,12 +1435,12 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertSplatAdditionalFile(
           splatFileId = orgFileId,
           fileId = insertFile(storageUrl = "s3://bucket/frames.zip"),
-          type = SplatAdditionalFileType.Frames,
+          type = "frames",
       )
       insertSplatAdditionalFile(
           splatFileId = orgFileId,
           fileId = insertFile(storageUrl = "s3://bucket/imu.json"),
-          type = SplatAdditionalFileType.Imu,
+          type = "imu",
       )
 
       val messageSlot = slot<SplatterRequestMessage>()
@@ -1454,8 +1455,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(
-              SplatterRequestFileLocation("bucket", "frames.zip", SplatAdditionalFileType.Frames),
-              SplatterRequestFileLocation("bucket", "imu.json", SplatAdditionalFileType.Imu),
+              SplatterRequestFileLocation("bucket", "frames.zip", "frames"),
+              SplatterRequestFileLocation("bucket", "imu.json", "imu"),
           ),
           messageSlot.captured.additionalFiles,
           "Request additional files",
@@ -1468,7 +1469,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertSplatAdditionalFile(
           splatFileId = orgFileId,
           fileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/old-imu.json"),
-          type = SplatAdditionalFileType.Imu,
+          type = "imu",
       )
       val newImuFileId = insertFile(fileName = "imu.json", storageUrl = "s3://bucket/new-imu.json")
 
@@ -1480,20 +1481,18 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           fileId = orgFileId,
           force = true,
           runBirdnet = false,
-          additionalFiles = mapOf(newImuFileId to SplatAdditionalFileType.Imu),
+          additionalFiles = mapOf(newImuFileId to "imu"),
       )
 
       assertTableEquals(
           SplatAdditionalFilesRecord(
               fileId = newImuFileId,
               splatFileId = orgFileId,
-              typeId = SplatAdditionalFileType.Imu,
+              type = "imu",
           )
       )
       assertEquals(
-          listOf(
-              SplatterRequestFileLocation("bucket", "new-imu.json", SplatAdditionalFileType.Imu)
-          ),
+          listOf(SplatterRequestFileLocation("bucket", "new-imu.json", "imu")),
           messageSlot.captured.additionalFiles,
           "Request additional files",
       )
@@ -2038,24 +2037,24 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertOrganizationMediaFile(fileId = videoFileId)
       val framesFileId =
           insertFile(
-              contentType = "application/json",
+              contentType = "application/json+frames",
               fileBatchId = fileBatchId,
               fileName = "frames.jsonl",
               storageUrl = "s3://bucket/frames.jsonl",
           )
       val imuFileId =
           insertFile(
-              contentType = "application/json",
+              contentType = "application/json+imu",
               fileBatchId = fileBatchId,
               fileName = "imu.json",
               storageUrl = "s3://bucket/imu.json",
           )
       val sessionMetaFileId =
           insertFile(
-              contentType = "application/json",
+              contentType = "application/json+sessionMeta",
               fileBatchId = fileBatchId,
-              fileName = "session-meta.json",
-              storageUrl = "s3://bucket/session-meta.json",
+              fileName = "sessionMeta.json",
+              storageUrl = "s3://bucket/sessionMeta.json",
           )
 
       val messageSlot = slot<SplatterRequestMessage>()
@@ -2080,17 +2079,17 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               SplatAdditionalFilesRecord(
                   fileId = framesFileId,
                   splatFileId = videoFileId,
-                  typeId = SplatAdditionalFileType.Frames,
+                  type = "frames",
               ),
               SplatAdditionalFilesRecord(
                   fileId = imuFileId,
                   splatFileId = videoFileId,
-                  typeId = SplatAdditionalFileType.Imu,
+                  type = "imu",
               ),
               SplatAdditionalFilesRecord(
                   fileId = sessionMetaFileId,
                   splatFileId = videoFileId,
-                  typeId = SplatAdditionalFileType.SessionMeta,
+                  type = "session-meta",
               ),
           )
       )
@@ -2104,13 +2103,13 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               SplatterRequestFileLocation(
                   "bucket",
                   "frames.jsonl",
-                  SplatAdditionalFileType.Frames,
+                  "frames",
               ),
-              SplatterRequestFileLocation("bucket", "imu.json", SplatAdditionalFileType.Imu),
+              SplatterRequestFileLocation("bucket", "imu.json", "imu"),
               SplatterRequestFileLocation(
                   "bucket",
-                  "session-meta.json",
-                  SplatAdditionalFileType.SessionMeta,
+                  "sessionMeta.json",
+                  "session-meta",
               ),
           ),
           messageSlot.captured.additionalFiles,
@@ -2119,7 +2118,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `ignores batch files whose names are not additional file types`() {
+    fun `ignores batch files whose content types have no additional file type suffix`() {
       val fileBatchId = insertFileBatch()
       val videoFileId =
           insertFile(
@@ -2130,6 +2129,16 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertOrganizationMediaFile(fileId = videoFileId)
       insertFile(contentType = "text/plain", fileBatchId = fileBatchId, fileName = "notes.txt")
+      insertFile(
+          contentType = "application/json+",
+          fileBatchId = fileBatchId,
+          fileName = "imu.json",
+      )
+      insertFile(
+          contentType = "text/plain; charset=utf-8",
+          fileBatchId = fileBatchId,
+          fileName = "readme.txt",
+      )
 
       val messageSlot = slot<SplatterRequestMessage>()
       every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
@@ -2157,20 +2166,20 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertOrganizationMediaFile(fileId = videoFileId)
       insertFile(
-          contentType = "application/json",
+          contentType = "application/json+unknown",
           fileBatchId = fileBatchId,
           fileName = "imu.json",
           storageUrl = "s3://bucket/imu.json",
       )
       insertFile(
-          contentType = "text/csv",
+          contentType = "text/csv+unknown",
           fileBatchId = fileBatchId,
           fileName = "imu.csv",
           storageUrl = "s3://bucket/imu.csv",
       )
       val framesFileId =
           insertFile(
-              contentType = "application/json",
+              contentType = "application/json+frames",
               fileBatchId = fileBatchId,
               fileName = "frames.jsonl",
               storageUrl = "s3://bucket/frames.jsonl",
@@ -2186,7 +2195,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           SplatAdditionalFilesRecord(
               fileId = framesFileId,
               splatFileId = videoFileId,
-              typeId = SplatAdditionalFileType.Frames,
+              type = "frames",
           )
       )
       assertEquals(
@@ -2194,7 +2203,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               SplatterRequestFileLocation(
                   "bucket",
                   "frames.jsonl",
-                  SplatAdditionalFileType.Frames,
+                  "frames",
               )
           ),
           messageSlot.captured.additionalFiles,
@@ -2202,8 +2211,60 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
+    @CsvSource(
+        "application/json+imu,imu",
+        "application/json+sessionMeta,session-meta",
+        "application/json+IMUData,imu-data",
+        "application/json+cameraIMU,camera-imu",
+        "application/json+GPS,gps",
+        "application/json+already-kebab,already-kebab",
+        "application/vnd.custom+json+imu,imu",
+        "application/json+imu; charset=utf-8,imu",
+        "application/json+sessionMeta ;charset=utf-8,session-meta",
+    )
+    @ParameterizedTest(name = "{0} -> {1}")
+    fun `derives additional file type from content type suffix`(
+        contentType: String,
+        expectedType: String,
+    ) {
+      val fileBatchId = insertFileBatch()
+      val videoFileId =
+          insertFile(
+              contentType = "video/mp4",
+              fileBatchId = fileBatchId,
+              fileName = "video.mp4",
+              storageUrl = "s3://bucket/video.mp4",
+          )
+      insertOrganizationMediaFile(fileId = videoFileId)
+      val additionalFileId =
+          insertFile(
+              contentType = contentType,
+              fileBatchId = fileBatchId,
+              fileName = "additional.json",
+              storageUrl = "s3://bucket/additional.json",
+          )
+
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      assertTableEquals(
+          SplatAdditionalFilesRecord(
+              fileId = additionalFileId,
+              splatFileId = videoFileId,
+              type = expectedType,
+          )
+      )
+      assertEquals(
+          listOf(SplatterRequestFileLocation("bucket", "additional.json", expectedType)),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
+      )
+    }
+
     @Test
-    fun `detects additional file types in names with directory components`() {
+    fun `derives additional file types from content types rather than file names`() {
       val fileBatchId = insertFileBatch()
       val videoFileId =
           insertFile(
@@ -2215,21 +2276,18 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertOrganizationMediaFile(fileId = videoFileId)
       val imuFileId =
           insertFile(
-              contentType = "application/json",
-              fileBatchId = fileBatchId,
-              fileName = "C:\\fakepath\\imu.json",
-              storageUrl = "s3://bucket/imu.json",
-          )
-      val framesFileId =
-          insertFile(
-              contentType = "application/json",
+              contentType = "application/json+imu",
               fileBatchId = fileBatchId,
               fileName = "capture/frames.jsonl",
               storageUrl = "s3://bucket/frames.jsonl",
           )
-
-      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
-          mockk(relaxed = true)
+      val framesFileId =
+          insertFile(
+              contentType = "application/json+frames",
+              fileBatchId = fileBatchId,
+              fileName = "C:\\fakepath\\imu.json",
+              storageUrl = "s3://bucket/imu.json",
+          )
 
       service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
@@ -2238,14 +2296,52 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               SplatAdditionalFilesRecord(
                   fileId = imuFileId,
                   splatFileId = videoFileId,
-                  typeId = SplatAdditionalFileType.Imu,
+                  type = "imu",
               ),
               SplatAdditionalFilesRecord(
                   fileId = framesFileId,
                   splatFileId = videoFileId,
-                  typeId = SplatAdditionalFileType.Frames,
+                  type = "frames",
               ),
           )
+      )
+    }
+
+    @Test
+    fun `ignores batch files whose content types normalize to the same type`() {
+      val fileBatchId = insertFileBatch()
+      val videoFileId =
+          insertFile(
+              contentType = "video/mp4",
+              fileBatchId = fileBatchId,
+              fileName = "video.mp4",
+              storageUrl = "s3://bucket/video.mp4",
+          )
+      insertOrganizationMediaFile(fileId = videoFileId)
+      insertFile(
+          contentType = "application/json+sessionMeta",
+          fileBatchId = fileBatchId,
+          fileName = "sessionMeta.json",
+          storageUrl = "s3://bucket/sessionMeta.json",
+      )
+      insertFile(
+          contentType = "application/json+session-meta",
+          fileBatchId = fileBatchId,
+          fileName = "session-meta.json",
+          storageUrl = "s3://bucket/session-meta.json",
+      )
+
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
+      assertTableEmpty(SPLAT_ADDITIONAL_FILES)
+      assertEquals(
+          emptyList<SplatterRequestFileLocation>(),
+          messageSlot.captured.additionalFiles,
+          "Request additional files",
       )
     }
 

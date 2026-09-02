@@ -170,7 +170,6 @@ import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
-import com.terraformation.backend.db.default_schema.SplatAdditionalFileType
 import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
@@ -3756,14 +3755,14 @@ abstract class DatabaseBackedTest {
   fun insertSplatAdditionalFile(
       splatFileId: FileId = inserted.fileId,
       fileId: FileId = inserted.fileId,
-      type: SplatAdditionalFileType = SplatAdditionalFileType.Frames,
+      type: String = "frames",
   ) {
     with(SPLAT_ADDITIONAL_FILES) {
       dslContext
           .insertInto(SPLAT_ADDITIONAL_FILES)
           .set(SPLAT_FILE_ID, splatFileId)
           .set(FILE_ID, fileId)
-          .set(TYPE_ID, type)
+          .set(TYPE, type)
           .execute()
     }
   }
