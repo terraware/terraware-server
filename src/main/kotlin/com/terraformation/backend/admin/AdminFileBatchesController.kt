@@ -1,10 +1,10 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.OrganizationMediaService
@@ -26,13 +26,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminFileBatchesController(
     private val fileService: FileService,
     private val organizationMediaService: OrganizationMediaService,
-    private val organizationsDao: OrganizationsDao,
+    private val organizationStore: OrganizationStore,
 ) {
   private val log = perClassLogger()
 
   @GetMapping
   fun fileBatchesHome(model: Model): String {
-    model.addAttribute("organizations", organizationsDao.findAll().sortedBy { it.id })
+    model.addAttribute("organizations", organizationStore.fetchAll().sortedBy { it.id })
     model.addAttribute("fileBatchTypes", FileBatchType.entries)
 
     return "/admin/fileBatches"
