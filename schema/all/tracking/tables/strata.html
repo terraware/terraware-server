@@ -156,6 +156,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="stratum_species_targets.stratum_id references strata.id via stratum_species_targets_stratum_id_fkey"><a href='stratum_species_targets.html'>stratum_species_targets</a><span class='relatedKey'>.stratum_id</span></td>
+                                                <td class="constraint detail">stratum_species_targets_stratum_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="stratum_t0_temp_densities.stratum_id references strata.id via stratum_t0_temp_densities_stratum_id_fkey"><a href='stratum_t0_temp_densities.html'>stratum_t0_temp_densities</a><span class='relatedKey'>.stratum_id</span></td>
                                                 <td class="constraint detail">stratum_t0_temp_densities_stratum_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -182,6 +187,11 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="stratum_species_targets.[planting_site_id, stratum_id] references strata.[planting_site_id, id] via stratum_must_be_in_site"><a href='stratum_species_targets.html'>stratum_species_targets</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">stratum_must_be_in_site</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
                                             <tr>
                                                 <td title="substrata.[planting_site_id, stratum_id] references strata.[planting_site_id, id] via substrata_planting_site_id_stratum_id_fkey"><a href='substrata.html'>substrata</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">substrata_planting_site_id_stratum_id_fkey</td>
@@ -415,7 +425,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="target_planting_density">target_planting_density</span></td>
+                                    <td><span id="initial_planting_density">initial_planting_density</span></td>
                                     <td>numeric</td>
                                     <td>0</td>
                                     <td title=''></td>
@@ -429,7 +439,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Number of plants per hectare that should be planted in the stratum initially.</p></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="boundary_modified_by">boundary_modified_by</span></td>
@@ -486,6 +496,23 @@
                                         </table>
                                     </td>
                                     <td><p>Stratum identifier that doesn&rsquo;t change even if the stratum is renamed or edited. Defaults to the stratum name.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="target_plant_density">target_plant_density</span></td>
+                                    <td>numeric</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Number of plants per hectare that the stratum should have after planting is fully completed. This may be less than the initial planting density to account for seedlings not surviving.</p></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -570,16 +597,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>target_plant_density_positive</td>
+                                    <td>(target_plant_density &gt; (0)::numeric)</td>
+                                </tr>
+                                <tr>
                                     <td>area_positive</td>
                                     <td>(area_ha &gt; (0)::numeric)</td>
                                 </tr>
                                 <tr>
-                                    <td>positive_target_density</td>
-                                    <td>(target_planting_density &gt; (0)::numeric)</td>
-                                </tr>
-                                <tr>
                                     <td>must_have_permanent_clusters</td>
                                     <td>(num_permanent_plots &gt; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>positive_target_density</td>
+                                    <td>(initial_planting_density &gt; (0)::numeric)</td>
                                 </tr>
                                 <tr>
                                     <td>no_negative_temporary_plots</td>

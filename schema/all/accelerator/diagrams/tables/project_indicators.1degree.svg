@@ -372,16 +372,16 @@
 <text text-anchor="start" x="738" y="-270.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="583,-240 583,-262 777,-262 777,-240 583,-240"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="588" y="-257"/>
-<text text-anchor="start" x="615" y="-248.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
+<text text-anchor="start" x="613" y="-248.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
 <polygon fill="none" stroke="black" points="583,-218 583,-240 777,-240 777,-218 583,-218"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="588" y="-235"/>
-<text text-anchor="start" x="615" y="-226.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_indicator_id</text>
+<text text-anchor="start" x="613" y="-226.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_indicator_id</text>
 <polygon fill="none" stroke="black" points="583,-196 583,-218 777,-218 777,-196 583,-196"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="588" y="-213"/>
-<text text-anchor="start" x="615" y="-204.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="613" y="-204.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="583,-174 583,-196 777,-196 777,-174 583,-174"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="588" y="-191"/>
-<text text-anchor="start" x="615" y="-182.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
+<text text-anchor="start" x="613" y="-182.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
 <polygon fill="none" stroke="black" points="583,-156 583,-174 777,-174 777,-156 583,-156"/>
 <text text-anchor="start" x="586" y="-162.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="583,-138 583,-156 678,-156 678,-138 583,-138"/>

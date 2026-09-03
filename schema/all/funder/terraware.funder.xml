@@ -381,6 +381,7 @@
             <parent column="id" foreignKey="published_report_auto_calculated_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_indicator_statuses"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="supporting_document_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
          <primaryKey column="auto_calculated_indicator_id" sequenceNumberInPK="2"/>
          <index name="published_report_auto_calculated_indicators_pkey" unique="true">
@@ -416,6 +417,7 @@
             <parent column="id" foreignKey="published_report_common_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_indicator_statuses"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="supporting_document_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
          <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
          <index name="published_report_common_indicators_pkey" unique="true">
@@ -454,6 +456,7 @@
             <parent column="id" foreignKey="published_report_project_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_indicator_statuses"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="supporting_document_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
          <primaryKey column="project_indicator_id" sequenceNumberInPK="2"/>
          <index name="published_report_project_indicators_pkey" unique="true">

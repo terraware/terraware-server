@@ -70,6 +70,10 @@
       <table name="external_dataset_types" remarks="Types of external data sets that the system can pull information from." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="external_dataset_type_id" foreignKey="external_dataset_imports_external_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_imports"/>
+            <child column="calculated_nativity_dataset_type_id" foreignKey="project_species_calculated_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="pending_nativity_dataset_type_id" foreignKey="project_species_pending_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="common_name_dataset_type_id" foreignKey="species_common_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <child column="family_name_dataset_type_id" foreignKey="species_family_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -226,6 +230,7 @@
       <table name="organizations" remarks="Top-level information about organizations." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
+            <child column="organization_id" foreignKey="project_species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_species"/>
             <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
             <child column="organization_id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="draft_planting_sites"/>
             <child column="organization_id" foreignKey="monitoring_plots_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
@@ -271,10 +276,55 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="project_species" remarks="Information about species in the context of specific projects, if applicable." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="true" remarks="If the information about this species only applies to one of an organization's projects, the project ID. Null if the organization has no projects (in which case we treat the organization as a &quot;project&quot;)." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="calculated_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_calculated_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="calculated_nativity_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_calculated_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="calculated_nativity_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="overridden_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_overridden_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="overridden_justification" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="overridden_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="overridden_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="pending_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_pending_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pending_nativity_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="pending_nativity_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_pending_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <index name="project_species_organization_id_project_id_species_id_idx" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="project_species_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+         <index name="project_species_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+         <checkConstraint constraint="((((calculated_nativity_id = 4) OR (calculated_nativity_id IS NULL)) AND (calculated_nativity_dataset_date IS NULL)) OR (calculated_nativity_dataset_date IS NOT NULL))" name="known_nativity_has_dataset"/>
+         <checkConstraint constraint="((((pending_nativity_id = 4) OR (pending_nativity_id IS NULL)) AND (pending_nativity_dataset_date IS NULL)) OR (pending_nativity_dataset_date IS NOT NULL))" name="known_pending_nativity_has_dataset"/>
+         <checkConstraint constraint="((calculated_nativity_dataset_date IS NULL) = (calculated_nativity_dataset_type_id IS NULL))" name="nativity_dataset_has_both_values"/>
+         <checkConstraint constraint="((pending_nativity_dataset_date IS NULL) = (pending_nativity_dataset_type_id IS NULL))" name="pending_nativity_dataset_has_both_values"/>
+      </table>
       <table name="species" remarks="Per-organization information about species." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="participant_project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
             <child column="species_id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="species_id" foreignKey="project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_species"/>
             <child column="species_id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_ecosystem_types"/>
             <child column="species_id" foreignKey="species_growth_forms_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_growth_forms"/>
             <child column="species_id" foreignKey="species_plant_material_sourcing_methods_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_plant_material_sourcing_methods"/>
@@ -290,11 +340,13 @@
             <child column="species_id" foreignKey="planting_season_allocated_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_allocated_species"/>
             <child column="species_id" foreignKey="planting_season_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_species_targets"/>
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
+            <child column="species_id" foreignKey="planting_site_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_species_targets"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="species_id" foreignKey="plot_t0_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_densities"/>
             <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
             <child column="species_id" foreignKey="scheduled_planting_date_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="scheduled_planting_date_species"/>
             <child column="species_id" foreignKey="stratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_populations"/>
+            <child column="species_id" foreignKey="stratum_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_species_targets"/>
             <child column="species_id" foreignKey="stratum_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_t0_temp_densities"/>
             <child column="species_id" foreignKey="substratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_populations"/>
          </column>
@@ -329,6 +381,14 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="wood_density_level_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="species_wood_density_level_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wood_density_levels"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="common_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_common_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="common_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="family_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_family_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="family_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey1" unique="true">
             <column ascending="true" name="id"/>
@@ -344,6 +404,10 @@
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="scientific_name"/>
          </index>
+         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) = (common_name_dataset_date IS NULL))" name="common_name_source_has_both_values"/>
+         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) OR (common_name IS NOT NULL))" name="common_name_source_has_name"/>
+         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) = (family_name_dataset_date IS NULL))" name="family_name_source_has_both_values"/>
+         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) OR (family_name IS NOT NULL))" name="family_name_source_requires_name"/>
          <checkConstraint constraint="(common_name !~ similar_to_escape(' *'::text))" name="species_common_name_check"/>
          <checkConstraint constraint="(family_name !~ similar_to_escape(' *'::text))" name="species_family_name_check"/>
       </table>
@@ -389,6 +453,9 @@
       <table name="species_nativities" remarks="(Enum) Native/invasive/introduced values for a species in a given region." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="species_nativity_id" foreignKey="griis_taxa_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="griis_taxa"/>
+            <child column="calculated_nativity_id" foreignKey="project_species_calculated_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="overridden_nativity_id" foreignKey="project_species_overridden_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="pending_nativity_id" foreignKey="project_species_pending_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
             <child column="species_nativity_id" foreignKey="wcvp_distributions_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wcvp_distributions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

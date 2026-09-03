@@ -135,6 +135,26 @@
                                                 <td class="constraint detail">external_dataset_imports_external_dataset_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="project_species.calculated_nativity_dataset_type_id references external_dataset_types.id via project_species_calculated_nativity_dataset_type_id_fkey"><a href='project_species.html'>project_species</a><span class='relatedKey'>.calculated_nativity_dataset_type_id</span></td>
+                                                <td class="constraint detail">project_species_calculated_nativity_dataset_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="project_species.pending_nativity_dataset_type_id references external_dataset_types.id via project_species_pending_nativity_dataset_type_id_fkey"><a href='project_species.html'>project_species</a><span class='relatedKey'>.pending_nativity_dataset_type_id</span></td>
+                                                <td class="constraint detail">project_species_pending_nativity_dataset_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="species.common_name_dataset_type_id references external_dataset_types.id via species_common_name_dataset_type_id_fkey"><a href='species.html'>species</a><span class='relatedKey'>.common_name_dataset_type_id</span></td>
+                                                <td class="constraint detail">species_common_name_dataset_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="species.family_name_dataset_type_id references external_dataset_types.id via species_family_name_dataset_type_id_fkey"><a href='species.html'>species</a><span class='relatedKey'>.family_name_dataset_type_id</span></td>
+                                                <td class="constraint detail">species_family_name_dataset_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -214,11 +234,16 @@
                                 <h5>Close relationships within degrees of separation</h5>
                                 <ul class="nav nav-tabs pull-left ui-sortable-handle">
                                     <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/external_dataset_types.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        
+                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/external_dataset_types.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
                             </div>

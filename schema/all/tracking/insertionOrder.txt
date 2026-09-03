@@ -23,14 +23,15 @@ planting_sites
 strata
 substrata
 monitoring_plots
+deliveries
 stratum_histories
 substratum_histories
 monitoring_plot_histories
 observation_plots
 observation_biomass_details
 observation_biomass_species
-deliveries
 observation_biomass_quadrat_details
+planting_site_species_targets
 planting_site_survival_rate_calculations
 simplified_planting_site_histories
 simplified_planting_sites
@@ -67,5 +68,6 @@ draft_planting_sites
 observation_media_files
 recorded_plants
 recorded_trees
+stratum_species_targets
 observation_biomass_quadrat_species
 plantings

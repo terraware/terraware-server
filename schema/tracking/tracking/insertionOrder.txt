@@ -25,12 +25,13 @@ scheduled_planting_dates
 monitoring_plots
 substratum_histories
 planting_date_requests
+deliveries
 monitoring_plot_histories
 observation_plots
 observation_biomass_details
 observation_biomass_species
-deliveries
 observation_biomass_quadrat_details
+planting_site_species_targets
 planting_season_allocated_species
 planting_site_notifications
 planting_site_populations
@@ -65,6 +66,7 @@ observation_plot_results
 observed_plot_coordinates
 observation_media_files
 recorded_plants
+stratum_species_targets
 recorded_trees
 plantings
 observation_biomass_quadrat_species

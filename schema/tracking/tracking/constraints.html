@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">140 Foreign Key Constraints</h3>
+                            <h3 class="box-title">146 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -704,6 +704,90 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>species_must_be_targeted_to_site</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/stratum_species_targets.html'>stratum_species_targets</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/stratum_species_targets.html'>stratum_species_targets</a><span>.species_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_site_species_targets.html'>planting_site_species_targets</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/planting_site_species_targets.html'>planting_site_species_targets</a><span>.species_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>stratum_species_targets_planting_site_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/stratum_species_targets.html'>stratum_species_targets</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>stratum_species_targets_stratum_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/stratum_species_targets.html'>stratum_species_targets</a><span>.stratum_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/strata.html'>strata</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>stratum_must_be_in_site</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/stratum_species_targets.html'>stratum_species_targets</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/stratum_species_targets.html'>stratum_species_targets</a><span>.stratum_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/strata.html'>strata</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/strata.html'>strata</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>observation_biomass_quadrat_species_monitoring_plot_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -1092,6 +1176,24 @@
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>deliveries_reassigned_from_delivery_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/deliveries.html'>deliveries</a><span>.reassigned_from_delivery_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/deliveries.html'>deliveries</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>observation_biomass_quadrat_details_observation_id_fkey</td>
@@ -1946,78 +2048,18 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>observed_plot_coordinates_position_id_fkey</td>
+                                        <td>planting_site_species_targets_planting_site_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.position_id</span></td>
+                                                    <td><a href='tables/planting_site_species_targets.html'>planting_site_species_targets</a><span>.planting_site_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/observation_plot_positions.html'>observation_plot_positions</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>observed_plot_coordinates_observation_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.observation_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/observations.html'>observations</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>observed_plot_coordinates_observation_id_monitoring_plot__fkey1</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.observation_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.monitoring_plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/observation_plots.html'>observation_plots</a><span>.observation_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/observation_plots.html'>observation_plots</a><span>.monitoring_plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>observed_plot_coordinates_monitoring_plot_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.monitoring_plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -2090,6 +2132,84 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/planting_site_histories.html'>planting_site_histories</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>observed_plot_coordinates_position_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.position_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observation_plot_positions.html'>observation_plot_positions</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>observed_plot_coordinates_observation_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.observation_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observations.html'>observations</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>observed_plot_coordinates_observation_id_monitoring_plot__fkey1</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.observation_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.monitoring_plot_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observation_plots.html'>observation_plots</a><span>.observation_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/observation_plots.html'>observation_plots</a><span>.monitoring_plot_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>observed_plot_coordinates_monitoring_plot_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observed_plot_coordinates.html'>observed_plot_coordinates</a><span>.monitoring_plot_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -2838,7 +2958,12 @@
                                     <tr>
                                         <td><a href='tables/strata.html'>strata</a></td>
                                         <td>positive_target_density</td>
-                                        <td>(target_planting_density &gt; (0)::numeric)</td>
+                                        <td>(initial_planting_density &gt; (0)::numeric)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/strata.html'>strata</a></td>
+                                        <td>target_plant_density_positive</td>
+                                        <td>(target_plant_density &gt; (0)::numeric)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/planting_seasons.html'>planting_seasons</a></td>
@@ -2928,7 +3053,12 @@
                                     <tr>
                                         <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
                                         <td>growth_form_specific_data</td>
-                                        <td>(((tree_growth_form_id &#61; 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 2) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)))</td>
+                                        <td>(((tree_growth_form_id &#61; 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 2) AND (bole_height_m IS NULL) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
+                                        <td>recorded_trees_bole_height_m_check</td>
+                                        <td>(bole_height_m &gt;&#61; (0)::numeric)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>

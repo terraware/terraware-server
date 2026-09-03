@@ -99,6 +99,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "planting_site_histories":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_notifications":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_populations":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_site_species_targets":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_survival_rate_calculations":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=teeodot];
   "plantings":"delivery_id":w -> "deliveries":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"planting_site_id":w -> "deliveries":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -132,6 +133,11 @@ digraph "twoDegreesRelationshipsDiagram" {
   "stratum_histories":"elipses":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "stratum_histories":"elipses":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "stratum_populations":"elipses":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_species_targets":"planting_site_id":w -> "planting_site_species_targets":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_species_targets":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_species_targets":"planting_site_id":w -> "strata":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_species_targets":"species_id":w -> "planting_site_species_targets":"species_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_species_targets":"stratum_id":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "stratum_t0_temp_densities":"elipses":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "substrata":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "substrata":"planting_site_id":w -> "strata":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -188,7 +194,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="58" HEIGHT="16"><B>deliveries</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/deliveries.html"
     target="_top"
@@ -558,14 +564,25 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16"><B>planting_site_populations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="planting_site_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="177" HEIGHT="16">planting_site_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="177" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="planting_site_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">planting_site_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/planting_site_populations.html"
     target="_top"
     tooltip="planting_site_populations"
+  ];
+  "planting_site_species_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="173" HEIGHT="16"><B>planting_site_species_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/planting_site_species_targets.html"
+    target="_top"
+    tooltip="planting_site_species_targets"
   ];
   "planting_site_survival_rate_calculations" [
    label=<
@@ -599,7 +616,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="grid_origin" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="203" HEIGHT="16">grid_origin</TD></TR></TABLE></TD><TD PORT="grid_origin.type" ALIGN="LEFT">geometry[2147483647]</TD></TR>
       <TR><TD PORT="country_code" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="203" HEIGHT="16">country_code</TD></TR></TABLE></TD><TD PORT="country_code.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="survival_rate_includes_temp_plots" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="203" HEIGHT="16">survival_rate_includes_temp_plots</TD></TR></TABLE></TD><TD PORT="survival_rate_includes_temp_plots.type" ALIGN="LEFT">bool[1]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">17 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/planting_sites.html"
     target="_top"
@@ -754,7 +771,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="36" HEIGHT="16"><B>strata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">10 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/strata.html"
     target="_top"
@@ -781,6 +798,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/stratum_populations.html"
     target="_top"
     tooltip="stratum_populations"
+  ];
+  "stratum_species_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="145" HEIGHT="16"><B>stratum_species_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/stratum_species_targets.html"
+    target="_top"
+    tooltip="stratum_species_targets"
   ];
   "stratum_t0_temp_densities" [
    label=<

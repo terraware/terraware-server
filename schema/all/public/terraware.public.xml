@@ -437,6 +437,9 @@
          <index name="event_log_substratumid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
+         <index name="event_log_viabilitytestid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
          <index name="event_log_withdrawalid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
@@ -455,6 +458,10 @@
       <table name="external_dataset_types" remarks="Types of external data sets that the system can pull information from." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="external_dataset_type_id" foreignKey="external_dataset_imports_external_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_imports"/>
+            <child column="calculated_nativity_dataset_type_id" foreignKey="project_species_calculated_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="pending_nativity_dataset_type_id" foreignKey="project_species_pending_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="common_name_dataset_type_id" foreignKey="species_common_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <child column="family_name_dataset_type_id" foreignKey="species_family_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -626,8 +633,9 @@
             <child column="file_id" foreignKey="organization_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_media_files"/>
             <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_files"/>
             <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_photos"/>
+            <child column="file_id" foreignKey="splat_additional_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="splat_additional_files"/>
+            <child column="file_id" foreignKey="splat_annotation_media_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="splat_annotation_media"/>
             <child column="file_id" foreignKey="splat_annotations_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_annotations"/>
-            <child column="data_file_id" foreignKey="splats_data_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="splats"/>
             <child column="file_id" foreignKey="splats_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="splats"/>
             <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
             <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
@@ -968,6 +976,7 @@
             <child column="organization_id" foreignKey="organization_media_files_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_media_files"/>
             <child column="organization_id" foreignKey="organization_report_settings_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_report_settings"/>
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
+            <child column="organization_id" foreignKey="project_species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_species"/>
             <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
             <child column="organization_id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
             <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
@@ -1091,6 +1100,54 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
+      <table name="project_species" remarks="Information about species in the context of specific projects, if applicable." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="true" remarks="If the information about this species only applies to one of an organization's projects, the project ID. Null if the organization has no projects (in which case we treat the organization as a &quot;project&quot;)." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="calculated_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_calculated_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="calculated_nativity_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_calculated_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="calculated_nativity_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="overridden_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_overridden_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="overridden_justification" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="overridden_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_overridden_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="overridden_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="pending_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_pending_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pending_nativity_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="pending_nativity_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_pending_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <index name="project_species_organization_id_project_id_species_id_idx" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="project_species_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+         <index name="project_species_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+         <checkConstraint constraint="((((calculated_nativity_id = 4) OR (calculated_nativity_id IS NULL)) AND (calculated_nativity_dataset_date IS NULL)) OR (calculated_nativity_dataset_date IS NOT NULL))" name="known_nativity_has_dataset"/>
+         <checkConstraint constraint="((((pending_nativity_id = 4) OR (pending_nativity_id IS NULL)) AND (pending_nativity_dataset_date IS NULL)) OR (pending_nativity_dataset_date IS NOT NULL))" name="known_pending_nativity_has_dataset"/>
+         <checkConstraint constraint="((calculated_nativity_dataset_date IS NULL) = (calculated_nativity_dataset_type_id IS NULL))" name="nativity_dataset_has_both_values"/>
+         <checkConstraint constraint="((pending_nativity_dataset_date IS NULL) = (pending_nativity_dataset_type_id IS NULL))" name="pending_nativity_dataset_has_both_values"/>
+      </table>
       <table name="projects" remarks="Distinguishes among an organization's projects." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_id" foreignKey="activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activities"/>
@@ -1137,6 +1194,7 @@
             <child column="project_id" foreignKey="project_internal_users_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_internal_users"/>
             <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
             <child column="project_id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_report_settings"/>
+            <child column="project_id" foreignKey="project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_species"/>
             <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
             <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="project_id" foreignKey="draft_planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
@@ -1352,6 +1410,7 @@
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="participant_project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
             <child column="species_id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="species_id" foreignKey="project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_species"/>
             <child column="species_id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_ecosystem_types"/>
             <child column="species_id" foreignKey="species_growth_forms_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_growth_forms"/>
             <child column="species_id" foreignKey="species_plant_material_sourcing_methods_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_plant_material_sourcing_methods"/>
@@ -1367,11 +1426,13 @@
             <child column="species_id" foreignKey="planting_season_allocated_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_allocated_species"/>
             <child column="species_id" foreignKey="planting_season_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_species_targets"/>
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
+            <child column="species_id" foreignKey="planting_site_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_species_targets"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="species_id" foreignKey="plot_t0_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_densities"/>
             <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
             <child column="species_id" foreignKey="scheduled_planting_date_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="scheduled_planting_date_species"/>
             <child column="species_id" foreignKey="stratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_populations"/>
+            <child column="species_id" foreignKey="stratum_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_species_targets"/>
             <child column="species_id" foreignKey="stratum_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_t0_temp_densities"/>
             <child column="species_id" foreignKey="substratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_populations"/>
          </column>
@@ -1414,6 +1475,14 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="wood_density_level_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="species_wood_density_level_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wood_density_levels"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="common_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_common_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="common_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="family_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_family_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="family_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey1" unique="true">
             <column ascending="true" name="id"/>
@@ -1429,6 +1498,10 @@
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="scientific_name"/>
          </index>
+         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) = (common_name_dataset_date IS NULL))" name="common_name_source_has_both_values"/>
+         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) OR (common_name IS NOT NULL))" name="common_name_source_has_name"/>
+         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) = (family_name_dataset_date IS NULL))" name="family_name_source_has_both_values"/>
+         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) OR (family_name IS NOT NULL))" name="family_name_source_requires_name"/>
          <checkConstraint constraint="(common_name !~ similar_to_escape(' *'::text))" name="species_common_name_check"/>
          <checkConstraint constraint="(family_name !~ similar_to_escape(' *'::text))" name="species_family_name_check"/>
       </table>
@@ -1476,6 +1549,9 @@
       <table name="species_nativities" remarks="(Enum) Native/invasive/introduced values for a species in a given region." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="species_nativity_id" foreignKey="griis_taxa_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="griis_taxa"/>
+            <child column="calculated_nativity_id" foreignKey="project_species_calculated_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="overridden_nativity_id" foreignKey="project_species_overridden_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="pending_nativity_id" foreignKey="project_species_pending_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
             <child column="species_nativity_id" foreignKey="wcvp_distributions_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wcvp_distributions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -1563,8 +1639,52 @@
             <column ascending="true" name="species_id"/>
          </index>
       </table>
+      <table name="splat_additional_files" remarks="Supplementary input files that help with generating a splat." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="splat_additional_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="splat_file_id" nullable="false" remarks="Video file of the splat that this file is an input for." size="19" type="int8" typeCode="-5">
+            <parent column="file_id" foreignKey="splat_additional_files_splat_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="splats"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="splat_additional_files_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="splat_additional_files_splat_file_id_type_key" unique="true">
+            <column ascending="true" name="splat_file_id"/>
+            <column ascending="true" name="type"/>
+         </index>
+      </table>
+      <table name="splat_annotation_media" remarks="Media files (photos or videos) attached to splat annotations. Modeled for multiple media per annotation." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="splat_annotation_media_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="splat_annotation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="splat_annotation_media_splat_annotation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="splat_annotations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="position" nullable="false" remarks="Display order of this media within its annotation, 0-based." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="splat_annotation_media_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="splat_annotation_media_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="splat_annotation_media_splat_annotation_id_idx" unique="false">
+            <column ascending="true" name="splat_annotation_id"/>
+         </index>
+         <index name="splat_annotation_media_splat_annotation_id_position_key" unique="true">
+            <column ascending="true" name="splat_annotation_id"/>
+            <column ascending="true" name="position"/>
+         </index>
+         <checkConstraint constraint="(&quot;position&quot; &gt;= 0)" name="splat_annotation_media_position_check"/>
+      </table>
       <table name="splat_annotations" remarks="Annotations that should be displayed inside splat models." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="splat_annotation_id" foreignKey="splat_annotation_media_splat_annotation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="splat_annotation_media"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="splat_annotations_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
          </column>
@@ -1588,6 +1708,7 @@
       </table>
       <table name="splats" remarks="Information about 3D Gaussian splatting models generated from video files." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="splat_file_id" foreignKey="splat_additional_files_splat_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_additional_files"/>
             <parent column="id" foreignKey="splats_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -1612,15 +1733,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="scene_bounds" nullable="true" remarks="Bounding perimeter of the splat in cartesian coordinates, defined as a PointZM such that XYZ is the center of the circle, and M is the radius. The circle lies on the ground plane." size="2147483647" type="geometry" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="sky_radius" nullable="true" remarks="Size of the sky sphere." size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="average_camera_height" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="data_file_id" nullable="true" remarks="Optional file containing additional metadata that helps with generating the splat, such as pose priors from sensor data." size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="splats_data_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
-         </column>
          <primaryKey column="file_id" sequenceNumberInPK="1"/>
          <index name="splats_pkey" unique="true">
             <column ascending="true" name="file_id"/>
-         </index>
-         <index name="splats_data_file_id_idx" unique="false">
-            <column ascending="true" name="data_file_id"/>
          </index>
          <index name="splats_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
@@ -2002,6 +2117,7 @@
             <child column="created_by" foreignKey="project_internal_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
             <child column="modified_by" foreignKey="project_internal_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
             <child column="user_id" foreignKey="project_internal_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
+            <child column="overridden_by" foreignKey="project_species_overridden_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
             <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="locked_by" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
@@ -2010,6 +2126,7 @@
             <child column="created_by" foreignKey="species_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
             <child column="deleted_by" foreignKey="species_deleted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
             <child column="modified_by" foreignKey="species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <child column="created_by" foreignKey="splat_annotation_media_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_annotation_media"/>
             <child column="created_by" foreignKey="splat_annotations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_annotations"/>
             <child column="modified_by" foreignKey="splat_annotations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_annotations"/>
             <child column="created_by" foreignKey="splats_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="splats"/>

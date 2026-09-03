@@ -191,6 +191,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="planting_site_species_targets.species_id references species.id via planting_site_species_targets_species_id_fkey"><a href='../../tracking/tables/planting_site_species_targets.html'>planting_site_species_targets</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">planting_site_species_targets_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="plantings.species_id references species.id via plantings_species_id_fkey"><a href='../../tracking/tables/plantings.html'>plantings</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">plantings_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -213,6 +218,11 @@
                                             <tr>
                                                 <td title="stratum_populations.species_id references species.id via stratum_populations_species_id_fkey"><a href='../../tracking/tables/stratum_populations.html'>stratum_populations</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">stratum_populations_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="stratum_species_targets.species_id references species.id via stratum_species_targets_species_id_fkey"><a href='../../tracking/tables/stratum_species_targets.html'>stratum_species_targets</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">stratum_species_targets_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -668,6 +678,74 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="common_name_dataset_type_id">common_name_dataset_type_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="common_name_dataset_date">common_name_dataset_date</span></td>
+                                    <td>date</td>
+                                    <td>13</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="family_name_dataset_type_id">family_name_dataset_type_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="family_name_dataset_date">family_name_dataset_date</span></td>
+                                    <td>date</td>
+                                    <td>13</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -751,8 +829,24 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>common_name_source_has_both_values</td>
+                                    <td>((common_name_dataset_type_id IS NULL) &#61; (common_name_dataset_date IS NULL))</td>
+                                </tr>
+                                <tr>
+                                    <td>family_name_source_requires_name</td>
+                                    <td>((family_name_dataset_type_id IS NULL) OR (family_name IS NOT NULL))</td>
+                                </tr>
+                                <tr>
                                     <td>species_family_name_check</td>
                                     <td>(family_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>family_name_source_has_both_values</td>
+                                    <td>((family_name_dataset_type_id IS NULL) &#61; (family_name_dataset_date IS NULL))</td>
+                                </tr>
+                                <tr>
+                                    <td>common_name_source_has_name</td>
+                                    <td>((common_name_dataset_type_id IS NULL) OR (common_name IS NOT NULL))</td>
                                 </tr>
                                 <tr>
                                     <td>species_common_name_check</td>

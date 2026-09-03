@@ -206,14 +206,19 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="splat_additional_files.file_id references files.id via splat_additional_files_file_id_fkey"><a href='splat_additional_files.html'>splat_additional_files</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">splat_additional_files_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="splat_annotation_media.file_id references files.id via splat_annotation_media_file_id_fkey"><a href='splat_annotation_media.html'>splat_annotation_media</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">splat_annotation_media_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="splat_annotations.file_id references files.id via splat_annotations_file_id_fkey"><a href='splat_annotations.html'>splat_annotations</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">splat_annotations_file_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="splats.data_file_id references files.id via splats_data_file_id_fkey"><a href='splats.html'>splats</a><span class='relatedKey'>.data_file_id</span></td>
-                                                <td class="constraint detail">splats_data_file_id_fkey</td>
-                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="splats.file_id references files.id via splats_file_id_fkey"><a href='splats.html'>splats</a><span class='relatedKey'>.file_id</span></td>

@@ -2,6 +2,7 @@ draft_planting_sites
 observation_biomass_quadrat_species
 plantings
 recorded_trees
+stratum_species_targets
 recorded_plants
 observation_media_files
 observed_plot_coordinates
@@ -36,12 +37,13 @@ planting_site_survival_rate_calculations
 planting_site_populations
 planting_site_notifications
 planting_season_allocated_species
+planting_site_species_targets
 observation_biomass_quadrat_details
-deliveries
 observation_biomass_species
 observation_biomass_details
 observation_plots
 monitoring_plot_histories
+deliveries
 planting_date_requests
 substratum_histories
 monitoring_plots

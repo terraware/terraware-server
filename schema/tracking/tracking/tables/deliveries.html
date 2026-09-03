@@ -131,6 +131,11 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="deliveries.reassigned_from_delivery_id references deliveries.id via deliveries_reassigned_from_delivery_id_fkey"><a href='deliveries.html'>deliveries</a><span class='relatedKey'>.reassigned_from_delivery_id</span></td>
+                                                <td class="constraint detail">deliveries_reassigned_from_delivery_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="plantings.[planting_site_id, delivery_id] references deliveries.[planting_site_id, id] via plantings_planting_site_id_delivery_id_fkey"><a href='plantings.html'>plantings</a><span class='relatedKey'>.delivery_id</span></td>
                                                 <td class="constraint detail">plantings_planting_site_id_delivery_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -289,6 +294,28 @@
                                     </td>
                                     <td><p>When the reassignment was recorded. Null if this delivery has no reassignment.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="reassigned_from_delivery_id">reassigned_from_delivery_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="deliveries.reassigned_from_delivery_id references deliveries.id via deliveries_reassigned_from_delivery_id_fkey"><a href='deliveries.html'>deliveries</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">deliveries_reassigned_from_delivery_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td><p>If this delivery was created by reassigning plants from a delivery at another planting site, the ID of that delivery.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -332,10 +359,16 @@
                                     <td>planting_site_id + id</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> deliveries_withdrawal_id_key</td>
-                                    <td>Must be unique</td>
+                                    <td title='Indexed'>deliveries_reassigned_from_delivery_id_idx</td>
+                                    <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>withdrawal_id</td>
+                                    <td>reassigned_from_delivery_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> deliveries_withdrawal_id_planting_site_id_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>withdrawal_id + planting_site_id</td>
                                 </tr>
                                 </tbody>
                             </table>

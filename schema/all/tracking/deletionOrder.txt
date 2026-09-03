@@ -1,5 +1,6 @@
 plantings
 observation_biomass_quadrat_species
+stratum_species_targets
 recorded_trees
 recorded_plants
 observation_media_files
@@ -36,14 +37,15 @@ simplified_strata
 simplified_planting_sites
 simplified_planting_site_histories
 planting_site_survival_rate_calculations
+planting_site_species_targets
 observation_biomass_quadrat_details
-deliveries
 observation_biomass_species
 observation_biomass_details
 observation_plots
 monitoring_plot_histories
 substratum_histories
 stratum_histories
+deliveries
 monitoring_plots
 substrata
 strata

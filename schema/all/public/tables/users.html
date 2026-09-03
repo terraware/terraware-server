@@ -536,6 +536,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="project_species.overridden_by references users.id via project_species_overridden_by_fkey"><a href='project_species.html'>project_species</a><span class='relatedKey'>.overridden_by</span></td>
+                                                <td class="constraint detail">project_species_overridden_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="projects.created_by references users.id via projects_created_by_fkey"><a href='projects.html'>projects</a><span class='relatedKey'>.created_by</span></td>
                                                 <td class="constraint detail">projects_created_by_fkey</td>
                                                 <td class="constraint detail"><span title=''></span></td>
@@ -573,6 +578,11 @@
                                             <tr>
                                                 <td title="species.modified_by references users.id via species_modified_by_fkey"><a href='species.html'>species</a><span class='relatedKey'>.modified_by</span></td>
                                                 <td class="constraint detail">species_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="splat_annotation_media.created_by references users.id via splat_annotation_media_created_by_fkey"><a href='splat_annotation_media.html'>splat_annotation_media</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">splat_annotation_media_created_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
@@ -1200,16 +1210,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>users_auth_id_check</td>
-                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>users_first_name_check</td>
                                     <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>users_last_name_check</td>
                                     <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>users_auth_id_check</td>
+                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

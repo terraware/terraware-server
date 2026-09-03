@@ -136,6 +136,21 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="project_species.calculated_nativity_id references species_nativities.id via project_species_calculated_nativity_id_fkey"><a href='project_species.html'>project_species</a><span class='relatedKey'>.calculated_nativity_id</span></td>
+                                                <td class="constraint detail">project_species_calculated_nativity_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="project_species.overridden_nativity_id references species_nativities.id via project_species_overridden_nativity_id_fkey"><a href='project_species.html'>project_species</a><span class='relatedKey'>.overridden_nativity_id</span></td>
+                                                <td class="constraint detail">project_species_overridden_nativity_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="project_species.pending_nativity_id references species_nativities.id via project_species_pending_nativity_id_fkey"><a href='project_species.html'>project_species</a><span class='relatedKey'>.pending_nativity_id</span></td>
+                                                <td class="constraint detail">project_species_pending_nativity_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="wcvp_distributions.species_nativity_id references species_nativities.id via wcvp_distributions_species_nativity_id_fkey"><a href='wcvp_distributions.html'>wcvp_distributions</a><span class='relatedKey'>.species_nativity_id</span></td>
                                                 <td class="constraint detail">wcvp_distributions_species_nativity_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>

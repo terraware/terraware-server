@@ -190,7 +190,7 @@
 <text text-anchor="start" x="262.5" y="-520.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 <polygon fill="#ffffff" stroke="transparent" points="272.5,-514 272.5,-532 316.5,-532 316.5,-514 272.5,-514"/>
 <polygon fill="none" stroke="black" points="272.5,-514 272.5,-532 316.5,-532 316.5,-514 272.5,-514"/>
-<text text-anchor="start" x="291.5" y="-520.2" font-family="Helvetica,sans-Serif" font-size="11.00">15 &gt;</text>
+<text text-anchor="start" x="291.5" y="-520.2" font-family="Helvetica,sans-Serif" font-size="11.00">17 &gt;</text>
 </a>
 </g>
 </g>
@@ -293,23 +293,22 @@
 <text text-anchor="start" x="1558" y="-1239.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="1555,-1215 1555,-1233 1599,-1233 1599,-1215 1555,-1215"/>
 <polygon fill="none" stroke="black" points="1555,-1215 1555,-1233 1599,-1233 1599,-1215 1555,-1215"/>
-<text text-anchor="start" x="1558" y="-1221.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<text text-anchor="start" x="1558" y="-1221.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
 <polygon fill="#ffffff" stroke="transparent" points="1599,-1215 1599,-1233 1623,-1233 1623,-1215 1599,-1215"/>
 <polygon fill="none" stroke="black" points="1599,-1215 1599,-1233 1623,-1233 1623,-1215 1599,-1215"/>
 <text text-anchor="start" x="1613" y="-1221.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 <polygon fill="#ffffff" stroke="transparent" points="1623,-1215 1623,-1233 1657,-1233 1657,-1215 1623,-1215"/>
 <polygon fill="none" stroke="black" points="1623,-1215 1623,-1233 1657,-1233 1657,-1215 1623,-1215"/>
-<text text-anchor="start" x="1638" y="-1221.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
+<text text-anchor="start" x="1638" y="-1221.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>
 </g>
 <!-- deliveries&#45;&gt;nursery.withdrawals -->
 <g id="edge7" class="edge">
 <title>deliveries:w&#45;&gt;nursery.withdrawals:e</title>
-<path fill="none" stroke="black" d="M1543.58,-1240.5C1511.79,-1232.2 1461.38,-1190.97 1422.21,-1155.31"/>
-<polygon fill="black" stroke="black" points="1553.78,-1237.93 1552.64,-1245.85 1551.05,-1245.62 1552.19,-1237.7 1553.78,-1237.93"/>
-<polyline fill="none" stroke="black" points="1554,-1242 1550.04,-1241.43 "/>
-<ellipse fill="none" stroke="black" cx="1546.87" cy="-1240.97" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1539.75,-1239.37C1507.84,-1228.97 1459.84,-1189.57 1422.21,-1155.31"/>
+<polygon fill="black" stroke="black" points="1546.13,-1240.55 1553.35,-1245.54 1550.07,-1241.27 1554,-1242 1554,-1242 1554,-1242 1550.07,-1241.27 1554.65,-1238.46 1546.13,-1240.55 1546.13,-1240.55"/>
+<ellipse fill="none" stroke="black" cx="1542.99" cy="-1239.97" rx="3.2" ry="3.2"/>
 </g>
 <!-- deliveries&#45;&gt;public.users -->
 <g id="edge3" class="edge">
@@ -591,15 +590,15 @@
 <text text-anchor="start" x="473" y="-485.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="432,-459 432,-477 512,-477 512,-459 432,-459"/>
 <text text-anchor="start" x="435" y="-465.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="432,-441 432,-459 465,-459 465,-441 432,-441"/>
-<polygon fill="none" stroke="black" points="432,-441 432,-459 465,-459 465,-441 432,-441"/>
+<polygon fill="#ffffff" stroke="transparent" points="432,-441 432,-459 462,-459 462,-441 432,-441"/>
+<polygon fill="none" stroke="black" points="432,-441 432,-459 462,-459 462,-441 432,-441"/>
 <text text-anchor="start" x="435" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="465,-441 465,-459 484,-459 484,-441 465,-441"/>
-<polygon fill="none" stroke="black" points="465,-441 465,-459 484,-459 484,-441 465,-441"/>
-<text text-anchor="start" x="474" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="484,-441 484,-459 512,-459 512,-441 484,-441"/>
-<polygon fill="none" stroke="black" points="484,-441 484,-459 512,-459 512,-441 484,-441"/>
-<text text-anchor="start" x="493" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="462,-441 462,-459 479,-459 479,-441 462,-441"/>
+<polygon fill="none" stroke="black" points="462,-441 462,-459 479,-459 479,-441 462,-441"/>
+<text text-anchor="start" x="469" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="479,-441 479,-459 512,-459 512,-441 479,-441"/>
+<polygon fill="none" stroke="black" points="479,-441 479,-459 512,-459 512,-441 479,-441"/>
+<text text-anchor="start" x="487" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>
@@ -747,7 +746,7 @@
 <text text-anchor="start" x="459" y="-700.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
 <polygon fill="#ffffff" stroke="transparent" points="496,-694 496,-712 536,-712 536,-694 496,-694"/>
 <polygon fill="none" stroke="black" points="496,-694 496,-712 536,-712 536,-694 496,-694"/>
-<text text-anchor="start" x="511" y="-700.2" font-family="Helvetica,sans-Serif" font-size="11.00">16 &gt;</text>
+<text text-anchor="start" x="511" y="-700.2" font-family="Helvetica,sans-Serif" font-size="11.00">18 &gt;</text>
 </a>
 </g>
 </g>
