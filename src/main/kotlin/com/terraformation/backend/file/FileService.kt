@@ -145,7 +145,13 @@ class FileService(
         }
 
     return storageStream.use {
-      val storageUrl = fileStore.newUrl(clock.instant(), category, newFileMetadata.contentType)
+      val storageUrl =
+          fileStore.newUrl(
+              clock.instant(),
+              category,
+              newFileMetadata.contentType,
+              newFileMetadata.filenameWithoutPath,
+          )
 
       try {
         fileStore.write(storageUrl, storageStream)

@@ -80,8 +80,13 @@ class LocalFileStore(
     return Path(url.path.trimStart('/'))
   }
 
-  override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
-    return getUrl(pathGenerator.generatePath(timestamp, category, contentType))
+  override fun newUrl(
+      timestamp: Instant,
+      category: String,
+      contentType: String,
+      filename: String?,
+  ): URI {
+    return getUrl(pathGenerator.generatePath(timestamp, category, contentType, filename))
   }
 
   private fun getFullPath(url: URI): Path {

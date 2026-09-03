@@ -83,6 +83,14 @@ interface FileStore {
    *
    * This will typically delegate the construction of the relative path to
    * [PathGenerator.generatePath].
+   *
+   * @param filename The name of the file as supplied by the client, if any. Used to determine the
+   *   file extension for content types that don't have standard extensions.
    */
-  fun newUrl(timestamp: Instant, category: String, contentType: String): URI
+  fun newUrl(
+      timestamp: Instant,
+      category: String,
+      contentType: String,
+      filename: String? = null,
+  ): URI
 }

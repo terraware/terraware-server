@@ -49,7 +49,7 @@ class UploadService(
       facilityId: FacilityId? = null,
       successStatus: UploadStatus = UploadStatus.AwaitingValidation,
   ): UploadId {
-    val url = fileStore.newUrl(clock.instant(), type.name, contentType)
+    val url = fileStore.newUrl(clock.instant(), type.name, contentType, fileName)
     val uploadsRow =
         UploadsRow(
             contentType = contentType,

@@ -110,9 +110,14 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
     return Path(url.path.trimStart('/'))
   }
 
-  override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
+  override fun newUrl(
+      timestamp: Instant,
+      category: String,
+      contentType: String,
+      filename: String?,
+  ): URI {
     return if (pathGenerator != null) {
-      getUrl(pathGenerator.generatePath(timestamp, category, contentType))
+      getUrl(pathGenerator.generatePath(timestamp, category, contentType, filename))
     } else {
       URI("file:///$timestamp/$category/${counter++}")
     }

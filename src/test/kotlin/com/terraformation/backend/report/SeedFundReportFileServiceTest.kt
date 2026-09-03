@@ -87,7 +87,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
     seedFundReportId = insertSeedFundReport()
 
     every { fileStore.delete(any()) } just Runs
-    every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
+    every { fileStore.newUrl(any(), any(), any(), any()) } answers { URI("${++storageUrlCount}") }
     every { fileStore.write(any(), any()) } just Runs
     every { user.canReadSeedFundReport(any()) } returns true
     every { user.canUpdateSeedFundReport(any()) } returns true
@@ -97,7 +97,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   inner class DeleteReport {
     @Test
     fun `report deletion triggers file and photo deletion`() {
-      excludeRecords { fileStore.newUrl(any(), any(), any()) }
+      excludeRecords { fileStore.newUrl(any(), any(), any(), any()) }
       excludeRecords { fileStore.write(any(), any()) }
 
       val fileId1 = storeFile(filename = "a.txt")
