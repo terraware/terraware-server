@@ -635,7 +635,7 @@ class Messages {
   fun seedQuantity(quantity: SeedQuantityModel): String {
     val formattedNumber =
         NumberFormat.getInstance(currentLocale())
-            .apply { maximumFractionDigits = 5 }
+            .apply { maximumFractionDigits = 6 }
             .format(quantity.quantity)
 
     // This will need to be revisited if/when we support languages with different pluralization
