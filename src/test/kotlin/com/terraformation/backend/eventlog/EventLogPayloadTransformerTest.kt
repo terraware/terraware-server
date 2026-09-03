@@ -758,7 +758,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 userId = knownUserId,
                 userName = "Known User",
             ),
-            // Replacing a photo is rendered as an update from the old file to the new one.
             EventLogEntryPayload(
                 action =
                     FieldUpdatedActionPayload(
