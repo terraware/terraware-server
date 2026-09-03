@@ -149,7 +149,8 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `publishes OrganizationVideoUploadedEvent based on caller-supplied content type`() {
+    fun `publishes OrganizationVideoUploadedEvent when overridden content type is video`() {
+      // any content type that starts with "video/" publishes this event.
       val multipartFile =
           MockMultipartFile("file", "clip.bin", "application/octet-stream", ByteArray(1))
 
@@ -157,6 +158,16 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
           service.upload(organizationId, multipartFile, "caption", contentType = "video/mp4")
 
       eventPublisher.assertEventPublished(OrganizationVideoUploadedEvent(fileId, organizationId))
+    }
+
+    @Test
+    fun `does not publish OrganizationVideoUploadedEvent when content type is overridden to non-video`() {
+      // any content type that starts with "video/" publishes this event.
+      val multipartFile = MockMultipartFile("file", "clip.bin", "video/mp4", ByteArray(1))
+
+      service.upload(organizationId, multipartFile, "caption", contentType = "not-video/mp4")
+
+      eventPublisher.assertEventNotPublished<OrganizationVideoUploadedEvent>()
     }
 
     @Test
