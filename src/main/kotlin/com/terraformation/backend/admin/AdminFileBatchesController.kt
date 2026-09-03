@@ -1,10 +1,10 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
-import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.OrganizationMediaService
@@ -20,19 +20,19 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/fileBatches")
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
 class AdminFileBatchesController(
     private val fileService: FileService,
     private val organizationMediaService: OrganizationMediaService,
-    private val organizationStore: OrganizationStore,
+    private val organizationsDao: OrganizationsDao,
 ) {
   private val log = perClassLogger()
 
-  @GetMapping("/fileBatches")
+  @GetMapping
   fun fileBatchesHome(model: Model): String {
-    model.addAttribute("organizations", organizationStore.fetchAll().sortedBy { it.id })
+    model.addAttribute("organizations", organizationsDao.findAll().sortedBy { it.id })
     model.addAttribute("fileBatchTypes", FileBatchType.entries)
 
     return "/admin/fileBatches"
@@ -41,13 +41,13 @@ class AdminFileBatchesController(
   /**
    * Uploads a batch of organization media files. Each file may be given a content type that
    * overrides the one the browser detected, which allows uploading files whose content types
-   * clients can't declare directly, such as the additional inputs for splat generation.
+   * clients can't declare directly, such as the additional files for splat generation.
    *
    * The content type for a file is the element of [contentTypes] at the same position as the file
    * in [files]; browsers submit an entry for every row of the form, including rows where no file
    * was chosen, so the two lists stay aligned.
    */
-  @PostMapping("/fileBatches")
+  @PostMapping
   fun uploadFileBatch(
       @RequestParam organizationId: OrganizationId,
       @RequestParam type: FileBatchType,

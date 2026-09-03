@@ -32,10 +32,9 @@
 </p>
 
 <p>
-    You can set the content type of each file yourself. Leave it empty to use the content type
-    the browser detects, which must be one of the types the media upload API accepts. Fill it in
-    to store any content type you like, including ones a browser will never detect, such as
-    <code>application/json+cameraPoses</code>.
+    The content type of each file is detected from the file if left blank, or used directly.
+    An example would be <code>application/json+frames</code> for specifying the "frames" additional
+    file for splat generation.
 </p>
 
 <p th:if="${#lists.isEmpty(organizations)}" style="background-color: red;">
