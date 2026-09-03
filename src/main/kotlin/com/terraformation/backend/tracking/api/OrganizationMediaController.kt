@@ -135,9 +135,7 @@ data class UploadOrganizationMediaRequestPayload(
     val caption: String? = null,
     @Schema(
         description =
-            "Store the file with this content type rather than the one declared by the upload. " +
-                "Use this for content types a client can't declare directly, such as the " +
-                "\"+\"-suffixed types that identify additional splat inputs."
+            "Store the file with this content type rather than the one declared by the upload."
     )
     val contentType: String? = null,
     val fileBatchId: FileBatchId? = null,

@@ -135,18 +135,17 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `stores caller-supplied content type that is not an accepted upload type`() {
-      val multipartFile =
-          MockMultipartFile("file", "poses.json", "application/octet-stream", ByteArray(1))
+      val multipartFile = MockMultipartFile("file", "imu.jsonl", "application/json", ByteArray(1))
 
       val fileId =
           service.upload(
               organizationId,
               multipartFile,
               "caption",
-              contentType = "application/json+cameraPoses",
+              contentType = "application/json+imu",
           )
 
-      assertEquals("application/json+cameraPoses", filesDao.fetchOneById(fileId)!!.contentType)
+      assertEquals("application/json+imu", filesDao.fetchOneById(fileId)!!.contentType)
     }
 
     @Test
@@ -163,7 +162,7 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects unsupported content type when caller does not supply one`() {
       val multipartFile =
-          MockMultipartFile("file", "poses.json", "application/octet-stream", ByteArray(1))
+          MockMultipartFile("file", "frames.jsonl", "application/octet-stream", ByteArray(1))
 
       assertThrows<NotSupportedException> {
         service.upload(organizationId, multipartFile, "caption")

@@ -38,13 +38,6 @@ class OrganizationMediaService(
 ) {
   private val log = perClassLogger()
 
-  /**
-   * Stores a media file for an organization.
-   *
-   * @param contentType Store the file with this content type rather than the one declared by the
-   *   client. The value is used as-is, so it may be a content type that wouldn't be accepted as an
-   *   upload, such as one of the `+`-suffixed types that identify additional splat inputs.
-   */
   fun upload(
       organizationId: OrganizationId,
       file: MultipartFile,

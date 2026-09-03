@@ -37,11 +37,6 @@
     file for splat generation.
 </p>
 
-<p th:if="${#lists.isEmpty(organizations)}" style="background-color: red;">
-    You are not a member of any organizations, so you can't upload media files. Add yourself to an
-    organization first.
-</p>
-
 <form method="POST" action="/admin/fileBatches" enctype="multipart/form-data">
     <p>
         <label for="organizationId">Organization</label>
