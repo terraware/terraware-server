@@ -21,10 +21,15 @@ import org.apache.tika.mime.MimeTypes
  *   details.)
  * - `.ext` is a file extension based on the file's MIME type, or on the name of the uploaded file
  *   if the MIME type doesn't have a standard extension, or `.bin` if neither of those yields an
- *   extension. For example, for JPEG files, the extension is `.jpg`.
+ *   extension.
  */
 @Named
 class PathGenerator(private val random: Random = Random.Default) {
+  companion object {
+    private const val DEFAULT_EXTENSION = ".bin"
+    private val extensionRegex = Regex("[a-z0-9]{1,10}")
+  }
+
   private val yearFormatter = dateTimeFormatter("yyyy")
   private val monthFormatter = dateTimeFormatter("MM")
   private val dayFormatter = dateTimeFormatter("dd")
@@ -35,9 +40,8 @@ class PathGenerator(private val random: Random = Random.Default) {
    *
    * @param contentType The MIME type of the file. This is used to determine the file extension.
    * @param filename The name of the file as supplied by the client, if any. Its extension is used
-   *   when [contentType] isn't a MIME type with a standard extension, which is the case for the
-   *   `+`-suffixed types that identify additional splat inputs. A default extension of `.bin` is
-   *   used if the filename has no usable extension either.
+   *   when [contentType] isn't a MIME type with a standard extension. A default extension of `.bin`
+   *   is used if the filename has no usable extension either.
    */
   fun generatePath(
       timestamp: Instant,
@@ -86,9 +90,4 @@ class PathGenerator(private val random: Random = Random.Default) {
 
   private fun dateTimeFormatter(pattern: String) =
       DateTimeFormatter.ofPattern(pattern).withZone(ZoneOffset.UTC)!!
-
-  companion object {
-    private const val DEFAULT_EXTENSION = ".bin"
-    private val extensionRegex = Regex("[a-z0-9]{1,10}")
-  }
 }
