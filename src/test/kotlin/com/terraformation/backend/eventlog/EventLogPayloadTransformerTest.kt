@@ -46,6 +46,8 @@ import com.terraformation.backend.seedbank.event.AccessionDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoAddedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoDeletedEvent
 import com.terraformation.backend.seedbank.event.AccessionPhotoReplacedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEvent
+import com.terraformation.backend.seedbank.event.AccessionQuantityUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEvent
 import com.terraformation.backend.seedbank.event.AccessionUpdatedEventValues
 import com.terraformation.backend.seedbank.event.AccessionUploadedEvent
@@ -346,6 +348,125 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
+  fun `renders Accession seed quantities as human-readable text`() {
+    val accessionId = AccessionId(10)
+    val facilityId = FacilityId(11)
+
+    val quantityEntry =
+        eventLogEntry(
+            knownUserId,
+            AccessionQuantityUpdatedEvent(
+                changedFrom =
+                    AccessionQuantityUpdatedEventValues(
+                        quantity = SeedQuantityModel(BigDecimal(10), SeedQuantityUnits.Seeds)
+                    ),
+                changedTo =
+                    AccessionQuantityUpdatedEventValues(
+                        quantity = SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Seeds)
+                    ),
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+    val subsetWeightEntry =
+        eventLogEntry(
+            knownUserId,
+            AccessionUpdatedEvent(
+                changedFrom =
+                    AccessionUpdatedEventValues(
+                        subsetWeightQuantity =
+                            SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Grams)
+                    ),
+                changedTo =
+                    AccessionUpdatedEventValues(
+                        subsetWeightQuantity =
+                            SeedQuantityModel(BigDecimal("1234.5"), SeedQuantityUnits.Grams)
+                    ),
+                accessionId = accessionId,
+                facilityId = facilityId,
+                organizationId = organizationId,
+            ),
+        )
+
+    val subject =
+        AccessionSubjectPayload(
+            accessionId = accessionId,
+            deleted = null,
+            facilityId = facilityId,
+            fullText = "Accession 10",
+            shortText = "Accession",
+        )
+
+    val expected =
+        listOf(
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "quantity",
+                        changedFrom = listOf("10 seeds"),
+                        changedTo = listOf("1 seed"),
+                    ),
+                subject = subject,
+                timestamp = quantityEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "subset weight",
+                        changedFrom = listOf("1 gram"),
+                        changedTo = listOf("1,234.5 grams"),
+                    ),
+                subject = subject,
+                timestamp = subsetWeightEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+        )
+
+    val actual =
+        Locales.ENGLISH.use {
+          transformer.eventsToPayloads(listOf(quantityEntry, subsetWeightEntry))
+        }
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `localizes seed quantities`() {
+    val quantityEntry =
+        eventLogEntry(
+            knownUserId,
+            AccessionQuantityUpdatedEvent(
+                changedFrom =
+                    AccessionQuantityUpdatedEventValues(
+                        quantity = SeedQuantityModel(BigDecimal(10), SeedQuantityUnits.Seeds)
+                    ),
+                changedTo =
+                    AccessionQuantityUpdatedEventValues(
+                        quantity = SeedQuantityModel(BigDecimal(8), SeedQuantityUnits.Seeds)
+                    ),
+                accessionId = AccessionId(10),
+                facilityId = FacilityId(11),
+                organizationId = organizationId,
+            ),
+        )
+
+    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(quantityEntry)) }
+
+    assertEquals(
+        FieldUpdatedActionPayload(
+            fieldName = "cantidad",
+            changedFrom = listOf("10 semillas"),
+            changedTo = listOf("8 semillas"),
+        ),
+        payloads.single().action,
+    )
+  }
+
+  @Test
   fun `maps Accession uploaded and deleted events and marks subject deleted`() {
     val accessionId = AccessionId(10)
     val facilityId = FacilityId(11)
@@ -428,8 +549,18 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         eventLogEntry(
             knownUserId,
             WithdrawalUpdatedEvent(
-                changedFrom = WithdrawalUpdatedEventValues(notes = "a"),
-                changedTo = WithdrawalUpdatedEventValues(notes = "b"),
+                changedFrom =
+                    WithdrawalUpdatedEventValues(
+                        notes = "a",
+                        withdrawnQuantity =
+                            SeedQuantityModel(BigDecimal(300), SeedQuantityUnits.Seeds),
+                    ),
+                changedTo =
+                    WithdrawalUpdatedEventValues(
+                        notes = "b",
+                        withdrawnQuantity =
+                            SeedQuantityModel(BigDecimal(250), SeedQuantityUnits.Seeds),
+                    ),
                 withdrawalId = withdrawalId,
                 accessionId = accessionId,
                 facilityId = facilityId,
@@ -470,10 +601,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                             CreatedFieldPayload("staffResponsible", listOf("Some Person")),
                             CreatedFieldPayload("viabilityTestId", listOf("30")),
                             CreatedFieldPayload("withdrawnByUserId", listOf("$knownUserId")),
-                            CreatedFieldPayload(
-                                "withdrawnQuantity",
-                                listOf("SeedQuantityModel(quantity=300, units=Seeds)"),
-                            ),
+                            CreatedFieldPayload("withdrawnQuantity", listOf("300 seeds")),
                         )
                     ),
                 subject = subject,
@@ -487,6 +615,18 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         fieldName = "notes",
                         changedFrom = listOf("a"),
                         changedTo = listOf("b"),
+                    ),
+                subject = subject,
+                timestamp = updateEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "withdrawn quantity",
+                        changedFrom = listOf("300 seeds"),
+                        changedTo = listOf("250 seeds"),
                     ),
                 subject = subject,
                 timestamp = updateEntry.createdTime,

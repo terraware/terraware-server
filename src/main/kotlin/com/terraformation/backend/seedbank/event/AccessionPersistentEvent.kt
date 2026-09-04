@@ -172,8 +172,8 @@ data class AccessionUpdatedEventV1(
           ),
           createUpdatedField(
               "subsetWeightQuantity",
-              changedFrom.subsetWeightQuantity?.toString(),
-              changedTo.subsetWeightQuantity?.toString(),
+              messages.seedQuantityOrNull(changedFrom.subsetWeightQuantity),
+              messages.seedQuantityOrNull(changedTo.subsetWeightQuantity),
           ),
       )
 }
@@ -226,8 +226,8 @@ data class AccessionQuantityUpdatedEventV1(
       listOfNotNull(
           createUpdatedField(
               "quantity",
-              changedFrom.quantity?.toString(),
-              changedTo.quantity?.toString(),
+              messages.seedQuantityOrNull(changedFrom.quantity),
+              messages.seedQuantityOrNull(changedTo.quantity),
           )
       )
 }

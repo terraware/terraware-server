@@ -71,7 +71,7 @@ data class WithdrawalCreatedEventV2(
           createInitialField("staffResponsible", staffResponsible),
           createInitialField("viabilityTestId", viabilityTestId?.toString()),
           createInitialField("withdrawnByUserId", withdrawnByUserId?.toString()),
-          createInitialField("withdrawnQuantity", withdrawnQuantity?.toString()),
+          createInitialField("withdrawnQuantity", messages.seedQuantityOrNull(withdrawnQuantity)),
       )
 }
 
@@ -118,8 +118,8 @@ data class WithdrawalUpdatedEventV1(
           ),
           createUpdatedField(
               "withdrawnQuantity",
-              changedFrom.withdrawnQuantity?.toString(),
-              changedTo.withdrawnQuantity?.toString(),
+              messages.seedQuantityOrNull(changedFrom.withdrawnQuantity),
+              messages.seedQuantityOrNull(changedTo.withdrawnQuantity),
           ),
       )
 }

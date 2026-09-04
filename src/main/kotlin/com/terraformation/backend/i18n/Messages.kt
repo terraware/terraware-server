@@ -632,10 +632,10 @@ class Messages {
         else -> ", "
       }
 
-  private fun seedQuantity(quantity: SeedQuantityModel): String {
+  fun seedQuantity(quantity: SeedQuantityModel): String {
     val formattedNumber =
         NumberFormat.getInstance(currentLocale())
-            .apply { maximumFractionDigits = 5 }
+            .apply { maximumFractionDigits = 6 }
             .format(quantity.quantity)
 
     // This will need to be revisited if/when we support languages with different pluralization
@@ -647,6 +647,8 @@ class Messages {
 
     return getMessage(messageName, formattedNumber)
   }
+
+  fun seedQuantityOrNull(quantity: SeedQuantityModel?) = quantity?.let { seedQuantity(it) }
 
   private fun <T : LocalizableEnum<*>> getEnumValuesList(values: List<T>): String {
     val locale = currentLocale()
