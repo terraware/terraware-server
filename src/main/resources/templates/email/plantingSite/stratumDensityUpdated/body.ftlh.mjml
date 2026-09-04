@@ -8,12 +8,13 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-body03">
-                ${strings("notification.plantingSite.stratumDensityUpdated.email.body", plantingSiteName, stratumName)}
+                ${strings("notification.plantingSite.stratumDensityUpdated.email.body", plantingSiteName)}
                 </mj-text>
             <mj-raw>
                 <#if initialPlantingDensityChange??>
             </mj-raw>
                     <mj-text mj-class="text-body01-regular" padding-top="4px">
+                        ${stratumName}
                         <strong>${strings("stratum.initialPlantingDensity")}:</strong>
                         <#if initialPlantingDensityChange.previousDensity??>${initialPlantingDensityChange.previousDensity}<#else>${strings("notSet")}</#if>
                         &rarr;
@@ -24,6 +25,7 @@
                 <#if targetPlantDensityChange??>
             </mj-raw>
                     <mj-text mj-class="text-body01-regular" padding-top="4px">
+                        ${stratumName}
                         <strong>${strings("stratum.targetPlantDensity")}:</strong>
                         <#if targetPlantDensityChange.previousDensity??>${targetPlantDensityChange.previousDensity}<#else>${strings("notSet")}</#if>
                         &rarr;
