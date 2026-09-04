@@ -1,3 +1,4 @@
+d9c6e4de Don't save API request details on login redirect (#4909)
 a410eadd Update admin splats page to line up with splatter (#4904)
 da7fb108 Consolidate EventLogPayloadTransformerTest cases (#4896)
 940be0d0 SW-7604 Render seed quantities in the event log (#4895)
