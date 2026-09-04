@@ -478,6 +478,7 @@ class PlantingSiteMapEdited(
 
 class StratumDensityUpdated(
     config: TerrawareServerConfig,
+    val goalsUrl: String,
     val initialPlantingDensityChange: DensityChangedEventModel?,
     val organizationName: String,
     val plantingSiteName: String,
