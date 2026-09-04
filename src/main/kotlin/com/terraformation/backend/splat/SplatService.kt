@@ -431,11 +431,14 @@ class SplatService(
         }
 
     dslContext.transaction { _ ->
+      val splatIsNew = insertOrRestartSplat(fileId, organizationId, splatUrl, force)
+
+      // Concurrent generation requests for the same file all contend for the same splats row, so by
+      // the time this runs, a competing request has either committed its additional files or rolled
+      // them back; checking any earlier could let two requests each add a disjoint set of files.
       if (additionalFiles.isNotEmpty() && hasAdditionalFiles(fileId)) {
         throw SplatAdditionalFilesExistException(fileId)
       }
-
-      val splatIsNew = insertOrRestartSplat(fileId, organizationId, splatUrl, force)
 
       if (birdnetUrl != null) {
         insertOrRestartBirdnetResult(fileId, birdnetUrl, force)
