@@ -430,8 +430,15 @@ class SplatService(
           null
         }
 
-    val replacedFileIds = dslContext.transactionResult { _ ->
+    dslContext.transaction { _ ->
       val splatIsNew = insertOrRestartSplat(fileId, organizationId, splatUrl, force)
+
+      // Concurrent generation requests for the same file all contend for the same splats row, so by
+      // the time this runs, a competing request has either committed its additional files or rolled
+      // them back; checking any earlier could let two requests each add a disjoint set of files.
+      if (additionalFiles.isNotEmpty() && hasAdditionalFiles(fileId)) {
+        throw SplatAdditionalFilesExistException(fileId)
+      }
 
       if (birdnetUrl != null) {
         insertOrRestartBirdnetResult(fileId, birdnetUrl, force)
@@ -442,10 +449,10 @@ class SplatService(
             "Splat record already exists for file $fileId; ignoring additional generation request"
         )
 
-        return@transactionResult emptyList()
+        return@transaction
       }
 
-      val replacedFileIds = replaceAdditionalFiles(fileId, additionalFiles)
+      insertAdditionalFiles(fileId, additionalFiles)
 
       sqsTemplate.send(
           requestQueueUrl,
@@ -466,11 +473,7 @@ class SplatService(
       log.info(
           "Requested splat generation for file $fileId${if (runBirdnet) " with BirdNet" else ""}"
       )
-
-      replacedFileIds
     }
-
-    publishAdditionalFilesDeleted(replacedFileIds)
   }
 
   /**
@@ -542,23 +545,17 @@ class SplatService(
     }
   }
 
-  /**
-   * Makes [additionalFiles] the full set of additional files for a splat, replacing any previous
-   * ones. Does nothing if [additionalFiles] is empty.
-   *
-   * @return The previous additional files that nothing refers to any more; see
-   *   [deleteAdditionalFiles] for how the caller must dispose of them.
-   */
-  private fun replaceAdditionalFiles(
+  private fun hasAdditionalFiles(splatFileId: FileId): Boolean =
+      dslContext.fetchExists(
+          SPLAT_ADDITIONAL_FILES,
+          SPLAT_ADDITIONAL_FILES.SPLAT_FILE_ID.eq(splatFileId),
+      )
+
+  /** Attaches [additionalFiles] to a splat. These are immutable for the splat's lifetime. */
+  private fun insertAdditionalFiles(
       splatFileId: FileId,
       additionalFiles: Map<FileId, SplatAdditionalFileType>,
-  ): List<FileId> {
-    if (additionalFiles.isEmpty()) {
-      return emptyList()
-    }
-
-    val replacedFileIds = deleteAdditionalFiles(splatFileId, retainedFileIds = additionalFiles.keys)
-
+  ) {
     with(SPLAT_ADDITIONAL_FILES) {
       additionalFiles.forEach { (additionalFileId, type) ->
         dslContext
@@ -566,13 +563,9 @@ class SplatService(
             .set(FILE_ID, additionalFileId)
             .set(SPLAT_FILE_ID, splatFileId)
             .set(TYPE, type)
-            .onDuplicateKeyUpdate()
-            .set(TYPE, type)
             .execute()
       }
     }
-
-    return replacedFileIds
   }
 
   private fun fileLocation(url: URI, type: SplatAdditionalFileType? = null) =
@@ -617,22 +610,16 @@ class SplatService(
    * Removes a splat's additional files from the database. Additional files are uploaded as
    * organization media, so their organization media rows are deleted too.
    *
-   * @param retainedFileIds Files that are about to be inserted as additional files of the same
-   *   splat again. Their rows are left in place for the insert to update.
    * @return The files that nothing refers to any more. The caller must publish
    *   [FileReferenceDeletedEvent] for each of them, but only once its transaction has committed:
    *   the handler deletes the files from the file store, which a rollback can't undo.
    */
-  private fun deleteAdditionalFiles(
-      splatFileId: FileId,
-      retainedFileIds: Set<FileId> = emptySet(),
-  ): List<FileId> {
+  private fun deleteAdditionalFiles(splatFileId: FileId): List<FileId> {
     val deletedFileIds =
         with(SPLAT_ADDITIONAL_FILES) {
           dslContext
               .deleteFrom(SPLAT_ADDITIONAL_FILES)
               .where(SPLAT_FILE_ID.eq(splatFileId))
-              .and(FILE_ID.notIn(retainedFileIds))
               .returning(FILE_ID)
               .fetch(FILE_ID.asNonNullable())
         }
