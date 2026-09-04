@@ -1,3 +1,5 @@
+a410eadd Update admin splats page to line up with splatter (#4904)
+da7fb108 Consolidate EventLogPayloadTransformerTest cases (#4896)
 940be0d0 SW-7604 Render seed quantities in the event log (#4895)
 42f0bf63 Don't let an existing splat supply additional files (#4900)
 f95078d5 Add admin page for uploading a file batch (#4902)
