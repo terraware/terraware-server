@@ -16,6 +16,7 @@ import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.tracking.OrganizationMediaService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import org.locationtech.jts.geom.Point
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -52,6 +53,7 @@ class OrganizationMediaController(
             file = file,
             caption = payload?.caption,
             fileBatchId = payload?.fileBatchId,
+            contentType = payload?.contentType,
         )
     return UploadOrganizationMediaResponsePayload(fileId)
   }
@@ -131,6 +133,11 @@ class OrganizationMediaController(
 
 data class UploadOrganizationMediaRequestPayload(
     val caption: String? = null,
+    @Schema(
+        description =
+            "Store the file with this content type rather than the one declared by the upload."
+    )
+    val contentType: String? = null,
     val fileBatchId: FileBatchId? = null,
 )
 

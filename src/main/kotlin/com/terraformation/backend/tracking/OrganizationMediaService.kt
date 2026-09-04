@@ -43,17 +43,18 @@ class OrganizationMediaService(
       file: MultipartFile,
       caption: String?,
       fileBatchId: FileBatchId? = null,
+      contentType: String? = null,
   ): FileId {
     requirePermissions { createOrganizationMedia(organizationId) }
 
-    val contentType = file.getPlainContentType(SUPPORTED_ADDITIONAL_MEDIA_TYPES)
+    val fileContentType = contentType ?: file.getPlainContentType(SUPPORTED_ADDITIONAL_MEDIA_TYPES)
     val filename = file.getFilename("media")
 
     val fileId =
         fileService.storeFile(
             "organizationMedia",
             file.inputStream,
-            FileMetadata.of(contentType, filename, file.size),
+            FileMetadata.of(fileContentType, filename, file.size),
             fileBatchId = fileBatchId,
         ) { (fileId, _) ->
           dslContext
@@ -66,7 +67,7 @@ class OrganizationMediaService(
 
     log.info("Stored media file $fileId for organization $organizationId")
 
-    if (contentType.startsWith("video/")) {
+    if (fileContentType.startsWith("video/")) {
       eventPublisher.publishEvent(
           OrganizationVideoUploadedEvent(fileId, organizationId, fileBatchId)
       )

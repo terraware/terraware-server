@@ -23,6 +23,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import io.mockk.every
 import io.mockk.mockk
+import jakarta.ws.rs.NotSupportedException
 import java.io.ByteArrayInputStream
 import java.net.URI
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -130,6 +131,53 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
       eventPublisher.assertEventPublished(
           OrganizationVideoUploadedEvent(fileId, organizationId, fileBatchId)
       )
+    }
+
+    @Test
+    fun `stores caller-supplied content type that is not an accepted upload type`() {
+      val multipartFile = MockMultipartFile("file", "imu.jsonl", "application/json", ByteArray(1))
+
+      val fileId =
+          service.upload(
+              organizationId,
+              multipartFile,
+              "caption",
+              contentType = "application/json+imu",
+          )
+
+      assertEquals("application/json+imu", filesDao.fetchOneById(fileId)!!.contentType)
+    }
+
+    @Test
+    fun `publishes OrganizationVideoUploadedEvent when overridden content type is video`() {
+      // any content type that starts with "video/" publishes this event.
+      val multipartFile =
+          MockMultipartFile("file", "clip.bin", "application/octet-stream", ByteArray(1))
+
+      val fileId =
+          service.upload(organizationId, multipartFile, "caption", contentType = "video/mp4")
+
+      eventPublisher.assertEventPublished(OrganizationVideoUploadedEvent(fileId, organizationId))
+    }
+
+    @Test
+    fun `does not publish OrganizationVideoUploadedEvent when content type is overridden to non-video`() {
+      // any content type that starts with "video/" publishes this event.
+      val multipartFile = MockMultipartFile("file", "clip.bin", "video/mp4", ByteArray(1))
+
+      service.upload(organizationId, multipartFile, "caption", contentType = "not-video/mp4")
+
+      eventPublisher.assertEventNotPublished<OrganizationVideoUploadedEvent>()
+    }
+
+    @Test
+    fun `rejects unsupported content type when caller does not supply one`() {
+      val multipartFile =
+          MockMultipartFile("file", "frames.jsonl", "application/octet-stream", ByteArray(1))
+
+      assertThrows<NotSupportedException> {
+        service.upload(organizationId, multipartFile, "caption")
+      }
     }
   }
 

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <script th:fragment="additionalScript" type="application/javascript">
+        function addFileRow() {
+            const template = document.getElementById('fileRowTemplate');
+            const row = template.content.cloneNode(true);
+            document.getElementById('fileRows').appendChild(row);
+        }
+
+        function removeFileRow(button) {
+            button.closest('tr').remove();
+        }
+
+        document.addEventListener('DOMContentLoaded', addFileRow);
+    </script>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>Upload File Batch</h2>
+
+<p>
+    Here you can upload a group of files as a single file batch. The files are stored as media
+    files for the organization you choose (only lists orgs you are a member of), and the batch is
+    marked as finished uploading once they have all been stored, which is what triggers any
+    processing the batch type calls for. A <code>Splat</code> batch generates a splat from the
+    batch's video file, using the batch's other files as additional inputs.
+</p>
+
+<p>
+    The content type of each file is detected from the file if left blank, or used directly.
+    An example would be <code>application/json+frames</code> for specifying the "frames" additional
+    file for splat generation.
+</p>
+
+<form method="POST" action="/admin/fileBatches" enctype="multipart/form-data">
+    <p>
+        <label for="organizationId">Organization</label>
+        <select id="organizationId" name="organizationId" required>
+            <option th:each="organization : ${organizations}" th:value="${organization.id}"
+                    th:text="|${organization.name} (${organization.id})|">
+                My Org (123)
+            </option>
+        </select>
+    </p>
+
+    <p>
+        <label for="type">Batch type</label>
+        <select id="type" name="type" required>
+            <option th:each="fileBatchType : ${fileBatchTypes}"
+                    th:value="${fileBatchType.jsonValue}"
+                    th:text="${fileBatchType.jsonValue}">
+                Splat
+            </option>
+        </select>
+    </p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>File</th>
+            <th>Content type</th>
+            <th/>
+        </tr>
+        </thead>
+        <tbody id="fileRows"></tbody>
+    </table>
+
+    <p>
+        <button type="button" onclick="addFileRow()">Add another file</button>
+    </p>
+
+    <input type="submit" value="Upload Batch"/>
+</form>
+
+<template id="fileRowTemplate">
+    <tr>
+        <td><input type="file" name="files"/></td>
+        <td><input type="text" name="contentTypes" size="40" placeholder="Detect from file"/></td>
+        <td>
+            <button type="button" onclick="removeFileRow(this)">Remove</button>
+        </td>
+    </tr>
+</template>
+
+</body>
+</html>
