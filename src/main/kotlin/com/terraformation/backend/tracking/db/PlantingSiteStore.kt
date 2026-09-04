@@ -1162,32 +1162,46 @@ class PlantingSiteStore(
       }
     }
 
-    val initialPlantingDensityChange =
-        densityChange(initial.initialPlantingDensity, edited.initialPlantingDensity)
-    val targetPlantDensityChange =
-        densityChange(initial.targetPlantDensity, edited.targetPlantDensity)
+    val stratumName = edited.name!!
+    val densityChanges =
+        listOfNotNull(
+            densityChange(
+                DensityChangedEventModel.DensityType.Initial,
+                initial.initialPlantingDensity,
+                edited.initialPlantingDensity,
+                stratumId,
+                stratumName,
+            ),
+            densityChange(
+                DensityChangedEventModel.DensityType.Target,
+                initial.targetPlantDensity,
+                edited.targetPlantDensity,
+                stratumId,
+                stratumName,
+            ),
+        )
 
-    if (initialPlantingDensityChange != null || targetPlantDensityChange != null) {
-      eventPublisher.publishEvent(
+    if (densityChanges.isNotEmpty()) {
+      rateLimitedEventPublisher.publishEvent(
           StratumDensityUpdatedEvent(
+              densityChanges = densityChanges,
               plantingSiteId = initial.plantingSiteId!!,
-              stratumId = stratumId,
-              stratumName = edited.name!!,
-              initialPlantingDensityChange = initialPlantingDensityChange,
-              targetPlantDensityChange = targetPlantDensityChange,
           )
       )
     }
   }
 
   private fun densityChange(
+      type: DensityChangedEventModel.DensityType,
       previousDensity: BigDecimal?,
       newDensity: BigDecimal?,
+      stratumId: StratumId,
+      stratumName: String,
   ): DensityChangedEventModel? =
       if (previousDensity.equalsIgnoreScale(newDensity)) {
         null
       } else {
-        DensityChangedEventModel(previousDensity, newDensity)
+        DensityChangedEventModel(type, previousDensity, newDensity, stratumId, stratumName)
       }
 
   /**

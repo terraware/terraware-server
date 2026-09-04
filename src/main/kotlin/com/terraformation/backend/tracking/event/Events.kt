@@ -172,12 +172,38 @@ data class PlantingSiteHistoryCreatedEvent(
  * different value. The change fields are null for densities that didn't change.
  */
 data class StratumDensityUpdatedEvent(
+    val densityChanges: List<DensityChangedEventModel>,
     val plantingSiteId: PlantingSiteId,
-    val stratumId: StratumId,
-    val stratumName: String,
-    val initialPlantingDensityChange: DensityChangedEventModel? = null,
-    val targetPlantDensityChange: DensityChangedEventModel? = null,
-)
+) : RateLimitedEvent<StratumDensityUpdatedEvent> {
+  override fun getMinimumInterval(): Duration = Duration.ofHours(24)
+
+  override fun getRateLimitKey() = plantingSiteId
+
+  override fun combine(existing: StratumDensityUpdatedEvent): StratumDensityUpdatedEvent {
+    val combinedChanges =
+        existing.densityChanges.associateBy { it.stratumId to it.densityType }.toMutableMap()
+    densityChanges.forEach { change ->
+      val key = change.stratumId to change.densityType
+      val existingChange = combinedChanges[key]
+
+      combinedChanges[key] =
+          DensityChangedEventModel(
+              densityType = change.densityType,
+              previousDensity =
+                  if (existingChange != null) {
+                    existingChange.previousDensity
+                  } else {
+                    change.previousDensity
+                  },
+              newDensity = change.newDensity,
+              stratumId = change.stratumId,
+              stratumName = change.stratumName,
+          )
+    }
+
+    return StratumDensityUpdatedEvent(combinedChanges.values.toList(), plantingSiteId)
+  }
+}
 
 data class T0PlotDataAssignedEvent(
     val monitoringPlotId: MonitoringPlotId,
