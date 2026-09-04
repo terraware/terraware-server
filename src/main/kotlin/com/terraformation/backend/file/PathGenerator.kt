@@ -19,11 +19,17 @@ import org.apache.tika.mime.MimeTypes
  * - `hhmmss` is the time part of the file's creation timestamp in UTC timezone.
  * - `random` is a 16-character-long random hexadecimal string. (See [generateBaseName] for
  *   details.)
- * - `.ext` is a file extension based on the file's MIME type, or `.bin` if the file's type doesn't
- *   have a standard file extension. For example, for JPEG files, the extension is `.jpg`.
+ * - `.ext` is a file extension based on the file's MIME type, or on the name of the uploaded file
+ *   if the MIME type doesn't have a standard extension, or `.bin` if neither of those yields an
+ *   extension.
  */
 @Named
 class PathGenerator(private val random: Random = Random.Default) {
+  companion object {
+    private const val DEFAULT_EXTENSION = ".bin"
+    private val extensionRegex = Regex("[a-z0-9]{1,10}")
+  }
+
   private val yearFormatter = dateTimeFormatter("yyyy")
   private val monthFormatter = dateTimeFormatter("MM")
   private val dayFormatter = dateTimeFormatter("dd")
@@ -32,13 +38,22 @@ class PathGenerator(private val random: Random = Random.Default) {
   /**
    * Returns a unique path for a new file. This would typically be passed to [FileStore.getUrl].
    *
-   * @param contentType The MIME type of the file. This is used to determine the file extension. If
-   *   the MIME type is unknown, a default extension of `.bin` will be used.
+   * @param contentType The MIME type of the file. This is used to determine the file extension.
+   * @param filename The name of the file as supplied by the client, if any. Its extension is used
+   *   when [contentType] isn't a MIME type with a standard extension. A default extension of `.bin`
+   *   is used if the filename has no usable extension either.
    */
-  fun generatePath(timestamp: Instant, category: String, contentType: String): Path {
+  fun generatePath(
+      timestamp: Instant,
+      category: String,
+      contentType: String,
+      filename: String? = null,
+  ): Path {
     val baseName = generateBaseName(timestamp)
     val extension =
-        MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType)?.extension ?: ".bin"
+        MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType)?.extension
+            ?: filenameExtension(filename)
+            ?: DEFAULT_EXTENSION
 
     return Path(
         yearFormatter.format(timestamp),
@@ -48,6 +63,18 @@ class PathGenerator(private val random: Random = Random.Default) {
         "$baseName$extension",
     )
   }
+
+  /**
+   * Returns the extension of a filename, including the leading `.`, or null if it doesn't have one.
+   * Since the extension becomes part of a storage path, extensions that aren't plain alphanumeric
+   * strings are rejected rather than sanitized.
+   */
+  private fun filenameExtension(filename: String?): String? =
+      filename
+          ?.substringAfterLast('.', missingDelimiterValue = "")
+          ?.lowercase()
+          ?.takeIf { extensionRegex.matches(it) }
+          ?.let { ".$it" }
 
   /**
    * Returns a unique string for use as the base part of the filename. The string is a 6-digit

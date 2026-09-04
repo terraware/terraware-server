@@ -145,6 +145,23 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `uses filename extension in storage URL if content type has no standard extension`() {
+      val data = Random.nextBytes(10)
+
+      val fileId =
+          fileService.storeFile(
+              "category",
+              data.inputStream(),
+              FileMetadata.of("application/json+frames", "frames.jsonl", data.size.toLong()),
+          ) {}
+
+      assertEquals(
+          URI("file:///2021/02/03/category/040506-0123456789ABCDEF.jsonl"),
+          filesDao.fetchOneById(fileId)!!.storageUrl,
+      )
+    }
+
+    @Test
     fun `stores file that has no EXIF metadata`() {
       val data = Random.nextBytes(10)
       val size = data.size.toLong()

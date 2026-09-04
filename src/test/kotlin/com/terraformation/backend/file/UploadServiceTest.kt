@@ -61,7 +61,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     val contentType = "text/csv"
     val type = UploadType.SpeciesCSV
 
-    every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
+    every { fileStore.newUrl(any(), any(), any(), any()) } returns storageUrl
     every { fileStore.write(storageUrl, any()) } just Runs
     val organizationId = insertOrganization()
 
@@ -88,7 +88,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `receive does not leave behind uploads row if file fails to transfer to store`() {
-    every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
+    every { fileStore.newUrl(any(), any(), any(), any()) } returns storageUrl
     every { fileStore.delete(storageUrl) } just Runs
     every { fileStore.write(storageUrl, any()) } throws IOException("uh oh")
 

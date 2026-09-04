@@ -166,8 +166,13 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
     }
   }
 
-  override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
-    return getUrl(pathGenerator.generatePath(timestamp, category, contentType))
+  override fun newUrl(
+      timestamp: Instant,
+      category: String,
+      contentType: String,
+      filename: String?,
+  ): URI {
+    return getUrl(pathGenerator.generatePath(timestamp, category, contentType, filename))
   }
 
   /**
