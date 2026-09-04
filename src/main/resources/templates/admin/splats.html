@@ -78,7 +78,7 @@
             <td>Other Args</td>
             <td><input type="text" name="stepArgs[extract]" th:value="${stepArgs['extract']}"/></td>
             <td>
-                Additional space-separated arguments to pass to splat.py extract.
+                Additional space-separated arguments to pass to extract.
             </td>
         </tr>
         </tbody>
@@ -106,7 +106,25 @@
             <td><input type="text" name="stepArgs[filter-blurry]"
                        th:value="${stepArgs['filter-blurry']}"/></td>
             <td>
-                Additional space-separated arguments to pass to splat.py filter-blurry.
+                Additional space-separated arguments to pass to filter-blurry.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
+
+        <tbody>
+        <tr>
+            <td>sky-segment</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[sky-segment]"
+                       th:value="${stepArgs['sky-segment']}"/></td>
+            <td>
+                Additional space-separated arguments to pass to sky-segment.
             </td>
         </tr>
         </tbody>
@@ -124,7 +142,25 @@
             <td><input type="text" name="stepArgs[feature-extractor]"
                        th:value="${stepArgs['feature-extractor']}"/></td>
             <td>
-                Additional space-separated arguments to pass to colmap feature_extractor.
+                Additional space-separated arguments to pass to colmap feature-extractor.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
+
+        <tbody>
+        <tr>
+            <td>pose-priors</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[pose-priors]"
+                       th:value="${stepArgs['pose-priors']}"/></td>
+            <td>
+                Additional space-separated arguments to pass to pose-priors.
             </td>
         </tr>
         </tbody>
@@ -174,7 +210,7 @@
             <td><input type="text" name="stepArgs[feature-matcher]"
                        th:value="${stepArgs['feature-matcher']}"/></td>
             <td>
-                Additional space-separated arguments to pass to colmap.
+                Additional space-separated arguments to pass to colmap feature-matcher.
             </td>
         </tr>
         </tbody>
@@ -204,13 +240,13 @@
 
         <tbody>
         <tr>
-            <td>model-converter-1</td>
+            <td>biggest-subdir-1</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[model-converter-1]"
-                       th:value="${stepArgs['model-converter-1']}"/></td>
+            <td><input type="text" name="stepArgs[biggest-subdir-1]"
+                       th:value="${stepArgs['biggest-subdir-1']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the first invocation of
-                colmap model_converter.
+                biggest-subdir.
             </td>
         </tr>
         </tbody>
@@ -275,6 +311,26 @@
             </td>
         </tr>
 
+
+        <tbody>
+        <tr>
+            <td>view-graph-calibrator</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[view-graph-calibrator]"
+                       th:value="${stepArgs['view-graph-calibrator']}"/></td>
+            <td>
+                Additional space-separated arguments to pass to view-graph-calibrator if check-2
+                fails.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
+
         <tbody>
         <tr>
             <td>glomap</td>
@@ -294,13 +350,12 @@
 
         <tbody>
         <tr>
-            <td>model-converter-2</td>
+            <td>biggest-subdir-2</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[model-converter-2]"
-                       th:value="${stepArgs['model-converter-2']}"/></td>
+            <td><input type="text" name="stepArgs[biggest-subdir-2]"
+                       th:value="${stepArgs['biggest-subdir-2']}"/></td>
             <td>
-                Additional space-separated arguments to pass to the second invocation of
-                colmap model_converter, after glomap.
+                Additional space-separated arguments to pass to biggest-subdir-2.
             </td>
         </tr>
         </tbody>
@@ -318,7 +373,7 @@
             <td><input type="text" name="stepArgs[check-3]" th:value="${stepArgs['check-3']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the third invocation of
-                check_reconstruction.py, after glomap or colmap.
+                check_reconstruction.py, after glomap.
             </td>
         </tr>
         </tbody>
@@ -367,11 +422,12 @@
 
         <tbody>
         <tr>
-            <td>prepare</td>
+            <td>link-images</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[prepare]" th:value="${stepArgs['prepare']}"/></td>
+            <td><input type="text" name="stepArgs[link-images]"
+                       th:value="${stepArgs['link-images']}"/></td>
             <td>
-                Additional space-separated arguments to pass to splat.py prepare.
+                Additional space-separated arguments to pass to link-images.
             </td>
         </tr>
         </tbody>
@@ -452,6 +508,43 @@
                        th:value="${stepArgs['splat-transform']}"/></td>
             <td>
                 Additional space-separated arguments to pass to splat-transform.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
+
+        <tbody>
+        <tr>
+            <td>splat-transform-streamed</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[splat-transform-streamed]"
+                       th:value="${stepArgs['splat-transform-streamed']}"/></td>
+            <td>
+                Additional space-separated arguments to pass to splat-transform when it generates
+                the streamed version of the model.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
+
+        <tbody>
+        <tr>
+            <td>ply-metadata</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[ply-metadata]"
+                       th:value="${stepArgs['ply-metadata']}"/></td>
+            <td>
+                Additional space-separated arguments to pass to the ply-metadata step.
             </td>
         </tr>
         </tbody>
