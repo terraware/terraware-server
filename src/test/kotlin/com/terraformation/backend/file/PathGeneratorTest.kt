@@ -1,7 +1,7 @@
 package com.terraformation.backend.file
 
 import java.time.Instant
-import kotlin.io.path.extension
+import kotlin.io.path.Path
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
@@ -11,12 +11,16 @@ class PathGeneratorTest {
   private val timestamp = Instant.parse("2024-03-15T12:34:56Z")
   private val pathGenerator = PathGenerator(Random(0))
 
+  /** Hexadecimal form of the first value from the generator's seeded random number source. */
+  private val randomValue = "8CB4C22C53FEAE50"
+
   @CsvSource(
       "content type extension     , image/jpeg              ,                 , jpg",
       "content type beats filename, image/jpeg              , photo.png       , jpg",
-      "filename extension         , application/json+frames , frames.json     , json",
+      "filename extension         , application/json+frames , frames.jsonl    , jsonl",
       "uppercase filename         , application/x-bogus     , DATA.JSON       , json",
       "no filename                , application/json+frames ,                 , bin",
+      "filename with multiple dots, application/json+frames , foo.bar.jsonx   , jsonx",
       "filename without extension , application/x-bogus     , frames          , bin",
       "unusable filename extension, application/x-bogus     , frames.j/../son , bin",
       ignoreLeadingAndTrailingWhitespace = true,
@@ -30,6 +34,6 @@ class PathGeneratorTest {
   ) {
     val path = pathGenerator.generatePath(timestamp, "category", contentType, filename)
 
-    assertEquals(expectedExtension, path.extension)
+    assertEquals(Path("2024/03/15/category/123456-$randomValue.$expectedExtension"), path)
   }
 }
