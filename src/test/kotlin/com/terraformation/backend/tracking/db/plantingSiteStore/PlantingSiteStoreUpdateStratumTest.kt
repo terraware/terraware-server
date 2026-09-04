@@ -168,18 +168,26 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
         )
       }
 
-      eventPublisher.assertEventPublished(
+      rateLimitedEventPublisher.assertEventPublished(
           StratumDensityUpdatedEvent(
-              plantingSiteId = inserted.plantingSiteId,
-              stratumId = stratumId,
-              stratumName = "stratum",
-              initialPlantingDensityChange =
-                  DensityChangedEventModel(
-                      previousDensity = BigDecimal(1500),
-                      newDensity = BigDecimal("1750.0"),
+              densityChanges =
+                  listOf(
+                      DensityChangedEventModel(
+                          densityType = DensityChangedEventModel.DensityType.Initial,
+                          newDensity = BigDecimal("1750.0"),
+                          previousDensity = BigDecimal("1500"),
+                          stratumId = stratumId,
+                          stratumName = "stratum",
+                      ),
+                      DensityChangedEventModel(
+                          densityType = DensityChangedEventModel.DensityType.Target,
+                          newDensity = BigDecimal("1200"),
+                          previousDensity = null,
+                          stratumId = stratumId,
+                          stratumName = "stratum",
+                      ),
                   ),
-              targetPlantDensityChange =
-                  DensityChangedEventModel(previousDensity = null, newDensity = BigDecimal(1200)),
+              plantingSiteId = inserted.plantingSiteId,
           )
       )
     }
@@ -196,13 +204,19 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
       store.updateStratum(stratumId) { it.copy(targetPlantDensity = null) }
 
-      eventPublisher.assertEventPublished(
+      rateLimitedEventPublisher.assertEventPublished(
           StratumDensityUpdatedEvent(
+              densityChanges =
+                  listOf(
+                      DensityChangedEventModel(
+                          densityType = DensityChangedEventModel.DensityType.Target,
+                          newDensity = null,
+                          previousDensity = BigDecimal("1200"),
+                          stratumId = stratumId,
+                          stratumName = "stratum",
+                      ),
+                  ),
               plantingSiteId = inserted.plantingSiteId,
-              stratumId = stratumId,
-              stratumName = "stratum",
-              targetPlantDensityChange =
-                  DensityChangedEventModel(previousDensity = BigDecimal(1200), newDensity = null),
           )
       )
     }

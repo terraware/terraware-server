@@ -10,30 +10,18 @@
                 <mj-text mj-class="text-body03">
                 ${strings("notification.plantingSite.stratumDensityUpdated.email.body", plantingSiteName)}
                 </mj-text>
-            <mj-raw>
-                <#if initialPlantingDensityChange??>
-            </mj-raw>
+
+                <mj-raw><#list densityChanges as change></mj-raw>
+
                     <mj-text mj-class="text-body01-regular" padding-top="4px">
-                        ${stratumName}
-                        <strong>${strings("stratum.initialPlantingDensity")}:</strong>
-                        <#if initialPlantingDensityChange.previousDensity??>${initialPlantingDensityChange.previousDensity}<#else>${strings("notSet")}</#if>
+                        ${change.stratumName}
+                        ${strings("stratum.density." + change.densityType)}:
+                        <#if change.previousDensity??>${change.previousDensity}<#else>${strings("notSet")}</#if>
                         &rarr;
-                        <#if initialPlantingDensityChange.newDensity??>${initialPlantingDensityChange.newDensity}<#else>${strings("notSet")}</#if>
+                        <#if change.newDensity??>${change.newDensity}<#else>${strings("notSet")}</#if>
                     </mj-text>
-            <mj-raw>
-                </#if>
-                <#if targetPlantDensityChange??>
-            </mj-raw>
-                    <mj-text mj-class="text-body01-regular" padding-top="4px">
-                        ${stratumName}
-                        <strong>${strings("stratum.targetPlantDensity")}:</strong>
-                        <#if targetPlantDensityChange.previousDensity??>${targetPlantDensityChange.previousDensity}<#else>${strings("notSet")}</#if>
-                        &rarr;
-                        <#if targetPlantDensityChange.newDensity??>${targetPlantDensityChange.newDensity}<#else>${strings("notSet")}</#if>
-                    </mj-text>
-            <mj-raw>
-                </#if>
-            </mj-raw>
+
+                <mj-raw></#list></mj-raw>
 
                 <mj-button mj-class="btn-productive-primary-md" href="${goalsUrl?no_esc}">
                     ${strings("notification.plantingSite.stratumDensityUpdated.email.buttonLabel")}

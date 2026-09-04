@@ -478,12 +478,10 @@ class PlantingSiteMapEdited(
 
 class StratumDensityUpdated(
     config: TerrawareServerConfig,
+    val densityChanges: List<DensityChangedEventModel>,
     val goalsUrl: String,
-    val initialPlantingDensityChange: DensityChangedEventModel?,
     val organizationName: String,
     val plantingSiteName: String,
-    val stratumName: String,
-    val targetPlantDensityChange: DensityChangedEventModel?,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "plantingSite/stratumDensityUpdated"
