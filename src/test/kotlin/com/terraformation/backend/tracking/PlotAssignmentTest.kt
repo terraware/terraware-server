@@ -16,6 +16,8 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.Shapefile
@@ -28,6 +30,7 @@ import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
 class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
@@ -115,6 +118,98 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSubstratum(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
+  }
+
+  @Test
+  fun `publishes event when not all configured plots fit in a stratum`() {
+    val smallBoundary = gen.multiRectangle(0 to 0, 91 to 31)
+    val smallFeature =
+        gen.substratumFeature(
+            smallBoundary,
+            name = "Sub1",
+            stratum = "S1",
+            permanentPlots = 6,
+            temporaryPlots = 2,
+        )
+
+    val largeBoundary = gen.multiRectangle(200 to 0, 531 to 121)
+    val largeFeature =
+        gen.substratumFeature(
+            largeBoundary,
+            name = "Sub2",
+            stratum = "S2",
+            permanentPlots = 2,
+            temporaryPlots = 2,
+        )
+
+    val plantingSite = importSite(listOf(smallFeature, largeFeature))
+    val smallStratum = plantingSite.strata.first { it.name == "S1" }
+    val largeStratum = plantingSite.strata.first { it.name == "S2" }
+    val smallSubstratum = smallStratum.substrata.first { it.name == "Sub1" }
+    val largeSubstratum = largeStratum.substrata.first { it.name == "Sub2" }
+
+    val observationId =
+        insertObservation(plantingSiteId = plantingSite.id, state = ObservationState.Upcoming)
+    insertObservationRequestedSubstratum(substratumId = smallSubstratum.id)
+    insertObservationRequestedSubstratum(substratumId = largeSubstratum.id)
+
+    observationService.startObservation(observationId)
+
+    val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
+
+    assertEquals(7, observationPlots.size, "Total plots in observation")
+    assertEquals(
+        4, // 2 in S1, 2 in S2
+        observationPlots.count { it.model.isPermanent },
+        "Permanent plots in observation",
+    )
+
+    eventPublisher.assertEventPublished(
+        ObservationPlotsUnderallocatedEvent(
+            observationId,
+            plantingSite.id,
+            listOf(
+                ObservationPlotsUnderallocatedEvent.Shortfall(
+                    numAllocated = 3,
+                    numConfigured = 8,
+                    stratumId = smallStratum.id,
+                    stratumName = smallStratum.name,
+                )
+            ),
+        )
+    )
+  }
+
+  @Test
+  fun `abandons the observation when a stratum has no room for any plots at all`() {
+    val substratumBoundary = gen.multiRectangle(0 to 0, 91 to 31)
+    val feature =
+        gen.substratumFeature(
+            substratumBoundary,
+            stratum = "S1",
+            permanentPlots = 6,
+            temporaryPlots = 2,
+        )
+
+    val plantingSite = importSite(listOf(feature))
+    val substratum = plantingSite.strata.single().substrata.single()
+
+    // Fill the substratum with unavailable plots.
+    plantingSiteStore.ensurePermanentPlotsExist(plantingSite.id)
+    monitoringPlotsDao.findAll().forEach { plantingSiteStore.makePlotUnavailable(it.id!!) }
+
+    val observationId =
+        insertObservation(plantingSiteId = plantingSite.id, state = ObservationState.Upcoming)
+    insertObservationRequestedSubstratum(substratumId = substratum.id)
+
+    observationService.startObservation(observationId)
+
+    eventPublisher.assertEventPublished(ObservationNotStartedEvent(observationId, plantingSite.id))
+    assertEquals(
+        emptyList<Any>(),
+        observationStore.fetchObservationPlotDetails(observationId),
+        "Abandoned observation should have no plots",
+    )
   }
 
   // Run test 10 times to exercise different random selections. 10 is somewhat arbitrary but given
@@ -207,6 +302,8 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         assertEquals("between 0 and 2", "$numPermanentPlots", "Number of permanent plots")
       }
     }
+
+    eventPublisher.assertEventNotPublished<ObservationPlotsUnderallocatedEvent>()
   }
 
   /**

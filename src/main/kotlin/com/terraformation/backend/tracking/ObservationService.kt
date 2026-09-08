@@ -63,6 +63,7 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -76,7 +77,8 @@ import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
-import com.terraformation.backend.tracking.model.SubstratumFullException
+import com.terraformation.backend.tracking.model.StratumFullException
+import com.terraformation.backend.tracking.model.StratumPlotAllocator
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.Instant
@@ -144,29 +146,41 @@ class ObservationService(
         log.info("Starting observation")
 
         try {
+          val observedPermanentPlotIds =
+              observationStore.fetchObservedPermanentPlotIds(observation.plantingSiteId)
+          val shortfalls = mutableListOf<ObservationPlotsUnderallocatedEvent.Shortfall>()
+
           plantingSite.strata.forEach { stratum ->
             log.withMDC("stratumId" to stratum.id) {
               if (stratum.substrata.any { it.id in observation.requestedSubstratumIds }) {
-                val permanentPlotIds =
-                    stratum.choosePermanentPlots(observation.requestedSubstratumIds)
-                val temporaryPlotIds =
-                    stratum
-                        .chooseTemporaryPlots(
-                            observation.requestedSubstratumIds,
+                val allocation =
+                    StratumPlotAllocator(
+                            stratum,
                             gridOrigin,
                             plantingSite.exclusion,
+                            observedPermanentPlotIds,
                         )
-                        .map { plotBoundary ->
-                          plantingSiteStore.createTemporaryPlot(
-                              plantingSite.id,
-                              stratum.id,
-                              plotBoundary,
-                          )
-                        }
+                        .allocate(observation.requestedSubstratumIds)
+
+                if (
+                    allocation.permanentPlotIds.isEmpty() &&
+                        allocation.temporaryPlotBoundaries.isEmpty()
+                ) {
+                  throw StratumFullException(stratum.id)
+                }
+
+                val temporaryPlotIds =
+                    allocation.temporaryPlotBoundaries.map { plotBoundary ->
+                      plantingSiteStore.createTemporaryPlot(
+                          plantingSite.id,
+                          stratum.id,
+                          plotBoundary,
+                      )
+                    }
 
                 observationStore.addPlotsToObservation(
                     observationId,
-                    permanentPlotIds,
+                    allocation.permanentPlotIds,
                     isPermanent = true,
                 )
                 observationStore.addPlotsToObservation(
@@ -175,9 +189,20 @@ class ObservationService(
                     isPermanent = false,
                 )
 
+                if (allocation.isShortfall) {
+                  shortfalls.add(
+                      ObservationPlotsUnderallocatedEvent.Shortfall(
+                          numAllocated = allocation.numAllocated,
+                          numConfigured = allocation.numConfigured,
+                          stratumId = stratum.id,
+                          stratumName = stratum.name,
+                      )
+                  )
+                }
+
                 log.info(
-                    "Added ${permanentPlotIds.size} permanent and ${temporaryPlotIds.size} " +
-                        "temporary plots"
+                    "Added ${allocation.permanentPlotIds.size} permanent and " +
+                        "${temporaryPlotIds.size} temporary plots"
                 )
               } else {
                 log.info("Skipping stratum because it has no reported plants")
@@ -188,7 +213,17 @@ class ObservationService(
           val startedObservation = observationStore.recordObservationStart(observationId)
 
           eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
-        } catch (e: SubstratumFullException) {
+
+          if (shortfalls.isNotEmpty()) {
+            eventPublisher.publishEvent(
+                ObservationPlotsUnderallocatedEvent(
+                    observationId,
+                    observation.plantingSiteId,
+                    shortfalls,
+                )
+            )
+          }
+        } catch (e: StratumFullException) {
           log.info("Unable to start observation $observationId", e)
 
           eventPublisher.publishEvent(
