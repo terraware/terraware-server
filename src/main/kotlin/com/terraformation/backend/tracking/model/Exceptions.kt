@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 
 class SubstratumFullException(
@@ -11,3 +12,6 @@ class SubstratumFullException(
         "Substratum $substratumId needs $plotsNeeded temporary plots but only " +
             "$plotsRemaining available"
     )
+
+class StratumFullException(val stratumId: StratumId) :
+    IllegalStateException("Stratum $stratumId has no room for any monitoring plots")

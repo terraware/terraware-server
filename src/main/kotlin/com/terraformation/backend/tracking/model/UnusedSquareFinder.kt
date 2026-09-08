@@ -23,6 +23,8 @@ class UnusedSquareFinder(
     private val sizeMeters: Number,
     /** Areas to exclude from the stratum, or null if the whole stratum is available. */
     exclusion: MultiPolygon? = null,
+    /** Only return squares matching this predicate. */
+    private val predicate: (Polygon) -> Boolean = { true },
 ) {
   private val geometryFactory = stratumBoundary.factory
   private val boundaryCrs = CRS.decode("EPSG:${stratumBoundary.srid}", true)
@@ -147,7 +149,7 @@ class UnusedSquareFinder(
     if (regionWidth < gridInterval && regionHeight < gridInterval) {
       val polygon = gridAlignedSquare(southwest.x, southwest.y)
 
-      return if (coveredByStratum(polygon)) {
+      return if (coveredByStratum(polygon) && predicate(polygon)) {
         polygon
       } else {
         null
@@ -164,7 +166,7 @@ class UnusedSquareFinder(
               Random.nextDouble(southwest.y, northeast.y),
           )
 
-      if (coveredByStratum(polygon)) {
+      if (coveredByStratum(polygon) && predicate(polygon)) {
         return polygon
       }
     }

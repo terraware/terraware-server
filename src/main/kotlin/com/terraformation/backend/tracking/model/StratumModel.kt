@@ -256,8 +256,10 @@ data class StratumModel<
       sizeMeters: Number,
       exclusion: MultiPolygon? = null,
       searchBoundary: MultiPolygon = this.boundary,
+      predicate: (Polygon) -> Boolean = { true },
   ): Polygon? {
-    return UnusedSquareFinder(searchBoundary, gridOrigin, sizeMeters, exclusion).findUnusedSquare()
+    return UnusedSquareFinder(searchBoundary, gridOrigin, sizeMeters, exclusion, predicate)
+        .findUnusedSquare()
   }
 
   /**
@@ -286,6 +288,7 @@ data class StratumModel<
       exclusion: MultiPolygon? = null,
       searchBoundary: MultiPolygon = this.boundary,
       permanentPlotIds: Set<MonitoringPlotId>? = null,
+      predicate: (Polygon) -> Boolean = { true },
   ): List<Polygon> {
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
@@ -298,7 +301,13 @@ data class StratumModel<
 
     return (1..count).mapNotNull { squareNumber ->
       val square =
-          findUnusedSquare(gridOrigin, sizeMeters, exclusionWithAllocatedSquares, searchBoundary)
+          findUnusedSquare(
+              gridOrigin,
+              sizeMeters,
+              exclusionWithAllocatedSquares,
+              searchBoundary,
+              predicate,
+          )
 
       if (square != null && squareNumber < count) {
         // Prevent this square from being selected again by excluding an area in the middle of it.
