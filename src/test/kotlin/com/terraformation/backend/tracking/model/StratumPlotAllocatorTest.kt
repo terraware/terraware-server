@@ -46,6 +46,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                 stratum,
                 siteOrigin,
                 exclusion = null,
+                observedPermanentPlotIds = emptySet(),
             )
             .allocate(substrataIds(1))
 
@@ -66,7 +67,13 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val stratum = fullStratum(capacity, configuredPermanent)
 
     val allocation =
-        StratumPlotAllocator(stratum, siteOrigin, exclusion = null).allocate(substrataIds(1))
+        StratumPlotAllocator(
+                stratum,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = emptySet(),
+            )
+            .allocate(substrataIds(1))
 
     assertEquals(configuredPermanent + 2, allocation.numConfigured, "Configured plots")
     assertEquals(capacity, allocation.numAllocated, "Allocated plots")
@@ -83,8 +90,13 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     )
   }
 
-  @Test
-  fun `does not turn permanent plots that cross substratum boundaries into temporary plots`() {
+  @ParameterizedTest
+  @CsvSource("0,3,2", "3,3,3", "4,4,4")
+  fun `does not turn permanent plots that cross substratum boundaries into temporary plots`(
+      numObserved: Int,
+      expectedAllocated: Int,
+      expectedPermanent: Int,
+  ) {
     val boundary = substratumBoundary(1, 4)
     val envelope = boundary.envelopeInternal
     val splitX = envelope.minX + envelope.width / 4
@@ -122,19 +134,71 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                 ),
         )
 
+    val permanentPlotIds = listOf(10, 11, 13, 12).map { MonitoringPlotId(it.toLong()) }
     val requestedSubstratumIds = substrataIds(1, 2)
     val allocation =
-        StratumPlotAllocator(stratum, siteOrigin, exclusion = null).allocate(requestedSubstratumIds)
+        StratumPlotAllocator(
+                stratum,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = permanentPlotIds.take(numObserved).toSet(),
+            )
+            .allocate(requestedSubstratumIds)
 
     assertEquals(8, allocation.numConfigured, "Configured plots")
-    assertEquals(3, allocation.numAllocated, "Allocated count should span the whole stratum")
+    assertEquals(
+        expectedAllocated,
+        allocation.numAllocated,
+        "Allocated count should span the whole stratum",
+    )
     assertTrue(allocation.isShortfall, "Should be a shortfall")
     assertEquals(
-        monitoringPlotIds(10, 11),
+        permanentPlotIds.take(expectedPermanent).toSet(),
         allocation.permanentPlotIds,
         "Should keep the lowest permanent indexes at the reduced capacity",
     )
-    assertEquals(1, allocation.temporaryPlotBoundaries.size, "Number of temporary plots")
+    assertEquals(
+        expectedAllocated - expectedPermanent,
+        allocation.temporaryPlotBoundaries.size,
+        "Number of temporary plots",
+    )
+  }
+
+  @Test
+  fun `keeps an observed permanent plot permanent instead of using one with a lower index`() {
+    val stratum = fullStratum()
+
+    val allocation =
+        StratumPlotAllocator(
+                stratum,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = setOf(MonitoringPlotId(13)),
+            )
+            .allocate(substrataIds(1))
+
+    assertEquals(
+        setOf(MonitoringPlotId(10), MonitoringPlotId(11), MonitoringPlotId(13)),
+        allocation.permanentPlotIds,
+        "Observed plot should displace the highest unobserved one",
+    )
+  }
+
+  @Test
+  fun `exceeds the target permanent-temporary ratio when too many plots are previously observed`() {
+    val stratum = fullStratum()
+
+    val allocation =
+        StratumPlotAllocator(
+                stratum,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = monitoringPlotIds(10, 11, 12, 13),
+            )
+            .allocate(substrataIds(1))
+
+    assertEquals(4, allocation.permanentPlotIds.size, "All observed plots stay permanent")
+    assertEquals(0, allocation.temporaryPlotBoundaries.size, "No room left for temporary plots")
   }
 
   @Test
@@ -166,6 +230,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                 stratum,
                 siteOrigin,
                 exclusion = null,
+                observedPermanentPlotIds = emptySet(),
             )
             .allocate(substrataIds(1))
 
@@ -195,6 +260,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
               stratum,
               siteOrigin,
               exclusion = null,
+              observedPermanentPlotIds = emptySet(),
           )
           .allocate(substrataIds(1))
     }
@@ -234,6 +300,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                 stratum,
                 siteOrigin,
                 exclusion = null,
+                observedPermanentPlotIds = emptySet(),
             )
             .allocate(substrataIds(1))
 
