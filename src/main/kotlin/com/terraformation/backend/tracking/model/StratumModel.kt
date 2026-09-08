@@ -75,9 +75,13 @@ data class StratumModel<
    * - Plots that are already selected as permanent plots aren't eligible.
    * - Plots that span substratum boundaries aren't eligible.
    * - Plots in substrata that were not requested for the observation aren't eligible.
-   * - Plots must be spread across substrata as evenly as possible: the number of temporary plots
-   *   can't vary by more than 1 between substrata. This even spreading doesn't take eligibility
-   *   into account.
+   * - Plots must be spread across substrata as evenly as possible: the quota assigned to each
+   *   substratum can't vary by more than 1 between substrata. This even spreading doesn't take
+   *   eligibility into account.
+   * - A requested substratum that doesn't have room for its whole quota passes the remainder to the
+   *   other requested substrata, one plot at a time so the plots stay as evenly spread as the
+   *   available space allows. Quotas belonging to unrequested substrata are dropped rather than
+   *   passed on.
    * - If plots can't be exactly evenly spread across substrata (that is, [numTemporaryPlots] is not
    *   a multiple of the number of substrata), the substrata for the remaining plots are determined
    *   using the following criteria in order (with the later criteria used as a tiebreaker if more
@@ -99,11 +103,10 @@ data class StratumModel<
    *   using the stratum's configured permanent plot count.
    * @return A collection of plot boundaries. These may or may not be the boundaries of plots that
    *   already exist in the database; callers can use [findMonitoringPlot] to check whether they
-   *   already exist.
+   *   already exist. Fewer boundaries than requested are returned if the substrata don't have room
+   *   for all of them.
    * @throws IllegalArgumentException The number of temporary plots hasn't been configured or the
    *   stratum has no substrata.
-   * @throws SubstratumFullException There weren't enough eligible plots available in a substratum
-   *   to choose the required number.
    */
   fun chooseTemporaryPlots(
       requestedSubstratumIds: Set<SubstratumId>,
@@ -122,47 +125,81 @@ data class StratumModel<
 
     // Any plots that can't be spread evenly will be placed in the substrata with the smallest
     // number of permanent plots, with priority given to substrata that are requested, and
-    // substratum ID
-    // used as a tie-breaker.
+    // substratum ID used as a tie-breaker.
     //
     // If we sort the substrata by those criteria, this means we can assign one extra plot each to
     // the first N substrata on that sorted list where N is the number of excess plots.
-    return substrata
-        .sortedWith(
-            compareBy { substratum: SubstratumModel<SSID> ->
-              substratum.monitoringPlots.count { plot -> isPermanent(plot, permanentPlotIds) }
-            }
-                .thenBy { if (it.id != null && it.id in requestedSubstratumIds) 0 else 1 }
-                .thenBy { it.id?.value ?: 0L }
-        )
-        .flatMapIndexed { index, substratum ->
-          if (substratum.id != null && substratum.id in requestedSubstratumIds) {
-            val numPlots =
-                if (index < numExcessPlots) {
-                  numEvenlySpreadPlotsPerSubstratum + 1
-                } else {
-                  numEvenlySpreadPlotsPerSubstratum
+    val quotas =
+        substrata
+            .sortedWith(
+                compareBy { substratum: SubstratumModel<SSID> ->
+                  substratum.monitoringPlots.count { plot -> isPermanent(plot, permanentPlotIds) }
                 }
+                    .thenBy { if (it.id != null && it.id in requestedSubstratumIds) 0 else 1 }
+                    .thenBy { it.id?.value ?: 0L }
+            )
+            .mapIndexed { index, substratum ->
+              val numPlots =
+                  if (index < numExcessPlots) {
+                    numEvenlySpreadPlotsPerSubstratum + 1
+                  } else {
+                    numEvenlySpreadPlotsPerSubstratum
+                  }
 
-            val squares =
-                findUnusedSquares(
-                    count = numPlots,
-                    exclusion = exclusion,
-                    gridOrigin = gridOrigin,
-                    searchBoundary = substratum.boundary,
-                    permanentPlotIds = permanentPlotIds,
-                )
-
-            if (squares.size < numPlots) {
-              throw SubstratumFullException(substratum.id, numPlots, squares.size)
+              substratum to numPlots
+            }
+            .filter { (substratum, _) ->
+              substratum.id != null && substratum.id in requestedSubstratumIds
             }
 
-            squares
-          } else {
-            // This substratum has no plants or wasn't requested, so it gets no temporary plots.
-            emptyList()
+    val chosenSquares = mutableListOf<Polygon>()
+
+    // Squares that have already been chosen are excluded from later searches.
+    var searchExclusion = exclusion
+
+    fun place(substratum: SubstratumModel<SSID>, numPlots: Int): Int {
+      val squares =
+          findUnusedSquares(
+              count = numPlots,
+              exclusion = searchExclusion,
+              gridOrigin = gridOrigin,
+              searchBoundary = substratum.boundary,
+              permanentPlotIds = permanentPlotIds,
+          )
+
+      searchExclusion =
+          squares.fold(searchExclusion) { acc, square ->
+            val triangle = middleTriangle(square)
+            (acc?.union(triangle) ?: triangle).toMultiPolygon()
           }
-        }
+
+      chosenSquares.addAll(squares)
+
+      return squares.size
+    }
+
+    // Substrata that didn't have room for their whole quotas pass the remainder to the ones that
+    // still have space, starting after any substrata that have already received excess plots due
+    // to the plot count not being a whole multiple of the substratum count.
+    var deficit = quotas.sumOf { (substratum, numPlots) -> numPlots - place(substratum, numPlots) }
+    var consecutiveFullSubstrata = 0
+    var quotaIndex = quotas.indexOfLast { it.second > numEvenlySpreadPlotsPerSubstratum } + 1
+
+    while (deficit > 0 && consecutiveFullSubstrata < quotas.size) {
+      val substratum = quotas[quotaIndex.rem(quotas.size)].first
+      val numPlaced = place(substratum, 1)
+
+      if (numPlaced > 0) {
+        consecutiveFullSubstrata = 0
+        deficit -= numPlaced
+      } else {
+        consecutiveFullSubstrata++
+      }
+
+      quotaIndex++
+    }
+
+    return chosenSquares
   }
 
   /**

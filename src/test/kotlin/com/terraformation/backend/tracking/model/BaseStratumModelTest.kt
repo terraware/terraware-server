@@ -78,12 +78,17 @@ abstract class BaseStratumModelTest {
 
   /**
    * Returns the boundary for a sample substratum. Substrata are arranged in a row from west to east
-   * and each one has room for 5 monitoring plots in the layout defined by [monitoringPlotBoundary],
-   * plus a 1-meter margin to account for floating-point inaccuracy.
+   * and each one has room for the requested number of monitoring plots in the layout defined by
+   * [monitoringPlotBoundary].
    */
   protected fun substratumBoundary(id: Int, numPlots: Int): MultiPolygon {
     return Turtle(siteOrigin).makeMultiPolygon {
       east(id * MONITORING_PLOT_SIZE * 2)
+
+      if (numPlots == 1) {
+        square(MONITORING_PLOT_SIZE)
+        return@makeMultiPolygon
+      }
 
       val southwest = currentPosition
 

@@ -94,7 +94,6 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
-import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -591,7 +590,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `deletes observation and publishes event if planting site is too small`() {
+    fun `starts observation with fewer plots if planting site is too small for all of them`() {
       val boundary = rectangle(MONITORING_PLOT_SIZE)
 
       insertStratum(boundary = boundary, numPermanentPlots = 1, numTemporaryPlots = 1)
@@ -602,9 +601,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.startObservation(observationId)
 
-      assertTableEmpty(OBSERVATIONS)
+      val observationPlots = observationPlotsDao.findAll()
 
-      eventPublisher.assertEventPublished(ObservationNotStartedEvent(observationId, plantingSiteId))
+      assertEquals(
+          listOf(true),
+          observationPlots.map { it.isPermanent },
+          "Should have only the one permanent plot; no room for a temporary plot",
+      )
+
+      assertEquals(
+          ObservationState.InProgress,
+          observationsDao.fetchOneById(observationId)!!.stateId,
+          "Observation state",
+      )
+
+      eventPublisher.assertEventPublished(
+          ObservationStartedEvent(observationStore.fetchObservationById(observationId))
+      )
     }
 
     @Test

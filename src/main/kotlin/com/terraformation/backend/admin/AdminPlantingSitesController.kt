@@ -39,7 +39,6 @@ import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
-import com.terraformation.backend.tracking.model.SubstratumFullException
 import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Hidden
@@ -228,19 +227,15 @@ class AdminPlantingSitesController(
                 val numPermanent = stratum.numPermanentPlots
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
-                    try {
-                      stratum
-                          .chooseTemporaryPlots(
-                              site.strata
-                                  .flatMap { stratum -> stratum.substrata.map { it.id } }
-                                  .toSet(),
-                              gridOrigin = site.gridOrigin!!,
-                              exclusion = site.exclusion,
-                          )
-                          .map { boundary -> boundary to stratum.findMonitoringPlot(boundary)?.id }
-                    } catch (e: SubstratumFullException) {
-                      emptyList()
-                    }
+                    stratum
+                        .chooseTemporaryPlots(
+                            site.strata
+                                .flatMap { stratum -> stratum.substrata.map { it.id } }
+                                .toSet(),
+                            gridOrigin = site.gridOrigin!!,
+                            exclusion = site.exclusion,
+                        )
+                        .map { boundary -> boundary to stratum.findMonitoringPlot(boundary)?.id }
                 val temporaryPlotIds = temporaryPlotsAndIds.mapNotNull { (_, id) -> id }.toSet()
 
                 // Temporary plots that, if this were the start of an actual observation, we would
