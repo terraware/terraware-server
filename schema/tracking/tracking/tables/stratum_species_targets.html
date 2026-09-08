@@ -135,13 +135,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="stratum_species_targets.[planting_site_id, stratum_id] references strata.[planting_site_id, id] via stratum_must_be_in_site"><a href='strata.html'>strata</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">stratum_must_be_in_site</td>
+                                                <td title="stratum_species_targets.[planting_site_id, species_id] references planting_site_species_targets.[planting_site_id, species_id] via species_must_be_targeted_to_site"><a href='planting_site_species_targets.html'>planting_site_species_targets</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">species_must_be_targeted_to_site</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="stratum_species_targets.[planting_site_id, species_id] references planting_site_species_targets.[planting_site_id, species_id] via species_must_be_targeted_to_site"><a href='planting_site_species_targets.html'>planting_site_species_targets</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">species_must_be_targeted_to_site</td>
+                                                <td title="stratum_species_targets.[planting_site_id, stratum_id] references strata.[planting_site_id, id] via stratum_must_be_in_site"><a href='strata.html'>strata</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">stratum_must_be_in_site</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>

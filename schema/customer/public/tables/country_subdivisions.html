@@ -253,12 +253,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>country_subdivisions_code_length</td>
-                                    <td>((length(code) &gt;&#61; 4) AND (length(code) &lt;&#61; 6))</td>
-                                </tr>
-                                <tr>
                                     <td>country_subdivisions_code_matches_country</td>
                                     <td>(substr(code, 1, 2) &#61; country_code)</td>
+                                </tr>
+                                <tr>
+                                    <td>country_subdivisions_code_length</td>
+                                    <td>((length(code) &gt;&#61; 4) AND (length(code) &lt;&#61; 6))</td>
                                 </tr>
                                 </tbody>
                             </table>

@@ -1735,10 +1735,97 @@
 <polygon fill="black" stroke="black" points="1258,-22393 1266,-22396.6 1262,-22393 1266,-22393 1266,-22393 1266,-22393 1262,-22393 1266,-22389.4 1258,-22393 1258,-22393"/>
 <ellipse fill="none" stroke="black" cx="1254.8" cy="-22393" rx="3.2" ry="3.2"/>
 </g>
-<!-- uploads -->
+<!-- timeseries_values -->
 <g id="node25" class="node">
+<title>timeseries_values</title>
+<g id="a_node25"><a xlink:href="../../tables/timeseries_values.html" xlink:title="timeseries_values" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="2001,-22866 2001,-22972 2151,-22972 2151,-22866 2001,-22866"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="2001,-22950 2001,-22972 2151,-22972 2151,-22950 2001,-22950"/>
+<polygon fill="none" stroke="black" points="2001,-22950 2001,-22972 2151,-22972 2151,-22950 2001,-22950"/>
+<text text-anchor="start" x="2006" y="-22959.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries_values</text>
+<text text-anchor="start" x="2112" y="-22958.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="#ffffff" stroke="transparent" points="2001,-22928 2001,-22950 2151,-22950 2151,-22928 2001,-22928"/>
+<polygon fill="none" stroke="black" points="2001,-22928 2001,-22950 2151,-22950 2151,-22928 2001,-22928"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2006" y="-22945"/>
+<text text-anchor="start" x="2033" y="-22936.2" font-family="Helvetica,sans-Serif" font-size="11.00">timeseries_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="2001,-22906 2001,-22928 2151,-22928 2151,-22906 2001,-22906"/>
+<polygon fill="none" stroke="black" points="2001,-22906 2001,-22928 2151,-22928 2151,-22906 2001,-22906"/>
+<text text-anchor="start" x="2033" y="-22914.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<polygon fill="none" stroke="black" points="2001,-22884 2001,-22906 2151,-22906 2151,-22884 2001,-22884"/>
+<text text-anchor="start" x="2033" y="-22892.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
+<polygon fill="#ffffff" stroke="transparent" points="2001,-22866 2001,-22884 2074,-22884 2074,-22866 2001,-22866"/>
+<polygon fill="none" stroke="black" points="2001,-22866 2001,-22884 2074,-22884 2074,-22866 2001,-22866"/>
+<text text-anchor="start" x="2004" y="-22872.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="2074,-22866 2074,-22884 2112,-22884 2112,-22866 2074,-22866"/>
+<polygon fill="none" stroke="black" points="2074,-22866 2074,-22884 2112,-22884 2112,-22866 2074,-22866"/>
+<text text-anchor="start" x="2102" y="-22872.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="2112,-22866 2112,-22884 2151,-22884 2151,-22866 2112,-22866"/>
+<polygon fill="none" stroke="black" points="2112,-22866 2112,-22884 2151,-22884 2151,-22866 2112,-22866"/>
+<text text-anchor="start" x="2141" y="-22872.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- timeseries -->
+<g id="node56" class="node">
+<title>timeseries</title>
+<g id="a_node56"><a xlink:href="../../tables/timeseries.html" xlink:title="timeseries" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1744,-22690 1744,-22972 1854,-22972 1854,-22690 1744,-22690"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1744,-22950 1744,-22972 1854,-22972 1854,-22950 1744,-22950"/>
+<polygon fill="none" stroke="black" points="1744,-22950 1744,-22972 1854,-22972 1854,-22950 1744,-22950"/>
+<text text-anchor="start" x="1749" y="-22959.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries</text>
+<text text-anchor="start" x="1815" y="-22958.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1744,-22928 1744,-22950 1854,-22950 1854,-22928 1744,-22928"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22945"/>
+<text text-anchor="start" x="1764" y="-22936.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="1744,-22906 1744,-22928 1854,-22928 1854,-22906 1744,-22906"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22923"/>
+<text text-anchor="start" x="1764" y="-22914.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1744,-22884 1744,-22906 1854,-22906 1854,-22884 1744,-22884"/>
+<polygon fill="none" stroke="black" points="1744,-22884 1744,-22906 1854,-22906 1854,-22884 1744,-22884"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22901"/>
+<text text-anchor="start" x="1764" y="-22892.2" font-family="Helvetica,sans-Serif" font-size="11.00">device_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1744,-22862 1744,-22884 1854,-22884 1854,-22862 1744,-22862"/>
+<polygon fill="none" stroke="black" points="1744,-22862 1744,-22884 1854,-22884 1854,-22862 1744,-22862"/>
+<text text-anchor="start" x="1764" y="-22870.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="none" stroke="black" points="1744,-22840 1744,-22862 1854,-22862 1854,-22840 1744,-22840"/>
+<text text-anchor="start" x="1764" y="-22848.2" font-family="Helvetica,sans-Serif" font-size="11.00">units</text>
+<polygon fill="none" stroke="black" points="1744,-22818 1744,-22840 1854,-22840 1854,-22818 1744,-22818"/>
+<text text-anchor="start" x="1764" y="-22826.2" font-family="Helvetica,sans-Serif" font-size="11.00">decimal_places</text>
+<polygon fill="none" stroke="black" points="1744,-22796 1744,-22818 1854,-22818 1854,-22796 1744,-22796"/>
+<text text-anchor="start" x="1764" y="-22804.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<polygon fill="none" stroke="black" points="1744,-22774 1744,-22796 1854,-22796 1854,-22774 1744,-22774"/>
+<text text-anchor="start" x="1764" y="-22782.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<polygon fill="none" stroke="black" points="1744,-22752 1744,-22774 1854,-22774 1854,-22752 1744,-22752"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22769"/>
+<text text-anchor="start" x="1764" y="-22760.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<polygon fill="none" stroke="black" points="1744,-22730 1744,-22752 1854,-22752 1854,-22730 1744,-22730"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22747"/>
+<text text-anchor="start" x="1764" y="-22738.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<polygon fill="none" stroke="black" points="1744,-22708 1744,-22730 1854,-22730 1854,-22708 1744,-22708"/>
+<text text-anchor="start" x="1764" y="-22716.2" font-family="Helvetica,sans-Serif" font-size="11.00">retention_days</text>
+<polygon fill="#ffffff" stroke="transparent" points="1744,-22690 1744,-22708 1792,-22708 1792,-22690 1744,-22690"/>
+<polygon fill="none" stroke="black" points="1744,-22690 1744,-22708 1792,-22708 1792,-22690 1744,-22690"/>
+<text text-anchor="start" x="1747" y="-22696.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="1792,-22690 1792,-22708 1818,-22708 1818,-22690 1792,-22690"/>
+<polygon fill="none" stroke="black" points="1792,-22690 1792,-22708 1818,-22708 1818,-22690 1792,-22690"/>
+<text text-anchor="start" x="1808" y="-22696.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1818,-22690 1818,-22708 1854,-22708 1854,-22690 1818,-22690"/>
+<polygon fill="none" stroke="black" points="1818,-22690 1818,-22708 1854,-22708 1854,-22690 1818,-22690"/>
+<text text-anchor="start" x="1835" y="-22696.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- timeseries_values&#45;&gt;timeseries -->
+<g id="edge264" class="edge">
+<title>timeseries_values:w&#45;&gt;timeseries:e</title>
+<path fill="none" stroke="black" d="M1985.4,-22939C1932.67,-22939 1914.28,-22939 1855,-22939"/>
+<polygon fill="black" stroke="black" points="1992,-22939 2000,-22942.6 1996,-22939 2000,-22939 2000,-22939 2000,-22939 1996,-22939 2000,-22935.4 1992,-22939 1992,-22939"/>
+<ellipse fill="none" stroke="black" cx="1988.8" cy="-22939" rx="3.2" ry="3.2"/>
+</g>
+<!-- uploads -->
+<g id="node26" class="node">
 <title>uploads</title>
-<g id="a_node25"><a xlink:href="../../tables/uploads.html" xlink:title="uploads" target="_top">
+<g id="a_node26"><a xlink:href="../../tables/uploads.html" xlink:title="uploads" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1358,-21741 1358,-22023 1470,-22023 1470,-21741 1358,-21741"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1358,-22001 1358,-22023 1470,-22023 1470,-22001 1358,-22001"/>
 <polygon fill="none" stroke="black" points="1358,-22001 1358,-22023 1470,-22023 1470,-22001 1358,-22001"/>
@@ -1926,93 +2013,6 @@
 <path fill="none" stroke="black" d="M1342.38,-21813.64C1282.41,-21810.54 1254.64,-21787.02 1223,-21730 1175.11,-21643.69 1256.19,-7589.22 1190,-7516 1146.55,-7467.94 943.77,-7533.77 900,-7486 822.03,-7400.92 926.74,-5507.74 867,-5409 846.31,-5374.8 827.98,-5366 788,-5366"/>
 <polygon fill="black" stroke="black" points="1349,-21813.8 1356.91,-21817.6 1353,-21813.9 1357,-21814 1357,-21814 1357,-21814 1353,-21813.9 1357.09,-21810.4 1349,-21813.8 1349,-21813.8"/>
 <ellipse fill="none" stroke="black" cx="1345.8" cy="-21813.72" rx="3.2" ry="3.2"/>
-</g>
-<!-- timeseries_values -->
-<g id="node26" class="node">
-<title>timeseries_values</title>
-<g id="a_node26"><a xlink:href="../../tables/timeseries_values.html" xlink:title="timeseries_values" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="2001,-22866 2001,-22972 2151,-22972 2151,-22866 2001,-22866"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="2001,-22950 2001,-22972 2151,-22972 2151,-22950 2001,-22950"/>
-<polygon fill="none" stroke="black" points="2001,-22950 2001,-22972 2151,-22972 2151,-22950 2001,-22950"/>
-<text text-anchor="start" x="2006" y="-22959.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries_values</text>
-<text text-anchor="start" x="2112" y="-22958.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="#ffffff" stroke="transparent" points="2001,-22928 2001,-22950 2151,-22950 2151,-22928 2001,-22928"/>
-<polygon fill="none" stroke="black" points="2001,-22928 2001,-22950 2151,-22950 2151,-22928 2001,-22928"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2006" y="-22945"/>
-<text text-anchor="start" x="2033" y="-22936.2" font-family="Helvetica,sans-Serif" font-size="11.00">timeseries_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="2001,-22906 2001,-22928 2151,-22928 2151,-22906 2001,-22906"/>
-<polygon fill="none" stroke="black" points="2001,-22906 2001,-22928 2151,-22928 2151,-22906 2001,-22906"/>
-<text text-anchor="start" x="2033" y="-22914.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
-<polygon fill="none" stroke="black" points="2001,-22884 2001,-22906 2151,-22906 2151,-22884 2001,-22884"/>
-<text text-anchor="start" x="2033" y="-22892.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
-<polygon fill="#ffffff" stroke="transparent" points="2001,-22866 2001,-22884 2074,-22884 2074,-22866 2001,-22866"/>
-<polygon fill="none" stroke="black" points="2001,-22866 2001,-22884 2074,-22884 2074,-22866 2001,-22866"/>
-<text text-anchor="start" x="2004" y="-22872.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="2074,-22866 2074,-22884 2112,-22884 2112,-22866 2074,-22866"/>
-<polygon fill="none" stroke="black" points="2074,-22866 2074,-22884 2112,-22884 2112,-22866 2074,-22866"/>
-<text text-anchor="start" x="2102" y="-22872.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="2112,-22866 2112,-22884 2151,-22884 2151,-22866 2112,-22866"/>
-<polygon fill="none" stroke="black" points="2112,-22866 2112,-22884 2151,-22884 2151,-22866 2112,-22866"/>
-<text text-anchor="start" x="2141" y="-22872.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- timeseries -->
-<g id="node56" class="node">
-<title>timeseries</title>
-<g id="a_node56"><a xlink:href="../../tables/timeseries.html" xlink:title="timeseries" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1744,-22690 1744,-22972 1854,-22972 1854,-22690 1744,-22690"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1744,-22950 1744,-22972 1854,-22972 1854,-22950 1744,-22950"/>
-<polygon fill="none" stroke="black" points="1744,-22950 1744,-22972 1854,-22972 1854,-22950 1744,-22950"/>
-<text text-anchor="start" x="1749" y="-22959.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries</text>
-<text text-anchor="start" x="1815" y="-22958.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1744,-22928 1744,-22950 1854,-22950 1854,-22928 1744,-22928"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22945"/>
-<text text-anchor="start" x="1764" y="-22936.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="1744,-22906 1744,-22928 1854,-22928 1854,-22906 1744,-22906"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22923"/>
-<text text-anchor="start" x="1764" y="-22914.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1744,-22884 1744,-22906 1854,-22906 1854,-22884 1744,-22884"/>
-<polygon fill="none" stroke="black" points="1744,-22884 1744,-22906 1854,-22906 1854,-22884 1744,-22884"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22901"/>
-<text text-anchor="start" x="1764" y="-22892.2" font-family="Helvetica,sans-Serif" font-size="11.00">device_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1744,-22862 1744,-22884 1854,-22884 1854,-22862 1744,-22862"/>
-<polygon fill="none" stroke="black" points="1744,-22862 1744,-22884 1854,-22884 1854,-22862 1744,-22862"/>
-<text text-anchor="start" x="1764" y="-22870.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="none" stroke="black" points="1744,-22840 1744,-22862 1854,-22862 1854,-22840 1744,-22840"/>
-<text text-anchor="start" x="1764" y="-22848.2" font-family="Helvetica,sans-Serif" font-size="11.00">units</text>
-<polygon fill="none" stroke="black" points="1744,-22818 1744,-22840 1854,-22840 1854,-22818 1744,-22818"/>
-<text text-anchor="start" x="1764" y="-22826.2" font-family="Helvetica,sans-Serif" font-size="11.00">decimal_places</text>
-<polygon fill="none" stroke="black" points="1744,-22796 1744,-22818 1854,-22818 1854,-22796 1744,-22796"/>
-<text text-anchor="start" x="1764" y="-22804.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
-<polygon fill="none" stroke="black" points="1744,-22774 1744,-22796 1854,-22796 1854,-22774 1744,-22774"/>
-<text text-anchor="start" x="1764" y="-22782.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
-<polygon fill="none" stroke="black" points="1744,-22752 1744,-22774 1854,-22774 1854,-22752 1744,-22752"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22769"/>
-<text text-anchor="start" x="1764" y="-22760.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
-<polygon fill="none" stroke="black" points="1744,-22730 1744,-22752 1854,-22752 1854,-22730 1744,-22730"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1749" y="-22747"/>
-<text text-anchor="start" x="1764" y="-22738.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="none" stroke="black" points="1744,-22708 1744,-22730 1854,-22730 1854,-22708 1744,-22708"/>
-<text text-anchor="start" x="1764" y="-22716.2" font-family="Helvetica,sans-Serif" font-size="11.00">retention_days</text>
-<polygon fill="#ffffff" stroke="transparent" points="1744,-22690 1744,-22708 1792,-22708 1792,-22690 1744,-22690"/>
-<polygon fill="none" stroke="black" points="1744,-22690 1744,-22708 1792,-22708 1792,-22690 1744,-22690"/>
-<text text-anchor="start" x="1747" y="-22696.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="1792,-22690 1792,-22708 1818,-22708 1818,-22690 1792,-22690"/>
-<polygon fill="none" stroke="black" points="1792,-22690 1792,-22708 1818,-22708 1818,-22690 1792,-22690"/>
-<text text-anchor="start" x="1808" y="-22696.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1818,-22690 1818,-22708 1854,-22708 1854,-22690 1818,-22690"/>
-<polygon fill="none" stroke="black" points="1818,-22690 1818,-22708 1854,-22708 1854,-22690 1818,-22690"/>
-<text text-anchor="start" x="1835" y="-22696.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- timeseries_values&#45;&gt;timeseries -->
-<g id="edge264" class="edge">
-<title>timeseries_values:w&#45;&gt;timeseries:e</title>
-<path fill="none" stroke="black" d="M1985.4,-22939C1932.67,-22939 1914.28,-22939 1855,-22939"/>
-<polygon fill="black" stroke="black" points="1992,-22939 2000,-22942.6 1996,-22939 2000,-22939 2000,-22939 2000,-22939 1996,-22939 2000,-22935.4 1992,-22939 1992,-22939"/>
-<ellipse fill="none" stroke="black" cx="1988.8" cy="-22939" rx="3.2" ry="3.2"/>
 </g>
 <!-- seed_fund_report_photos -->
 <g id="node27" class="node">

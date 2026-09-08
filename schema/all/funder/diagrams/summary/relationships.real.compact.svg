@@ -171,53 +171,10 @@
 <polygon fill="black" stroke="black" points="330.01,-2405.46 338.21,-2408.59 334.01,-2405.23 338,-2405 338,-2405 338,-2405 334.01,-2405.23 337.79,-2401.41 330.01,-2405.46 330.01,-2405.46"/>
 <ellipse fill="none" stroke="black" cx="326.82" cy="-2405.65" rx="3.2" ry="3.2"/>
 </g>
-<!-- published_auto_calculated_indicator_baselines -->
-<g id="node3" class="node">
-<title>published_auto_calculated_indicator_baselines</title>
-<g id="a_node3"><a xlink:href="../../tables/published_auto_calculated_indic_82736b5c.html" xlink:title="published_auto_calculated_indicator_baselines" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="332,-2481 332,-2583 654,-2583 654,-2481 332,-2481"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="332,-2561 332,-2583 654,-2583 654,-2561 332,-2561"/>
-<polygon fill="none" stroke="black" points="332,-2561 332,-2583 654,-2583 654,-2561 332,-2561"/>
-<text text-anchor="start" x="337" y="-2570.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_auto_calculated_indicator_baselines</text>
-<text text-anchor="start" x="615" y="-2569.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="332,-2539 332,-2561 654,-2561 654,-2539 332,-2539"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="337" y="-2556"/>
-<text text-anchor="start" x="364" y="-2547.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="none" stroke="black" points="332,-2517 332,-2539 654,-2539 654,-2517 332,-2517"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="337" y="-2534"/>
-<text text-anchor="start" x="364" y="-2525.2" font-family="Helvetica,sans-Serif" font-size="11.00">auto_calculated_indicator_id</text>
-<polygon fill="none" stroke="black" points="332,-2499 332,-2517 654,-2517 654,-2499 332,-2499"/>
-<text text-anchor="start" x="335" y="-2505.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="332,-2481 332,-2499 491,-2499 491,-2481 332,-2481"/>
-<polygon fill="none" stroke="black" points="332,-2481 332,-2499 491,-2499 491,-2481 332,-2481"/>
-<text text-anchor="start" x="335" y="-2487.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="491,-2481 491,-2499 572,-2499 572,-2481 491,-2481"/>
-<polygon fill="none" stroke="black" points="491,-2481 491,-2499 572,-2499 572,-2481 491,-2481"/>
-<text text-anchor="start" x="562" y="-2487.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="572,-2481 572,-2499 654,-2499 654,-2481 572,-2481"/>
-<polygon fill="none" stroke="black" points="572,-2481 572,-2499 654,-2499 654,-2481 572,-2481"/>
-<text text-anchor="start" x="644" y="-2487.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- published_auto_calculated_indicator_baselines&#45;&gt;public.projects -->
-<g id="edge22" class="edge">
-<title>published_auto_calculated_indicator_baselines:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M319.01,-2541.48C280.28,-2479.67 305.33,-2100.9 291,-2052 264.17,-1960.42 203.92,-1864.52 170.31,-1815.39"/>
-<polygon fill="black" stroke="black" points="324.48,-2545.37 328.91,-2552.93 327.74,-2547.68 331,-2550 331,-2550 331,-2550 327.74,-2547.68 333.09,-2547.07 324.48,-2545.37 324.48,-2545.37"/>
-<ellipse fill="none" stroke="black" cx="321.87" cy="-2543.51" rx="3.2" ry="3.2"/>
-</g>
-<!-- published_auto_calculated_indicator_baselines&#45;&gt;accelerator.auto_calculated_indicators -->
-<g id="edge21" class="edge">
-<title>published_auto_calculated_indicator_baselines:w&#45;&gt;accelerator.auto_calculated_indicators:e</title>
-<path fill="none" stroke="black" d="M316.53,-2528C308.12,-2528 299.58,-2528 291.03,-2528"/>
-<polygon fill="black" stroke="black" points="323,-2528 331,-2531.6 327,-2528 331,-2528 331,-2528 331,-2528 327,-2528 331,-2524.4 323,-2528 323,-2528"/>
-<ellipse fill="none" stroke="black" cx="319.8" cy="-2528" rx="3.2" ry="3.2"/>
-</g>
 <!-- published_activity_observations -->
-<g id="node4" class="node">
+<g id="node3" class="node">
 <title>published_activity_observations</title>
-<g id="a_node4"><a xlink:href="../../tables/published_activity_observations.html" xlink:title="published_activity_observations" target="_top">
+<g id="a_node3"><a xlink:href="../../tables/published_activity_observations.html" xlink:title="published_activity_observations" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="740.5,-537 740.5,-639 975.5,-639 975.5,-537 740.5,-537"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="741,-617 741,-639 976,-639 976,-617 741,-617"/>
 <polygon fill="none" stroke="black" points="741,-617 741,-639 976,-639 976,-617 741,-617"/>
@@ -318,6 +275,49 @@
 <polygon fill="black" stroke="black" points="739.15,-580.01 739.25,-588.01 737.65,-588.03 737.55,-580.03 739.15,-580.01"/>
 <polyline fill="none" stroke="black" points="740,-584 736,-584.05 "/>
 <ellipse fill="none" stroke="black" cx="732.8" cy="-584.09" rx="3.2" ry="3.2"/>
+</g>
+<!-- published_auto_calculated_indicator_baselines -->
+<g id="node4" class="node">
+<title>published_auto_calculated_indicator_baselines</title>
+<g id="a_node4"><a xlink:href="../../tables/published_auto_calculated_indic_82736b5c.html" xlink:title="published_auto_calculated_indicator_baselines" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="332,-2481 332,-2583 654,-2583 654,-2481 332,-2481"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="332,-2561 332,-2583 654,-2583 654,-2561 332,-2561"/>
+<polygon fill="none" stroke="black" points="332,-2561 332,-2583 654,-2583 654,-2561 332,-2561"/>
+<text text-anchor="start" x="337" y="-2570.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_auto_calculated_indicator_baselines</text>
+<text text-anchor="start" x="615" y="-2569.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="332,-2539 332,-2561 654,-2561 654,-2539 332,-2539"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="337" y="-2556"/>
+<text text-anchor="start" x="364" y="-2547.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="none" stroke="black" points="332,-2517 332,-2539 654,-2539 654,-2517 332,-2517"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="337" y="-2534"/>
+<text text-anchor="start" x="364" y="-2525.2" font-family="Helvetica,sans-Serif" font-size="11.00">auto_calculated_indicator_id</text>
+<polygon fill="none" stroke="black" points="332,-2499 332,-2517 654,-2517 654,-2499 332,-2499"/>
+<text text-anchor="start" x="335" y="-2505.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="332,-2481 332,-2499 491,-2499 491,-2481 332,-2481"/>
+<polygon fill="none" stroke="black" points="332,-2481 332,-2499 491,-2499 491,-2481 332,-2481"/>
+<text text-anchor="start" x="335" y="-2487.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="491,-2481 491,-2499 572,-2499 572,-2481 491,-2481"/>
+<polygon fill="none" stroke="black" points="491,-2481 491,-2499 572,-2499 572,-2481 491,-2481"/>
+<text text-anchor="start" x="562" y="-2487.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="572,-2481 572,-2499 654,-2499 654,-2481 572,-2481"/>
+<polygon fill="none" stroke="black" points="572,-2481 572,-2499 654,-2499 654,-2481 572,-2481"/>
+<text text-anchor="start" x="644" y="-2487.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- published_auto_calculated_indicator_baselines&#45;&gt;public.projects -->
+<g id="edge22" class="edge">
+<title>published_auto_calculated_indicator_baselines:w&#45;&gt;public.projects:e</title>
+<path fill="none" stroke="black" d="M319.01,-2541.48C280.28,-2479.67 305.33,-2100.9 291,-2052 264.17,-1960.42 203.92,-1864.52 170.31,-1815.39"/>
+<polygon fill="black" stroke="black" points="324.48,-2545.37 328.91,-2552.93 327.74,-2547.68 331,-2550 331,-2550 331,-2550 327.74,-2547.68 333.09,-2547.07 324.48,-2545.37 324.48,-2545.37"/>
+<ellipse fill="none" stroke="black" cx="321.87" cy="-2543.51" rx="3.2" ry="3.2"/>
+</g>
+<!-- published_auto_calculated_indicator_baselines&#45;&gt;accelerator.auto_calculated_indicators -->
+<g id="edge21" class="edge">
+<title>published_auto_calculated_indicator_baselines:w&#45;&gt;accelerator.auto_calculated_indicators:e</title>
+<path fill="none" stroke="black" d="M316.53,-2528C308.12,-2528 299.58,-2528 291.03,-2528"/>
+<polygon fill="black" stroke="black" points="323,-2528 331,-2531.6 327,-2528 331,-2528 331,-2528 331,-2528 327,-2528 331,-2524.4 323,-2528 323,-2528"/>
+<ellipse fill="none" stroke="black" cx="319.8" cy="-2528" rx="3.2" ry="3.2"/>
 </g>
 <!-- published_project_sdg -->
 <g id="node5" class="node">
