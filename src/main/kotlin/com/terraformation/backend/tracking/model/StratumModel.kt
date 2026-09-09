@@ -299,28 +299,36 @@ data class StratumModel<
           exclusionWithAllocatedSquares?.union(exclusion)?.toMultiPolygon() ?: exclusion
     }
 
-    return (1..count).mapNotNull { squareNumber ->
-      val square =
-          findUnusedSquare(
-              gridOrigin,
-              sizeMeters,
-              exclusionWithAllocatedSquares,
-              searchBoundary,
-              predicate,
-          )
+    var squareNumber = 0
+    return sequence {
+      while (squareNumber++ < count) {
+        val square =
+            findUnusedSquare(
+                gridOrigin,
+                sizeMeters,
+                exclusionWithAllocatedSquares,
+                searchBoundary,
+                predicate,
+            )
 
-      if (square != null && squareNumber < count) {
-        // Prevent this square from being selected again by excluding an area in the middle of it.
-        val additionalExclusion = middleTriangle(square)
+        if (square == null) {
+          break
+        }
 
-        val newCombinedExclusion =
-            exclusionWithAllocatedSquares?.union(additionalExclusion) ?: additionalExclusion
+        if (squareNumber < count) {
+          // Prevent this square from being selected again by excluding an area in the middle of it.
+          val additionalExclusion = middleTriangle(square)
 
-        exclusionWithAllocatedSquares = newCombinedExclusion.toMultiPolygon()
+          val newCombinedExclusion =
+              exclusionWithAllocatedSquares?.union(additionalExclusion) ?: additionalExclusion
+
+          exclusionWithAllocatedSquares = newCombinedExclusion.toMultiPolygon()
+        }
+
+        yield(square)
       }
-
-      square
     }
+        .toList()
   }
 
   /**
