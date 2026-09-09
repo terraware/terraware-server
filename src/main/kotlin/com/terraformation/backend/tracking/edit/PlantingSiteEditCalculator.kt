@@ -262,14 +262,20 @@ class PlantingSiteEditCalculator(
                         desiredSubstrataByMonitoringPlotId[plotEdit.monitoringPlotId] ==
                             desiredSubstratum
                       }
-                      .filter { plotEdit ->
+                      .map { plotEdit ->
                         // If the plot is already in the right substratum with the right permanent
                         // index, no need to adopt it.
                         val monitoringPlotId = plotEdit.monitoringPlotId
                         val existingMonitoringPlot = existingMonitoringPlotsById[monitoringPlotId]
-                        existingSubstrataByMonitoringPlotId[monitoringPlotId] !=
-                            existingSubstratum ||
-                            existingMonitoringPlot?.permanentIndex != plotEdit.permanentIndex
+                        if (
+                            existingSubstrataByMonitoringPlotId[monitoringPlotId] !=
+                                existingSubstratum ||
+                                existingMonitoringPlot?.permanentIndex != plotEdit.permanentIndex
+                        ) {
+                          plotEdit
+                        } else {
+                          MonitoringPlotEdit.Accept(monitoringPlotId, plotEdit.permanentIndex)
+                        }
                       }
               val ejectEdits =
                   existingSubstratum.monitoringPlots

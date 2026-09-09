@@ -790,7 +790,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         )
       }
 
-      if (plantingSiteEdit.stratumEdits.isNotEmpty()) {
+      if (plantingSiteEdit.stratumEdits.any { !it.isNoOp() }) {
         assertHistories(existing, edited)
       }
 

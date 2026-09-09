@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.edit
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.terraformation.backend.tracking.model.AnyStratumModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.util.equalsIgnoreScale
@@ -48,6 +49,28 @@ sealed interface StratumEdit {
    * covered by the existing site's exclusion areas.
    */
   val removedRegion: MultiPolygon?
+
+  /** Returns true if this edit only reports unchanged monitoring plots. */
+  @JsonIgnore
+  fun isNoOp(): Boolean =
+      this is Update &&
+          areaHaDifference.equalsIgnoreScale(BigDecimal.ZERO) &&
+          addedRegion.isEmpty &&
+          removedRegion.isEmpty &&
+          existingModel.boundary.equalsOrBothNull(desiredModel.boundary) &&
+          existingModel.areaHa.equalsIgnoreScale(desiredModel.areaHa) &&
+          existingModel.name == desiredModel.name &&
+          existingModel.errorMargin.equalsIgnoreScale(desiredModel.errorMargin) &&
+          existingModel.initialPlantingDensity.equalsIgnoreScale(
+              desiredModel.initialPlantingDensity
+          ) &&
+          existingModel.numPermanentPlots == desiredModel.numPermanentPlots &&
+          existingModel.studentsT.equalsIgnoreScale(desiredModel.studentsT) &&
+          existingModel.variance.equalsIgnoreScale(desiredModel.variance) &&
+          monitoringPlotEdits.isEmpty() &&
+          substratumEdits.all { edit ->
+            edit.isNoOp() && existingModel.substrata.any { it.id == edit.existingModel?.id }
+          }
 
   fun equalsExact(other: StratumEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&

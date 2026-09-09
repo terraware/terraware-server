@@ -908,7 +908,9 @@ class ObservationService(
       // Abandon any active observations with incomplete plots in strata that are affected by the
       // edit.
       val affectedStratumIds =
-          event.plantingSiteEdit.stratumEdits.mapNotNull { it.existingModel?.id }
+          event.plantingSiteEdit.stratumEdits
+              .filterNot { it.isNoOp() }
+              .mapNotNull { it.existingModel?.id }
       val affectedObservationIds =
           observationStore.fetchActiveObservationIds(event.edited.id, affectedStratumIds)
 
