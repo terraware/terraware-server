@@ -33,6 +33,10 @@
                 </#if>
             </mj-raw>
 
+                <mj-button mj-class="btn-productive-primary-md" href="${goalsUrl?no_esc}">
+                    ${strings("notification.plantingSite.stratumDensityUpdated.email.buttonLabel")}
+                </mj-button>
+
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
 
                 <mj-include path="../../footer.ftlh.mjml"/>

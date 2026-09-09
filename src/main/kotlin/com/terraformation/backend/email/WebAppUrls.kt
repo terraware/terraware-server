@@ -191,6 +191,14 @@ class WebAppUrls(
     return UriBuilder.fromPath("/seed-fund-reports/$seedFundReportId").build()
   }
 
+  fun fullPlantingSiteGoals(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/planting-plans/$plantingSiteId")
+        .queryParam("section", "siteGoals")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
   fun fullPlantingSite(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/planting-sites/$plantingSiteId")
