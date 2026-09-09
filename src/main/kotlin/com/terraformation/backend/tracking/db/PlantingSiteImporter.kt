@@ -12,6 +12,12 @@ import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
+import java.util.Collections
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.Geometry
@@ -120,7 +126,7 @@ class PlantingSiteImporter(
       gridOrigin: Point? = null,
       requireStableIds: Boolean = false,
   ): NewPlantingSiteModel {
-    val problems = mutableListOf<String>()
+    val problems = Collections.synchronizedList(mutableListOf<String>())
 
     val exclusion = getExclusion(exclusionsFile, problems)
     val strataWithSubstrata =
@@ -130,7 +136,10 @@ class PlantingSiteImporter(
       throw ShapefilesInvalidException(problems)
     }
 
-    val siteBoundary = mergeToMultiPolygon(strataWithSubstrata.map { it.boundary })
+    val siteBoundary =
+        runBlocking(Dispatchers.Default) {
+          mergeToMultiPolygon(strataWithSubstrata.map { it.boundary })
+        }
 
     val newModel =
         PlantingSiteModel.create(
@@ -264,89 +273,120 @@ class PlantingSiteImporter(
       feature.getProperty(stratumNameProperties)!!
     }
 
-    return substrataByStratum.mapNotNull { (stratumName, substratumFeatures) ->
-      val substratumModels = substratumFeatures.map { substratumFeature ->
-        val boundary = convertToXY(substratumFeature.geometry)
-        val name = substratumFeature.getProperty(substratumNameProperties)!!
-        val fullName = "$stratumName-$name"
-        val stableId =
-            StableId(substratumFeature.getProperty(substratumStableIdProperties) ?: fullName)
+    return runBlocking(Dispatchers.Default) {
+      substrataByStratum
+          .map { (stratumName, substratumFeatures) ->
+            async {
+              val substratumModels = substratumFeatures.map { substratumFeature ->
+                val boundary = convertToXY(substratumFeature.geometry)
+                val name = substratumFeature.getProperty(substratumNameProperties)!!
+                val fullName = "$stratumName-$name"
+                val stableId =
+                    StableId(
+                        substratumFeature.getProperty(substratumStableIdProperties) ?: fullName
+                    )
 
-        SubstratumModel.create(
-            boundary = boundary.toMultiPolygon(),
-            exclusion = exclusion,
-            fullName = fullName,
-            name = name,
-            stableId = stableId,
-        )
-      }
+                SubstratumModel.create(
+                    boundary = boundary.toMultiPolygon(),
+                    exclusion = exclusion,
+                    fullName = fullName,
+                    name = name,
+                    stableId = stableId,
+                )
+              }
 
-      val stratumBoundary = mergeToMultiPolygon(substratumModels.map { it.boundary })
+              val stratumBoundary = mergeToMultiPolygon(substratumModels.map { it.boundary })
 
-      // Stratum settings only need to appear on one substratum; take the first valid values we
-      // find.
-      val errorMargin =
-          substratumFeatures
-              .mapNotNull { it.getProperty(errorMarginProperties)?.toBigDecimalOrNull() }
-              .find { it.signum() > 0 }
-      val variance =
-          substratumFeatures
-              .mapNotNull { it.getProperty(varianceProperties)?.toBigDecimalOrNull() }
-              .find { it.signum() > 0 }
-      val studentsT =
-          substratumFeatures
-              .mapNotNull { it.getProperty(studentsTProperties)?.toBigDecimalOrNull() }
-              .find { it.signum() > 0 } ?: StratumModel.DEFAULT_STUDENTS_T
+              // Stratum settings only need to appear on one substratum; take the first valid values
+              // we find.
+              val errorMargin =
+                  substratumFeatures
+                      .mapNotNull { it.getProperty(errorMarginProperties)?.toBigDecimalOrNull() }
+                      .find { it.signum() > 0 }
+              val variance =
+                  substratumFeatures
+                      .mapNotNull { it.getProperty(varianceProperties)?.toBigDecimalOrNull() }
+                      .find { it.signum() > 0 }
+              val studentsT =
+                  substratumFeatures
+                      .mapNotNull { it.getProperty(studentsTProperties)?.toBigDecimalOrNull() }
+                      .find { it.signum() > 0 } ?: StratumModel.DEFAULT_STUDENTS_T
 
-      val numPermanentPlots = substratumFeatures.firstNotNullOfOrNull {
-        it.getProperty(permanentPlotCountProperties)?.toIntOrNull()
-      }
-      val numTemporaryPlots = substratumFeatures.firstNotNullOfOrNull {
-        it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
-      }
-      val initialPlantingDensity =
-          substratumFeatures.firstNotNullOfOrNull {
-            it.getProperty(initialPlantingDensityProperties)?.toBigDecimalOrNull()
-          } ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY
+              val numPermanentPlots = substratumFeatures.firstNotNullOfOrNull {
+                it.getProperty(permanentPlotCountProperties)?.toIntOrNull()
+              }
+              val numTemporaryPlots = substratumFeatures.firstNotNullOfOrNull {
+                it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
+              }
+              val initialPlantingDensity =
+                  substratumFeatures.firstNotNullOfOrNull {
+                    it.getProperty(initialPlantingDensityProperties)?.toBigDecimalOrNull()
+                  } ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY
 
-      if (errorMargin != null && variance != null) {
-        StratumModel.create(
-            boundary = stratumBoundary,
-            errorMargin = errorMargin,
-            exclusion = exclusion,
-            initialPlantingDensity = initialPlantingDensity,
-            name = stratumName,
-            numPermanentPlots = numPermanentPlots,
-            numTemporaryPlots = numTemporaryPlots,
-            substrata = substratumModels,
-            stableId = stableIdsByStratum[stratumName]!!,
-            studentsT = studentsT,
-            variance = variance,
-        )
-      } else {
-        if (errorMargin == null) {
-          problems +=
-              "Stratum $stratumName has no substratum with positive value for properties: " +
-                  errorMarginProperties.joinToString()
-        }
-        if (variance == null) {
-          problems +=
-              "Stratum $stratumName has no substratum with positive value for properties: " +
-                  varianceProperties.joinToString()
-        }
+              if (errorMargin != null && variance != null) {
+                StratumModel.create(
+                    boundary = stratumBoundary,
+                    errorMargin = errorMargin,
+                    exclusion = exclusion,
+                    initialPlantingDensity = initialPlantingDensity,
+                    name = stratumName,
+                    numPermanentPlots = numPermanentPlots,
+                    numTemporaryPlots = numTemporaryPlots,
+                    substrata = substratumModels,
+                    stableId = stableIdsByStratum[stratumName]!!,
+                    studentsT = studentsT,
+                    variance = variance,
+                )
+              } else {
+                if (errorMargin == null) {
+                  problems +=
+                      "Stratum $stratumName has no substratum with positive value for properties: " +
+                          errorMarginProperties.joinToString()
+                }
+                if (variance == null) {
+                  problems +=
+                      "Stratum $stratumName has no substratum with positive value for properties: " +
+                          varianceProperties.joinToString()
+                }
 
-        null
-      }
+                null
+              }
+            }
+          }
+          .awaitAll()
+          .filterNotNull()
     }
   }
+
+  private suspend fun <T> parallelReduce(items: Collection<T>, reducer: (T, T) -> T): T =
+      coroutineScope {
+        if (items.size == 1) {
+          items.first()
+        } else {
+          val reducedItems =
+              items
+                  .chunked(2)
+                  .map { pair ->
+                    async {
+                      if (pair.size == 1) {
+                        pair[0]
+                      } else {
+                        reducer(pair[0], pair[1])
+                      }
+                    }
+                  }
+                  .awaitAll()
+
+          parallelReduce(reducedItems, reducer)
+        }
+      }
 
   /**
    * Merges a set of geometries into a MultiPolygon. If two geometries are adjacent but have a tiny
    * gap, e.g., due to floating-point precision limitations, the gap is eliminated.
    */
-  private fun mergeToMultiPolygon(geometries: Collection<Geometry>): MultiPolygon {
-    return geometries
-        .reduce { a, b ->
+  private suspend fun mergeToMultiPolygon(geometries: Collection<Geometry>): MultiPolygon {
+    return parallelReduce(geometries) { a, b ->
           val tolerance = GeometrySnapper.computeOverlaySnapTolerance(a, b)
           a.union(GeometrySnapper(b).snapTo(a, tolerance))
         }
