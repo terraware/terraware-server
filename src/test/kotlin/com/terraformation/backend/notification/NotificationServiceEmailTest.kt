@@ -1923,7 +1923,7 @@ internal class NotificationServiceEmailTest {
         )
     )
 
-    val message = sentMessageWithSubject("has made updates to density settings")
+    val message = sentMessageWithSubject("has made updates to Plant Density settings")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(plantingSite.name, message = message)
     assertBodyContains(plantingSite.name, message = message, hasTextPlain = false)
