@@ -17,6 +17,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
+import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
@@ -235,6 +236,16 @@ class ObservationStarted(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/started"
+}
+
+class ObservationPlotsUnderallocated(
+    config: TerrawareServerConfig,
+    val observationUrl: String,
+    val plantingSiteName: String,
+    val shortfalls: List<ObservationPlotsUnderallocatedEvent.Shortfall>,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/underallocated"
 }
 
 class ObservationUpcoming(

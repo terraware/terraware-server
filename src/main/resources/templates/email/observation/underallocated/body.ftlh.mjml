@@ -1,0 +1,39 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ObservationPlotsUnderallocated" --> -->
+<!-- <#setting date_format="full"> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                ${strings("notification.observation.underallocated.email.body.1", plantingSiteName)}
+                </mj-text>
+
+                <mj-raw><#list shortfalls as shortfall></mj-raw>
+                    <mj-text mj-class="text-body03">
+                    ${strings("notification.observation.underallocated.email.body.2",
+                        shortfall.stratumName, shortfall.numConfigured, shortfall.numAllocated)}
+                    </mj-text>
+                <mj-raw></#list></mj-raw>
+
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.observation.underallocated.email.body.3")}
+                </mj-text>
+
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.observation.underallocated.email.body.4")}
+                </mj-text>
+
+                <mj-button mj-class="btn-productive-primary-md"
+                           href="${observationUrl?no_esc}">${strings("notification.email.buttonLabel")}
+                </mj-button>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

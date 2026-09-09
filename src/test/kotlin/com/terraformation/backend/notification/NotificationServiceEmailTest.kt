@@ -135,6 +135,7 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -1099,6 +1100,38 @@ internal class NotificationServiceEmailTest {
     service.on(event)
 
     assertNoMessageSent()
+  }
+
+  @Test
+  fun observationPlotsUnderallocated() {
+    val event =
+        ObservationPlotsUnderallocatedEvent(
+            observation.id,
+            plantingSite.id,
+            listOf(
+                ObservationPlotsUnderallocatedEvent.Shortfall(
+                    numAllocated = 3,
+                    numConfigured = 5,
+                    stratumId = stratum.id,
+                    stratumName = "Stratum 1",
+                ),
+                ObservationPlotsUnderallocatedEvent.Shortfall(
+                    numAllocated = 2,
+                    numConfigured = 9,
+                    stratumId = stratum.id,
+                    stratumName = "Stratum 5",
+                ),
+            ),
+        )
+
+    service.on(event)
+
+    assertBodyContains("stratum Stratum 1")
+    assertBodyContains("stratum Stratum 5")
+    assertBodyContains(" 5 assigned monitoring plots")
+    assertBodyContains("enough space to fit 2 ")
+
+    assertIsEventListener<ObservationPlotsUnderallocatedEvent>(service)
   }
 
   @Test

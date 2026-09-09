@@ -21,6 +21,7 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import jakarta.inject.Named
 import jakarta.ws.rs.core.UriBuilder
@@ -208,6 +209,18 @@ class WebAppUrls(
 
   fun plantingSite(plantingSiteId: PlantingSiteId): URI {
     return URI("/planting-sites/$plantingSiteId")
+  }
+
+  fun fullObservation(
+      organizationId: OrganizationId,
+      plantingSiteId: PlantingSiteId,
+      observationId: ObservationId,
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/observations/$observationId")
+        .queryParam("organizationId", organizationId)
+        .queryParam("plantingSiteId", plantingSiteId)
+        .build()
   }
 
   fun fullObservations(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {

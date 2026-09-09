@@ -88,6 +88,7 @@ import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.email.model.ObservationNotStarted
 import com.terraformation.backend.email.model.ObservationPlotReplaced
+import com.terraformation.backend.email.model.ObservationPlotsUnderallocated
 import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
@@ -130,6 +131,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -501,6 +503,29 @@ class NotificationService(
         event.metadata.organizationId,
         appContent,
         emailContent,
+        roles = setOf(Role.Owner, Role.Admin),
+    )
+  }
+
+  @EventListener
+  fun on(event: ObservationPlotsUnderallocatedEvent) {
+    log.info("Creating notifications for observation ${event.observationId} underallocated.")
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+    val organizationId = plantingSite.organizationId
+
+    val emailContent =
+        ObservationPlotsUnderallocated(
+            config,
+            webAppUrls
+                .fullObservation(organizationId, event.plantingSiteId, event.observationId)
+                .toString(),
+            plantingSite.name,
+            event.shortfalls,
+        )
+
+    sendToOrganization(
+        organizationId,
+        emailContent = emailContent,
         roles = setOf(Role.Owner, Role.Admin),
     )
   }
