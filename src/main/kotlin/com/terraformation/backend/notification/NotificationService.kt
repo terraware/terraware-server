@@ -829,15 +829,13 @@ class NotificationService(
             organization,
             StratumDensityUpdated(
                 config = config,
+                densityChanges = event.densityChanges,
                 goalsUrl =
                     webAppUrls
                         .fullPlantingSiteGoals(organization.id, event.plantingSiteId)
                         .toString(),
-                initialPlantingDensityChange = event.initialPlantingDensityChange,
                 organizationName = organization.name,
                 plantingSiteName = plantingSite.name,
-                stratumName = event.stratumName,
-                targetPlantDensityChange = event.targetPlantDensityChange,
             ),
             fallBackToSupport = false,
         )

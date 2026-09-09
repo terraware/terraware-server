@@ -474,9 +474,17 @@ data class StratumModel<
 
 /** A change to one of a stratum's planting density settings. */
 data class DensityChangedEventModel(
+    val densityType: DensityType,
     val previousDensity: BigDecimal?,
     val newDensity: BigDecimal?,
-)
+    val stratumId: StratumId,
+    val stratumName: String,
+) {
+  enum class DensityType {
+    Initial,
+    Target,
+  }
+}
 
 typealias AnyStratumModel = StratumModel<out StratumId?, out SubstratumId?, out Instant?>
 

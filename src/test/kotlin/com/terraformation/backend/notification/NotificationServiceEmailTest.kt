@@ -1910,16 +1910,24 @@ internal class NotificationServiceEmailTest {
 
     service.on(
         StratumDensityUpdatedEvent(
-            plantingSiteId = plantingSite.id,
-            stratumId = stratum.id,
-            stratumName = stratum.name,
-            initialPlantingDensityChange =
-                DensityChangedEventModel(
-                    previousDensity = BigDecimal("1500"),
-                    newDensity = BigDecimal("1750"),
+            densityChanges =
+                listOf(
+                    DensityChangedEventModel(
+                        densityType = DensityChangedEventModel.DensityType.Initial,
+                        newDensity = BigDecimal("1750"),
+                        previousDensity = BigDecimal("1500"),
+                        stratumId = stratum.id,
+                        stratumName = stratum.name,
+                    ),
+                    DensityChangedEventModel(
+                        densityType = DensityChangedEventModel.DensityType.Target,
+                        newDensity = BigDecimal("1200"),
+                        previousDensity = null,
+                        stratumId = stratum.id,
+                        stratumName = stratum.name,
+                    ),
                 ),
-            targetPlantDensityChange =
-                DensityChangedEventModel(previousDensity = null, newDensity = BigDecimal("1200")),
+            plantingSiteId = plantingSite.id,
         )
     )
 
@@ -1946,14 +1954,17 @@ internal class NotificationServiceEmailTest {
 
     service.on(
         StratumDensityUpdatedEvent(
-            plantingSiteId = plantingSite.id,
-            stratumId = stratum.id,
-            stratumName = stratum.name,
-            initialPlantingDensityChange =
-                DensityChangedEventModel(
-                    previousDensity = BigDecimal("1500"),
-                    newDensity = BigDecimal("1750"),
+            densityChanges =
+                listOf(
+                    DensityChangedEventModel(
+                        densityType = DensityChangedEventModel.DensityType.Initial,
+                        newDensity = BigDecimal("1750"),
+                        previousDensity = BigDecimal("1500"),
+                        stratumId = stratum.id,
+                        stratumName = stratum.name,
+                    ),
                 ),
+            plantingSiteId = plantingSite.id,
         )
     )
 
