@@ -833,6 +833,10 @@ class PlantingSiteStore(
               now,
           )
         }
+
+        replacementResults.addAll(
+            applyPermanentPlotCreations(edit.monitoringPlotEdits, plantingSiteId, stratumId)
+        )
       }
       is StratumEdit.Delete -> {
         replacementResults.addAll(
@@ -915,27 +919,43 @@ class PlantingSiteStore(
           }
         }
 
-        // Need to create permanent plots using the updated substrata since we need their IDs.
-        val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-        val updatedStratum = updatedSite.strata.single { it.id == edit.existingModel.id }
-
-        edit.monitoringPlotEdits
-            .filter { it.permanentIndex != null }
-            .groupBy { it.region }
-            .forEach { (region, plotEdits) ->
-              val newPlotIds =
-                  createPermanentPlots(
-                      updatedSite,
-                      updatedStratum,
-                      plotEdits.map { it.permanentIndex!! },
-                      region,
-                  )
-              replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
-            }
+        replacementResults.addAll(
+            applyPermanentPlotCreations(
+                edit.monitoringPlotEdits,
+                plantingSiteId,
+                edit.existingModel.id,
+            )
+        )
       }
     }
 
     return ReplacementResult.merge(replacementResults)
+  }
+
+  private fun applyPermanentPlotCreations(
+      edits: List<MonitoringPlotEdit.Create>,
+      plantingSiteId: PlantingSiteId,
+      stratumId: StratumId,
+  ): List<ReplacementResult> {
+    val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+    val stratum = plantingSite.strata.single { it.id == stratumId }
+    val replacementResults = mutableListOf<ReplacementResult>()
+
+    edits
+        .filter { it.permanentIndex != null }
+        .groupBy { it.region }
+        .forEach { (region, plotEdits) ->
+          val newPlotIds =
+              createPermanentPlots(
+                  plantingSite,
+                  stratum,
+                  plotEdits.map { it.permanentIndex!! },
+                  region,
+              )
+          replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
+        }
+
+    return replacementResults
   }
 
   private fun applySubstratumEdit(
