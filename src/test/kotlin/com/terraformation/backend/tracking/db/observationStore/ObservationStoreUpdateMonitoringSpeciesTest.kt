@@ -144,6 +144,70 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
   }
 
   @Test
+  fun `adds new species to observation if needed`() {
+    scenario {
+      siteCreated { stratum(1) { substratum(1) { plot(1) } } }
+
+      val density = 100
+
+      t0DensitySet { plot(1) { species(0, density = density) } }
+
+      observation(1) {
+        plot(1) // No plants recorded
+      }
+
+      val liveCount = 6
+      val deadCount = 7
+      val existingCount = 8
+
+      observationEdited(1) {
+        plot(1) { species(0, live = liveCount, dead = deadCount, existing = existingCount) }
+      }
+
+      expectResults(observation = 1) {
+        survivalRate(percent(liveCount, density))
+        species(
+            0,
+            survivalRate = percent(liveCount, density),
+            totalLive = liveCount,
+            totalDead = deadCount,
+            totalExisting = existingCount,
+        )
+        stratum(1) {
+          survivalRate(percent(liveCount, density))
+          species(
+              0,
+              survivalRate = percent(liveCount, density),
+              totalLive = liveCount,
+              totalDead = deadCount,
+              totalExisting = existingCount,
+          )
+          substratum(1) {
+            survivalRate(percent(liveCount, density))
+            species(
+                0,
+                survivalRate = percent(liveCount, density),
+                totalLive = liveCount,
+                totalDead = deadCount,
+                totalExisting = existingCount,
+            )
+            plot(1) {
+              survivalRate(percent(liveCount, density))
+              species(
+                  0,
+                  survivalRate = percent(liveCount, density),
+                  totalLive = liveCount,
+                  totalDead = deadCount,
+                  totalExisting = existingCount,
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @Test
   fun `updates plant counts for unknown and Other species`() {
     scenario {
       siteCreated { stratum(1) { substratum(1) { plot(1) } } }
