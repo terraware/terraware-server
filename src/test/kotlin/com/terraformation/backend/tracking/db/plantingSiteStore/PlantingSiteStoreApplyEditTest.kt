@@ -570,10 +570,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       }
 
       val desired = newSite {
-        stratum(name = "A", stableId = StableId("B"), x = 250, width = 250) {
+        stratum(name = "A", stableId = StableId("B"), x = 250, width = 250, numPermanent = 3) {
           substratum(stableId = StableId("B-S2"))
         }
-        stratum(name = "B", stableId = StableId("A"), x = 0, width = 250) {
+        stratum(name = "B", stableId = StableId("A"), x = 0, width = 250, numPermanent = 4) {
           substratum(stableId = StableId("A-S1"))
         }
       }
@@ -589,6 +589,14 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           existing.strata.associate { it.stableId to it.id },
           edited.strata.associate { it.stableId to it.id },
           "Stratum IDs by stable ID after name swap",
+      )
+
+      assertEquals(
+          mapOf("A" to 3, "B" to 4),
+          edited.strata.associate { stratum ->
+            stratum.name to stratum.substrata.sumOf { it.monitoringPlots.size }
+          },
+          "Monitoring plots in each stratum",
       )
     }
 
