@@ -408,70 +408,10 @@
 </a>
 </g>
 </g>
-<!-- country_botanical_countries -->
-<g id="node7" class="node">
-<title>country_botanical_countries</title>
-<g id="a_node7"><a xlink:href="../../tables/country_botanical_countries.html" xlink:title="country_botanical_countries" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="218,-3185 218,-3269 431,-3269 431,-3185 218,-3185"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="218.5,-3247 218.5,-3269 431.5,-3269 431.5,-3247 218.5,-3247"/>
-<polygon fill="none" stroke="black" points="218.5,-3247 218.5,-3269 431.5,-3269 431.5,-3247 218.5,-3247"/>
-<text text-anchor="start" x="223.5" y="-3256.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">country_botanical_countries</text>
-<text text-anchor="start" x="392.5" y="-3255.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="218.5,-3225 218.5,-3247 431.5,-3247 431.5,-3225 218.5,-3225"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="223.5" y="-3242"/>
-<text text-anchor="start" x="250.5" y="-3233.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
-<polygon fill="none" stroke="black" points="218.5,-3203 218.5,-3225 431.5,-3225 431.5,-3203 218.5,-3203"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="223.5" y="-3220"/>
-<text text-anchor="start" x="250.5" y="-3211.2" font-family="Helvetica,sans-Serif" font-size="11.00">botanical_country_code</text>
-<polygon fill="#ffffff" stroke="transparent" points="218.5,-3185 218.5,-3203 322.5,-3203 322.5,-3185 218.5,-3185"/>
-<polygon fill="none" stroke="black" points="218.5,-3185 218.5,-3203 322.5,-3203 322.5,-3185 218.5,-3185"/>
-<text text-anchor="start" x="221.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="322.5,-3185 322.5,-3203 376.5,-3203 376.5,-3185 322.5,-3185"/>
-<polygon fill="none" stroke="black" points="322.5,-3185 322.5,-3203 376.5,-3203 376.5,-3185 322.5,-3185"/>
-<text text-anchor="start" x="366.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="376.5,-3185 376.5,-3203 431.5,-3203 431.5,-3185 376.5,-3185"/>
-<polygon fill="none" stroke="black" points="376.5,-3185 376.5,-3203 431.5,-3203 431.5,-3185 376.5,-3185"/>
-<text text-anchor="start" x="421.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- botanical_countries -->
-<g id="node24" class="node">
-<title>botanical_countries</title>
-<g id="a_node24"><a xlink:href="../../tables/botanical_countries.html" xlink:title="botanical_countries" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="8,-3167 8,-3247 169,-3247 169,-3167 8,-3167"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="8.5,-3225 8.5,-3247 169.5,-3247 169.5,-3225 8.5,-3225"/>
-<polygon fill="none" stroke="black" points="8.5,-3225 8.5,-3247 169.5,-3247 169.5,-3225 8.5,-3225"/>
-<text text-anchor="start" x="13.5" y="-3234.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">botanical_countries</text>
-<text text-anchor="start" x="130.5" y="-3233.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="8.5,-3203 8.5,-3225 169.5,-3225 169.5,-3203 8.5,-3203"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13.5" y="-3220"/>
-<text text-anchor="start" x="40.5" y="-3211.2" font-family="Helvetica,sans-Serif" font-size="11.00">level3_code</text>
-<polygon fill="none" stroke="black" points="8.5,-3185 8.5,-3203 169.5,-3203 169.5,-3185 8.5,-3185"/>
-<text text-anchor="start" x="11.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="8.5,-3167 8.5,-3185 77.5,-3185 77.5,-3167 8.5,-3167"/>
-<polygon fill="none" stroke="black" points="8.5,-3167 8.5,-3185 77.5,-3185 77.5,-3167 8.5,-3167"/>
-<text text-anchor="start" x="11.5" y="-3173.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="77.5,-3167 77.5,-3185 118.5,-3185 118.5,-3167 77.5,-3167"/>
-<polygon fill="none" stroke="black" points="77.5,-3167 77.5,-3185 118.5,-3185 118.5,-3167 77.5,-3167"/>
-<text text-anchor="start" x="108.5" y="-3173.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="118.5,-3167 118.5,-3185 169.5,-3185 169.5,-3167 118.5,-3167"/>
-<polygon fill="none" stroke="black" points="118.5,-3167 118.5,-3185 169.5,-3185 169.5,-3167 118.5,-3167"/>
-<text text-anchor="start" x="150.5" y="-3173.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
-</a>
-</g>
-</g>
-<!-- country_botanical_countries&#45;&gt;botanical_countries -->
-<g id="edge5" class="edge">
-<title>country_botanical_countries:w&#45;&gt;botanical_countries:e</title>
-<path fill="none" stroke="black" d="M202.9,-3214C192.43,-3214 185.51,-3214 170.5,-3214"/>
-<polygon fill="black" stroke="black" points="209.5,-3214 217.5,-3217.6 213.5,-3214 217.5,-3214 217.5,-3214 217.5,-3214 213.5,-3214 217.5,-3210.4 209.5,-3214 209.5,-3214"/>
-<ellipse fill="none" stroke="black" cx="206.3" cy="-3214" rx="3.2" ry="3.2"/>
-</g>
 <!-- gbif_names -->
-<g id="node8" class="node">
+<g id="node7" class="node">
 <title>gbif_names</title>
-<g id="a_node8"><a xlink:href="../../tables/gbif_names.html" xlink:title="gbif_names" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/gbif_names.html" xlink:title="gbif_names" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="547,-3561 547,-3707 658,-3707 658,-3561 547,-3561"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="547.5,-3685 547.5,-3707 658.5,-3707 658.5,-3685 547.5,-3685"/>
 <polygon fill="none" stroke="black" points="547.5,-3685 547.5,-3707 658.5,-3707 658.5,-3685 547.5,-3685"/>
@@ -536,6 +476,66 @@
 <path fill="none" stroke="black" d="M531.86,-3652C483.12,-3652 465.75,-3652 410.5,-3652"/>
 <polygon fill="black" stroke="black" points="538.5,-3652 546.5,-3655.6 542.5,-3652 546.5,-3652 546.5,-3652 546.5,-3652 542.5,-3652 546.5,-3648.4 538.5,-3652 538.5,-3652"/>
 <ellipse fill="none" stroke="black" cx="535.3" cy="-3652" rx="3.2" ry="3.2"/>
+</g>
+<!-- country_botanical_countries -->
+<g id="node8" class="node">
+<title>country_botanical_countries</title>
+<g id="a_node8"><a xlink:href="../../tables/country_botanical_countries.html" xlink:title="country_botanical_countries" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="218,-3185 218,-3269 431,-3269 431,-3185 218,-3185"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="218.5,-3247 218.5,-3269 431.5,-3269 431.5,-3247 218.5,-3247"/>
+<polygon fill="none" stroke="black" points="218.5,-3247 218.5,-3269 431.5,-3269 431.5,-3247 218.5,-3247"/>
+<text text-anchor="start" x="223.5" y="-3256.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">country_botanical_countries</text>
+<text text-anchor="start" x="392.5" y="-3255.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="218.5,-3225 218.5,-3247 431.5,-3247 431.5,-3225 218.5,-3225"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="223.5" y="-3242"/>
+<text text-anchor="start" x="250.5" y="-3233.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
+<polygon fill="none" stroke="black" points="218.5,-3203 218.5,-3225 431.5,-3225 431.5,-3203 218.5,-3203"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="223.5" y="-3220"/>
+<text text-anchor="start" x="250.5" y="-3211.2" font-family="Helvetica,sans-Serif" font-size="11.00">botanical_country_code</text>
+<polygon fill="#ffffff" stroke="transparent" points="218.5,-3185 218.5,-3203 322.5,-3203 322.5,-3185 218.5,-3185"/>
+<polygon fill="none" stroke="black" points="218.5,-3185 218.5,-3203 322.5,-3203 322.5,-3185 218.5,-3185"/>
+<text text-anchor="start" x="221.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="322.5,-3185 322.5,-3203 376.5,-3203 376.5,-3185 322.5,-3185"/>
+<polygon fill="none" stroke="black" points="322.5,-3185 322.5,-3203 376.5,-3203 376.5,-3185 322.5,-3185"/>
+<text text-anchor="start" x="366.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="376.5,-3185 376.5,-3203 431.5,-3203 431.5,-3185 376.5,-3185"/>
+<polygon fill="none" stroke="black" points="376.5,-3185 376.5,-3203 431.5,-3203 431.5,-3185 376.5,-3185"/>
+<text text-anchor="start" x="421.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- botanical_countries -->
+<g id="node24" class="node">
+<title>botanical_countries</title>
+<g id="a_node24"><a xlink:href="../../tables/botanical_countries.html" xlink:title="botanical_countries" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="8,-3167 8,-3247 169,-3247 169,-3167 8,-3167"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="8.5,-3225 8.5,-3247 169.5,-3247 169.5,-3225 8.5,-3225"/>
+<polygon fill="none" stroke="black" points="8.5,-3225 8.5,-3247 169.5,-3247 169.5,-3225 8.5,-3225"/>
+<text text-anchor="start" x="13.5" y="-3234.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">botanical_countries</text>
+<text text-anchor="start" x="130.5" y="-3233.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="8.5,-3203 8.5,-3225 169.5,-3225 169.5,-3203 8.5,-3203"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13.5" y="-3220"/>
+<text text-anchor="start" x="40.5" y="-3211.2" font-family="Helvetica,sans-Serif" font-size="11.00">level3_code</text>
+<polygon fill="none" stroke="black" points="8.5,-3185 8.5,-3203 169.5,-3203 169.5,-3185 8.5,-3185"/>
+<text text-anchor="start" x="11.5" y="-3191.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="8.5,-3167 8.5,-3185 77.5,-3185 77.5,-3167 8.5,-3167"/>
+<polygon fill="none" stroke="black" points="8.5,-3167 8.5,-3185 77.5,-3185 77.5,-3167 8.5,-3167"/>
+<text text-anchor="start" x="11.5" y="-3173.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="77.5,-3167 77.5,-3185 118.5,-3185 118.5,-3167 77.5,-3167"/>
+<polygon fill="none" stroke="black" points="77.5,-3167 77.5,-3185 118.5,-3185 118.5,-3167 77.5,-3167"/>
+<text text-anchor="start" x="108.5" y="-3173.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="118.5,-3167 118.5,-3185 169.5,-3185 169.5,-3167 118.5,-3167"/>
+<polygon fill="none" stroke="black" points="118.5,-3167 118.5,-3185 169.5,-3185 169.5,-3167 118.5,-3167"/>
+<text text-anchor="start" x="150.5" y="-3173.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
+</a>
+</g>
+</g>
+<!-- country_botanical_countries&#45;&gt;botanical_countries -->
+<g id="edge5" class="edge">
+<title>country_botanical_countries:w&#45;&gt;botanical_countries:e</title>
+<path fill="none" stroke="black" d="M202.9,-3214C192.43,-3214 185.51,-3214 170.5,-3214"/>
+<polygon fill="black" stroke="black" points="209.5,-3214 217.5,-3217.6 213.5,-3214 217.5,-3214 217.5,-3214 217.5,-3214 213.5,-3214 217.5,-3210.4 209.5,-3214 209.5,-3214"/>
+<ellipse fill="none" stroke="black" cx="206.3" cy="-3214" rx="3.2" ry="3.2"/>
 </g>
 <!-- organizations&#45;&gt;botanical_countries -->
 <g id="edge11" class="edge">
