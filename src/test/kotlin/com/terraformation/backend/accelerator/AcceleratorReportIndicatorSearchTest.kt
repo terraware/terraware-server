@@ -165,7 +165,7 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf(
                     "indicator" to "Trees Planted",
-                    "status" to "Unlikely",
+                    "status" to "At Risk",
                     "supportingDocumentUrl" to "https://example.com/auto-calc",
                     "systemTime" to "1970-01-01T00:33:20Z",
                     "systemValue" to "1,000",
