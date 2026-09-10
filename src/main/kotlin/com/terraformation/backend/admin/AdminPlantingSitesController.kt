@@ -781,17 +781,24 @@ class AdminPlantingSitesController(
     val substratumEdits =
         stratumEdit.substratumEdits.flatMap { describeSubstratumEdit(stratumEdit, it) }
 
+    val totalPermanent =
+        stratumEdit.monitoringPlotEdits.size +
+            stratumEdit.substratumEdits.sumOf { substratumEdit ->
+              substratumEdit.monitoringPlotEdits.count { it.permanentIndex != null }
+            }
+
     return listOf(
         if (existingModel != null) {
           if (desiredModel != null) {
             val overlapPercent = renderOverlapPercent(existingModel.boundary, desiredModel.boundary)
             val areaDifference = stratumEdit.areaHaDifference.toPlainString()
-            "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
+            "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%, " +
+                "$totalPermanent permanent plots"
           } else {
             "$prefix Delete (stable ID ${existingModel.stableId})"
           }
         } else {
-          "$prefix Create (stable ID ${desiredModel?.stableId})"
+          "$prefix Create (stable ID ${desiredModel?.stableId}), $totalPermanent permanent plots"
         }
     ) + monitoringPlotCreations + substratumEdits
   }
@@ -833,6 +840,12 @@ class AdminPlantingSitesController(
                   "$prefix Adopt plot ID $plotId without permanent index"
                 }
             is MonitoringPlotEdit.Eject -> "$prefix Eject plot ID $plotId"
+            is MonitoringPlotEdit.Accept ->
+                if (permanentIndex != null) {
+                  "$prefix Accept plot ID $plotId with permanent index $permanentIndex"
+                } else {
+                  "$prefix Accept plot ID $plotId without permanent index"
+                }
           }
         }
 

@@ -590,7 +590,7 @@ class PlantingSiteStore(
       val replacementResults = mutableListOf<ReplacementResult>()
 
       if (
-          plantingSiteEdit.stratumEdits.isEmpty() &&
+          plantingSiteEdit.stratumEdits.all { it.isNoOp() } &&
               existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary) &&
               existing.exclusion.equalsOrBothNull(plantingSiteEdit.desiredModel.exclusion)
       ) {
@@ -1062,6 +1062,8 @@ class PlantingSiteStore(
 
         ReplacementResult(emptySet(), setOf(edit.monitoringPlotId))
       }
+
+      is MonitoringPlotEdit.Accept -> ReplacementResult(emptySet(), emptySet())
     }
   }
 

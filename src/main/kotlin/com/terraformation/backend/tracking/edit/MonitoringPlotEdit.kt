@@ -70,4 +70,13 @@ sealed interface MonitoringPlotEdit {
     override val permanentIndex: Int?
       get() = null
   }
+
+  /**
+   * Represents a monitoring plot that is already in the correct substratum with the correct
+   * permanent index. This is just for reporting purposes; the plot won't be modified.
+   */
+  data class Accept(
+      override val monitoringPlotId: MonitoringPlotId,
+      override val permanentIndex: Int?,
+  ) : MonitoringPlotEdit
 }
