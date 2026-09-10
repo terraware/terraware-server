@@ -143,7 +143,7 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
     insertReportAutoCalculatedIndicator(
         indicator = AutoCalculatedIndicator.TreesPlanted,
         overrideValue = 900,
-        status = ReportIndicatorStatus.Unlikely,
+        status = ReportIndicatorStatus.AtRisk,
         supportingDocumentUrl = URI("https://example.com/auto-calc"),
         systemTime = Instant.ofEpochSecond(2000),
         systemValue = 1000,

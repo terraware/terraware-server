@@ -945,7 +945,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         value = BigDecimal(180),
         progressNotes = "progress notes 2",
         projectsComments = "Underperformance justification 2",
-        status = ReportIndicatorStatus.Unlikely,
+        status = ReportIndicatorStatus.AtRisk,
     )
 
     insertPublishedProjectIndicatorTarget(
@@ -1079,7 +1079,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       progressNotes = "progress notes 2",
                       projectsComments = "Underperformance justification 2",
                       refId = "1.1.1",
-                      status = ReportIndicatorStatus.Unlikely,
+                      status = ReportIndicatorStatus.AtRisk,
                       target = BigDecimal(200),
                       unit = null,
                       value = BigDecimal(180),
