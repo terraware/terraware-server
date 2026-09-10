@@ -246,7 +246,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `throws exception if application does not exist`() {
-        assertThrows<ApplicationNotFoundException> { store.fetchOneById(ApplicationId(1)) }
+        assertThrows<ApplicationNotFoundException> { store.fetchOneById(ApplicationId(0)) }
       }
 
       @Test
@@ -304,7 +304,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `throws exception if application does not exist`() {
-        assertThrows<ApplicationNotFoundException> { store.fetchGeoFeatureById(ApplicationId(1)) }
+        assertThrows<ApplicationNotFoundException> { store.fetchGeoFeatureById(ApplicationId(0)) }
       }
 
       @Test
