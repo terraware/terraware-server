@@ -90,6 +90,48 @@ class StratumModelTest : BaseStratumModelTest() {
     }
 
     @Test
+    fun `uses explicit count instead of configured number of temporary plots`() {
+      val model =
+          stratumModel(
+              numTemporaryPlots = 1,
+              substrata =
+                  listOf(
+                      substratumModel(
+                          plots = monitoringPlotModels(temporaryIds = listOf(10, 11, 12))
+                      )
+                  ),
+          )
+
+      assertEquals(
+          3,
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin, count = 3).size,
+          "Number of plots chosen",
+      )
+    }
+
+    @Test
+    fun `treats explicit permanent plot IDs as the permanent set`() {
+      val model =
+          stratumModel(
+              numTemporaryPlots = 1,
+              numPermanentPlots = 1,
+              substrata =
+                  listOf(substratumModel(plots = monitoringPlotModels(permanentIds = listOf(10)))),
+          )
+
+      val chosen =
+          model
+              .chooseTemporaryPlots(substrataIds(1), siteOrigin, permanentPlotIds = emptySet())
+              .mapNotNull { model.findMonitoringPlot(it)?.id }
+
+      assertEquals(
+          listOf(MonitoringPlotId(10)),
+          chosen,
+          "Plot excluded from the permanent set should be selectable as temporary",
+      )
+    }
+
+    @Test
     fun `does not choose unavailable plots`() {
       val model =
           stratumModel(

@@ -69,8 +69,7 @@ data class StratumModel<
   }
 
   /**
-   * Chooses a set of plots to act as temporary monitoring plots. The number of plots is determined
-   * by [numTemporaryPlots].
+   * Chooses a set of plots to act as temporary monitoring plots.
    *
    * This follows some rules:
    * - Plots that are already selected as permanent plots aren't eligible.
@@ -95,6 +94,9 @@ data class StratumModel<
    *   with a small number of requested substrata, we would end up piling the entire stratum's worth
    *   of temporary plots into a handful of substrata.
    *
+   * @param count Number of temporary plots to allocate. Defaults to [numTemporaryPlots].
+   * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent instead of
+   *   using the stratum's configured permanent plot count.
    * @return A collection of plot boundaries. These may or may not be the boundaries of plots that
    *   already exist in the database; callers can use [findMonitoringPlot] to check whether they
    *   already exist.
@@ -107,14 +109,16 @@ data class StratumModel<
       requestedSubstratumIds: Set<SubstratumId>,
       gridOrigin: Point,
       exclusion: MultiPolygon? = null,
+      count: Int = numTemporaryPlots,
+      permanentPlotIds: Set<MonitoringPlotId>? = null,
   ): Collection<Polygon> {
     if (substrata.isEmpty()) {
       throw IllegalArgumentException("No substrata found for stratum $id (wrong fetch depth?)")
     }
 
     // We will assign as many plots as possible evenly across all substrata, eligible or not.
-    val numEvenlySpreadPlotsPerSubstratum = numTemporaryPlots / substrata.size
-    val numExcessPlots = numTemporaryPlots.rem(substrata.size)
+    val numEvenlySpreadPlotsPerSubstratum = count / substrata.size
+    val numExcessPlots = count.rem(substrata.size)
 
     // Any plots that can't be spread evenly will be placed in the substrata with the smallest
     // number of permanent plots, with priority given to substrata that are requested, and
@@ -126,9 +130,7 @@ data class StratumModel<
     return substrata
         .sortedWith(
             compareBy { substratum: SubstratumModel<SSID> ->
-              substratum.monitoringPlots.count { plot ->
-                plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
-              }
+              substratum.monitoringPlots.count { plot -> isPermanent(plot, permanentPlotIds) }
             }
                 .thenBy { if (it.id != null && it.id in requestedSubstratumIds) 0 else 1 }
                 .thenBy { it.id?.value ?: 0L }
@@ -148,6 +150,7 @@ data class StratumModel<
                     exclusion = exclusion,
                     gridOrigin = gridOrigin,
                     searchBoundary = substratum.boundary,
+                    permanentPlotIds = permanentPlotIds,
                 )
 
             if (squares.size < numPlots) {
@@ -176,6 +179,28 @@ data class StratumModel<
   fun permanentIndexExists(permanentIndex: Int): Boolean {
     return substrata.any { substratum ->
       substratum.monitoringPlots.any { it.permanentIndex == permanentIndex }
+    }
+  }
+
+  /**
+   * Returns true if a plot should be treated as permanent during plot selection.
+   *
+   * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent. If null,
+   *   some or all plots with permanent indexes are treated as permanent, depending on
+   *   [includeAllIndexes].
+   * @param includeAllIndexes If true, treat every plot with a permanent index as permanent
+   *   regardless of [numPermanentPlots]. If false, only treat plots with permanent indexes less
+   *   than or equal to [numPermanentPlots] as permanent. Ignored when [permanentPlotIds] is set.
+   */
+  private fun isPermanent(
+      plot: MonitoringPlotModel,
+      permanentPlotIds: Set<MonitoringPlotId>?,
+      includeAllIndexes: Boolean = false,
+  ): Boolean {
+    return when {
+      permanentPlotIds != null -> plot.id in permanentPlotIds
+      plot.permanentIndex != null -> includeAllIndexes || plot.permanentIndex <= numPermanentPlots
+      else -> false
     }
   }
 
@@ -209,6 +234,8 @@ data class StratumModel<
    *   candidates for inclusion in the next observation (that is, ignore permanent plots that were
    *   used in previous observations but won't be used in the next one).
    * @param exclusion Areas to exclude from the stratum, or null if the whole stratum is available.
+   * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent instead of
+   *   using [numPermanentPlots].
    * @return List of unused squares. If there is not enough room for the requested number of
    *   squares, this may be shorter than [count] elements; if there's no room for even a single
    *   square, the list will be empty.
@@ -221,11 +248,12 @@ data class StratumModel<
       excludePlotIds: Set<MonitoringPlotId> = emptySet(),
       exclusion: MultiPolygon? = null,
       searchBoundary: MultiPolygon = this.boundary,
+      permanentPlotIds: Set<MonitoringPlotId>? = null,
   ): List<Polygon> {
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
     var exclusionWithAllocatedSquares =
-        getMonitoringPlotExclusions(excludeAllPermanentPlots, excludePlotIds)
+        getMonitoringPlotExclusions(excludeAllPermanentPlots, excludePlotIds, permanentPlotIds)
     if (exclusion != null) {
       exclusionWithAllocatedSquares =
           exclusionWithAllocatedSquares?.union(exclusion)?.toMultiPolygon() ?: exclusion
@@ -358,6 +386,7 @@ data class StratumModel<
   private fun getMonitoringPlotExclusions(
       includeAll: Boolean = false,
       excludePlotIds: Set<MonitoringPlotId>,
+      permanentPlotIds: Set<MonitoringPlotId>? = null,
   ): MultiPolygon? {
     val relevantPlots =
         substrata
@@ -365,8 +394,7 @@ data class StratumModel<
             .filter { plot ->
               !plot.isAvailable ||
                   plot.id in excludePlotIds ||
-                  plot.permanentIndex != null &&
-                      (includeAll || plot.permanentIndex <= numPermanentPlots)
+                  isPermanent(plot, permanentPlotIds, includeAll)
             }
 
     if (relevantPlots.isEmpty()) {
