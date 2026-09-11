@@ -94,7 +94,9 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -618,6 +620,38 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       eventPublisher.assertEventPublished(
           ObservationStartedEvent(observationStore.fetchObservationById(observationId))
       )
+    }
+
+    @Test
+    fun `does not start observation if only unrequested substrata have capacity`() {
+      val requestedBoundary = rectangle(MONITORING_PLOT_SIZE)
+      plantingSiteId =
+          insertPlantingSite(
+              width = 4,
+              height = 1,
+              gridOrigin = point(1),
+              exclusion = rectangle(width = 10, height = 10, x = 10, y = 10),
+          )
+      insertStratum(
+          width = 4,
+          height = 1,
+          numPermanentPlots = 1,
+          numTemporaryPlots = 1,
+      )
+      val requestedSubstratumId = insertSubstratum(boundary = requestedBoundary)
+      insertSubstratum(x = 1, width = 3, height = 1)
+      insertPermanentPlot(1, x = 1, y = 0)
+
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = requestedSubstratumId)
+
+      service.startObservation(observationId)
+
+      eventPublisher.assertEventPublished(ObservationNotStartedEvent(observationId, plantingSiteId))
+      eventPublisher.assertEventNotPublished<ObservationStartedEvent>()
+      eventPublisher.assertEventNotPublished<ObservationPlotsUnderallocatedEvent>()
+
+      assertTableEmpty(OBSERVATIONS, "Observation should have been deleted")
     }
 
     @Test

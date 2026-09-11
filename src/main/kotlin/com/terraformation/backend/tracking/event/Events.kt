@@ -106,6 +106,28 @@ data class ObservationNotStartedEvent(
     val plantingSiteId: PlantingSiteId,
 ) : ObservationSchedulingNotificationEvent
 
+/**
+ * Published when an observation started with fewer monitoring plots than its strata are configured
+ * for because the strata didn't have room for all of them. Only strata that fell short are
+ * included.
+ */
+data class ObservationPlotsUnderallocatedEvent(
+    val observationId: ObservationId,
+    val plantingSiteId: PlantingSiteId,
+    val shortfalls: List<Shortfall>,
+) {
+  /**
+   * How many monitoring plots a stratum was configured for and how many it had room for. Both
+   * counts cover the whole stratum and don't take requested substrata into account.
+   */
+  data class Shortfall(
+      val numAllocated: Int,
+      val numConfigured: Int,
+      val stratumId: StratumId,
+      val stratumName: String,
+  )
+}
+
 data class ObservationStateUpdatedEvent(
     val observationId: ObservationId,
     val newState: ObservationState,
