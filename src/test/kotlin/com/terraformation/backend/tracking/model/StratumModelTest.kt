@@ -2,15 +2,18 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.rectangle
 import com.terraformation.backend.util.Turtle
 import kotlin.random.Random
 import org.assertj.core.api.Assertions.assertThat
+import org.jooq.impl.DSL.square
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.Polygon
 
 class StratumModelTest : BaseStratumModelTest() {
   @Nested
@@ -452,7 +455,7 @@ class StratumModelTest : BaseStratumModelTest() {
     }
 
     @Test
-    fun `throws exception if substratum has too few remaining plots`() {
+    fun `returns fewer plots if substratum does not have room for all of them`() {
       val model =
           stratumModel(
               numTemporaryPlots = 6,
@@ -460,9 +463,131 @@ class StratumModelTest : BaseStratumModelTest() {
                   listOf(substratumModel(plots = monitoringPlotModels(permanentIds = listOf(10)))),
           )
 
-      assertThrows<SubstratumFullException> {
-        model.chooseTemporaryPlots(substrataIds(1), siteOrigin)
-      }
+      assertEquals(
+          emptyList<Polygon>(),
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).toList(),
+          "Should return no plots when the only position is taken by a permanent plot",
+      )
+    }
+
+    @Test
+    fun `spreads a full substratum's plots across the requested substrata that have room`() {
+      val model =
+          stratumModel(
+              numTemporaryPlots = 6,
+              substrata =
+                  listOf(
+                      // Full substratum
+                      substratumModel(
+                          id = 1,
+                          plots = monitoringPlotModels(permanentIds = listOf(10)),
+                      ),
+                      substratumModel(
+                          id = 2,
+                          plots = monitoringPlotModels(temporaryIds = listOf(20, 21, 22, 23, 24)),
+                      ),
+                      substratumModel(
+                          id = 3,
+                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
+                      ),
+                      // Unrequested substratum
+                      substratumModel(
+                          id = 4,
+                          plots = monitoringPlotModels(temporaryIds = listOf(40, 41, 42)),
+                      ),
+                  ),
+          )
+
+      val availablePlotIds =
+          listOf(
+              monitoringPlotIds(10),
+              monitoringPlotIds(20, 21, 22, 23, 24),
+              monitoringPlotIds(30, 31, 32, 33, 34),
+              monitoringPlotIds(40, 41, 42),
+          )
+
+      val chosenIds =
+          model.chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin).map {
+            model.findMonitoringPlot(it)?.id
+          }
+      val chosenIdSet = chosenIds.toSet()
+
+      val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIdSet).size }
+
+      assertEquals(
+          listOf(0, 3, 2, 0),
+          numChosenPerSubstratum,
+          "Number of plots chosen in each substratum",
+      )
+
+      assertEquals(
+          chosenIds.distinct(),
+          chosenIds,
+          "Should not choose the same plot multiple times",
+      )
+    }
+
+    @Test
+    fun `redistributes remaining plots to substrata with fewest temporary plots`() {
+      val model =
+          stratumModel(
+              numTemporaryPlots = 4,
+              substrata =
+                  listOf(
+                      substratumModel(
+                          id = 1,
+                          plots = monitoringPlotModels(temporaryIds = listOf(10, 11, 12, 13)),
+                      ),
+                      substratumModel(
+                          id = 2,
+                          plots = monitoringPlotModels(temporaryIds = listOf(20, 21, 22, 23)),
+                      ),
+                      substratumModel(
+                          id = 3,
+                          plots = monitoringPlotModels(permanentIds = listOf(30)),
+                      ),
+                  ),
+          )
+
+      val chosenIds =
+          model.chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin).map {
+            model.findMonitoringPlot(it)?.id
+          }
+      val numChosenPerSubstratum =
+          model.substrata.map { substratum ->
+            substratum.monitoringPlots.count { it.id in chosenIds }
+          }
+
+      assertEquals(
+          listOf(2, 2, 0),
+          numChosenPerSubstratum,
+          "Remaining plots should be spread evenly across substrata with space",
+      )
+    }
+
+    @Test
+    fun `returns fewer plots when no substratum has room for the remainder`() {
+      val model =
+          stratumModel(
+              numTemporaryPlots = 6,
+              substrata =
+                  listOf(
+                      substratumModel(
+                          id = 1,
+                          plots = monitoringPlotModels(temporaryIds = listOf(10, 11)),
+                      ),
+                      substratumModel(
+                          id = 2,
+                          plots = monitoringPlotModels(temporaryIds = listOf(20, 21)),
+                      ),
+                  ),
+          )
+
+      assertEquals(
+          4,
+          model.chooseTemporaryPlots(substrataIds(1, 2), siteOrigin).size,
+          "Should return as many plots as will fit",
+      )
     }
   }
 
