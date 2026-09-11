@@ -585,6 +585,7 @@ class PlantingSiteStore(
 
     return entityLocker.withLockedPlantingSite(plantingSiteId) {
       val existing = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+      val gridOrigin = existing.gridOrigin ?: plantingSiteEdit.desiredModel.gridOrigin
       val now = clock.instant()
       val userId = currentUser().userId
       val replacementResults = mutableListOf<ReplacementResult>()
@@ -605,6 +606,7 @@ class PlantingSiteStore(
             .set(BOUNDARY, plantingSiteEdit.desiredModel.boundary)
             .set(COUNTRY_CODE, countryCode)
             .set(EXCLUSION, plantingSiteEdit.desiredModel.exclusion)
+            .set(GRID_ORIGIN, gridOrigin)
             .set(MODIFIED_BY, userId)
             .set(MODIFIED_TIME, now)
             .where(ID.eq(plantingSiteId))
@@ -620,7 +622,7 @@ class PlantingSiteStore(
                 .set(CREATED_BY, userId)
                 .set(CREATED_TIME, now)
                 .set(EXCLUSION, plantingSiteEdit.desiredModel.exclusion)
-                .set(GRID_ORIGIN, existing.gridOrigin)
+                .set(GRID_ORIGIN, gridOrigin)
                 .set(PLANTING_SITE_ID, plantingSiteId)
                 .returning(ID)
                 .fetchOne(ID)!!
