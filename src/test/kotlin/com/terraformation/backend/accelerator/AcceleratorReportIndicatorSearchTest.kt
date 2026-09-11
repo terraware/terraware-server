@@ -143,7 +143,7 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
     insertReportAutoCalculatedIndicator(
         indicator = AutoCalculatedIndicator.TreesPlanted,
         overrideValue = 900,
-        status = ReportIndicatorStatus.Unlikely,
+        status = ReportIndicatorStatus.AtRisk,
         supportingDocumentUrl = URI("https://example.com/auto-calc"),
         systemTime = Instant.ofEpochSecond(2000),
         systemValue = 1000,
@@ -165,7 +165,7 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf(
                     "indicator" to "Trees Planted",
-                    "status" to "Unlikely",
+                    "status" to "At Risk",
                     "supportingDocumentUrl" to "https://example.com/auto-calc",
                     "systemTime" to "1970-01-01T00:33:20Z",
                     "systemValue" to "1,000",

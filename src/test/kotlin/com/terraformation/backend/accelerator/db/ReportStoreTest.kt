@@ -404,7 +404,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
-          status = ReportIndicatorStatus.Unlikely,
+          status = ReportIndicatorStatus.AtRisk,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -481,7 +481,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportIndicatorEntryModel(
                           target = BigDecimal(25),
-                          status = ReportIndicatorStatus.Unlikely,
+                          status = ReportIndicatorStatus.AtRisk,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
@@ -2776,7 +2776,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(5000),
           projectsComments = "Existing species planted indicator notes",
           progressNotes = "Existing species planted indicator internal comment",
-          status = ReportIndicatorStatus.Unlikely,
+          status = ReportIndicatorStatus.AtRisk,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
@@ -2823,7 +2823,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportIndicatorEntryModel(
                           value = BigDecimal(45),
-                          status = ReportIndicatorStatus.Unlikely,
+                          status = ReportIndicatorStatus.AtRisk,
                           projectsComments = "New trees planted indicator notes",
                           progressNotes = "New trees planted indicator internal comment",
                           supportingDocumentUrl = URI("https://example.com/new-trees"),
@@ -2909,7 +2909,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   overrideValue = BigDecimal(45),
-                  statusId = ReportIndicatorStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.AtRisk,
                   projectsComments = "New trees planted indicator notes",
                   progressNotes = "New trees planted indicator internal comment",
                   supportingDocumentUrl = URI("https://example.com/new-trees"),
@@ -3272,7 +3272,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(5000),
           projectsComments = "Existing species planted indicator notes",
           progressNotes = "Existing species planted indicator internal comment",
-          status = ReportIndicatorStatus.Unlikely,
+          status = ReportIndicatorStatus.AtRisk,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
@@ -3327,7 +3327,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportIndicatorEntryModel(
                           projectsComments = "New trees planted indicator notes",
-                          status = ReportIndicatorStatus.Unlikely,
+                          status = ReportIndicatorStatus.AtRisk,
                           supportingDocumentUrl = URI("https://example.com/new-trees"),
 
                           // These fields are ignored
@@ -3413,7 +3413,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
-                  statusId = ReportIndicatorStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.AtRisk,
                   projectsComments = "New trees planted indicator notes",
                   supportingDocumentUrl = URI("https://example.com/new-trees"),
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -4696,7 +4696,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportProjectIndicator(
           reportId = reportId,
           indicatorId = projectIndicatorId2,
-          status = ReportIndicatorStatus.Unlikely,
+          status = ReportIndicatorStatus.AtRisk,
           value = BigDecimal(39),
           projectsComments = "Project Indicator 2 Underperformance",
       )
@@ -4785,7 +4785,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SurvivalRate,
-          status = ReportIndicatorStatus.Unlikely,
+          status = ReportIndicatorStatus.AtRisk,
           systemValue = BigDecimal(51),
       )
 
@@ -5056,7 +5056,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
                   projectIndicatorId = projectIndicatorId2,
-                  statusId = ReportIndicatorStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.AtRisk,
                   value = BigDecimal(39),
                   projectsComments = "Project Indicator 2 Underperformance",
               ),
@@ -5244,7 +5244,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
                   projectIndicatorId = projectIndicatorId2,
-                  statusId = ReportIndicatorStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.AtRisk,
                   value = BigDecimal(39),
                   projectsComments = "Project Indicator 2 Underperformance",
               ),
@@ -5278,7 +5278,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
-                  statusId = ReportIndicatorStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.AtRisk,
                   value = BigDecimal(51),
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(
