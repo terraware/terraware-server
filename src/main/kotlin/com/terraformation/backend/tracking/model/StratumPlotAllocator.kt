@@ -14,11 +14,18 @@ import org.locationtech.jts.geom.Polygon
  * A stratum can hold fewer plots than it is configured for. When that happens, 75% of the plots
  * that fit are allocated as permanent, 25% as temporary. This can mean demoting a permanent plot to
  * temporary even though its permanent index is less than [StratumModel.numPermanentPlots].
+ *
+ * A permanent plot that has already been observed is never demoted, even if that pushes the split
+ * away from the target ratio.
  */
 class StratumPlotAllocator(
     private val stratum: ExistingStratumModel,
     private val gridOrigin: Point,
     private val exclusion: MultiPolygon?,
+    /**
+     * Plots that have already been observed as permanent. May include plots outside this stratum.
+     */
+    private val observedPermanentPlotIds: Set<MonitoringPlotId>,
 ) {
   /**
    * Fraction of a stratum's plots that should be treated as permanent when there isn't room for the
@@ -70,9 +77,15 @@ class StratumPlotAllocator(
       )
     }
 
-    var numPermanent = existingPermanent.size
-    while (numPermanent > (numAllocated * permanentPlotFraction).roundToInt()) {
-      val demotedPlot = existingPermanent[--numPermanent]
+    val (observed, unobserved) = existingPermanent.partition { it.id in observedPermanentPlotIds }
+    val availablePermanent = observed + unobserved
+    var numPermanent = availablePermanent.size
+
+    while (
+        numPermanent > observed.size &&
+            numPermanent > (numAllocated * permanentPlotFraction).roundToInt()
+    ) {
+      val demotedPlot = availablePermanent[--numPermanent]
 
       // A permanent plot can cross substratum boundaries, but a temporary plot must fit within
       // one substratum. Losing such a plot reduces capacity and can require further demotions.
@@ -81,11 +94,15 @@ class StratumPlotAllocator(
       }
     }
 
-    val permanentPlotIds = existingPermanent.take(numPermanent).map { it.id }.toSet()
+    val permanentPlotIds =
+        availablePermanent
+            .take(numPermanent)
+            .map { it.id }
+            .toSet()
+            .intersect(stratum.choosePermanentPlots(requestedSubstratumIds))
 
     return Allocation(
-        permanentPlotIds =
-            permanentPlotIds.intersect(stratum.choosePermanentPlots(requestedSubstratumIds)),
+        permanentPlotIds = permanentPlotIds,
         temporaryPlotBoundaries =
             stratum.chooseTemporaryPlots(
                 requestedSubstratumIds,

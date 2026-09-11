@@ -1732,6 +1732,23 @@ class ObservationStore(
     }
   }
 
+  /**
+   * Returns the IDs of a planting site's monitoring plots that have been included in observations
+   * as permanent plots. Includes plots from observations that haven't been completed.
+   */
+  fun fetchObservedPermanentPlotIds(plantingSiteId: PlantingSiteId): Set<MonitoringPlotId> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .selectDistinct(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+        .from(OBSERVATION_PLOTS)
+        .join(MONITORING_PLOTS)
+        .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+        .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(OBSERVATION_PLOTS.IS_PERMANENT)
+        .fetchSet(OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable())
+  }
+
   /** Recalculates the stratum- and site-level survival rates for an observation. */
   fun recalculateSurvivalRates(
       observationId: ObservationId,
