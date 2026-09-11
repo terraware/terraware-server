@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -1295,8 +1296,16 @@ class ObservationStore(
                 .and(SPECIES_ID.eqOrIsNull(speciesId))
                 .and(SPECIES_NAME.eqOrIsNull(speciesName))
                 .fetchOne { EditableMonitoringSpeciesModel.of(it) }
-                ?: throw SpeciesNotInObservationException(speciesId, speciesName)
           }
+              ?: if (
+                  speciesId == null ||
+                      parentStore.getOrganizationId(speciesId) ==
+                          parentStore.getOrganizationId(observationId)
+              ) {
+                EditableMonitoringSpeciesModel(0, 0, 0)
+              } else {
+                throw SpeciesNotFoundException(speciesId)
+              }
 
       val updated = updateFunc(existing)
 
