@@ -1,3 +1,5 @@
+c898f287 Remove simple planting site migration from admin UI (#4928)
+0aa73aa1 Remove planting site area migration from admin UI (#4927)
 380c98de SW-8861 Allow adding species to completed plots (#4925)
 1d4ee085 SW-8817 Stop searching for unused squares after first miss (#4921)
 7e0a511e SW-8817 Notify admins when observation has too few plots (#4920)
