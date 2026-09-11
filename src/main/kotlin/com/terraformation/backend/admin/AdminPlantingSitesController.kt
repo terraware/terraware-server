@@ -681,31 +681,6 @@ class AdminPlantingSitesController(
     return redirectToAdminHome()
   }
 
-  @PostMapping("/migrateSimplePlantingSites")
-  @RequireGlobalRole([GlobalRole.SuperAdmin])
-  fun migrateSimplePlantingSites(redirectAttributes: RedirectAttributes): String {
-    val successDetails = mutableListOf<String>()
-    val failureDetails = mutableListOf<String>()
-
-    try {
-      systemUser.run {
-        plantingSiteStore.migrateSimplePlantingSites(successDetails::add, failureDetails::add)
-        redirectAttributes.successMessage = "Successfully migrated planting sites"
-        redirectAttributes.successDetails = successDetails
-      }
-
-      if (failureDetails.isNotEmpty()) {
-        redirectAttributes.failureMessage = "Failed to migrate some planting sites"
-        redirectAttributes.failureDetails = failureDetails
-      }
-    } catch (e: Exception) {
-      log.error("Failed to migrate simple planting sites", e)
-      redirectAttributes.failureMessage = "Failed to migrate planting sites: ${e.message}"
-    }
-
-    return redirectToAdminHome()
-  }
-
   private fun describeSiteEdit(edit: PlantingSiteEdit): List<String> {
     log.info("Site edit ${objectMapper.writeValueAsString(edit)}")
     val stratumChanges =

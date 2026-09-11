@@ -68,10 +68,6 @@ class AdminController(
     )
     model.addAttribute("canManageTracking", GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute(
-        "canMigrateSimplePlantingSites",
-        GlobalRole.SuperAdmin in currentUser().globalRoles,
-    )
-    model.addAttribute(
         "canQueryGeoServer",
         config.geoServer.wfsUrl != null &&
             currentUser()
