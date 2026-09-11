@@ -446,7 +446,7 @@ class AdminPlantingSitesController(
                 existing.name,
                 existing.description,
                 existing.organizationId,
-                requireStableIds = true,
+                requireStableIds = existing.boundary != null,
             )
 
         val calculator = PlantingSiteEditCalculator(existing, desired)

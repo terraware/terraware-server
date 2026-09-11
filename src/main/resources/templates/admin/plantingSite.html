@@ -274,33 +274,40 @@
                 </td>
             </tr>
         </table>
+    </th:block>
+</th:block>
 
-        <h3>Upload New Shapefiles</h3>
+<th:block th:if="${canUpdatePlantingSite}">
+    <h3>Upload New Shapefiles</h3>
 
-        <form method="POST" enctype="multipart/form-data"
-              action="/admin/updatePlantingSiteShapefiles">
-            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-            <label>
-                Zipfile
-                <input type="file" name="zipfile" required/>
-            </label>
-            <br/>
-            <label>
-                Operation
-                <select name="dryRun">
-                    <option value="true" selected>Dry run (no change to site)</option>
-                    <option value="false">Apply changes to site</option>
-                </select>
-            </label>
-            <br/>
+    <form method="POST" enctype="multipart/form-data"
+          action="/admin/updatePlantingSiteShapefiles">
+        <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+        <label>
+            Zipfile
+            <input type="file" name="zipfile" required/>
+        </label>
+        <br/>
+        <label>
+            Operation
+            <select name="dryRun">
+                <option value="true" selected>Dry run (no change to site)</option>
+                <option value="false">Apply changes to site</option>
+            </select>
+        </label>
+        <br/>
+        <th:block th:if="!${site.strata.isEmpty()}">
             <label>
                 Substratum IDs to mark incomplete (comma-separated)
                 <input type="text" name="substratumIdsToMarkIncomplete"/>
             </label>
             <br/>
-            <input type="submit" value="Use Updated Shapefiles"/>
-        </form>
-    </th:block>
+        </th:block>
+        <input type="submit" value="Use Updated Shapefiles"/>
+    </form>
+</th:block>
+
+<th:block th:if="!${site.strata.isEmpty()}">
 
     <h3>Site Details</h3>
 
