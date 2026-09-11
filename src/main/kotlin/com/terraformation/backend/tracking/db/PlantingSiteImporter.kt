@@ -10,8 +10,10 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
+import com.terraformation.backend.util.nullIfEquals
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
+import java.math.BigDecimal
 import java.util.Collections
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -320,7 +322,9 @@ class PlantingSiteImporter(
               }
               val initialPlantingDensity =
                   substratumFeatures.firstNotNullOfOrNull {
-                    it.getProperty(initialPlantingDensityProperties)?.toBigDecimalOrNull()
+                    it.getProperty(initialPlantingDensityProperties)
+                        ?.toBigDecimalOrNull()
+                        ?.nullIfEquals(BigDecimal.ZERO)
                   } ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY
 
               if (errorMargin != null && variance != null) {
