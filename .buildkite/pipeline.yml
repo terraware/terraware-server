@@ -120,12 +120,18 @@ steps:
       TEST_S3_BUCKET_NAME: "terraformation-buildkite-test"
 
   - <<: *use-existing-checkout
-    label: ":python: Check scripts"
-    key: "check-scripts"
+    label: ":gradle: Compare OpenAPI schema to staging"
+    key: "compare-openapi"
     depends_on:
       - step: "run-tests"
       - step: "external-tests"
         allow_failure: true
+    command: ".buildkite/scripts/compare-openapi.sh"
+
+  - <<: *use-existing-checkout
+    label: ":python: Check scripts"
+    key: "check-scripts"
+    depends_on: "compare-openapi"
     if_changed: "scripts/**"
     plugins:
       - cache#v1.11.1:
@@ -138,10 +144,8 @@ steps:
     label: ":junit: Annotate build with test results"
     key: "junit-annotate"
     depends_on:
-      - step: "run-tests"
+      - step: "compare-openapi"
       - step: "check-scripts"
-      - step: "external-tests"
-        allow_failure: true
     plugins:
       - junit-annotate#v2.7.0:
           artifacts: "build/test-results/**/*.xml"
