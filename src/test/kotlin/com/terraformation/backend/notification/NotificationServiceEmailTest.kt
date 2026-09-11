@@ -1510,7 +1510,7 @@ internal class NotificationServiceEmailTest {
         )
     )
 
-    val message = sentMessageWithSubject("t0 planting density settings")
+    val message = sentMessageWithSubject("Survival Rate settings")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(plantingSite.name, message = message)
     assertBodyContains(plantingSite.name, message = message)
@@ -1594,7 +1594,7 @@ internal class NotificationServiceEmailTest {
         )
     )
 
-    val message = sentMessageWithSubject("t0 planting density settings")
+    val message = sentMessageWithSubject("Survival Rate settings")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(plantingSite.name, message = message)
     assertBodyContains(plantingSite.name, message = message)
