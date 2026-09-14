@@ -300,7 +300,11 @@ class T0Store(
                     )
             )
 
-    val combined = withdrawnSpecies.unionAll(observedNotWithdrawnSpecies).asTable("combined")
+    val combined =
+        withdrawnSpecies
+            .unionAll(observedNotWithdrawnSpecies)
+            .orderBy(MONITORING_PLOTS.ID, DSL.field("species_id"))
+            .asTable("combined")
 
     val plotIdField = combined.field(MONITORING_PLOTS.ID)
     val speciesIdField = combined.field("species_id")!!
