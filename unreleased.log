@@ -1,3 +1,6 @@
+e52f9615 Fix intermittent T0StoreTest failures (#4933)
+04512945 SW-8782 Allow adding map to mapless planting site (#4931)
+ba0b928b SW-8782 Treat 0 density in shapefile as absent (#4930)
 c898f287 Remove simple planting site migration from admin UI (#4928)
 0aa73aa1 Remove planting site area migration from admin UI (#4927)
 380c98de SW-8861 Allow adding species to completed plots (#4925)
