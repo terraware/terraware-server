@@ -10,14 +10,9 @@ set -euo pipefail
 echo "--- :git: Generate release notes"
 
 # Get version tags
-git fetch --tags --depth=1
+git fetch --tags
 THIS_VERSION=$(git tag --list --sort=creatordate 'v[0-9]*' | tail -n1)
 LAST_VERSION=$(git tag --list --sort=creatordate 'v[0-9]*' | tail -n2 | head -n1)
-
-.buildkite/scripts/lib/fetch-tag.sh "$LAST_VERSION"
-
-# THIS_VERSION should already be fetched, but check for it in case history isn't linear.
-.buildkite/scripts/lib/fetch-tag.sh "$THIS_VERSION"
 
 CHANGELOG=$(git log "$LAST_VERSION".."$THIS_VERSION" --pretty=format:"%s")
 
