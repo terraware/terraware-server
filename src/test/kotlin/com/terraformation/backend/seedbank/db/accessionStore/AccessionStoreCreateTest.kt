@@ -187,10 +187,10 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             collectionSiteCountryCode = "UG",
             collectionSiteCountrySubdivision = "subdivision",
             collectionSiteLandowner = "landowner",
-            collectionSiteName = "siteName",
+            collectionSiteName = " site   name ",
             collectionSiteNotes = "siteNotes",
             collectionSource = CollectionSource.Other,
-            collectors = listOf("primaryCollector", "second1", "second2"),
+            collectors = listOf("primary  collector", "second1", " second2", "   "),
             facilityId = facilityId,
             notes = "notes",
             plantId = "plantId",
@@ -230,9 +230,11 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     // Check fields that have different names in the create payload and the model.
     assertEquals(DataSource.FileImport, stored.source, "Data source")
 
+    assertEquals("site name", stored.collectionSiteName, "Collection site name")
+
     assertEquals(
         listOf(
-            AccessionCollectorsRow(stored.id, 0, "primaryCollector"),
+            AccessionCollectorsRow(stored.id, 0, "primary collector"),
             AccessionCollectorsRow(stored.id, 1, "second1"),
             AccessionCollectorsRow(stored.id, 2, "second2"),
         ),
