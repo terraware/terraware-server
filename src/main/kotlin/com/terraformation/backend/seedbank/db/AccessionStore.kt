@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
@@ -310,7 +311,28 @@ class AccessionStore(
                     .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
                     .set(
                         COLLECTION_SITE_NAME,
-                        accession.collectionSiteName?.normalizeWhitespaceOrNull(),
+                        accession.collectionSiteName?.normalizeWhitespaceOrNull()?.let { siteName ->
+                          DSL.coalesce(
+                              DSL.field(
+                                  // COLLECTION_SITE_NAME uses case-insensitive collation, so eq()
+                                  // can match a row with different capitalization.
+                                  DSL.select(COLLECTION_SITE_NAME)
+                                      .from(ACCESSIONS)
+                                      .where(
+                                          FACILITY_ID.`in`(
+                                              DSL.select(FACILITIES.ID)
+                                                  .from(FACILITIES)
+                                                  .where(
+                                                      FACILITIES.ORGANIZATION_ID.eq(organizationId)
+                                                  )
+                                          )
+                                      )
+                                      .and(COLLECTION_SITE_NAME.eq(siteName))
+                                      .limit(1)
+                              ),
+                              DSL.value(siteName),
+                          )
+                        },
                     )
                     .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
                     .set(COLLECTION_SOURCE_ID, accession.collectionSource)
@@ -513,6 +535,22 @@ class AccessionStore(
           updateContext?.remainingQuantityNotes,
       )
       insertStateHistory(existing, accession, facilityId, organizationId)
+
+      if (
+          existing.collectionSiteName != accession.collectionSiteName &&
+              accession.collectionSiteName != null
+      ) {
+        // Use the requested site name capitalization across the organization.
+        with(ACCESSIONS) {
+          dslContext
+              .update(ACCESSIONS)
+              .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
+              .where(COLLECTION_SITE_NAME.eq(accession.collectionSiteName)) // case-insensitive
+              .and(COLLECTION_SITE_NAME.collate("en-x-icu").ne(accession.collectionSiteName))
+              .and(facilities.ORGANIZATION_ID.eq(organizationId))
+              .execute()
+        }
+      }
 
       val rowsUpdated =
           with(ACCESSIONS) {

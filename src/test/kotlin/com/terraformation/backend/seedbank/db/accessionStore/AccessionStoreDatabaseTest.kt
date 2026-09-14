@@ -9,6 +9,7 @@ import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.records.AccessionCollectorsRecord
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
@@ -89,6 +90,24 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             AccessionCollectorsRecord(initial.id, 0, "primary", organizationId),
             AccessionCollectorsRecord(initial.id, 1, "Second", organizationId),
         )
+    )
+  }
+
+  @Test
+  fun `update applies requested capitalization to existing collection sites`() {
+    val otherNameId = insertAccession(AccessionsRow(collectionSiteName = "other name"))
+    val existingId = insertAccession(AccessionsRow(collectionSiteName = "site name"))
+    val initial = store.create(accessionModel().copy(collectionSiteName = "site name"))
+
+    store.update(initial.copy(collectionSiteName = "Site Name"))
+
+    assertEquals(
+        mapOf(
+            otherNameId to "other name",
+            existingId to "Site Name",
+            initial.id to "Site Name",
+        ),
+        accessionsDao.findAll().associate { it.id to it.collectionSiteName },
     )
   }
 
