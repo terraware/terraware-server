@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.StableId
@@ -57,6 +58,31 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
   @Nested
   inner class ApplyPlantingSiteEdit {
+    @Test
+    fun `adds map to site that has no map yet`() {
+      val desired = newSite()
+      val existing =
+          createSite(
+              desired.copy(
+                  areaHa = null,
+                  boundary = null,
+                  gridOrigin = null,
+                  strata = emptyList(),
+              )
+          )
+
+      val edited = store.applyPlantingSiteEdit(calculateSiteEdit(existing, desired))
+
+      assertEquals(desired.areaHa, edited.areaHa, "Area")
+      assertGeometryEquals(desired.boundary, edited.boundary, "Boundary")
+      assertGeometryEquals(desired.gridOrigin, edited.gridOrigin, "Grid origin")
+      assertEquals(1, edited.strata.single().substrata.size, "Substrata")
+
+      val history = plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).single()
+      assertGeometryEquals(edited.boundary, history.boundary, "History boundary")
+      assertGeometryEquals(edited.gridOrigin, history.gridOrigin, "History grid origin")
+    }
+
     @Test
     fun `updates existing boundaries`() {
       val (edited, existing) =
