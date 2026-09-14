@@ -9,7 +9,7 @@ import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
-import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
+import com.terraformation.backend.db.seedbank.tables.records.AccessionCollectorsRecord
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
@@ -73,10 +73,22 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     store.update(initial.copy(collectors = listOf("second1")))
 
-    assertEquals(
-        listOf(AccessionCollectorsRow(initial.id, 0, "second1")),
-        accessionCollectorsDao.findAll(),
-        "Collectors are stored",
+    assertTableEquals(AccessionCollectorsRecord(initial.id, 0, "second1", organizationId))
+  }
+
+  @Test
+  fun `update applies requested capitalization to existing collectors`() {
+    val existing = store.create(accessionModel(collectors = listOf("second")))
+    val initial = store.create(accessionModel(collectors = listOf("primary", "second")))
+
+    store.update(initial.copy(collectors = listOf("primary", "Second")))
+
+    assertTableEquals(
+        listOf(
+            AccessionCollectorsRecord(existing.id, 0, "Second", organizationId),
+            AccessionCollectorsRecord(initial.id, 0, "primary", organizationId),
+            AccessionCollectorsRecord(initial.id, 1, "Second", organizationId),
+        )
     )
   }
 
@@ -162,14 +174,12 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     assertEquals("site name", stored.collectionSiteName, "Collection site name")
 
-    assertEquals(
+    assertTableEquals(
         listOf(
-            AccessionCollectorsRow(stored.id, 0, "primary collector"),
-            AccessionCollectorsRow(stored.id, 1, "second1"),
-            AccessionCollectorsRow(stored.id, 2, "second2"),
-        ),
-        accessionCollectorsDao.findAll().sortedBy { it.position },
-        "Collectors are stored",
+            AccessionCollectorsRecord(stored.id, 0, "primary collector", organizationId),
+            AccessionCollectorsRecord(stored.id, 1, "second1", organizationId),
+            AccessionCollectorsRecord(stored.id, 2, "second2", organizationId),
+        )
     )
 
     // Old species ID was null, so this doesn't count as a change.

@@ -26,7 +26,7 @@ class AccessionCollectorsTable(private val tables: SearchTables) : SearchTable()
 
   override val fields: List<SearchField> =
       listOf(
-          textField("name", ACCESSION_COLLECTORS.NAME),
+          textField("name", ACCESSION_COLLECTORS.NAME.collate("en-x-icu")),
           integerField("position", ACCESSION_COLLECTORS.POSITION, localize = false),
       )
 

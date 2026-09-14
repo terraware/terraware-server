@@ -30,6 +30,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionQuantityHist
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.GeolocationsRow
+import com.terraformation.backend.db.seedbank.tables.records.AccessionCollectorsRecord
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.file.FileStore
@@ -61,7 +62,7 @@ import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.jobs.lambdas.IocJobLambda
 import org.jobrunr.scheduling.JobScheduler
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -232,7 +233,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   stateId = AccessionState.InStorage,
               ),
           ),
-          listOf(AccessionCollectorsRow(AccessionId(1), 0, "Collector,Name")),
+          listOf(AccessionCollectorsRow(AccessionId(1), 0, "Collector,Name", organizationId)),
           listOf(
               GeolocationsRow(
                   accessionId = AccessionId(2),
@@ -1006,7 +1007,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   treesCollectedFrom = 1,
               )
           )
-      accessionCollectorsDao.insert(AccessionCollectorsRow(accessionId, 0, "Old Collector"))
+      insertAccessionCollector(name = "Old Collector")
       geolocationsDao.insert(
           GeolocationsRow(
               accessionId = accessionId,
@@ -1056,11 +1057,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           "Accessions",
       )
 
-      assertEquals(
-          listOf(AccessionCollectorsRow(accessionId, 0, "New Collector")),
-          accessionCollectorsDao.findAll(),
-          "Collectors",
-      )
+      assertTableEquals(AccessionCollectorsRecord(accessionId, 0, "New Collector", organizationId))
 
       assertEquals(
           listOf(

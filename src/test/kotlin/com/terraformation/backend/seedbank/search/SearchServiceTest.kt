@@ -15,7 +15,6 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
-import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
@@ -156,6 +155,11 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
                 treesCollectedFrom = 1,
             )
         )
+
+    insertAccessionCollector(name = "collector 1")
+    insertAccessionCollector(name = "collector 2")
+    insertAccessionCollector(name = "collector 3")
+
     accessionId2 =
         insertAccession(
             AccessionsRow(
@@ -165,12 +169,6 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
                 treesCollectedFrom = 2,
             )
         )
-
-    accessionCollectorsDao.insert(
-        AccessionCollectorsRow(accessionId1, 0, "collector 1"),
-        AccessionCollectorsRow(accessionId1, 1, "collector 2"),
-        AccessionCollectorsRow(accessionId1, 2, "collector 3"),
-    )
   }
 
   protected fun searchAccessions(

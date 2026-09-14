@@ -165,6 +165,10 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create writes all API payload fields to database`() {
+    // Should pick up capitalization from existing collector names.
+    insertAccession()
+    insertAccessionCollector(name = "Primary Collector")
+
     val speciesId = insertSpecies()
     insertProject()
     insertSubLocation(facilityId = facilityId, name = "Location 1")
@@ -234,11 +238,11 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
     assertEquals(
         listOf(
-            AccessionCollectorsRow(stored.id, 0, "primary collector"),
-            AccessionCollectorsRow(stored.id, 1, "second1"),
-            AccessionCollectorsRow(stored.id, 2, "second2"),
+            AccessionCollectorsRow(stored.id, 0, "Primary Collector", organizationId),
+            AccessionCollectorsRow(stored.id, 1, "second1", organizationId),
+            AccessionCollectorsRow(stored.id, 2, "second2", organizationId),
         ),
-        accessionCollectorsDao.findAll().sortedBy { it.position },
+        accessionCollectorsDao.fetchByAccessionId(stored.id!!).sortedBy { it.position },
         "Collectors are stored",
     )
   }
