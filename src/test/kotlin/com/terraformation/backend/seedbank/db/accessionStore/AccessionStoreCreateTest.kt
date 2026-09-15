@@ -165,8 +165,8 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create writes all API payload fields to database`() {
-    // Should pick up capitalization from existing collector names.
-    insertAccession()
+    // Should pick up capitalization from existing collector and site names.
+    insertAccession(AccessionsRow(collectionSiteName = "Site Name"))
     insertAccessionCollector(name = "Primary Collector")
 
     val speciesId = insertSpecies()
@@ -234,7 +234,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     // Check fields that have different names in the create payload and the model.
     assertEquals(DataSource.FileImport, stored.source, "Data source")
 
-    assertEquals("site name", stored.collectionSiteName, "Collection site name")
+    assertEquals("Site Name", stored.collectionSiteName, "Collection site name")
 
     assertEquals(
         listOf(
