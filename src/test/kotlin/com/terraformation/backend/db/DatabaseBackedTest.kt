@@ -439,6 +439,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow as SeedbankWithdrawalsRow
+import com.terraformation.backend.db.seedbank.tables.records.AccessionCollectorsRecord
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.DeliveryId
@@ -2144,6 +2145,24 @@ abstract class DatabaseBackedTest {
     accessionsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.accessionIds.add(it) }
+  }
+
+  private var nextAccessionCollectorPosition = 0
+
+  fun insertAccessionCollector(
+      accessionId: AccessionId = inserted.accessionId,
+      organizationId: OrganizationId = inserted.organizationId,
+      position: Int = nextAccessionCollectorPosition++,
+      name: String = "collector",
+  ) {
+    AccessionCollectorsRecord(
+            accessionId = accessionId,
+            name = name,
+            organizationId = organizationId,
+            position = position,
+        )
+        .attach(dslContext)
+        .insert()
   }
 
   private var nextBagNumber = 1

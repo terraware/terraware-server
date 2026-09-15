@@ -370,6 +370,7 @@ class AccessionStore(
           }
 
           updateCollectors(
+              organizationId,
               accessionId,
               emptyList(),
               accession.collectors.mapNotNull { it.normalizeWhitespaceOrNull() },
@@ -469,7 +470,13 @@ class AccessionStore(
 
     dslContext.transaction { _ ->
       if (existing.collectors != accession.collectors) {
-        updateCollectors(accessionId, existing.collectors, accession.collectors)
+        updateCollectors(
+            organizationId,
+            accessionId,
+            existing.collectors,
+            accession.collectors,
+            true,
+        )
       }
 
       val existingTests: MutableList<ViabilityTestModel> = existing.viabilityTests.toMutableList()
@@ -1097,10 +1104,29 @@ class AccessionStore(
         .convertFrom { result -> result.map { it.value1() } }
   }
 
+  /**
+   * Updates the list of collector names on an accession.
+   *
+   * If there is an existing collector in the organization with the same name as a requested
+   * collector, but possibly differing in capitalization or accents, one of two things happens
+   * depending on the value of [updateExisting].
+   *
+   * If [updateExisting] is false, the existing name's capitalization and accents are used even if
+   * they differ from the requested name.
+   *
+   * If [updateExisting] is true, the existing name is replaced with the requested name on all
+   * accessions in the organization where it appears.
+   *
+   * This is a best-effort operation, intended to reduce the number of duplicate-looking names; it's
+   * possible (and acceptable) for different capitalizations of the same name to be inserted by
+   * concurrent writes.
+   */
   private fun updateCollectors(
+      organizationId: OrganizationId,
       accessionId: AccessionId,
       existing: List<String>,
       desired: List<String>,
+      updateExisting: Boolean = false,
   ) {
     if (existing.size > desired.size) {
       dslContext
@@ -1111,19 +1137,40 @@ class AccessionStore(
     }
 
     desired.forEachIndexed { position, name ->
-      if (position >= existing.size) {
+      with(ACCESSION_COLLECTORS) {
+        if (updateExisting) {
+          dslContext
+              .update(ACCESSION_COLLECTORS)
+              .set(NAME, name)
+              .where(ORGANIZATION_ID.eq(organizationId))
+              .and(NAME.eq(name))
+              .and(NAME.collate("en-x-icu").ne(name))
+              .execute()
+        }
+
         dslContext
             .insertInto(ACCESSION_COLLECTORS)
-            .set(ACCESSION_COLLECTORS.ACCESSION_ID, accessionId)
-            .set(ACCESSION_COLLECTORS.POSITION, position)
-            .set(ACCESSION_COLLECTORS.NAME, name)
-            .execute()
-      } else if (name != existing[position]) {
-        dslContext
-            .update(ACCESSION_COLLECTORS)
-            .set(ACCESSION_COLLECTORS.NAME, name)
-            .where(ACCESSION_COLLECTORS.ACCESSION_ID.eq(accessionId))
-            .and(ACCESSION_COLLECTORS.POSITION.eq(position))
+            .set(ACCESSION_ID, accessionId)
+            .set(ORGANIZATION_ID, organizationId)
+            .set(POSITION, position)
+            .set(
+                NAME,
+                DSL.coalesce(
+                    DSL.field(
+                        // NAME uses a case-insensitive collation, so the eq() here can match a
+                        // row with different capitalization than the name we're searching for.
+                        DSL.select(NAME)
+                            .from(ACCESSION_COLLECTORS)
+                            .where(ORGANIZATION_ID.eq(organizationId))
+                            .and(NAME.eq(name))
+                            .limit(1)
+                    ),
+                    DSL.value(name),
+                ),
+            )
+            .onConflict(ACCESSION_ID, POSITION)
+            .doUpdate()
+            .set(NAME, DSL.excluded(NAME))
             .execute()
       }
     }
