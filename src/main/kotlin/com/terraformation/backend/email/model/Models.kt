@@ -175,6 +175,7 @@ class DeviceUnresponsive(
 class UserAddedToOrganization(
     config: TerrawareServerConfig,
     val admin: IndividualUser,
+    val learnMoreUrl: String,
     val organization: OrganizationModel,
     val organizationHomeUrl: String,
     val user: IndividualUser,
