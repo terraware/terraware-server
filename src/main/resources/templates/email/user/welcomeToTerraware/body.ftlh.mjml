@@ -1,0 +1,38 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.WelcomeToTerraware" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body mj-class="body-gray">
+        <mj-include path="../../logo-welcome.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper-welcome">
+                <mj-text mj-class="text-headline06-bold" padding-left="0px" padding-right="0px">
+                    ${strings("notification.user.welcomeToTerraware.email.body.1")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    <#if user.firstName??>
+                        ${strings("notification.user.welcomeToTerraware.email.body.2", user.firstName)}
+                    <#else>
+                        ${strings("notification.user.welcomeToTerraware.email.body.2.noname")}
+                    </#if>
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.user.welcomeToTerraware.email.body.3", user.email)}</mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.user.welcomeToTerraware.email.body.4")}</mj-text>
+                <mj-button mj-class="btn-productive-primary-md" href="${webAppUrl}"
+                >${strings("notification.user.welcomeToTerraware.email.buttonLabel")}</mj-button>
+            </mj-column>
+        </mj-section>
+        <mj-section padding="0px">
+            <mj-column mj-class="org-image-container" width="100%">
+                <mj-image src="${webAppUrl}/assets/welcome-screenshot.png">
+                </mj-image>
+            </mj-column>
+        </mj-section>
+        <mj-include path="../../manageSettings-welcome.ftlh.mjml"/>
+
+        <mj-include path="../../footer-welcome.ftlh.mjml"/>
+    </mj-body>
+</mjml>

@@ -35,6 +35,7 @@ import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
+import com.terraformation.backend.customer.event.UserRegisteredEvent
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.FacilityModel
@@ -731,6 +732,17 @@ internal class NotificationServiceEmailTest {
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(webAppUrls.fullOrganizationHome(organization.id), "Link URL")
     assertSubjectContains("You've")
+    assertRecipientsEqual(setOf(user.email))
+  }
+
+  @Test
+  fun userRegistered() {
+    service.on(UserRegisteredEvent(user.userId))
+
+    assertBodyContains(user.firstName!!, "First name")
+    assertBodyContains(user.email, "Email")
+    assertBodyContains(config.webAppUrl, "Link URL")
+    assertSubjectContains("Welcome")
     assertRecipientsEqual(setOf(user.email))
   }
 

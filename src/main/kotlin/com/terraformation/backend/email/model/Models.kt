@@ -647,3 +647,11 @@ class SplatMarkedNeedsAttention(
   val uploadDateString: String
     get() = uploadDate.toString()
 }
+
+class WelcomeToTerraware(
+    config: TerrawareServerConfig,
+    val user: IndividualUser,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "user/welcomeToTerraware"
+}
