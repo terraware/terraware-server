@@ -208,6 +208,8 @@ testing {
                 "-Xmx5120m",
                 // For MockK, which needs to stub out final fields.
                 "--enable-final-field-mutation=ALL-UNNAMED",
+                // Suppress log spew on SQL exceptions with AWS driver wrapper
+                "-Daws.jdbc.config.exception.context.enabled=false",
             )
             systemProperty("java.locale.providers", "SPI,CLDR")
             testLogging { exceptionFormat = TestExceptionFormat.FULL }
