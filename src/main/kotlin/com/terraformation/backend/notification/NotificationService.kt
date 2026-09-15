@@ -417,6 +417,7 @@ class NotificationService(
             UserAddedToOrganization(
                 config,
                 admin,
+                webAppUrls.fullLearnMore().toString(),
                 organization,
                 webAppUrls.fullOrganizationHome(organizationId).toString(),
                 user,
