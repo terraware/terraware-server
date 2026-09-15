@@ -134,7 +134,7 @@ dependencies {
   implementation("org.commonmark:commonmark:0.29.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
-  implementation("org.freemarker:freemarker:2.3.34")
+  implementation("org.freemarker:freemarker:2.3.35")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-geojson:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
