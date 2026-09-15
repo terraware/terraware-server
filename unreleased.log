@@ -1,3 +1,5 @@
+c6c91a30 SW-5601 "Added to organization" email copy updates (#4953)
+f7272172 SW-5601 Organization new-user notification email copy updates (#4952)
 70a7696b Update ktor monorepo to v3.5.2 (#4951)
 0e7a9436 Update dependency org.freemarker:freemarker to v2.3.35 (#4950)
 c688cb48 Update dependency org.apache.tika:tika-core to v3.3.2 (#4949)
