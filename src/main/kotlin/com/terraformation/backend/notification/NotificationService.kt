@@ -408,8 +408,10 @@ class NotificationService(
             UserAddedToTerraware(
                 config,
                 admin,
+                webAppUrls.fullLearnMore().toString(),
                 organization,
                 webAppUrls.terrawareRegistrationUrl(organizationId, user.email).toString(),
+                user,
             )
           } else {
             UserAddedToOrganization(

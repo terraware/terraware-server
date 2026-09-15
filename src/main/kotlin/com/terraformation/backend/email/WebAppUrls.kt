@@ -331,6 +331,10 @@ class WebAppUrls(
     return UriBuilder.fromUri(config.webAppUrl).path("/help-support/contact-us").build()
   }
 
+  fun fullLearnMore(): URI {
+    return UriBuilder.fromUri(config.webAppUrl).path("/learn-more").build()
+  }
+
   fun fullVirtualWalkthroughs(organizationId: OrganizationId, fileId: FileId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/virtual-walkthroughs")
