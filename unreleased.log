@@ -1,3 +1,8 @@
+70a7696b Update ktor monorepo to v3.5.2 (#4951)
+0e7a9436 Update dependency org.freemarker:freemarker to v2.3.35 (#4950)
+c688cb48 Update dependency org.apache.tika:tika-core to v3.3.2 (#4949)
+6387fa96 Update dependency commons-codec:commons-codec to v1.22.1 (#4948)
+46d42e46 Update dependency com.google.api-client:google-api-client to v2.9.1 (#4947)
 578edb2e SW-5601 Welcome to Terraware email (#4945)
 0f38060f SW-8885 Normalize accession collection site names (#4941)
 2c7b869f SW-8885 Normalize accession collector names (#4940)
