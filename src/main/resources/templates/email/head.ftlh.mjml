@@ -1,6 +1,18 @@
 <mj-head>
     <mj-attributes>
         <mj-class
+                name="icon-28"
+                width="28px"
+                height="28px"
+        />
+
+        <mj-class
+                name="icon-48"
+                width="48px"
+                height="48px"
+        />
+
+        <mj-class
                 name="logo-wrapper"
                 width="650px"
                 padding="0px"

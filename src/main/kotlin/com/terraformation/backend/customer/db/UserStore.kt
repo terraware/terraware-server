@@ -7,6 +7,7 @@ import com.terraformation.backend.auth.UserRepresentation
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
+import com.terraformation.backend.customer.event.UserRegisteredEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
@@ -833,7 +834,25 @@ class UserStore(
               modifiedTime = clock.instant(),
           )
 
-      usersDao.update(updatedRow)
+      // If there are multiple requests being handled for this user, we only want to publish a
+      // single "user registered" event.
+      val rowsUpdated =
+          with(USERS) {
+            dslContext
+                .update(USERS)
+                .set(AUTH_ID, updatedRow.authId)
+                .set(FIRST_NAME, updatedRow.firstName)
+                .set(LAST_NAME, updatedRow.lastName)
+                .set(MODIFIED_TIME, updatedRow.modifiedTime)
+                .where(ID.eq(updatedRow.id))
+                .and(AUTH_ID.isNull)
+                .execute()
+          }
+
+      if (rowsUpdated == 1) {
+        publisher.publishEvent(UserRegisteredEvent(existingUser.id!!))
+      }
+
       updatedRow
     } else {
       val localeAttribute =
@@ -854,6 +873,8 @@ class UserStore(
       usersDao.insert(usersRow)
 
       log.info("New user ${usersRow.id} has registered with auth ID ${keycloakUser.id}")
+
+      publisher.publishEvent(UserRegisteredEvent(usersRow.id!!))
 
       usersRow
     }

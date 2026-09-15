@@ -10,6 +10,7 @@ import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.UserRepresentation
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
+import com.terraformation.backend.customer.event.UserRegisteredEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
@@ -172,6 +173,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals("f", actual.firstName, "First name")
     assertEquals("l", actual.lastName, "Last name")
     assertEquals(timeZone, actual.timeZone, "Time zone")
+
+    publisher.assertEventNotPublished<UserRegisteredEvent>()
   }
 
   @Test
@@ -180,6 +183,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(userRepresentation.email, user.email, "Email")
     assertEquals(Locales.GIBBERISH, user.locale, "Locale")
+
+    publisher.assertEventPublished(UserRegisteredEvent(user.userId))
   }
 
   @Test
@@ -195,6 +200,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(userRepresentation.firstName, updatedRow.firstName, "First name")
     assertEquals(userRepresentation.lastName, updatedRow.lastName, "Last name")
     assertEquals(authId, updatedRow.authId, "Auth ID")
+
+    publisher.assertEventPublished(UserRegisteredEvent(userId))
   }
 
   @Test

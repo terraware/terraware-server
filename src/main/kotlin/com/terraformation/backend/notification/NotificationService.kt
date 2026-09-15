@@ -30,6 +30,7 @@ import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
+import com.terraformation.backend.customer.event.UserRegisteredEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.IndividualUser
@@ -113,6 +114,7 @@ import com.terraformation.backend.email.model.T0DataSet
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToTerraware
+import com.terraformation.backend.email.model.WelcomeToTerraware
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
 import com.terraformation.backend.i18n.Messages
@@ -420,6 +422,25 @@ class NotificationService(
           }
 
       sendToUser(user, appContent, emailContent, requireEmailOptIn = false)
+    }
+  }
+
+  @EventListener
+  fun on(event: UserRegisteredEvent) {
+    try {
+      systemUser.run {
+        val user = userStore.fetchOneById(event.userId)
+
+        if (user is IndividualUser) {
+          log.info("Creating notification for user ${event.userId} registration.")
+
+          val emailContent = WelcomeToTerraware(config, user)
+
+          sendToUser(user, emailContent = emailContent, requireEmailOptIn = false)
+        }
+      }
+    } catch (e: Exception) {
+      log.error("Failed to send welcome email to user ${event.userId}", e)
     }
   }
 
