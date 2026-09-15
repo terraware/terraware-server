@@ -13,6 +13,7 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.util.normalizeWhitespaceOrNull
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
@@ -368,6 +369,8 @@ data class AccessionModel(
     val newState = existing.getStateTransition(this)?.newState ?: existing.state
 
     return copy(
+        collectionSiteName = collectionSiteName?.normalizeWhitespaceOrNull(),
+        collectors = collectors.mapNotNull { it.normalizeWhitespaceOrNull() },
         estimatedSeedCount = calculateEstimatedSeedCount(newRemaining),
         estimatedWeight = calculateEstimatedWeight(newRemaining),
         latestObservedQuantity = calculateLatestObservedQuantity(existing),

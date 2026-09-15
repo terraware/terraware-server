@@ -97,6 +97,24 @@ fun <T> Sequence<T>.onChunk(chunkSize: Int, func: (List<T>) -> Unit): Sequence<T
   return chunked(chunkSize).onEach { func(it) }.flatten()
 }
 
+private val multipleWhitespaceRegex = Regex("\\p{IsWhite_Space}+")
+
+/**
+ * Strips leading and trailing whitespace and replaces stretches of adjacent whitespace characters
+ * with single ASCII spaces.
+ */
+fun String.normalizeWhitespace(): String {
+  return replace(multipleWhitespaceRegex, " ").trim()
+}
+
+/**
+ * Strips leading and trailing whitespace and replaces stretches of adjacent whitespace characters
+ * with single ASCII spaces. If the resulting string is empty, returns null.
+ */
+fun String.normalizeWhitespaceOrNull(): String? {
+  return normalizeWhitespace().nullIfEquals("")
+}
+
 private val combiningMarksRegex = Regex("[\\u0000\\p{Mn}]+")
 
 /** Removes accents and other diacritics from characters in a string. */

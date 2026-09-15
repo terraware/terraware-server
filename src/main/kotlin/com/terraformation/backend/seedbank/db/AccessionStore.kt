@@ -60,6 +60,7 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.seedbank.model.isV2Compatible
+import com.terraformation.backend.util.normalizeWhitespaceOrNull
 import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -307,7 +308,10 @@ class AccessionStore(
                         accession.collectionSiteCountrySubdivision,
                     )
                     .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
-                    .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
+                    .set(
+                        COLLECTION_SITE_NAME,
+                        accession.collectionSiteName?.normalizeWhitespaceOrNull(),
+                    )
                     .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
                     .set(COLLECTION_SOURCE_ID, accession.collectionSource)
                     .set(CREATED_BY, currentUser().userId)
@@ -365,7 +369,11 @@ class AccessionStore(
                 .execute()
           }
 
-          updateCollectors(accessionId, emptyList(), accession.collectors)
+          updateCollectors(
+              accessionId,
+              emptyList(),
+              accession.collectors.mapNotNull { it.normalizeWhitespaceOrNull() },
+          )
           bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
           geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
           viabilityTestStore.updateViabilityTests(
@@ -763,6 +771,7 @@ class AccessionStore(
       existing: AccessionModel,
       updated: AccessionModel,
   ): Pair<AccessionUpdatedEventValues, AccessionUpdatedEventValues> {
+    val updatedCollectors = updated.collectors.mapNotNull { it.normalizeWhitespaceOrNull() }
     val changedFrom =
         AccessionUpdatedEventValues(
             bagNumbers = existing.bagNumbers.nullIfEquals(updated.bagNumbers),
@@ -778,11 +787,13 @@ class AccessionStore(
             collectionSiteLandowner =
                 existing.collectionSiteLandowner.nullIfEquals(updated.collectionSiteLandowner),
             collectionSiteName =
-                existing.collectionSiteName.nullIfEquals(updated.collectionSiteName),
+                existing.collectionSiteName.nullIfEquals(
+                    updated.collectionSiteName?.normalizeWhitespaceOrNull()
+                ),
             collectionSiteNotes =
                 existing.collectionSiteNotes.nullIfEquals(updated.collectionSiteNotes),
             collectionSource = existing.collectionSource.nullIfEquals(updated.collectionSource),
-            collectors = existing.collectors.nullIfEquals(updated.collectors),
+            collectors = existing.collectors.nullIfEquals(updatedCollectors),
             dryingEndDate = existing.dryingEndDate.nullIfEquals(updated.dryingEndDate),
             founderId = existing.founderId.nullIfEquals(updated.founderId),
             geolocations = existing.geolocations.nullIfEquals(updated.geolocations),
@@ -811,11 +822,13 @@ class AccessionStore(
             collectionSiteLandowner =
                 updated.collectionSiteLandowner.nullIfEquals(existing.collectionSiteLandowner),
             collectionSiteName =
-                updated.collectionSiteName.nullIfEquals(existing.collectionSiteName),
+                updated.collectionSiteName
+                    ?.normalizeWhitespaceOrNull()
+                    .nullIfEquals(existing.collectionSiteName),
             collectionSiteNotes =
                 updated.collectionSiteNotes.nullIfEquals(existing.collectionSiteNotes),
             collectionSource = updated.collectionSource.nullIfEquals(existing.collectionSource),
-            collectors = updated.collectors.nullIfEquals(existing.collectors),
+            collectors = updatedCollectors.nullIfEquals(existing.collectors),
             dryingEndDate = updated.dryingEndDate.nullIfEquals(existing.dryingEndDate),
             founderId = updated.founderId.nullIfEquals(existing.founderId),
             geolocations = updated.geolocations.nullIfEquals(existing.geolocations),
