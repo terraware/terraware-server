@@ -186,8 +186,10 @@ class UserAddedToOrganization(
 class UserAddedToTerraware(
     config: TerrawareServerConfig,
     val admin: IndividualUser,
+    val learnMoreUrl: String,
     val organization: OrganizationModel,
     val terrawareRegistrationUrl: String,
+    val user: IndividualUser,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "user/addedToTerraware"
