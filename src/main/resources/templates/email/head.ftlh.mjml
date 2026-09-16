@@ -192,6 +192,12 @@
         .text-link:visited {
             color: #2C8658;
         }
+
+        .wrapped-pre {
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
     </mj-style>
     <mj-style inline>
         .text-footer div {

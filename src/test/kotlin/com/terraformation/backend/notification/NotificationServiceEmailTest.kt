@@ -668,14 +668,15 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun facilityAlertRequested() {
-    val body = "test body"
+    val body = "test < body"
+    val escapedBody = "test &lt; body"
     val subject = "test subject"
 
     service.on(FacilityAlertRequestedEvent(facility.id, subject, body, adminUser.userId))
 
     assertSubjectContains(subject)
-    assertBodyContains(body, "Alert body", hasTextHtml = false)
-    assertBodyContains(facility.name, "Facility name", hasTextHtml = false)
+    assertBodyContains(escapedBody, "Alert body", hasTextPlain = false)
+    assertBodyContains(facility.name, "Facility name", hasTextPlain = false)
     assertRecipientsEqual(organizationRecipients)
   }
 
