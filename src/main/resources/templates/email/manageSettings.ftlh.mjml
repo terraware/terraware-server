@@ -1,3 +1,3 @@
 <mj-text mj-class="text-body-footer" css-class="text-body-footer">
-    ${link("notification.email.html.manageSettings", manageSettingsUrl)}
+    ${link("notification.email.manageSettings", manageSettingsUrl)}
 </mj-text>
