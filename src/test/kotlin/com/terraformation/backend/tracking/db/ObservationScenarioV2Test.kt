@@ -2,23 +2,36 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.SoilType
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
+import com.terraformation.backend.rectanglePolygon
+import com.terraformation.backend.tracking.model.BiomassQuadratModel
+import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
+import com.terraformation.backend.tracking.model.BiomassSpeciesModel
+import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
+import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -683,6 +696,272 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
 
       assertThrows<ObservationNotFoundException> { resultsStoreV2.fetchOneById(observationId) }
     }
+  }
+
+  @Nested
+  inner class AdHocResults {
+    @Test
+    fun `fetches ad-hoc plot details at every depth`() {
+      insertMonitoringPlot(isAdHoc = true)
+      val observationId = insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertObservationPlotCondition(condition = ObservableCondition.AnimalDamage)
+      val speciesId = insertSpecies()
+      insertObservedPlotSpeciesTotals(totalLive = 1)
+      val plantId = insertRecordedPlant(speciesId = speciesId)
+
+      val expected = expectedAdHocResults()
+      val expectedPlot =
+          expected.adHocPlot!!.copy(
+              conditions = setOf(ObservableCondition.AnimalDamage),
+              species =
+                  listOf(
+                      ObservationSpeciesResultsModel(
+                          certainty = RecordedSpeciesCertainty.Known,
+                          latestLive = 1,
+                          permanentLive = 0,
+                          speciesId = speciesId,
+                          speciesName = null,
+                          survivalRate = null,
+                          t0Density = null,
+                          totalDead = 0,
+                          totalExisting = 0,
+                          totalLive = 1,
+                          totalPlants = 1,
+                      )
+                  ),
+              totalPlants = 1,
+              totalSpecies = 1,
+          )
+      val expectedPlants =
+          listOf(
+              RecordedPlantModel(
+                  certainty = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1),
+                  id = plantId,
+                  speciesId = speciesId,
+                  speciesName = null,
+                  status = RecordedPlantStatus.Live,
+              )
+          )
+
+      ObservationResultsDepth.entries.forEach { depth ->
+        assertEquals(
+            expected.copy(
+                adHocPlot =
+                    expectedPlot.copy(
+                        plants =
+                            if (depth == ObservationResultsDepth.Plant) expectedPlants else null
+                    )
+            ),
+            resultsStoreV2.fetchOneById(observationId, depth),
+            "$depth depth",
+        )
+      }
+    }
+
+    @Test
+    fun `fetches only ad-hoc results for the requested site or organization`() {
+      insertMonitoringPlot(isAdHoc = true)
+      insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      insertObservationPlot(completedBy = user.userId)
+      val expected = expectedAdHocResults()
+      insertObservation(completedTime = Instant.EPOCH) // non-ad-hoc observation
+
+      insertPlantingSite()
+      insertMonitoringPlot(isAdHoc = true)
+      insertObservation(completedTime = Instant.ofEpochSecond(1), isAdHoc = true)
+      insertObservationPlot(completedBy = user.userId)
+      val expectedOtherSite =
+          expectedAdHocResults(
+              plotNumber = 2,
+              areaHa = null,
+              completedTime = Instant.ofEpochSecond(1),
+          )
+
+      insertOrganization()
+      insertPlantingSite()
+      insertMonitoringPlot(isAdHoc = true)
+      insertObservation(completedTime = Instant.ofEpochSecond(2), isAdHoc = true)
+      insertObservationPlot(completedBy = user.userId)
+
+      assertEquals(
+          listOf(expected),
+          resultsStoreV2.fetchByPlantingSiteId(plantingSiteId, isAdHoc = true),
+          "Site observations",
+      )
+      assertEquals(
+          listOf(expectedOtherSite, expected),
+          resultsStoreV2.fetchByOrganizationId(organizationId, isAdHoc = true),
+          "Organization observations",
+      )
+    }
+
+    @Test
+    fun `fetches ad-hoc biomass observation results`() {
+      val plotId = insertMonitoringPlot(isAdHoc = true)
+      val observationId =
+          insertObservation(
+              completedTime = Instant.EPOCH,
+              isAdHoc = true,
+              observationType = ObservationType.BiomassMeasurements,
+          )
+      insertObservationPlot(completedBy = user.userId)
+      insertObservationBiomassDetails(
+          description = "Forest plot",
+          forestType = BiomassForestType.Terrestrial,
+          herbaceousCoverPercent = 25,
+          smallTreesCountLow = 5,
+          smallTreesCountHigh = 10,
+          soilAssessment = "Moist soil",
+          soilType = SoilType.Loam,
+      )
+      val speciesId = insertSpecies()
+      insertObservationBiomassSpecies(speciesId = speciesId, isThreatened = true)
+      insertObservationBiomassQuadratDetails(
+          position = ObservationPlotPosition.NortheastCorner,
+          description = "Dense ground cover",
+      )
+      insertObservationBiomassQuadratSpecies(
+          position = ObservationPlotPosition.NortheastCorner,
+          abundanceCount = 7,
+      )
+      val treeId =
+          insertRecordedTree(
+              diameterAtBreastHeightCm = BigDecimal(20),
+              pointOfMeasurementM = BigDecimal("1.3"),
+              heightM = BigDecimal(12),
+          )
+
+      val expected =
+          expectedAdHocResults()
+              .copy(
+                  observationType = ObservationType.BiomassMeasurements,
+                  biomassDetails =
+                      ExistingBiomassDetailsModel(
+                          description = "Forest plot",
+                          forestType = BiomassForestType.Terrestrial,
+                          herbaceousCoverPercent = 25,
+                          observationId = observationId,
+                          plotId = plotId,
+                          smallTreeCountRange = 5 to 10,
+                          soilAssessment = "Moist soil",
+                          soilType = SoilType.Loam,
+                          species =
+                              setOf(
+                                  BiomassSpeciesModel(
+                                      speciesId = speciesId,
+                                      isInvasive = false,
+                                      isThreatened = true,
+                                  )
+                              ),
+                          quadrats =
+                              mapOf(
+                                  ObservationPlotPosition.NortheastCorner to
+                                      BiomassQuadratModel(
+                                          description = "Dense ground cover",
+                                          species =
+                                              setOf(
+                                                  BiomassQuadratSpeciesModel(
+                                                      abundanceCount = 7,
+                                                      speciesId = speciesId,
+                                                  )
+                                              ),
+                                      ),
+                                  ObservationPlotPosition.NorthwestCorner to
+                                      BiomassQuadratModel(species = emptySet()),
+                                  ObservationPlotPosition.SoutheastCorner to
+                                      BiomassQuadratModel(species = emptySet()),
+                                  ObservationPlotPosition.SouthwestCorner to
+                                      BiomassQuadratModel(species = emptySet()),
+                              ),
+                          trees =
+                              listOf(
+                                  ExistingRecordedTreeModel(
+                                      id = treeId,
+                                      diameterAtBreastHeightCm = BigDecimal(20),
+                                      gpsCoordinates = null,
+                                      heightM = BigDecimal(12),
+                                      isDead = false,
+                                      pointOfMeasurementM = BigDecimal("1.3"),
+                                      speciesId = speciesId,
+                                      treeGrowthForm = TreeGrowthForm.Tree,
+                                      treeNumber = 1,
+                                      trunkNumber = 1,
+                                  )
+                              ),
+                      ),
+              )
+
+      assertEquals(expected, resultsStoreV2.fetchOneById(observationId), "Observation by ID")
+      assertEquals(
+          listOf(expected),
+          resultsStoreV2.fetchByPlantingSiteId(plantingSiteId, isAdHoc = true),
+          "Site observations",
+      )
+      assertEquals(
+          listOf(expected),
+          resultsStoreV2.fetchByOrganizationId(organizationId, isAdHoc = true),
+          "Organization observations",
+      )
+    }
+
+    private fun expectedAdHocResults(
+        plotNumber: Long = 1,
+        areaHa: BigDecimal? = BigDecimal(2500),
+        completedTime: Instant = Instant.EPOCH,
+    ) =
+        ObservationResultsModel(
+            adHocPlot =
+                ObservationMonitoringPlotResultsModel(
+                    boundary = rectanglePolygon(30),
+                    claimedByName = "First Last",
+                    claimedByUserId = user.userId,
+                    completedTime = Instant.EPOCH,
+                    conditions = emptySet(),
+                    coordinates = emptyList(),
+                    elevationMeters = null,
+                    isAdHoc = true,
+                    isPermanent = false,
+                    monitoringPlotId = inserted.monitoringPlotId,
+                    monitoringPlotNumber = plotNumber,
+                    notes = null,
+                    overlappedByPlotIds = emptySet(),
+                    overlapsWithPlotIds = emptySet(),
+                    media = emptyList(),
+                    plantingDensity = null,
+                    plants = null,
+                    sizeMeters = 30,
+                    species = emptyList(),
+                    status = ObservationPlotStatus.Completed,
+                    survivalRate = null,
+                    totalPlants = null,
+                    totalSpecies = null,
+                ),
+            anyPlotsCompleted = false,
+            areaHa = areaHa,
+            biomassDetails = null,
+            completedTime = completedTime,
+            estimatedPlants = null,
+            isAdHoc = true,
+            observationId = inserted.observationId,
+            observationType = ObservationType.Monitoring,
+            observedDensity = null,
+            plantingCompleted = false,
+            plantingDensity = null,
+            plantingDensityStdDev = null,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            plantingSiteId = inserted.plantingSiteId,
+            species = emptyList(),
+            startDate = LocalDate.of(2023, 1, 1),
+            state = ObservationState.Completed,
+            strata = emptyList(),
+            survivalRate = null,
+            survivalRateIncludesTempPlots = false,
+            survivalRateStdDev = null,
+            totalPlants = null,
+            totalSpecies = null,
+        )
   }
 
   @Nested
