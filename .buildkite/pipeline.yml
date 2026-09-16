@@ -46,8 +46,6 @@ common:
         - secret-id: "terraware_server_build_secrets"
 
   - &use-existing-checkout
-    agents:
-      "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
     checkout:
       skip: true
     retry:
@@ -56,8 +54,8 @@ common:
 
 
 agents:
-  # Run all steps on the same kind of runner.
-  queue: "x86-8core"
+  # Run all steps on the same runner that uploaded the pipeline initially.
+  "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
 
 env:
   BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://$BUILDKITE_PLUGIN_S3_CACHE_BUCKET/artifacts/$BUILDKITE_PIPELINE_SLUG/$BUILDKITE_BUILD_ID"
