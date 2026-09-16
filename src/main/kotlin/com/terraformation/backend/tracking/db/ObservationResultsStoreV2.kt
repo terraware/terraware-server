@@ -53,7 +53,11 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
   ): ObservationResultsModel {
     requirePermissions { readObservation(observationId) }
 
-    return fetchByCondition(OBSERVATIONS.ID.eq(observationId), depth, 1, true).first()
+    val isAdHoc =
+        dslContext.fetchValue(OBSERVATIONS.IS_AD_HOC, OBSERVATIONS.ID.eq(observationId))
+            ?: throw ObservationNotFoundException(observationId)
+
+    return fetchByCondition(OBSERVATIONS.ID.eq(observationId), depth, 1, isAdHoc).first()
   }
 
   fun fetchByPlantingSiteId(
@@ -573,28 +577,18 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       condition: Condition,
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
       limit: Int?,
-      includeAdHoc: Boolean,
+      isAdHoc: Boolean,
   ): List<ObservationResultsModel> {
-    val adHocDepth =
-        if (depth == ObservationResultsDepth.Plant) {
-          ObservationResultsDepth.Plant
-        } else {
-          ObservationResultsDepth.Plot
-        }
+    if (isAdHoc) {
+      return fetchAdHocByCondition(condition, depth, limit)
+    }
 
-    val adHocPlotsField: Field<List<ObservationMonitoringPlotResultsModel>> =
-        if (includeAdHoc) {
-          adHocMonitoringPlotsMultiset(adHocDepth)
-        } else {
-          emptyMultiset()
-        }
     val strataField = stratumMultiset(depth)
     val plantingSiteSpeciesMultisetField = plantingSiteSpeciesMultiset()
 
     val results =
         dslContext
             .select(
-                adHocPlotsField,
                 biomassDetailsMultiset,
                 OBSERVATIONS.COMPLETED_TIME,
                 OBSERVATIONS.ID,
@@ -659,7 +653,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
               val observedDensity = record[OBSERVATION_SITE_RESULTS.OBSERVED_DENSITY]
 
               ObservationResultsModel(
-                  adHocPlot = record[adHocPlotsField].firstOrNull(),
+                  adHocPlot = null,
                   anyPlotsCompleted = anyCompleted,
                   areaHa = areaHa,
                   biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
@@ -716,5 +710,73 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       ObservationResultsDepth.Plot,
       ObservationResultsDepth.Plant -> results
     }
+  }
+
+  private fun fetchAdHocByCondition(
+      condition: Condition,
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
+      limit: Int?,
+  ): List<ObservationResultsModel> {
+    val adHocDepth =
+        if (depth == ObservationResultsDepth.Plant) {
+          ObservationResultsDepth.Plant
+        } else {
+          ObservationResultsDepth.Plot
+        }
+
+    val adHocPlotsField = adHocMonitoringPlotsMultiset(adHocDepth)
+
+    val results =
+        dslContext
+            .select(
+                adHocPlotsField,
+                biomassDetailsMultiset,
+                OBSERVATIONS.COMPLETED_TIME,
+                OBSERVATIONS.ID,
+                OBSERVATIONS.OBSERVATION_TYPE_ID,
+                OBSERVATIONS.PLANTING_SITE_ID,
+                OBSERVATIONS.START_DATE,
+                OBSERVATIONS.STATE_ID,
+                PLANTING_SITE_HISTORIES.AREA_HA,
+                PLANTING_SITE_HISTORIES.ID,
+            )
+            .from(OBSERVATIONS)
+            .leftJoin(PLANTING_SITE_HISTORIES)
+            .on(OBSERVATIONS.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
+            .leftJoin(OBSERVATION_SITE_RESULTS)
+            .on(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+            .where(condition)
+            .orderBy(OBSERVATIONS.COMPLETED_TIME.desc().nullsLast(), OBSERVATIONS.ID.desc())
+            .let { if (limit != null) it.limit(limit) else it }
+            .fetch { record ->
+              ObservationResultsModel(
+                  adHocPlot = record[adHocPlotsField].firstOrNull(),
+                  anyPlotsCompleted = false,
+                  areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA],
+                  biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
+                  completedTime = record[OBSERVATIONS.COMPLETED_TIME],
+                  estimatedPlants = null,
+                  isAdHoc = true,
+                  observationId = record[OBSERVATIONS.ID.asNonNullable()],
+                  observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
+                  observedDensity = null,
+                  plantingCompleted = false,
+                  plantingDensity = null,
+                  plantingDensityStdDev = null,
+                  plantingSiteHistoryId = record[PLANTING_SITE_HISTORIES.ID],
+                  plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
+                  species = emptyList(),
+                  startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
+                  state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
+                  strata = emptyList(),
+                  survivalRate = null,
+                  survivalRateIncludesTempPlots = false,
+                  survivalRateStdDev = null,
+                  totalPlants = null,
+                  totalSpecies = null,
+              )
+            }
+
+    return results
   }
 }
