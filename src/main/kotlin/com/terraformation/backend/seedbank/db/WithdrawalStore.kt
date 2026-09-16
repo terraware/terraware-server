@@ -97,6 +97,7 @@ class WithdrawalStore(
           .leftJoin(USERS)
           .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
           .where(ACCESSION_ID.eq(accessionId))
+          .orderBy(DATE, CREATED_TIME, ID)
           .fetch { record ->
             val quantity =
                 SeedQuantityModel.of(record[WITHDRAWN_QUANTITY], record[WITHDRAWN_UNITS_ID])
