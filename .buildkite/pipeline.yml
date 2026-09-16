@@ -45,10 +45,6 @@ common:
         - secret-id: "buildkite_build_secrets"
         - secret-id: "terraware_server_build_secrets"
 
-  - &shallow-clone
-    peakon/git-shallow-clone#v0.0.1:
-      depth: 1
-
   - &use-existing-checkout
     checkout:
       skip: true
@@ -58,18 +54,18 @@ common:
 
 
 agents:
-  # Run all steps on the same kind of runner.
-  queue: "x86-8core"
+  # Run all steps on the same runner that uploaded the pipeline initially.
+  "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
 
 env:
   BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://$BUILDKITE_PLUGIN_S3_CACHE_BUCKET/artifacts/$BUILDKITE_PIPELINE_SLUG/$BUILDKITE_BUILD_ID"
 
 steps:
-  - label: ":graphite: CI optimizer"
+  - <<: *use-existing-checkout
+    label: ":graphite: CI optimizer"
     key: "graphite-ci-optimizer"
     soft_fail: true
     plugins:
-      - *shallow-clone
       - *load-secrets
     command: .buildkite/scripts/graphite-optimizer.sh
 
