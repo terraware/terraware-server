@@ -1,4 +1,4 @@
-FROM amazoncorretto:26.0.1-al2023-headless
+FROM amazoncorretto:27.0.0-al2023-headless
 
 ARG USER_ID=1001
 
