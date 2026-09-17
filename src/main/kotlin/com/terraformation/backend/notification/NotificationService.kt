@@ -17,7 +17,6 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAdd
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -42,7 +41,6 @@ import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobStartedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
-import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.InternalInterest
@@ -57,9 +55,6 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
-import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
@@ -103,13 +98,11 @@ import com.terraformation.backend.email.model.PlantingSiteMapEdited
 import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
 import com.terraformation.backend.email.model.SeedFundReportCreated
-import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.SplatGenerationCompleted
 import com.terraformation.backend.email.model.SplatGenerationFailed
 import com.terraformation.backend.email.model.SplatMarkedNeedsAttention
 import com.terraformation.backend.email.model.StratumDensityUpdated
 import com.terraformation.backend.email.model.T0DataSet
-import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToTerraware
 import com.terraformation.backend.email.model.WelcomeToTerraware
@@ -171,11 +164,9 @@ import org.springframework.context.event.EventListener
 @Named
 class NotificationService(
     private val activityStore: ActivityStore,
-    private val automationStore: AutomationStore,
     private val clock: InstantSource,
     private val config: TerrawareServerConfig,
     private val deliverableStore: DeliverableStore,
-    private val deviceStore: DeviceStore,
     private val documentStore: DocumentStore,
     private val dslContext: DSLContext,
     private val emailService: EmailService,
@@ -235,71 +226,6 @@ class NotificationService(
             config,
             facility,
             webAppUrls.fullFacilityMonitoring(organizationId, event.facilityId).toString(),
-        )
-
-    sendToOrganization(organizationId, appContent, emailContent)
-  }
-
-  @EventListener
-  fun on(event: SensorBoundsAlertTriggeredEvent) {
-    val automation = automationStore.fetchOneById(event.automationId)
-    val timeseriesName =
-        automation.timeseriesName
-            ?: throw IllegalStateException("Automation ${automation.id} has no timeseries name")
-    val deviceId =
-        automation.deviceId
-            ?: throw IllegalStateException("Automation ${automation.id} has no device ID")
-    val device = deviceStore.fetchOneById(deviceId)
-    val facility = facilityStore.fetchOneById(automation.facilityId)
-    val organizationId =
-        parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
-
-    val appContent =
-        AppContent(
-            notificationType = NotificationType.SensorOutOfBounds,
-            localUrl = webAppUrls.facilityMonitoring(facility.id, device),
-            renderMessage = {
-              messages.sensorBoundsAlert(device, facility.name, timeseriesName, event.value)
-            },
-        )
-
-    val emailContent =
-        SensorBoundsAlert(
-            config,
-            automation,
-            device,
-            facility,
-            event.value,
-            webAppUrls.fullFacilityMonitoring(organizationId, facility.id, device).toString(),
-        )
-
-    sendToOrganization(organizationId, appContent, emailContent)
-  }
-
-  @EventListener
-  fun on(event: UnknownAutomationTriggeredEvent) {
-    val automation = automationStore.fetchOneById(event.automationId)
-    val devicesRow = automation.deviceId?.let { deviceStore.fetchOneById(it) }
-    val facility = facilityStore.fetchOneById(automation.facilityId)
-    val organizationId =
-        parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
-
-    val appContent =
-        AppContent(
-            notificationType = NotificationType.UnknownAutomationTriggered,
-            localUrl = webAppUrls.facilityMonitoring(facility.id),
-            renderMessage = {
-              messages.unknownAutomationTriggered(automation.name, facility.name, event.message)
-            },
-        )
-
-    val emailContent =
-        UnknownAutomationTriggered(
-            config,
-            automation,
-            facility,
-            event.message,
-            webAppUrls.fullFacilityMonitoring(organizationId, facility.id, devicesRow).toString(),
         )
 
     sendToOrganization(organizationId, appContent, emailContent)

@@ -10,11 +10,9 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
-import com.terraformation.backend.device.AutomationService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/automations")
 @RestController
 class AutomationsController(
-    private val automationService: AutomationService,
     private val automationStore: AutomationStore,
 ) {
   @GetMapping
@@ -47,13 +44,6 @@ class AutomationsController(
         }
 
     return ListAutomationsResponsePayload(automations.map { AutomationPayload(it) })
-  }
-
-  @GetMapping("/{automationId}")
-  @Operation(summary = "Gets the details of a single automation for a device or facility.")
-  fun getAutomation(@PathVariable automationId: AutomationId): GetAutomationResponsePayload {
-    val automation = automationStore.fetchOneById(automationId)
-    return GetAutomationResponsePayload(AutomationPayload(automation))
   }
 
   @Operation(summary = "Creates a new automation for a device or facility.")
@@ -88,38 +78,7 @@ class AutomationsController(
     automationStore.update(payload.toModel(existing))
     return SimpleSuccessResponsePayload()
   }
-
-  @DeleteMapping("/{automationId}")
-  @Operation(summary = "Deletes an existing automation from a device or facility.")
-  fun deleteAutomation(@PathVariable automationId: AutomationId): SimpleSuccessResponsePayload {
-    automationStore.delete(automationId)
-    return SimpleSuccessResponsePayload()
-  }
-
-  @Operation(summary = "Reports that an automation has been triggered.")
-  @PostMapping("/{automationId}/trigger")
-  fun postAutomationTrigger(
-      @PathVariable automationId: AutomationId,
-      @RequestBody payload: AutomationTriggerRequestPayload,
-  ): SimpleSuccessResponsePayload {
-    automationService.trigger(automationId, payload.timeseriesValue, payload.message)
-    return SimpleSuccessResponsePayload()
-  }
 }
-
-data class AutomationTriggerRequestPayload(
-    @Schema(
-        description =
-            "For automations that are triggered by changes to timeseries values, the value that " +
-                "triggered the automation."
-    )
-    val timeseriesValue: Double?,
-    @Schema(
-        description =
-            "Default message to publish if the automation type isn't yet supported by the server."
-    )
-    val message: String?,
-)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class AutomationPayload(

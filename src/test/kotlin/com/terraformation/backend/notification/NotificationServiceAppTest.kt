@@ -1,6 +1,5 @@
 package com.terraformation.backend.notification
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
@@ -27,7 +26,6 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -70,9 +68,6 @@ import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
-import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
@@ -142,9 +137,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var accessionStore: AccessionStore
   private lateinit var activityStore: ActivityStore
-  private lateinit var automationStore: AutomationStore
   private lateinit var deliverableStore: DeliverableStore
-  private lateinit var deviceStore: DeviceStore
   private lateinit var documentStore: DocumentStore
   private lateinit var facilityStore: FacilityStore
   private lateinit var moduleEventStore: ModuleEventStore
@@ -172,7 +165,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
 
-    val objectMapper = jacksonObjectMapper()
     val publisher = TestEventPublisher()
 
     organizationId = insertOrganization()
@@ -196,9 +188,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
         )
     activityStore = ActivityStore(clock, dslContext, publisher, parentStore)
-    automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
     deliverableStore = DeliverableStore(dslContext)
-    deviceStore = DeviceStore(devicesDao)
     documentStore =
         DocumentStore(
             clock,
@@ -314,11 +304,9 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     service =
         NotificationService(
             activityStore,
-            automationStore,
             clock,
             config,
             deliverableStore,
-            deviceStore,
             documentStore,
             dslContext,
             emailService,
@@ -440,42 +428,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         title = "Device manager cannot be detected.",
         body = "Device manager is disconnected. Please check on it.",
-        localUrl = webAppUrls.facilityMonitoring(facilityId),
-    )
-  }
-
-  @Test
-  fun `should store sensor bounds alert notification`() {
-    val timeseriesName = "test timeseries"
-    val badValue = 5.678
-
-    insertDevice()
-    val automationId = insertAutomation(timeseriesName = timeseriesName)
-
-    testEventNotification(
-        SensorBoundsAlertTriggeredEvent(automationId, badValue),
-        type = NotificationType.SensorOutOfBounds,
-        title = "device 1 is out of range.",
-        body = "$timeseriesName on device 1 is $badValue, which is out of threshold.",
-        localUrl = webAppUrls.facilityMonitoring(facilityId),
-    )
-  }
-
-  @Test
-  fun `should store unknown automation triggered notification`() {
-    val automationName = "automation name"
-    val automationType = "unknown"
-    val facilityName = "Facility 1"
-    val message = "message"
-
-    val automationId =
-        insertAutomation(name = automationName, type = automationType, deviceId = null)
-
-    testEventNotification(
-        UnknownAutomationTriggeredEvent(automationId, automationType, message),
-        type = NotificationType.UnknownAutomationTriggered,
-        title = "$automationName triggered at $facilityName",
-        body = message,
         localUrl = webAppUrls.facilityMonitoring(facilityId),
     )
   }
