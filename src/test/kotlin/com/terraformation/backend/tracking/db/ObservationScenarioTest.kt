@@ -29,6 +29,7 @@ import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationSiteStatsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.scenario.ObservationScenario
 import com.terraformation.backend.util.calculateAreaHectares
@@ -186,6 +187,80 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/SubstratumStats.csv", actual) { row ->
       row.filterIndexed { index, _ -> (index - 1) % 5 != 4 } // estimated plants
     }
+  }
+
+  /**
+   * Asserts that the overall statistics for each area match the expected-output CSV. Areas with no
+   * statistics at all are absent from the CSV.
+   */
+  protected fun assertSiteObservationStats(prefix: String, stats: ObservationSiteStatsModel) {
+    val observationNumbers =
+        inserted.observationIds.withIndex().associate { (index, id) -> id to "${index + 1}" }
+
+    fun columns(
+        observationId: ObservationId?,
+        plantingDensity: Int?,
+        survivalRate: Int?,
+        totalPlants: Int?,
+        totalSpecies: Int?,
+    ) =
+        listOf(
+            observationId?.let { observationNumbers[it] } ?: "",
+            plantingDensity.toStringOrBlank(),
+            survivalRate.toStringOrBlank("%"),
+            totalPlants.toStringOrBlank(),
+            totalSpecies.toStringOrBlank(),
+        )
+
+    val rowKeys =
+        listOf(listOf("Site", "")) +
+            stratumIds.keys.map { listOf("Stratum", it) } +
+            substratumIds.keys.map { listOf("Substratum", it) }
+
+    val actual =
+        makeActualCsv(
+            listOf(stats),
+            rowKeys,
+            { (level, name), siteStats ->
+              when (level) {
+                "Site" ->
+                    columns(
+                        siteStats.observationId,
+                        siteStats.plantingDensity,
+                        siteStats.survivalRate,
+                        siteStats.totalPlants,
+                        siteStats.totalSpecies,
+                    )
+                "Stratum" ->
+                    siteStats.strata
+                        .first { it.stratumId == stratumIds[name] }
+                        .let {
+                          columns(
+                              it.observationId,
+                              it.plantingDensity,
+                              it.survivalRate,
+                              it.totalPlants,
+                              it.totalSpecies,
+                          )
+                        }
+                else ->
+                    siteStats.strata
+                        .flatMap { it.substrata }
+                        .first { it.substratumId == substratumIds[name] }
+                        .let {
+                          columns(
+                              it.observationId,
+                              it.plantingDensity,
+                              it.survivalRate,
+                              it.totalPlants,
+                              it.totalSpecies,
+                          )
+                        }
+              }
+            },
+        )
+
+    assertResultsMatchCsv("$prefix/OverallStats.csv", actual, skipRows = 1)
   }
 
   protected fun assertPlantsResults(filePath: String, results: ObservationResultsModel) {
