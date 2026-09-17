@@ -119,6 +119,7 @@
             <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
             <child column="organization_id" foreignKey="identifier_sequences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="identifier_sequences"/>
             <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+            <child column="organization_id" foreignKey="accession_collectors_organization_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accession_collectors"/>
             <child column="organization_id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="draft_planting_sites"/>
             <child column="organization_id" foreignKey="monitoring_plots_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <child column="organization_id" foreignKey="planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>

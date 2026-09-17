@@ -9,10 +9,10 @@ viability_test_types
 withdrawal_purposes
 accessions
 viability_tests
-accession_collectors
 bags
 geolocations
 viability_test_results
+accession_collectors
 accession_photos
 accession_quantity_history
 accession_state_history

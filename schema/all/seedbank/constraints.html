@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">42 Foreign Key Constraints</h3>
+                            <h3 class="box-title">43 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -103,6 +103,24 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td>accession_collectors_organization_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/accession_collectors.html'>accession_collectors</a><span>.organization_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/organizations.html'>organizations</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
                                     <tr>
                                         <td>accession_collectors_accession_id_fkey</td>
                                         <td>
@@ -890,13 +908,18 @@
                                 <tbody>
                                     <tr>
                                         <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
-                                        <td>accession_collectors_name_check</td>
-                                        <td>(name !~ similar_to_escape(&#39;\s*&#39;::text))</td>
+                                        <td>accession_collectors_position_check</td>
+                                        <td>(&quot;position&quot; &gt;&#61; 0)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
-                                        <td>accession_collectors_position_check</td>
-                                        <td>(&quot;position&quot; &gt;&#61; 0)</td>
+                                        <td>name_not_empty</td>
+                                        <td>(length(name) &gt; 0)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
+                                        <td>name_whitespace</td>
+                                        <td>((name !~ (&#39;\s\s&#39;::text COLLATE &quot;en-x-icu&quot;)) AND (name !~ (&#39;^\s&#39;::text COLLATE &quot;en-x-icu&quot;)) AND (name !~ (&#39;\s$&#39;::text COLLATE &quot;en-x-icu&quot;)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
@@ -920,11 +943,6 @@
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
-                                        <td>accessions_collection_site_name_check</td>
-                                        <td>(collection_site_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_collection_site_notes_check</td>
                                         <td>(collection_site_notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
@@ -945,6 +963,11 @@
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
+                                        <td>collection_site_name_nonempty</td>
+                                        <td>(length(collection_site_name) &gt; 0)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>observed_quantity_must_have_time</td>
                                         <td>(((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL)))</td>
                                     </tr>
@@ -957,6 +980,11 @@
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>remaining_quantity_must_have_units</td>
                                         <td>(((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/accessions.html'>accessions</a></td>
+                                        <td>site_name_whitespace</td>
+                                        <td>((collection_site_name !~ (&#39;\s\s&#39;::text COLLATE &quot;en-x-icu&quot;)) AND (collection_site_name !~ (&#39;^\s&#39;::text COLLATE &quot;en-x-icu&quot;)) AND (collection_site_name !~ (&#39;\s$&#39;::text COLLATE &quot;en-x-icu&quot;)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>

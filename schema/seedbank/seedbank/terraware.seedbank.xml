@@ -6,14 +6,22 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accession_collectors_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
          <primaryKey column="accession_id" sequenceNumberInPK="1"/>
          <primaryKey column="position" sequenceNumberInPK="2"/>
          <index name="accession_collectors_pkey" unique="true">
             <column ascending="true" name="accession_id"/>
             <column ascending="true" name="position"/>
          </index>
-         <checkConstraint constraint="(name !~ similar_to_escape('\s*'::text))" name="accession_collectors_name_check"/>
+         <index name="accession_collectors_organization_id_name_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="name"/>
+         </index>
          <checkConstraint constraint="(&quot;position&quot; &gt;= 0)" name="accession_collectors_position_check"/>
+         <checkConstraint constraint="(length(name) &gt; 0)" name="name_not_empty"/>
+         <checkConstraint constraint="((name !~ ('\s\s'::text COLLATE &quot;en-x-icu&quot;)) AND (name !~ ('^\s'::text COLLATE &quot;en-x-icu&quot;)) AND (name !~ ('\s$'::text COLLATE &quot;en-x-icu&quot;)))" name="name_whitespace"/>
       </table>
       <table name="accession_photos" remarks="Linking table between `accessions` and `files`." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -197,6 +205,10 @@
          <index name="accessions__species_id_ix" unique="false">
             <column ascending="true" name="species_id"/>
          </index>
+         <index name="accessions_facility_id_collection_site_name_idx" unique="false">
+            <column ascending="true" name="facility_id"/>
+            <column ascending="true" name="collection_site_name"/>
+         </index>
          <index name="accessions_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
@@ -204,14 +216,15 @@
          <checkConstraint constraint="(collection_site_country_code !~ similar_to_escape(' *'::text))" name="accessions_collection_site_country_code_check"/>
          <checkConstraint constraint="(collection_site_country_subdivision !~ similar_to_escape(' *'::text))" name="accessions_collection_site_country_subdivision_check"/>
          <checkConstraint constraint="(collection_site_landowner !~ similar_to_escape(' *'::text))" name="accessions_collection_site_landowner_check"/>
-         <checkConstraint constraint="(collection_site_name !~ similar_to_escape(' *'::text))" name="accessions_collection_site_name_check"/>
          <checkConstraint constraint="(collection_site_notes !~ similar_to_escape(' *'::text))" name="accessions_collection_site_notes_check"/>
          <checkConstraint constraint="(founder_id !~ similar_to_escape(' *'::text))" name="accessions_founder_id_check"/>
          <checkConstraint constraint="(number !~ similar_to_escape(' *'::text))" name="accessions_number_check"/>
          <checkConstraint constraint="(processing_notes !~ similar_to_escape(' *'::text))" name="accessions_processing_notes_check"/>
+         <checkConstraint constraint="(length(collection_site_name) &gt; 0)" name="collection_site_name_nonempty"/>
          <checkConstraint constraint="(((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL)))" name="observed_quantity_must_have_time"/>
          <checkConstraint constraint="(((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL)))" name="observed_quantity_must_have_units"/>
          <checkConstraint constraint="(((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL)))" name="remaining_quantity_must_have_units"/>
+         <checkConstraint constraint="((collection_site_name !~ ('\s\s'::text COLLATE &quot;en-x-icu&quot;)) AND (collection_site_name !~ ('^\s'::text COLLATE &quot;en-x-icu&quot;)) AND (collection_site_name !~ ('\s$'::text COLLATE &quot;en-x-icu&quot;)))" name="site_name_whitespace"/>
          <checkConstraint constraint="(((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL)))" name="subset_weight_quantity_must_have_units"/>
          <checkConstraint constraint="((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL))" name="subset_weight_units_must_not_be_seeds"/>
       </table>

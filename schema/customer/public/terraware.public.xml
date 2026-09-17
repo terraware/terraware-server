@@ -455,6 +455,7 @@
             <child column="organization_id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
             <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="organization_id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_preferences"/>
+            <child column="organization_id" foreignKey="accession_collectors_organization_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accession_collectors"/>
             <child column="organization_id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="draft_planting_sites"/>
             <child column="organization_id" foreignKey="monitoring_plots_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <child column="organization_id" foreignKey="planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>

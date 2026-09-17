@@ -211,6 +211,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="accession_collectors.organization_id references organizations.id via accession_collectors_organization_id_fkey"><a href='../../seedbank/tables/accession_collectors.html'>accession_collectors</a><span class='relatedKey'>.organization_id</span></td>
+                                                <td class="constraint detail">accession_collectors_organization_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="draft_planting_sites.organization_id references organizations.id via draft_planting_sites_organization_id_fkey"><a href='../../tracking/tables/draft_planting_sites.html'>draft_planting_sites</a><span class='relatedKey'>.organization_id</span></td>
                                                 <td class="constraint detail">draft_planting_sites_organization_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -577,6 +582,18 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>other_type_details_only_for_other</td>
+                                    <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
+                                </tr>
+                                <tr>
                                     <td>organizations_country_subdivision_code_check</td>
                                     <td>(country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
@@ -585,20 +602,8 @@
                                     <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>other_type_details_only_for_other</td>
-                                    <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
-                                </tr>
-                                <tr>
-                                    <td>country_code_matches_subdivision</td>
-                                    <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
-                                </tr>
-                                <tr>
                                     <td>other_type_details_null_or_not_empty</td>
                                     <td>((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>
