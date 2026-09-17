@@ -210,6 +210,16 @@ class ObservationsController(
     return ListObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
   }
 
+  @GetMapping("/results/stats")
+  @Operation(summary = "Gets the latest observation statistics for a planting site.")
+  fun getSiteObservationStats(
+      @RequestParam plantingSiteId: PlantingSiteId
+  ): GetSiteObservationStatsResponsePayload {
+    val stats = observationResultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+
+    return GetSiteObservationStatsResponsePayload(ObservationSiteStatsPayload(stats))
+  }
+
   @GetMapping("/{observationId}")
   @Operation(summary = "Gets information about a single observation.")
   fun getObservation(@PathVariable observationId: ObservationId): GetObservationResponsePayload {
@@ -930,6 +940,9 @@ data class CompletePlotObservationRequestPayload(
 )
 
 data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
+    SuccessResponsePayload
+
+data class GetSiteObservationStatsResponsePayload(val stats: ObservationSiteStatsPayload) :
     SuccessResponsePayload
 
 data class GetOneAssignedPlotResponsePayload(

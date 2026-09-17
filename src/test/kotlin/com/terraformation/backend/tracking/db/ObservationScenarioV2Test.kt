@@ -24,7 +24,10 @@ import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationSiteStatsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
+import com.terraformation.backend.tracking.model.ObservationStratumStatsModel
+import com.terraformation.backend.tracking.model.ObservationSubstratumStatsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.util.toPlantsPerHectare
@@ -40,6 +43,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 class ObservationScenarioV2Test : ObservationScenarioTest() {
@@ -61,7 +65,16 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
         resultsStoreV2
             .fetchByPlantingSiteId(plantingSiteId, ObservationResultsDepth.Plant)
             .sortedBy { it.observationId }
-    assertResults(prefix, allResults)
+
+    assertAll(
+        { assertResults(prefix, allResults) },
+        {
+          assertSiteObservationStats(
+              prefix,
+              resultsStoreV2.fetchSiteObservationStats(plantingSiteId),
+          )
+        },
+    )
   }
 
   @Nested
@@ -1076,6 +1089,133 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       assertNull(incompletePlotResults.totalSpecies, "Incomplete Plot Total Species")
       assertNull(incompletePlotResults.plantingDensity, "Incomplete Plot Planting Density")
       assertEquals(emptyList<Any>(), incompletePlotResults.species, "Incomplete Plot Species")
+    }
+  }
+
+  @Nested
+  inner class FetchSiteObservationStats {
+    @Test
+    fun `only counts completed and abandoned observations of scheduled monitoring`() {
+      importFromCsvFiles(
+          "/tracking/observation/DisjointSubstrata",
+          numObservations = 3,
+          sizeMeters = 30,
+      )
+
+      val (_, observationId2, _) = inserted.observationIds
+      val alpha1PlotId = plotIds["111"]!!
+
+      // Newer than observation 3 and it completed a plot in Alpha-1, so Alpha-1 uses it.
+      clock.instant = Instant.ofEpochSecond(10)
+      val abandonedObservationId = insertObservation(state = ObservationState.InProgress)
+      insertObservationRequestedSubstratum(substratumId = substratumIds["Alpha-1"]!!)
+      insertObservationRequestedSubstratum(substratumId = substratumIds["Alpha-2"]!!)
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          isPermanent = true,
+          monitoringPlotId = alpha1PlotId,
+          monitoringPlotHistoryId = plotHistoryIds[alpha1PlotId]!!,
+      )
+      // Left unobserved, so the observation stays in progress and can be abandoned.
+      val alpha2PlotId = plotIds["112"]!!
+      insertObservationPlot(
+          isPermanent = true,
+          monitoringPlotId = alpha2PlotId,
+          monitoringPlotHistoryId = plotHistoryIds[alpha2PlotId]!!,
+      )
+      observationStore.completePlot(
+          abandonedObservationId,
+          alpha1PlotId,
+          emptySet(),
+          "Notes",
+          Instant.ofEpochSecond(10),
+          emptyList(),
+      )
+      observationStore.abandonObservation(abandonedObservationId)
+
+      // Newer still, but none of these are eligible.
+      clock.instant = Instant.ofEpochSecond(20)
+      insertObservation(state = ObservationState.InProgress)
+      insertObservation(state = ObservationState.Upcoming)
+      insertObservation(completedTime = Instant.ofEpochSecond(20), isAdHoc = true)
+
+      val stats = resultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+      val substrataById = stats.strata.single().substrata.associateBy { it.substratumId }
+
+      assertEquals(
+          abandonedObservationId,
+          substrataById[substratumIds["Alpha-1"]!!]?.observationId,
+          "Alpha-1 uses the abandoned observation, which completed its plot",
+      )
+      assertEquals(
+          observationId2,
+          substrataById[substratumIds["Alpha-2"]!!]?.observationId,
+          "Alpha-2 skips the abandoned observation, which left its plot unobserved",
+      )
+      assertEquals(
+          abandonedObservationId,
+          stats.strata.single().observationId,
+          "Stratum uses the abandoned observation",
+      )
+      assertEquals(
+          abandonedObservationId,
+          stats.observationId,
+          "Site uses the abandoned observation",
+      )
+    }
+
+    @Test
+    fun `includes areas that have never been observed`() {
+      importSiteFromCsvFile("/tracking/observation/DisjointSubstrata", sizeMeters = 30)
+
+      val stats = resultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+
+      assertEquals(
+          ObservationSiteStatsModel(
+              completedTime = null,
+              observationId = null,
+              plantingDensity = null,
+              plantingSiteId = plantingSiteId,
+              strata =
+                  listOf(
+                      ObservationStratumStatsModel(
+                          completedTime = null,
+                          observationId = null,
+                          plantingDensity = null,
+                          stratumId = stratumIds["Alpha"]!!,
+                          substrata =
+                              listOf("Alpha-1", "Alpha-2").map { name ->
+                                ObservationSubstratumStatsModel(
+                                    completedTime = null,
+                                    observationId = null,
+                                    plantingDensity = null,
+                                    substratumId = substratumIds[name]!!,
+                                    survivalRate = null,
+                                    totalPlants = null,
+                                    totalSpecies = null,
+                                )
+                              },
+                          survivalRate = null,
+                          totalPlants = null,
+                          totalSpecies = null,
+                      )
+                  ),
+              survivalRate = null,
+              totalPlants = null,
+              totalSpecies = null,
+          ),
+          stats,
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to read planting site`() {
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> {
+        resultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+      }
     }
   }
 
