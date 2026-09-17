@@ -123,21 +123,35 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .select(PLANTING_SITES.ID, latestSiteStatsMultiset, strataStatsMultiset)
+        .select(
+            PLANTING_SITES.ID,
+            OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
+            OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
+            OBSERVATION_SITE_RESULTS.SURVIVAL_RATE,
+            siteObservations.COMPLETED_TIME,
+            siteTotalPlantsField,
+            siteTotalSpeciesField,
+            strataStatsMultiset,
+        )
         .from(PLANTING_SITES)
+        .leftJoin(OBSERVATION_SITE_RESULTS)
+        .on(
+            OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)
+                .and(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(latestSiteObservationId))
+        )
+        .leftJoin(siteObservations)
+        .on(siteObservations.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID))
         .where(PLANTING_SITES.ID.eq(plantingSiteId))
         .fetchOne { record ->
-          val stats = record[latestSiteStatsMultiset].firstOrNull()
-
           ObservationSiteStatsModel(
-              completedTime = stats?.completedTime,
-              observationId = stats?.observationId,
-              plantingDensity = stats?.plantingDensity,
+              completedTime = record[siteObservations.COMPLETED_TIME],
+              observationId = record[OBSERVATION_SITE_RESULTS.OBSERVATION_ID],
+              plantingDensity = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY],
               plantingSiteId = record[PLANTING_SITES.ID.asNonNullable()],
               strata = record[strataStatsMultiset],
-              survivalRate = stats?.survivalRate,
-              totalPlants = stats?.totalPlants,
-              totalSpecies = stats?.totalSpecies,
+              survivalRate = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE],
+              totalPlants = record[siteTotalPlantsField],
+              totalSpecies = record[siteTotalSpeciesField],
           )
         } ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
@@ -818,14 +832,31 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     return results
   }
 
-  private data class LatestObservationStats(
-      val completedTime: Instant,
-      val observationId: ObservationId,
-      val plantingDensity: Int?,
-      val survivalRate: Int?,
-      val totalPlants: Int?,
-      val totalSpecies: Int?,
-  )
+  private val substratumSpeciesTotalsCondition: Condition =
+      OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(
+              OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID
+          )
+          .and(
+              OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_HISTORY_ID.eq(
+                  OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
+              )
+          )
+
+  private val stratumSpeciesTotalsCondition: Condition =
+      OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID)
+          .and(
+              OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_HISTORY_ID.eq(
+                  OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
+              )
+          )
+
+  private val siteSpeciesTotalsCondition: Condition =
+      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID)
+          .and(
+              OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_HISTORY_ID.eq(
+                  OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
+              )
+          )
 
   private fun totalPlantsField(
       speciesTotals: Table<*>,
@@ -877,15 +908,84 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
               .and(plotsInAreaCondition)
       )
 
-  private val substratumSpeciesTotalsCondition: Condition =
-      OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(
-              OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID
-          )
-          .and(
-              OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_HISTORY_ID.eq(
-                  OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
-              )
-          )
+  // Each level joins its own alias of OBSERVATIONS so the nested queries don't shadow each other.
+  private val substratumObservations = OBSERVATIONS.`as`("substratum_observations")
+  private val stratumObservations = OBSERVATIONS.`as`("stratum_observations")
+  private val siteObservations = OBSERVATIONS.`as`("site_observations")
+
+  private val latestSubstratumObservationId: Field<ObservationId?> = run {
+    val results = OBSERVATION_SUBSTRATUM_RESULTS.`as`("latest_substratum_results")
+    val observations = OBSERVATIONS.`as`("latest_substratum_observations")
+
+    DSL.field(
+        DSL.select(results.OBSERVATION_ID)
+            .from(results)
+            .join(observations)
+            .on(observations.ID.eq(results.OBSERVATION_ID))
+            .where(results.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+            .and(observations.COMPLETED_TIME.isNotNull)
+            .and(observations.IS_AD_HOC.isFalse)
+            .and(
+                anyPlotCompletedCondition(
+                    results.OBSERVATION_ID,
+                    MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
+                        results.SUBSTRATUM_HISTORY_ID
+                    ),
+                )
+            )
+            .orderBy(observations.COMPLETED_TIME.desc(), observations.ID.desc())
+            .limit(1)
+    )
+  }
+
+  private val latestStratumObservationId: Field<ObservationId?> = run {
+    val results = OBSERVATION_STRATUM_RESULTS.`as`("latest_stratum_results")
+    val observations = OBSERVATIONS.`as`("latest_stratum_observations")
+
+    DSL.field(
+        DSL.select(results.OBSERVATION_ID)
+            .from(results)
+            .join(observations)
+            .on(observations.ID.eq(results.OBSERVATION_ID))
+            .where(results.STRATUM_ID.eq(STRATA.ID))
+            .and(observations.COMPLETED_TIME.isNotNull)
+            .and(observations.IS_AD_HOC.isFalse)
+            .and(
+                anyPlotCompletedCondition(
+                    results.OBSERVATION_ID,
+                    MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.`in`(
+                        DSL.select(SUBSTRATUM_HISTORIES.ID)
+                            .from(SUBSTRATUM_HISTORIES)
+                            .where(
+                                SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
+                                    results.STRATUM_HISTORY_ID
+                                )
+                            )
+                    ),
+                )
+            )
+            .orderBy(observations.COMPLETED_TIME.desc(), observations.ID.desc())
+            .limit(1)
+    )
+  }
+
+  private val latestSiteObservationId: Field<ObservationId?> = run {
+    val results = OBSERVATION_SITE_RESULTS.`as`("latest_site_results")
+    val observations = OBSERVATIONS.`as`("latest_site_observations")
+
+    DSL.field(
+        DSL.select(results.OBSERVATION_ID)
+            .from(results)
+            .join(observations)
+            .on(observations.ID.eq(results.OBSERVATION_ID))
+            .where(results.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+            .and(observations.COMPLETED_TIME.isNotNull)
+            .and(observations.IS_AD_HOC.isFalse)
+            .and(anyPlotCompletedCondition(results.OBSERVATION_ID, DSL.trueCondition()))
+            .orderBy(observations.COMPLETED_TIME.desc(), observations.ID.desc())
+            .limit(1)
+    )
+  }
 
   private val substratumTotalPlantsField: Field<Int?> =
       totalPlantsField(
@@ -904,55 +1004,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
           substratumSpeciesTotalsCondition,
       )
 
-  private val latestSubstratumStatsMultiset: Field<List<LatestObservationStats>> =
-      DSL.multiset(
-              DSL.select(
-                      OBSERVATIONS.COMPLETED_TIME,
-                      OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID,
-                      OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY,
-                      OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE,
-                      substratumTotalPlantsField,
-                      substratumTotalSpeciesField,
-                  )
-                  .from(OBSERVATION_SUBSTRATUM_RESULTS)
-                  .join(OBSERVATIONS)
-                  .on(OBSERVATIONS.ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID))
-                  .where(OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
-                  .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
-                  .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-                  .and(
-                      anyPlotCompletedCondition(
-                          OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID,
-                          MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
-                              OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
-                          ),
-                      )
-                  )
-                  .orderBy(OBSERVATIONS.COMPLETED_TIME.desc(), OBSERVATIONS.ID.desc())
-                  .limit(1)
-          )
-          .convertFrom { result ->
-            result.map { record ->
-              LatestObservationStats(
-                  completedTime = record[OBSERVATIONS.COMPLETED_TIME.asNonNullable()],
-                  observationId =
-                      record[OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.asNonNullable()],
-                  plantingDensity = record[OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY],
-                  survivalRate = record[OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE],
-                  totalPlants = record[substratumTotalPlantsField],
-                  totalSpecies = record[substratumTotalSpeciesField],
-              )
-            }
-          }
-
-  private val stratumSpeciesTotalsCondition: Condition =
-      OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID)
-          .and(
-              OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_HISTORY_ID.eq(
-                  OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
-              )
-          )
-
   private val stratumTotalPlantsField: Field<Int?> =
       totalPlantsField(
           OBSERVED_STRATUM_SPECIES_TOTALS,
@@ -969,61 +1020,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
           OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_EXISTING,
           stratumSpeciesTotalsCondition,
       )
-
-  private val latestStratumStatsMultiset: Field<List<LatestObservationStats>> =
-      DSL.multiset(
-              DSL.select(
-                      OBSERVATIONS.COMPLETED_TIME,
-                      OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
-                      OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY,
-                      OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE,
-                      stratumTotalPlantsField,
-                      stratumTotalSpeciesField,
-                  )
-                  .from(OBSERVATION_STRATUM_RESULTS)
-                  .join(OBSERVATIONS)
-                  .on(OBSERVATIONS.ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID))
-                  .where(OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(STRATA.ID))
-                  .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
-                  .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-                  .and(
-                      anyPlotCompletedCondition(
-                          OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
-                          MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.`in`(
-                              DSL.select(SUBSTRATUM_HISTORIES.ID)
-                                  .from(SUBSTRATUM_HISTORIES)
-                                  .where(
-                                      SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
-                                          OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
-                                      )
-                                  )
-                          ),
-                      )
-                  )
-                  .orderBy(OBSERVATIONS.COMPLETED_TIME.desc(), OBSERVATIONS.ID.desc())
-                  .limit(1)
-          )
-          .convertFrom { result ->
-            result.map { record ->
-              LatestObservationStats(
-                  completedTime = record[OBSERVATIONS.COMPLETED_TIME.asNonNullable()],
-                  observationId =
-                      record[OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.asNonNullable()],
-                  plantingDensity = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY],
-                  survivalRate = record[OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE],
-                  totalPlants = record[stratumTotalPlantsField],
-                  totalSpecies = record[stratumTotalSpeciesField],
-              )
-            }
-          }
-
-  private val siteSpeciesTotalsCondition: Condition =
-      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID)
-          .and(
-              OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_HISTORY_ID.eq(
-                  OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
-              )
-          )
 
   private val siteTotalPlantsField: Field<Int?> =
       totalPlantsField(
@@ -1042,87 +1038,84 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
           siteSpeciesTotalsCondition,
       )
 
-  private val latestSiteStatsMultiset: Field<List<LatestObservationStats>> =
-      DSL.multiset(
-              DSL.select(
-                      OBSERVATIONS.COMPLETED_TIME,
-                      OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
-                      OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
-                      OBSERVATION_SITE_RESULTS.SURVIVAL_RATE,
-                      siteTotalPlantsField,
-                      siteTotalSpeciesField,
-                  )
-                  .from(OBSERVATION_SITE_RESULTS)
-                  .join(OBSERVATIONS)
-                  .on(OBSERVATIONS.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID))
-                  .where(OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-                  .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
-                  .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-                  .and(
-                      anyPlotCompletedCondition(
-                          OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
-                          DSL.trueCondition(),
-                      )
-                  )
-                  .orderBy(OBSERVATIONS.COMPLETED_TIME.desc(), OBSERVATIONS.ID.desc())
-                  .limit(1)
-          )
-          .convertFrom { result ->
-            result.map { record ->
-              LatestObservationStats(
-                  completedTime = record[OBSERVATIONS.COMPLETED_TIME.asNonNullable()],
-                  observationId = record[OBSERVATION_SITE_RESULTS.OBSERVATION_ID.asNonNullable()],
-                  plantingDensity = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY],
-                  survivalRate = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE],
-                  totalPlants = record[siteTotalPlantsField],
-                  totalSpecies = record[siteTotalSpeciesField],
-              )
-            }
-          }
-
   private val substrataStatsMultiset: Field<List<ObservationSubstratumStatsModel>> =
       DSL.multiset(
-              DSL.select(SUBSTRATA.ID, latestSubstratumStatsMultiset)
+              DSL.select(
+                      SUBSTRATA.ID,
+                      OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID,
+                      OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY,
+                      OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE,
+                      substratumObservations.COMPLETED_TIME,
+                      substratumTotalPlantsField,
+                      substratumTotalSpeciesField,
+                  )
                   .from(SUBSTRATA)
+                  .leftJoin(OBSERVATION_SUBSTRATUM_RESULTS)
+                  .on(
+                      OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID)
+                          .and(
+                              OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(
+                                  latestSubstratumObservationId
+                              )
+                          )
+                  )
+                  .leftJoin(substratumObservations)
+                  .on(substratumObservations.ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID))
                   .where(SUBSTRATA.STRATUM_ID.eq(STRATA.ID))
                   .orderBy(SUBSTRATA.NAME, SUBSTRATA.ID)
           )
           .convertFrom { result ->
             result.map { record ->
-              val stats = record[latestSubstratumStatsMultiset].firstOrNull()
-
               ObservationSubstratumStatsModel(
-                  completedTime = stats?.completedTime,
-                  observationId = stats?.observationId,
-                  plantingDensity = stats?.plantingDensity,
+                  completedTime = record[substratumObservations.COMPLETED_TIME],
+                  observationId = record[OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID],
+                  plantingDensity = record[OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY],
                   substratumId = record[SUBSTRATA.ID.asNonNullable()],
-                  survivalRate = stats?.survivalRate,
-                  totalPlants = stats?.totalPlants,
-                  totalSpecies = stats?.totalSpecies,
+                  survivalRate = record[OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE],
+                  totalPlants = record[substratumTotalPlantsField],
+                  totalSpecies = record[substratumTotalSpeciesField],
               )
             }
           }
 
   private val strataStatsMultiset: Field<List<ObservationStratumStatsModel>> =
       DSL.multiset(
-              DSL.select(STRATA.ID, latestStratumStatsMultiset, substrataStatsMultiset)
+              DSL.select(
+                      STRATA.ID,
+                      OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
+                      OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY,
+                      OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE,
+                      stratumObservations.COMPLETED_TIME,
+                      stratumTotalPlantsField,
+                      stratumTotalSpeciesField,
+                      substrataStatsMultiset,
+                  )
                   .from(STRATA)
+                  .leftJoin(OBSERVATION_STRATUM_RESULTS)
+                  .on(
+                      OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(STRATA.ID)
+                          .and(
+                              OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(
+                                  latestStratumObservationId
+                              )
+                          )
+                  )
+                  .leftJoin(stratumObservations)
+                  .on(stratumObservations.ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID))
                   .where(STRATA.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
                   .orderBy(STRATA.NAME, STRATA.ID)
           )
           .convertFrom { result ->
             result.map { record ->
-              val stats = record[latestStratumStatsMultiset].firstOrNull()
-
               ObservationStratumStatsModel(
-                  completedTime = stats?.completedTime,
-                  observationId = stats?.observationId,
-                  plantingDensity = stats?.plantingDensity,
+                  completedTime = record[stratumObservations.COMPLETED_TIME],
+                  observationId = record[OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID],
+                  plantingDensity = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY],
                   stratumId = record[STRATA.ID.asNonNullable()],
                   substrata = record[substrataStatsMultiset],
-                  survivalRate = stats?.survivalRate,
-                  totalPlants = stats?.totalPlants,
-                  totalSpecies = stats?.totalSpecies,
+                  survivalRate = record[OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE],
+                  totalPlants = record[stratumTotalPlantsField],
+                  totalSpecies = record[stratumTotalSpeciesField],
               )
             }
           }
