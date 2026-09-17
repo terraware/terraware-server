@@ -26,6 +26,7 @@ class NonLocalizableEnumField<T : EnumFromReferenceTable<*, T>>(
     override val exportable: Boolean = true,
 ) : SingleColumnSearchField<T>() {
   private val byName = enumClass.enumConstants!!.associateBy { it.jsonValue }
+  private val valuesInSortOrder = enumClass.enumConstants.sortedBy { it.jsonValue.lowercase() }
 
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
@@ -55,11 +56,8 @@ class NonLocalizableEnumField<T : EnumFromReferenceTable<*, T>>(
    * display name.
    */
   override val orderByField: Field<Int> by lazy {
-    val valueToPosition =
-        enumClass.enumConstants
-            .sortedBy { it.jsonValue.lowercase() }
-            .mapIndexed { index, value -> value to index }
-            .toMap()
+    val valueToPosition: Map<T?, Int> =
+        valuesInSortOrder.mapIndexed { index, value -> value to index }.toMap()
 
     DSL.case_(databaseField).mapValues(valueToPosition)
   }

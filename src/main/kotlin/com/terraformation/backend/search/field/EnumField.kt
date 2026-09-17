@@ -29,6 +29,7 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
 ) : SingleColumnSearchField<T>() {
   private val byLocalizedDisplayName = ConcurrentHashMap<Locale, Map<String, T>>()
   private val orderByFields = ConcurrentHashMap<Locale, Field<Int>>()
+  private val valuesInSortOrder = ConcurrentHashMap<Locale, List<T>>()
 
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact)
@@ -69,20 +70,23 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     get() {
       val locale = currentLocale()
       return orderByFields.getOrPut(locale) {
-        val collator = Collator.getInstance(locale)
-        val toLowerCaseDisplayName: (T) -> String = { it.toSearchValue().lowercase(locale) }
+        val valueToPosition: Map<T?, Int> =
+            getValuesInSortOrder().mapIndexed { index, value -> value to index }.toMap()
 
-        val valueToPosition =
-            enumClass.enumConstants
-                .sortedWith(compareBy(collator, toLowerCaseDisplayName))
-                .mapIndexed { index, value -> value to index }
-                .toMap()
-
-        return DSL.case_(databaseField).mapValues(valueToPosition)
+        DSL.case_(databaseField).mapValues(valueToPosition)
       }
     }
 
   override fun computeValue(record: Record) = record[databaseField]?.toSearchValue()
+
+  private fun getValuesInSortOrder(): List<T> {
+    val locale = currentLocale()
+    return valuesInSortOrder.getOrPut(locale) {
+      val collator = Collator.getInstance(locale)
+      val toLowerCaseDisplayName: (T) -> String = { it.toSearchValue().lowercase(locale) }
+      enumClass.enumConstants.sortedWith(compareBy(collator, toLowerCaseDisplayName))
+    }
+  }
 
   override fun raw(): SearchField? {
     return if (localize) {

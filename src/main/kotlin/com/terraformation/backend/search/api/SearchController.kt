@@ -172,6 +172,7 @@ class SearchController(
                       mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
                       payload.cursor,
                       count,
+                      payload.getSearchSortFields(rootPrefix),
                   )
               FieldValuesPayload(fetchResult.size > count, fetchResult)
             },
