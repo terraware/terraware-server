@@ -137,7 +137,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         .leftJoin(OBSERVATION_SITE_RESULTS)
         .on(
             OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)
-                .and(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(latestSiteObservationId))
+                .and(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(latestSiteObservationId()))
         )
         .leftJoin(siteObservations)
         .on(siteObservations.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID))
@@ -913,11 +913,11 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
   private val stratumObservations = OBSERVATIONS.`as`("stratum_observations")
   private val siteObservations = OBSERVATIONS.`as`("site_observations")
 
-  private val latestSubstratumObservationId: Field<ObservationId?> = run {
+  private fun latestSubstratumObservationId(): Field<ObservationId?> {
     val results = OBSERVATION_SUBSTRATUM_RESULTS.`as`("latest_substratum_results")
     val observations = OBSERVATIONS.`as`("latest_substratum_observations")
 
-    DSL.field(
+    return DSL.field(
         DSL.select(results.OBSERVATION_ID)
             .from(results)
             .join(observations)
@@ -938,11 +938,11 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     )
   }
 
-  private val latestStratumObservationId: Field<ObservationId?> = run {
+  private fun latestStratumObservationId(): Field<ObservationId?> {
     val results = OBSERVATION_STRATUM_RESULTS.`as`("latest_stratum_results")
     val observations = OBSERVATIONS.`as`("latest_stratum_observations")
 
-    DSL.field(
+    return DSL.field(
         DSL.select(results.OBSERVATION_ID)
             .from(results)
             .join(observations)
@@ -969,11 +969,11 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     )
   }
 
-  private val latestSiteObservationId: Field<ObservationId?> = run {
+  private fun latestSiteObservationId(): Field<ObservationId?> {
     val results = OBSERVATION_SITE_RESULTS.`as`("latest_site_results")
     val observations = OBSERVATIONS.`as`("latest_site_observations")
 
-    DSL.field(
+    return DSL.field(
         DSL.select(results.OBSERVATION_ID)
             .from(results)
             .join(observations)
@@ -1055,7 +1055,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                       OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID)
                           .and(
                               OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(
-                                  latestSubstratumObservationId
+                                  latestSubstratumObservationId()
                               )
                           )
                   )
@@ -1096,7 +1096,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                       OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(STRATA.ID)
                           .and(
                               OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(
-                                  latestStratumObservationId
+                                  latestStratumObservationId()
                               )
                           )
                   )
