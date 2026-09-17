@@ -655,9 +655,14 @@ class NestedQueryBuilder(
    */
   fun toSelectQuery(distinct: Boolean = false): SelectSeekStepN<Record> {
     return renderedQuery.get {
+      val selectFields = getSelectFields()
+      val distinctFields = if (distinct) getDistinctFields() else emptyList()
       val select =
-          if (distinct) dslContext.selectDistinct(getSelectFields())
-          else dslContext.select(getSelectFields())
+          if (distinct) {
+            dslContext.select(selectFields).distinctOn(distinctFields)
+          } else {
+            dslContext.select(selectFields)
+          }
 
       val selectFrom = select.from(prefix.searchTable.fromTable)
       val selectWithParents = joinFlattenedSublists(selectFrom)
@@ -690,7 +695,16 @@ class NestedQueryBuilder(
             selectWithConditions
           }
 
-      selectWithVisibility.orderBy(getOrderBy(!distinct))
+      val orderBy = getOrderBy(!distinct)
+
+      if (distinct) {
+        dslContext
+            .select(DSL.asterisk())
+            .from(selectWithVisibility.orderBy(distinctFields + orderBy).asTable("distinct_values"))
+            .orderBy(orderBy)
+      } else {
+        selectWithVisibility.orderBy(orderBy)
+      }
     }
   }
 
@@ -921,9 +935,7 @@ class NestedQueryBuilder(
    *
    * @param includeDefaultFields Add a default set of fields to ensure that results are returned in
    *   a consistent order if the same query is run repeatedly and the caller didn't supply precise
-   *   enough sort criteria. This needs to be `false` if the caller is asking for distinct search
-   *   results, since a SQL `SELECT DISTINCT` query can't be ordered by fields that don't appear in
-   *   the select list.
+   *   enough sort criteria. Default fields are omitted for distinct-value queries.
    */
   private fun getOrderBy(includeDefaultFields: Boolean): List<OrderField<*>> {
     val orderByFields = sortFields.map { getOrderByField(it) }
@@ -997,6 +1009,23 @@ class NestedQueryBuilder(
   }
 
   /**
+   * Returns the positions of result fields, excluding fields used only for sorting. Column
+   * positions let DISTINCT ON and ORDER BY reference the same expressions.
+   */
+  private fun getDistinctFields(): List<Field<Int>> {
+    return selectFieldPositions.flatMap { (name, position) ->
+      val scalarField = scalarFields[name]
+      if (scalarField != null) {
+        scalarField.selectFields.indices.map { DSL.inline(position + it + 1) }
+      } else if (sublistQueryBuilders[name]?.hasSelectFields() == true) {
+        listOf(DSL.inline(position + 1))
+      } else {
+        emptyList()
+      }
+    }
+  }
+
+  /**
    * Returns a list of fields to add to the `SELECT` clause so they can be referenced in the `ORDER
    * BY` clause of the parent query.
    */
@@ -1026,8 +1055,9 @@ class NestedQueryBuilder(
               sortFieldPositions[relativeName] = selectFieldIndex
               null
             } else {
-              sortFieldPositions[relativeName] = nextSelectFieldPosition++
-              orderByField
+              val position = nextSelectFieldPosition++
+              sortFieldPositions[relativeName] = position
+              orderByField.`as`("sort_$position")
             }
           } else {
             null
