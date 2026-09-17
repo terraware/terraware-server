@@ -20,15 +20,12 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Duration
-import java.time.Instant
 import org.jooq.JSONB
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -250,27 +247,6 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(expectedDevices, devicesDao.findAll())
     assertAutomationConfigsEqual(emptySet())
-  }
-
-  @Test
-  fun `markDeviceUnresponsive publishes event`() {
-    val expected =
-        DeviceUnresponsiveEvent(DeviceId(1), Instant.ofEpochSecond(123), Duration.ofSeconds(30))
-
-    service.markUnresponsive(
-        expected.deviceId,
-        expected.lastRespondedTime,
-        expected.expectedInterval,
-    )
-
-    eventPublisher.assertEventPublished(expected)
-  }
-
-  @Test
-  fun `markDeviceUnresponsive throws exception if no permission to update device`() {
-    every { user.canUpdateDevice(any()) } returns false
-
-    assertThrows<AccessDeniedException> { service.markUnresponsive(DeviceId(1), null, null) }
   }
 
   private fun assertHasBmuAutomations(deviceId: DeviceId) {

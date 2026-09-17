@@ -15,8 +15,6 @@ import com.terraformation.backend.device.db.DeviceStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import java.time.Duration
-import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -69,25 +67,6 @@ class DevicesController(
   ): SimpleSuccessResponsePayload {
     val devicesRow = payload.toRow(deviceId)
     deviceService.update(devicesRow)
-    return SimpleSuccessResponsePayload()
-  }
-
-  @ApiResponseSimpleSuccess
-  @ApiResponse404
-  @Operation(
-      summary = "Marks a device as unresponsive.",
-      description = "Notifies the appropriate users so they can troubleshoot the problem.",
-  )
-  @PostMapping("/api/v1/devices/{id}/unresponsive")
-  fun deviceUnresponsive(
-      @PathVariable("id") deviceId: DeviceId,
-      @RequestBody payload: DeviceUnresponsiveRequestPayload,
-  ): SimpleSuccessResponsePayload {
-    deviceService.markUnresponsive(
-        deviceId,
-        payload.lastRespondedTime,
-        payload.expectedIntervalSecs?.let { Duration.ofSeconds(it.toLong()) },
-    )
     return SimpleSuccessResponsePayload()
   }
 }
@@ -282,21 +261,6 @@ data class UpdateDeviceRequestPayload(
     )
   }
 }
-
-data class DeviceUnresponsiveRequestPayload(
-    @Schema(
-        description =
-            "When the device most recently responded. Null or absent if the device has never " +
-                "responded."
-    )
-    val lastRespondedTime: Instant?,
-    @Schema(
-        description =
-            "The expected amount of time between updates from the device. Null or absent if " +
-                "there is no fixed update interval."
-    )
-    val expectedIntervalSecs: Int?,
-)
 
 data class GetDeviceResponsePayload(val device: DeviceConfig) : SuccessResponsePayload
 

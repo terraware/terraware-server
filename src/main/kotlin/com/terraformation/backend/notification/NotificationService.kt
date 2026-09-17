@@ -58,7 +58,6 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.documentproducer.db.DocumentStore
@@ -78,7 +77,6 @@ import com.terraformation.backend.email.model.ApplicationSubmitted
 import com.terraformation.backend.email.model.CompletedSectionVariableUpdated
 import com.terraformation.backend.email.model.DeliverableReadyForReview
 import com.terraformation.backend.email.model.DeliverableStatusUpdated
-import com.terraformation.backend.email.model.DeviceUnresponsive
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
@@ -302,35 +300,6 @@ class NotificationService(
             facility,
             event.message,
             webAppUrls.fullFacilityMonitoring(organizationId, facility.id, devicesRow).toString(),
-        )
-
-    sendToOrganization(organizationId, appContent, emailContent)
-  }
-
-  @EventListener
-  fun on(event: DeviceUnresponsiveEvent) {
-    val device = deviceStore.fetchOneById(event.deviceId)
-    val deviceName =
-        device.name ?: throw IllegalStateException("Device ${event.deviceId} has no name")
-    val facilityId =
-        device.facilityId ?: throw IllegalStateException("Device ${event.deviceId} has no facility")
-    val facility = facilityStore.fetchOneById(facilityId)
-    val organizationId =
-        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-
-    val appContent =
-        AppContent(
-            notificationType = NotificationType.DeviceUnresponsive,
-            localUrl = webAppUrls.facilityMonitoring(facilityId, device),
-            renderMessage = { messages.deviceUnresponsive(deviceName) },
-        )
-
-    val emailContent =
-        DeviceUnresponsive(
-            config,
-            device,
-            facility,
-            webAppUrls.fullFacilityMonitoring(organizationId, facilityId, device).toString(),
         )
 
     sendToOrganization(organizationId, appContent, emailContent)

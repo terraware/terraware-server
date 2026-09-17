@@ -98,7 +98,6 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.documentproducer.db.DocumentStore
@@ -178,7 +177,6 @@ import jakarta.mail.internet.MimeMessage
 import jakarta.ws.rs.core.MediaType
 import java.math.BigDecimal
 import java.net.URI
-import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
@@ -708,19 +706,6 @@ internal class NotificationServiceEmailTest {
         webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow),
         "Link URL",
     )
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun deviceUnresponsive() {
-    service.on(DeviceUnresponsiveEvent(devicesRow.id!!, Instant.EPOCH, Duration.ofMinutes(14)))
-
-    assertBodyContains(devicesRow.name!!, "Device name")
-    assertBodyContains(
-        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow),
-        "Link URL",
-    )
-    assertEquals(organizationRecipients, sentMessages.keys, "Recipients")
     assertRecipientsEqual(organizationRecipients)
   }
 

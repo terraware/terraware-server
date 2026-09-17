@@ -3,17 +3,13 @@ package com.terraformation.backend.device
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.model.AutomationModel
-import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
-import java.time.Duration
-import java.time.Instant
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 
@@ -53,18 +49,6 @@ class DeviceService(
         updateAutomations(deviceId, row.copy(facilityId = existingRow.facilityId))
       }
     }
-  }
-
-  fun markUnresponsive(
-      deviceId: DeviceId,
-      lastRespondedTime: Instant?,
-      expectedInterval: Duration?,
-  ) {
-    requirePermissions { updateDevice(deviceId) }
-
-    eventPublisher.publishEvent(
-        DeviceUnresponsiveEvent(deviceId, lastRespondedTime, expectedInterval)
-    )
   }
 
   /**

@@ -162,16 +162,6 @@ class UnknownAutomationTriggered(
     get() = "device/unknownAutomation"
 }
 
-class DeviceUnresponsive(
-    config: TerrawareServerConfig,
-    val device: DevicesRow,
-    val facility: FacilityModel,
-    val facilityMonitoringUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "device/unresponsive"
-}
-
 class UserAddedToOrganization(
     config: TerrawareServerConfig,
     val admin: IndividualUser,
