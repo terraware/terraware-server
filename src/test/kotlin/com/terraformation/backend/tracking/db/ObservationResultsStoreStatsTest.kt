@@ -227,7 +227,6 @@ class ObservationResultsStoreStatsTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  /** The substratum's statistics are one higher than the stratum's so the two can't be confused. */
   private fun observeStratum(
       observationId: ObservationId,
       stratum: TestStratum,
