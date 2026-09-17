@@ -827,7 +827,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       val totalSpecies: Int?,
   )
 
-  /** Total live and dead plants of all species, or null if no species were recorded. */
   private fun totalPlantsField(
       speciesTotals: Table<*>,
       totalLive: Field<Int?>,
