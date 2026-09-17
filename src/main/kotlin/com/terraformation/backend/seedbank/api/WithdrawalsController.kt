@@ -102,7 +102,7 @@ data class GetWithdrawalPayload(
                 "and count data. Absent if \"withdrawnQuantity\" is a weight quantity and the " +
                 "accession has no subset weight and count."
     )
-    val estimatedCount: Int? = null,
+    val estimatedCount: Long? = null,
     @Schema(
         description =
             "Weight of seeds withdrawn. Calculated by server. This is an estimate if " +

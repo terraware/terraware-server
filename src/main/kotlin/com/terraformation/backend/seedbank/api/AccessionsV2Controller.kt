@@ -189,7 +189,7 @@ data class AccessionPayloadV2(
             "Estimated number of seeds remaining. Absent if there isn't enough " +
                 "information to calculate an estimate."
     )
-    val estimatedCount: Int?,
+    val estimatedCount: Long?,
     @Schema(
         description =
             "Estimated weight of seeds remaining. Absent if there isn't enough " +
@@ -261,7 +261,7 @@ data class AccessionPayloadV2(
             "Total number of seeds withdrawn. If withdrawals are measured by weight, this is an " +
                 "estimate based on the accession's subset count and weight."
     )
-    val totalWithdrawnCount: Int?,
+    val totalWithdrawnCount: Long?,
     @Schema(
         description =
             "Total weight of seeds withdrawn. If withdrawals are measured by seed " +

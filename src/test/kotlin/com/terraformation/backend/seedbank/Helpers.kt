@@ -16,6 +16,10 @@ inline fun <reified T> quantity(quantity: Int, units: SeedQuantityUnits): T {
   return quantity(BigDecimal(quantity), units) as T
 }
 
+inline fun <reified T> quantity(quantity: Long, units: SeedQuantityUnits): T {
+  return quantity(BigDecimal(quantity), units) as T
+}
+
 inline fun <reified T> grams(quantity: Int): T {
   return quantity(quantity, SeedQuantityUnits.Grams)
 }
@@ -37,5 +41,9 @@ inline fun <reified T> kilograms(quantity: Int): T {
 }
 
 inline fun <reified T> seeds(quantity: Int): T {
+  return quantity(quantity, SeedQuantityUnits.Seeds)
+}
+
+inline fun <reified T> seeds(quantity: Long): T {
   return quantity(quantity, SeedQuantityUnits.Seeds)
 }
