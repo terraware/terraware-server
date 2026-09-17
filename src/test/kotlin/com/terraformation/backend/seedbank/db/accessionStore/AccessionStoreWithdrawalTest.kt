@@ -81,7 +81,34 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
               )
             }
 
-    assertEquals(2, accession.totalWithdrawnCount, "Total withdrawn count")
+    assertEquals(2L, accession.totalWithdrawnCount, "Total withdrawn count")
     assertEquals(grams(4), accession.totalWithdrawnWeight, "Total withdrawn weight")
+  }
+
+  @Test
+  fun `seed counts larger than 32 bits survive a round trip through the database`() {
+    val accessionId =
+        create()
+            .andUpdate { it.copy(remaining = seeds(9_876_400_000L)) }
+            .andUpdate {
+              it.addWithdrawal(
+                  WithdrawalModel(
+                      date = LocalDate.EPOCH,
+                      purpose = WithdrawalPurpose.Other,
+                      withdrawn = seeds(5_000_000_000L),
+                  )
+              )
+            }
+            .id!!
+
+    val fetched = store.fetchOneById(accessionId)
+
+    assertEquals(4_876_400_000L, fetched.estimatedSeedCount, "Estimated seed count")
+    assertEquals(5_000_000_000L, fetched.totalWithdrawnCount, "Total withdrawn count")
+    assertEquals(
+        listOf(5_000_000_000L),
+        fetched.withdrawals.map { it.estimatedCount },
+        "Withdrawal estimated counts",
+    )
   }
 }

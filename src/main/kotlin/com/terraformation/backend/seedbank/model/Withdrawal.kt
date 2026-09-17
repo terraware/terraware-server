@@ -9,6 +9,7 @@ import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.util.compareNullsLast
+import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -20,7 +21,7 @@ data class WithdrawalModel(
     val createdTime: Instant? = null,
     val date: LocalDate,
     val destination: String? = null,
-    val estimatedCount: Int? = null,
+    val estimatedCount: Long? = null,
     val estimatedWeight: SeedQuantityModel? = null,
     val id: WithdrawalId? = null,
     val notes: String? = null,
@@ -107,13 +108,16 @@ data class WithdrawalModel(
     }
   }
 
-  fun calculateEstimatedCount(subsetWeight: SeedQuantityModel?, subsetCount: Int?): Int? {
-    return when {
-      withdrawn == null -> null
-      withdrawn.units == SeedQuantityUnits.Seeds -> withdrawn.quantity.toInt()
-      subsetCount == null || subsetWeight == null -> null
-      else -> withdrawn.toUnits(SeedQuantityUnits.Seeds, subsetWeight, subsetCount).quantity.toInt()
-    }
+  fun calculateEstimatedCount(subsetWeight: SeedQuantityModel?, subsetCount: Int?): Long? {
+    val seeds =
+        when {
+          withdrawn == null -> null
+          withdrawn.units == SeedQuantityUnits.Seeds -> withdrawn.quantity
+          subsetCount == null || subsetWeight == null -> null
+          else -> withdrawn.toUnits(SeedQuantityUnits.Seeds, subsetWeight, subsetCount).quantity
+        }
+
+    return seeds?.setScale(0, RoundingMode.HALF_UP)?.toLong()
   }
 
   fun calculateEstimatedWeight(

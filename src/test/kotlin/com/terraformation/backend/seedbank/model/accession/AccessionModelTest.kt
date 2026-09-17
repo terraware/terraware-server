@@ -41,7 +41,7 @@ internal abstract class AccessionModelTest {
   protected fun accession(
       viabilityTests: List<ViabilityTestModel> = emptyList(),
       dryingEndDate: LocalDate? = null,
-      estimatedSeedCount: Int? = null,
+      estimatedSeedCount: Long? = null,
       latestObservedQuantity: SeedQuantityModel? = null,
       latestObservedTime: Instant? = null,
       remaining: SeedQuantityModel? = null,
@@ -137,8 +137,8 @@ internal abstract class AccessionModelTest {
       createdTime: Instant? = clock.instant(),
       id: WithdrawalId? = nextWithdrawalId(),
       withdrawnByUserId: UserId? = null,
-      estimatedCount: Int? =
-          if (withdrawn.units == SeedQuantityUnits.Seeds) withdrawn.quantity.toInt() else null,
+      estimatedCount: Long? =
+          if (withdrawn.units == SeedQuantityUnits.Seeds) withdrawn.quantity.toLong() else null,
   ): WithdrawalModel {
     return WithdrawalModel(
         createdTime = createdTime,
