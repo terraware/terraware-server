@@ -132,8 +132,6 @@ class SearchService(private val dslContext: DSLContext) {
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    *   by at most 1 element, which callers can use to detect that the number of values exceeds the
    *   limit.
-   * @return A list of values, which may include `null` if the field is optional and has no value on
-   *   some of the matching accessions.
    */
   fun fetchValues(
       rootPrefix: SearchFieldPrefix,
@@ -141,7 +139,7 @@ class SearchService(private val dslContext: DSLContext) {
       criteria: Map<SearchFieldPrefix, SearchNode>,
       cursor: String? = null,
       limit: Int = 50,
-  ): List<String?> {
+  ): List<SearchValuesResult> {
     if (fieldPath.isNested) {
       throw IllegalArgumentException("Fetching nested field values is not supported.")
     }
@@ -180,7 +178,7 @@ class SearchService(private val dslContext: DSLContext) {
     // The distinct() call is needed here despite the "distinct = true" in the runQuery call because
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
-    return searchResults.map { it?.get(fieldPathName)?.toString() }.distinct()
+    return searchResults.map { SearchValuesResult(it?.get(fieldPathName)?.toString()) }.distinct()
   }
 
   fun searchCount(

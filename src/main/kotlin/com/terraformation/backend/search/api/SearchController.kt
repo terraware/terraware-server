@@ -173,7 +173,7 @@ class SearchController(
                       payload.cursor,
                       count,
                   )
-              FieldValuesPayload(fetchResult, fetchResult.size > count)
+              FieldValuesPayload(fetchResult.size > count, fetchResult)
             },
         )
     )

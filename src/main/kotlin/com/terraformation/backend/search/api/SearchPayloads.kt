@@ -17,6 +17,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.search.SearchValuesResult
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotEmpty
@@ -199,7 +200,15 @@ data class FieldValuesPayload(
                 "a partial list."
     )
     val partial: Boolean,
-)
+) {
+  constructor(
+      partial: Boolean,
+      searchValuesResults: List<SearchValuesResult>,
+  ) : this(
+      searchValuesResults.map { it.value },
+      partial,
+  )
+}
 
 data class SearchValuesResponsePayload(val results: Map<String, FieldValuesPayload>) :
     SuccessResponsePayload

@@ -52,7 +52,7 @@ class ValuesController(
               limit = limit,
           )
       val partial = values.size > limit
-      SeedbankValuesPayload(values.take(limit), partial)
+      SeedbankValuesPayload(values.take(limit).map { it.value }, partial)
     }
 
     return ListFieldValuesResponsePayload(values)
