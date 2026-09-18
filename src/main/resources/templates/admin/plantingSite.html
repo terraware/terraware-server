@@ -307,15 +307,13 @@
     </form>
 </th:block>
 
-<th:block th:if="${canViewSurvivalRates}">
-    <h3>Survival Rates</h3>
+<h3>Survival Rates</h3>
 
-    <p>
-        <a th:href="|/admin/plantingSite/${site.id}/survivalRates|">
-            View survival rate diagnostics
-        </a>
-    </p>
-</th:block>
+<p>
+    <a th:href="|/admin/plantingSite/${site.id}/survivalRates|">
+        View survival rate diagnostics
+    </a>
+</p>
 
 <th:block th:if="!${site.strata.isEmpty()}">
 
