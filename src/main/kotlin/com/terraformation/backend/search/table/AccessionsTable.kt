@@ -94,7 +94,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         enumField("collectionSource", ACCESSIONS.COLLECTION_SOURCE_ID),
         timestampField("createdTime", ACCESSIONS.CREATED_TIME),
         dateField("dryingEndDate", ACCESSIONS.DRYING_END_DATE),
-        integerField("estimatedCount", ACCESSIONS.EST_SEED_COUNT),
+        longField("estimatedCount", ACCESSIONS.EST_SEED_COUNT),
         *weightFields(
             "estimatedWeight",
             ACCESSIONS.EST_WEIGHT_QUANTITY,
@@ -116,7 +116,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         aliasField("speciesName", "species_scientificName"),
         enumField("state", ACCESSIONS.STATE_ID),
         integerField("totalViabilityPercent", ACCESSIONS.TOTAL_VIABILITY_PERCENT),
-        integerField("totalWithdrawnCount", ACCESSIONS.TOTAL_WITHDRAWN_COUNT),
+        longField("totalWithdrawnCount", ACCESSIONS.TOTAL_WITHDRAWN_COUNT),
         *weightFields(
             "totalWithdrawnWeight",
             ACCESSIONS.TOTAL_WITHDRAWN_WEIGHT_QUANTITY,

@@ -44,7 +44,7 @@ class PublicStatisticsStore(
    * testing.
    */
   private val MAX_SITE_AREA_HA = BigDecimal("10000")
-  private val MAX_SEEDS_IN_ACCESSION = 1_000_000
+  private val MAX_SEEDS_IN_ACCESSION = 1_000_000L
   private val MAX_SEEDLINGS_IN_BATCH = 1_000_000
   private val MAX_PLANTS_IN_PLANTING = 500_000
 

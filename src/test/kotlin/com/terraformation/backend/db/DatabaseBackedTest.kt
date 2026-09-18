@@ -2448,7 +2448,7 @@ abstract class DatabaseBackedTest {
       withdrawnGrams: BigDecimal? = row.withdrawnGrams,
       withdrawnQuantity: BigDecimal? = row.withdrawnQuantity,
       withdrawnUnitsId: SeedQuantityUnits = row.withdrawnUnitsId ?: SeedQuantityUnits.Grams,
-      estimatedCount: Int? = row.estimatedCount,
+      estimatedCount: Long? = row.estimatedCount,
       estimatedWeightQuantity: BigDecimal? = row.estimatedWeightQuantity,
       estimatedWeightUnitsId: SeedQuantityUnits? = row.estimatedWeightUnitsId,
       batchId: BatchId? = row.batchId ?: inserted.batchId,
