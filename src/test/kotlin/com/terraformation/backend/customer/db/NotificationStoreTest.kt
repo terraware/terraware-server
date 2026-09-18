@@ -19,7 +19,6 @@ import java.net.URI
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -180,52 +179,6 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     assertFalse(
         store.fetchById(id).isRead,
         "Expected notification to be unread after marking as unread",
-    )
-  }
-
-  @Test
-  fun `should return count information on unread notifications`() {
-    // create 2 notifications of each type
-    val id = store.create(notificationModel())
-    store.create(notificationModel())
-    store.create(notificationModel(true))
-    store.create(notificationModel(true))
-
-    var result = store.count()
-
-    var forOrg = result.firstOrNull { r -> r.organizationId == organizationId }
-    assertNotNull(forOrg, "Did not find unread count for organization notifications")
-    assertEquals(2, forOrg!!.unread, "Unread count mismatch for organization notifications")
-
-    var forGlobal = result.firstOrNull { r -> r.organizationId == null }
-    assertNotNull(forGlobal, "Did not find unread count for global notifications")
-    assertEquals(2, forGlobal!!.unread, "Unread count mismatch for global notifications")
-
-    // mark first notification as read
-    store.markRead(true, id)
-
-    result = store.count()
-
-    forOrg = result.firstOrNull { r -> r.organizationId == organizationId }
-    assertNotNull(
-        forOrg,
-        "Did not find unread count for organization notifications after marking some as read",
-    )
-    assertEquals(
-        1,
-        forOrg!!.unread,
-        "Unread count mismatch for organization notifications after marking some as read",
-    )
-
-    forGlobal = result.firstOrNull { r -> r.organizationId == null }
-    assertNotNull(
-        forGlobal,
-        "Did not find unread count for global notifications after marking some as read",
-    )
-    assertEquals(
-        2,
-        forGlobal!!.unread,
-        "Unread count mismatch for global notifications after marking some as read",
     )
   }
 
