@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -35,6 +36,13 @@ class TrackingStatsStore(
     requirePermissions { readOrganization(organizationId) }
 
     return getSurvivalRate(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+  }
+
+  /** Returns the aggregated area-weighted survival rate for a single planting site. */
+  fun getSurvivalRate(plantingSiteId: PlantingSiteId): Int? {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return getSurvivalRate(PLANTING_SITES.ID.eq(plantingSiteId))
   }
 
   private fun getSurvivalRate(plantingSitesCondition: Condition): Int? {
