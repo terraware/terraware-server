@@ -1,2 +1,5 @@
+62f0216b Remove unused device manager endpoints (#4970)
+9166b5cd Remove unused device automation endpoints (#4968)
+bbf7382a Remove "device unresponsive" endpoint (#4967)
 895fbe25 Add endpoint for latest observation stats of a planting site (#4975)
 fa517f43 Update Gradle to v9.7.1 (#4974)
