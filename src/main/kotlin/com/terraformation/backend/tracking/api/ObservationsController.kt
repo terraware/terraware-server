@@ -228,10 +228,7 @@ class ObservationsController(
   ): GetObservationStatsResponsePayload {
     val stats =
         when {
-          plantingSiteId != null ->
-              observationResultsStoreV2.fetchStatsForSite(plantingSiteId).ifEmpty {
-                throw PlantingSiteNotFoundException(plantingSiteId)
-              }
+          plantingSiteId != null -> observationResultsStoreV2.fetchStatsForSite(plantingSiteId)
           projectId != null -> observationResultsStoreV2.fetchStatsForProject(projectId)
           else -> throw BadRequestException("Must specify either plantingSiteId or projectId")
         }
