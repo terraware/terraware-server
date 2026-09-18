@@ -11,8 +11,6 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 data class StratumSurvivalRateRow(
     val id: StratumId,
@@ -117,7 +115,7 @@ data class SurvivalRatesPageModel(
       return SurvivalRatesPageModel(
           latestCompletedObservationId = latestCompleted?.observationId,
           latestCompletedSurvivalRate = latestCompleted?.survivalRate,
-          latestCompletedTime = latestCompleted?.completedTime?.toDisplayString(),
+          latestCompletedTime = latestCompleted?.completedTime?.toString(),
           monitoringPlots =
               site.strata.flatMap { stratum ->
                 stratum.substrata.flatMap { substratum ->
@@ -126,8 +124,7 @@ data class SurvivalRatesPageModel(
                     MonitoringPlotSurvivalRateRow(
                         id = plot.id,
                         isPermanent = source?.value?.isPermanent,
-                        observationCompletedTime =
-                            source?.observationCompletedTime?.toDisplayString(),
+                        observationCompletedTime = source?.observationCompletedTime?.toString(),
                         observationId = source?.observationId,
                         plantingDensity = source?.value?.plantingDensity,
                         plotNumber = plot.plotNumber,
@@ -147,14 +144,14 @@ data class SurvivalRatesPageModel(
           siteSurvivalRate = siteSurvivalRateSource?.survivalRate,
           siteSurvivalRateObservationId = siteSurvivalRateSource?.observationId,
           siteSurvivalRateObservationCompletedTime =
-              siteSurvivalRateSource?.completedTime?.toDisplayString(),
+              siteSurvivalRateSource?.completedTime?.toString(),
           strata =
               site.strata.map { stratum ->
                 val source = strataById[stratum.id]
                 StratumSurvivalRateRow(
                     id = stratum.id,
                     name = stratum.name,
-                    observationCompletedTime = source?.observationCompletedTime?.toDisplayString(),
+                    observationCompletedTime = source?.observationCompletedTime?.toString(),
                     observationId = source?.observationId,
                     plantingCompleted = source?.value?.plantingCompleted,
                     plantingDensity = source?.value?.plantingDensity,
@@ -170,8 +167,7 @@ data class SurvivalRatesPageModel(
                   SubstratumSurvivalRateRow(
                       id = substratum.id,
                       name = substratum.name,
-                      observationCompletedTime =
-                          source?.observationCompletedTime?.toDisplayString(),
+                      observationCompletedTime = source?.observationCompletedTime?.toString(),
                       observationId = source?.observationId,
                       plantingCompleted = source?.value?.plantingCompleted,
                       plantingDensity = source?.value?.plantingDensity,
@@ -187,10 +183,6 @@ data class SurvivalRatesPageModel(
     }
   }
 }
-
-private val displayTimeFormatter = DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC)
-
-private fun Instant.toDisplayString(): String = displayTimeFormatter.format(this)
 
 private data class ResultSource<T>(
     val observationId: ObservationId,
