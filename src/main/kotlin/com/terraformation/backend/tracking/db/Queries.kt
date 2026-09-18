@@ -2,12 +2,15 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.StratumHistoryId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import org.jooq.Condition
@@ -33,6 +36,49 @@ fun latestObservationForSubstratumField(
       .on(dependentSsh.ID.eq(OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID))
       .where(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.eq(observationIdField))
       .and(dependentSsh.SUBSTRATUM_ID.eq(substratumIdField))
+      .limit(1)
+}
+
+/**
+ * Retrieves the most recent observationId whose stratum results should be rolled forward for a
+ * stratum, or null if none of the stratum's substrata were observed in or before the requested
+ * observation.
+ */
+fun latestObservationForStratumField(
+    observationIdField: Field<ObservationId?>,
+    stratumHistoryIdField: Field<StratumHistoryId?>,
+    stratumIdField: Field<StratumId?>,
+): Select<Record1<ObservationId?>> {
+  val dependentSsh = SUBSTRATUM_HISTORIES.`as`("dependent_stratum_ssh")
+  val dependsOnObs = OBSERVATIONS.`as`("dependent_stratum_obs")
+  val dependsOnResults = OBSERVATION_STRATUM_RESULTS.`as`("dependent_stratum_results")
+  return DSL.select(OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID)
+      .from(OBSERVATION_DEPENDENT_SUBSTRATA)
+      .join(dependentSsh)
+      .on(dependentSsh.ID.eq(OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID))
+      .join(dependsOnObs)
+      .on(dependsOnObs.ID.eq(OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID))
+      .where(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.eq(observationIdField))
+      .and(dependentSsh.STRATUM_HISTORY_ID.eq(stratumHistoryIdField))
+      // A substratum that has moved between strata can point at an observation that recorded it
+      // under its previous stratum and so has no results for this one.
+      .andExists(
+          DSL.selectOne()
+              .from(dependsOnResults)
+              .where(
+                  dependsOnResults.OBSERVATION_ID.eq(
+                      OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID
+                  )
+              )
+              .and(dependsOnResults.STRATUM_ID.eq(stratumIdField))
+      )
+      .orderBy(
+          // Prefer results from the requested observation if it observed the stratum.
+          OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(observationIdField).desc(),
+          // Otherwise take the results from the next latest observation of the stratum.
+          dependsOnObs.COMPLETED_TIME.desc(),
+          dependsOnObs.ID.desc(),
+      )
       .limit(1)
 }
 
