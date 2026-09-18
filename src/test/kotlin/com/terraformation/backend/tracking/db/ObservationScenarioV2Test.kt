@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -1216,6 +1217,52 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       assertThrows<PlantingSiteNotFoundException> {
         resultsStoreV2.fetchStatsForSite(plantingSiteId)
       }
+    }
+  }
+
+  @Nested
+  inner class FetchStatsForProject {
+    @Test
+    fun `only returns planting sites of the project`() {
+      val projectId = insertProject()
+      val otherProjectId = insertProject()
+
+      // The site from initialSetUp has no project at all.
+      val siteInProjectId = insertPlantingSite(name = "In project", projectId = projectId)
+      insertPlantingSite(name = "Other project", projectId = otherProjectId)
+
+      every { user.canReadProject(any()) } returns true
+
+      assertEquals(
+          listOf(siteInProjectId),
+          resultsStoreV2.fetchStatsForProject(projectId).map { it.plantingSiteId },
+          "Planting site IDs",
+      )
+    }
+
+    @Test
+    fun `returns sites in name order`() {
+      val projectId = insertProject()
+      val siteBId = insertPlantingSite(name = "B", projectId = projectId)
+      val siteAId = insertPlantingSite(name = "A", projectId = projectId)
+
+      every { user.canReadProject(any()) } returns true
+
+      assertEquals(
+          listOf(siteAId, siteBId),
+          resultsStoreV2.fetchStatsForProject(projectId).map { it.plantingSiteId },
+          "Planting site IDs",
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to read project`() {
+      val projectId = insertProject()
+      insertPlantingSite(projectId = projectId)
+
+      every { user.canReadProject(any()) } returns false
+
+      assertThrows<ProjectNotFoundException> { resultsStoreV2.fetchStatsForProject(projectId) }
     }
   }
 

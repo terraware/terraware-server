@@ -4,6 +4,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.emptyMultiset
 import com.terraformation.backend.db.tracking.ObservationId
@@ -123,6 +124,12 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchStats(PLANTING_SITES.ID.eq(plantingSiteId))
+  }
+
+  fun fetchStatsForProject(projectId: ProjectId): List<ObservationSiteStatsModel> {
+    requirePermissions { readProject(projectId) }
+
+    return fetchStats(PLANTING_SITES.PROJECT_ID.eq(projectId))
   }
 
   private fun fetchStats(condition: Condition): List<ObservationSiteStatsModel> =
