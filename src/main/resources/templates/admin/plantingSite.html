@@ -307,6 +307,14 @@
     </form>
 </th:block>
 
+<h3>Survival Rates</h3>
+
+<p>
+    <a th:href="|/admin/plantingSite/${site.id}/survivalRates|">
+        View survival rate diagnostics
+    </a>
+</p>
+
 <th:block th:if="!${site.strata.isEmpty()}">
 
     <h3>Site Details</h3>

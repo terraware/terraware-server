@@ -1,0 +1,252 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        table.bordered {
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+
+        table.bordered th, table.bordered td {
+            border: 1px solid #999;
+            padding: .25em .5em;
+            white-space: nowrap;
+        }
+
+        table.bordered thead th {
+            background-color: #e0e0e0;
+            position: sticky;
+            text-align: left;
+            top: 0;
+        }
+
+        table.bordered tbody tr:nth-child(even) {
+            background-color: #f4f4f4;
+        }
+
+        table.bordered tbody tr:hover {
+            background-color: #ffffcc;
+        }
+
+        table.bordered td.numeric {
+            text-align: right;
+        }
+
+        table.bordered td.missing {
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a> -
+    <a th:href="|/admin/organization/${model.organizationId}|" th:text="${model.organizationName}">
+        Org Name
+    </a> -
+    <a th:href="|/admin/plantingSite/${model.siteId}|" th:text="${model.siteName}">
+        Planting Site
+    </a>
+</p>
+
+<h2 th:text="|Survival Rates for ${model.siteName} (${model.siteId})|">
+    Survival Rates for Planting Site (1)
+</h2>
+
+<p th:if="!${hasObservations}">
+    This planting site has never had an observation.
+</p>
+
+<p th:if="${hasObservations and !hasCompletedObservations}">
+    This planting site has observations, but none have been completed.
+</p>
+
+<p th:if="!${allT0DataSet}">
+    T0 data is incomplete, so survival rates cannot be calculated for the whole planting site.
+</p>
+<p th:unless="!${allT0DataSet}">
+    All T0 data is set.
+</p>
+
+<th:block th:if="${hasCompletedObservations and allT0DataSet}">
+    <p th:if="${model.survivalRateIncludesTempPlots}">
+        Survival rates include temporary monitoring plots.
+    </p>
+    <p th:unless="${model.survivalRateIncludesTempPlots}">
+        Survival rates only include permanent monitoring plots.
+    </p>
+
+    <p th:if="${model.latestCompletedSurvivalRate == null}">
+        <strong>Warning:</strong>
+        The latest completed observation
+        <th:block th:text="${model.latestCompletedObservationId}">1</th:block>
+        (
+        <th:block th:text="${model.latestCompletedTime}">Wed, 1 Jan 2025 00:00:00 GMT</th:block>
+        )
+        has no site-level survival rate.
+    </p>
+
+    <p th:if="${model.siteSurvivalRate != null}">
+        Latest available site survival rate:
+        <strong th:text="|${model.siteSurvivalRate}%|">75%</strong>
+        from observation
+        <th:block th:text="${model.siteSurvivalRateObservationId}">1</th:block>
+        (
+        <th:block th:text="${model.siteSurvivalRateObservationCompletedTime}">
+            Wed, 1 Jan 2025 00:00:00 GMT
+        </th:block>
+        ).
+    </p>
+
+    <p th:if="${model.siteSurvivalRate == null}">
+        No completed observation has produced a site-level survival rate.
+    </p>
+
+    <h3>Strata</h3>
+
+    <table class="bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Survival Rate</th>
+            <th>Std Dev</th>
+            <th>Observation ID</th>
+            <th>Observation Completed</th>
+            <th>Planting Density</th>
+            <th>Planting Completed</th>
+            <th>Total Plants</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${model.strata}">
+            <td class="numeric" th:text="${row.id}">1</td>
+            <td th:text="${row.name}">Stratum</td>
+            <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
+                th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
+            </td>
+            <td th:class="${row.survivalRateStdDev != null ? 'numeric' : 'missing'}"
+                th:text="${row.survivalRateStdDev ?: '—'}">5
+            </td>
+            <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
+                th:text="${row.observationId ?: 'Never observed'}">1
+            </td>
+            <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
+                th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
+            </td>
+            <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
+                th:text="${row.plantingDensity ?: '—'}">100
+            </td>
+            <td th:classappend="${row.plantingCompleted == null ? 'missing' : ''}"
+                th:text="${row.plantingCompleted ?: '—'}">true
+            </td>
+            <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
+                th:text="${row.totalPlants ?: '—'}">100
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3>Substrata</h3>
+
+    <table class="bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Stratum</th>
+            <th>Name</th>
+            <th>Survival Rate</th>
+            <th>Std Dev</th>
+            <th>Observation ID</th>
+            <th>Observation Completed</th>
+            <th>Planting Density</th>
+            <th>Planting Completed</th>
+            <th>Total Plants</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${model.substrata}">
+            <td class="numeric" th:text="${row.id}">1</td>
+            <td th:text="${row.stratumName}">Stratum</td>
+            <td th:text="${row.name}">Substratum</td>
+            <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
+                th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
+            </td>
+            <td th:class="${row.survivalRateStdDev != null ? 'numeric' : 'missing'}"
+                th:text="${row.survivalRateStdDev ?: '—'}">5
+            </td>
+            <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
+                th:text="${row.observationId ?: 'Never observed'}">1
+            </td>
+            <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
+                th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
+            </td>
+            <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
+                th:text="${row.plantingDensity ?: '—'}">100
+            </td>
+            <td th:classappend="${row.plantingCompleted == null ? 'missing' : ''}"
+                th:text="${row.plantingCompleted ?: '—'}">true
+            </td>
+            <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
+                th:text="${row.totalPlants ?: '—'}">100
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3>Monitoring Plots</h3>
+
+    <table class="bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Stratum</th>
+            <th>Substratum</th>
+            <th>Plot Number</th>
+            <th>Survival Rate</th>
+            <th>Observation ID</th>
+            <th>Observation Completed</th>
+            <th>Observed As</th>
+            <th>Plot Status</th>
+            <th>Planting Density</th>
+            <th>Total Plants</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${model.monitoringPlots}">
+            <td class="numeric" th:text="${row.id}">1</td>
+            <td th:text="${row.stratumName}">Stratum</td>
+            <td th:text="${row.substratumName}">Substratum</td>
+            <td class="numeric" th:text="${row.plotNumber}">1</td>
+            <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
+                th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
+            </td>
+            <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
+                th:text="${row.observationId ?: 'Never observed'}">1
+            </td>
+            <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
+                th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
+            </td>
+            <td th:classappend="${row.isPermanent == null ? 'missing' : ''}"
+                th:text="${row.isPermanent == null ? '—' : (row.isPermanent ? 'Permanent' : 'Temporary')}">
+                Permanent
+            </td>
+            <td th:classappend="${row.status == null ? 'missing' : ''}"
+                th:text="${row.status ?: '—'}">Completed
+            </td>
+            <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
+                th:text="${row.plantingDensity ?: '—'}">100
+            </td>
+            <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
+                th:text="${row.totalPlants ?: '—'}">100
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</th:block>
+
+</body>
+</html>
