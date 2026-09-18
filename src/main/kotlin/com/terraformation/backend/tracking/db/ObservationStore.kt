@@ -1377,38 +1377,54 @@ class ObservationStore(
         //
         // Edits to an observation can affect stratum and site data for later observations, but only
         // if the edited observation hasn't been superseded by a newer observation of the same
-        // substratum.
+        // substratum. A later observation's site results can roll forward a stratum row covering
+        // any of that stratum's substrata, including ones since removed from the site, so the set
+        // of affected observations is every observation that depends on this one for any
+        // substratum, plus everything that in turn depends on those. Recalculating one of them
+        // rewrites the stratum rows its own dependents read, so the set has to be closed
+        // transitively and then walked in completion order.
 
-        val dependentSsh = SUBSTRATUM_HISTORIES.`as`("edit_dependent_ssh")
-        val laterObservationsDependentOnSubstratumDataFromThisObservation =
-            dslContext
-                .select(OBSERVATIONS.ID.asNonNullable())
-                .from(OBSERVATIONS)
-                .where(OBSERVATIONS.PLANTING_SITE_ID.eq(observation.plantingSiteId))
-                .and(OBSERVATIONS.COMPLETED_TIME.gt(observation.completedTime))
-                .and(
-                    OBSERVATIONS.ID.`in`(
-                        DSL.select(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
-                            .from(OBSERVATION_DEPENDENT_SUBSTRATA)
-                            .join(dependentSsh)
-                            .on(
-                                dependentSsh.ID.eq(
-                                    OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID
-                                )
-                            )
-                            .where(
-                                OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(
-                                    observationId
-                                )
-                            )
-                            .and(dependentSsh.SUBSTRATUM_ID.eq(substratumId))
-                    )
-                )
-                .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
-                .fetch(OBSERVATIONS.ID.asNonNullable())
+        val laterObservationsDependentOnThisObservation = mutableSetOf<ObservationId>()
+        var dependencySources = setOf(observationId)
 
-        laterObservationsDependentOnSubstratumDataFromThisObservation.forEach { laterObservationId
-          ->
+        while (dependencySources.isNotEmpty()) {
+          dependencySources =
+              dslContext
+                  .select(OBSERVATIONS.ID.asNonNullable())
+                  .from(OBSERVATIONS)
+                  .where(OBSERVATIONS.PLANTING_SITE_ID.eq(observation.plantingSiteId))
+                  .and(OBSERVATIONS.COMPLETED_TIME.gt(observation.completedTime))
+                  .and(
+                      OBSERVATIONS.ID.`in`(
+                          DSL.select(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
+                              .from(OBSERVATION_DEPENDENT_SUBSTRATA)
+                              .where(
+                                  OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.`in`(
+                                      dependencySources
+                                  )
+                              )
+                      )
+                  )
+                  .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+                  .fetchSet(OBSERVATIONS.ID.asNonNullable())
+                  .minus(laterObservationsDependentOnThisObservation)
+
+          laterObservationsDependentOnThisObservation += dependencySources
+        }
+
+        val orderedDependentObservationIds =
+            if (laterObservationsDependentOnThisObservation.isEmpty()) {
+              emptyList()
+            } else {
+              dslContext
+                  .select(OBSERVATIONS.ID.asNonNullable())
+                  .from(OBSERVATIONS)
+                  .where(OBSERVATIONS.ID.`in`(laterObservationsDependentOnThisObservation))
+                  .orderBy(OBSERVATIONS.COMPLETED_TIME, OBSERVATIONS.ID)
+                  .fetch(OBSERVATIONS.ID.asNonNullable())
+            }
+
+        orderedDependentObservationIds.forEach { laterObservationId ->
           recalculateSurvivalRates(laterObservationId, observation.plantingSiteId)
           updateObservationResults(laterObservationId, observation.plantingSiteId)
           recalculateSurvivalRateResults(laterObservationId, observation.plantingSiteId)

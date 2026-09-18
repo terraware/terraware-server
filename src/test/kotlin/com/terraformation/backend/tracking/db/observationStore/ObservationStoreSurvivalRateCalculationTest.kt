@@ -1499,12 +1499,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         plot(3) { species(0, live = obsLive[1][3]) }
       }
 
-      // Area-weighted site rate; substratum areas are all 1, so each stratum's rate is weighted by
-      // the count of its observed substrata.
       fun areaWeightedSiteRate(stratumRates: List<Pair<Int, Int>>): Int {
         val totalWeight = stratumRates.sumOf { it.first }
-        val weighted = stratumRates.sumOf { (substrataCount, rate) -> substrataCount * rate }
-        return weighted / totalWeight
+        val weighted = stratumRates.sumOf { (weight, rate) -> weight * rate }
+        return weighted
+            .toBigDecimal()
+            .divide(totalWeight.toBigDecimal(), 0, java.math.RoundingMode.HALF_UP)
+            .toInt()
       }
 
       expectResults(observation = 1) {
@@ -1534,9 +1535,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       observation(2) { plot(1) { species(0, live = obsLive[2][1]) } }
 
       expectResults(observation = 2) {
-        // Stratum 2 has no result in this observation, so the site rate is just stratum 1's.
+        // Stratum 2 has no result in this observation, so it contributes the rate and area it had
+        // in observation 1.
         val stratum1ObsRate2 = percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2])
-        survivalRate(areaWeightedSiteRate(listOf(2 to stratum1ObsRate2)))
+        val stratum2ObsRate1 = percent(obsLive[1][3], densities[3])
+        survivalRate(areaWeightedSiteRate(listOf(2 to stratum1ObsRate2, 1 to stratum2ObsRate1)))
         stratum(1) {
           survivalRate(stratum1ObsRate2)
           substratum(1) {
@@ -1561,9 +1564,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
       expectResults(observation = 3) {
         // Stratum 1 has no OBSERVATION_STRATUM_RESULTS row in this observation (no plot in it was
-        // observed), so the site SR only includes stratum 2's substrata.
+        // observed), so it contributes observation 2's rate along with the 2 ha area stored on
+        // that row.
+        val stratum1ObsRate2 = percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2])
         val stratum2ObsRate3 = percent(obsLive[1][2] + obsLive[3][3], densities[2] + densities[3])
-        survivalRate(areaWeightedSiteRate(listOf(2 to stratum2ObsRate3)))
+        survivalRate(areaWeightedSiteRate(listOf(200 to stratum1ObsRate2, 18 to stratum2ObsRate3)))
         noResultForStratum(1)
         stratum(2) {
           // Should pull substratum 2 rate from observation 1, but credit it to stratum 2
@@ -2040,6 +2045,311 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         message = "Stratum species totals for observation 2 after editing observation 1's B data",
         where = OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observation2),
     )
+  }
+
+  @Test
+  fun `site survival rate rolls forward a stratum the observation skipped`() {
+    val speciesId = insertSpecies()
+    insertPlotT0Density(
+        monitoringPlotId = plotId,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare(),
+    )
+
+    val stratumB = insertStratum()
+    val substratumB = insertSubstratum()
+    val plotB = insertMonitoringPlot(permanentIndex = 2, substratumId = substratumB)
+    insertPlotT0Density(
+        monitoringPlotId = plotB,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(20).toPlantsPerHectare(),
+    )
+
+    // Observation 1 observes both strata: A is 10/10 = 100%, B is 10/20 = 50%. The substrata have
+    // the same area, so the site is (100 + 50) / 2 = 75%.
+    insertObservationRequestedSubstratum(observationId = observationId, substratumId = substratumB)
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = plotB,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 10), RecordedPlantStatus.Live),
+    )
+    observationStore.completePlot(
+        observationId,
+        plotB,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 10), RecordedPlantStatus.Live),
+    )
+
+    // Observation 2 observes only stratum A: 8/10 = 80%.
+    clock.instant = Instant.ofEpochSecond(10)
+    val observation2 = insertObservation()
+    insertObservationRequestedSubstratum(observationId = observation2, substratumId = substratumId)
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotId,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    observationStore.completePlot(
+        observation2,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime.plusSeconds(10),
+        createPlantsRows(mapOf(speciesId to 8), RecordedPlantStatus.Live),
+    )
+
+    assertEquals(
+        emptyList<Any>(),
+        observationStratumResultsDao.fetchByObservationId(observation2).filter {
+          it.stratumId == stratumB
+        },
+        "Observation 2 should have no stratum results for the stratum it skipped",
+    )
+
+    val rolledForward = observationSiteResultsDao.fetchOneByObservationId(observation2)!!
+
+    assertAll(
+        {
+          assertEquals(
+              65,
+              rolledForward.survivalRate,
+              "Site rate should weigh B's rate from observation 1 with A's from observation 2",
+          )
+        },
+        {
+          assertEqualsIgnoreScale(
+              BigDecimal(2),
+              rolledForward.survivalRateArea,
+              "Site area should include the skipped stratum",
+          )
+        },
+    )
+
+    // Editing B's data in observation 1 raises B to 20/20 = 100%, which observation 2 rolls
+    // forward: (80 + 100) / 2 = 90%.
+    observationStore.updateMonitoringSpecies(
+        observationId,
+        plotB,
+        RecordedSpeciesCertainty.Known,
+        speciesId,
+        null,
+    ) { model ->
+      model.copy(totalLive = 20)
+    }
+
+    assertEquals(
+        90,
+        observationSiteResultsDao.fetchOneByObservationId(observation2)!!.survivalRate,
+        "Site rate after editing the skipped stratum's data in observation 1",
+    )
+  }
+
+  @Test
+  fun `site survival rate rolls a stratum forward past an observation that lacks its results`() {
+    every { user.canReadPlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
+
+    dslContext.deleteFrom(MONITORING_PLOTS).execute()
+
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1) }
+          substratum(2) { plot(2) }
+        }
+        stratum(2) { substratum(3) { plot(3) } }
+      }
+
+      val densities = nullSafeMapOf(1 to 30, 2 to 40, 3 to 50)
+      t0DensitySet {
+        plot(1) { species(0, density = densities[1]) }
+        plot(2) { species(0, density = densities[2]) }
+        plot(3) { species(0, density = densities[3]) }
+      }
+
+      // Map<observation number, Map<plot number, live plant count>>
+      val obsLive =
+          nullSafeMapOf(
+              1 to nullSafeMapOf(1 to 13, 2 to 14, 3 to 15),
+              2 to nullSafeMapOf(2 to 24),
+              3 to nullSafeMapOf(1 to 33),
+          )
+
+      observation(1) {
+        plot(1) { species(0, live = obsLive[1][1]) }
+        plot(2) { species(0, live = obsLive[1][2]) }
+        plot(3) { species(0, live = obsLive[1][3]) }
+      }
+
+      // Only substratum 2 is observed, so stratum 2 gets no results row in this observation.
+      observation(2) { plot(2) { species(0, live = obsLive[2][2]) } }
+
+      siteEdited {
+        stratum(1) { substratum(1) { plot(1) } }
+        stratum(2) {
+          substratum(2) { plot(2) } // Moved from stratum 1
+          substratum(3) { plot(3) }
+        }
+      }
+
+      observation(3) { plot(1) { species(0, live = obsLive[3][1]) } }
+
+      expectResults(observation = 3) {
+        // Stratum 2 isn't observed here. Its substratum 2 was last observed in observation 2, but
+        // under stratum 1, so observation 2 holds no stratum 2 results to roll forward; the rollup
+        // has to reach further back to observation 1, which does. That gives stratum 2 substratum
+        // 3's rate over the 1 ha area stored on the observation 1 row, against stratum 1's own row
+        // covering substratum 1's post-edit 0.09 ha:
+        //
+        //   (110 * 0.09 + 30 * 1) / 1.09 = 37
+        survivalRate(37)
+        stratum(1) {
+          survivalRate(percent(obsLive[3][1], densities[1]))
+          substratum(1) { survivalRate(percent(obsLive[3][1], densities[1])) }
+        }
+        noResultForStratum(2)
+      }
+    }
+  }
+
+  @Test
+  fun `editing a removed substratum updates observations that roll its stratum forward`() {
+    every { user.canReadPlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
+    every { user.canUpdateObservationQuantities(any()) } returns true
+
+    dslContext.deleteFrom(MONITORING_PLOTS).execute()
+
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1) }
+          substratum(2) { plot(2) }
+        }
+        stratum(2) { substratum(3) { plot(3) } }
+      }
+
+      val densities = nullSafeMapOf(1 to 30, 2 to 40, 3 to 50)
+      t0DensitySet {
+        plot(1) { species(0, density = densities[1]) }
+        plot(2) { species(0, density = densities[2]) }
+        plot(3) { species(0, density = densities[3]) }
+      }
+
+      observation(1) {
+        plot(1) { species(0, live = 13) }
+        plot(2) { species(0, live = 14) }
+        plot(3) { species(0, live = 15) }
+      }
+
+      // Substratum 2 is dropped from the site, but stratum 1's observation 1 results still
+      // include its data.
+      siteEdited {
+        stratum(1) { substratum(1) { plot(1) } }
+        stratum(2) { substratum(3) { plot(3) } }
+      }
+
+      // Stratum 1 isn't observed, so observation 2's site rate rolls its observation 1 row
+      // forward.
+      observation(2) { plot(3) { species(0, live = 35) } }
+
+      expectResults(observation = 2) {
+        // Stratum 1 contributes its observation 1 rate, 27/70 = 39%, over the 2 ha area stored on
+        // that row; stratum 2 contributes its own row over substratum 3's post-edit 0.09 ha:
+        //
+        //   (39 * 2 + 70 * 0.09) / 2.09 = 40
+        survivalRate(40)
+        noResultForStratum(1)
+        stratum(2) { survivalRate(percent(35, densities[3])) }
+      }
+
+      // Editing the removed substratum's data in observation 1 leaves stratum 1 with no rate
+      // there, which observation 2 has to pick up.
+      observationEdited(1) { plot(2) { species(0, live = 1) } }
+
+      expectResults(observation = 2) {
+        survivalRate(null)
+        noResultForStratum(1)
+        stratum(2) { survivalRate(percent(35, densities[3])) }
+      }
+    }
+  }
+
+  @Test
+  fun `editing an observation updates observations that depend on it indirectly`() {
+    every { user.canReadPlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
+    every { user.canUpdateObservationQuantities(any()) } returns true
+
+    dslContext.deleteFrom(MONITORING_PLOTS).execute()
+
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1) } // Dropped from the site before observation 3
+          substratum(2) { plot(2) }
+        }
+        stratum(2) { substratum(3) { plot(3) } }
+      }
+
+      val densities = nullSafeMapOf(1 to 30, 2 to 40, 3 to 50)
+      t0DensitySet {
+        plot(1) { species(0, density = densities[1]) }
+        plot(2) { species(0, density = densities[2]) }
+        plot(3) { species(0, density = densities[3]) }
+      }
+
+      observation(1) {
+        plot(1) { species(0, live = 13) }
+        plot(3) { species(0, live = 15) }
+      }
+
+      // Substratum 1 isn't observed, so stratum 1's row here rolls its observation 1 data
+      // forward alongside substratum 2's: (13 + 24) / (30 + 40) = 53%, over 2 ha.
+      observation(2) { plot(2) { species(0, live = 24) } }
+
+      siteEdited {
+        stratum(1) { substratum(2) { plot(2) } }
+        stratum(2) { substratum(3) { plot(3) } }
+      }
+
+      // Stratum 1 isn't observed here either, and its only remaining substratum was last observed
+      // in observation 2, so observation 3 rolls observation 2's stratum row forward. Observation
+      // 3 has no dependency on observation 1 at all: substratum 1 is gone from its snapshot.
+      observation(3) { plot(3) { species(0, live = 35) } }
+
+      expectResults(observation = 3) {
+        // (53 * 2 + 70 * 0.09) / 2.09 = 54
+        survivalRate(54)
+        noResultForStratum(1)
+        stratum(2) { survivalRate(percent(35, densities[3])) }
+      }
+
+      observationEdited(1) { plot(1) { species(0, live = 3) } }
+
+      // Recalculating observation 2 drops the now-removed substratum 1 from its stratum row,
+      // taking it to 24 / 40 = 60% over 1 ha. Observation 3 consumes that row, so it has to be
+      // recalculated too even though nothing links it to observation 1:
+      //
+      //   (60 * 1 + 70 * 0.09) / 1.09 = 61
+      expectResults(observation = 3) {
+        survivalRate(61)
+        noResultForStratum(1)
+        stratum(2) { survivalRate(percent(35, densities[3])) }
+      }
+    }
   }
 
   private fun createPlantsRows(

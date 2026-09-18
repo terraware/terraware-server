@@ -1,0 +1,5 @@
+Plot,Certainty,Species,Status,x,y
+111,Known,Known 1,Live,10.1,10.2
+111,Known,Known 1,Dead,11.1,11.2
+111,Known,Known 1,Dead,12.1,12.2
+111,Known,Known 1,Dead,13.1,13.2

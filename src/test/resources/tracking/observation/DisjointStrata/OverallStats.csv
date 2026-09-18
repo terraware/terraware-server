@@ -1,0 +1,6 @@
+Level,Name,Observation,Planting Density,Survival Rate,# Plants,# Species
+Site,,2,17,36%,4,1
+Stratum,Alpha,2,11,25%,4,1
+Stratum,Beta,1,22,40%,5,1
+Substratum,Alpha-1,2,11,25%,4,1
+Substratum,Beta-1,1,22,40%,5,1

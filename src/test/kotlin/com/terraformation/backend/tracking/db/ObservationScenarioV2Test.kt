@@ -1242,6 +1242,16 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
     }
 
     @Test
+    fun `stratum not observed in the latest observation still counts toward the site`() {
+      runV2Scenario(
+          "/tracking/observation/DisjointStrata",
+          numObservations = 2,
+          sizeMeters = 30,
+          plantingSiteId,
+      )
+    }
+
+    @Test
     fun `permanent plots being added and removed`() {
       runV2Scenario(
           "/tracking/observation/PermanentPlotChanges",
