@@ -92,6 +92,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         textField("collectionSiteName", ACCESSIONS.COLLECTION_SITE_NAME.collate("en-x-icu")),
         textField("collectionSiteNotes", ACCESSIONS.COLLECTION_SITE_NOTES),
         enumField("collectionSource", ACCESSIONS.COLLECTION_SOURCE_ID),
+        timestampField("createdTime", ACCESSIONS.CREATED_TIME),
         dateField("dryingEndDate", ACCESSIONS.DRYING_END_DATE),
         integerField("estimatedCount", ACCESSIONS.EST_SEED_COUNT),
         *weightFields(
