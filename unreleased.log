@@ -1,3 +1,10 @@
+4e949908 Apply changes from code browser
+2e77c507 Apply changes from code browser
+a0206cc3 Get observation stats for the planting sites of a project
+3bf168c1 Apply changes from code browser
+558b00c4 Return a list of observation stats from the endpoint
+3283ea29 Fetch observation stats by condition
+9270a0d1 Add survival rates diagnostic page to admin (#4980)
 62f0216b Remove unused device manager endpoints (#4970)
 9166b5cd Remove unused device automation endpoints (#4968)
 bbf7382a Remove "device unresponsive" endpoint (#4967)
