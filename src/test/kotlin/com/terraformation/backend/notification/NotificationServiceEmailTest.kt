@@ -22,7 +22,6 @@ import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -97,9 +96,6 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
-import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
-import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
@@ -199,11 +195,9 @@ internal class NotificationServiceEmailTest {
   private val acceleratorUser: IndividualUser = mockk()
   private val activityStore: ActivityStore = mockk()
   private val adminUser: IndividualUser = mockk()
-  private val automationStore: AutomationStore = mockk()
   private val clock: InstantSource = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val deliverableStore: DeliverableStore = mockk()
-  private val deviceStore: DeviceStore = mockk()
   private val documentStore: DocumentStore = mockk()
   private val facilityStore: FacilityStore = mockk()
   private val fundingEntityStore: FundingEntityStore = mockk()
@@ -253,11 +247,9 @@ internal class NotificationServiceEmailTest {
   private val service =
       NotificationService(
           activityStore,
-          automationStore,
           clock,
           config,
           deliverableStore,
-          deviceStore,
           documentStore,
           dslContext,
           emailService,
@@ -575,7 +567,6 @@ internal class NotificationServiceEmailTest {
     every { adminUser.email } returns "admin@test.com"
     every { adminUser.fullName } returns "Admin Name"
     every { adminUser.userId } returns UserId(1)
-    every { automationStore.fetchOneById(automation.id) } returns automation
     every { deliverableStore.fetchDeliverableCategory(any()) } returns deliverableCategory
     every {
       deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverable.deliverableId)
@@ -586,7 +577,6 @@ internal class NotificationServiceEmailTest {
           projectId = deliverable.projectId,
       )
     } returns listOf(deliverable)
-    every { deviceStore.fetchOneById(devicesRow.id!!) } returns devicesRow
     every { documentStore.fetchOneById(document.id) } returns document
     every { facilityStore.fetchOneById(facility.id) } returns facility
     every { fundingEntityStore.fetchOneById(fundingEntity.id) } returns fundingEntity
@@ -682,30 +672,6 @@ internal class NotificationServiceEmailTest {
     service.on(FacilityIdleEvent(facility.id))
 
     assertBodyContains(webAppUrls.fullFacilityMonitoring(organization.id, facility.id), "Link URL")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun sensorBoundsAlertTriggered() {
-    service.on(SensorBoundsAlertTriggeredEvent(automation.id, 3.1))
-
-    assertBodyContains(devicesRow.name!!, "Device name")
-    assertBodyContains(
-        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow),
-        "Link URL",
-    )
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun unknownAutomationTriggeredEvent() {
-    service.on(UnknownAutomationTriggeredEvent(automation.id, "Bogus Type", "Test Message"))
-
-    assertBodyContains(automation.name, "Automation name")
-    assertBodyContains(
-        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow),
-        "Link URL",
-    )
     assertRecipientsEqual(organizationRecipients)
   }
 

@@ -2,7 +2,6 @@ package com.terraformation.backend.email.model
 
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
@@ -10,7 +9,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -127,39 +125,6 @@ class FacilityIdle(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "facility/idle"
-}
-
-class SensorBoundsAlert(
-    config: TerrawareServerConfig,
-    val automation: AutomationModel,
-    val device: DevicesRow,
-    val facility: FacilityModel,
-    val value: Any,
-    val facilityMonitoringUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() {
-      return when {
-        device.deviceType == "BMU" && automation.timeseriesName == "relative_state_of_charge" ->
-            "device/lowPower"
-        device.deviceType == "sensor" && automation.timeseriesName == "humidity" ->
-            "device/humidity"
-        device.deviceType == "sensor" && automation.timeseriesName == "temperature" ->
-            "device/temperature"
-        else -> "device/sensorBounds"
-      }
-    }
-}
-
-class UnknownAutomationTriggered(
-    config: TerrawareServerConfig,
-    val automation: AutomationModel,
-    val facility: FacilityModel,
-    val message: String?,
-    val facilityMonitoringUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "device/unknownAutomation"
 }
 
 class UserAddedToOrganization(
