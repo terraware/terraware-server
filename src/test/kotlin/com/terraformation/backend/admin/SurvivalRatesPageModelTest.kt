@@ -220,7 +220,7 @@ class SurvivalRatesPageModelTest {
     assertThat(model["hasObservations"]).isEqualTo(false)
     assertThat(model["hasCompletedObservations"]).isEqualTo(false)
     assertThat(model["allT0DataSet"]).isEqualTo(false)
-    assertThat(model["page"]).isEqualTo(SurvivalRatesPageModel.of(site, organization, emptyList()))
+    assertThat(model["model"]).isEqualTo(SurvivalRatesPageModel.of(site, organization, emptyList()))
   }
 
   private fun site(vararg strata: ExistingStratumModel) =
