@@ -216,11 +216,12 @@ class ObservationsController(
   fun getSiteObservationStats(
       @RequestParam plantingSiteId: PlantingSiteId
   ): GetSiteObservationStatsResponsePayload {
-    val stats =
-        observationResultsStoreV2.fetchStatsForSite(plantingSiteId).firstOrNull()
-            ?: throw PlantingSiteNotFoundException(plantingSiteId)
+    val stats = observationResultsStoreV2.fetchStatsForSite(plantingSiteId)
+    if (stats.isEmpty()) {
+      throw PlantingSiteNotFoundException(plantingSiteId)
+    }
 
-    return GetSiteObservationStatsResponsePayload(ObservationSiteStatsPayload(stats))
+    return GetSiteObservationStatsResponsePayload(stats.map { ObservationSiteStatsPayload(it) })
   }
 
   @GetMapping("/{observationId}")
@@ -945,7 +946,7 @@ data class CompletePlotObservationRequestPayload(
 data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
     SuccessResponsePayload
 
-data class GetSiteObservationStatsResponsePayload(val stats: ObservationSiteStatsPayload) :
+data class GetSiteObservationStatsResponsePayload(val stats: List<ObservationSiteStatsPayload>) :
     SuccessResponsePayload
 
 data class GetOneAssignedPlotResponsePayload(
