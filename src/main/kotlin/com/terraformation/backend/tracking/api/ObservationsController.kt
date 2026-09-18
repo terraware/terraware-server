@@ -217,9 +217,6 @@ class ObservationsController(
       @RequestParam plantingSiteId: PlantingSiteId
   ): GetSiteObservationStatsResponsePayload {
     val stats = observationResultsStoreV2.fetchStatsForSite(plantingSiteId)
-    if (stats.isEmpty()) {
-      throw PlantingSiteNotFoundException(plantingSiteId)
-    }
 
     return GetSiteObservationStatsResponsePayload(stats.map { ObservationSiteStatsPayload(it) })
   }
