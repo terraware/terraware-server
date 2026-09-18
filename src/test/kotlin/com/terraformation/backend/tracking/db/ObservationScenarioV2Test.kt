@@ -71,7 +71,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
         {
           assertSiteObservationStats(
               prefix,
-              resultsStoreV2.fetchSiteObservationStats(plantingSiteId),
+              resultsStoreV2.fetchStatsForSite(plantingSiteId).single(),
           )
         },
     )
@@ -1140,7 +1140,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(completedTime = Instant.ofEpochSecond(20), isAdHoc = true)
 
-      val stats = resultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+      val stats = resultsStoreV2.fetchStatsForSite(plantingSiteId).single()
       val substrataById = stats.strata.single().substrata.associateBy { it.substratumId }
 
       assertEquals(
@@ -1169,7 +1169,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
     fun `includes areas that have never been observed`() {
       importSiteFromCsvFile("/tracking/observation/DisjointSubstrata", sizeMeters = 30)
 
-      val stats = resultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+      val stats = resultsStoreV2.fetchStatsForSite(plantingSiteId).single()
 
       assertEquals(
           ObservationSiteStatsModel(
@@ -1214,7 +1214,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       every { user.canReadPlantingSite(plantingSiteId) } returns false
 
       assertThrows<PlantingSiteNotFoundException> {
-        resultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+        resultsStoreV2.fetchStatsForSite(plantingSiteId)
       }
     }
   }

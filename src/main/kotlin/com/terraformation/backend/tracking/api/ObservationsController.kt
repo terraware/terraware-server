@@ -47,6 +47,7 @@ import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -215,7 +216,9 @@ class ObservationsController(
   fun getSiteObservationStats(
       @RequestParam plantingSiteId: PlantingSiteId
   ): GetSiteObservationStatsResponsePayload {
-    val stats = observationResultsStoreV2.fetchSiteObservationStats(plantingSiteId)
+    val stats =
+        observationResultsStoreV2.fetchStatsForSite(plantingSiteId).firstOrNull()
+            ?: throw PlantingSiteNotFoundException(plantingSiteId)
 
     return GetSiteObservationStatsResponsePayload(ObservationSiteStatsPayload(stats))
   }

@@ -119,42 +119,46 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
    * own observation: the most recent one that completed at least one monitoring plot in that area.
    * Areas that have never been observed are included with no statistics.
    */
-  fun fetchSiteObservationStats(plantingSiteId: PlantingSiteId): ObservationSiteStatsModel {
+  fun fetchStatsForSite(plantingSiteId: PlantingSiteId): List<ObservationSiteStatsModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return dslContext
-        .select(
-            PLANTING_SITES.ID,
-            OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
-            OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
-            OBSERVATION_SITE_RESULTS.SURVIVAL_RATE,
-            siteObservations.COMPLETED_TIME,
-            siteTotalPlantsField,
-            siteTotalSpeciesField,
-            strataStatsMultiset,
-        )
-        .from(PLANTING_SITES)
-        .leftJoin(OBSERVATION_SITE_RESULTS)
-        .on(
-            OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)
-                .and(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(latestSiteObservationId()))
-        )
-        .leftJoin(siteObservations)
-        .on(siteObservations.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID))
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchOne { record ->
-          ObservationSiteStatsModel(
-              completedTime = record[siteObservations.COMPLETED_TIME],
-              observationId = record[OBSERVATION_SITE_RESULTS.OBSERVATION_ID],
-              plantingDensity = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY],
-              plantingSiteId = record[PLANTING_SITES.ID.asNonNullable()],
-              strata = record[strataStatsMultiset],
-              survivalRate = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE],
-              totalPlants = record[siteTotalPlantsField],
-              totalSpecies = record[siteTotalSpeciesField],
-          )
-        } ?: throw PlantingSiteNotFoundException(plantingSiteId)
+    return fetchStats(PLANTING_SITES.ID.eq(plantingSiteId))
   }
+
+  private fun fetchStats(condition: Condition): List<ObservationSiteStatsModel> =
+      dslContext
+          .select(
+              PLANTING_SITES.ID,
+              OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
+              OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
+              OBSERVATION_SITE_RESULTS.SURVIVAL_RATE,
+              siteObservations.COMPLETED_TIME,
+              siteTotalPlantsField,
+              siteTotalSpeciesField,
+              strataStatsMultiset,
+          )
+          .from(PLANTING_SITES)
+          .leftJoin(OBSERVATION_SITE_RESULTS)
+          .on(
+              OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)
+                  .and(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(latestSiteObservationId()))
+          )
+          .leftJoin(siteObservations)
+          .on(siteObservations.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID))
+          .where(condition)
+          .orderBy(PLANTING_SITES.NAME, PLANTING_SITES.ID)
+          .fetch { record ->
+            ObservationSiteStatsModel(
+                completedTime = record[siteObservations.COMPLETED_TIME],
+                observationId = record[OBSERVATION_SITE_RESULTS.OBSERVATION_ID],
+                plantingDensity = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY],
+                plantingSiteId = record[PLANTING_SITES.ID.asNonNullable()],
+                strata = record[strataStatsMultiset],
+                survivalRate = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE],
+                totalPlants = record[siteTotalPlantsField],
+                totalSpecies = record[siteTotalSpeciesField],
+            )
+          }
 
   /**
    * Monitoring plots for an observation. Plant density and survival rate are read from
