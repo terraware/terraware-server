@@ -21,6 +21,7 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -212,13 +213,30 @@ class ObservationsController(
   }
 
   @GetMapping("/results/stats")
-  @Operation(summary = "Gets the latest observation statistics for a planting site.")
-  fun getSiteObservationStats(
-      @RequestParam plantingSiteId: PlantingSiteId
-  ): GetSiteObservationStatsResponsePayload {
-    val stats = observationResultsStoreV2.fetchStatsForSite(plantingSiteId)
+  @Operation(summary = "Gets the latest observation statistics for planting sites.")
+  fun getObservationStats(
+      @RequestParam
+      @Schema(description = "Limit results to a single planting site.")
+      plantingSiteId: PlantingSiteId? = null,
+      @RequestParam
+      @Schema(
+          description =
+              "Limit results to the planting sites of a project. Ignored if plantingSiteId is " +
+                  "specified."
+      )
+      projectId: ProjectId? = null,
+  ): GetObservationStatsResponsePayload {
+    val stats =
+        when {
+          plantingSiteId != null ->
+              observationResultsStoreV2.fetchStatsForSite(plantingSiteId).ifEmpty {
+                throw PlantingSiteNotFoundException(plantingSiteId)
+              }
+          projectId != null -> observationResultsStoreV2.fetchStatsForProject(projectId)
+          else -> throw BadRequestException("Must specify either plantingSiteId or projectId")
+        }
 
-    return GetSiteObservationStatsResponsePayload(stats.map { ObservationSiteStatsPayload(it) })
+    return GetObservationStatsResponsePayload(stats.map { ObservationSiteStatsPayload(it) })
   }
 
   @GetMapping("/{observationId}")
@@ -943,7 +961,7 @@ data class CompletePlotObservationRequestPayload(
 data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
     SuccessResponsePayload
 
-data class GetSiteObservationStatsResponsePayload(val stats: List<ObservationSiteStatsPayload>) :
+data class GetObservationStatsResponsePayload(val stats: List<ObservationSiteStatsPayload>) :
     SuccessResponsePayload
 
 data class GetOneAssignedPlotResponsePayload(
