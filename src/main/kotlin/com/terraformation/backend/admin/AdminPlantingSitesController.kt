@@ -137,6 +137,10 @@ class AdminPlantingSitesController(
     model.addAttribute("canManageObservations", canManageObservations)
     model.addAttribute("canStartObservations", canStartObservations)
     model.addAttribute(
+        "canViewSurvivalRates",
+        currentUser().canReadPlantingSite(plantingSiteId),
+    )
+    model.addAttribute(
         "canMovePlantingSiteToAnyOrg",
         currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId),
     )
