@@ -4,6 +4,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.db.TrackingStatsStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -24,15 +25,25 @@ class TrackingStatsController(
   @Operation(summary = "Gets aggregated statistics about planting sites.")
   fun getAggregatedTrackingStats(
       @RequestParam
-      @Parameter(description = "Organization ID to summarize. Ignored if projectId is supplied.")
+      @Parameter(
+          description =
+              "Organization ID to summarize. Ignored if projectId or plantingSiteId is supplied."
+      )
       organizationId: OrganizationId? = null,
-      @RequestParam projectId: ProjectId? = null,
+      @RequestParam
+      @Parameter(description = "Project ID to summarize. Ignored if plantingSiteId is supplied.")
+      projectId: ProjectId? = null,
+      @RequestParam plantingSiteId: PlantingSiteId? = null,
   ): TrackingStatsResponsePayload {
     val survivalRate =
         when {
+          plantingSiteId != null -> trackingStatsStore.getSurvivalRate(plantingSiteId)
           projectId != null -> trackingStatsStore.getSurvivalRate(projectId)
           organizationId != null -> trackingStatsStore.getSurvivalRate(organizationId)
-          else -> throw BadRequestException("Must specify either organizationId or projectId")
+          else ->
+              throw BadRequestException(
+                  "Must specify one of organizationId, projectId, or plantingSiteId"
+              )
         }
 
     return TrackingStatsResponsePayload(survivalRate = survivalRate)

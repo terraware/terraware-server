@@ -45,7 +45,9 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // Observation 5: Site 4, survival rate 30, area 80
       // Observation 6: Site 4, no survival rate or area (causes site 4 to be omitted)
       //
-      // So the project-level survival rate for project 1 should be
+      // So the site-level rate for site 1 should be the rate from its latest observation, 70.
+      //
+      // The project-level survival rate for project 1 should be
       //
       // (70 * 10 + 50 * 20) / (10 + 20) = 57
       //
@@ -53,7 +55,7 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       //
       // (70 * 10 + 50 * 20 + 10 * 40) / (10 + 20 + 40) = 30
 
-      insertPlantingSite(projectId = projectId1)
+      val plantingSiteId1 = insertPlantingSite(projectId = projectId1)
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(100))
       insertObservationStratumResult(survivalRate = 90, survivalRateArea = 5)
@@ -84,6 +86,7 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservation(completedTime = Instant.ofEpochSecond(600))
       insertObservationStratumResult(survivalRate = 30, survivalRateArea = 80)
 
+      assertEquals(70, store.getSurvivalRate(plantingSiteId1), "Planting site survival rate")
       assertEquals(57, store.getSurvivalRate(projectId1), "Project survival rate")
       assertEquals(30, store.getSurvivalRate(organizationId), "Organization survival rate")
     }
@@ -91,11 +94,12 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns null if no sites in scope have survival rates`() {
       val projectId = insertProject()
-      insertPlantingSite(projectId = projectId)
+      val plantingSiteId = insertPlantingSite(projectId = projectId)
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(100))
       insertObservationStratumResult()
 
+      assertNull(store.getSurvivalRate(plantingSiteId), "Planting site survival rate")
       assertNull(store.getSurvivalRate(projectId), "Project survival rate")
       assertNull(store.getSurvivalRate(organizationId), "Organization survival rate")
     }
@@ -113,6 +117,14 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherOrganizationId = insertOrganization()
 
       assertThrows<OrganizationNotFoundException> { store.getSurvivalRate(otherOrganizationId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to read planting site`() {
+      insertOrganization()
+      val plantingSiteId = insertPlantingSite()
+
+      assertThrows<PlantingSiteNotFoundException> { store.getSurvivalRate(plantingSiteId) }
     }
   }
 }
