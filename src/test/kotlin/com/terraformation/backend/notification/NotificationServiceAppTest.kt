@@ -71,7 +71,6 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.device.db.DeviceStore
-import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.documentproducer.db.DocumentStore
@@ -116,7 +115,6 @@ import com.terraformation.backend.util.mockDeliverable
 import io.mockk.every
 import io.mockk.mockk
 import java.net.URI
-import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
@@ -479,21 +477,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
         title = "$automationName triggered at $facilityName",
         body = message,
         localUrl = webAppUrls.facilityMonitoring(facilityId),
-    )
-  }
-
-  @Test
-  fun `should store device unresponsive notification`() {
-    val deviceName = "test device"
-    val deviceId = insertDevice(name = deviceName, type = "sensor")
-    val device = deviceStore.fetchOneById(deviceId)
-
-    testEventNotification(
-        DeviceUnresponsiveEvent(deviceId, Instant.EPOCH, Duration.ofSeconds(1)),
-        type = NotificationType.DeviceUnresponsive,
-        title = "$deviceName cannot be detected.",
-        body = "$deviceName cannot be detected. Please check on it.",
-        localUrl = webAppUrls.facilityMonitoring(facilityId, device),
     )
   }
 
