@@ -3,15 +3,124 @@ package com.terraformation.backend.seedbank.search
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.i18n.Locales
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFilterType
+import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.SearchValuesResult
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class SearchServiceFetchValuesTest : SearchServiceTest() {
+  @Test
+  fun `localizes sort field values when needed`() {
+    Locales.GIBBERISH.use {
+      val sortOrderFields =
+          listOf(
+                  "ageMonths",
+                  "ageMonths(raw)",
+                  "totalWithdrawnWeightKilograms",
+                  "totalWithdrawnWeightPounds",
+                  "totalWithdrawnWeightPounds(raw)",
+                  "collectionSiteCountry_name",
+                  "state",
+                  "active",
+                  "collectedTime",
+                  "species.scientificName",
+              )
+              .map { SearchSortField(rootPrefix.resolve(it)) }
+
+      val expected =
+          listOf(
+              SearchValuesResult(
+                  "XYZ",
+                  listOf(
+                      "15",
+                      "15",
+                      "5",
+                      "11,0231",
+                      "11.0231",
+                      "VWdhbmRh",
+                      "U3RvcmFnZQ SW4",
+                      "QWN0aXZl",
+                      "2019-03-02T00:00:00Z",
+                      "Kousa Dogwood",
+                  ),
+              ),
+              SearchValuesResult(
+                  "ABCDEFG",
+                  listOf(
+                      null,
+                      null,
+                      null,
+                      null,
+                      null,
+                      null,
+                      "UHJvY2Vzc2luZw",
+                      "QWN0aXZl",
+                      null,
+                      "Other Dogwood",
+                  ),
+              ),
+          )
+
+      assertEquals(
+          expected,
+          searchService.fetchValues(
+              rootPrefix,
+              accessionNumberField,
+              emptyMap(),
+              sortOrder = sortOrderFields,
+          ),
+      )
+    }
+  }
+
+  @Test
+  fun `enum sort fields sort on localized display names`() {
+    accessionsDao.update(
+        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.AwaitingProcessing)
+    )
+    accessionsDao.update(
+        accessionsDao.fetchOneById(accessionId2)!!.copy(stateId = AccessionState.Drying)
+    )
+    val sortOrder = listOf(SearchSortField(stateField))
+    val englishValues =
+        listOf(
+            SearchValuesResult("Kousa Dogwood", listOf("Awaiting Processing")),
+            SearchValuesResult("Other Dogwood", listOf("Drying")),
+        )
+
+    assertEquals(
+        englishValues,
+        searchService.fetchValues(rootPrefix, speciesNameField, emptyMap(), sortOrder = sortOrder),
+    )
+    assertEquals(
+        listOf(
+            SearchValuesResult("Other Dogwood", listOf("RHJ5aW5n")),
+            SearchValuesResult("Kousa Dogwood", listOf("UHJvY2Vzc2luZw QXdhaXRpbmc")),
+        ),
+        Locales.GIBBERISH.use {
+          searchService.fetchValues(rootPrefix, speciesNameField, emptyMap(), sortOrder = sortOrder)
+        },
+    )
+    assertEquals(
+        englishValues,
+        Locales.GIBBERISH.use {
+          searchService.fetchValues(
+              rootPrefix,
+              speciesNameField,
+              emptyMap(),
+              sortOrder = listOf(SearchSortField(rootPrefix.resolve("state(raw)"))),
+          )
+        },
+        "Uses non-localized enum values if sort field is raw",
+    )
+  }
+
   @Test
   fun `no criteria for simple column value`() {
     val values =

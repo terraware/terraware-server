@@ -200,6 +200,17 @@ data class FieldValuesPayload(
                 "a partial list."
     )
     val partial: Boolean,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "The values of the fields specified in the sortOrder of the request. Each " +
+                        "element of this list corresponds to the element at the same position in " +
+                        "the `values` list. Each element of the list is a list of values in the " +
+                        "same order as the `sortOrder` list from the request."
+            )
+    )
+    val sortValues: List<List<String?>>?,
 ) {
   constructor(
       partial: Boolean,
@@ -207,6 +218,11 @@ data class FieldValuesPayload(
   ) : this(
       searchValuesResults.map { it.value },
       partial,
+      if (searchValuesResults.any { it.sortValues.isNotEmpty() }) {
+        searchValuesResults.map { it.sortValues }
+      } else {
+        null
+      },
   )
 }
 

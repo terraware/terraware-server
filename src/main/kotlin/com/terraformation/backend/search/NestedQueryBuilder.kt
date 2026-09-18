@@ -11,6 +11,7 @@ import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.Record1
 import org.jooq.RecordMapper
+import org.jooq.Result
 import org.jooq.Select
 import org.jooq.SelectConditionStep
 import org.jooq.SelectJoinStep
@@ -534,6 +535,8 @@ class NestedQueryBuilder(
      * `viabilityTests.viabilityTestResults`. Must be an absolute path.
      */
     private val prefix: SearchFieldPrefix,
+    /** Include the backing columns needed to render sort values with [SearchField.computeValue]. */
+    private val includeSortValues: Boolean = false,
 ) {
   /**
    * Conditions to include in this query's `WHERE` clause. This includes conditions that are
@@ -591,6 +594,9 @@ class NestedQueryBuilder(
    */
   private val sortFieldPositions = mutableMapOf<String, Int>()
 
+  /** Positions of the backing columns needed to render sort fields. */
+  private val sortValuePositions = mutableMapOf<Field<*>, Int>()
+
   /**
    * Zero-indexed position that the next field that's added to the `SELECT` clause will have. Since
    * the `SELECT` clause can ultimately include a mix of raw columns and expressions (see
@@ -611,7 +617,7 @@ class NestedQueryBuilder(
    * scratch on each [toMultiset] call because jOOQ can potentially generate column and table
    * aliases and we don't want those to change from one [toMultiset] call to the next.
    */
-  private val renderedMultiset = MemoizedValue<Field<List<Map<String, Any>>?>>()
+  private val renderedMultiset = MemoizedValue<Field<Result<Record>?>>()
 
   /**
    * Includes a set of fields in the search results.
@@ -733,13 +739,7 @@ class NestedQueryBuilder(
    * that `fetch` will return a list of `Map<String,Any>` instead of the default behavior which is
    * to return a list of `Record`.
    *
-   * It is also used as an
-   * [ad-hoc converter](https://www.jooq.org/doc/3.0/manual/sql-execution/fetching/ad-hoc-converter/)
-   * that's attached to the multisets that are generated for sublists. The same transformation
-   * happens: the result of the subquery inside the multiset is turned into `List<Map<String,Any>>`.
-   * The result of that conversion becomes the value of the multiset field in the parent query. See
-   * the jOOQ docs for a more detailed explanation of how ad-hoc converters and nested queries
-   * interact with each other.
+   * Child query builders apply the same conversion to the records in nested multisets.
    *
    * Returns null rather than an empty map if there were no values in any fields.
    */
@@ -761,7 +761,7 @@ class NestedQueryBuilder(
     val sublistsWithSelectFields = sublistQueryBuilders.filterValues { it.hasSelectFields() }
 
     sublistsWithSelectFields.forEach { (sublistName, queryBuilder) ->
-      val values: List<Map<String, Any>>? = record[getMultiset(sublistName)]
+      val values = record[getMultiset(sublistName)]?.mapNotNull(queryBuilder::convertToMap)
       val firstValue = values?.firstOrNull()
 
       if (firstValue != null) {
@@ -770,6 +770,29 @@ class NestedQueryBuilder(
     }
 
     return fieldValues.ifEmpty { null }
+  }
+
+  /** Returns the values of a list of sort fields. */
+  fun getSortValues(record: Record, fields: List<SearchSortField>): List<String?> {
+    return fields.map { getSortValue(record, it.field) }
+  }
+
+  private fun getSortValue(record: Record, fieldPath: SearchFieldPath): String? {
+    val relativeField = fieldPath.relativeTo(prefix)
+    return if (relativeField.isNested) {
+      val sublistName = getSublistName(relativeField)
+      val firstRecord = record[getMultiset(sublistName)]?.firstOrNull()
+      firstRecord?.let {
+        sublistQueryBuilders.getValue(sublistName).getSortValue(firstRecord, fieldPath)
+      }
+    } else {
+      val field = fieldPath.searchField
+      val fieldRecord = dslContext.newRecord(field.selectFields)
+      fieldRecord.fromArray(
+          *field.selectFields.map { record[sortValuePositions.getValue(it)] }.toTypedArray()
+      )
+      field.computeValue(fieldRecord)
+    }
   }
 
   /**
@@ -879,7 +902,8 @@ class NestedQueryBuilder(
     // Retrieve the sublist query builder by name if it exists. Create it if it doesn't exist. When
     // creating it, if searchCriteria is passed in, then add the filter to sublist query builder.
     return sublistQueryBuilders.computeIfAbsent(sublistName) {
-      val queryBuilder = NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
+      val queryBuilder =
+          NestedQueryBuilder(dslContext, prefix.withSublist(sublistName), includeSortValues)
       if (criteria != null) {
         queryBuilder.addCondition(
             filterResults(SearchFieldPrefix(relativeField.searchTable), criteria, true)
@@ -988,8 +1012,8 @@ class NestedQueryBuilder(
 
   /**
    * Returns the list of fields to include in the `SELECT` clause of the query. This includes fields
-   * that should be returned to the caller in search results, and also, if this node is a sublist
-   * query, any fields that the parent query will need to be able to use in its `ORDER BY` clause.
+   * returned in search results, sort keys needed for parent queries, and columns used to render
+   * [getSortValues].
    */
   private fun getSelectFields(): List<Field<*>> {
     val fieldsInSelectOrder =
@@ -1005,7 +1029,34 @@ class NestedQueryBuilder(
               }
             }
 
-    return fieldsInSelectOrder + getSortFieldsToExposeToParent()
+    val sortValueFields = getSortValueFields(fieldsInSelectOrder)
+    return fieldsInSelectOrder + sortValueFields + getSortFieldsToExposeToParent()
+  }
+
+  /**
+   * Selects the backing columns used by sort field formatters without including them in DISTINCT
+   * ON. Reuses selected columns and aliases extra columns to avoid ambiguous field lookups.
+   */
+  private fun getSortValueFields(selectedFields: List<Field<*>>): List<Field<*>> {
+    if (!includeSortValues) {
+      return emptyList()
+    }
+
+    return sortFields
+        .filter { !it.field.relativeTo(prefix).isNested }
+        .flatMap { it.field.searchField.selectFields }
+        .distinct()
+        .mapNotNull { field ->
+          val selectedPosition = selectedFields.indexOf(field)
+          if (selectedPosition >= 0) {
+            sortValuePositions[field] = selectedPosition
+            null
+          } else {
+            val position = nextSelectFieldPosition++
+            sortValuePositions[field] = position
+            field.`as`("sort_value_$position")
+          }
+        }
   }
 
   /**
@@ -1031,10 +1082,6 @@ class NestedQueryBuilder(
    */
   private fun getSortFieldsToExposeToParent(): List<Field<*>> {
     return sortFields
-        .filter {
-          val relativeField = it.field.relativeTo(prefix)
-          relativeField.isFlattened || !relativeField.isNested
-        }
         .distinctBy { it.field }
         .mapNotNull { sortField ->
           val field = sortField.field.searchField
@@ -1045,8 +1092,15 @@ class NestedQueryBuilder(
             // If we are selecting and sorting on an enum field, the sortable value will be a CASE
             // expression. We need to make that available in the multiset so the parent can order
             // by it.
-            val selectFieldIndex = selectFieldPositions[relativeName]
-            val orderByField = field.orderByField
+            val selectFieldIndex =
+                selectFieldPositions[relativeName]
+                    ?: if (!relativeField.isNested) sortValuePositions[field.orderByField] else null
+            val orderByField =
+                if (relativeField.isNested) {
+                  getOrderByFieldForSublist(sortField.field)
+                } else {
+                  field.orderByField
+                }
             if (
                 selectFieldIndex != null &&
                     field.selectFields.size == 1 &&
@@ -1068,7 +1122,7 @@ class NestedQueryBuilder(
   /**
    * Returns the multiset field for a sublist query, rendering it if it hasn't been rendered before.
    */
-  private fun getMultiset(sublistName: String): Field<List<Map<String, Any>>?> {
+  private fun getMultiset(sublistName: String): Field<Result<Record>?> {
     val queryBuilder =
         sublistQueryBuilders[sublistName]
             ?: throw IllegalStateException("BUG! Sublist $sublistName not found")
@@ -1080,7 +1134,7 @@ class NestedQueryBuilder(
    * use [prefix] as part of its column alias; this is mostly for ease of debugging if a human needs
    * to look at the SQL.
    */
-  private fun toMultiset(): Field<List<Map<String, Any>>?> {
+  private fun toMultiset(): Field<Result<Record>?> {
     return renderedMultiset.get {
       if (isRoot()) {
         throw IllegalStateException("BUG! Root node should never be rendered as a multiset")
@@ -1100,9 +1154,7 @@ class NestedQueryBuilder(
 
       prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
 
-      DSL.multiset(toSelectQuery()).`as`(alias).convertFrom { result ->
-        result.mapNotNull { record -> convertToMap(record) }
-      }
+      DSL.multiset(toSelectQuery()).`as`(alias)
     }
   }
 

@@ -5,6 +5,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.field.SearchField
 import jakarta.inject.Named
 import org.jooq.DSLContext
+import org.jooq.Record
 import org.jooq.conf.ParamType
 
 /**
@@ -67,7 +68,17 @@ class SearchService(private val dslContext: DSLContext) {
     }
 
     val results =
-        runQuery(rootPrefix, fields, criteria, sortOrder, limit, offset, distinct).filterNotNull()
+        runQuery(
+                rootPrefix,
+                fields,
+                criteria,
+                sortOrder,
+                limit,
+                offset,
+                distinct,
+                NestedQueryBuilder::convertToMap,
+            )
+            .filterNotNull()
 
     val newCursor =
         if (results.size > limit) {
@@ -85,8 +96,9 @@ class SearchService(private val dslContext: DSLContext) {
       fields: Collection<SearchFieldPath>,
       criteria: Map<SearchFieldPrefix, SearchNode>,
       sortOrder: List<SearchSortField> = emptyList(),
+      includeSortValues: Boolean = false,
   ): NestedQueryBuilder {
-    val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
+    val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix, includeSortValues)
     queryBuilder.addSelectFields(fields, criteria)
     queryBuilder.addSortFields(sortOrder)
     queryBuilder.addCondition(queryBuilder.filterResults(rootPrefix, criteria[rootPrefix]))
@@ -94,7 +106,7 @@ class SearchService(private val dslContext: DSLContext) {
     return queryBuilder
   }
 
-  private fun runQuery(
+  private fun <T> runQuery(
       rootPrefix: SearchFieldPrefix,
       fields: Collection<SearchFieldPath>,
       criteria: Map<SearchFieldPrefix, SearchNode>,
@@ -102,8 +114,10 @@ class SearchService(private val dslContext: DSLContext) {
       limit: Int,
       offset: Int = 0,
       distinct: Boolean,
-  ): List<Map<String, Any>?> {
-    val queryBuilder = buildQuery(rootPrefix, fields, criteria, sortOrder)
+      mapper: (NestedQueryBuilder, Record) -> T,
+      includeSortValues: Boolean = false,
+  ): List<T> {
+    val queryBuilder = buildQuery(rootPrefix, fields, criteria, sortOrder, includeSortValues)
     val query = queryBuilder.toSelectQuery(distinct)
 
     // Query one more row than the limit so we can tell the client whether or not there are
@@ -118,7 +132,7 @@ class SearchService(private val dslContext: DSLContext) {
     log.debug("search SQL query: ${queryWithLimit.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
-    val results = queryWithLimit.fetch(queryBuilder::convertToMap)
+    val results = queryWithLimit.fetch { record -> mapper(queryBuilder, record) }
 
     val endTime = System.currentTimeMillis()
     log.debug("search query returned ${results.size} rows in ${endTime - startTime} ms")
@@ -132,6 +146,11 @@ class SearchService(private val dslContext: DSLContext) {
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    *   by at most 1 element, which callers can use to detect that the number of values exceeds the
    *   limit.
+   * @param sortOrder Order of the values. If a value occurs on multiple matching records, its
+   *   position is determined by the first record in this order. Ties are broken by the value in
+   *   ascending order, which is also the default order if none is specified.
+   * @return Each result contains the requested value (which may be null) and the values of sort
+   *   fields in [sortOrder] order.
    */
   fun fetchValues(
       rootPrefix: SearchFieldPrefix,
@@ -139,6 +158,7 @@ class SearchService(private val dslContext: DSLContext) {
       criteria: Map<SearchFieldPrefix, SearchNode>,
       cursor: String? = null,
       limit: Int = 50,
+      sortOrder: List<SearchSortField> = emptyList(),
   ): List<SearchValuesResult> {
     if (fieldPath.isNested) {
       throw IllegalArgumentException("Fetching nested field values is not supported.")
@@ -146,16 +166,25 @@ class SearchService(private val dslContext: DSLContext) {
 
     val offset = cursor?.toIntOrNull() ?: 0
     val partialCriteria = criteria.mapValues { it.value.toPartialSearch() }
+    val effectiveSortOrder = (sortOrder + SearchSortField(fieldPath)).distinctBy { it.field }
+    val mapper = { queryBuilder: NestedQueryBuilder, record: Record ->
+      SearchValuesResult(
+          value = fieldPath.searchField.computeValue(record),
+          sortValues = queryBuilder.getSortValues(record, sortOrder),
+      )
+    }
 
     val partialResults =
         runQuery(
             rootPrefix,
             listOf(fieldPath),
             partialCriteria,
-            listOf(SearchSortField(fieldPath)),
+            effectiveSortOrder,
             limit = limit,
             offset = offset,
             distinct = true,
+            mapper = mapper,
+            includeSortValues = sortOrder.isNotEmpty(),
         )
 
     val searchResults =
@@ -166,19 +195,19 @@ class SearchService(private val dslContext: DSLContext) {
               rootPrefix,
               listOf(fieldPath),
               criteria,
-              listOf(SearchSortField(fieldPath)),
+              effectiveSortOrder,
               limit = limit,
               offset = offset,
               distinct = true,
+              mapper = mapper,
+              includeSortValues = sortOrder.isNotEmpty(),
           )
         }
 
-    val fieldPathName = "$fieldPath"
-
-    // The distinct() call is needed here despite the "distinct = true" in the runQuery call because
+    // The distinctBy() is needed here despite the "distinct = true" in the runQuery call because
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
-    return searchResults.map { SearchValuesResult(it?.get(fieldPathName)?.toString()) }.distinct()
+    return searchResults.distinctBy { it.value }
   }
 
   fun searchCount(
