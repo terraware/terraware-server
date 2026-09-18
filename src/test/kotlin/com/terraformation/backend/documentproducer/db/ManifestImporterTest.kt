@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
@@ -31,7 +30,6 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val messages = Messages()
-  private val clock = TestClock()
 
   private val deliverableStore: DeliverableStore by lazy { DeliverableStore(dslContext) }
 

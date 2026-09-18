@@ -1,7 +1,6 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Test
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables = SearchTables(clock)
 

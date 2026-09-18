@@ -1,7 +1,6 @@
 package com.terraformation.backend.device.balena
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -21,7 +20,6 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val balenaClient: BalenaClient = mockk()
-  private val clock = TestClock()
 
   private val poller: BalenaPoller by lazy {
     BalenaPoller(

@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
@@ -35,7 +34,6 @@ import org.springframework.security.access.AccessDeniedException
 class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  val clock = TestClock()
   val eventPublisher = TestEventPublisher()
 
   private val store: ParticipantProjectSpeciesStore by lazy {

@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach
 internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
   protected val store: BatchStore by lazy {
     BatchStore(

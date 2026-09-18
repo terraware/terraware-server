@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationModel
@@ -31,7 +30,6 @@ import org.junit.jupiter.params.provider.ValueSource
 internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private lateinit var permissionStore: PermissionStore
   private lateinit var store: NotificationStore
 

@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
@@ -38,7 +37,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
   private val fileService: FileService by lazy {

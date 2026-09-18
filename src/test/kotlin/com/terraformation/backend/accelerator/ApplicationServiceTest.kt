@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.db.ApplicationStore
@@ -47,7 +46,6 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private val applicationVariableValuesService = mockk<ApplicationVariableValuesService>()
   private val acceleratorProjectVariableValuesService =
       mockk<AcceleratorProjectVariableValuesService>()
-  private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
   private val eventPublisher = TestEventPublisher()
   private val preScreenBoundarySubmissionFetcher = mockk<PreScreenBoundarySubmissionFetcher>()

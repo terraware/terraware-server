@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach
 abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
   protected val jobScheduler: JobScheduler = mockk()
   protected val systemUser: SystemUser by lazy { SystemUser(usersDao) }

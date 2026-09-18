@@ -1,7 +1,6 @@
 package com.terraformation.backend.device
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.tables.records.TimeseriesValuesRecord
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test
 class TimeseriesPrunerTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val pruner by lazy { TimeseriesPruner(clock, dslContext) }
 
   @BeforeEach

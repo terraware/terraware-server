@@ -53,7 +53,6 @@ import io.mockk.slot
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.math.BigDecimal
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -89,7 +88,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         IdentifierGenerator(clock, dslContext),
     )
   }
-  private val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
   private val facilityStore: FacilityStore by lazy {
     FacilityStore(
         clock,

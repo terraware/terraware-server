@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -33,7 +32,6 @@ internal class UserServiceTest : DatabaseTest(), RunsAsUser {
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
-  private val clock = TestClock()
   private val publisher = TestEventPublisher()
   private val userStore: UserStore by lazy {
     UserStore(

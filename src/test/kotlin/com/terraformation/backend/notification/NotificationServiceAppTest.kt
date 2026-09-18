@@ -1,7 +1,6 @@
 package com.terraformation.backend.notification
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
@@ -132,7 +131,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var organizationId: OrganizationId
   private lateinit var otherUserId: UserId
 
-  private val clock = TestClock()
   private val messages: Messages = Messages()
 
   private lateinit var accessionStore: AccessionStore

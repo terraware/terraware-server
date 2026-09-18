@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.db.ProjectPhaseFetcher
 import com.terraformation.backend.accelerator.db.VoteStore
 import com.terraformation.backend.accelerator.event.ProjectPhaseUpdatedEvent
@@ -21,8 +20,6 @@ import org.junit.jupiter.api.Test
 
 class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
-
-  private val clock = TestClock()
 
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
 

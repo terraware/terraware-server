@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.model.ExistingSpeciesDeliverableSubmissionModel
@@ -25,7 +24,6 @@ import org.springframework.security.access.AccessDeniedException
 class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: SubmissionStore by lazy { SubmissionStore(clock, dslContext, eventPublisher) }
 

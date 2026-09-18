@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking.db
 
 import com.opencsv.CSVReader
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
@@ -62,7 +61,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     speciesIds.entries.associate { it.value to it.key }
   }
 
-  protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
   protected val jobScheduler: JobScheduler = mockk()
   protected val systemUser: SystemUser by lazy { SystemUser(usersDao) }

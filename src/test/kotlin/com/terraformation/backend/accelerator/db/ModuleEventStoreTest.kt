@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
@@ -35,7 +34,6 @@ import org.springframework.security.access.AccessDeniedException
 class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
   private val store: ModuleEventStore by lazy {
@@ -439,9 +437,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
               createdBy = user.userId,
-              createdTime = Instant.EPOCH,
+              createdTime = clock.instant,
               modifiedBy = user.userId,
-              modifiedTime = Instant.EPOCH,
+              modifiedTime = clock.instant,
           ),
           eventsDao.findById(workshop),
       )
@@ -461,7 +459,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
               createdBy = user.userId,
-              createdTime = Instant.EPOCH,
+              createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
           ),

@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.mockUser
@@ -15,8 +14,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteNotificationStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
-  private val clock = TestClock()
 
   private val store: PlantingSiteNotificationStore by lazy {
     PlantingSiteNotificationStore(clock, dslContext)

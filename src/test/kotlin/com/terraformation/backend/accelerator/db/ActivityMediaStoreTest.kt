@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ActivityMediaUpdatedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
@@ -30,7 +29,6 @@ import org.junit.jupiter.api.assertThrows
 class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: ActivityMediaStore by lazy {
     ActivityMediaStore(clock, dslContext, eventPublisher)

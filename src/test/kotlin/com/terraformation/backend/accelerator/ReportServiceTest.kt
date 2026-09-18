@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.PublishedReportComparedProps
@@ -52,7 +51,6 @@ import org.springframework.security.access.AccessDeniedException
 class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val messages = Messages()
   private val eventPublisher = TestEventPublisher()
   private val fileService = mockk<FileService>()

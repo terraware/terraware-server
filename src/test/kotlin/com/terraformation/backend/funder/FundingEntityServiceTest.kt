@@ -1,7 +1,6 @@
 package com.terraformation.backend.funder
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
@@ -49,7 +48,6 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   @Autowired private lateinit var config: TerrawareServerConfig
-  private val clock = TestClock()
   private val fundingEntityStore by lazy { FundingEntityStore(dslContext) }
   private val fundingEntityUserStore by lazy { FundingEntityUserStore(dslContext) }
   private val parentStore by lazy { ParentStore(dslContext) }

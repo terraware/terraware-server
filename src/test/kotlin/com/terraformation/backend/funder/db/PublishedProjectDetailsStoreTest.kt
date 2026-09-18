@@ -1,7 +1,6 @@
 package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.IndicatorProgressModel
@@ -33,7 +32,6 @@ import org.junit.jupiter.api.assertThrows
 class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val random: Random = mockk()
   private val pathGenerator: PathGenerator by lazy { PathGenerator(random) }

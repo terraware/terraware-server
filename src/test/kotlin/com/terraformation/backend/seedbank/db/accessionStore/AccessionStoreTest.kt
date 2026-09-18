@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -37,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach
 internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  protected val clock = TestClock()
   protected val publisher = TestEventPublisher()
 
   protected lateinit var store: AccessionStore

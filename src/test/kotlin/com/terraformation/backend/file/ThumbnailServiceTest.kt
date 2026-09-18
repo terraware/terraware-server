@@ -1,7 +1,6 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -29,7 +28,6 @@ import org.springframework.http.MediaType
 class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
   private val converter1: JpegConverter = mockk()

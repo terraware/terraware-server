@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -51,7 +50,6 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
   private val accessionStore: AccessionStore = mockk()
   private val batchStore: BatchStore = mockk()
-  private val clock = TestClock()
   private val parentStore: ParentStore = mockk()
   private val photoRepository: PhotoRepository = mockk()
 

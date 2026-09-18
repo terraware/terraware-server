@@ -1,7 +1,6 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.TimeseriesNotFoundException
@@ -29,7 +28,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private lateinit var store: TimeseriesStore
 
   private lateinit var deviceId: DeviceId

@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.DisclaimerModel
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -26,7 +25,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val store: DisclaimerStore by lazy {
     DisclaimerStore(clock, disclaimersDao, dslContext, userDisclaimersDao)
   }

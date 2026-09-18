@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
@@ -39,7 +38,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
   private val fileService: FileService by lazy {

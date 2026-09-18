@@ -2,7 +2,6 @@ package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test
 internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val objectMapper = jacksonObjectMapper()
   private val store: AutomationStore by lazy {
     AutomationStore(automationsDao, clock, dslContext, objectMapper, ParentStore(dslContext))

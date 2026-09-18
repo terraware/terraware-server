@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -33,7 +32,6 @@ import org.junit.jupiter.api.assertThrows
 internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val rateLimitedEventPublisher = TestEventPublisher()
   private val t0Store: T0Store by lazy { T0Store(clock, dslContext, eventPublisher) }

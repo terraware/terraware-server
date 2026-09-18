@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertSetEquals
@@ -49,7 +48,6 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
-  private val clock = TestClock()
   private val identifierGenerator: IdentifierGenerator by lazy {
     IdentifierGenerator(clock, dslContext)
   }

@@ -1,7 +1,6 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -30,7 +29,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val store: ProjectSpeciesStore by lazy {
     ProjectSpeciesStore(
         clock,
@@ -103,7 +101,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   overriddenBy = inserted.userId,
                   overriddenJustification = "Justification",
                   overriddenNativityId = SpeciesNativity.Introduced,
-                  overriddenTime = Instant.EPOCH,
+                  overriddenTime = clock.instant,
                   projectId = projectId,
                   speciesId = speciesId,
               ),
@@ -536,7 +534,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   overriddenBy = inserted.userId,
                   overriddenJustification = "Justification",
                   overriddenNativityId = SpeciesNativity.Introduced,
-                  overriddenTime = Instant.EPOCH,
+                  overriddenTime = clock.instant,
                   projectId = projectId,
                   speciesId = wcvpSpeciesId,
               ),
@@ -582,7 +580,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   overriddenBy = inserted.userId,
                   overriddenJustification = "Justification",
                   overriddenNativityId = SpeciesNativity.Introduced,
-                  overriddenTime = Instant.EPOCH,
+                  overriddenTime = clock.instant,
                   pendingNativityId = SpeciesNativity.Unknown,
                   projectId = locatedProjectId,
                   speciesId = otherSpeciesId,
@@ -644,7 +642,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               overriddenBy = inserted.userId,
               overriddenJustification = "Justification",
               overriddenNativityId = SpeciesNativity.Introduced,
-              overriddenTime = Instant.EPOCH,
+              overriddenTime = clock.instant,
               projectId = projectId,
               speciesId = speciesId,
           )
@@ -764,7 +762,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   overriddenBy = inserted.userId,
                   overriddenJustification = "Justification",
                   overriddenNativityId = SpeciesNativity.Introduced,
-                  overriddenTime = Instant.EPOCH,
+                  overriddenTime = clock.instant,
                   pendingNativityDatasetDate = griisDate,
                   pendingNativityDatasetTypeId = ExternalDatasetType.GRIIS,
                   pendingNativityId = SpeciesNativity.Invasive,
@@ -871,7 +869,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   overriddenBy = inserted.userId,
                   overriddenJustification = "Justification",
                   overriddenNativityId = SpeciesNativity.Introduced,
-                  overriddenTime = Instant.EPOCH,
+                  overriddenTime = clock.instant,
                   projectId = griisProjectId,
                   speciesId = otherSpeciesId,
               ),

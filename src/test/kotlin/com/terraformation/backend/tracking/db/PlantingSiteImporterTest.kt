@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
@@ -33,7 +32,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val importer: PlantingSiteImporter by lazy {

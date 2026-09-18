@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.VoteDecisionModel
 import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.db.DatabaseTest
@@ -25,7 +24,6 @@ import org.springframework.security.access.AccessDeniedException
 class VoteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val store: VoteStore by lazy {
     VoteStore(clock, dslContext, ProjectPhaseFetcher(dslContext))
   }

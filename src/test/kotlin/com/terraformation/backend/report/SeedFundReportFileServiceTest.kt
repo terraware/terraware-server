@@ -2,7 +2,6 @@ package com.terraformation.backend.report
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.db.ParentStore
@@ -46,7 +45,6 @@ import org.springframework.security.access.AccessDeniedException
 class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
   private val fileService: FileService by lazy {

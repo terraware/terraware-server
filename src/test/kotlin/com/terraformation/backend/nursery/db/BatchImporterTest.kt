@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.ParentStore
@@ -55,7 +54,6 @@ import org.junit.jupiter.api.Test
 internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
   private val scheduler: JobScheduler = mockk()

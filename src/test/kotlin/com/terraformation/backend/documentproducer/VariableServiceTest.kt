@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.assertIsEventListener
@@ -50,7 +49,7 @@ class VariableServiceTest : DatabaseTest(), RunsAsUser {
         variableImporter,
         variableStore,
         VariableValueStore(
-            TestClock(),
+            clock,
             dslContext,
             eventPublisher,
             variableImageValuesDao,

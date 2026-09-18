@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -38,7 +37,6 @@ import org.locationtech.jts.geom.Geometry
 class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables: SearchTables by lazy { SearchTables(clock) }
 

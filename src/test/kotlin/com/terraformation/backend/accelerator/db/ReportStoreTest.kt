@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
@@ -107,7 +106,6 @@ import org.springframework.security.access.AccessDeniedException
 class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val messages = Messages()
 
@@ -782,10 +780,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = today.plusDays(31),
               createdBy = user.userId,
               createdByUser = SimpleUserModel(user.userId, "First Last"),
-              createdTime = Instant.EPOCH,
+              createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedByUser = SimpleUserModel(user.userId, "First Last"),
-              modifiedTime = Instant.EPOCH,
+              modifiedTime = clock.instant,
           )
 
       assertEquals(emptyList<ReportModel>(), store.fetch())
@@ -4480,9 +4478,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
                   createdBy = currentUser().userId,
-                  createdTime = Instant.EPOCH,
+                  createdTime = clock.instant,
                   modifiedBy = currentUser().userId,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedTime = clock.instant,
                   upcomingNotificationSentTime = clock.instant,
               ),
               ReportsRecord(
@@ -4494,9 +4492,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2024, Month.OCTOBER, 1),
                   endDate = LocalDate.of(2024, Month.DECEMBER, 31),
                   createdBy = currentUser().userId,
-                  createdTime = Instant.EPOCH,
+                  createdTime = clock.instant,
                   modifiedBy = currentUser().userId,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedTime = clock.instant,
               ),
               ReportsRecord(
                   id = notifiedReportId,
@@ -4507,9 +4505,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
                   createdBy = currentUser().userId,
-                  createdTime = Instant.EPOCH,
+                  createdTime = clock.instant,
                   modifiedBy = currentUser().userId,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedTime = clock.instant,
                   upcomingNotificationSentTime = Instant.ofEpochSecond(15000),
               ),
               ReportsRecord(
@@ -4521,9 +4519,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
                   createdBy = currentUser().userId,
-                  createdTime = Instant.EPOCH,
+                  createdTime = clock.instant,
                   modifiedBy = currentUser().userId,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedTime = clock.instant,
                   submittedBy = currentUser().userId,
                   submittedTime = Instant.ofEpochSecond(30000),
               ),
@@ -4536,9 +4534,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
                   createdBy = currentUser().userId,
-                  createdTime = Instant.EPOCH,
+                  createdTime = clock.instant,
                   modifiedBy = currentUser().userId,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedTime = clock.instant,
               ),
               ReportsRecord(
                   id = futureReportId,
@@ -4549,9 +4547,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, Month.APRIL, 1),
                   endDate = LocalDate.of(2025, Month.JUNE, 30),
                   createdBy = currentUser().userId,
-                  createdTime = Instant.EPOCH,
+                  createdTime = clock.instant,
                   modifiedBy = currentUser().userId,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedTime = clock.instant,
               ),
           ),
       )

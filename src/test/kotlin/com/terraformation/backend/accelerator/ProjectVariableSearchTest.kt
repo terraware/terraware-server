@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.Test
 class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables = SearchTables(clock)
 

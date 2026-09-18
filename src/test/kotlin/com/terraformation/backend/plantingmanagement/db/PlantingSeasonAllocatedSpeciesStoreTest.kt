@@ -1,7 +1,6 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -26,7 +25,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonAllocatedSpeciesStore by lazy {
     PlantingSeasonAllocatedSpeciesStore(clock, dslContext, eventPublisher, SeasonHelper(dslContext))

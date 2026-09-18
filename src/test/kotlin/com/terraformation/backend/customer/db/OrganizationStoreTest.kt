@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
@@ -51,7 +50,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private lateinit var permissionStore: PermissionStore
   private val publisher = TestEventPublisher()
   private lateinit var store: OrganizationStore

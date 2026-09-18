@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -47,7 +46,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private lateinit var store: FacilityStore

@@ -1,7 +1,6 @@
 package com.terraformation.backend.daily
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertSetEquals
@@ -35,7 +34,6 @@ import org.junit.jupiter.api.Test
 class NotificationScannerTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock(Instant.EPOCH.plus(2, ChronoUnit.DAYS))
   private val config: TerrawareServerConfig = mockk()
   private val notifiers: MutableList<FacilityNotifier> = mutableListOf()
 
@@ -70,6 +68,8 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { config.dailyTasks } returns TerrawareServerConfig.DailyTasksConfig()
+
+    clock.instant = Instant.EPOCH.plus(2, ChronoUnit.DAYS)
 
     insertOrganization()
     facilityId =

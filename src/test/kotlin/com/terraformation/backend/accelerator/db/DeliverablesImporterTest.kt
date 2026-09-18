@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.DeliverablesUploadedEvent
 import com.terraformation.backend.assertSetEquals
@@ -27,7 +26,7 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
 
   private val importer: DeliverablesImporter by lazy {
     DeliverablesImporter(
-        TestClock(),
+        clock,
         dslContext,
         VariableStore(
             dslContext,

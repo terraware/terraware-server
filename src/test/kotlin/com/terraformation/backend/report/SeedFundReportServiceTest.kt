@@ -3,7 +3,6 @@ package com.terraformation.backend.report
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
@@ -73,7 +72,6 @@ import org.junit.jupiter.api.assertThrows
 class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
   private val messages = Messages()
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())

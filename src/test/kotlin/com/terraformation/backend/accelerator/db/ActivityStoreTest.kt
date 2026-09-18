@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
@@ -42,7 +41,6 @@ import org.springframework.security.access.AccessDeniedException
 class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: ActivityStore by lazy {
     ActivityStore(clock, dslContext, eventPublisher, ParentStore(dslContext))

@@ -2,7 +2,6 @@ package com.terraformation.backend.file
 
 import com.drew.imaging.FileType
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertIsEventListener
@@ -64,7 +63,6 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 
 class FileServiceTest : DatabaseTest(), RunsAsUser {
-  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private lateinit var fileStore: FileStore

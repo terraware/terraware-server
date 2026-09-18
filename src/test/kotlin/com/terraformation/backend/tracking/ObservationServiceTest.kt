@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertGeometryEquals
@@ -146,7 +145,6 @@ import org.springframework.security.access.AccessDeniedException
 class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = spyk(TestClock())
   private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
@@ -1409,7 +1407,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception scheduling an observation if start date is in the past`() {
-      every { clock.instant() } returns Instant.EPOCH.plus(1, ChronoUnit.DAYS)
+      clock.instant = Instant.EPOCH.plus(1, ChronoUnit.DAYS)
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
@@ -1577,7 +1575,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception rescheduling an observation if start date is in the past`() {
-      every { clock.instant() } returns Instant.EPOCH.plus(1, ChronoUnit.DAYS)
+      clock.instant = Instant.EPOCH.plus(1, ChronoUnit.DAYS)
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)

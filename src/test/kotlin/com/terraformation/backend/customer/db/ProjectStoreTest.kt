@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.event.ProjectCreatedEvent
 import com.terraformation.backend.customer.event.ProjectDeletedEvent
@@ -45,7 +44,6 @@ import org.springframework.security.access.AccessDeniedException
 class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val store: ProjectStore by lazy {
@@ -362,7 +360,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               botanicalCountryCode = botanicalCountryCode,
               countryCode = "AU",
               createdBy = currentUserId,
-              createdTime = Instant.EPOCH,
+              createdTime = clock.instant,
               description = "New description",
               modifiedBy = currentUserId,
               modifiedTime = clock.instant,
