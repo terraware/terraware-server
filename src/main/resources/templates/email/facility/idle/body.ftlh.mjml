@@ -11,7 +11,7 @@
                     ${strings("notification.seedBank.idle.email.body.1")}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                    ${link("notification.seedBank.idle.email.body.html.2", "https://www.terraformation.com/contact-us/terraware-support")}
+                    ${link("notification.seedBank.idle.email.body.2", "https://www.terraformation.com/contact-us/terraware-support")}
                 </mj-text>
                 <mj-include path="../link.ftlh.mjml"/>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
