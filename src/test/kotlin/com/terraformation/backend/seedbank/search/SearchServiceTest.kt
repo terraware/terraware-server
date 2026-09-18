@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -45,8 +44,6 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val createdTime = Instant.parse(createdTimeString)
   protected val modifiedTimeString = "2021-07-16T23:56:55Z"
   protected val modifiedTime = Instant.parse(modifiedTimeString)
-
-  protected val clock = TestClock()
 
   protected val tables = SearchTables(clock)
   protected val accessionsTable = tables.accessions

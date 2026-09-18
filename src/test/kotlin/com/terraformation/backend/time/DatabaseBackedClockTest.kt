@@ -34,7 +34,7 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
 
   /** Lazily-instantiated test subject; this will pick up per-test config values. */
-  private val clock: DatabaseBackedClock by lazy { newDatabaseBackedClock() }
+  private val dbClock: DatabaseBackedClock by lazy { newDatabaseBackedClock() }
 
   private val applicationStartedEvent =
       ApplicationStartedEvent(SpringApplication(Application::class.java), null, null, Duration.ZERO)
@@ -53,8 +53,8 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
         .set(TEST_CLOCK.REAL_TIME, Instant.now())
         .set(TEST_CLOCK.FAKE_TIME, Instant.EPOCH)
         .execute()
-    clock.initialize(applicationStartedEvent)
-    assertSameInstant(Instant.EPOCH, clock.instant())
+    dbClock.initialize(applicationStartedEvent)
+    assertSameInstant(Instant.EPOCH, dbClock.instant())
   }
 
   @Test
@@ -65,18 +65,18 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
         "Clock table should be empty initially",
     )
 
-    clock.initialize(applicationStartedEvent)
+    dbClock.initialize(applicationStartedEvent)
     val results = dslContext.selectFrom(TEST_CLOCK).fetch()
     assertEquals(1, results.size, "Number of rows in test clock table")
   }
 
   @Test
   fun `fake clock advances on its own`() {
-    clock.initialize(applicationStartedEvent)
+    dbClock.initialize(applicationStartedEvent)
 
-    val early = clock.instant()
+    val early = dbClock.instant()
     Thread.sleep(50)
-    val later = clock.instant()
+    val later = dbClock.instant()
 
     assertNotEquals(early, later)
   }
@@ -88,12 +88,12 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
         .set(TEST_CLOCK.REAL_TIME, Instant.now())
         .set(TEST_CLOCK.FAKE_TIME, Instant.EPOCH)
         .execute()
-    clock.initialize(applicationStartedEvent)
+    dbClock.initialize(applicationStartedEvent)
 
     val newFake = Instant.EPOCH.plus(1, ChronoUnit.DAYS)
-    clock.setFakeTime(newFake)
+    dbClock.setFakeTime(newFake)
 
-    assertSameInstant(newFake, clock.instant(), "Time from existing instance")
+    assertSameInstant(newFake, dbClock.instant(), "Time from existing instance")
 
     val newClock = newDatabaseBackedClock()
     newClock.initialize(applicationStartedEvent)
@@ -107,42 +107,42 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
         .set(TEST_CLOCK.REAL_TIME, Instant.now())
         .set(TEST_CLOCK.FAKE_TIME, Instant.EPOCH)
         .execute()
-    clock.initialize(applicationStartedEvent)
+    dbClock.initialize(applicationStartedEvent)
 
-    clock.reset()
+    dbClock.reset()
 
-    assertSameInstant(Instant.now(), clock.instant())
+    assertSameInstant(Instant.now(), dbClock.instant())
   }
 
   @Test
   fun `publishes event when clock is advanced`() {
     val expectedAdjustment = Duration.ofMinutes(1)
 
-    clock.initialize(applicationStartedEvent)
-    clock.advance(expectedAdjustment)
+    dbClock.initialize(applicationStartedEvent)
+    dbClock.advance(expectedAdjustment)
 
     publisher.assertEventPublished(ClockAdvancedEvent(expectedAdjustment))
   }
 
   @Test
   fun `publishes event when clock is reset`() {
-    clock.initialize(applicationStartedEvent)
-    clock.reset()
+    dbClock.initialize(applicationStartedEvent)
+    dbClock.reset()
 
     publisher.assertEventPublished(ClockResetEvent())
   }
 
   @Test
   fun `does not allow clock to be advanced by a negative amount`() {
-    clock.initialize(applicationStartedEvent)
-    assertThrows<IllegalArgumentException> { clock.advance(Duration.ofSeconds(-1)) }
+    dbClock.initialize(applicationStartedEvent)
+    assertThrows<IllegalArgumentException> { dbClock.advance(Duration.ofSeconds(-1)) }
   }
 
   @Test
   fun `does not allow clock to be advanced to an earlier time`() {
-    clock.initialize(applicationStartedEvent)
+    dbClock.initialize(applicationStartedEvent)
     assertThrows<IllegalArgumentException> {
-      clock.setFakeTime(clock.instant() - Duration.ofSeconds(1))
+      dbClock.setFakeTime(clock.instant() - Duration.ofSeconds(1))
     }
   }
 
@@ -150,14 +150,14 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   fun `advance throws exception if no permission to set test clock`() {
     every { user.canSetTestClock() } returns false
 
-    assertThrows<AccessDeniedException> { clock.advance(Duration.ofDays(5)) }
+    assertThrows<AccessDeniedException> { dbClock.advance(Duration.ofDays(5)) }
   }
 
   @Test
   fun `reset throws exception if no permission to set test clock`() {
     every { user.canSetTestClock() } returns false
 
-    assertThrows<AccessDeniedException> { clock.reset() }
+    assertThrows<AccessDeniedException> { dbClock.reset() }
   }
 
   /** Tests for default pass-through behavior. */
@@ -166,17 +166,17 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun useSystemClock() {
       every { config.useTestClock } returns false
-      clock.initialize(applicationStartedEvent)
+      dbClock.initialize(applicationStartedEvent)
     }
 
     @Test
     fun `returns system time`() {
-      assertSameInstant(Instant.now(), clock.instant())
+      assertSameInstant(Instant.now(), dbClock.instant())
     }
 
     @Test
     fun `throws exception when setting time`() {
-      assertThrows<IllegalStateException> { clock.setFakeTime(Instant.now()) }
+      assertThrows<IllegalStateException> { dbClock.setFakeTime(Instant.now()) }
     }
   }
 

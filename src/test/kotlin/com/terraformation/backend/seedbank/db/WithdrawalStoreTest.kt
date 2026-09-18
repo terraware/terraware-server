@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
@@ -45,7 +44,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var store: WithdrawalStore
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
   private lateinit var accessionId: AccessionId
@@ -622,7 +620,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val accessionHistoryDefaults =
         AccessionHistoryModel(
             batchId = batchId,
-            createdTime = Instant.EPOCH,
+            createdTime = clock.instant,
             date = LocalDate.EPOCH,
             description = "withdrew 1 gram",
             fullName = user.fullName,

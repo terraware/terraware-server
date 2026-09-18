@@ -1,7 +1,6 @@
 package com.terraformation.backend.funder
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
@@ -44,7 +43,6 @@ import org.springframework.http.MediaType
 class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val muxService: MuxService = mockk()
   private val publishedActivityStore: PublishedActivityStore by lazy {

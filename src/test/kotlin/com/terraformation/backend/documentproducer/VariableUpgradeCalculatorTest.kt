@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -27,8 +26,6 @@ import org.junit.jupiter.api.Test
 
 class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
-  private val clock = TestClock()
 
   private val variableStore: VariableStore by lazy {
     VariableStore(

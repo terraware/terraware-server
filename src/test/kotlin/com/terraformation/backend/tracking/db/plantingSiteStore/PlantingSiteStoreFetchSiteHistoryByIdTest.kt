@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertGeometryEquals
@@ -38,7 +37,6 @@ import org.junit.jupiter.api.assertThrows
 internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
   protected val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   protected val store: PlantingSiteStore by lazy {

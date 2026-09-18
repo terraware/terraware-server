@@ -2,7 +2,6 @@ package com.terraformation.backend.ratelimit
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Test
 class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
   private val rateLimitedEventPublisher: RateLimitedEventPublisherImpl by lazy {

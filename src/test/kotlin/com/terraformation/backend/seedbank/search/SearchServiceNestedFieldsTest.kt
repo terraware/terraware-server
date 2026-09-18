@@ -978,7 +978,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "accessionNumber" to "ABCDEFG",
                     "active" to "Active",
                     "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
-                    "createdTime" to "1970-01-01T00:00:00Z",
+                    "createdTime" to "2020-06-15T00:00:00Z",
                     "id" to "$accessionId2",
                     "plantsCollectedFrom" to "2",
                     "source" to "Web",
@@ -1006,7 +1006,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                             mapOf("name" to "collector 2", "position" to "1"),
                             mapOf("name" to "collector 3", "position" to "2"),
                         ),
-                    "createdTime" to "1970-01-01T00:00:00Z",
+                    "createdTime" to "2020-06-15T00:00:00Z",
                     "id" to "$accessionId1",
                     "plantId" to "plantId",
                     "plantsCollectedFrom" to "1",
@@ -1102,7 +1102,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             mapOf(
                 "birdnetStatus" to "Preparing",
                 "contentType" to "video/mp4",
-                "createdTime" to "1970-01-01T00:00:00Z",
+                "createdTime" to "2020-06-15T00:00:00Z",
                 "fileId" to "$fileId",
                 "gpsCoordinates" to """{"type":"Point","coordinates":[12,34]}""",
                 "latitude" to "34",
@@ -1122,7 +1122,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             "organizationMemberships" to
                 listOf(
                     mapOf(
-                        "createdTime" to "1970-01-01T00:00:00Z",
+                        "createdTime" to "2020-06-15T00:00:00Z",
                         "roleName" to "Manager",
                     )
                 ),
@@ -1132,7 +1132,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val expectedOrganizationUsers =
         listOf(
             mapOf(
-                "createdTime" to "1970-01-01T00:00:00Z",
+                "createdTime" to "2020-06-15T00:00:00Z",
                 "roleName" to "Manager",
                 "user" to expectedUser,
             )

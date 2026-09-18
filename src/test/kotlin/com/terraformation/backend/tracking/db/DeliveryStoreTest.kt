@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
@@ -46,7 +45,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val store: DeliveryStore by lazy {
     DeliveryStore(clock, deliveriesDao, dslContext, ParentStore(dslContext), plantingsDao)
   }

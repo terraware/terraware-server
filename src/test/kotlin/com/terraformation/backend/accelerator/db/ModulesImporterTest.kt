@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ModulesUploadedEvent
 import com.terraformation.backend.db.DatabaseTest
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.Test
 class ModulesImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
   private val importer: ModulesImporter by lazy {

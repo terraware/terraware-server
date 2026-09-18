@@ -3,7 +3,6 @@ package com.terraformation.backend.report.db
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
@@ -48,7 +47,6 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
   private val defaultTime = ZonedDateTime.of(2023, 7, 3, 2, 1, 0, 0, ZoneOffset.UTC)
 
-  private val clock = TestClock(defaultTime.toInstant())
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val store by lazy {
@@ -68,6 +66,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    clock.instant = defaultTime.toInstant()
+
     organizationId = insertOrganization()
     insertFacility()
 
@@ -417,7 +417,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               SeedFundReportMetadata(
                   id = reportId,
                   lockedBy = currentUser().userId,
-                  lockedTime = Instant.EPOCH,
+                  lockedTime = clock.instant,
                   modifiedBy = currentUser().userId,
                   modifiedTime = clock.instant,
                   organizationId = organizationId,

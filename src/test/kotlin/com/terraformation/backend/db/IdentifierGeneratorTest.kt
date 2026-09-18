@@ -1,7 +1,6 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
 import java.time.Instant
@@ -12,8 +11,6 @@ import org.junit.jupiter.api.Test
 
 internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
-  private val clock = TestClock()
 
   private val generator: IdentifierGenerator by lazy { IdentifierGenerator(clock, dslContext) }
 

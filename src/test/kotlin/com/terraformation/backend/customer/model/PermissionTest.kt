@@ -74,9 +74,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.dummyKeycloakInfo
 import io.mockk.mockk
-import java.time.Clock
 import java.time.Instant
-import java.time.ZoneOffset
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -132,8 +130,6 @@ internal class PermissionTest : DatabaseTest() {
   private lateinit var userStore: UserStore
 
   @Autowired private lateinit var config: TerrawareServerConfig
-
-  private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
 
   private lateinit var userId: UserId
   private val user: TerrawareUser by lazy { fetchUser() }

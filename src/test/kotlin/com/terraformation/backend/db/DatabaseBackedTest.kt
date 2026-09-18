@@ -693,6 +693,9 @@ abstract class DatabaseBackedTest {
   /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
   val inserted = InsertedDatabaseIds()
 
+  /** Clock that's used to generate timestamps in the various insert methods. */
+  open val clock = TestClock()
+
   @Autowired
   fun registerApplicationContext(context: ApplicationContext) {
     SpringShutdownListener.register(context)
@@ -946,10 +949,10 @@ abstract class DatabaseBackedTest {
           .set(COUNTRY_CODE, countryCode)
           .set(COUNTRY_SUBDIVISION_CODE, countrySubdivisionCode)
           .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
+          .set(CREATED_TIME, clock.instant())
           .set(NAME, name)
           .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, clock.instant())
           .set(TIME_ZONE, timeZone)
           .returning(ID)
           .fetchOne(ID)!!
@@ -970,7 +973,7 @@ abstract class DatabaseBackedTest {
       idleAfterTime: Instant? = null,
       idleSinceTime: Instant? = null,
       lastNotificationDate: LocalDate? = null,
-      nextNotificationTime: Instant = Instant.EPOCH,
+      nextNotificationTime: Instant = clock.instant(),
       timeZone: ZoneId? = null,
       buildStartedDate: LocalDate? = null,
       buildCompletedDate: LocalDate? = null,
@@ -989,7 +992,7 @@ abstract class DatabaseBackedTest {
           .set(CAPACITY, capacity)
           .set(CONNECTION_STATE_ID, FacilityConnectionState.NotConnected)
           .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
+          .set(CREATED_TIME, clock.instant())
           .set(DESCRIPTION, description)
           .set(FACILITY_NUMBER, facilityNumber)
           .set(IDLE_AFTER_TIME, idleAfterTime)
@@ -999,7 +1002,7 @@ abstract class DatabaseBackedTest {
           .set(LOCATION, location)
           .set(MAX_IDLE_MINUTES, maxIdleMinutes)
           .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, clock.instant())
           .set(NAME, name)
           .set(NEXT_NOTIFICATION_TIME, nextNotificationTime)
           .set(OPERATION_STARTED_DATE, operationStartedDate)
@@ -1022,7 +1025,7 @@ abstract class DatabaseBackedTest {
       organizationId: OrganizationId = inserted.organizationId,
       name: String = "Project ${nextProjectNumber++}",
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       description: String? = null,
       phase: AcceleratorPhase? = null,
       botanicalCountryCode: String? = null,
@@ -1118,9 +1121,9 @@ abstract class DatabaseBackedTest {
       role: ProjectInternalRole? = row.projectInternalRoleId,
       roleName: String? = row.roleName,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       modifiedBy: UserId = inserted.userId,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = clock.instant(),
   ): ProjectInternalUsersRow {
     val rowWithDefaults =
         ProjectInternalUsersRow(
@@ -1165,7 +1168,7 @@ abstract class DatabaseBackedTest {
       carbonCertifications: Set<CarbonCertification> = emptySet(),
       landUseModelHectares: Map<LandUseModelType, Number?> = emptyMap(),
       publishedBy: UserId = inserted.userId,
-      publishedTime: Instant = Instant.EPOCH,
+      publishedTime: Instant = clock.instant(),
   ): PublishedProjectDetailsRow {
     val rowWithDefaults =
         PublishedProjectDetailsRow(
@@ -1309,7 +1312,7 @@ abstract class DatabaseBackedTest {
       overallScore: Double? = null,
       summary: String? = null,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ) {
     val row =
         ProjectOverallScoresRow(
@@ -1333,7 +1336,7 @@ abstract class DatabaseBackedTest {
       score: Int? = null,
       qualitative: String? = null,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ) {
     val row =
         ProjectScoresRow(
@@ -1360,7 +1363,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertDeliverable(
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       deliverableCategoryId: DeliverableCategory = DeliverableCategory.FinancialViability,
       deliverableTypeId: DeliverableType = DeliverableType.Document,
       descriptionHtml: String? = "Description $nextDeliverableNumber",
@@ -1470,7 +1473,7 @@ abstract class DatabaseBackedTest {
       deviceId: DeviceId = inserted.deviceId,
       name: String = "timeseries ${nextTimeseriesNumber++}",
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       type: TimeseriesType = TimeseriesType.Numeric,
       units: String = "volts",
       decimalPlaces: Int? = 1,
@@ -1499,7 +1502,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertTimeseriesValue(
       timeseriesId: TimeseriesId = inserted.timeseriesId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       value: String = "1",
   ) {
     with(TIMESERIES_VALUES) {
@@ -1513,10 +1516,10 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertDeviceManager(
-      balenaModifiedTime: Instant = Instant.EPOCH,
-      createdTime: Instant = Instant.EPOCH,
+      balenaModifiedTime: Instant = clock.instant(),
+      createdTime: Instant = clock.instant(),
       facilityId: FacilityId? = null,
-      refreshedTime: Instant = Instant.EPOCH,
+      refreshedTime: Instant = clock.instant(),
       userId: UserId? = if (facilityId != null) inserted.userId else null,
   ): DeviceManagersRow {
     val balenaId = BalenaDeviceId(nextBalenaId.getAndIncrement())
@@ -1555,12 +1558,12 @@ abstract class DatabaseBackedTest {
       dslContext
           .insertInto(AUTOMATIONS)
           .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
+          .set(CREATED_TIME, clock.instant())
           .set(DEVICE_ID, deviceId)
           .set(FACILITY_ID, facilityId)
           .set(LOWER_THRESHOLD, lowerThreshold)
           .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, clock.instant())
           .set(NAME, name)
           .set(TIMESERIES_NAME, timeseriesName)
           .set(TYPE, type)
@@ -1576,7 +1579,7 @@ abstract class DatabaseBackedTest {
   fun insertSpecies(
       scientificName: String = "Species ${nextSpeciesNumber++}",
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       modifiedTime: Instant = createdTime,
       organizationId: OrganizationId = inserted.organizationId,
       deletedTime: Instant? = null,
@@ -1676,7 +1679,7 @@ abstract class DatabaseBackedTest {
       overriddenNativityId: SpeciesNativity? = null,
       overriddenBy: UserId? = overriddenNativityId?.let { inserted.userId },
       overriddenJustification: String? = overriddenNativityId?.let { "Justification" },
-      overriddenTime: Instant? = overriddenNativityId?.let { Instant.EPOCH },
+      overriddenTime: Instant? = overriddenNativityId?.let { clock.instant() },
       pendingNativity: SpeciesNativity? = null,
       pendingNativityDatasetDate: LocalDate? = pendingNativity?.let { LocalDate.EPOCH },
       pendingNativityDatasetType: ExternalDatasetType? = pendingNativity?.let {
@@ -1707,7 +1710,7 @@ abstract class DatabaseBackedTest {
       speciesId: SpeciesId = inserted.speciesId,
       type: SpeciesProblemType = SpeciesProblemType.NameNotFound,
       suggestedValue: String? = null,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ): SpeciesProblemId {
     val record =
         SpeciesProblemsRecord(
@@ -1726,7 +1729,7 @@ abstract class DatabaseBackedTest {
 
   fun insertSubmission(
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       deliverableId: DeliverableId? = inserted.deliverableId,
       feedback: String? = null,
       modifiedBy: UserId = createdBy,
@@ -1757,7 +1760,7 @@ abstract class DatabaseBackedTest {
 
   fun insertSubmissionDocument(
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       description: String? = null,
       documentStore: DocumentStore = DocumentStore.Google,
       location: String = "Location $nextSubmissionNumber",
@@ -1812,8 +1815,8 @@ abstract class DatabaseBackedTest {
       timeZone: ZoneId? = null,
       locale: Locale? = null,
       cookiesConsented: Boolean? = null,
-      cookiesConsentedTime: Instant? = if (cookiesConsented != null) Instant.EPOCH else null,
-      createdTime: Instant = Instant.EPOCH,
+      cookiesConsentedTime: Instant? = if (cookiesConsented != null) clock.instant() else null,
+      createdTime: Instant = clock.instant(),
       deletedTime: Instant? = null,
   ): UserId {
     val insertedId =
@@ -1843,7 +1846,7 @@ abstract class DatabaseBackedTest {
   fun insertUserDisclaimer(
       userId: UserId = inserted.userId,
       disclaimerId: DisclaimerId = inserted.disclaimerId,
-      acceptedOn: Instant = Instant.EPOCH,
+      acceptedOn: Instant = clock.instant(),
   ) {
     userDisclaimersDao.insert(
         UserDisclaimersRow(
@@ -1858,7 +1861,7 @@ abstract class DatabaseBackedTest {
       internalInterest: InternalInterest,
       userId: UserId = inserted.userId,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ) {
     userInternalInterestsDao.insert(
         UserInternalInterestsRow(
@@ -1920,7 +1923,7 @@ abstract class DatabaseBackedTest {
       organizationId: OrganizationId = inserted.organizationId,
       role: Role = Role.Contributor,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ) {
     with(ORGANIZATION_USERS) {
       dslContext
@@ -1970,10 +1973,10 @@ abstract class DatabaseBackedTest {
           dslContext
               .insertInto(SUB_LOCATIONS)
               .set(CREATED_BY, createdBy)
-              .set(CREATED_TIME, Instant.EPOCH)
+              .set(CREATED_TIME, clock.instant())
               .set(FACILITY_ID, facilityId)
               .set(MODIFIED_BY, createdBy)
-              .set(MODIFIED_TIME, Instant.EPOCH)
+              .set(MODIFIED_TIME, clock.instant())
               .set(NAME, name)
               .returning(ID)
               .fetchOne(ID)!!
@@ -1991,7 +1994,7 @@ abstract class DatabaseBackedTest {
       size: Long = row.size ?: 1,
       capturedLocalTime: LocalDateTime? = row.capturedLocalTime,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       fileBatchId: FileBatchId? = row.fileBatchId,
       geolocation: Point? = row.geolocation?.centroid,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -2023,7 +2026,7 @@ abstract class DatabaseBackedTest {
       batchStatus: FileBatchStatus = row.batchStatusId ?: FileBatchStatus.Uploading,
       batchType: FileBatchType = row.batchTypeId ?: FileBatchType.Splat,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
   ): FileBatchId {
     val rowWithDefaults =
         row.copy(
@@ -2046,7 +2049,7 @@ abstract class DatabaseBackedTest {
       storageUrl: URI = URI.create("file:///${nextUploadNumber}.csv"),
       contentType: String = "text/csv",
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       status: UploadStatus = UploadStatus.Receiving,
       organizationId: OrganizationId? = null,
       facilityId: FacilityId? = null,
@@ -2080,7 +2083,7 @@ abstract class DatabaseBackedTest {
       title: String = "",
       body: String = "",
       localUrl: URI = URI.create(""),
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       isRead: Boolean = false,
   ): NotificationId {
     return with(NOTIFICATIONS) {
@@ -2114,7 +2117,7 @@ abstract class DatabaseBackedTest {
   fun insertAccession(
       row: AccessionsRow = AccessionsRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       dataSourceId: DataSource = row.dataSourceId ?: DataSource.Web,
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -2248,7 +2251,7 @@ abstract class DatabaseBackedTest {
       activeGrowthQuantity: Int = row.activeGrowthQuantity ?: 0,
       addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
       hardeningOffQuantity: Int = row.hardeningOffQuantity ?: 0,
@@ -2350,7 +2353,7 @@ abstract class DatabaseBackedTest {
       activeGrowthQuantity: Int = 0,
       batchId: BatchId = inserted.batchId,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       germinatingQuantity: Int = 0,
       hardeningOffQuantity: Int = 0,
       historyType: BatchQuantityHistoryType = BatchQuantityHistoryType.Observed,
@@ -2384,7 +2387,7 @@ abstract class DatabaseBackedTest {
   fun insertNurseryWithdrawal(
       row: WithdrawalsRow = WithdrawalsRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       destinationFacilityId: FacilityId? = row.destinationFacilityId,
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -2432,8 +2435,8 @@ abstract class DatabaseBackedTest {
   fun insertSeedbankWithdrawal(
       row: SeedbankWithdrawalsRow = SeedbankWithdrawalsRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      updatedTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
+      updatedTime: Instant = row.createdTime ?: clock.instant(),
       withdrawnBy: UserId = row.withdrawnBy ?: inserted.userId,
       date: LocalDate = row.date ?: LocalDate.EPOCH,
       accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
@@ -2506,7 +2509,7 @@ abstract class DatabaseBackedTest {
   fun insertPlantingSeason(
       row: PlantingSeasonsRow = PlantingSeasonsRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -2536,7 +2539,7 @@ abstract class DatabaseBackedTest {
   fun insertPlantingSeasonAllocatedSpecies(
       row: PlantingSeasonAllocatedSpeciesRow = PlantingSeasonAllocatedSpeciesRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
@@ -2577,7 +2580,7 @@ abstract class DatabaseBackedTest {
   fun insertPlantingSeasonSpeciesTarget(
       row: PlantingSeasonSpeciesTargetsRow = PlantingSeasonSpeciesTargetsRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
@@ -2603,7 +2606,7 @@ abstract class DatabaseBackedTest {
   fun insertPlantingSeasonScheduledDate(
       row: ScheduledPlantingDatesRow = ScheduledPlantingDatesRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       date: LocalDate = LocalDate.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -2646,7 +2649,7 @@ abstract class DatabaseBackedTest {
   fun insertPlantingDateRequest(
       row: PlantingDateRequestsRow = PlantingDateRequestsRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       date: LocalDate = LocalDate.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -2701,7 +2704,7 @@ abstract class DatabaseBackedTest {
       height: Number = 2,
       boundary: Geometry? = row.boundary,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       exclusion: Geometry? = row.exclusion,
       gridOrigin: Geometry? = row.gridOrigin,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
@@ -2792,7 +2795,7 @@ abstract class DatabaseBackedTest {
       row: PlantingSiteNotificationsRow = PlantingSiteNotificationsRow(),
       number: Int = row.notificationNumber ?: 1,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      sentTime: Instant = row.sentTime ?: Instant.EPOCH,
+      sentTime: Instant = row.sentTime ?: clock.instant(),
       type: NotificationType,
   ): PlantingSiteNotificationId {
     val rowWithDefaults =
@@ -2917,7 +2920,7 @@ abstract class DatabaseBackedTest {
                   y.toDouble() * MONITORING_PLOT_SIZE,
               ),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       errorMargin: BigDecimal = row.errorMargin ?: StratumModel.DEFAULT_ERROR_MARGIN,
       initialPlantingDensity: BigDecimal? = row.initialPlantingDensity,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
@@ -3014,7 +3017,7 @@ abstract class DatabaseBackedTest {
                   y.toDouble() * MONITORING_PLOT_SIZE,
               ),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       observedTime: Instant? = row.observedTime,
       plantingCompletedTime: Instant? = row.plantingCompletedTime,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
@@ -3092,7 +3095,7 @@ abstract class DatabaseBackedTest {
 
   fun insertModule(
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       name: String = "Module $nextModuleNumber",
       position: Int = nextModuleNumber,
       overview: String? = null,
@@ -3145,7 +3148,7 @@ abstract class DatabaseBackedTest {
                   y.toDouble() * sizeMeters.toDouble(),
               ),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       isAdHoc: Boolean = row.isAdHoc ?: false,
       isAvailable: Boolean = row.isAvailable ?: true,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -3156,7 +3159,7 @@ abstract class DatabaseBackedTest {
       substratumId: SubstratumId? = row.substratumId ?: inserted.substratumIds.lastOrNull(),
       plotNumber: Long =
           row.plotNumber
-              ?: IdentifierGenerator(TestClock(), dslContext)
+              ?: IdentifierGenerator(clock, dslContext)
                   .generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
       insertHistory: Boolean = true,
   ): MonitoringPlotId {
@@ -3233,7 +3236,7 @@ abstract class DatabaseBackedTest {
   fun insertDisclaimer(
       row: DisclaimersRow = DisclaimersRow(),
       content: String = row.content ?: "Disclaimer",
-      effectiveOn: Instant = row.effectiveOn ?: Instant.EPOCH,
+      effectiveOn: Instant = row.effectiveOn ?: clock.instant(),
   ): DisclaimerId {
     val rowWithDefaults =
         row.copy(
@@ -3251,7 +3254,7 @@ abstract class DatabaseBackedTest {
   fun insertDraftPlantingSite(
       row: DraftPlantingSitesRow = DraftPlantingSitesRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       data: ArbitraryJsonObject = row.data ?: JSONB.valueOf("{}"),
       description: String? = row.description,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -3287,7 +3290,7 @@ abstract class DatabaseBackedTest {
   fun insertDelivery(
       row: DeliveriesRow = DeliveriesRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
@@ -3313,7 +3316,7 @@ abstract class DatabaseBackedTest {
   fun insertPlanting(
       row: PlantingsRow = PlantingsRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       deliveryId: DeliveryId = row.deliveryId ?: inserted.deliveryId,
       numPlants: Int = row.numPlants ?: 1,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
@@ -3424,13 +3427,13 @@ abstract class DatabaseBackedTest {
       row: SeedFundReportsRow = SeedFundReportsRow(),
       body: String = row.body?.data() ?: """{"version":"1","organizationName":"org"}""",
       lockedBy: UserId? = row.lockedBy,
-      lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { Instant.EPOCH },
+      lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { clock.instant() },
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: ProjectId? = row.projectId,
       projectName: String? = row.projectName,
       quarter: Int = row.quarter ?: 1,
       submittedBy: UserId? = row.submittedBy,
-      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH },
+      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { clock.instant() },
       status: SeedFundReportStatus =
           row.statusId
               ?: when {
@@ -3548,7 +3551,7 @@ abstract class DatabaseBackedTest {
 
   fun insertObservation(
       row: ObservationsRow = ObservationsRow(),
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       endDate: LocalDate = row.endDate ?: LocalDate.of(2023, 1, 31),
       isAdHoc: Boolean = row.isAdHoc ?: false,
       observationType: ObservationType = row.observationTypeId ?: ObservationType.Monitoring,
@@ -3738,7 +3741,7 @@ abstract class DatabaseBackedTest {
       originPosition: CoordinateModel? = null,
       cameraPosition: CoordinateModel? = null,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
       needsAttention: Boolean = row.needsAttention ?: false,
@@ -3791,7 +3794,7 @@ abstract class DatabaseBackedTest {
       fileId: FileId = row.fileId ?: inserted.fileId,
       assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       resultsStorageUrl: URI? = row.resultsStorageUrl,
       errorMessage: String? = row.errorMessage,
       completedTime: Instant? = row.completedTime,
@@ -3821,7 +3824,7 @@ abstract class DatabaseBackedTest {
       position: CoordinateModel = CoordinateModel(1.0, 2.0, 3.0),
       cameraPosition: CoordinateModel? = null,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
   ): SplatAnnotationId {
@@ -3853,7 +3856,7 @@ abstract class DatabaseBackedTest {
       fileId: FileId = inserted.fileId,
       position: Int = 0,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ) {
     with(SPLAT_ANNOTATION_MEDIA) {
       dslContext
@@ -3871,11 +3874,11 @@ abstract class DatabaseBackedTest {
       row: ObservationPlotsRow = ObservationPlotsRow(),
       completedBy: UserId? = row.completedBy,
       completedTime: Instant? =
-          row.completedTime ?: if (completedBy != null) Instant.EPOCH else null,
+          row.completedTime ?: if (completedBy != null) clock.instant() else null,
       claimedBy: UserId? = row.claimedBy ?: completedBy,
-      claimedTime: Instant? = row.claimedTime ?: if (claimedBy != null) Instant.EPOCH else null,
+      claimedTime: Instant? = row.claimedTime ?: if (claimedBy != null) clock.instant() else null,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       isPermanent: Boolean = row.isPermanent ?: false,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       monitoringPlotHistoryId: MonitoringPlotHistoryId =
@@ -4285,9 +4288,9 @@ abstract class DatabaseBackedTest {
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
       stratumDensity: BigDecimal = row.stratumDensity ?: BigDecimal.valueOf(10),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
   ) {
     with(STRATUM_T0_TEMP_DENSITIES) {
       dslContext
@@ -4309,9 +4312,9 @@ abstract class DatabaseBackedTest {
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
       plotDensity: BigDecimal = row.plotDensity ?: BigDecimal.valueOf(10),
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
   ) {
     with(PLOT_T0_DENSITIES) {
       dslContext
@@ -4332,9 +4335,9 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
   ) {
     with(PLOT_T0_OBSERVATIONS) {
       dslContext
@@ -4441,9 +4444,9 @@ abstract class DatabaseBackedTest {
       additionalComments: String? = row.additionalComments,
       financialSummaries: String? = row.financialSummaries,
       createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      createdTime: Instant = row.createdTime ?: clock.instant(),
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
       submittedBy: UserId? =
           row.submittedBy
               ?: if (status != ReportStatus.NotSubmitted && status != ReportStatus.NotNeeded) {
@@ -4451,7 +4454,7 @@ abstract class DatabaseBackedTest {
               } else {
                 null
               },
-      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH },
+      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { clock.instant() },
       upcomingNotificationSentTime: Instant? = row.upcomingNotificationSentTime,
   ): ReportId {
     val rowWithDefaults =
@@ -4551,7 +4554,7 @@ abstract class DatabaseBackedTest {
       status: ReportIndicatorStatus? = row.statusId,
       supportingDocumentUrl: URI? = row.supportingDocumentUrl,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
   ) {
     val rowWithDefaults =
         row.copy(
@@ -4579,7 +4582,7 @@ abstract class DatabaseBackedTest {
       status: ReportIndicatorStatus? = row.statusId,
       supportingDocumentUrl: URI? = row.supportingDocumentUrl,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
   ) {
     val rowWithDefaults =
         row.copy(
@@ -4603,14 +4606,14 @@ abstract class DatabaseBackedTest {
       indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
       systemValue: Number? = row.systemValue,
-      systemTime: Instant? = row.systemTime ?: systemValue?.let { Instant.EPOCH },
+      systemTime: Instant? = row.systemTime ?: systemValue?.let { clock.instant() },
       overrideValue: Number? = row.overrideValue,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
       supportingDocumentUrl: URI? = row.supportingDocumentUrl,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
   ) {
     val rowWithDefaults =
         row.copy(
@@ -4863,7 +4866,7 @@ abstract class DatabaseBackedTest {
       endDate: LocalDate = LocalDate.of(2025, 3, 31),
       quarter: ReportQuarter? = ReportQuarter.Q1,
       publishedBy: UserId = inserted.userId,
-      publishedTime: Instant = Instant.EPOCH,
+      publishedTime: Instant = clock.instant(),
       additionalComments: String? = null,
       financialSummaries: String? = null,
       highlights: String? = null,
@@ -5011,14 +5014,14 @@ abstract class DatabaseBackedTest {
       activityDate: LocalDate = LocalDate.EPOCH,
       activityType: ActivityType = ActivityType.Planting,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       description: String? = "Activity",
       isHighlight: Boolean = false,
       modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,
       projectId: ProjectId = inserted.projectId,
       verifiedBy: UserId? = null,
-      verifiedTime: Instant? = if (verifiedBy != null) Instant.EPOCH else null,
+      verifiedTime: Instant? = if (verifiedBy != null) clock.instant() else null,
       activityStatus: ActivityStatus =
           if (verifiedBy != null) ActivityStatus.Verified else ActivityStatus.NotVerified,
   ): ActivityId {
@@ -5095,7 +5098,7 @@ abstract class DatabaseBackedTest {
       isHighlight: Boolean = false,
       projectId: ProjectId = inserted.projectId,
       publishedBy: UserId = inserted.userId,
-      publishedTime: Instant = Instant.EPOCH,
+      publishedTime: Instant = clock.instant(),
   ) {
     val row =
         PublishedActivitiesRow(
@@ -5188,7 +5191,7 @@ abstract class DatabaseBackedTest {
       name: String = "Tag ${nextInternalTagNumber++}",
       description: String? = null,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ): InternalTagId {
     val row =
         InternalTagsRow(
@@ -5212,7 +5215,7 @@ abstract class DatabaseBackedTest {
           if (inserted.internalTagIds.isEmpty()) InternalTagIds.Reporter
           else inserted.internalTagId,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ) {
     organizationInternalTagsDao.insert(
         OrganizationInternalTagsRow(
@@ -5228,7 +5231,7 @@ abstract class DatabaseBackedTest {
       boundary: Geometry? = null,
       countryCode: String? = null,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       feedback: String? = null,
       internalComment: String? = null,
       internalName: String = "XXX",
@@ -5263,7 +5266,7 @@ abstract class DatabaseBackedTest {
       feedback: String? = null,
       internalComment: String? = null,
       modifiedBy: UserId = inserted.userId,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = clock.instant(),
       status: ApplicationStatus = ApplicationStatus.NotSubmitted,
   ): ApplicationHistoryId {
     val row =
@@ -5299,11 +5302,11 @@ abstract class DatabaseBackedTest {
 
   fun insertParticipantProjectSpecies(
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       feedback: String? = null,
       internalComment: String? = null,
       modifiedBy: UserId = createdBy,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = clock.instant(),
       projectId: ProjectId = inserted.projectId,
       rationale: String? = null,
       speciesId: SpeciesId = inserted.speciesId,
@@ -5360,10 +5363,10 @@ abstract class DatabaseBackedTest {
       slidesUrl: Any? = null,
       recordingUrl: Any? = null,
       revision: Int = 1,
-      startTime: Instant = Instant.EPOCH.plusSeconds(3600),
+      startTime: Instant = clock.instant().plusSeconds(3600),
       endTime: Instant = startTime.plusSeconds(3600),
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ): EventId {
     val row =
         EventsRow(
@@ -5405,7 +5408,7 @@ abstract class DatabaseBackedTest {
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ): ProjectVotesRow {
     val row =
         ProjectVotesRow(
@@ -5429,7 +5432,7 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId = inserted.projectId,
       phase: AcceleratorPhase = AcceleratorPhase.Phase0DueDiligence,
       voteOption: VoteOption? = null,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = clock.instant(),
   ): ProjectVoteDecisionsRow {
     val row =
         ProjectVoteDecisionsRow(
@@ -5448,7 +5451,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertDocument(
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       documentTemplateId: DocumentTemplateId = inserted.documentTemplateId,
       internalComment: String? = null,
       modifiedBy: UserId = createdBy,
@@ -5571,7 +5574,7 @@ abstract class DatabaseBackedTest {
       documentId: DocumentId = inserted.documentId,
       name: String = "Saved",
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       isSubmitted: Boolean = false,
       variableManifestId: VariableManifestId = inserted.variableManifestId,
   ): DocumentSavedVersionId {
@@ -5850,7 +5853,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertThumbnail(
       contentType: String = MediaType.IMAGE_JPEG_VALUE,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       fileId: FileId,
       width: Int = 320,
       height: Int = 240,
@@ -5884,7 +5887,7 @@ abstract class DatabaseBackedTest {
       type: VariableType? = null,
       citation: String? = null,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ): VariableValueId {
     val actualType = type ?: variablesDao.fetchOneById(variableId)!!.variableTypeId!!
 
@@ -5975,7 +5978,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertVariableManifest(
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       documentTemplateId: DocumentTemplateId = inserted.documentTemplateId,
   ): VariableManifestId {
     val row =
@@ -6032,7 +6035,7 @@ abstract class DatabaseBackedTest {
       status: VariableWorkflowStatus = VariableWorkflowStatus.NotSubmitted,
       maxVariableValueId: VariableValueId = inserted.variableValueId,
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
   ): VariableWorkflowHistoryId {
     val row =
         VariableWorkflowHistoryRow(
@@ -6072,7 +6075,7 @@ abstract class DatabaseBackedTest {
   protected fun insertFundingEntity(
       name: String = "TestFundingEntity ${UUID.randomUUID()}",
       createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
+      createdTime: Instant = clock.instant(),
       modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,
   ): FundingEntityId {
@@ -6211,7 +6214,7 @@ abstract class DatabaseBackedTest {
       resourceName: String = "resource${nextGriisResourceSuffix++}",
       countryCode: String = "US",
       publicationDate: LocalDate = LocalDate.EPOCH,
-      updatedTime: Instant = Instant.EPOCH,
+      updatedTime: Instant = clock.instant(),
   ): GriisResourceId {
     val record =
         GriisResourcesRecord(
@@ -6321,7 +6324,7 @@ abstract class DatabaseBackedTest {
 
   fun insertExternalDatasetImport(
       type: ExternalDatasetType = ExternalDatasetType.GRIIS,
-      importedTime: Instant = Instant.EPOCH,
+      importedTime: Instant = clock.instant(),
       lastPublicationDate: LocalDate? = LocalDate.of(2026, 1, 1),
   ) {
     ExternalDatasetImportsRecord(

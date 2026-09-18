@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
@@ -24,7 +23,6 @@ import org.springframework.security.access.AccessDeniedException
 class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val store: InternalTagStore by lazy {
     InternalTagStore(clock, dslContext, internalTagsDao, organizationInternalTagsDao)
   }

@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
@@ -26,7 +25,6 @@ import org.springframework.security.access.AccessDeniedException
 class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val fetcher: PreScreenBoundarySubmissionFetcher by lazy {
     PreScreenBoundarySubmissionFetcher(
         ApplicationStore(clock, countriesDao, mockk(), dslContext, mockk(), mockk()),

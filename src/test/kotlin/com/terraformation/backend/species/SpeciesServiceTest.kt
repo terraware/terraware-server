@@ -1,7 +1,6 @@
 package com.terraformation.backend.species
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.db.ParentStore
@@ -52,7 +51,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   override val user: TerrawareUser = mockUser()
 

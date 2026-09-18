@@ -1,7 +1,6 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -45,7 +44,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   private val gbifConfig: TerrawareServerConfig.GbifConfig = mockk()
-  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val fileStore: FileStore = mockk()
   private val lockService: LockService = mockk()

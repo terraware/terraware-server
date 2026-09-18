@@ -18,9 +18,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.URI
-import java.time.Clock
 import java.time.Instant
-import java.time.ZoneOffset
 import javax.imageio.ImageIO
 import javax.imageio.stream.MemoryCacheImageInputStream
 import kotlin.random.Random
@@ -37,7 +35,6 @@ import org.springframework.http.MediaType
 
 internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
   private val fileStore = InMemoryFileStore()
   private val imageUtils: ImageUtils = spyk(ImageUtils(fileStore))
 

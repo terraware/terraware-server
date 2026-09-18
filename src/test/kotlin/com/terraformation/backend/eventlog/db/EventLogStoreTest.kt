@@ -2,7 +2,6 @@ package com.terraformation.backend.eventlog.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
@@ -27,7 +26,6 @@ import org.junit.jupiter.api.fail
 class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val objectMapper = jacksonObjectMapper()
   private val store: EventLogStore by lazy { EventLogStore(clock, dslContext, objectMapper) }
 

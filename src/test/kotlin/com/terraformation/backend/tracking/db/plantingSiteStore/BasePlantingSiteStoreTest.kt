@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
   protected val identifierGenerator: IdentifierGenerator by lazy {
     IdentifierGenerator(clock, dslContext)

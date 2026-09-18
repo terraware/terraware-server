@@ -1,7 +1,6 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceManagerNotFoundException
@@ -24,7 +23,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val store: DeviceManagerStore by lazy {
     DeviceManagerStore(clock, deviceManagersDao, dslContext)
   }

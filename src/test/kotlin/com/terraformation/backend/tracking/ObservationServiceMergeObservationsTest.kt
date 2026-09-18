@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
@@ -51,7 +50,6 @@ import org.junit.jupiter.api.assertThrows
 class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val geometrySimplifier: GeometrySimplifier = mockk()

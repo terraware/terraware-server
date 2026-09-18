@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Test
 internal class MediaFilesTableTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val tables = SearchTables(clock)
   private val mediaFilesPrefix = SearchFieldPrefix(tables.mediaFiles)
   private val fileIdField = mediaFilesPrefix.resolve("fileId")

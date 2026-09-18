@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
@@ -23,7 +22,6 @@ import org.junit.jupiter.api.Test
 class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
   private val submissionStore: SubmissionStore by lazy {

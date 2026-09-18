@@ -1,7 +1,6 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Test
 internal class PlantingSeasonStoreTransitionTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonStore by lazy {
     PlantingSeasonStore(

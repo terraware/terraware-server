@@ -1,7 +1,6 @@
 package com.terraformation.backend.daily
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
@@ -29,7 +28,6 @@ import org.junit.jupiter.api.Test
 class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
   private val eventPublisher = TestEventPublisher()
 

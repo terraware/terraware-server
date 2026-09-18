@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Test
 internal class AccessionHelperTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private lateinit var parentStore: ParentStore
   private lateinit var helper: AccessionHelper
   private lateinit var facilityId: FacilityId

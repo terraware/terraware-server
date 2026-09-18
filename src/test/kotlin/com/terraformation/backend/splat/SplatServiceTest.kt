@@ -1,7 +1,6 @@
 package com.terraformation.backend.splat
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
@@ -65,7 +64,6 @@ import org.junit.jupiter.params.provider.CsvSource
 class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val fileStore: S3FileStore = mockk()

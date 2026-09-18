@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
@@ -63,7 +62,6 @@ import org.springframework.security.access.AccessDeniedException
 class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
   private val messages = Messages()

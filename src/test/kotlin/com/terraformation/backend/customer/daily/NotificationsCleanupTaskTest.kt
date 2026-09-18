@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.daily
 
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
@@ -18,13 +17,14 @@ import org.junit.jupiter.api.Test
 internal class NotificationsCleanupTaskTest : DatabaseTest() {
   private val config: TerrawareServerConfig = mockk()
   private val now = Instant.parse("2021-01-01T00:00:00Z")
-  private val clock = TestClock(now)
 
   private lateinit var notificationsCleanupTask: NotificationsCleanupTask
 
   @BeforeEach
   fun setUp() {
     every { config.notifications.retentionDays } returns 1
+
+    clock.instant = now
 
     notificationsCleanupTask = NotificationsCleanupTask(clock, config, dslContext)
   }

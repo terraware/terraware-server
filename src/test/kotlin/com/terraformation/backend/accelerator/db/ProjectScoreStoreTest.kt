@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ExistingProjectScoreModel
 import com.terraformation.backend.accelerator.model.NewProjectScoreModel
 import com.terraformation.backend.assertSetEquals
@@ -22,7 +21,6 @@ import org.springframework.security.access.AccessDeniedException
 class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
   private val store: ProjectScoreStore by lazy {
     ProjectScoreStore(clock, dslContext, ProjectPhaseFetcher(dslContext))
   }

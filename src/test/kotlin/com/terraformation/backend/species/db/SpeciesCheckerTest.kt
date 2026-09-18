@@ -1,7 +1,6 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.Test
 internal class SpeciesCheckerTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val clock = TestClock()
   private val gbifStore: GbifStore by lazy { GbifStore(dslContext) }
   private val speciesStore: SpeciesStore by lazy {
     SpeciesStore(

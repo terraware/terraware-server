@@ -1,7 +1,6 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -53,7 +52,6 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
-  private val clock = TestClock()
   override val user: TerrawareUser = mockUser()
 
   private lateinit var store: SpeciesStore

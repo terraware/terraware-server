@@ -2,7 +2,6 @@ package com.terraformation.backend.device
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -36,7 +35,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val objectMapper = jacksonObjectMapper()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }

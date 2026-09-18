@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.variables
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
@@ -56,7 +55,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
             variableTextsDao,
         ),
         VariableValueStore(
-            TestClock(),
+            clock,
             dslContext,
             TestEventPublisher(),
             variableImageValuesDao,

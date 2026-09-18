@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.db.DatabaseTest
@@ -26,7 +25,6 @@ import org.springframework.security.access.AccessDeniedException
 
 class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  private val clock = TestClock()
   private val store: DeliverableStore by lazy { DeliverableStore(dslContext) }
 
   @BeforeEach
@@ -160,7 +158,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               documents =
                   listOf(
                       SubmissionDocumentModel(
-                          createdTime = Instant.EPOCH,
+                          createdTime = clock.instant,
                           description = null,
                           documentStore = DocumentStore.Google,
                           id = documentId1,
@@ -169,7 +167,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                           originalName = "Original Name 1",
                       ),
                       SubmissionDocumentModel(
-                          createdTime = Instant.EPOCH,
+                          createdTime = clock.instant,
                           description = null,
                           documentStore = DocumentStore.Google,
                           id = documentId2,

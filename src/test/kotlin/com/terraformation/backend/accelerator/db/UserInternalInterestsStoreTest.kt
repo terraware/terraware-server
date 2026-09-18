@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -17,8 +16,6 @@ import org.junit.jupiter.api.assertThrows
 
 class UserInternalInterestsStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-
-  private val clock = TestClock()
 
   private val store: UserInternalInterestsStore by lazy {
     UserInternalInterestsStore(clock, dslContext)

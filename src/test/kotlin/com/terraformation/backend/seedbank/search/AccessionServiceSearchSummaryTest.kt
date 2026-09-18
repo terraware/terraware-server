@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -46,7 +45,6 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
         mockk(),
     )
   }
-  private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables: SearchTables by lazy { SearchTables(clock) }
 

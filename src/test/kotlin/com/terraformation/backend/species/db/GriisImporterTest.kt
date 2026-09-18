@@ -1,7 +1,6 @@
 package com.terraformation.backend.species.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.SpeciesNativity
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class GriisImporterTest : DatabaseTest() {
-  private val clock = TestClock()
   private val uriFetcher: UriFetcher = mockk()
   private val importer: GriisImporter by lazy {
     GriisImporter(clock, dslContext, jacksonObjectMapper(), uriFetcher)

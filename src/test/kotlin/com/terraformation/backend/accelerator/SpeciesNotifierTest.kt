@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
@@ -32,7 +31,7 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
   private val notifier: SpeciesNotifier by lazy {
     SpeciesNotifier(
         rateLimitedEventPublisher,
-        SubmissionStore(TestClock(), dslContext, TestEventPublisher()),
+        SubmissionStore(clock, dslContext, TestEventPublisher()),
     )
   }
 

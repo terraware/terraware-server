@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
@@ -24,8 +23,6 @@ import org.junit.jupiter.api.Test
 
 class DocumentStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
-  private val clock = TestClock()
 
   private val store: DocumentStore by lazy {
     DocumentStore(clock, documentSavedVersionsDao, documentsDao, dslContext, documentTemplatesDao)

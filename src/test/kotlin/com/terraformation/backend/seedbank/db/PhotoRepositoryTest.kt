@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.db.ParentStore
@@ -69,7 +68,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val filename = "test-photo.jpg"
   private val uploadedTime = ZonedDateTime.of(2021, 2, 3, 4, 5, 6, 0, ZoneOffset.UTC).toInstant()
   private val metadata = FileMetadata.of(contentType, filename, 1L)
-  private val clock = TestClock(uploadedTime)
 
   private val sixPixelPng: ByteArray by lazy {
     javaClass.getResourceAsStream("/file/sixPixels.png").use { it.readAllBytes() }
@@ -97,6 +95,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
             mockk(),
         )
+
+    clock.instant = uploadedTime
 
     every { random.nextLong() } returns 0x0123456789abcdef
     pathGenerator = PathGenerator(random)

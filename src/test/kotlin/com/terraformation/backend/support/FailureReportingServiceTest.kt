@@ -1,7 +1,6 @@
 package com.terraformation.backend.support
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
@@ -36,7 +35,6 @@ class FailureReportingServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val config: TerrawareServerConfig = mockk()
-  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val supportService: SupportService = mockk()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }

@@ -2,7 +2,6 @@ package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.CredentialRepresentation
@@ -72,7 +71,6 @@ import org.springframework.security.access.AccessDeniedException
  * [InMemoryKeycloakAdminClient].
  */
 internal class UserStoreTest : DatabaseTest(), RunsAsUser {
-  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val objectMapper = jacksonObjectMapper()
   private val publisher = TestEventPublisher()

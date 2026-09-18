@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
 import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
@@ -32,7 +31,6 @@ import org.springframework.security.access.AccessDeniedException
 class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val dropboxWriter: DropboxWriter = mockk()
   private val eventPublisher = TestEventPublisher()
