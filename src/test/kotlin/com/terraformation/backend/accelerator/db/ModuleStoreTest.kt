@@ -11,7 +11,7 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

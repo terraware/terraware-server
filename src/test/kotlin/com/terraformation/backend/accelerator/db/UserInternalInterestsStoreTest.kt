@@ -9,7 +9,6 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

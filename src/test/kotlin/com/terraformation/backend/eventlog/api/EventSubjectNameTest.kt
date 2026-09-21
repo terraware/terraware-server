@@ -3,7 +3,7 @@ package com.terraformation.backend.eventlog.api
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.assertSetEquals
 import kotlin.reflect.full.findAnnotation
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class EventSubjectNameTest {

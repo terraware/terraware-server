@@ -4,7 +4,8 @@ import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import java.math.BigDecimal
 import java.math.RoundingMode
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 

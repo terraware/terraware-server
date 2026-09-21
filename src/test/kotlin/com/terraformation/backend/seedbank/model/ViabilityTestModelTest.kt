@@ -3,7 +3,8 @@ package com.terraformation.backend.seedbank.model
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

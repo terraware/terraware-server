@@ -18,7 +18,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

@@ -30,7 +30,7 @@ import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.math.BigDecimal
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

@@ -22,7 +22,8 @@ import java.time.Instant
 import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

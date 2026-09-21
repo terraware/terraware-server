@@ -6,7 +6,8 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.search.table.SearchTables
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class SearchFieldPrefixTest {

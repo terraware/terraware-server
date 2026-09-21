@@ -30,7 +30,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

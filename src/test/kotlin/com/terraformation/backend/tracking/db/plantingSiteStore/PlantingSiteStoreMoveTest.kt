@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

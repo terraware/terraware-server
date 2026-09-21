@@ -14,7 +14,7 @@ import com.terraformation.backend.util.Turtle
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.ZoneId
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

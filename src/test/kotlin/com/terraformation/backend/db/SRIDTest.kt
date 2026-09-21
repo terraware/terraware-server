@@ -2,7 +2,7 @@ package com.terraformation.backend.db
 
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.tables.references.SPATIAL_REF_SYS
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 

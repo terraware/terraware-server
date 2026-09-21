@@ -12,7 +12,7 @@ import io.mockk.every
 import java.time.Instant
 import java.time.ZoneId
 import org.jooq.JSONB
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

@@ -6,7 +6,7 @@ import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

@@ -15,7 +15,7 @@ import com.terraformation.backend.db.funder.tables.records.PublishedProjectDetai
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class FunderProjectDetailsModelTest {

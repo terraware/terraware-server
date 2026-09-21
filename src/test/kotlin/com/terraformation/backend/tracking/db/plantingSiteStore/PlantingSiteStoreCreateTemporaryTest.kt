@@ -9,7 +9,7 @@ import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.util.Turtle
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
