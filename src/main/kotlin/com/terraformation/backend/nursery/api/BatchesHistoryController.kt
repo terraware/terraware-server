@@ -140,6 +140,20 @@ class BatchesHistoryController(
       }
     }
 
+    val quantityHistoryWithdrawalIds = quantityHistory.mapNotNull { it.withdrawalId }.toSet()
+
+    val backdatedWithdrawalPayloads =
+        outgoingWithdrawals
+            .filterKeys { it !in quantityHistoryWithdrawalIds }
+            .values
+            .map { withdrawalsRow ->
+              BatchHistoryOutgoingWithdrawalPayload(
+                  null,
+                  outgoingBatchWithdrawals.getValue(withdrawalsRow.id!!),
+                  withdrawalsRow,
+              )
+            }
+
     val batchPhotos = batchPhotosDao.fetchByBatchId(batchId)
     val photoCreatedPayloads = batchPhotos.map { batchPhotosRow ->
       BatchHistoryPhotoCreatedPayload(
@@ -159,7 +173,14 @@ class BatchesHistoryController(
             }
 
     val historyPayloads =
-        (detailsPayloads + quantityPayloads + photoCreatedPayloads + photoDeletedPayloads)
+        listOf(
+                detailsPayloads,
+                quantityPayloads,
+                photoCreatedPayloads,
+                photoDeletedPayloads,
+                backdatedWithdrawalPayloads,
+            )
+            .flatten()
             .sortedWith { a, b ->
               if (a.version != null && b.version != null) {
                 a.version!! - b.version!!
@@ -388,24 +409,24 @@ data class BatchHistoryIncomingWithdrawalPayload(
     val germinatingQuantityAdded: Int,
     val hardeningOffQuantityAdded: Int = 0,
     val readyQuantityAdded: Int,
-    override val version: Int,
+    override val version: Int?,
     val withdrawalId: WithdrawalId,
     val withdrawnDate: LocalDate,
 ) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
-      historyRow: BatchQuantityHistoryRow,
+      historyRow: BatchQuantityHistoryRow?,
       batchWithdrawalsRow: BatchWithdrawalsRow,
       withdrawalsRow: WithdrawalsRow,
   ) : this(
       activeGrowthQuantityAdded = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
-      createdBy = historyRow.createdBy!!,
-      createdTime = historyRow.createdTime!!,
+      createdBy = historyRow?.createdBy ?: withdrawalsRow.createdBy!!,
+      createdTime = historyRow?.createdTime ?: withdrawalsRow.createdTime!!,
       fromBatchId = batchWithdrawalsRow.batchId!!,
       germinatingQuantityAdded = batchWithdrawalsRow.germinatingQuantityWithdrawn!!,
       hardeningOffQuantityAdded = batchWithdrawalsRow.hardeningOffQuantityWithdrawn!!,
       readyQuantityAdded = batchWithdrawalsRow.readyQuantityWithdrawn!!,
-      version = historyRow.version!!,
-      withdrawalId = historyRow.withdrawalId!!,
+      version = historyRow?.version,
+      withdrawalId = batchWithdrawalsRow.withdrawalId!!,
       withdrawnDate = withdrawalsRow.withdrawnDate!!,
   )
 
@@ -431,23 +452,23 @@ data class BatchHistoryOutgoingWithdrawalPayload(
     val hardeningOffQuantity: Int = 0,
     val purpose: WithdrawalPurpose,
     val readyQuantityWithdrawn: Int,
-    override val version: Int,
+    override val version: Int?,
     val withdrawalId: WithdrawalId,
     val withdrawnDate: LocalDate,
 ) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
-      historyRow: BatchQuantityHistoryRow,
+      historyRow: BatchQuantityHistoryRow?,
       batchWithdrawalsRow: BatchWithdrawalsRow,
       withdrawalsRow: WithdrawalsRow,
   ) : this(
       activeGrowthQuantityWithdrawn = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
-      createdBy = historyRow.createdBy!!,
-      createdTime = historyRow.createdTime!!,
+      createdBy = historyRow?.createdBy ?: withdrawalsRow.createdBy!!,
+      createdTime = historyRow?.createdTime ?: withdrawalsRow.createdTime!!,
       germinatingQuantityWithdrawn = batchWithdrawalsRow.germinatingQuantityWithdrawn!!,
       hardeningOffQuantity = batchWithdrawalsRow.hardeningOffQuantityWithdrawn!!,
       purpose = withdrawalsRow.purposeId!!,
       readyQuantityWithdrawn = batchWithdrawalsRow.readyQuantityWithdrawn!!,
-      version = historyRow.version!!,
+      version = historyRow?.version,
       withdrawalId = batchWithdrawalsRow.withdrawalId!!,
       withdrawnDate = withdrawalsRow.withdrawnDate!!,
   )
