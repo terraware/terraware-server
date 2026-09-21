@@ -206,6 +206,7 @@ class PublishedReportStore(
         )!!
     val indicatorDescriptionField = indicatorTable.field("description", String::class.java)!!
     val indicatorNameField = indicatorTable.field("name", String::class.java)!!
+    val indicatorPrecisionField = indicatorTable.field("precision", Int::class.java)!!
     val indicatorReferenceField = indicatorTable.field("ref_id", String::class.java)!!
     val indicatorTypeField =
         indicatorTable.field(
@@ -300,6 +301,7 @@ class PublishedReportStore(
                     indicatorClassField,
                     indicatorDescriptionField,
                     indicatorNameField,
+                    indicatorPrecisionField,
                     indicatorReferenceField,
                     indicatorTypeField,
                     statusField,
@@ -350,6 +352,7 @@ class PublishedReportStore(
                 indicatorId = record[indicatorTableIdField.asNonNullable()],
                 level = record[indicatorTypeField],
                 name = record[indicatorNameField],
+                precision = record[indicatorPrecisionField],
                 previousYearCumulativeTotal = record[sumAtPreviousYearEnd],
                 progressNotes = record[progressNotesField],
                 projectsComments = record[projectsCommentsField],
