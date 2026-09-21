@@ -17,6 +17,7 @@ import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
+import java.math.RoundingMode
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -41,7 +42,7 @@ internal abstract class AccessionModelTest {
   protected fun accession(
       viabilityTests: List<ViabilityTestModel> = emptyList(),
       dryingEndDate: LocalDate? = null,
-      estimatedSeedCount: Int? = null,
+      estimatedSeedCount: Long? = null,
       latestObservedQuantity: SeedQuantityModel? = null,
       latestObservedTime: Instant? = null,
       remaining: SeedQuantityModel? = null,
@@ -137,8 +138,10 @@ internal abstract class AccessionModelTest {
       createdTime: Instant? = clock.instant(),
       id: WithdrawalId? = nextWithdrawalId(),
       withdrawnByUserId: UserId? = null,
-      estimatedCount: Int? =
-          if (withdrawn.units == SeedQuantityUnits.Seeds) withdrawn.quantity.toInt() else null,
+      estimatedCount: Long? =
+          if (withdrawn.units == SeedQuantityUnits.Seeds)
+              withdrawn.quantity.setScale(0, RoundingMode.HALF_UP).toLong()
+          else null,
   ): WithdrawalModel {
     return WithdrawalModel(
         createdTime = createdTime,

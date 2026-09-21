@@ -15,6 +15,7 @@ import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.util.normalizeWhitespaceOrNull
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -72,7 +73,7 @@ data class AccessionModel(
     val collectors: List<String> = emptyList(),
     val createdTime: Instant? = null,
     val dryingEndDate: LocalDate? = null,
-    val estimatedSeedCount: Int? = null,
+    val estimatedSeedCount: Long? = null,
     val estimatedWeight: SeedQuantityModel? = null,
     val facilityId: FacilityId? = null,
     val founderId: String? = null,
@@ -102,7 +103,7 @@ data class AccessionModel(
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
     val totalViabilityPercent: Int? = null,
-    val totalWithdrawnCount: Int? = null,
+    val totalWithdrawnCount: Long? = null,
     val totalWithdrawnWeight: SeedQuantityModel? = null,
     val viabilityTests: List<ViabilityTestModel> = emptyList(),
     val withdrawals: List<WithdrawalModel> = emptyList(),
@@ -258,7 +259,9 @@ data class AccessionModel(
           if (
               (latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
                   mostRecentWithdrawal?.withdrawn?.units == SeedQuantityUnits.Seeds &&
-                  (mostRecentWithdrawal.withdrawn.quantity.toInt() == existing.estimatedSeedCount ||
+                  (mostRecentWithdrawal.withdrawn.quantity
+                      .setScale(0, RoundingMode.HALF_UP)
+                      .toLong() == existing.estimatedSeedCount ||
                       (state == AccessionState.UsedUp && remaining?.quantity == BigDecimal.ZERO)))
           ) {
             SeedQuantityModel.of(BigDecimal.ZERO, latestObservedQuantity.units)
@@ -282,11 +285,12 @@ data class AccessionModel(
     return newRemaining
   }
 
-  fun calculateEstimatedSeedCount(baseQuantity: SeedQuantityModel?): Int? {
+  fun calculateEstimatedSeedCount(baseQuantity: SeedQuantityModel?): Long? {
     return baseQuantity
         ?.toUnitsOrNull(SeedQuantityUnits.Seeds, subsetWeightQuantity, subsetCount)
         ?.quantity
-        ?.toInt()
+        ?.setScale(0, RoundingMode.HALF_UP)
+        ?.toLong()
   }
 
   private fun calculateEstimatedWeight(baseQuantity: SeedQuantityModel?): SeedQuantityModel? {
@@ -358,7 +362,7 @@ data class AccessionModel(
     return newWithdrawals.mapNotNull { it.estimatedWeight }.reduceOrNull { a, b -> a + b }
   }
 
-  private fun calculateTotalWithdrawnCount(newWithdrawals: List<WithdrawalModel>): Int? {
+  private fun calculateTotalWithdrawnCount(newWithdrawals: List<WithdrawalModel>): Long? {
     return newWithdrawals.mapNotNull { it.estimatedCount }.reduceOrNull { a, b -> a + b }
   }
 
