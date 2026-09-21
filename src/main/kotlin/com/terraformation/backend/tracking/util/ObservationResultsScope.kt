@@ -33,6 +33,7 @@ import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIE
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
+import com.terraformation.backend.tracking.db.latestObservationForStratumField
 import com.terraformation.backend.tracking.db.latestObservationForSubstratumField
 import com.terraformation.backend.tracking.db.substratumObservedAtOrBefore
 import java.math.BigDecimal
@@ -675,24 +676,41 @@ class ObservationResultsSite(
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
+  private val latestStratumResults =
+      STRATUM_HISTORIES.join(OBSERVATION_STRATUM_RESULTS)
+          .on(OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(STRATUM_HISTORIES.STRATUM_ID))
+
+  private fun latestStratumResultsCondition(observationIdField: Field<ObservationId?>): Condition =
+      STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+              OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
+          )
+          .and(
+              OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(
+                  latestObservationForStratumField(
+                      observationIdField,
+                      STRATUM_HISTORIES.ID,
+                      STRATUM_HISTORIES.STRATUM_ID,
+                  )
+              )
+          )
+
   override fun anyChildHasNullSurvivalRateCondition(
       observationIdField: Field<ObservationId?>
   ): Condition =
       DSL.exists(
           DSL.selectOne()
-              .from(OBSERVATION_STRATUM_RESULTS)
-              .join(STRATUM_HISTORIES)
-              .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
-              .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
-              .and(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.`in`(siteHistorySelect))
+              .from(latestStratumResults)
+              .where(latestStratumResultsCondition(observationIdField))
               .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNull)
       )
 
   /**
    * Returns the site-level survival rate as an area-weighted average of the stratum-level survival
-   * rates, weighting each stratum by its stored [OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA].
-   * That area already excludes substrata that weren't observed in or before this observation, so
-   * those substrata don't count toward the weighting formula.
+   * rates, weighting each stratum by the [OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA] stored
+   * alongside the rate. Each stratum contributes the results of the latest observation that
+   * observed it, so a stratum this observation skipped still counts with its last observed rate and
+   * area. Those areas already exclude substrata that weren't observed in or before the source
+   * observation, so those substrata don't count toward the weighting formula.
    */
   override fun survivalRateValue(
       observationIdField: Field<ObservationId?>,
@@ -715,15 +733,8 @@ class ObservationResultsSite(
                             )
                         )
                 )
-                .from(OBSERVATION_STRATUM_RESULTS)
-                .join(STRATUM_HISTORIES)
-                .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
-                .where(
-                    STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                        OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
-                    )
-                )
-                .and(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
+                .from(latestStratumResults)
+                .where(latestStratumResultsCondition(observationIdField))
                 .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
         )
 
@@ -767,15 +778,8 @@ class ObservationResultsSite(
   ): Field<BigDecimal?> =
       DSL.field(
           DSL.select(DSL.sum(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA))
-              .from(OBSERVATION_STRATUM_RESULTS)
-              .join(STRATUM_HISTORIES)
-              .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
-              .where(
-                  STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                      OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
-                  )
-              )
-              .and(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
+              .from(latestStratumResults)
+              .where(latestStratumResultsCondition(observationIdField))
               .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
       )
 }

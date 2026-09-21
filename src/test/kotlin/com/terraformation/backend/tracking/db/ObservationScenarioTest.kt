@@ -145,13 +145,13 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             allResults,
             rowKeys,
             { (stratumName), results ->
-              val stratum = results.strata.first { it.stratumId == stratumIds[stratumName] }
+              val stratum = results.strata.firstOrNull { it.stratumId == stratumIds[stratumName] }
               listOf(
-                  stratum.totalPlants.toStringOrBlank(),
-                  stratum.plantingDensity.toStringOrBlank(),
-                  stratum.observedDensity.toStringOrBlank(),
-                  stratum.totalSpecies.toStringOrBlank(),
-                  stratum.survivalRate.toStringOrBlank("%"),
+                  stratum?.totalPlants.toStringOrBlank(),
+                  stratum?.plantingDensity.toStringOrBlank(),
+                  stratum?.observedDensity.toStringOrBlank(),
+                  stratum?.totalSpecies.toStringOrBlank(),
+                  stratum?.survivalRate.toStringOrBlank("%"),
               )
             },
         )
