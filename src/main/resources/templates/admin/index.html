@@ -287,6 +287,19 @@
             <input type="submit" value="Recalculate"/>
         </form>
     </th:block>
+
+    <th:block th:if="${canBackfillNurseryRates}">
+        <h3>Backfill Nursery Germination/Loss Rates</h3>
+
+        <p>
+            This populates the germination and loss rates for batches that were missing rates
+            because they had additional incoming transfers from accessions or other batches.
+        </p>
+
+        <form method="POST" action="/admin/backfillNurseryRates">
+            <input type="submit" value="Backfill Nursery Rates"/>
+        </form>
+    </th:block>
 </details>
 
 <details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
