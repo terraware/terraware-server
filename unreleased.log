@@ -1,3 +1,6 @@
+8bba9c04 Get observation stats for the planting sites of a project (#4978)
+e7f125c7 Return a list of observation stats from the endpoint (#4977)
+063408e5 Fetch observation stats by condition (#4976)
 02ae59ad Include unobserved strata in site survival rate (#4981)
 0bd6cef9 SW-6411 Include backdated withdrawals in batch history (#4990)
 13b7ead7 Update dependency software.amazon.awssdk:bom to v2.55.0 (#4992)
