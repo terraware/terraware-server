@@ -15,6 +15,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.zip.ZipFile
+import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.inputStream
 import org.springframework.stereotype.Controller
@@ -183,7 +184,7 @@ class AdminSpeciesController(
   }
 
   private fun <T> withDownloadedFile(url: URI, suffix: String = ".zip", func: (Path) -> T): T {
-    val tempFile = kotlin.io.path.createTempFile(suffix = suffix)
+    val tempFile = createTempFile(suffix = suffix)
 
     try {
       log.info("Copying $url to local filesystem: $tempFile")
