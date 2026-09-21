@@ -49,6 +49,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.io.path.createTempFile
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
@@ -310,7 +311,7 @@ class AdminPlantingSitesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      kotlin.io.path.createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
+      createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
         zipfile.inputStream.use { inputStream ->
           Files.copy(inputStream, localZipFile, StandardCopyOption.REPLACE_EXISTING)
         }
@@ -434,7 +435,7 @@ class AdminPlantingSitesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      kotlin.io.path.createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
+      createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
         zipfile.inputStream.use { inputStream ->
           Files.copy(inputStream, localZipFile, StandardCopyOption.REPLACE_EXISTING)
         }

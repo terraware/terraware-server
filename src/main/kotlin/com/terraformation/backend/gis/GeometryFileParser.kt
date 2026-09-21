@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.MediaType
 import java.io.InputStream
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
+import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeBytes
 import org.apache.tika.Tika
@@ -65,7 +66,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
   /** Parses a KMZ file, which is a KML file in a zip archive possibly alongside other files. */
   private fun parseKmz(content: ByteArray): Geometry {
-    val tempFile = kotlin.io.path.createTempFile(suffix = ".zip")
+    val tempFile = createTempFile(suffix = ".zip")
 
     try {
       tempFile.writeBytes(content)
