@@ -58,15 +58,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `estimated seed count is calculated based on weight`() {
       val accession =
-          accession(remaining = grams(1), subsetCount = 10, subsetWeight = milligrams(200))
-              .withCalculatedValues()
-
-      assertEquals(50L, accession.estimatedSeedCount)
-    }
-
-    @Test
-    fun `estimated seed count from weight is not truncated to 32 bits`() {
-      val accession =
           accession(remaining = kilograms(1000), subsetCount = 10, subsetWeight = milligrams(1))
               .withCalculatedValues()
 
@@ -249,36 +240,6 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `estimated seed count is not truncated to 32 bits`() {
-      // SW-8714: this accession had est_seed_count 1286465408, the low 32 bits of 9876400000.
-      val accession = accession(remaining = seeds(9_876_400_000L)).withCalculatedValues()
-
-      assertEquals(9_876_400_000L, accession.estimatedSeedCount)
-    }
-
-    @Test
-    fun `withdrawn seed count is not truncated to 32 bits`() {
-      val accession = accession(remaining = seeds(9_876_400_000L)).withCalculatedValues()
-      val afterWithdrawal =
-          accession.addWithdrawal(
-              withdrawal(seeds(5_000_000_000L), id = null, estimatedCount = null)
-          )
-
-      assertEquals(5_000_000_000L, afterWithdrawal.totalWithdrawnCount)
-    }
-
-    @Test
-    fun `total withdrawn count does not overflow when the sum exceeds 32 bits`() {
-      val accession = accession(remaining = seeds(6_000_000_000L)).withCalculatedValues()
-      val afterWithdrawals =
-          accession
-              .addWithdrawal(withdrawal(seeds(2_000_000_000L), id = null, estimatedCount = null))
-              .addWithdrawal(withdrawal(seeds(2_000_000_000L), id = null, estimatedCount = null))
-
-      assertEquals(4_000_000_000L, afterWithdrawals.totalWithdrawnCount)
-    }
-
-    @Test
     fun `fractional seed quantity is rounded rather than truncated`() {
       val accession =
           accession(remaining = SeedQuantityModel.of(BigDecimal("10.5"), SeedQuantityUnits.Seeds))
@@ -402,13 +363,13 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `total withdrawal count is calculated for count-based withdrawals`() {
-      val accession = accession(remaining = seeds(10)).withCalculatedValues()
+      val accession = accession(remaining = seeds(10_000_000_000L)).withCalculatedValues()
       val afterWithdrawals =
           accession
-              .addWithdrawal(withdrawal(seeds(2), id = null))
-              .addWithdrawal(withdrawal(seeds(1), id = null))
+              .addWithdrawal(withdrawal(seeds(3_000_000_000L), id = null))
+              .addWithdrawal(withdrawal(seeds(3_000_000_000L), id = null))
 
-      assertEquals(3L, afterWithdrawals.totalWithdrawnCount)
+      assertEquals(6_000_000_000L, afterWithdrawals.totalWithdrawnCount)
     }
   }
 
@@ -814,12 +775,12 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     @Test
     fun `estimated seed count is the same as remaining quantity if it is count-based`() {
       val accession =
-          accession(remaining = seeds(10))
+          accession(remaining = seeds(9_876_400_000L))
               .withCalculatedValues()
               .copy(clock = tomorrowClock)
               .addWithdrawal(withdrawal(seeds(1), date = tomorrow, id = null))
 
-      assertEquals(9L, accession.estimatedSeedCount)
+      assertEquals(9_876_399_999L, accession.estimatedSeedCount)
     }
 
     @Test

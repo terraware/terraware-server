@@ -3,7 +3,8 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
-import com.terraformation.backend.seedbank.grams
+import com.terraformation.backend.seedbank.kilograms
+import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
@@ -69,46 +70,24 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
     val accession =
         create()
             .andUpdate {
-              it.copy(remaining = grams(10), subsetCount = 1, subsetWeightQuantity = grams(2))
+              it.copy(
+                  remaining = kilograms(1000),
+                  subsetCount = 10,
+                  subsetWeightQuantity = milligrams(1),
+              )
             }
             .andUpdate {
               it.addWithdrawal(
                   WithdrawalModel(
                       date = LocalDate.EPOCH,
                       purpose = WithdrawalPurpose.Other,
-                      withdrawn = grams(4),
+                      withdrawn = kilograms(500),
                   )
               )
             }
 
-    assertEquals(2L, accession.totalWithdrawnCount, "Total withdrawn count")
-    assertEquals(grams(4), accession.totalWithdrawnWeight, "Total withdrawn weight")
-  }
-
-  @Test
-  fun `seed counts larger than 32 bits survive a round trip through the database`() {
-    val accessionId =
-        create()
-            .andUpdate { it.copy(remaining = seeds(9_876_400_000L)) }
-            .andUpdate {
-              it.addWithdrawal(
-                  WithdrawalModel(
-                      date = LocalDate.EPOCH,
-                      purpose = WithdrawalPurpose.Other,
-                      withdrawn = seeds(5_000_000_000L),
-                  )
-              )
-            }
-            .id!!
-
-    val fetched = store.fetchOneById(accessionId)
-
-    assertEquals(4_876_400_000L, fetched.estimatedSeedCount, "Estimated seed count")
-    assertEquals(5_000_000_000L, fetched.totalWithdrawnCount, "Total withdrawn count")
-    assertEquals(
-        listOf(5_000_000_000L),
-        fetched.withdrawals.map { it.estimatedCount },
-        "Withdrawal estimated counts",
-    )
+    assertEquals(5_000_000_000L, accession.estimatedSeedCount, "Estimated seed count")
+    assertEquals(5_000_000_000L, accession.totalWithdrawnCount, "Total withdrawn count")
+    assertEquals(kilograms(500), accession.totalWithdrawnWeight, "Total withdrawn weight")
   }
 }

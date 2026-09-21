@@ -17,6 +17,7 @@ import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
+import java.math.RoundingMode
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -138,7 +139,9 @@ internal abstract class AccessionModelTest {
       id: WithdrawalId? = nextWithdrawalId(),
       withdrawnByUserId: UserId? = null,
       estimatedCount: Long? =
-          if (withdrawn.units == SeedQuantityUnits.Seeds) withdrawn.quantity.toLong() else null,
+          if (withdrawn.units == SeedQuantityUnits.Seeds)
+              withdrawn.quantity.setScale(0, RoundingMode.HALF_UP).toLong()
+          else null,
   ): WithdrawalModel {
     return WithdrawalModel(
         createdTime = createdTime,
