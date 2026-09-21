@@ -1,3 +1,4 @@
+55ae748d Add planting site scope to aggregated tracking stats (#4987)
 8bba9c04 Get observation stats for the planting sites of a project (#4978)
 e7f125c7 Return a list of observation stats from the endpoint (#4977)
 063408e5 Fetch observation stats by condition (#4976)
