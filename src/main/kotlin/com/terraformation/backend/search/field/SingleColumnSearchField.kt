@@ -35,14 +35,17 @@ abstract class SingleColumnSearchField<T : Any> : SearchField {
         other.table == table
   }
 
-  protected fun phaseMatchCondition(values: List<String>): Condition =
+  protected fun phraseMatchCondition(
+      values: List<String>,
+      field: Field<T?> = databaseField,
+  ): Condition =
       DSL.or(
           values.flatMap {
             listOf(
-                databaseField.likeIgnoreCase(it), // Exact match with phrase
-                databaseField.likeIgnoreCase("% $it %"), // phrase in the middle
-                databaseField.likeIgnoreCase("$it %"), // phrase as a prefix
-                databaseField.likeIgnoreCase("% $it"), // phrase as a suffix
+                field.likeIgnoreCase(it), // Exact match with phrase
+                field.likeIgnoreCase("% $it %"), // phrase in the middle
+                field.likeIgnoreCase("$it %"), // phrase as a prefix
+                field.likeIgnoreCase("% $it"), // phrase as a suffix
             )
           }
       )
