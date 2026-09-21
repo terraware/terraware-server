@@ -4,13 +4,15 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.file.useAndDelete
+import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
 import java.io.InputStream
+import java.nio.file.Path
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlin.io.path.createTempFile
-import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeBytes
 import org.apache.tika.Tika
 import org.geotools.api.feature.simple.SimpleFeature
@@ -29,7 +31,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     return when (detectedContentType) {
       "application/vnd.google-earth.kml+xml" -> parseKml(content.inputStream())
       "application/vnd.google-earth.kmz",
-      "application/zip" -> parseKmz(content)
+      "application/zip" -> parseZip(content)
 
       // Tika can identify JSON files as text/plain.
       MediaType.APPLICATION_JSON,
@@ -64,27 +66,58 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     return geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT }
   }
 
-  /** Parses a KMZ file, which is a KML file in a zip archive possibly alongside other files. */
-  private fun parseKmz(content: ByteArray): Geometry {
-    val tempFile = createTempFile(suffix = ".zip")
-
-    try {
+  /** Parses an archive containing KML or a shapefile and its secondary files. */
+  private fun parseZip(content: ByteArray): Geometry {
+    return createTempFile(suffix = ".zip").useAndDelete { tempFile ->
       tempFile.writeBytes(content)
 
       val zipFile =
           try {
             ZipFile(tempFile.toFile())
           } catch (e: ZipException) {
-            throw ContentFormatException("KMZ file does not appear to be a valid zip archive")
+            throw ContentFormatException("File does not appear to be a valid zip archive")
           }
 
-      val zipEntry =
-          zipFile.entries().asSequence().firstOrNull { it.name.endsWith(".kml", ignoreCase = true) }
-              ?: throw ContentFormatException("No KML file found in archive")
+      val filenames = zipFile.use { zip ->
+        parseZippedKml(zip)?.let {
+          return@useAndDelete it
+        }
+        zip.entries().asSequence().filter { !it.isDirectory }.map { it.name }.toList()
+      }
 
-      return zipFile.getInputStream(zipEntry).use { parseKml(it) }
-    } finally {
-      tempFile.deleteIfExists()
+      parseZippedShapefile(tempFile, filenames)
     }
+  }
+
+  private fun parseZippedKml(zip: ZipFile): Geometry? {
+    val entry =
+        zip.entries().asSequence().firstOrNull {
+          !it.isDirectory && it.name.endsWith(".kml", ignoreCase = true)
+        } ?: return null
+
+    return zip.getInputStream(entry).use { parseKml(it) }
+  }
+
+  private fun parseZippedShapefile(path: Path, filenames: List<String>): Geometry {
+    val shapefiles = filenames.filter { it.endsWith(".shp", ignoreCase = true) }
+    if (shapefiles.isEmpty()) {
+      throw ContentFormatException("No KML or SHP file found in archive")
+    }
+    if (shapefiles.size != 1) {
+      throw ContentFormatException("Archive must contain exactly one .shp file")
+    }
+
+    val basename = shapefiles.single().substringBeforeLast('.')
+    for (extension in listOf("shx", "dbf", "prj")) {
+      if (filenames.none { it.equals("$basename.$extension", ignoreCase = true) }) {
+        throw ContentFormatException("Archive is missing $basename.$extension")
+      }
+    }
+
+    val geometries = Shapefile.fromZipFile(path).single().features.map { it.geometry }
+    if (geometries.isEmpty()) {
+      throw ContentFormatException("No valid geometries found in shapefile")
+    }
+    return geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT }
   }
 }

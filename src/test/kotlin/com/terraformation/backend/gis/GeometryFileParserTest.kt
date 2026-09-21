@@ -1,14 +1,23 @@
 package com.terraformation.backend.gis
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.util.toMultiPolygon
+import java.io.ByteArrayOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import org.geotools.util.ContentFormatException
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
 
@@ -77,11 +86,70 @@ class GeometryFileParserTest {
     assertThrows<ContentFormatException> { runTriangleScenario("/gis/no-kml.kmz") }
   }
 
-  private fun runTriangleScenario(resourcePath: String) {
+  @Test
+  fun `can parse zip containing KML`() {
+    runTriangleScenario("/gis/triangle.kmz", "triangle.zip")
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["PlantingSite", "PlantingZones"])
+  fun `can parse zipped shapefile and transform coordinates`(basename: String) {
+    val geometry = parser.parse(shapefileZip(basename = basename), "boundary.zip")
+    val expected =
+        javaClass.getResourceAsStream("/gis/$basename.geojson").use {
+          objectMapper.readValue<Geometry>(it)
+        }
+
+    assertGeometryEquals(expected.toMultiPolygon().norm(), geometry.toMultiPolygon().norm())
+    assertEquals(SRID.LONG_LAT, geometry.srid)
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["shp", "shx", "dbf", "prj"])
+  fun `rejects missing shapefile components`(extension: String) {
+    assertThrows<ContentFormatException> { parser.parse(shapefileZip(extension), "boundary.zip") }
+  }
+
+  @Test
+  fun `rejects multiple shapefiles`() {
+    val content = javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes()
+    assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
+  }
+
+  @Test
+  fun `rejects zip with no supported geometry file`() {
+    val content = javaClass.getResource("/gis/no-kml.kmz")!!.readBytes()
+    assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
+  }
+
+  private fun shapefileZip(
+      omitExtension: String? = null,
+      basename: String = "PlantingSite",
+  ): ByteArray {
+    val output = ByteArrayOutputStream()
+    ZipOutputStream(output).use { zipOutput ->
+      ZipInputStream(javaClass.getResourceAsStream("/tracking/TwoShapefiles.zip")!!).use { input ->
+        generateSequence { input.nextEntry }
+            .forEach { entry ->
+              if (
+                  entry.name.startsWith("$basename.") &&
+                      entry.name.substringAfterLast('.') != omitExtension
+              ) {
+                zipOutput.putNextEntry(ZipEntry(entry.name))
+                input.copyTo(zipOutput)
+                zipOutput.closeEntry()
+              }
+            }
+      }
+    }
+    return output.toByteArray()
+  }
+
+  private fun runTriangleScenario(resourcePath: String, filename: String = resourcePath) {
     javaClass.getResourceAsStream(resourcePath).use { stream ->
       val bytes = stream.readAllBytes()
 
-      val geometry = parser.parse(bytes, resourcePath)
+      val geometry = parser.parse(bytes, filename)
 
       assertGeometryEquals(triangle, geometry.toMultiPolygon().norm())
     }
