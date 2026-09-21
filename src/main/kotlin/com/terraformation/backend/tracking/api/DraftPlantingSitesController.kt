@@ -1,5 +1,7 @@
 package com.terraformation.backend.tracking.api
 
+import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -9,11 +11,14 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
+import com.terraformation.backend.tracking.DraftPlantingSiteService
 import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.ZoneId
+import org.locationtech.jts.geom.Geometry
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,14 +26,22 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MaxUploadSizeExceededException
+import org.springframework.web.multipart.MultipartFile
 
 @RequestMapping("/api/v1/tracking/draftSites")
 @RestController
 @TrackingEndpoint
 class DraftPlantingSitesController(
+    private val draftPlantingSiteService: DraftPlantingSiteService,
     private val draftPlantingSiteStore: DraftPlantingSiteStore,
 ) {
+  companion object {
+    const val MAX_BOUNDARY_FILE_SIZE_MB = 10L
+  }
+
   @GetMapping("/{id}")
   @Operation(summary = "Gets the details of a saved draft of a planting site.")
   fun getDraftPlantingSite(
@@ -66,6 +79,30 @@ class DraftPlantingSitesController(
     draftPlantingSiteStore.update(id, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(
+      summary = "Parses a boundary file for a draft planting site.",
+      description =
+          "Accepts KML (.kml), KMZ (.kmz), GeoJSON (.geojson or .json), or a ZIP containing " +
+              "one shapefile with matching .shp, .shx, .dbf, and .prj files. " +
+              "The file is parsed and the geometry is returned.",
+  )
+  @ApiResponse200
+  @ApiResponse413(description = "The file exceeds the $MAX_BOUNDARY_FILE_SIZE_MB MB limit.")
+  @PostMapping("/{id}/boundaryFile", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  fun parseDraftPlantingSiteBoundary(
+      @PathVariable id: DraftPlantingSiteId,
+      @RequestPart("file") file: MultipartFile,
+  ): ParseDraftPlantingSiteBoundaryResponsePayload {
+    val maxFileSize = MAX_BOUNDARY_FILE_SIZE_MB * 1024 * 1024
+    if (file.size > maxFileSize) {
+      throw MaxUploadSizeExceededException(maxFileSize)
+    }
+
+    val geometry = draftPlantingSiteService.parseBoundaryFile(id, file.bytes, file.originalFilename)
+
+    return ParseDraftPlantingSiteBoundaryResponsePayload(geometry)
   }
 
   @DeleteMapping("/{id}")
@@ -161,6 +198,9 @@ data class CreateDraftPlantingSiteRequestPayload(
 )
 
 data class CreateDraftPlantingSiteResponsePayload(val id: DraftPlantingSiteId) :
+    SuccessResponsePayload
+
+data class ParseDraftPlantingSiteBoundaryResponsePayload(val geometry: Geometry) :
     SuccessResponsePayload
 
 data class UpdateDraftPlantingSiteRequestPayload(
