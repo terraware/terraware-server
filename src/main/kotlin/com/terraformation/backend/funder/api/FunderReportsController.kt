@@ -122,6 +122,7 @@ data class PublishedReportIndicatorPayload(
     val endOfProjectTarget: BigDecimal?,
     val level: IndicatorLevel,
     val name: String,
+    val precision: Int,
     @Schema(
         description =
             "If the indicator is lifetime cumulative, the cumulative total at the end of the " +
@@ -149,6 +150,7 @@ data class PublishedReportIndicatorPayload(
       endOfProjectTarget = model.endOfProjectTarget,
       level = model.level,
       name = model.name,
+      precision = model.precision,
       previousYearCumulativeTotal = model.previousYearCumulativeTotal,
       progressNotes = model.progressNotes,
       projectsComments = model.projectsComments,
