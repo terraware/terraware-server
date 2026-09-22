@@ -28,18 +28,21 @@ class AcceleratorReportsTable(tables: SearchTables) : SearchTable() {
       listOf(
           acceleratorReportAutoCalculatedIndicators.asMultiValueSublist(
               "autoCalculatedIndicators",
-              REPORTS.ID.eq(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID),
+              REPORTS.ID,
+              REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID,
           ),
           acceleratorReportCommonIndicators.asMultiValueSublist(
               "commonIndicators",
-              REPORTS.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID),
+              REPORTS.ID,
+              REPORT_COMMON_INDICATORS.REPORT_ID,
           ),
-          projects.asSingleValueSublist("project", REPORTS.PROJECT_ID.eq(PROJECTS.ID)),
+          projects.asSingleValueSublist("project", REPORTS.PROJECT_ID, PROJECTS.ID),
           acceleratorReportProjectIndicators.asMultiValueSublist(
               "projectIndicators",
-              REPORTS.ID.eq(REPORT_PROJECT_INDICATORS.REPORT_ID),
+              REPORTS.ID,
+              REPORT_PROJECT_INDICATORS.REPORT_ID,
           ),
-          users.asSingleValueSublist("submittedBy", REPORTS.SUBMITTED_BY.eq(USERS.ID)),
+          users.asSingleValueSublist("submittedBy", REPORTS.SUBMITTED_BY, USERS.ID),
       )
     }
   }

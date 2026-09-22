@@ -23,11 +23,13 @@ class ParticipantProjectSpeciesTable(private val tables: SearchTables) : SearchT
       listOf(
           projects.asSingleValueSublist(
               "project",
-              PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID),
+              PARTICIPANT_PROJECT_SPECIES.PROJECT_ID,
+              PROJECTS.ID,
           ),
           species.asSingleValueSublist(
               "species",
-              PARTICIPANT_PROJECT_SPECIES.SPECIES_ID.eq(SPECIES.ID),
+              PARTICIPANT_PROJECT_SPECIES.SPECIES_ID,
+              SPECIES.ID,
           ),
       )
     }

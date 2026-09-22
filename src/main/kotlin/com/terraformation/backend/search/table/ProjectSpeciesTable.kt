@@ -21,19 +21,23 @@ class ProjectSpeciesTable(tables: SearchTables) : SearchTable() {
       listOf(
           organizations.asSingleValueSublist(
               "organization",
-              PROJECT_SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              PROJECT_SPECIES.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
           projects.asSingleValueSublist(
               "project",
-              PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID),
+              PROJECT_SPECIES.PROJECT_ID,
+              PROJECTS.ID,
           ),
           species.asSingleValueSublist(
               "species",
-              PROJECT_SPECIES.SPECIES_ID.eq(SPECIES.ID),
+              PROJECT_SPECIES.SPECIES_ID,
+              SPECIES.ID,
           ),
           users.asSingleValueSublist(
               "overriddenBy",
-              PROJECT_SPECIES.OVERRIDDEN_BY.eq(USERS.ID),
+              PROJECT_SPECIES.OVERRIDDEN_BY,
+              USERS.ID,
           ),
       )
     }

@@ -22,19 +22,23 @@ class RecordedTreesTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           observationBiomassSpecies.asSingleValueSublist(
               "biomassSpecies",
-              RECORDED_TREES.BIOMASS_SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.ID),
+              RECORDED_TREES.BIOMASS_SPECIES_ID,
+              OBSERVATION_BIOMASS_SPECIES.ID,
           ),
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              RECORDED_TREES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+              RECORDED_TREES.MONITORING_PLOT_ID,
+              MONITORING_PLOTS.ID,
           ),
           observationPlots.asSingleValueSublist(
               "observationPlot",
-              RECORDED_TREES.OBSERVATION_PLOT_ID.eq(OBSERVATION_PLOTS.OBSERVATION_PLOT_ID),
+              RECORDED_TREES.OBSERVATION_PLOT_ID,
+              OBSERVATION_PLOTS.OBSERVATION_PLOT_ID,
           ),
           observations.asSingleValueSublist(
               "observation",
-              RECORDED_TREES.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+              RECORDED_TREES.OBSERVATION_ID,
+              OBSERVATIONS.ID,
           ),
       )
     }

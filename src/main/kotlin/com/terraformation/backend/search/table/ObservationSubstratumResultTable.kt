@@ -24,15 +24,18 @@ class ObservationSubstratumResultTable(private val tables: SearchTables) : Searc
       listOf(
           observations.asSingleValueSublist(
               "observation",
-              OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+              OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID,
+              OBSERVATIONS.ID,
           ),
           substrata.asSingleValueSublist(
               "substratum",
-              OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
           substratumHistories.asSingleValueSublist(
               "substratumHistory",
-              OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID),
+              OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID,
+              SUBSTRATUM_HISTORIES.ID,
           ),
           observationPlotResult.asMultiValueSublist(
               "plotResults",

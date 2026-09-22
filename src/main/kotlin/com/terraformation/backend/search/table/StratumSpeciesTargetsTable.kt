@@ -24,7 +24,8 @@ class StratumSpeciesTargetsTable(private val tables: SearchTables) : SearchTable
       listOf(
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              STRATUM_SPECIES_TARGETS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              STRATUM_SPECIES_TARGETS.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           plantingSiteSpeciesTargets.asSingleValueSublist(
               "plantingSiteSpeciesTarget",
@@ -37,11 +38,13 @@ class StratumSpeciesTargetsTable(private val tables: SearchTables) : SearchTable
           ),
           species.asSingleValueSublist(
               "species",
-              STRATUM_SPECIES_TARGETS.SPECIES_ID.eq(SPECIES.ID),
+              STRATUM_SPECIES_TARGETS.SPECIES_ID,
+              SPECIES.ID,
           ),
           strata.asSingleValueSublist(
               "stratum",
-              STRATUM_SPECIES_TARGETS.STRATUM_ID.eq(STRATA.ID),
+              STRATUM_SPECIES_TARGETS.STRATUM_ID,
+              STRATA.ID,
           ),
       )
     }

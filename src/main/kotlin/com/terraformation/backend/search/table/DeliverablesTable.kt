@@ -20,9 +20,10 @@ class DeliverablesTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           projectDeliverables.asMultiValueSublist(
               "projectDeliverables",
-              PROJECT_DELIVERABLES.DELIVERABLE_ID.eq(DELIVERABLES.ID),
+              DELIVERABLES.ID,
+              PROJECT_DELIVERABLES.DELIVERABLE_ID,
           ),
-          modules.asSingleValueSublist("module", MODULES.ID.eq(DELIVERABLES.MODULE_ID)),
+          modules.asSingleValueSublist("module", DELIVERABLES.MODULE_ID, MODULES.ID),
       )
     }
   }

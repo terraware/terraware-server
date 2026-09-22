@@ -34,58 +34,70 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          batches.asMultiValueSublist("batches", ORGANIZATIONS.ID.eq(BATCHES.ORGANIZATION_ID)),
+          batches.asMultiValueSublist("batches", ORGANIZATIONS.ID, BATCHES.ORGANIZATION_ID),
           botanicalCountries.asSingleValueSublist(
               "botanicalCountry",
-              ORGANIZATIONS.BOTANICAL_COUNTRY_CODE.eq(BOTANICAL_COUNTRIES.LEVEL3_CODE),
+              ORGANIZATIONS.BOTANICAL_COUNTRY_CODE,
+              BOTANICAL_COUNTRIES.LEVEL3_CODE,
           ),
-          countries.asSingleValueSublist("country", ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
+          countries.asSingleValueSublist("country", ORGANIZATIONS.COUNTRY_CODE, COUNTRIES.CODE),
           countrySubdivisions.asSingleValueSublist(
               "countrySubdivision",
-              ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE.eq(COUNTRY_SUBDIVISIONS.CODE),
+              ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE,
+              COUNTRY_SUBDIVISIONS.CODE,
           ),
           draftPlantingSites.asMultiValueSublist(
               "draftPlantingSites",
-              ORGANIZATIONS.ID.eq(DRAFT_PLANTING_SITES.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              DRAFT_PLANTING_SITES.ORGANIZATION_ID,
           ),
           facilities.asMultiValueSublist(
               "facilities",
-              ORGANIZATIONS.ID.eq(FACILITIES.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              FACILITIES.ORGANIZATION_ID,
           ),
           organizationInternalTags.asMultiValueSublist(
               "internalTags",
-              ORGANIZATIONS.ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID,
           ),
           inventories.asMultiValueSublist(
               "inventories",
-              ORGANIZATIONS.ID.eq(INVENTORIES.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              INVENTORIES.ORGANIZATION_ID,
           ),
           mediaFiles.asMultiValueSublist(
               "mediaFiles",
-              ORGANIZATIONS.ID.eq(mediaFiles.organizationIdColumn),
+              ORGANIZATIONS.ID,
+              mediaFiles.organizationIdColumn,
           ),
           organizationUsers.asMultiValueSublist(
               "members",
-              ORGANIZATIONS.ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              ORGANIZATION_USERS.ORGANIZATION_ID,
           ),
           nurseryWithdrawals.asMultiValueSublist(
               "nurseryWithdrawals",
-              ORGANIZATIONS.ID.eq(WITHDRAWAL_SUMMARIES.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              WITHDRAWAL_SUMMARIES.ORGANIZATION_ID,
           ),
           plantingSites.asMultiValueSublist(
               "plantingSites",
-              ORGANIZATIONS.ID.eq(PLANTING_SITE_SUMMARIES.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              PLANTING_SITE_SUMMARIES.ORGANIZATION_ID,
           ),
-          projects.asMultiValueSublist("projects", ORGANIZATIONS.ID.eq(PROJECTS.ORGANIZATION_ID)),
+          projects.asMultiValueSublist("projects", ORGANIZATIONS.ID, PROJECTS.ORGANIZATION_ID),
           projectSpecies.asMultiValueSublist(
               "projectSpecies",
-              ORGANIZATIONS.ID.eq(PROJECT_SPECIES.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              PROJECT_SPECIES.ORGANIZATION_ID,
           ),
           seedFundReports.asMultiValueSublist(
               "seedFundReports",
-              ORGANIZATIONS.ID.eq(SEED_FUND_REPORTS.ORGANIZATION_ID),
+              ORGANIZATIONS.ID,
+              SEED_FUND_REPORTS.ORGANIZATION_ID,
           ),
-          species.asMultiValueSublist("species", ORGANIZATIONS.ID.eq(SPECIES.ORGANIZATION_ID)),
+          species.asMultiValueSublist("species", ORGANIZATIONS.ID, SPECIES.ORGANIZATION_ID),
       )
     }
   }

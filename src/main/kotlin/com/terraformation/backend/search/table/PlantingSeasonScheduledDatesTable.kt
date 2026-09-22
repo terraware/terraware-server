@@ -20,13 +20,13 @@ class PlantingSeasonScheduledDatesTable(private val tables: SearchTables) : Sear
       listOf(
           plantingSeasons.asSingleValueSublist(
               "plantingSeason",
-              SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID),
+              SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID,
+              PLANTING_SEASONS.ID,
           ),
           scheduledPlantingDateSpeciesTable.asMultiValueSublist(
               "scheduledDateSpecies",
-              SCHEDULED_PLANTING_DATES.ID.eq(
-                  SCHEDULED_PLANTING_DATE_SPECIES.SCHEDULED_PLANTING_DATE_ID
-              ),
+              SCHEDULED_PLANTING_DATES.ID,
+              SCHEDULED_PLANTING_DATE_SPECIES.SCHEDULED_PLANTING_DATE_ID,
           ),
       )
     }

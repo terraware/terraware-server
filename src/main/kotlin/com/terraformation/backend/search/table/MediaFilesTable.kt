@@ -83,12 +83,14 @@ class MediaFilesTable(tables: SearchTables) : SearchTable() {
       listOf(
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              monitoringPlotIdColumn.eq(MONITORING_PLOTS.ID),
+              monitoringPlotIdColumn,
+              MONITORING_PLOTS.ID,
           ),
-          observations.asSingleValueSublist("observation", observationIdColumn.eq(OBSERVATIONS.ID)),
+          observations.asSingleValueSublist("observation", observationIdColumn, OBSERVATIONS.ID),
           organizations.asSingleValueSublist(
               "organization",
-              organizationIdColumn.eq(ORGANIZATIONS.ID),
+              organizationIdColumn,
+              ORGANIZATIONS.ID,
           ),
       )
     }

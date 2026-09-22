@@ -20,7 +20,8 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
       listOf(
           projects.asSingleValueSublist(
               "project",
-              PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(PROJECTS.ID),
+              PROJECT_ACCELERATOR_DETAILS.PROJECT_ID,
+              PROJECTS.ID,
           ),
       )
     }

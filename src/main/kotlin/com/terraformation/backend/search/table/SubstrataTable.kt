@@ -25,31 +25,38 @@ class SubstrataTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           monitoringPlots.asMultiValueSublist(
               "monitoringPlots",
-              SUBSTRATA.ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID),
+              SUBSTRATA.ID,
+              MONITORING_PLOTS.SUBSTRATUM_ID,
           ),
           plantings.asMultiValueSublist(
               "plantings",
-              SUBSTRATA.ID.eq(PLANTINGS.SUBSTRATUM_ID),
+              SUBSTRATA.ID,
+              PLANTINGS.SUBSTRATUM_ID,
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              SUBSTRATA.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              SUBSTRATA.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           strata.asSingleValueSublist(
               "plantingZone",
-              SUBSTRATA.STRATUM_ID.eq(STRATA.ID),
+              SUBSTRATA.STRATUM_ID,
+              STRATA.ID,
           ),
           strata.asSingleValueSublist(
               "stratum",
-              SUBSTRATA.STRATUM_ID.eq(STRATA.ID),
+              SUBSTRATA.STRATUM_ID,
+              STRATA.ID,
           ),
           substratumHistories.asMultiValueSublist(
               "histories",
-              SUBSTRATA.ID.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID),
+              SUBSTRATA.ID,
+              SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
           ),
           substratumPopulations.asMultiValueSublist(
               "populations",
-              SUBSTRATA.ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID),
+              SUBSTRATA.ID,
+              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID,
           ),
       )
     }

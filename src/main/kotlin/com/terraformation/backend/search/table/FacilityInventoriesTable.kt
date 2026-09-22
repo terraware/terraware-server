@@ -36,12 +36,14 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
           ),
           facilities.asSingleValueSublist(
               "facility",
-              FACILITY_INVENTORIES.FACILITY_ID.eq(FACILITIES.ID),
+              FACILITY_INVENTORIES.FACILITY_ID,
+              FACILITIES.ID,
           ),
-          species.asSingleValueSublist("species", FACILITY_INVENTORIES.SPECIES_ID.eq(SPECIES.ID)),
+          species.asSingleValueSublist("species", FACILITY_INVENTORIES.SPECIES_ID, SPECIES.ID),
           organizations.asSingleValueSublist(
               "organization",
-              FACILITY_INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              FACILITY_INVENTORIES.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
       )
     }

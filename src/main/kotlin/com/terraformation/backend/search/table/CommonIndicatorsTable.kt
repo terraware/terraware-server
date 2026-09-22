@@ -19,7 +19,8 @@ class CommonIndicatorsTable(tables: SearchTables) : SearchTable() {
       listOf(
           acceleratorReportCommonIndicators.asMultiValueSublist(
               "reportIndicators",
-              COMMON_INDICATORS.ID.eq(REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID),
+              COMMON_INDICATORS.ID,
+              REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           )
       )
     }

@@ -17,8 +17,8 @@ class ProjectModulesTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          projects.asSingleValueSublist("project", PROJECT_MODULES.PROJECT_ID.eq(PROJECTS.ID)),
-          modules.asSingleValueSublist("module", PROJECT_MODULES.MODULE_ID.eq(MODULES.ID)),
+          projects.asSingleValueSublist("project", PROJECT_MODULES.PROJECT_ID, PROJECTS.ID),
+          modules.asSingleValueSublist("module", PROJECT_MODULES.MODULE_ID, MODULES.ID),
       )
     }
   }

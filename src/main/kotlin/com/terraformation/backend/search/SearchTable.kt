@@ -170,10 +170,23 @@ abstract class SearchTable {
   }
 
   /**
+   * Returns a [SublistField] pointing to the next table in a sublist path, in cases where there can
+   * be multiple values in that table. In other words, returns a [SublistField] that defines a 1:N
+   * relationship between this table and another one.
+   */
+  fun <T> asMultiValueSublist(
+      name: String,
+      thisTableField: Field<T>,
+      otherTableField: Field<T>,
+      isTraversedForGetAllFields: Boolean = true,
+  ): SublistField {
+    return asMultiValueSublist(name, thisTableField.eq(otherTableField), isTraversedForGetAllFields)
+  }
+
+  /**
    * Returns a [SublistField] pointing to this table for use in cases where there can be multiple
-   * values. In other words, returns a [SublistField] that defines a 1:N relationship between
-   * another table and this one. For example, `facilities` is a multi-value sublist of `sites`
-   * because each site can have multiple facilities.
+   * values. In other words, returns a [SublistField] that defines a 1:N relationship between this
+   * table and another one.
    */
   fun asMultiValueSublist(
       name: String,
@@ -190,10 +203,27 @@ abstract class SearchTable {
   }
 
   /**
+   * Returns a [SublistField] pointing to the next table in a sublist path, in cases where there can
+   * only be a single value in that table. In other words, returns a [SublistField] that defines a
+   * 1:1 or N:1 relationship between this table and another one.
+   */
+  fun <T> asSingleValueSublist(
+      name: String,
+      thisTableField: Field<T>,
+      otherTableField: Field<T>,
+      isTraversedForGetAllFields: Boolean = false,
+  ): SublistField {
+    return asSingleValueSublist(
+        name,
+        thisTableField.eq(otherTableField),
+        isTraversedForGetAllFields,
+    )
+  }
+
+  /**
    * Returns a [SublistField] pointing to this table for use in cases where there is only a single
    * value. In other words, returns a [SublistField] that defines a 1:1 or N:1 relationship between
-   * another table and this one. For example, `site` is a single-value sublist of `facilities`
-   * because each facility is only associated with one site.
+   * another table and this one.
    */
   fun asSingleValueSublist(
       name: String,

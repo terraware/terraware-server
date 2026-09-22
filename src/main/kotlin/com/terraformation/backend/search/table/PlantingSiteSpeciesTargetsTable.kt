@@ -22,11 +22,13 @@ class PlantingSiteSpeciesTargetsTable(private val tables: SearchTables) : Search
       listOf(
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           species.asSingleValueSublist(
               "species",
-              PLANTING_SITE_SPECIES_TARGETS.SPECIES_ID.eq(SPECIES.ID),
+              PLANTING_SITE_SPECIES_TARGETS.SPECIES_ID,
+              SPECIES.ID,
           ),
           stratumSpeciesTargets.asMultiValueSublist(
               "stratumSpeciesTargets",
