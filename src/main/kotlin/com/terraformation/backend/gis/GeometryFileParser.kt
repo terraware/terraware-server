@@ -20,6 +20,7 @@ import org.geotools.kml.v22.KMLConfiguration
 import org.geotools.util.ContentFormatException
 import org.geotools.xsd.Parser
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryCollection
 
 @Named
 class GeometryFileParser(private val objectMapper: ObjectMapper) {
@@ -42,7 +43,8 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
   private fun parseGeoJson(content: ByteArray): Geometry {
     return try {
-      objectMapper.readValue<Geometry>(content)
+      val geometry = objectMapper.readValue<Geometry>(content)
+      if (geometry is GeometryCollection) geometry.union() else geometry
     } catch (e: JsonParseException) {
       throw ContentFormatException("File does not appear to be valid GeoJSON")
     }
