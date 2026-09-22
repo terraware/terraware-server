@@ -7,8 +7,10 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DELIV
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class DeliverablesTable(private val tables: SearchTables) : SearchTable() {
@@ -45,7 +47,10 @@ class DeliverablesTable(private val tables: SearchTables) : SearchTable() {
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.modules
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query.join(MODULES).on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
+    return query.join(MODULES).on(table.column(DELIVERABLES.MODULE_ID).eq(MODULES.ID))
   }
 }

@@ -9,9 +9,11 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTO
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -85,9 +87,12 @@ class ObservationSubstratumResultTable(private val tables: SearchTables) : Searc
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.observations
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     return query
         .join(OBSERVATIONS)
-        .on(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+        .on(table.column(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID).eq(OBSERVATIONS.ID))
   }
 }

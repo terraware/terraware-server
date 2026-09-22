@@ -7,9 +7,11 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPUL
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class SubstratumPopulationsTable(private val tables: SearchTables) : SearchTable() {
@@ -46,10 +48,13 @@ class SubstratumPopulationsTable(private val tables: SearchTables) : SearchTable
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.plantingSites
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     return query
         .join(SUBSTRATA)
-        .on(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+        .on(table.column(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID).eq(SUBSTRATA.ID))
         .join(PLANTING_SITE_SUMMARIES)
         .on(SUBSTRATA.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
   }

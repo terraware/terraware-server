@@ -6,9 +6,11 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIO
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class BatchSubLocationsTable(private val tables: SearchTables) : SearchTable() {
@@ -33,8 +35,11 @@ class BatchSubLocationsTable(private val tables: SearchTables) : SearchTable() {
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.batches
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query.join(BATCHES).on(BATCH_SUB_LOCATIONS.BATCH_ID.eq(BATCHES.ID))
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
+    return query.join(BATCHES).on(table.column(BATCH_SUB_LOCATIONS.BATCH_ID).eq(BATCHES.ID))
   }
 
   override val defaultOrderFields: List<OrderField<*>> =
