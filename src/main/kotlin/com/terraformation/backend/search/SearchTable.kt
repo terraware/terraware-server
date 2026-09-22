@@ -272,6 +272,10 @@ abstract class SearchTable {
     )
   }
 
+  open fun withAlias(alias: String): AliasedSearchTable {
+    return AliasedSearchTable(this, alias)
+  }
+
   private fun resolveTableOrNull(relativePath: String): SearchTable? {
     val nextAndRest =
         relativePath.split(NESTED_SUBLIST_DELIMITER, FLATTENED_SUBLIST_DELIMITER, limit = 2)

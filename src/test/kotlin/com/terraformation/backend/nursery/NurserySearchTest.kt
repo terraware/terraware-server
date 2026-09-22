@@ -556,47 +556,44 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       val fields =
           listOf(
                   "id",
-                  "batchWithdrawals.batch_project_name",
-                  "batchWithdrawals.destinationBatchProjectName",
+                  "batchWithdrawals.batch.project_name",
+                  "batchWithdrawals.destinationBatch.project_name",
               )
               .map { prefix.resolve(it) }
+      val filter =
+          OrNode(
+              listOf(
+                  FieldNode(
+                      prefix.resolve("batchWithdrawals.batch.project_name"),
+                      listOf("Project 2"),
+                  ),
+                  FieldNode(
+                      prefix.resolve("batchWithdrawals.destinationBatch.project_name"),
+                      listOf("Project 2"),
+                  ),
+              )
+          )
+      val orderBy = listOf(SearchSortField(prefix.resolve("id")))
 
-      listOf("Project 1", "Project 2").forEach { projectName ->
-        val filter =
-            OrNode(
-                listOf(
-                    FieldNode(
-                        prefix.resolve("batchWithdrawals.batch_project_name"),
-                        listOf(projectName),
-                    ),
-                    FieldNode(
-                        prefix.resolve("batchWithdrawals.destinationBatchProjectName"),
-                        listOf(projectName),
-                    ),
-                )
-            )
-        val orderBy = listOf(SearchSortField(prefix.resolve("id")))
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "$withdrawalId",
+                      "batchWithdrawals" to
+                          listOf(
+                              mapOf(
+                                  "batch" to mapOf("project_name" to "Project 1"),
+                                  "destinationBatch" to mapOf("project_name" to "Project 2"),
+                              ),
+                          ),
+                  ),
+              )
+          )
 
-        val expected =
-            SearchResults(
-                listOf(
-                    mapOf(
-                        "id" to "$withdrawalId",
-                        "batchWithdrawals" to
-                            listOf(
-                                mapOf(
-                                    "batch_project_name" to "Project 1",
-                                    "destinationBatchProjectName" to "Project 2",
-                                ),
-                            ),
-                    ),
-                )
-            )
+      val actual = searchService.search(prefix, fields, mapOf(prefix to filter), orderBy)
 
-        val actual = searchService.search(prefix, fields, mapOf(prefix to filter), orderBy)
-
-        assertJsonEquals(expected, actual)
-      }
+      assertJsonEquals(expected, actual)
     }
 
     @Test
