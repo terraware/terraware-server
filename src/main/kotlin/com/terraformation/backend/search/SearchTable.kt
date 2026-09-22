@@ -74,11 +74,26 @@ abstract class SearchTable {
   abstract val sublists: List<SublistField>
 
   /** The primary key column for the table in question. */
-  abstract val primaryKey: TableField<out Record, out Any?>
+  abstract val primaryKey: Field<out Any?>
+
+  /**
+   * The individual columns that make up [primaryKey]. jOOQ represents a composite primary key as a
+   * single embeddable column, but it doesn't expose embeddable columns on aliased tables at all, so
+   * queries have to refer to the component columns instead.
+   */
+  open val primaryKeyFields: List<Field<*>>
+    get() =
+        if (primaryKey.dataType.isEmbeddable) {
+          primaryKey.dataType.row!!.fields().toList()
+        } else {
+          listOf(primaryKey)
+        }
 
   /** The jOOQ Table object for the table in question. */
   open val fromTable: Table<out Record>
-    get() = primaryKey.table ?: throw IllegalStateException("$primaryKey has no table")
+    get() =
+        (primaryKey as? TableField<out Record, *>)?.table
+            ?: throw IllegalStateException("$primaryKey has no table")
 
   /**
    * If the user's ability to see a particular row in this table can't be determined directly from
