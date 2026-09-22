@@ -8,9 +8,11 @@ import com.terraformation.backend.db.nursery.tables.references.SPECIES_PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class NurserySpeciesProjectsTable(private val tables: SearchTables) : SearchTable() {
@@ -36,7 +38,7 @@ class NurserySpeciesProjectsTable(private val tables: SearchTables) : SearchTabl
 
   override val fields: List<SearchField> = emptyList()
 
-  override fun conditionForVisibility(): Condition {
-    return SPECIES_PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table.column(SPECIES_PROJECTS.ORGANIZATION_ID).`in`(currentUser().organizationRoles.keys)
   }
 }

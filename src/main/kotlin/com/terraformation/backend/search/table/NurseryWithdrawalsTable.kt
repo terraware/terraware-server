@@ -14,9 +14,11 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
@@ -103,8 +105,10 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
           },
       )
 
-  override fun conditionForVisibility(): Condition {
-    return WITHDRAWAL_SUMMARIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table
+        .column(WITHDRAWAL_SUMMARIES.ORGANIZATION_ID)
+        .`in`(currentUser().organizationRoles.keys)
   }
 
   override val defaultOrderFields: List<OrderField<*>> = listOf(WITHDRAWAL_SUMMARIES.ID)

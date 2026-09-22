@@ -10,8 +10,10 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -50,15 +52,17 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
 
   // Users are only visible to other people in the same organizations, and device manager users are
   // not visible via this table.
-  override fun conditionForVisibility(): Condition {
-    return USERS.USER_TYPE_ID.eq(UserType.Individual)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table
+        .column(USERS.USER_TYPE_ID)
+        .eq(UserType.Individual)
         .and(
             DSL.or(
                 listOf(
                     DSL.exists(
                         DSL.selectOne()
                             .from(ORGANIZATION_USERS)
-                            .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
+                            .where(table.column(USERS.ID).eq(ORGANIZATION_USERS.USER_ID))
                             .and(
                                 ORGANIZATION_USERS.ORGANIZATION_ID.`in`(
                                     currentUser().organizationRoles.keys
@@ -69,7 +73,7 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                       DSL.exists(
                           DSL.selectOne()
                               .from(PROJECT_INTERNAL_USERS)
-                              .where(USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID))
+                              .where(table.column(USERS.ID).eq(PROJECT_INTERNAL_USERS.USER_ID))
                       )
                     } else {
                       DSL.exists(
@@ -77,7 +81,7 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                               .from(PROJECTS)
                               .join(PROJECT_INTERNAL_USERS)
                               .on(PROJECTS.ID.eq(PROJECT_INTERNAL_USERS.PROJECT_ID))
-                              .where(USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID))
+                              .where(table.column(USERS.ID).eq(PROJECT_INTERNAL_USERS.USER_ID))
                               .and(
                                   PROJECTS.ORGANIZATION_ID.`in`(
                                       currentUser().organizationRoles.keys

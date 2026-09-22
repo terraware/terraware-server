@@ -11,8 +11,10 @@ import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_O
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -55,14 +57,14 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
           },
       )
 
-  override fun conditionForVisibility(): Condition {
+  override fun conditionForVisibility(table: Table<*>): Condition {
     return if (currentUser().canReadAllAcceleratorDetails()) {
       DSL.trueCondition()
     } else {
       DSL.exists(
           DSL.selectOne()
               .from(PROJECTS)
-              .where(PROJECT_VARIABLE_VALUES.PROJECT_ID.eq(PROJECTS.ID))
+              .where(table.column(PROJECT_VARIABLE_VALUES.PROJECT_ID).eq(PROJECTS.ID))
               .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
       )
     }
