@@ -31,6 +31,10 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
   }
 
   fun parse(content: ByteArray, filename: String?): Geometry {
+    return parseWithFormat(content, filename).geometry
+  }
+
+  fun parseWithFormat(content: ByteArray, filename: String?): ParsedGeometryFile {
     val detectedContentType =
         Tika().detect(content, filename)
             ?: throw ContentFormatException("Unable to determine file type")
@@ -47,16 +51,22 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     }
   }
 
-  private fun parseGeoJson(content: ByteArray): Geometry {
+  private fun parseGeoJson(content: ByteArray): ParsedGeometryFile {
     return try {
       val geometry = objectMapper.readValue<Geometry>(content)
-      if (geometry is GeometryCollection) geometry.union() else geometry
+      ParsedGeometryFile(
+          if (geometry is GeometryCollection) geometry.union() else geometry,
+          GeometryFileFormat.GeoJSON,
+      )
     } catch (e: JsonParseException) {
       throw ContentFormatException("File does not appear to be valid GeoJSON")
     }
   }
 
-  private fun parseKml(inputStream: InputStream): Geometry {
+  private fun parseKml(
+      inputStream: InputStream,
+      format: GeometryFileFormat = GeometryFileFormat.KML,
+  ): ParsedGeometryFile {
     val parentFeature =
         Parser(KMLConfiguration()).parse(inputStream) as? SimpleFeature
             ?: throw ContentFormatException("Unable to extract top-level information from KML file")
@@ -71,11 +81,14 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       throw ContentFormatException("No valid geometries found in KML file")
     }
 
-    return geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT }
+    return ParsedGeometryFile(
+        geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT },
+        format,
+    )
   }
 
   /** Parses an archive containing KML or a shapefile and its secondary files. */
-  private fun parseZip(content: ByteArray): Geometry {
+  private fun parseZip(content: ByteArray): ParsedGeometryFile {
     return createTempFile(suffix = ".zip").useAndDelete { tempFile ->
       tempFile.writeBytes(content)
 
@@ -92,16 +105,16 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     }
   }
 
-  private fun parseZippedKml(zip: ZipFile): Geometry? {
+  private fun parseZippedKml(zip: ZipFile): ParsedGeometryFile? {
     val entry =
         zip.entries().asSequence().firstOrNull {
           !it.isDirectory && it.name.endsWith(".kml", ignoreCase = true)
         } ?: return null
 
-    return zip.getInputStream(entry).use { parseKml(it) }
+    return zip.getInputStream(entry).use { parseKml(it, GeometryFileFormat.KMZ) }
   }
 
-  private fun parseZippedShapefile(zip: ZipFile): Geometry {
+  private fun parseZippedShapefile(zip: ZipFile): ParsedGeometryFile {
     val entries =
         zip.entries()
             .asSequence()
@@ -168,6 +181,9 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     if (geometries.isEmpty()) {
       throw ContentFormatException("No valid geometries found in shapefile")
     }
-    return geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT }
+    return ParsedGeometryFile(
+        geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT },
+        GeometryFileFormat.Shapefile,
+    )
   }
 }

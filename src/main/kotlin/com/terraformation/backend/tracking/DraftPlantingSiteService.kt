@@ -3,10 +3,13 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.tracking.model.BoundaryFileModel
+import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.io.IOException
 import org.geotools.util.ContentFormatException
-import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.util.PolygonExtracter
 import org.xml.sax.SAXException
 
 @Named
@@ -15,7 +18,7 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
       draftPlantingSiteId: DraftPlantingSiteId,
       content: ByteArray,
       filename: String?,
-  ): Geometry {
+  ): BoundaryFileModel {
     requirePermissions { updateDraftPlantingSite(draftPlantingSiteId) }
 
     return try {
@@ -24,7 +27,25 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
         "kmz",
         "geojson",
         "json",
-        "zip" -> geometryFileParser.parse(content, filename)
+        "zip" -> {
+          val parsed = geometryFileParser.parseWithFormat(content, filename)
+          val polygonArray =
+              PolygonExtracter.getPolygons(parsed.geometry)
+                  .filterIsInstance<Polygon>()
+                  .filterNot { it.isEmpty }
+                  .toTypedArray()
+          val polygons =
+              parsed.geometry.factory.createMultiPolygon(polygonArray).also {
+                it.srid = parsed.geometry.srid
+              }
+          BoundaryFileModel(
+              areaHa = polygons.calculateAreaHectares(),
+              filename = filename,
+              format = parsed.format,
+              geometry = parsed.geometry,
+              numPolygons = polygons.numGeometries,
+          )
+        }
         else ->
             throw ContentFormatException(
                 "Boundary file must be .kml, .kmz, .geojson, .json, or .zip"
