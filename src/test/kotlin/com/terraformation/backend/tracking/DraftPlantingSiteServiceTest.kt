@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
@@ -8,6 +9,7 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.util.toMultiPolygon
 import io.mockk.every
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
@@ -15,19 +17,19 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import org.geotools.util.ContentFormatException
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.locationtech.jts.geom.Geometry
 import org.springframework.security.access.AccessDeniedException
 
 class DraftPlantingSiteServiceTest : RunsAsUser {
   override val user = mockUser()
 
-  private val parser = GeometryFileParser(jacksonObjectMapper().registerModule(GeometryModule()))
+  private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
+  private val parser = GeometryFileParser(objectMapper)
   private val service = DraftPlantingSiteService(parser)
   private val draftId = DraftPlantingSiteId(1)
 
@@ -37,32 +39,40 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["kml", "kmz", "geojson", "json", "GEOJSON"])
+  @ValueSource(strings = ["kml", "kmz", "geojson", "json", "GEOJSON", "zip", "ZIP"])
   fun `parses supported geometry files`(extension: String) {
-    val resourceExtension = if (extension in listOf("json", "GEOJSON")) "geojson" else extension
+    val resourceExtension =
+        when (extension.lowercase()) {
+          "json",
+          "geojson" -> "geojson"
+          "zip" -> "kmz"
+          else -> extension
+        }
     val content = javaClass.getResource("/gis/triangle.$resourceExtension")!!.readBytes()
-    val geometries = service.uploadBoundaryFile(draftId, content, "boundary.$extension")
+    val geometry = service.parseBoundaryFile(draftId, content, "boundary.$extension")
 
-    assertEquals(1, geometries.size)
-    assertGeometryEquals(parser.parse(content, "triangle.$resourceExtension"), geometries.single())
+    assertGeometryEquals(parser.parse(content, "triangle.$resourceExtension"), geometry)
   }
 
-  @Test
-  fun `parses zipped shapefile and transforms coordinates`() {
-    val geometries = service.uploadBoundaryFile(draftId, shapefileZip(), "boundary.zip")
+  @ParameterizedTest
+  @ValueSource(strings = ["PlantingSite", "PlantingZones"])
+  fun `parses zipped shapefile and transforms coordinates`(basename: String) {
+    val geometry =
+        service.parseBoundaryFile(draftId, shapefileZip(basename = basename), "boundary.zip")
+    val expected =
+        javaClass.getResourceAsStream("/gis/$basename.geojson").use {
+          objectMapper.readValue<Geometry>(it)
+        }
 
-    assertEquals(1, geometries.size)
-    val geometry = geometries.single()
-    assertFalse(geometry.isEmpty)
+    assertGeometryEquals(expected.toMultiPolygon().norm(), geometry.toMultiPolygon().norm())
     assertEquals(SRID.LONG_LAT, geometry.srid)
-    assertTrue(geometry.coordinates.all { it.x in -180.0..180.0 && it.y in -90.0..90.0 })
   }
 
   @ParameterizedTest
   @ValueSource(strings = ["shp", "shx", "dbf", "prj"])
   fun `rejects missing shapefile components`(extension: String) {
     assertThrows<ContentFormatException> {
-      service.uploadBoundaryFile(draftId, shapefileZip(extension), "boundary.zip")
+      service.parseBoundaryFile(draftId, shapefileZip(extension), "boundary.zip")
     }
   }
 
@@ -70,7 +80,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   fun `rejects multiple shapefiles`() {
     val content = javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes()
     assertThrows<ContentFormatException> {
-      service.uploadBoundaryFile(draftId, content, "boundary.zip")
+      service.parseBoundaryFile(draftId, content, "boundary.zip")
     }
   }
 
@@ -78,14 +88,14 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   @ValueSource(strings = ["kml", "kmz", "geojson", "json", "zip", "txt"])
   fun `rejects malformed or unsupported files`(extension: String) {
     assertThrows<ContentFormatException> {
-      service.uploadBoundaryFile(draftId, "not a geometry".toByteArray(), "boundary.$extension")
+      service.parseBoundaryFile(draftId, "not a geometry".toByteArray(), "boundary.$extension")
     }
   }
 
   @Test
   fun `requires filename`() {
     assertThrows<ContentFormatException> {
-      service.uploadBoundaryFile(draftId, byteArrayOf(), null)
+      service.parseBoundaryFile(draftId, byteArrayOf(), null)
     }
   }
 
@@ -95,18 +105,21 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
     every { user.canReadDraftPlantingSite(draftId) } returns true
 
     assertThrows<AccessDeniedException> {
-      service.uploadBoundaryFile(draftId, byteArrayOf(), "bad.zip")
+      service.parseBoundaryFile(draftId, byteArrayOf(), "bad.zip")
     }
   }
 
-  private fun shapefileZip(omitExtension: String? = null): ByteArray {
+  private fun shapefileZip(
+      omitExtension: String? = null,
+      basename: String = "PlantingSite",
+  ): ByteArray {
     val output = ByteArrayOutputStream()
     ZipOutputStream(output).use { zipOutput ->
       ZipInputStream(javaClass.getResourceAsStream("/tracking/TwoShapefiles.zip")!!).use { input ->
         generateSequence { input.nextEntry }
             .forEach { entry ->
               if (
-                  entry.name.startsWith("PlantingSite.") &&
+                  entry.name.startsWith("$basename.") &&
                       entry.name.substringAfterLast('.') != omitExtension
               ) {
                 zipOutput.putNextEntry(ZipEntry(entry.name))
