@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
@@ -216,6 +217,34 @@ class GeometryFileParserTest {
         )
     val exception = assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
     assertEquals("Shapefile exceeds 209715200 total uncompressed bytes", exception.message)
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      "triangle.geojson, triangle.geojson, GeoJSON",
+      "triangle.kml, triangle.kml, KML",
+      "triangle.kmz, triangle.kmz, KMZ",
+      "triangle.kmz, triangle.zip, KMZ",
+  )
+  fun `parseWithFormat returns geometry and detected format`(
+      resourceName: String,
+      filename: String,
+      expectedFormat: GeometryFileFormat,
+  ) {
+    val content = javaClass.getResource("/gis/$resourceName")!!.readBytes()
+    val parsed = parser.parseWithFormat(content, filename)
+    assertEquals(expectedFormat, parsed.format)
+    assertGeometryEquals(triangle, parsed.geometry.toMultiPolygon().norm())
+  }
+
+  @Test
+  fun `parseWithFormat returns geometry and shapefile format for zipped shapefile`() {
+    val expected = javaClass.getResourceAsStream("/gis/PlantingSite.geojson").use {
+      objectMapper.readValue<Geometry>(it)
+    }
+    val parsed = parser.parseWithFormat(shapefileZip(), "boundary.zip")
+    assertEquals(GeometryFileFormat.Shapefile, parsed.format)
+    assertGeometryEquals(expected.toMultiPolygon().norm(), parsed.geometry.toMultiPolygon().norm())
   }
 
   private fun shapefileZip(
