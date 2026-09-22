@@ -5,13 +5,12 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.util.EnumSet
 import org.jooq.Condition
-import org.jooq.Field
 import org.jooq.impl.DSL
 
 /** Search field for ID columns that use wrapper types. */
 abstract class IdField<T : Any>(
     override val fieldName: String,
-    override val databaseField: Field<T?>,
+    override val getDatabaseField: DatabaseFieldSupplier<T>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<T>() {
   override val localize: Boolean

@@ -15,6 +15,21 @@ import org.jooq.impl.DSL
 import org.jooq.impl.QOM
 
 /**
+ * Returns a jOOQ field that holds a search field's value, given the jOOQ table the field's data is
+ * being read from.
+ *
+ * A search table can appear more than once in the same query, e.g., if a search asks for both
+ * `createdBy.firstName` and `modifiedBy.firstName`. Each occurrence of the table gets its own
+ * alias, so search field definitions can't refer to jOOQ columns directly; they have to render
+ * themselves against whichever instance of the table a particular query is using.
+ *
+ * Fields that map directly to columns can use [columnSupplier]. Fields whose values are computed by
+ * SQL expressions need to define their own suppliers so that any column references in the
+ * expressions are resolved against the correct instance of the table.
+ */
+typealias DatabaseFieldSupplier<T> = (Table<*>) -> Field<T?>
+
+/**
  * Returns the field from this table with the same name and collation as the requested field. This
  * can be used to map fields onto aliased tables.
  */
@@ -46,6 +61,15 @@ fun <T> columnsEqual(
     } else {
       leftTable.column(leftColumn).eq(rightTable.column(rightColumn))
     }
+
+/**
+ * Returns a [DatabaseFieldSupplier] for a column of a search field's own table. The column is
+ * looked up on whichever instance of the table is in use, so it picks up the table's alias if it
+ * has one.
+ */
+fun <T> columnSupplier(column: Field<T?>): DatabaseFieldSupplier<T> = { table ->
+  table.column(column)
+}
 
 /**
  * Metadata about a field that can be included in accession search requests. This is used by

@@ -3,16 +3,15 @@ package com.terraformation.backend.search.field
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.SearchTable
 import java.text.NumberFormat
-import org.jooq.Field
 
 /** Search field for numeric columns that don't allow fractional values. */
 class LongField(
     fieldName: String,
-    databaseField: Field<Long?>,
+    getDatabaseField: DatabaseFieldSupplier<Long>,
     table: SearchTable,
     localize: Boolean = true,
     exportable: Boolean = true,
-) : NumericSearchField<Long>(fieldName, databaseField, table, localize, exportable) {
+) : NumericSearchField<Long>(fieldName, getDatabaseField, table, localize, exportable) {
   override fun fromString(value: String) =
       if (localize) numberFormat.parse(value).toLong() else value.toLong()
 
@@ -20,7 +19,7 @@ class LongField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      LongField(rawFieldName(), databaseField, table, false, false)
+      LongField(rawFieldName(), getDatabaseField, table, false, false)
     } else {
       null
     }

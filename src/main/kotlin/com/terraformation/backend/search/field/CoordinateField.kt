@@ -19,7 +19,7 @@ import org.locationtech.jts.geom.Geometry
  */
 class CoordinateField(
     fieldName: String,
-    private val geometryField: Field<Geometry?>,
+    private val getGeometryField: DatabaseFieldSupplier<Geometry>,
     /** Which vertex of the geometry's exterior ring to return. 1-indexed. */
     private val vertexIndex: Int,
     private val axis: Axis,
@@ -29,7 +29,7 @@ class CoordinateField(
 ) :
     NumericSearchField<BigDecimal>(
         fieldName,
-        coordinateExtractionField(geometryField, vertexIndex, axis),
+        { coordinateExtractionField(getGeometryField(it), vertexIndex, axis) },
         table,
         localize,
         exportable,
@@ -56,7 +56,7 @@ class CoordinateField(
     return if (localize) {
       CoordinateField(
           fieldName = rawFieldName(),
-          geometryField = geometryField,
+          getGeometryField = getGeometryField,
           vertexIndex = vertexIndex,
           axis = axis,
           table = table,

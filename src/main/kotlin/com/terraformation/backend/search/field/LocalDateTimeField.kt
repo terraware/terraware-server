@@ -9,13 +9,12 @@ import java.time.format.DateTimeParseException
 import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Record
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 /** Search field for columns that have local date time. */
 class LocalDateTimeField(
     override val fieldName: String,
-    override val databaseField: TableField<*, LocalDateTime?>,
+    override val getDatabaseField: DatabaseFieldSupplier<LocalDateTime>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<LocalDateTime>() {
   override val localize: Boolean
