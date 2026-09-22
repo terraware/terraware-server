@@ -48,6 +48,47 @@ class GeometryFileParserTest {
   }
 
   @Test
+  fun `unions overlapping polygons in GeoJSON geometry collection`() {
+    val content =
+        """
+        {
+          "type": "GeometryCollection",
+          "geometries": [
+            {
+              "type": "Polygon",
+              "coordinates": [[[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]]
+            },
+            {
+              "type": "Polygon",
+              "coordinates": [[[1, 0], [3, 0], [3, 2], [1, 2], [1, 0]]]
+            }
+          ]
+        }
+        """
+            .trimIndent()
+            .encodeToByteArray()
+    val expected =
+        geometryFactory.createPolygon(
+            arrayOf(
+                Coordinate(0.0, 0.0),
+                Coordinate(1.0, 0.0),
+                Coordinate(2.0, 0.0),
+                Coordinate(3.0, 0.0),
+                Coordinate(3.0, 2.0),
+                Coordinate(2.0, 2.0),
+                Coordinate(1.0, 2.0),
+                Coordinate(0.0, 2.0),
+                Coordinate(0.0, 0.0),
+            )
+        )
+
+    val geometry = parser.parse(content, "overlapping-polygons.geojson")
+
+    assertGeometryEquals(expected.norm(), geometry.norm())
+    assertEquals(SRID.LONG_LAT, geometry.srid)
+  }
+
+  @Test
   fun `can parse KML file`() {
     runTriangleScenario("/gis/triangle.kml")
   }
