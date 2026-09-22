@@ -7,11 +7,13 @@ import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.toMultiPolygon
 import io.mockk.every
 import java.io.ByteArrayOutputStream
+import java.math.BigDecimal
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -49,23 +51,78 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
           else -> extension
         }
     val content = javaClass.getResource("/gis/triangle.$resourceExtension")!!.readBytes()
-    val geometry = service.parseBoundaryFile(draftId, content, "boundary.$extension")
+    val result = service.parseBoundaryFile(draftId, content, "boundary.$extension")
 
-    assertGeometryEquals(parser.parse(content, "triangle.$resourceExtension"), geometry)
+    assertGeometryEquals(parser.parse(content, "triangle.$resourceExtension"), result.geometry)
+    assertEquals("boundary.$extension", result.filename)
+    assertEquals(1, result.numPolygons)
+    assertEquals(
+        when (resourceExtension) {
+          "geojson" -> GeometryFileFormat.GeoJSON
+          "kml" -> GeometryFileFormat.KML
+          else -> GeometryFileFormat.KMZ
+        },
+        result.format,
+    )
   }
 
   @ParameterizedTest
   @ValueSource(strings = ["PlantingSite", "PlantingZones"])
   fun `parses zipped shapefile and transforms coordinates`(basename: String) {
-    val geometry =
+    val result =
         service.parseBoundaryFile(draftId, shapefileZip(basename = basename), "boundary.zip")
     val expected =
         javaClass.getResourceAsStream("/gis/$basename.geojson").use {
           objectMapper.readValue<Geometry>(it)
         }
 
-    assertGeometryEquals(expected.toMultiPolygon().norm(), geometry.toMultiPolygon().norm())
-    assertEquals(SRID.LONG_LAT, geometry.srid)
+    assertGeometryEquals(expected.toMultiPolygon().norm(), result.geometry.toMultiPolygon().norm())
+    assertEquals(SRID.LONG_LAT, result.geometry.srid)
+    assertEquals(GeometryFileFormat.Shapefile, result.format)
+    assertEquals("boundary.zip", result.filename)
+  }
+
+  @Test
+  fun `counts disjoint polygons and calculates area after union`() {
+    val polygon =
+        """
+        {
+          "type": "Polygon",
+          "coordinates": [[
+            [-76.13567116641384, 5.989357251936355],
+            [-76.12762679268639, 5.989357251773201],
+            [-76.12762679270281, 5.979015683955292],
+            [-76.13567116598097, 5.979015684419131],
+            [-76.13567116641384, 5.989357251936355]
+          ]]
+        }
+        """
+            .trimIndent()
+    val otherPolygon = polygon.replace("-76.", "-77.")
+    val content =
+        """{"type":"GeometryCollection","geometries":[$polygon,$polygon,$otherPolygon]}"""
+            .toByteArray()
+
+    val result = service.parseBoundaryFile(draftId, content, "boundary.json")
+
+    assertEquals(2, result.numPolygons)
+    assertEquals(BigDecimal("203.715"), result.areaHa)
+    assertEquals(GeometryFileFormat.GeoJSON, result.format)
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings =
+          [
+              "{\"type\":\"Point\",\"coordinates\":[0,0]}",
+              "{\"type\":\"LineString\",\"coordinates\":[[0,0],[1,1]]}",
+          ]
+  )
+  fun `returns zero polygons and area for nonpolygonal geometry`(content: String) {
+    val result = service.parseBoundaryFile(draftId, content.toByteArray(), "boundary.json")
+
+    assertEquals(0, result.numPolygons)
+    assertEquals(BigDecimal("0.000"), result.areaHa)
   }
 
   @ParameterizedTest
