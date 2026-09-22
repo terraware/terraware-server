@@ -157,14 +157,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_sections.variable_type_id references variable_types.id via variable_sections_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_sections_variable_type_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="variable_sections.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_sections_variable_id_variable_type_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
                                                 <td class="constraint detail">variable_sections_variable_id_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="variable_sections.variable_type_id references variable_types.id via variable_sections_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_sections_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -206,14 +206,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_sections.parent_variable_type_id references variable_types.id via variable_sections_parent_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_sections_parent_variable_type_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="variable_sections.[parent_variable_id, parent_variable_type_id] references variables.[id, variable_type_id] via variable_sections_parent_variable_id_parent_variable_type__fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
                                                 <td class="constraint detail">variable_sections_parent_variable_id_parent_variable_type__fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="variable_sections.parent_variable_type_id references variable_types.id via variable_sections_parent_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_sections_parent_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -301,12 +301,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>variable_sections_variable_type_id_check</td>
-                                    <td>(variable_type_id &#61; 8)</td>
-                                </tr>
-                                <tr>
                                     <td>variable_sections_parent_variable_type_id_check</td>
                                     <td>((parent_variable_type_id IS NULL) OR (parent_variable_type_id &#61; 8))</td>
+                                </tr>
+                                <tr>
+                                    <td>variable_sections_variable_type_id_check</td>
+                                    <td>(variable_type_id &#61; 8)</td>
                                 </tr>
                                 </tbody>
                             </table>

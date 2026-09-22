@@ -895,7 +895,7 @@
 <polygon fill="none" stroke="black" points="744,-402.38 744,-424.38 928,-424.38 928,-402.38 744,-402.38"/>
 <text text-anchor="start" x="764" y="-410.58" font-family="Helvetica,sans-Serif" font-size="11.00">estimated_count</text>
 <polygon fill="none" stroke="black" points="928,-402.38 928,-424.38 1028,-424.38 1028,-402.38 928,-402.38"/>
-<text text-anchor="start" x="931" y="-410.58" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="931" y="-410.58" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="744,-380.38 744,-402.38 928,-402.38 928,-380.38 744,-380.38"/>
 <text text-anchor="start" x="764" y="-388.58" font-family="Helvetica,sans-Serif" font-size="11.00">estimated_weight_quantity</text>
 <polygon fill="none" stroke="black" points="928,-380.38 928,-402.38 1028,-402.38 1028,-380.38 928,-380.38"/>

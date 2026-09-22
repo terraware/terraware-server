@@ -94,7 +94,7 @@
 <polygon fill="none" stroke="black" points="224.5,-1319 224.5,-1341 455.5,-1341 455.5,-1319 224.5,-1319"/>
 <text text-anchor="start" x="244.5" y="-1327.2" font-family="Helvetica,sans-Serif" font-size="11.00">est_seed_count</text>
 <polygon fill="none" stroke="black" points="455.5,-1319 455.5,-1341 555.5,-1341 555.5,-1319 455.5,-1319"/>
-<text text-anchor="start" x="458.5" y="-1327.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="458.5" y="-1327.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="224.5,-1297 224.5,-1319 455.5,-1319 455.5,-1297 224.5,-1297"/>
 <text text-anchor="start" x="244.5" y="-1305.2" font-family="Helvetica,sans-Serif" font-size="11.00">drying_end_date</text>
 <polygon fill="none" stroke="black" points="455.5,-1297 455.5,-1319 555.5,-1319 555.5,-1297 455.5,-1297"/>
@@ -225,7 +225,7 @@
 <polygon fill="none" stroke="black" points="224.5,-659 224.5,-681 455.5,-681 455.5,-659 224.5,-659"/>
 <text text-anchor="start" x="244.5" y="-667.2" font-family="Helvetica,sans-Serif" font-size="11.00">total_withdrawn_count</text>
 <polygon fill="none" stroke="black" points="455.5,-659 455.5,-681 555.5,-681 555.5,-659 455.5,-659"/>
-<text text-anchor="start" x="458.5" y="-667.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="458.5" y="-667.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="224.5,-637 224.5,-659 455.5,-659 455.5,-637 224.5,-637"/>
 <text text-anchor="start" x="244.5" y="-645.2" font-family="Helvetica,sans-Serif" font-size="11.00">total_withdrawn_weight_grams</text>
 <polygon fill="none" stroke="black" points="455.5,-637 455.5,-659 555.5,-659 555.5,-637 455.5,-637"/>
