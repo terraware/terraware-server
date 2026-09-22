@@ -4,6 +4,7 @@ import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.AccessionsTable
 import com.terraformation.backend.util.MemoizedValue
+import kotlin.collections.distinctBy
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -563,7 +564,7 @@ class NestedQueryBuilder(
    * example, if the caller asks for `viabilityTests_viabilityTestResults_recordingDate`, this set
    * will include both `viabilityTests` and `viabilityTestResults`.
    */
-  private val flattenedSublists = mutableSetOf<SublistField>()
+  private val flattenedSublists = mutableSetOf<ReferencedSublist>()
 
   /**
    * Zero-indexed position of each field in the `SELECT` clause. Both scalar and sublist fields are
@@ -875,9 +876,12 @@ class NestedQueryBuilder(
   }
 
   private fun addFlattenedSublists(sublists: Collection<SublistField>) {
+    var parentTable = prefix.searchTable
+
     sublists.forEach { sublist ->
       if (sublist.isFlattened) {
-        flattenedSublists.add(sublist)
+        flattenedSublists.add(ReferencedSublist(parentTable, sublist))
+        parentTable = sublist.searchTable
       } else {
         throw IllegalArgumentException("BUG! Sublist $sublist is not flattened")
       }
@@ -939,7 +943,7 @@ class NestedQueryBuilder(
    * rows the user is able to see, since inaccessible projects were filtered out already.
    */
   private fun joinFlattenedSublists(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
-    return flattenedSublists.fold(query) { joinedQuery, sublist ->
+    return flattenedSublists.fold(query) { joinedQuery, (_, sublist) ->
       val sublistVisibilityCondition = sublist.searchTable.conditionForVisibility()
       val joinWithForeignKey =
           joinedQuery.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
@@ -1343,11 +1347,11 @@ class NestedQueryBuilder(
       rootPrefix: SearchFieldPrefix,
       criteria: SearchNode,
   ): SelectJoinStep<T> {
-    val referencedSublists = criteria.referencedSublists().distinctBy { it.searchTable }
-    val referencedTables = referencedSublists.map { it.searchTable }.toSet()
+    val referencedSublists = criteria.referencedSublists().distinctBy { it.sublist.searchTable }
+    val referencedTables = referencedSublists.map { it.sublist.searchTable }.toSet()
 
     val joinedQuery =
-        referencedSublists.fold(selectFrom) { query, sublist ->
+        referencedSublists.fold(selectFrom) { query, (_, sublist) ->
           query.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
         }
 
