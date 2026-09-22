@@ -11,10 +11,13 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
+import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.tracking.DraftPlantingSiteService
 import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
+import com.terraformation.backend.tracking.model.BoundaryFileModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
@@ -86,7 +89,8 @@ class DraftPlantingSitesController(
       description =
           "Accepts KML (.kml), KMZ (.kmz), GeoJSON (.geojson or .json), or a ZIP containing " +
               "one shapefile with matching .shp, .shx, .dbf, and .prj files. " +
-              "The file is parsed and the geometry is returned.",
+              "Returns the parsed geometry, original filename, detected format, number of " +
+              "separate polygons, and area in hectares.",
   )
   @ApiResponse200
   @ApiResponse413(description = "The file exceeds the $MAX_BOUNDARY_FILE_SIZE_MB MB limit.")
@@ -100,9 +104,9 @@ class DraftPlantingSitesController(
       throw MaxUploadSizeExceededException(maxFileSize)
     }
 
-    val geometry = draftPlantingSiteService.parseBoundaryFile(id, file.bytes, file.originalFilename)
+    val model = draftPlantingSiteService.parseBoundaryFile(id, file.bytes, file.originalFilename)
 
-    return ParseDraftPlantingSiteBoundaryResponsePayload(geometry)
+    return ParseDraftPlantingSiteBoundaryResponsePayload(model)
   }
 
   @DeleteMapping("/{id}")
@@ -200,8 +204,30 @@ data class CreateDraftPlantingSiteRequestPayload(
 data class CreateDraftPlantingSiteResponsePayload(val id: DraftPlantingSiteId) :
     SuccessResponsePayload
 
-data class ParseDraftPlantingSiteBoundaryResponsePayload(val geometry: Geometry) :
-    SuccessResponsePayload
+data class ParseDraftPlantingSiteBoundaryResponsePayload(
+    @Schema(description = "Area of the returned polygons in hectares, excluding holes.")
+    val areaHa: BigDecimal,
+    @Schema(description = "Original filename of the uploaded file.") val filename: String,
+    @Schema(
+        description =
+            "Detected format of the parsed contents. A ZIP containing KML is reported as KMZ; " +
+                "a ZIP containing a shapefile is reported as Shapefile."
+    )
+    val format: GeometryFileFormat,
+    val geometry: Geometry,
+    @Schema(description = "Number of separate polygons after overlapping polygons are combined.")
+    val numPolygons: Int,
+) : SuccessResponsePayload {
+  constructor(
+      model: BoundaryFileModel
+  ) : this(
+      areaHa = model.areaHa,
+      filename = model.filename,
+      format = model.format,
+      geometry = model.geometry,
+      numPolygons = model.numPolygons,
+  )
+}
 
 data class UpdateDraftPlantingSiteRequestPayload(
     @Schema(
