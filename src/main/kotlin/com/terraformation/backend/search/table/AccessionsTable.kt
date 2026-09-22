@@ -89,7 +89,11 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.COLLECTION_SITE_COUNTRY_SUBDIVISION,
         ),
         textField("collectionSiteLandowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
-        textField("collectionSiteName", ACCESSIONS.COLLECTION_SITE_NAME.collate("en-x-icu")),
+        textField(
+            "collectionSiteName",
+            ACCESSIONS.COLLECTION_SITE_NAME,
+            collation = "en-x-icu",
+        ),
         textField("collectionSiteNotes", ACCESSIONS.COLLECTION_SITE_NOTES),
         enumField("collectionSource", ACCESSIONS.COLLECTION_SOURCE_ID),
         timestampField("createdTime", ACCESSIONS.CREATED_TIME),
