@@ -131,7 +131,7 @@ dependencies {
   implementation("net.sf.geographiclib:GeographicLib-Java:2.1")
   implementation("org.apache.tika:tika-core:3.3.2")
   implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
-  implementation("org.commonmark:commonmark:0.29.0")
+  implementation("org.commonmark:commonmark:0.30.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
   implementation("org.freemarker:freemarker:2.3.35")
