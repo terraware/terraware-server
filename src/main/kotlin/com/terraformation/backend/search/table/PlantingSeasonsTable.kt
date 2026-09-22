@@ -16,6 +16,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.Table
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -29,12 +30,23 @@ class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
               PLANTING_SEASONS.ID,
               PLANTING_SEASON_ALLOCATED_SPECIES.PLANTING_SEASON_ID,
           ),
-          plantingDateRequests.asMultiValueSublist(
-              "plantingDateRequests",
-              PLANTING_SEASONS.ID.eq(
-                  PLANTING_DATE_REQUESTS.scheduledPlantingDates.PLANTING_SEASON_ID
-              ),
-          ),
+          plantingDateRequests.asMultiValueSublist("plantingDateRequests") { thisTable, otherTable
+            ->
+            DSL.exists(
+                DSL.selectOne()
+                    .from(SCHEDULED_PLANTING_DATES)
+                    .where(
+                        SCHEDULED_PLANTING_DATES.ID.eq(
+                            otherTable.column(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID)
+                        )
+                    )
+                    .and(
+                        SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(
+                            thisTable.column(PLANTING_SEASONS.ID)
+                        )
+                    )
+            )
+          },
           plantingSites.asSingleValueSublist(
               "plantingSite",
               PLANTING_SEASONS.PLANTING_SITE_ID,

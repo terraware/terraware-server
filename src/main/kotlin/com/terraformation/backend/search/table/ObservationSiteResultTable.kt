@@ -38,26 +38,31 @@ class ObservationSiteResultTable(private val tables: SearchTables) : SearchTable
               OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID,
               PLANTING_SITE_HISTORIES.ID,
           ),
-          observationStratumResult.asMultiValueSublist(
-              "stratumResults",
-              OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID)
-                  .and(
-                      DSL.exists(
-                          DSL.selectOne()
-                              .from(STRATUM_HISTORIES)
-                              .where(
-                                  STRATUM_HISTORIES.ID.eq(
-                                      OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
-                                  )
-                              )
-                              .and(
-                                  STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                      OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
-                                  )
-                              )
-                      )
-                  ),
-          ),
+          observationStratumResult.asMultiValueSublist("stratumResults") { thisTable, otherTable ->
+            thisTable
+                .column(OBSERVATION_SITE_RESULTS.OBSERVATION_ID)
+                .eq(otherTable.column(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID))
+                .and(
+                    DSL.exists(
+                        DSL.selectOne()
+                            .from(STRATUM_HISTORIES)
+                            .where(
+                                STRATUM_HISTORIES.ID.eq(
+                                    otherTable.column(
+                                        OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
+                                    )
+                                )
+                            )
+                            .and(
+                                STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                                    thisTable.column(
+                                        OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
+                                    )
+                                )
+                            )
+                    )
+                )
+          },
       )
     }
   }

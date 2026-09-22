@@ -37,11 +37,12 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
               SPECIES.ID,
               FACILITY_INVENTORIES.SPECIES_ID,
           ),
-          inventories.asSingleValueSublist(
-              "inventory",
-              SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
-                  .and(SPECIES.ID.eq(INVENTORIES.SPECIES_ID)),
-          ),
+          inventories.asSingleValueSublist("inventory") { thisTable, otherTable ->
+            thisTable
+                .column(SPECIES.ORGANIZATION_ID)
+                .eq(otherTable.column(INVENTORIES.ORGANIZATION_ID))
+                .and(thisTable.column(SPECIES.ID).eq(otherTable.column(INVENTORIES.SPECIES_ID)))
+          },
           nurserySpeciesProjects.asMultiValueSublist(
               "nurseryProjects",
               SPECIES.ID,

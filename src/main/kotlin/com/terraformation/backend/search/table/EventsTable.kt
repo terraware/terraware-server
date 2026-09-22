@@ -25,11 +25,11 @@ class EventsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           modules.asSingleValueSublist("module", EVENTS.MODULE_ID, MODULES.ID),
-          projects.asMultiValueSublist(
-              "projects",
-              eventProjectsCondition,
-              isTraversedForGetAllFields = false,
-          ),
+          projects.asMultiValueSublist("projects", isTraversedForGetAllFields = false) {
+              thisTable,
+              otherTable ->
+            eventProjectsCondition(thisTable, otherTable)
+          },
       )
     }
   }
@@ -63,11 +63,11 @@ class EventsTable(tables: SearchTables) : SearchTable() {
 
   override val defaultOrderFields: List<OrderField<*>> = listOf(EVENTS.START_TIME, EVENTS.ID)
 
-  private val eventProjectsCondition =
+  private fun eventProjectsCondition(eventsTable: Table<*>, projectsTable: Table<*>): Condition =
       DSL.exists(
           DSL.selectOne()
               .from(EVENT_PROJECTS)
-              .where(EVENT_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
-              .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID))
+              .where(EVENT_PROJECTS.PROJECT_ID.eq(projectsTable.column(PROJECTS.ID)))
+              .and(EVENT_PROJECTS.EVENT_ID.eq(eventsTable.column(EVENTS.ID)))
       )
 }

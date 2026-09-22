@@ -37,15 +37,16 @@ class ObservationPlotResultTable(private val tables: SearchTables) : SearchTable
               OBSERVATION_PLOT_RESULTS.OBSERVATION_ID,
               OBSERVATIONS.ID,
           ),
-          observationPlots.asSingleValueSublist(
-              "observationPlot",
-              OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID)
-                  .and(
-                      OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(
-                          OBSERVATION_PLOTS.MONITORING_PLOT_ID
-                      )
-                  ),
-          ),
+          observationPlots.asSingleValueSublist("observationPlot") { thisTable, otherTable ->
+            thisTable
+                .column(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID)
+                .eq(otherTable.column(OBSERVATION_PLOTS.OBSERVATION_ID))
+                .and(
+                    thisTable
+                        .column(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID)
+                        .eq(otherTable.column(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+                )
+          },
       )
     }
   }
