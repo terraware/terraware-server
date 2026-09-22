@@ -7,7 +7,7 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.gis.GeometryFileParser
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry

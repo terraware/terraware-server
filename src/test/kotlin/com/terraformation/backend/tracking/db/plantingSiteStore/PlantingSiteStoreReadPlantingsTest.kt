@@ -3,7 +3,8 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

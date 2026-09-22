@@ -12,7 +12,10 @@ import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInt
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

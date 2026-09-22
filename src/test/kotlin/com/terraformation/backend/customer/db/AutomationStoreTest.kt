@@ -7,7 +7,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

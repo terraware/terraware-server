@@ -20,7 +20,7 @@ import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

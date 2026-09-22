@@ -3,7 +3,7 @@ package com.terraformation.backend.seedbank.model
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.seedbank.grams
 import java.math.BigDecimal
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 

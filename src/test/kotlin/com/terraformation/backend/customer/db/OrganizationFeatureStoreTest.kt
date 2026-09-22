@@ -10,7 +10,7 @@ import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

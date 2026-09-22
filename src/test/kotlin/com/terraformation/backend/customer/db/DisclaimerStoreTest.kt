@@ -16,7 +16,8 @@ import com.terraformation.backend.db.default_schema.tables.records.UserDisclaime
 import com.terraformation.backend.db.default_schema.tables.references.DISCLAIMERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_DISCLAIMERS
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

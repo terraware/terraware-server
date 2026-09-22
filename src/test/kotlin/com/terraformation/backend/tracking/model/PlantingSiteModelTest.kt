@@ -2,7 +2,9 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 

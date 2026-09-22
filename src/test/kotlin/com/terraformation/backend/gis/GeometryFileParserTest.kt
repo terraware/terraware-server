@@ -6,7 +6,6 @@ import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.util.toMultiPolygon
 import org.geotools.util.ContentFormatException
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.Coordinate

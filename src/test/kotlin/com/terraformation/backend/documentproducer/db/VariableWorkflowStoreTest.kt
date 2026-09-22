@@ -13,7 +13,7 @@ import com.terraformation.backend.documentproducer.event.QuestionsDeliverableRev
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import java.time.Instant
 import java.util.UUID
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

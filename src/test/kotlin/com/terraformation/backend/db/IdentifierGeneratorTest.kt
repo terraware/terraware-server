@@ -5,7 +5,8 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
 import java.time.Instant
 import java.time.ZoneOffset
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

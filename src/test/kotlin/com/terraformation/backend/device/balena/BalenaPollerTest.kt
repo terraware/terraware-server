@@ -12,7 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
