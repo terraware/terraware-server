@@ -186,6 +186,7 @@ import org.jooq.TransactionalRunnable
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -663,8 +664,8 @@ internal class NotificationServiceEmailTest {
     service.on(FacilityAlertRequestedEvent(facility.id, subject, body, adminUser.userId))
 
     assertSubjectContains(subject)
-    assertBodyContains(escapedBody, "Alert body", hasTextPlain = false)
-    assertBodyContains(facility.name, "Facility name", hasTextPlain = false)
+    assertBodyContains(escapedBody, "Alert body")
+    assertBodyContains(facility.name, "Facility name")
     assertRecipientsEqual(organizationRecipients)
   }
 
@@ -711,7 +712,6 @@ internal class NotificationServiceEmailTest {
     assertBodyContains(
         webAppUrls.acceleratorAdminRegistrationUrl(user.email),
         "Registration URL",
-        hasTextPlain = false,
     )
     assertSubjectContains("You've been invited to be an admin on Terraware")
     assertRecipientsEqual(setOf(user.email))
@@ -721,12 +721,8 @@ internal class NotificationServiceEmailTest {
   fun funderInvitedToFundingEntity() {
     service.on(FunderInvitedToFundingEntityEvent(user.email, fundingEntity.id))
 
-    assertBodyContains("My Funding Entity", "Funding Entity name", false)
-    assertBodyContains(
-        webAppUrls.funderPortalRegistrationUrl(user.email),
-        "Registration URL",
-        false,
-    )
+    assertBodyContains("My Funding Entity", "Funding Entity name")
+    assertBodyContains(webAppUrls.funderPortalRegistrationUrl(user.email), "Registration URL")
     assertSubjectContains("You've been invited to the Funder Portal under My Funding Entity")
     assertRecipientsEqual(setOf(user.email))
   }
@@ -994,8 +990,8 @@ internal class NotificationServiceEmailTest {
 
     assertSubjectContains("Not Started")
     assertSubjectContains("My Site")
-    assertBodyContains("My Site", hasTextPlain = false)
-    assertBodyContains("Contact Us", hasTextPlain = false)
+    assertBodyContains("My Site")
+    assertBodyContains("Contact Us")
 
     assertRecipientsEqual(organizationRecipients)
   }
@@ -1534,14 +1530,14 @@ internal class NotificationServiceEmailTest {
     val message = sentMessageWithSubject("has made updates to the plant counts")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(plantingSite.name, message = message)
-    assertBodyContains(plantingSite.name, message = message, hasTextPlain = false)
-    assertBodyContains("${monitoringPlot.plotNumber}", message = message, hasTextPlain = false)
-    assertBodyContains(species.scientificName, message = message, hasTextPlain = false)
-    assertBodyContains("Other species", message = message, hasTextPlain = false)
-    assertBodyContains("Unknown", message = message, hasTextPlain = false)
-    assertBodyContains(">1<", message = message, hasTextPlain = false)
-    assertBodyContains(">2<", message = message, hasTextPlain = false)
-    assertBodyContains("2026-01-06", message = message, hasTextPlain = false)
+    assertBodyContains(plantingSite.name, message = message)
+    assertBodyContains("${monitoringPlot.plotNumber}", message = message)
+    assertBodyContains(species.scientificName, message = message)
+    assertBodyContains("Other species", message = message)
+    assertBodyContains("Unknown", message = message)
+    assertBodyContains(">1<", message = message)
+    assertBodyContains(">2<", message = message)
+    assertBodyContains("2026-01-06", message = message)
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
@@ -1931,14 +1927,14 @@ internal class NotificationServiceEmailTest {
     val message = sentMessageWithSubject("has made updates to Plant Density settings")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(plantingSite.name, message = message)
-    assertBodyContains(plantingSite.name, message = message, hasTextPlain = false)
-    assertBodyContains(stratum.name, message = message, hasTextPlain = false)
-    assertBodyContains("Initial Planting Density", message = message, hasTextPlain = false)
-    assertBodyContains("1,500", message = message, hasTextPlain = false)
-    assertBodyContains("1,750", message = message, hasTextPlain = false)
-    assertBodyContains("Target Plant Density", message = message, hasTextPlain = false)
-    assertBodyContains("Not set", message = message, hasTextPlain = false)
-    assertBodyContains("1,200", message = message, hasTextPlain = false)
+    assertBodyContains(plantingSite.name, message = message)
+    assertBodyContains(stratum.name, message = message)
+    assertBodyContains("Initial Planting Density", message = message)
+    assertBodyContains("1,500", message = message)
+    assertBodyContains("1,750", message = message)
+    assertBodyContains("Target Plant Density", message = message)
+    assertBodyContains("Not set", message = message)
+    assertBodyContains("1,200", message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
 
@@ -2196,55 +2192,41 @@ internal class NotificationServiceEmailTest {
   private fun assertBodyContains(
       substring: Any,
       messagePrefix: String = "Localized text",
-      hasTextPlain: Boolean = true,
-      hasTextHtml: Boolean = true,
       message: MimeMessage = mimeMessageSlot.captured,
   ) {
     val substringText = "$substring"
-    var foundTextPlain = false
     var foundTextHtml = false
 
     textParts(message).forEach { part ->
       if (part.dataHandler.contentType.startsWith(MediaType.TEXT_HTML, ignoreCase = true)) {
         foundTextHtml = true
         assertContains(substringText, part.content.toString(), "$messagePrefix: text/html")
-      } else if (part.dataHandler.contentType.startsWith(MediaType.TEXT_PLAIN, ignoreCase = true)) {
-        foundTextPlain = true
-        assertContains(substringText, part.content.toString(), "$messagePrefix: text/plain")
       } else {
         fail("$messagePrefix: Unexpected content type: ${part.dataHandler.contentType}")
       }
     }
 
-    assertEquals(hasTextPlain, foundTextPlain, "$messagePrefix: Has text/plain part")
-    assertEquals(hasTextHtml, foundTextHtml, "$messagePrefix: Has text/html part")
+    assertTrue(foundTextHtml, "$messagePrefix: Has text/html part")
   }
 
   private fun assertBodyNotContains(
       substring: Any,
       messagePrefix: String = "Localized text",
-      hasTextPlain: Boolean = true,
-      hasTextHtml: Boolean = true,
       message: MimeMessage = mimeMessageSlot.captured,
   ) {
     val substringText = "$substring"
-    var foundTextPlain = false
     var foundTextHtml = false
 
     textParts(message).forEach { part ->
       if (part.dataHandler.contentType.startsWith(MediaType.TEXT_HTML, ignoreCase = true)) {
         foundTextHtml = true
         assertNotContains(substringText, part.content.toString(), "$messagePrefix: text/html")
-      } else if (part.dataHandler.contentType.startsWith(MediaType.TEXT_PLAIN, ignoreCase = true)) {
-        foundTextPlain = true
-        assertNotContains(substringText, part.content.toString(), "$messagePrefix: text/plain")
       } else {
         fail("$messagePrefix: Unexpected content type: ${part.dataHandler.contentType}")
       }
     }
 
-    assertEquals(hasTextPlain, foundTextPlain, "$messagePrefix: Has text/plain part")
-    assertEquals(hasTextHtml, foundTextHtml, "$messagePrefix: Has text/html part")
+    assertTrue(foundTextHtml, "$messagePrefix: Has text/html part")
   }
 
   private fun assertContains(needle: String, haystack: String, message: String) {
