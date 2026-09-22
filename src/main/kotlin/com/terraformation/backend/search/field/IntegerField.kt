@@ -24,4 +24,8 @@ class IntegerField(
       null
     }
   }
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return IntegerField(fieldName, getDatabaseField, newTable, localize, exportable)
+  }
 }

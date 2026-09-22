@@ -151,4 +151,10 @@ interface SearchField {
 
   /** Returns the name of the raw variant of this field, if any. */
   fun rawFieldName(): String = if (localize) "$fieldName(raw)" else fieldName
+
+  /**
+   * Returns a version of this field that reads its values from a different instance of the same
+   * search table, e.g., an aliased one.
+   */
+  fun withTable(newTable: SearchTable): SearchField
 }

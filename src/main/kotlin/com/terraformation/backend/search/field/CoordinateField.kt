@@ -68,6 +68,18 @@ class CoordinateField(
     }
   }
 
+  override fun withTable(newTable: SearchTable): SearchField {
+    return CoordinateField(
+        fieldName = fieldName,
+        getGeometryField = getGeometryField,
+        vertexIndex = vertexIndex,
+        axis = axis,
+        table = newTable,
+        localize = localize,
+        exportable = exportable,
+    )
+  }
+
   companion object {
     sealed interface Axis {
       /** The name of the PostGIS function that extracts this axis's value from a Point. */

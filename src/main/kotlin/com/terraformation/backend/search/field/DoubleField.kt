@@ -28,4 +28,8 @@ class DoubleField(
       null
     }
   }
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return DoubleField(fieldName, getDatabaseField, newTable, localize, exportable)
+  }
 }

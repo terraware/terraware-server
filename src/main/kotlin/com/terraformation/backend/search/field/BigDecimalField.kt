@@ -38,4 +38,8 @@ class BigDecimalField(
       null
     }
   }
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return BigDecimalField(fieldName, getDatabaseField, newTable, localize, exportable)
+  }
 }

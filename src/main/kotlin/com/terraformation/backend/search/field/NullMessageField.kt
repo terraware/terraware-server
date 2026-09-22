@@ -2,6 +2,7 @@ package com.terraformation.backend.search.field
 
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
+import com.terraformation.backend.search.SearchTable
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.concurrent.ConcurrentHashMap
@@ -42,6 +43,9 @@ class NullMessageField(
   }
 
   override fun raw(): SearchField? = original.raw()
+
+  override fun withTable(newTable: SearchTable): SearchField =
+      NullMessageField(original.withTable(newTable), nullKey, resourceBundleName)
 
   private fun getNullText(): String {
     val locale = currentLocale()

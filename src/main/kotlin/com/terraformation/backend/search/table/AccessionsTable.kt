@@ -214,6 +214,10 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
       }
     }
 
+    override fun withTable(newTable: SearchTable): SearchField {
+      return ActiveField(fieldName, newTable, localize)
+    }
+
     override fun toString() = fieldName
 
     override fun hashCode() = fieldName.hashCode()
