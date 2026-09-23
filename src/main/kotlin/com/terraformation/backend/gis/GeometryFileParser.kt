@@ -25,6 +25,11 @@ import org.locationtech.jts.geom.GeometryCollection
 
 @Named
 class GeometryFileParser(private val objectMapper: ObjectMapper) {
+  companion object {
+    private const val MAX_COMPONENT_BYTES = 100L * 1024 * 1024
+    private const val MAX_TOTAL_BYTES = 200L * 1024 * 1024
+  }
+
   fun parse(content: ByteArray, filename: String?): Geometry {
     val detectedContentType =
         Tika().detect(content, filename)
@@ -164,10 +169,5 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       throw ContentFormatException("No valid geometries found in shapefile")
     }
     return geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT }
-  }
-
-  companion object {
-    private const val MAX_COMPONENT_BYTES = 100L * 1024 * 1024
-    private const val MAX_TOTAL_BYTES = 200L * 1024 * 1024
   }
 }
