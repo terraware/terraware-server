@@ -239,9 +239,10 @@ class GeometryFileParserTest {
 
   @Test
   fun `parseWithFormat returns geometry and shapefile format for zipped shapefile`() {
-    val expected = javaClass.getResourceAsStream("/gis/PlantingSite.geojson").use {
-      objectMapper.readValue<Geometry>(it)
-    }
+    val expected =
+        javaClass.getResourceAsStream("/gis/PlantingSite.geojson").use {
+          objectMapper.readValue<Geometry>(it)
+        }
     val parsed = parser.parseWithFormat(shapefileZip(), "boundary.zip")
     assertEquals(GeometryFileFormat.Shapefile, parsed.format)
     assertGeometryEquals(expected.toMultiPolygon().norm(), parsed.geometry.toMultiPolygon().norm())
