@@ -7,6 +7,8 @@ import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.util.toMultiPolygon
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -163,17 +165,84 @@ class GeometryFileParserTest {
     assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = ["__MACOSX/._PlantingSite.shp", "._PlantingSite.shp"])
+  fun `ignores AppleDouble shapefile metadata`(filename: String) {
+    val content = shapefileZip(extraEntries = mapOf(filename to 100))
+    assertPlantingSiteGeometry(content)
+  }
+
+  @Test
+  fun `ignores unrelated archive entries`() {
+    val content =
+        shapefileZip(extraEntries = mapOf("other/PlantingSite.dbf" to 100 * 1024 * 1024 + 1))
+    assertPlantingSiteGeometry(content)
+  }
+
+  private fun assertPlantingSiteGeometry(content: ByteArray) {
+    val expected =
+        javaClass.getResourceAsStream("/gis/PlantingSite.geojson").use {
+          objectMapper.readValue<Geometry>(it)
+        }
+    val actual = parser.parse(content, "boundary.zip")
+    assertGeometryEquals(expected.toMultiPolygon().norm(), actual.toMultiPolygon().norm())
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [false, true])
+  fun `rejects oversized shapefile component`(understateSizes: Boolean) {
+    val content =
+        shapefileZip(
+            omitExtension = "dbf",
+            extraEntries = mapOf("PlantingSite.dbf" to 100 * 1024 * 1024 + 1),
+            understateSizes = understateSizes,
+        )
+    val exception = assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
+    assertEquals("Shapefile component exceeds 104857600 uncompressed bytes", exception.message)
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [false, true])
+  fun `rejects excessive total uncompressed shapefile size`(understateSizes: Boolean) {
+    val content =
+        shapefileZip(
+            extraEntries =
+                mapOf(
+                    "PlantingSite.shp" to 75 * 1024 * 1024,
+                    "PlantingSite.shx" to 75 * 1024 * 1024,
+                    "PlantingSite.dbf" to 75 * 1024 * 1024,
+                ),
+            understateSizes = understateSizes,
+        )
+    val exception = assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
+    assertEquals("Shapefile exceeds 209715200 total uncompressed bytes", exception.message)
+  }
+
   private fun shapefileZip(
       omitExtension: String? = null,
       basename: String = "PlantingSite",
+      extraEntries: Map<String, Int> = emptyMap(),
+      understateSizes: Boolean = false,
   ): ByteArray {
     val output = ByteArrayOutputStream()
     ZipOutputStream(output).use { zipOutput ->
+      for ((name, size) in extraEntries) {
+        zipOutput.putNextEntry(ZipEntry(name))
+        val buffer = ByteArray(8192)
+        var remaining = size
+        while (remaining > 0) {
+          val count = minOf(remaining, buffer.size)
+          zipOutput.write(buffer, 0, count)
+          remaining -= count
+        }
+        zipOutput.closeEntry()
+      }
       ZipInputStream(javaClass.getResourceAsStream("/tracking/TwoShapefiles.zip")!!).use { input ->
         generateSequence { input.nextEntry }
             .forEach { entry ->
               if (
                   entry.name.startsWith("$basename.") &&
+                      entry.name !in extraEntries &&
                       entry.name.substringAfterLast('.') != omitExtension
               ) {
                 zipOutput.putNextEntry(ZipEntry(entry.name))
@@ -183,7 +252,22 @@ class GeometryFileParserTest {
             }
       }
     }
-    return output.toByteArray()
+    val bytes = output.toByteArray()
+    if (understateSizes) {
+      val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+      // The end-of-central-directory record points to the first central directory entry.
+      var offset = buffer.getInt(bytes.size - 6)
+      while (buffer.getInt(offset) == 0x02014b50) {
+        // Understate the uncompressed size without changing the compressed data or its length.
+        buffer.putInt(offset + 24, 1)
+        offset +=
+            46 +
+                (buffer.getShort(offset + 28).toInt() and 0xffff) +
+                (buffer.getShort(offset + 30).toInt() and 0xffff) +
+                (buffer.getShort(offset + 32).toInt() and 0xffff)
+      }
+    }
+    return bytes
   }
 
   private fun runTriangleScenario(resourcePath: String, filename: String = resourcePath) {

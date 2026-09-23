@@ -9,10 +9,11 @@ import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
 import java.io.InputStream
-import java.nio.file.Path
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
+import kotlin.io.path.outputStream
 import kotlin.io.path.writeBytes
 import org.apache.tika.Tika
 import org.geotools.api.feature.simple.SimpleFeature
@@ -80,14 +81,9 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
             throw ContentFormatException("File does not appear to be a valid zip archive")
           }
 
-      val filenames = zipFile.use { zip ->
-        parseZippedKml(zip)?.let {
-          return@useAndDelete it
-        }
-        zip.entries().asSequence().filter { !it.isDirectory }.map { it.name }.toList()
+      zipFile.use { zip ->
+        parseZippedKml(zip) ?: parseZippedShapefile(zip)
       }
-
-      parseZippedShapefile(tempFile, filenames)
     }
   }
 
@@ -100,7 +96,15 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     return zip.getInputStream(entry).use { parseKml(it) }
   }
 
-  private fun parseZippedShapefile(path: Path, filenames: List<String>): Geometry {
+  private fun parseZippedShapefile(zip: ZipFile): Geometry {
+    val entries =
+        zip.entries()
+            .asSequence()
+            .filter {
+              !it.isDirectory && !it.name.substringAfterLast('/').startsWith('.')
+            }
+            .toList()
+    val filenames = entries.map { it.name }
     val shapefiles = filenames.filter { it.endsWith(".shp", ignoreCase = true) }
     if (shapefiles.isEmpty()) {
       throw ContentFormatException("No KML or SHP file found in archive")
@@ -110,16 +114,60 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     }
 
     val basename = shapefiles.single().substringBeforeLast('.')
-    for (extension in listOf("shx", "dbf", "prj")) {
-      if (filenames.none { it.equals("$basename.$extension", ignoreCase = true) }) {
-        throw ContentFormatException("Archive is missing $basename.$extension")
-      }
+    val components =
+        listOf("shp", "shx", "dbf", "prj").associateWith { extension ->
+          entries.singleOrNull { it.name.equals("$basename.$extension", ignoreCase = true) }
+              ?: throw ContentFormatException(
+                  "Archive must contain exactly one $basename.$extension"
+              )
+        }
+    if (components.values.any { it.size > MAX_COMPONENT_BYTES }) {
+      throw ContentFormatException(
+          "Shapefile component exceeds $MAX_COMPONENT_BYTES uncompressed bytes"
+      )
+    }
+    if (components.values.sumOf { maxOf(0L, it.size) } > MAX_TOTAL_BYTES) {
+      throw ContentFormatException("Shapefile exceeds $MAX_TOTAL_BYTES total uncompressed bytes")
     }
 
-    val geometries = Shapefile.fromZipFile(path).single().features.map { it.geometry }
+    val geometries =
+        createTempDirectory().useAndDelete { directory ->
+          var totalBytes = 0L
+          val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+          for ((extension, entry) in components) {
+            zip.getInputStream(entry).use { input ->
+              directory.resolve("boundary.$extension").outputStream().use { output ->
+                var componentBytes = 0L
+                while (true) {
+                  val count = input.read(buffer)
+                  if (count < 0) break
+                  componentBytes += count
+                  totalBytes += count
+                  if (componentBytes > MAX_COMPONENT_BYTES) {
+                    throw ContentFormatException(
+                        "Shapefile component exceeds $MAX_COMPONENT_BYTES uncompressed bytes"
+                    )
+                  }
+                  if (totalBytes > MAX_TOTAL_BYTES) {
+                    throw ContentFormatException(
+                        "Shapefile exceeds $MAX_TOTAL_BYTES total uncompressed bytes"
+                    )
+                  }
+                  output.write(buffer, 0, count)
+                }
+              }
+            }
+          }
+          Shapefile.fromFiles(directory.resolve("boundary.shp")).features.map { it.geometry }
+        }
     if (geometries.isEmpty()) {
       throw ContentFormatException("No valid geometries found in shapefile")
     }
     return geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT }
+  }
+
+  companion object {
+    private const val MAX_COMPONENT_BYTES = 100L * 1024 * 1024
+    private const val MAX_TOTAL_BYTES = 200L * 1024 * 1024
   }
 }
