@@ -1,14 +1,13 @@
 package com.terraformation.backend.gis
 
-import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
-import java.io.InputStream
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlin.io.path.createTempDirectory
@@ -22,53 +21,147 @@ import org.geotools.util.ContentFormatException
 import org.geotools.xsd.Parser
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.io.ParseException
+import org.locationtech.jts.io.geojson.GeoJsonReader
 
+/**
+ * Reads geometry from the file formats the clients can upload: KML, KMZ, GeoJSON, and ZIP archives
+ * containing either a KML file or a single shapefile.
+ */
 @Named
 class GeometryFileParser(private val objectMapper: ObjectMapper) {
   companion object {
     private const val MAX_COMPONENT_BYTES = 100L * 1024 * 1024
     private const val MAX_TOTAL_BYTES = 200L * 1024 * 1024
+    private val SUPPORTED_EXTENSIONS = setOf("kml", "kmz", "geojson", "json", "zip")
+
+    fun hasSupportedExtension(filename: String?): Boolean =
+        filename?.substringAfterLast('.', "")?.lowercase() in SUPPORTED_EXTENSIONS
   }
+
+  private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
 
   fun parse(content: ByteArray, filename: String?): Geometry {
     return parseWithFormat(content, filename).geometry
   }
 
+  /** Reads a file and combines its shapes into a single geometry. */
   fun parseWithFormat(content: ByteArray, filename: String?): ParsedGeometryFile {
-    val detectedContentType =
-        Tika().detect(content, filename)
-            ?: throw ContentFormatException("Unable to determine file type")
+    val parsed = readWithFormat(content, filename)
+    val elements = parsed.geometries
+    if (elements.isEmpty()) {
+      throw GeometryFileException(GeometryFileErrorCode.NoPolygons)
+    }
 
-    return when (detectedContentType) {
-      "application/vnd.google-earth.kml+xml" -> parseKml(content.inputStream())
+    val combined = elements.reduce { a, b -> a.union(b) }
+
+    // Combining two or more shapes already dissolves them, but a file can hold a single
+    // multi-part shape whose parts overlap.
+    return ParsedGeometryFile(
+        if (elements.size == 1 && combined is GeometryCollection) combined.union() else combined,
+        parsed.format,
+    )
+  }
+
+  /**
+   * Reads the individual shapes from a file without combining them or checking their topology. The
+   * shape list may be empty; its elements are in WGS 84 coordinates. Callers that enforce boundary
+   * rules need the original shapes rather than a combined one.
+   */
+  fun readWithFormat(content: ByteArray, filename: String?): ParsedGeometryShapes {
+    val extension = filename?.substringAfterLast('.', "")?.lowercase()
+
+    return when (Tika().detect(content, filename)) {
+      "application/vnd.google-earth.kml+xml" -> readKml(content, GeometryFileFormat.KML)
       "application/vnd.google-earth.kmz",
-      "application/zip" -> parseZip(content)
+      "application/zip" -> readZip(content)
+      MediaType.APPLICATION_JSON -> readGeoJson(content)
 
-      // Tika can identify JSON files as text/plain.
-      MediaType.APPLICATION_JSON,
-      MediaType.TEXT_PLAIN -> parseGeoJson(content)
-      else -> throw ContentFormatException("File type $detectedContentType not supported")
+      // Tika reports GeoJSON as text/plain unless the filename ends in .json, and callers don't
+      // always have a usable filename to give us.
+      MediaType.TEXT_PLAIN,
+      MediaType.APPLICATION_OCTET_STREAM ->
+          readByExtension(content, extension) ?: readGeoJson(content)
+
+      // Tika can only tell one XML dialect from another by its root element, which the KML reader
+      // checks; nothing here is GeoJSON.
+      MediaType.APPLICATION_XML,
+      MediaType.TEXT_XML ->
+          readByExtension(content, extension)
+              ?: throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+
+      else -> throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
     }
   }
 
-  private fun parseGeoJson(content: ByteArray): ParsedGeometryFile {
-    return try {
-      val geometry = objectMapper.readValue<Geometry>(content)
-      ParsedGeometryFile(
-          if (geometry is GeometryCollection) geometry.union() else geometry,
-          GeometryFileFormat.GeoJSON,
+  /** Dispatches on the filename for content Tika can only identify approximately. */
+  private fun readByExtension(content: ByteArray, extension: String?): ParsedGeometryShapes? =
+      when (extension) {
+        "kml" -> readKml(content, GeometryFileFormat.KML)
+        "kmz",
+        "zip" -> readZip(content)
+        else -> null
+      }
+
+  private fun parsedFile(geometries: List<Geometry>, format: GeometryFileFormat) =
+      ParsedGeometryShapes(
+          geometries.map { geometryFactory.createGeometry(it) },
+          format,
       )
-    } catch (e: JsonParseException) {
-      throw ContentFormatException("File does not appear to be valid GeoJSON")
+
+  private fun readGeoJson(content: ByteArray): ParsedGeometryShapes {
+    return try {
+      parsedFile(readGeoJsonNode(objectMapper.readTree(content)), GeometryFileFormat.GeoJSON)
+    } catch (e: JsonProcessingException) {
+      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+    } catch (e: ParseException) {
+      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+    } catch (e: IllegalArgumentException) {
+      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
     }
   }
 
-  private fun parseKml(
-      inputStream: InputStream,
+  /**
+   * Turns a GeoJSON document into a list of shapes. This deliberately avoids the object mapper's
+   * geometry binding, which rejects invalid topology as a parsing failure; a bow-tie polygon is a
+   * readable file with an unusable shape, not a malformed one.
+   */
+  private fun readGeoJsonNode(node: JsonNode): List<Geometry> {
+    return when (node.path("type").asText()) {
+      "FeatureCollection" -> readGeoJsonChildren(node, "features")
+      "GeometryCollection" -> readGeoJsonChildren(node, "geometries")
+      "Feature" -> {
+        val geometry =
+            node.get("geometry") ?: throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+        if (geometry.isNull) emptyList() else readGeoJsonNode(geometry)
+      }
+      "Point",
+      "MultiPoint",
+      "LineString",
+      "MultiLineString",
+      "Polygon",
+      "MultiPolygon" -> listOf(GeoJsonReader(geometryFactory).read(node.toString()))
+      else -> throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+    }
+  }
+
+  private fun readGeoJsonChildren(node: JsonNode, property: String): List<Geometry> {
+    val children = node.get(property)
+    if (children == null || !children.isArray) {
+      throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+    }
+
+    return children.flatMap { readGeoJsonNode(it) }
+  }
+
+  private fun readKml(
+      content: ByteArray,
       format: GeometryFileFormat = GeometryFileFormat.KML,
-  ): ParsedGeometryFile {
+  ): ParsedGeometryShapes {
     val parentFeature =
-        Parser(KMLConfiguration()).parse(inputStream) as? SimpleFeature
+        Parser(KMLConfiguration()).parse(content.inputStream()) as? SimpleFeature
             ?: throw ContentFormatException("Unable to extract top-level information from KML file")
     val childFeatures =
         parentFeature.getAttribute("Feature") as? Collection<*>
@@ -77,18 +170,11 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       (it as? SimpleFeature)?.defaultGeometry as? Geometry
     }
 
-    if (geometries.isEmpty()) {
-      throw ContentFormatException("No valid geometries found in KML file")
-    }
-
-    return ParsedGeometryFile(
-        geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT },
-        format,
-    )
+    return parsedFile(geometries, format)
   }
 
   /** Parses an archive containing KML or a shapefile and its secondary files. */
-  private fun parseZip(content: ByteArray): ParsedGeometryFile {
+  private fun readZip(content: ByteArray): ParsedGeometryShapes {
     return createTempFile(suffix = ".zip").useAndDelete { tempFile ->
       tempFile.writeBytes(content)
 
@@ -100,21 +186,21 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           }
 
       zipFile.use { zip ->
-        parseZippedKml(zip) ?: parseZippedShapefile(zip)
+        readZippedKml(zip) ?: readZippedShapefile(zip)
       }
     }
   }
 
-  private fun parseZippedKml(zip: ZipFile): ParsedGeometryFile? {
+  private fun readZippedKml(zip: ZipFile): ParsedGeometryShapes? {
     val entry =
         zip.entries().asSequence().firstOrNull {
           !it.isDirectory && it.name.endsWith(".kml", ignoreCase = true)
         } ?: return null
 
-    return zip.getInputStream(entry).use { parseKml(it, GeometryFileFormat.KMZ) }
+    return zip.getInputStream(entry).use { readKml(it.readAllBytes(), GeometryFileFormat.KMZ) }
   }
 
-  private fun parseZippedShapefile(zip: ZipFile): ParsedGeometryFile {
+  private fun readZippedShapefile(zip: ZipFile): ParsedGeometryShapes {
     val entries =
         zip.entries()
             .asSequence()
@@ -178,12 +264,6 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           }
           Shapefile.fromFiles(directory.resolve("boundary.shp")).features.map { it.geometry }
         }
-    if (geometries.isEmpty()) {
-      throw ContentFormatException("No valid geometries found in shapefile")
-    }
-    return ParsedGeometryFile(
-        geometries.reduce { a, b -> a.union(b) }.also { it.srid = SRID.LONG_LAT },
-        GeometryFileFormat.Shapefile,
-    )
+    return parsedFile(geometries, GeometryFileFormat.Shapefile)
   }
 }

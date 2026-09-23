@@ -14,6 +14,8 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import org.geotools.util.ContentFormatException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -166,6 +168,34 @@ class GeometryFileParserTest {
     assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
   }
 
+  @Test
+  fun `parses GeoJSON when the filename has no usable extension`() {
+    val content = javaClass.getResource("/gis/triangle.geojson")!!.readBytes()
+
+    // Tika reports GeoJSON as text/plain unless the name ends in .json, and callers don't always
+    // have a real filename to give us.
+    assertGeometryEquals(triangle, parser.parse(content, "file").toMultiPolygon().norm())
+    assertGeometryEquals(triangle, parser.parse(content, null).toMultiPolygon().norm())
+  }
+
+  @Test
+  fun `parse rejects a file with no geometries`() {
+    val content = """<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>"""
+
+    assertThrows<ContentFormatException> { parser.parse(content.toByteArray(), "empty.kml") }
+  }
+
+  @Test
+  fun `parse dissolves the parts of a single multi-part shape`() {
+    val content =
+        """{"type":"MultiPolygon","coordinates":[[[[0,0],[2,0],[2,2],[0,2],[0,0]]],[[[1,0],[3,0],[3,2],[1,2],[1,0]]]]}"""
+
+    val geometry = parser.parse(content.toByteArray(), "overlapping.geojson")
+
+    assertEquals("Polygon", geometry.geometryType)
+    assertEquals(6.0, geometry.area)
+  }
+
   @ParameterizedTest
   @ValueSource(strings = ["__MACOSX/._PlantingSite.shp", "._PlantingSite.shp"])
   fun `ignores AppleDouble shapefile metadata`(filename: String) {
@@ -247,6 +277,69 @@ class GeometryFileParserTest {
     assertEquals(GeometryFileFormat.Shapefile, parsed.format)
     assertGeometryEquals(expected.toMultiPolygon().norm(), parsed.geometry.toMultiPolygon().norm())
   }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["{broken", "{}", "null", "", "{\"type\":\"FeatureCollection\"}"])
+  fun `rejects malformed GeoJSON`(json: String) {
+    assertCode(GeometryFileErrorCode.InvalidFile, json.toByteArray(), "boundary.json")
+  }
+
+  @Test
+  fun `readWithFormat preserves invalid geometry for boundary validation`() {
+    val shapes =
+        readShapes(
+            """{"type":"Polygon","coordinates":[[[0,0],[2,2],[0,2],[2,0],[0,0]]]}""".toByteArray(),
+            "boundary.geojson",
+        )
+
+    assertFalse(shapes.single().isValid)
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings =
+          [
+              "{\"type\":\"FeatureCollection\",\"features\":[]}",
+              "{\"type\":\"GeometryCollection\",\"geometries\":[]}",
+              "{\"type\":\"Feature\",\"geometry\":null}",
+          ]
+  )
+  fun `readWithFormat accepts empty collections`(json: String) {
+    assertTrue(readShapes(json.toByteArray(), "boundary.json").isEmpty())
+  }
+
+  @Test
+  fun `readWithFormat unwraps features and geometry collections without union`() {
+    val parsed =
+        parser.readWithFormat(
+            """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[1,2]},{"type":"Polygon","coordinates":[[[0,0],[1,0],[0,1],[0,0]]]}]}}]}"""
+                .toByteArray(),
+            "boundary.geojson",
+        )
+
+    assertEquals(listOf("Point", "Polygon"), parsed.geometries.map { it.geometryType })
+    assertEquals(GeometryFileFormat.GeoJSON, parsed.format)
+  }
+
+  @Test
+  fun `unsupported content is rejected`() {
+    assertCode(
+        GeometryFileErrorCode.UnsupportedFormat,
+        """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
+            .toByteArray(),
+        "boundary.gpx",
+    )
+  }
+
+  private fun assertCode(code: GeometryFileErrorCode, content: ByteArray, filename: String?) {
+    assertEquals(
+        code,
+        assertThrows<GeometryFileException> { parser.readWithFormat(content, filename) }.code,
+    )
+  }
+
+  private fun readShapes(content: ByteArray, filename: String?): List<Geometry> =
+      parser.readWithFormat(content, filename).geometries
 
   private fun shapefileZip(
       omitExtension: String? = null,
