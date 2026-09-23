@@ -4,6 +4,9 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.gis.convertToXY
+import com.terraformation.backend.gis.extractPolygons
+import com.terraformation.backend.gis.mergeToMultiPolygon
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -18,18 +21,9 @@ import java.util.Collections
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import org.locationtech.jts.geom.Coordinate
-import org.locationtech.jts.geom.CoordinateXY
-import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
-import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.PrecisionModel
-import org.locationtech.jts.geom.util.GeometryEditor
-import org.locationtech.jts.operation.overlay.snap.GeometrySnapper
-import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 @Named
 class PlantingSiteImporter(
@@ -51,15 +45,6 @@ class PlantingSiteImporter(
     val permanentPlotCountProperties = setOf("permanent")
     val temporaryPlotCountProperties = setOf("temporary")
   }
-
-  /**
-   * When importing, use fixed-precision coordinates with 8 decimal digits rather than the default
-   * floating-point precision. This helps avoid introducing slight errors to calculated geometries
-   * such as when stratum boundaries are derived from substratum boundaries.
-   *
-   * 8 decimal digits works out to a resolution of less than 1 centimeter.
-   */
-  private val precisionReducer = GeometryPrecisionReducer(PrecisionModel(100000000.0))
 
   fun import(
       name: String,
@@ -172,14 +157,9 @@ class PlantingSiteImporter(
         exclusionsFile.features
             .map { convertToXY(it.geometry) }
             .flatMap { geometry ->
-              when (geometry) {
-                is Polygon -> listOf(geometry)
-                is MultiPolygon ->
-                    (0..<geometry.numGeometries).map { geometry.getGeometryN(it) as Polygon }
-                else -> {
-                  problems.add("Exclusion geometries must all be Polygon or MultiPolygon.")
-                  throw ShapefilesInvalidException(problems)
-                }
+              geometry.extractPolygons {
+                problems.add("Exclusion geometries must all be Polygon or MultiPolygon.")
+                throw ShapefilesInvalidException(problems)
               }
             }
 
@@ -359,58 +339,6 @@ class PlantingSiteImporter(
           }
           .awaitAll()
           .filterNotNull()
-    }
-  }
-
-  private suspend fun <T> parallelReduce(items: Collection<T>, reducer: (T, T) -> T): T =
-      coroutineScope {
-        if (items.size == 1) {
-          items.first()
-        } else {
-          val reducedItems =
-              items
-                  .chunked(2)
-                  .map { pair ->
-                    async {
-                      if (pair.size == 1) {
-                        pair[0]
-                      } else {
-                        reducer(pair[0], pair[1])
-                      }
-                    }
-                  }
-                  .awaitAll()
-
-          parallelReduce(reducedItems, reducer)
-        }
-      }
-
-  /**
-   * Merges a set of geometries into a MultiPolygon. If two geometries are adjacent but have a tiny
-   * gap, e.g., due to floating-point precision limitations, the gap is eliminated.
-   */
-  private suspend fun mergeToMultiPolygon(geometries: Collection<Geometry>): MultiPolygon {
-    return parallelReduce(geometries) { a, b ->
-          val tolerance = GeometrySnapper.computeOverlaySnapTolerance(a, b)
-          a.union(GeometrySnapper(b).snapTo(a, tolerance))
-        }
-        .toMultiPolygon()
-  }
-
-  /**
-   * Converts a geometry's coordinates to XY, stripping the Z and M dimensions if present and using
-   * fixed-precision coordinates for X and Y.
-   */
-  private fun convertToXY(geometry: Geometry): Geometry {
-    return precisionReducer.reduce(
-        GeometryEditor(geometry.factory).edit(geometry, XYEditorOperation)
-    )
-  }
-
-  /** Geometry editor operation that converts XYZ or XYZM coordinates to XY ones. */
-  object XYEditorOperation : GeometryEditor.CoordinateOperation() {
-    override fun edit(coordinates: Array<out Coordinate>, geometry: Geometry): Array<Coordinate> {
-      return coordinates.map { it as? CoordinateXY ?: CoordinateXY(it.x, it.y) }.toTypedArray()
     }
   }
 }
