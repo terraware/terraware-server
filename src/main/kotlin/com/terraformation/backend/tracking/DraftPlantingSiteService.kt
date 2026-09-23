@@ -66,6 +66,8 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
                 "Boundary file must be .kml, .kmz, .geojson, .json, or .zip"
             )
       }
+    } catch (e: GeometryFileException) {
+      throw e
     } catch (e: IOException) {
       throw ContentFormatException("Unable to read boundary file: ${e.message}")
     } catch (e: SAXException) {
