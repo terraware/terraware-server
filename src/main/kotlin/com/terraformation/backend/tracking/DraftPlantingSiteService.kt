@@ -2,6 +2,8 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.gis.GeometryFileErrorCode
+import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.tracking.model.BoundaryFileModel
 import com.terraformation.backend.util.calculateAreaHectares
@@ -14,12 +16,21 @@ import org.xml.sax.SAXException
 
 @Named
 class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParser) {
+  companion object {
+    private const val MAX_BOUNDARY_VERTICES = 50000
+    private val SUPPORTED_EXTENSIONS = setOf("kml", "kmz", "geojson", "json", "zip")
+  }
+
   fun parseBoundaryFile(
       draftPlantingSiteId: DraftPlantingSiteId,
       content: ByteArray,
       filename: String?,
   ): BoundaryFileModel {
     requirePermissions { updateDraftPlantingSite(draftPlantingSiteId) }
+
+    if (filename?.substringAfterLast('.', "")?.lowercase() !in SUPPORTED_EXTENSIONS) {
+      throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+    }
 
     return try {
       when (filename?.substringAfterLast('.', "")?.lowercase()) {
@@ -38,6 +49,10 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
               parsed.geometry.factory.createMultiPolygon(polygonArray).also {
                 it.srid = parsed.geometry.srid
               }
+          if (polygons.numPoints > MAX_BOUNDARY_VERTICES) {
+            throw GeometryFileException(GeometryFileErrorCode.TooManyVertices)
+          }
+
           BoundaryFileModel(
               areaHa = polygons.calculateAreaHectares(),
               filename = filename,
@@ -51,6 +66,8 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
                 "Boundary file must be .kml, .kmz, .geojson, .json, or .zip"
             )
       }
+    } catch (e: GeometryFileException) {
+      throw e
     } catch (e: IOException) {
       throw ContentFormatException("Unable to read boundary file: ${e.message}")
     } catch (e: SAXException) {
