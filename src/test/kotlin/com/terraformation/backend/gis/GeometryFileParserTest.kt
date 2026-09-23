@@ -321,6 +321,63 @@ class GeometryFileParserTest {
     assertEquals(GeometryFileFormat.GeoJSON, parsed.format)
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = ["", "<Folder>", "<Document><Folder>"])
+  fun `reads KML placemarks at any depth`(containers: String) {
+    val closing =
+        when (containers) {
+          "<Folder>" -> "</Folder>"
+          "<Document><Folder>" -> "</Folder></Document>"
+          else -> ""
+        }
+    val content =
+        """<kml xmlns="http://www.opengis.net/kml/2.2">$containers<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0,5 1,0,5 0,1,5 0,0,5</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>$closing</kml>"""
+
+    val parsed = parser.readWithFormat(content.toByteArray(), "boundary.kml")
+
+    assertEquals(1, parsed.geometries.size)
+    assertEquals(GeometryFileFormat.KML, parsed.format)
+  }
+
+  @Test
+  fun `empty KML has no geometries`() {
+    val content = """<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>"""
+
+    assertTrue(readShapes(content.toByteArray(), "empty.kml").isEmpty())
+  }
+
+  @Test
+  fun `malformed KML is invalid file`() {
+    assertCode(GeometryFileErrorCode.InvalidFile, "<kml><broken".toByteArray(), "boundary.kml")
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["a,b 1,0 0,1 0,0", "0,0 1,0 0,1"])
+  fun `rejects malformed KML rings instead of repairing them`(coordinates: String) {
+    val content =
+        """<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>$coordinates</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></kml>"""
+
+    assertCode(GeometryFileErrorCode.InvalidFile, content.toByteArray(), "boundary.kml")
+  }
+
+  @Test
+  fun `malformed KML point is invalid file`() {
+    val content =
+        """<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Point><coordinates>a,b</coordinates></Point></Placemark></kml>"""
+
+    assertCode(GeometryFileErrorCode.InvalidFile, content.toByteArray(), "boundary.kml")
+  }
+
+  @Test
+  fun `renamed GPX is unsupported`() {
+    assertCode(
+        GeometryFileErrorCode.UnsupportedFormat,
+        """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
+            .toByteArray(),
+        "boundary.kml",
+    )
+  }
+
   @Test
   fun `unsupported content is rejected`() {
     assertCode(
