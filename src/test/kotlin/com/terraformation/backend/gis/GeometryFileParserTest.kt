@@ -388,6 +388,86 @@ class GeometryFileParserTest {
     )
   }
 
+  @Test
+  fun `corrupt archive is invalid file`() {
+    assertCode(GeometryFileErrorCode.InvalidFile, "PK broken".toByteArray(), "boundary.zip")
+  }
+
+  @Test
+  fun `archive without spatial files has a specific code`() {
+    assertCode(
+        GeometryFileErrorCode.NoKmlInArchive,
+        zip(mapOf("readme.txt" to "text".toByteArray())),
+        "boundary.zip",
+    )
+  }
+
+  @ParameterizedTest
+  @CsvSource("shp,NoShapefile", "shx,InvalidFile", "dbf,InvalidFile", "prj,UnknownCoordinateSystem")
+  fun `missing shapefile components have specific codes`(
+      extension: String,
+      code: GeometryFileErrorCode,
+  ) {
+    assertCode(
+        code,
+        zip(shapefileEntries().filterKeys { !it.endsWith(".$extension") }),
+        "boundary.zip",
+    )
+  }
+
+  @Test
+  fun `multiple shapefiles have a specific code`() {
+    assertCode(
+        GeometryFileErrorCode.MultipleShapefiles,
+        javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes(),
+        "boundary.zip",
+    )
+  }
+
+  @Test
+  fun `undecodable CRS is unknown coordinate system`() {
+    assertCode(
+        GeometryFileErrorCode.UnknownCoordinateSystem,
+        zip(shapefileEntries() + ("PlantingSite.prj" to "not a CRS".toByteArray())),
+        "boundary.zip",
+    )
+  }
+
+  @Test
+  fun `unreadable shapefile is invalid file`() {
+    assertCode(
+        GeometryFileErrorCode.InvalidFile,
+        zip(shapefileEntries() + ("PlantingSite.shp" to byteArrayOf(1, 2, 3))),
+        "boundary.zip",
+    )
+  }
+
+  @Test
+  fun `ignores metadata and normalizes nested uppercase secondary files`() {
+    val entries =
+        shapefileEntries().mapKeys { "nested/" + it.key.uppercase() } +
+            mapOf(
+                "__MACOSX/PlantingSite.shp" to byteArrayOf(),
+                "nested/._PlantingSite.shp" to byteArrayOf(),
+                ".hidden/other.shp" to byteArrayOf(),
+            )
+
+    val parsed = parser.readWithFormat(zip(entries), "boundary.ZIP")
+
+    assertEquals(GeometryFileFormat.Shapefile, parsed.format)
+    assertFalse(parsed.geometries.isEmpty())
+    assertTrue(parsed.geometries.all { it.srid == SRID.LONG_LAT })
+  }
+
+  @Test
+  fun `KML takes precedence over shapefile`() {
+    val entries =
+        shapefileEntries() +
+            ("boundary.kml" to javaClass.getResource("/gis/triangle.kml")!!.readBytes())
+
+    assertEquals(GeometryFileFormat.KMZ, parser.readWithFormat(zip(entries), "boundary.zip").format)
+  }
+
   private fun assertCode(code: GeometryFileErrorCode, content: ByteArray, filename: String?) {
     assertEquals(
         code,
@@ -397,6 +477,30 @@ class GeometryFileParserTest {
 
   private fun readShapes(content: ByteArray, filename: String?): List<Geometry> =
       parser.readWithFormat(content, filename).geometries
+
+  private fun shapefileEntries(): Map<String, ByteArray> {
+    return ZipInputStream(javaClass.getResourceAsStream("/tracking/TwoShapefiles.zip")!!).use {
+        input ->
+      buildMap {
+        generateSequence { input.nextEntry }
+            .forEach { entry ->
+              if (entry.name.startsWith("PlantingSite.")) put(entry.name, input.readAllBytes())
+            }
+      }
+    }
+  }
+
+  private fun zip(entries: Map<String, ByteArray>): ByteArray {
+    val output = ByteArrayOutputStream()
+    ZipOutputStream(output).use { zip ->
+      entries.forEach { (name, content) ->
+        zip.putNextEntry(ZipEntry(name))
+        zip.write(content)
+        zip.closeEntry()
+      }
+    }
+    return output.toByteArray()
+  }
 
   private fun shapefileZip(
       omitExtension: String? = null,

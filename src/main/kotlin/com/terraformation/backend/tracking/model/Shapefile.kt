@@ -56,22 +56,26 @@ data class Shapefile(
       val dataStoreParams = mapOf("url" to shapefilePath.toUri().toURL())
       val dataStore = DataStoreFinder.getDataStore(dataStoreParams)
 
-      if (dataStore.typeNames.size != 1) {
-        throw IllegalArgumentException(
-            "Expected shapefile to have 1 datatype; found ${dataStore.typeNames.size}",
-        )
-      }
-
       val features =
-          dataStore
-              .getFeatureSource(dataStore.typeNames[0])
-              .getFeatures(Filter.INCLUDE)
-              .features()
-              .use { features ->
-                generateSequence { if (features.hasNext()) features.next() else null }
-                    .map { ShapefileFeature.fromGeotools(it) }
-                    .toList()
-              }
+          try {
+            if (dataStore.typeNames.size != 1) {
+              throw IllegalArgumentException(
+                  "Expected shapefile to have 1 datatype; found ${dataStore.typeNames.size}",
+              )
+            }
+
+            dataStore
+                .getFeatureSource(dataStore.typeNames[0])
+                .getFeatures(Filter.INCLUDE)
+                .features()
+                .use { features ->
+                  generateSequence { if (features.hasNext()) features.next() else null }
+                      .map { ShapefileFeature.fromGeotools(it) }
+                      .toList()
+                }
+          } finally {
+            dataStore.dispose()
+          }
 
       return Shapefile(features)
     }
