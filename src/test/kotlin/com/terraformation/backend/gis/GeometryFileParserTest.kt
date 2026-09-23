@@ -133,7 +133,7 @@ class GeometryFileParserTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["PlantingSite", "PlantingZones"])
+  @ValueSource(strings = ["PlantingSite", "Strata"])
   fun `can parse zipped shapefile and transform coordinates`(basename: String) {
     val geometry = parser.parse(shapefileZip(basename = basename), "boundary.zip")
     val expected =
