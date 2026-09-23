@@ -67,7 +67,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["PlantingSite", "PlantingZones"])
+  @ValueSource(strings = ["PlantingSite", "Strata"])
   fun `parses zipped shapefile and transforms coordinates`(basename: String) {
     val result =
         service.parseBoundaryFile(draftId, shapefileZip(basename = basename), "boundary.zip")
