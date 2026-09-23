@@ -1,5 +1,7 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.gis.GeometryFileErrorCode
+import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.tracking.model.BoundaryFileModel
 import com.terraformation.backend.util.calculateAreaHectares
@@ -12,10 +14,19 @@ import org.xml.sax.SAXException
 
 @Named
 class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParser) {
+  companion object {
+    private const val MAX_BOUNDARY_VERTICES = 50000
+    private val SUPPORTED_EXTENSIONS = setOf("kml", "kmz", "geojson", "json", "zip")
+  }
+
   fun parseBoundaryFile(
       content: ByteArray,
       filename: String?,
   ): BoundaryFileModel {
+    if (filename?.substringAfterLast('.', "")?.lowercase() !in SUPPORTED_EXTENSIONS) {
+      throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+    }
+
     return try {
       when (filename?.substringAfterLast('.', "")?.lowercase()) {
         "kml",
@@ -33,6 +44,10 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
               parsed.geometry.factory.createMultiPolygon(polygonArray).also {
                 it.srid = parsed.geometry.srid
               }
+          if (polygons.numPoints > MAX_BOUNDARY_VERTICES) {
+            throw GeometryFileException(GeometryFileErrorCode.TooManyVertices)
+          }
+
           BoundaryFileModel(
               areaHa = polygons.calculateAreaHectares(),
               filename = filename,
