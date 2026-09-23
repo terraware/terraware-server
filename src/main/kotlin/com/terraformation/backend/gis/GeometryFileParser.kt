@@ -9,6 +9,8 @@ import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
 import java.io.IOException
+import java.nio.BufferUnderflowException
+import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import javax.xml.stream.XMLInputFactory
@@ -17,10 +19,14 @@ import javax.xml.stream.XMLStreamException
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.outputStream
+import kotlin.io.path.readText
 import kotlin.io.path.writeBytes
 import org.apache.tika.Tika
 import org.geotools.api.feature.simple.SimpleFeature
+import org.geotools.api.referencing.FactoryException
+import org.geotools.api.referencing.operation.TransformException
 import org.geotools.kml.v22.KMLConfiguration
+import org.geotools.referencing.CRS
 import org.geotools.util.ContentFormatException
 import org.geotools.xsd.Parser
 import org.locationtech.jts.geom.Geometry
@@ -42,6 +48,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     private const val MAX_COMPONENT_BYTES = 100L * 1024 * 1024
     private const val MAX_TOTAL_BYTES = 200L * 1024 * 1024
     private val SUPPORTED_EXTENSIONS = setOf("kml", "kmz", "geojson", "json", "zip")
+    private val SECONDARY_EXTENSIONS = listOf("shx", "dbf", "prj")
 
     fun hasSupportedExtension(filename: String?): Boolean =
         filename?.substringAfterLast('.', "")?.lowercase() in SUPPORTED_EXTENSIONS
@@ -261,58 +268,65 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
         else -> emptyList()
       }
 
-  /** Parses an archive containing KML or a shapefile and its secondary files. */
+  /** Reads an archive containing either a KML file or a shapefile and its secondary files. */
   private fun readZip(content: ByteArray): ParsedGeometryShapes {
-    return createTempFile(suffix = ".zip").useAndDelete { tempFile ->
-      tempFile.writeBytes(content)
+    return createTempFile(suffix = ".zip").useAndDelete { path ->
+      path.writeBytes(content)
 
       val zipFile =
           try {
-            ZipFile(tempFile.toFile())
+            ZipFile(path.toFile())
           } catch (e: ZipException) {
-            throw ContentFormatException("File does not appear to be a valid zip archive")
+            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
           }
 
       zipFile.use { zip ->
-        readZippedKml(zip) ?: readZippedShapefile(zip)
+        val entries =
+            zip.entries()
+                .asSequence()
+                .filter { entry ->
+                  // Ignore hidden files and AppleDouble metadata.
+                  !entry.isDirectory &&
+                      entry.name.split('/').none { it.startsWith('.') || it == "__MACOSX" }
+                }
+                .toList()
+
+        val kml = entries.firstOrNull { it.name.endsWith(".kml", ignoreCase = true) }
+        if (kml != null) {
+          val kmlContent = zip.getInputStream(kml).use { it.readAllBytes() }
+          return@use readKml(kmlContent, GeometryFileFormat.KMZ)
+        }
+
+        readZippedShapefile(zip, entries)
       }
     }
   }
 
-  private fun readZippedKml(zip: ZipFile): ParsedGeometryShapes? {
-    val entry =
-        zip.entries().asSequence().firstOrNull {
-          !it.isDirectory && it.name.endsWith(".kml", ignoreCase = true)
-        } ?: return null
-
-    return zip.getInputStream(entry).use { readKml(it.readAllBytes(), GeometryFileFormat.KMZ) }
-  }
-
-  private fun readZippedShapefile(zip: ZipFile): ParsedGeometryShapes {
-    val entries =
-        zip.entries()
-            .asSequence()
-            .filter {
-              !it.isDirectory && !it.name.substringAfterLast('/').startsWith('.')
-            }
-            .toList()
-    val filenames = entries.map { it.name }
-    val shapefiles = filenames.filter { it.endsWith(".shp", ignoreCase = true) }
+  private fun readZippedShapefile(zip: ZipFile, entries: List<ZipEntry>): ParsedGeometryShapes {
+    val shapefiles = entries.filter { it.name.endsWith(".shp", ignoreCase = true) }
     if (shapefiles.isEmpty()) {
-      throw ContentFormatException("No KML or SHP file found in archive")
+      val hasSecondaryFiles = entries.any {
+        it.name.substringAfterLast('.').lowercase() in SECONDARY_EXTENSIONS
+      }
+      throw GeometryFileException(
+          if (hasSecondaryFiles) GeometryFileErrorCode.NoShapefile
+          else GeometryFileErrorCode.NoKmlInArchive
+      )
     }
-    if (shapefiles.size != 1) {
-      throw ContentFormatException("Archive must contain exactly one .shp file")
+    if (shapefiles.size > 1) {
+      throw GeometryFileException(GeometryFileErrorCode.MultipleShapefiles)
     }
 
-    val basename = shapefiles.single().substringBeforeLast('.')
+    val basename = shapefiles.single().name.substringBeforeLast('.')
     val components =
-        listOf("shp", "shx", "dbf", "prj").associateWith { extension ->
+        (listOf("shp") + SECONDARY_EXTENSIONS).associateWith { extension ->
           entries.singleOrNull { it.name.equals("$basename.$extension", ignoreCase = true) }
-              ?: throw ContentFormatException(
-                  "Archive must contain exactly one $basename.$extension"
+              ?: throw GeometryFileException(
+                  if (extension == "prj") GeometryFileErrorCode.UnknownCoordinateSystem
+                  else GeometryFileErrorCode.InvalidFile
               )
         }
+
     if (components.values.any { it.size > MAX_COMPONENT_BYTES }) {
       throw ContentFormatException(
           "Shapefile component exceeds $MAX_COMPONENT_BYTES uncompressed bytes"
@@ -322,36 +336,59 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       throw ContentFormatException("Shapefile exceeds $MAX_TOTAL_BYTES total uncompressed bytes")
     }
 
-    val geometries =
-        createTempDirectory().useAndDelete { directory ->
-          var totalBytes = 0L
-          val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-          for ((extension, entry) in components) {
-            zip.getInputStream(entry).use { input ->
-              directory.resolve("boundary.$extension").outputStream().use { output ->
-                var componentBytes = 0L
-                while (true) {
-                  val count = input.read(buffer)
-                  if (count < 0) break
-                  componentBytes += count
-                  totalBytes += count
-                  if (componentBytes > MAX_COMPONENT_BYTES) {
-                    throw ContentFormatException(
-                        "Shapefile component exceeds $MAX_COMPONENT_BYTES uncompressed bytes"
-                    )
-                  }
-                  if (totalBytes > MAX_TOTAL_BYTES) {
-                    throw ContentFormatException(
-                        "Shapefile exceeds $MAX_TOTAL_BYTES total uncompressed bytes"
-                    )
-                  }
-                  output.write(buffer, 0, count)
-                }
+    // The shapefile reader needs the secondary files next to the main one under a common basename.
+    return createTempDirectory().useAndDelete { directory ->
+      var totalBytes = 0L
+      val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+      for ((extension, entry) in components) {
+        zip.getInputStream(entry).use { input ->
+          directory.resolve("boundary.$extension").outputStream().use { output ->
+            var componentBytes = 0L
+            while (true) {
+              val count = input.read(buffer)
+              if (count < 0) break
+              componentBytes += count
+              totalBytes += count
+              if (componentBytes > MAX_COMPONENT_BYTES) {
+                throw ContentFormatException(
+                    "Shapefile component exceeds $MAX_COMPONENT_BYTES uncompressed bytes"
+                )
               }
+              if (totalBytes > MAX_TOTAL_BYTES) {
+                throw ContentFormatException(
+                    "Shapefile exceeds $MAX_TOTAL_BYTES total uncompressed bytes"
+                )
+              }
+              output.write(buffer, 0, count)
             }
           }
-          Shapefile.fromFiles(directory.resolve("boundary.shp")).features.map { it.geometry }
         }
-    return parsedFile(geometries, GeometryFileFormat.Shapefile)
+      }
+
+      try {
+        CRS.parseWKT(directory.resolve("boundary.prj").readText())
+      } catch (e: FactoryException) {
+        throw GeometryFileException(GeometryFileErrorCode.UnknownCoordinateSystem, e)
+      }
+
+      val geometries =
+          try {
+            Shapefile.fromFiles(directory.resolve("boundary.shp")).features.map { it.geometry }
+          } catch (e: GeometryFileException) {
+            throw e
+          } catch (e: IOException) {
+            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+          } catch (e: BufferUnderflowException) {
+            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+          } catch (e: IllegalArgumentException) {
+            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+          } catch (e: FactoryException) {
+            throw GeometryFileException(GeometryFileErrorCode.UnknownCoordinateSystem, e)
+          } catch (e: TransformException) {
+            throw GeometryFileException(GeometryFileErrorCode.InvalidGeometry, e)
+          }
+
+      parsedFile(geometries, GeometryFileFormat.Shapefile)
+    }
   }
 }
