@@ -238,8 +238,10 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
       }
 
       fun assertResultsMatchPlantCounts() {
+        // Other and unknown species never have t0 data, so their live plants don't count toward
+        // survival rates; only the t0 density of the known species contributes.
         expectResults(observation = 1) {
-          survivalRate(percent(otherLiveCount + unknownLiveCount, density))
+          survivalRate(0)
           // Unknown species are not included at the site level, just known and Other ones.
           species(
               OTHER,
@@ -249,7 +251,7 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
               totalExisting = otherExistingCount,
           )
           stratum(1) {
-            survivalRate(percent(otherLiveCount + unknownLiveCount, density))
+            survivalRate(0)
             // Unknown species are not included at the stratum level, just known and Other ones.
             species(
                 OTHER,
@@ -259,7 +261,7 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
                 totalExisting = otherExistingCount,
             )
             substratum(1) {
-              survivalRate(percent(otherLiveCount + unknownLiveCount, density))
+              survivalRate(0)
               species(
                   OTHER,
                   survivalRate = null,
@@ -275,7 +277,7 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
                   totalExisting = unknownExistingCount,
               )
               plot(1) {
-                survivalRate(percent(otherLiveCount + unknownLiveCount, density))
+                survivalRate(0)
                 species(
                     OTHER,
                     survivalRate = null,

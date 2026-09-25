@@ -424,6 +424,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         plot2Plants,
     )
 
+    // Plot 2 has no t0 density for species 3, so its species 3 plants don't count toward any
+    // survival rate.
     val plot2SurvivalRates: Map<Any, Map<SpeciesId?, Double?>> =
         mapOf(
             plot2 to
@@ -431,15 +433,15 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                     speciesId1 to (100.0 * 10 / 9),
                     speciesId2 to (100.0 * 17 / 19),
                     speciesId3 to null,
-                    null to 100.0 * (10 + 17 + 25) / (9 + 19),
+                    null to 100.0 * (10 + 17) / (9 + 19),
                 )
         )
     val survivalRates1And2: Map<SpeciesId?, Double?> =
         mapOf(
             speciesId1 to (100.0 * (9 + 10) / (15 + 9)),
             speciesId2 to (100.0 * (17 + 18) / (23 + 19)),
-            speciesId3 to (100.0 * (27 + 25) / 31),
-            null to 100.0 * (9 + 10 + 17 + 18 + 27 + 25) / (15 + 9 + 23 + 19 + 31),
+            speciesId3 to (100.0 * 27 / 31),
+            null to 100.0 * (9 + 10 + 17 + 18 + 27) / (15 + 9 + 23 + 19 + 31),
         )
     assertSurvivalRates(
         SurvivalRates(
@@ -449,6 +451,157 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(plantingSiteId to survivalRates1And2),
         ),
         "Plots 1 and 2 survival rates",
+    )
+  }
+
+  @Test
+  fun `survival rate rollups only include permanent plots that have t0 data`() {
+    val speciesId = insertSpecies()
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(50).toPlantsPerHectare(),
+    )
+
+    val plotWithoutT0 = insertMonitoringPlot(permanentIndex = 2)
+    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes1",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 40), RecordedPlantStatus.Live),
+    )
+    observationStore.completePlot(
+        observationId,
+        plotWithoutT0,
+        emptySet(),
+        "Notes2",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 30), RecordedPlantStatus.Live),
+    )
+
+    val survivalRate = 100.0 * 40 / 50
+    val rollupRates: Map<SpeciesId?, Number?> = mapOf(speciesId to survivalRate)
+
+    assertSurvivalRates(
+        SurvivalRates(
+            mapOf(
+                plotId to mapOf(speciesId to survivalRate, null to survivalRate),
+                plotWithoutT0 to mapOf(speciesId to null),
+            ),
+            mapOf(substratumId to rollupRates),
+            mapOf(stratumId to rollupRates),
+            mapOf(plantingSiteId to rollupRates),
+        ),
+        "Plot without t0 data should not contribute to rollups",
+    )
+  }
+
+  @Test
+  fun `survival rate numerators only include species that have t0 data in the plot`() {
+    val speciesWithT0 = insertSpecies()
+    val speciesWithoutT0 = insertSpecies()
+    insertPlotT0Density(
+        speciesId = speciesWithT0,
+        plotDensity = BigDecimal.valueOf(50).toPlantsPerHectare(),
+    )
+
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(
+            mapOf(speciesWithT0 to 40, speciesWithoutT0 to 30),
+            RecordedPlantStatus.Live,
+        ),
+    )
+
+    val survivalRate = 100.0 * 40 / 50
+    val rates: Map<SpeciesId?, Number?> =
+        mapOf(speciesWithT0 to survivalRate, speciesWithoutT0 to null, null to survivalRate)
+
+    assertSurvivalRates(
+        SurvivalRates(
+            mapOf(plotId to rates),
+            mapOf(substratumId to rates),
+            mapOf(stratumId to rates),
+            mapOf(plantingSiteId to rates),
+        ),
+        "Live plants of a species without t0 data should not contribute to survival rates",
+    )
+  }
+
+  @Test
+  fun `survival rate rollups only include temp plots that have t0 data`() {
+    with(PLANTING_SITES) {
+      dslContext
+          .update(this)
+          .set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, true)
+          .where(ID.eq(plantingSiteId))
+          .execute()
+    }
+
+    val speciesId = insertSpecies()
+    insertPlotT0Density(
+        monitoringPlotId = plotId,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(50).toPlantsPerHectare(),
+    )
+
+    // Temp plot in the first stratum, which has no t0 temp density, so the plot has no t0 data.
+    val tempPlotWithoutT0 = insertMonitoringPlot(substratumId = substratumId)
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+
+    val stratum2 = insertStratum()
+    val substratum2 = insertSubstratum()
+    insertObservationRequestedSubstratum()
+    val tempPlotWithT0 = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+    insertStratumT0TempDensity(
+        stratumId = stratum2,
+        speciesId = speciesId,
+        stratumDensity = BigDecimal.valueOf(50).toPlantsPerHectare(),
+    )
+
+    mapOf(plotId to 30, tempPlotWithoutT0 to 5, tempPlotWithT0 to 10).forEach {
+        (plotIdToComplete, live) ->
+      observationStore.completePlot(
+          observationId,
+          plotIdToComplete,
+          emptySet(),
+          "Notes",
+          observedTime,
+          createPlantsRows(mapOf(speciesId to live), RecordedPlantStatus.Live),
+      )
+    }
+
+    val permanentPlotRate = 100.0 * 30 / 50
+    val tempPlotRate = 100.0 * 10 / 50
+    // The temp plot with no t0 data contributes neither live plants nor t0 density to the rollups.
+    val siteRate = 100.0 * (30 + 10) / (50 + 50)
+
+    assertSurvivalRates(
+        SurvivalRates(
+            mapOf(
+                plotId to mapOf(speciesId to permanentPlotRate, null to permanentPlotRate),
+                tempPlotWithoutT0 to mapOf(speciesId to null),
+                tempPlotWithT0 to mapOf(speciesId to tempPlotRate, null to tempPlotRate),
+            ),
+            mapOf(
+                substratumId to mapOf(speciesId to permanentPlotRate, null to permanentPlotRate),
+                substratum2 to mapOf(speciesId to tempPlotRate, null to tempPlotRate),
+            ),
+            mapOf(
+                stratumId to mapOf(speciesId to permanentPlotRate, null to permanentPlotRate),
+                stratum2 to mapOf(speciesId to tempPlotRate, null to tempPlotRate),
+            ),
+            mapOf(plantingSiteId to mapOf(speciesId to siteRate, null to siteRate)),
+        ),
+        "Temp plot without t0 data should not contribute to rollups",
     )
   }
 
@@ -709,9 +862,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val tempPlotRatesUpdated = mapOf(speciesId to 100.0 * 1 / 30, null to 100.0 * 1 / 30)
     val obs2AllPlotsRatesUpdated = mapOf(speciesId to 100.0 * 2 / 40, null to 100.0 * 2 / 40)
     val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
-    // plots in deleted substrata currently affect species calculations only at a site level. This
-    // is a bug that will be addressed later.
-    val siteRatesUpdated = mapOf(speciesId to 100.0 * 5 / 75, null to 100.0 * 4 / 75)
     val obs1Expected =
         SurvivalRates(
             mapOf(
@@ -722,7 +872,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             ),
             mapOf(substratumId to allPlotRatesUpdated),
             mapOf(stratumId to allPlotRatesUpdated),
-            mapOf(plantingSiteId to siteRatesUpdated),
+            mapOf(plantingSiteId to allPlotRatesUpdated),
         )
     val obs2Expected =
         SurvivalRates(
