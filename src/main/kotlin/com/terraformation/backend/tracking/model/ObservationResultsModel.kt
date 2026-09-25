@@ -51,8 +51,7 @@ data class ObservationSpeciesResultsModel(
     val latestLive: Int,
     /**
      * Number of live plants observed in permanent plots in this observation, not including existing
-     * plants. 0 if this is a plot-level result for a temporary monitoring plot. Used in the
-     * survival rate calculation.
+     * plants. 0 if this is a plot-level result for a temporary monitoring plot.
      */
     val permanentLive: Int,
     /** Species ID if certainty is Known. */
@@ -60,11 +59,12 @@ data class ObservationSpeciesResultsModel(
     /** User-supplied species name if certainty is Other. */
     val speciesName: String?,
     /**
-     * Percentage of plants in permanent monitoring plots that are still alive since the t0 point.
-     * If there are no permanent monitoring plots (or if this is a plot-level result for a temporary
-     * monitoring plot) this will be null. The survival rate is calculated using [permanentLive] and
-     * [t0Density]. Existing plants are not included in the survival rate because the intent is to
-     * track the health of plants that were introduced to the site.
+     * Percentage of plants that are still alive since the t0 point, as a fraction of [t0Density].
+     * Only live plants in monitoring plots that have t0 data for this species are counted; a plot
+     * without t0 data contributes to neither the numerator nor the denominator. Temporary plots
+     * count only if the planting site includes them in survival rates. Null if no plot has t0 data
+     * for this species. Existing plants are not included in the survival rate because the intent is
+     * to track the health of plants that were introduced to the site.
      */
     val survivalRate: Int? = null,
     /** Plant Density for this species at the t0 point. */

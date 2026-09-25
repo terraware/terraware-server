@@ -424,6 +424,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         plot2Plants,
     )
 
+    // Plot 2 has no t0 density for species 3, so its species 3 plants don't count toward any
+    // survival rate.
     val plot2SurvivalRates: Map<Any, Map<SpeciesId?, Double?>> =
         mapOf(
             plot2 to
@@ -431,15 +433,15 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                     speciesId1 to (100.0 * 10 / 9),
                     speciesId2 to (100.0 * 17 / 19),
                     speciesId3 to null,
-                    null to 100.0 * (10 + 17 + 25) / (9 + 19),
+                    null to 100.0 * (10 + 17) / (9 + 19),
                 )
         )
     val survivalRates1And2: Map<SpeciesId?, Double?> =
         mapOf(
             speciesId1 to (100.0 * (9 + 10) / (15 + 9)),
             speciesId2 to (100.0 * (17 + 18) / (23 + 19)),
-            speciesId3 to (100.0 * (27 + 25) / 31),
-            null to 100.0 * (9 + 10 + 17 + 18 + 27 + 25) / (15 + 9 + 23 + 19 + 31),
+            speciesId3 to (100.0 * 27 / 31),
+            null to 100.0 * (9 + 10 + 17 + 18 + 27) / (15 + 9 + 23 + 19 + 31),
         )
     assertSurvivalRates(
         SurvivalRates(
@@ -481,8 +483,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     )
 
     val survivalRate = 100.0 * 40 / 50
-    val rollupRates: Map<SpeciesId?, Number?> =
-        mapOf(speciesId to survivalRate, null to survivalRate)
+    val rollupRates: Map<SpeciesId?, Number?> = mapOf(speciesId to survivalRate)
 
     assertSurvivalRates(
         SurvivalRates(
@@ -495,6 +496,42 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(plantingSiteId to rollupRates),
         ),
         "Plot without t0 data should not contribute to rollups",
+    )
+  }
+
+  @Test
+  fun `survival rate numerators only include species that have t0 data in the plot`() {
+    val speciesWithT0 = insertSpecies()
+    val speciesWithoutT0 = insertSpecies()
+    insertPlotT0Density(
+        speciesId = speciesWithT0,
+        plotDensity = BigDecimal.valueOf(50).toPlantsPerHectare(),
+    )
+
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(
+            mapOf(speciesWithT0 to 40, speciesWithoutT0 to 30),
+            RecordedPlantStatus.Live,
+        ),
+    )
+
+    val survivalRate = 100.0 * 40 / 50
+    val rates: Map<SpeciesId?, Number?> =
+        mapOf(speciesWithT0 to survivalRate, speciesWithoutT0 to null, null to survivalRate)
+
+    assertSurvivalRates(
+        SurvivalRates(
+            mapOf(plotId to rates),
+            mapOf(substratumId to rates),
+            mapOf(stratumId to rates),
+            mapOf(plantingSiteId to rates),
+        ),
+        "Live plants of a species without t0 data should not contribute to survival rates",
     )
   }
 
@@ -825,9 +862,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val tempPlotRatesUpdated = mapOf(speciesId to 100.0 * 1 / 30, null to 100.0 * 1 / 30)
     val obs2AllPlotsRatesUpdated = mapOf(speciesId to 100.0 * 2 / 40, null to 100.0 * 2 / 40)
     val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
-    // plots in deleted substrata currently affect species calculations only at a site level. This
-    // is a bug that will be addressed later.
-    val siteRatesUpdated = mapOf(speciesId to 100.0 * 5 / 75, null to 100.0 * 4 / 75)
     val obs1Expected =
         SurvivalRates(
             mapOf(
@@ -838,7 +872,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             ),
             mapOf(substratumId to allPlotRatesUpdated),
             mapOf(stratumId to allPlotRatesUpdated),
-            mapOf(plantingSiteId to siteRatesUpdated),
+            mapOf(plantingSiteId to allPlotRatesUpdated),
         )
     val obs2Expected =
         SurvivalRates(
