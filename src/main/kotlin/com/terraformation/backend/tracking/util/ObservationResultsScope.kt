@@ -79,14 +79,13 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
   /**
    * Returns the SQL expression that produces the survival rate (as an integer percentage 0–100) for
    * this scope on a row of [observedTotalsTable], given the observation id field. The default
-   * implementation uses a density-weighted formula; the site scope overrides this to return the
-   * area-weighted strata average.
+   * implementation divides the numerator by the denominator; the site scope overrides this to
+   * return the area-weighted strata average.
    */
   fun survivalRateValue(
       observationIdField: Field<ObservationId?>,
+      survivalRateNumerator: Field<Int>,
       survivalRateDenominator: Field<BigDecimal>,
-      latestLiveField: Field<Int>,
-      permanentLiveField: Field<Int>,
   ): Field<Int?> =
       DSL.case_()
           .`when`(
@@ -94,11 +93,9 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
               DSL.castNull(SQLDataType.INTEGER),
           )
           .else_(
-              DSL.case_()
-                  .`when`(observedTotalsPlantingSiteTempCondition, latestLiveField)
-                  .else_(permanentLiveField)
+              survivalRateNumerator
                   .mul(BigDecimal.valueOf(100))
-                  .div(DSL.nullif(survivalRateDenominator, BigDecimal.ZERO)),
+                  .div(DSL.nullif(survivalRateDenominator, BigDecimal.ZERO))
           )
 
   /**
@@ -714,9 +711,8 @@ class ObservationResultsSite(
    */
   override fun survivalRateValue(
       observationIdField: Field<ObservationId?>,
+      survivalRateNumerator: Field<Int>,
       survivalRateDenominator: Field<BigDecimal>,
-      latestLiveField: Field<Int>,
-      permanentLiveField: Field<Int>,
   ): Field<Int?> {
     val weightedAverage =
         DSL.field(
