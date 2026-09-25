@@ -714,15 +714,13 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               insertPlotT0Observation(monitoringPlotId = plotId)
               plants
                   .filter {
-                    it.certaintyId == RecordedSpeciesCertainty.Known &&
-                        it.speciesId != null &&
-                        it.statusId != RecordedPlantStatus.Existing
+                    it.certaintyId == RecordedSpeciesCertainty.Known && it.speciesId != null
                   }
-                  .groupingBy { it.speciesId }
-                  .eachCount()
-                  .forEach { (speciesId, count) ->
+                  .groupBy { it.speciesId!! }
+                  .forEach { (speciesId, speciesPlants) ->
+                    val count = speciesPlants.count { it.statusId != RecordedPlantStatus.Existing }
                     insertPlotT0Density(
-                        speciesId = speciesId!!,
+                        speciesId = speciesId,
                         monitoringPlotId = plotId,
                         plotDensity = count.toBigDecimal().toPlantsPerHectare(),
                     )
@@ -924,16 +922,12 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
           if (observationNum == 0 && plotId in permanentPlotIds && includeT0Data) {
             insertPlotT0Observation(monitoringPlotId = plotId)
             plants
-                .filter {
-                  it.certaintyId == RecordedSpeciesCertainty.Known &&
-                      it.speciesId != null &&
-                      it.statusId != RecordedPlantStatus.Existing
-                }
-                .groupingBy { it.speciesId }
-                .eachCount()
-                .forEach { (speciesId, count) ->
+                .filter { it.certaintyId == RecordedSpeciesCertainty.Known && it.speciesId != null }
+                .groupBy { it.speciesId!! }
+                .forEach { (speciesId, speciesPlants) ->
+                  val count = speciesPlants.count { it.statusId != RecordedPlantStatus.Existing }
                   insertPlotT0Density(
-                      speciesId = speciesId!!,
+                      speciesId = speciesId,
                       monitoringPlotId = plotId,
                       plotDensity = count.toBigDecimal().toPlantsPerHectare(),
                   )

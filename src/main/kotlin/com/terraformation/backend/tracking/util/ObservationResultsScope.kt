@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.util
 
-import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -58,8 +57,6 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
   /** Filter on [OBSERVATION_PLOT_RESULTS] selecting the plots that belong to this scope. */
   val plotResultsCondition: Condition
 
-  val latestLiveField: Field<Int>
-
   /** Condition that covers all result table rows that could be affected downstream. */
   val survivalRateRecalculationCondition: Condition
 
@@ -77,10 +74,11 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
   ): Condition
 
   /**
-   * Returns the SQL expression that produces the survival rate (as an integer percentage 0–100) for
-   * this scope on a row of [observedTotalsTable], given the observation id field. The default
-   * implementation divides the numerator by the denominator; the site scope overrides this to
-   * return the area-weighted strata average.
+   * Returns the SQL expression that produces the survival rate (as an integer percentage) for this
+   * scope on a row of [observedTotalsTable], given the observation id field. The numerator and
+   * denominator are both aggregated from the plots in this scope that have t0 data. The default
+   * implementation divides them; the site scope overrides this to return the area-weighted strata
+   * average.
    */
   fun survivalRateValue(
       observationIdField: Field<ObservationId?>,
@@ -182,8 +180,6 @@ class ObservationResultsPlot(
 
   override val plotResultsCondition = OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(plotId)
 
-  override val latestLiveField = OBSERVATION_PLOT_RESULTS.TOTAL_LIVE.asNonNullable()
-
   override val observedTotalsCondition = OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(plotId)
 
   override val survivalRateRecalculationCondition: Condition
@@ -267,8 +263,6 @@ class ObservationResultsSubstratum(
       OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID.`in`(
           substratumHistorySelect
       )
-
-  override val latestLiveField = OBSERVATION_SUBSTRATUM_RESULTS.TOTAL_LIVE.asNonNullable()
 
   override val observedTotalsCondition =
       OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID.`in`(substratumHistorySelect)
@@ -403,29 +397,6 @@ class ObservationResultsStratum(
       OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID.`in`(
           stratumHistorySelect
       )
-
-  override val latestLiveField =
-      with(OBSERVATION_SUBSTRATUM_RESULTS) {
-        DSL.field(
-            DSL.select(DSL.sum(DSL.coalesce(TOTAL_LIVE, 0)).cast(SQLDataType.INTEGER))
-                .from(this)
-                .join(SUBSTRATUM_HISTORIES)
-                .on(SUBSTRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORY_ID))
-                .where(
-                    SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
-                        OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
-                    )
-                )
-                .and(
-                    OBSERVATION_ID.eq(
-                        latestObservationForSubstratumField(
-                            OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
-                            SUBSTRATUM_ID,
-                        )
-                    )
-                )
-        )
-      }
 
   override val observedTotalsCondition =
       OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(stratumHistorySelect)
@@ -630,31 +601,6 @@ class ObservationResultsSite(
   override val rollupSpeciesCondition = OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteSelect)
 
   override val plotResultsCondition = DSL.trueCondition()
-
-  override val latestLiveField =
-      with(OBSERVATION_SUBSTRATUM_RESULTS) {
-        DSL.field(
-            DSL.select(DSL.sum(DSL.coalesce(TOTAL_LIVE, 0)).cast(SQLDataType.INTEGER))
-                .from(this)
-                .join(SUBSTRATUM_HISTORIES)
-                .on(SUBSTRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORY_ID))
-                .join(STRATUM_HISTORIES)
-                .on(STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
-                .where(
-                    STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                        OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
-                    )
-                )
-                .and(
-                    OBSERVATION_ID.eq(
-                        latestObservationForSubstratumField(
-                            OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
-                            SUBSTRATUM_ID,
-                        )
-                    )
-                ),
-        )
-      }
 
   override val observedTotalsCondition = OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(siteSelect)
 

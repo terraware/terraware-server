@@ -546,21 +546,21 @@ COMMENT ON TABLE tracking.observation_biomass_quadrat_species IS 'Herbaceous spe
 COMMENT ON TABLE tracking.observed_plot_coordinates IS 'Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.';
 
 COMMENT ON TABLE tracking.observed_plot_species_totals IS 'Aggregated per-monitoring-plot, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_plot_species_totals.permanent_live IS 'If this is a permanent monitoring plot, the number of live and existing plants observed. 0 otherwise.';
+COMMENT ON COLUMN tracking.observed_plot_species_totals.permanent_live IS 'If this is a permanent monitoring plot, the number of live plants observed, not including existing plants. 0 otherwise.';
 COMMENT ON COLUMN tracking.observed_plot_species_totals.survival_rate IS 'If this is a permanent monitoring plot, percentage of plants of the species observed in this plot, in either this observation or in previous ones, that have survived since the t0 point. Null if this is not a permanent monitoring plot in the current observation.';
 
 COMMENT ON TABLE tracking.observation_plot_statuses IS '(Enum) The status of an observation plot.';
 
 COMMENT ON TABLE tracking.observed_site_species_totals IS 'Aggregated per-planting-site, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_site_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
+COMMENT ON COLUMN tracking.observed_site_species_totals.permanent_live IS 'The number of live plants observed in permanent monitoring plots, not including existing plants.';
 COMMENT ON COLUMN tracking.observed_site_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting site, in either this observation or in previous ones, that have survived since the t0 point.';
 
 COMMENT ON TABLE tracking.observed_substratum_species_totals IS 'Aggregated per-substratum, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_substratum_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
+COMMENT ON COLUMN tracking.observed_substratum_species_totals.permanent_live IS 'The number of live plants observed in permanent monitoring plots, not including existing plants.';
 COMMENT ON COLUMN tracking.observed_substratum_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the substratum, in either the current observation or in previous ones, that have survived since the t0 point.';
 
 COMMENT ON TABLE tracking.observed_stratum_species_totals IS 'Aggregated per-stratum, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_stratum_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
+COMMENT ON COLUMN tracking.observed_stratum_species_totals.permanent_live IS 'The number of live plants observed in permanent monitoring plots, not including existing plants.';
 COMMENT ON COLUMN tracking.observed_stratum_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that have survived since the t0 point.';
 
 COMMENT ON TABLE tracking.planting_date_request_statuses IS '(Enum) Possible statuses of a planting date request.';

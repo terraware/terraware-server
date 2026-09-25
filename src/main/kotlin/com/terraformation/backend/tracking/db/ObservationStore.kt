@@ -1788,8 +1788,6 @@ class ObservationStore(
         val speciesName: String?,
         val stratumHistoryId: StratumHistoryId,
         val permanentLive: Int,
-        val totalLive: Int,
-        val survivalRateIncludesTempPlots: Boolean,
     )
 
     val plantingSiteHistoryId =
@@ -1815,9 +1813,6 @@ class ObservationStore(
                   SPECIES_NAME,
                   obsSh.ID.asNonNullable(),
                   PERMANENT_LIVE.asNonNullable(),
-                  TOTAL_LIVE.asNonNullable(),
-                  PLANTING_SITE_HISTORIES.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
-                      .asNonNullable(),
               )
               .from(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
               .join(SUBSTRATUM_HISTORIES)
@@ -1845,11 +1840,6 @@ class ObservationStore(
                     speciesName = record[SPECIES_NAME],
                     stratumHistoryId = record[obsSh.ID.asNonNullable()],
                     permanentLive = record[PERMANENT_LIVE.asNonNullable()],
-                    totalLive = record[TOTAL_LIVE.asNonNullable()],
-                    survivalRateIncludesTempPlots =
-                        record[
-                            PLANTING_SITE_HISTORIES.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
-                                .asNonNullable()],
                 )
               }
               .groupBy { record ->
@@ -1873,25 +1863,19 @@ class ObservationStore(
     liveAndDeadTotals.forEach { (speciesKey, stratumToLiveAndDead) ->
       stratumToLiveAndDead.forEach { (stratumHistoryId, liveAndDeadForStratum) ->
         val totalPermanentLive = liveAndDeadForStratum.sumOf { it.permanentLive }
-        val totalLive = liveAndDeadForStratum.sumOf { it.totalLive }
         val stratumId = stratumIdByHistoryId[stratumHistoryId]
 
         with(OBSERVED_STRATUM_SPECIES_TOTALS) {
           val updateScope = ObservationSpeciesStratum(stratumHistoryId, stratumId)
           // The live totals above roll each substratum forward from its latest observation, so the
-          // denominators must roll the same T0 densities forward to avoid inflating the rate.
+          // survival rate terms must roll the same plots forward to avoid inflating the rate.
           val terms =
               getSurvivalRateTerms(
                   updateScope,
                   DSL.value(observationId, OBSERVATIONS.ID.dataType),
                   DSL.value(speciesKey.id, SPECIES.ID.dataType),
               )
-          val survivalRate =
-              if (liveAndDeadForStratum.first().survivalRateIncludesTempPlots) {
-                getSurvivalRate(DSL.value(totalLive), terms.denominatorOrNull)
-              } else {
-                getSurvivalRate(DSL.value(totalPermanentLive), terms.denominatorOrNull)
-              }
+          val survivalRate = getSurvivalRate(terms.numerator, terms.denominatorOrNull)
 
           val rowsInserted =
               dslContext
@@ -1922,24 +1906,18 @@ class ObservationStore(
       }
 
       val totalPermanentLive = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.permanentLive }
-      val totalLive = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.totalLive }
 
       with(OBSERVED_SITE_SPECIES_TOTALS) {
         val updateScope = ObservationSpeciesSite(plantingSiteId, plantingSiteHistoryId)
         // Same as the stratum block: the site live totals roll substrata forward, so the
-        // denominators must too.
+        // survival rate terms must too.
         val terms =
             getSurvivalRateTerms(
                 updateScope,
                 DSL.value(observationId, OBSERVATIONS.ID.dataType),
                 DSL.value(speciesKey.id, SPECIES.ID.dataType),
             )
-        val survivalRate =
-            if (stratumToLiveAndDead.flatMap { it.value }.first().survivalRateIncludesTempPlots) {
-              getSurvivalRate(DSL.value(totalLive), terms.denominatorOrNull)
-            } else {
-              getSurvivalRate(DSL.value(totalPermanentLive), terms.denominatorOrNull)
-            }
+        val survivalRate = getSurvivalRate(terms.numerator, terms.denominatorOrNull)
 
         val rowsInserted =
             dslContext
@@ -2094,16 +2072,12 @@ class ObservationStore(
 
     val terms = getSurvivalRateTerms(updateScope, observationIdField, speciesIdField)
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
-    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
-    val totalLiveField = table.field("total_live", Int::class.java)!!
 
     dslContext
         .update(table)
         .set(
             survivalRateField,
-            DSL.case_()
-                .`when`(updateScope.observedTotalsPlantingSiteTempCondition, totalLiveField)
-                .else_(permanentLiveField)
+            terms.numerator
                 .mul(BigDecimal.valueOf(100))
                 .div(DSL.nullif(terms.denominatorOrZero, BigDecimal.ZERO)),
         )
@@ -2170,19 +2144,11 @@ class ObservationStore(
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
     val survivalRateAreaField = table.field("survival_rate_area", BigDecimal::class.java)
-    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
-    val survivalRateNumerator =
-        DSL.case_()
-            .`when`(
-                updateScope.observedTotalsPlantingSiteTempCondition,
-                updateScope.latestLiveField,
-            )
-            .else_(permanentLiveField)
 
     val survivalRateValue =
         updateScope.survivalRateValue(
             observationIdField,
-            survivalRateNumerator,
+            terms.numerator,
             terms.denominatorOrZero,
         )
 
@@ -2284,21 +2250,9 @@ class ObservationStore(
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
     val survivalRateAreaField = table.field("survival_rate_area", BigDecimal::class.java)
-    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
-    val survivalRateNumerator =
-        DSL.case_()
-            .`when`(
-                updateScope.observedTotalsPlantingSiteTempCondition,
-                updateScope.latestLiveField,
-            )
-            .else_(permanentLiveField)
 
     val survivalRateValue =
-        updateScope.survivalRateValue(
-            observationIdValue,
-            survivalRateNumerator,
-            terms.denominatorOrZero,
-        )
+        updateScope.survivalRateValue(observationIdValue, terms.numerator, terms.denominatorOrZero)
 
     val allPlotsCompleted =
         dslContext
@@ -3566,9 +3520,9 @@ class ObservationStore(
         }
       }
 
-      // The survival rate is computed from the accumulated live totals, so it is set in a single
-      // statement once all of this plot's totals rows are in place. A temporary plot only affects
-      // survival rates if the planting site includes temporary plots in them.
+      // The survival rate is computed from the per-plot totals of the plots that have t0 data, so
+      // it can only be calculated once this plot's totals rows are in place. A temporary plot only
+      // affects survival rates if the planting site includes temporary plots in them.
       if (speciesIds.isNotEmpty() && (includesTempPlots || isPermanent)) {
         // While the plot is being completed, its observation's substratum dependencies haven't
         // been recorded yet, so attribute plots to observations using the requested substrata.
@@ -3594,7 +3548,6 @@ class ObservationStore(
             } else {
               emptyMap()
             }
-        val numerator = if (includesTempPlots) totalLiveField else permanentLiveField
 
         var survivalRateBySpecies: CaseWhenStep<SpeciesId?, Int>? = null
 
@@ -3607,7 +3560,8 @@ class ObservationStore(
                 permanent != null -> permanent.denominator
                 else -> temp?.denominator
               }
-          val survivalRate = survivalRateValue(numerator, denominator)
+          val numerator = (permanent?.numerator ?: 0) + (temp?.numerator ?: 0)
+          val survivalRate = survivalRateValue(DSL.value(numerator), denominator)
 
           survivalRateBySpecies =
               survivalRateBySpecies?.`when`(speciesId, survivalRate)
@@ -3627,13 +3581,16 @@ class ObservationStore(
 
   /**
    * The rows that feed a survival rate calculation: one row per (monitoring plot, species) that has
-   * t0 data and belongs to a scope.
+   * t0 data and belongs to a scope, joined to the plot's per-species live plant count from the
+   * observation the plot is attributed to. The numerator and denominator of a survival rate are
+   * both aggregated from the same set so a plot without t0 data contributes to neither.
    */
   private class T0PlotSet(
       val table: Table<*>,
       val condition: Condition,
       val speciesIdField: Field<SpeciesId?>,
       val densityField: Field<BigDecimal?>,
+      val liveField: Field<Int?>,
   ) {
     /** Sum of t0 densities across the set, or SQL null if the set is empty. */
     val denominator: Field<BigDecimal> =
@@ -3642,12 +3599,18 @@ class ObservationStore(
                 .from(table)
                 .where(condition)
         )
+
+    /** Sum of live plants across the set, or SQL null if the set is empty. */
+    val numerator: Field<Int> =
+        DSL.field(
+            DSL.select(DSL.sum(liveField).cast(SQLDataType.INTEGER)).from(table).where(condition)
+        )
   }
 
   /**
    * Returns the t0 plot set for the permanent plots in [updateScope], restricted to
    * [speciesIdField] if it is non-null. [plotObservationCondition] selects, for each plot, the
-   * observation the plot is attributed to.
+   * observation whose live plant counts should be used.
    */
   private fun <ID : Any, HistoryId : Any> permanentT0PlotSet(
       updateScope: ObservationSpeciesScope<ID, HistoryId>,
@@ -3655,10 +3618,17 @@ class ObservationStore(
       plotObservationCondition: (ObservationPlots) -> Condition,
   ): T0PlotSet {
     val opPerm = OBSERVATION_PLOTS.`as`("opPerm")
+    val liveTotals = OBSERVED_PLOT_SPECIES_TOTALS.`as`("permLiveTotals")
 
     val table =
         PLOT_T0_DENSITIES.join(opPerm)
             .on(opPerm.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
+            .leftJoin(liveTotals)
+            .on(
+                liveTotals.OBSERVATION_ID.eq(opPerm.OBSERVATION_ID),
+                liveTotals.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID),
+                liveTotals.SPECIES_ID.eq(PLOT_T0_DENSITIES.SPECIES_ID),
+            )
 
     val plotSetCondition =
         DSL.and(
@@ -3678,6 +3648,7 @@ class ObservationStore(
         plotSetCondition,
         PLOT_T0_DENSITIES.SPECIES_ID,
         PLOT_T0_DENSITIES.PLOT_DENSITY,
+        liveTotals.TOTAL_LIVE,
     )
   }
 
@@ -3685,7 +3656,8 @@ class ObservationStore(
    * Returns the t0 plot set for the temporary plots in [updateScope], restricted to
    * [speciesIdField] if it is non-null. Temporary plots take their t0 density from their stratum
    * and only count if the planting site includes temporary plots in survival rates.
-   * [plotObservationCondition] selects, for each plot, the observation the plot is attributed to.
+   * [plotObservationCondition] selects, for each plot, the observation whose live plant counts
+   * should be used.
    */
   private fun <ID : Any, HistoryId : Any> tempT0PlotSet(
       updateScope: ObservationSpeciesScope<ID, HistoryId>,
@@ -3693,6 +3665,7 @@ class ObservationStore(
       plotObservationCondition: (ObservationPlots) -> Condition,
   ): T0PlotSet {
     val opTemp = OBSERVATION_PLOTS.`as`("opTemp")
+    val liveTotals = OBSERVED_PLOT_SPECIES_TOTALS.`as`("tempLiveTotals")
 
     return with(STRATUM_T0_TEMP_DENSITIES) {
       val table =
@@ -3701,6 +3674,12 @@ class ObservationStore(
                   opTemp.monitoringPlotHistories.substratumHistories.stratumHistories.STRATUM_ID.eq(
                       STRATUM_ID
                   )
+              )
+              .leftJoin(liveTotals)
+              .on(
+                  liveTotals.OBSERVATION_ID.eq(opTemp.OBSERVATION_ID),
+                  liveTotals.MONITORING_PLOT_ID.eq(opTemp.MONITORING_PLOT_ID),
+                  liveTotals.SPECIES_ID.eq(SPECIES_ID),
               )
 
       val plotSetCondition =
@@ -3717,7 +3696,7 @@ class ObservationStore(
               plotObservationCondition(opTemp),
           )
 
-      T0PlotSet(table, plotSetCondition, SPECIES_ID, STRATUM_DENSITY)
+      T0PlotSet(table, plotSetCondition, SPECIES_ID, STRATUM_DENSITY, liveTotals.TOTAL_LIVE)
     }
   }
 
@@ -3752,20 +3731,22 @@ class ObservationStore(
     )
   }
 
-  private data class SurvivalRateTerms(val denominator: BigDecimal)
+  private data class SurvivalRateTerms(val denominator: BigDecimal, val numerator: Int)
 
   /**
-   * Returns the survival-rate denominator (cumulative t0 plant density) for each of the requested
-   * species in a t0 plot set, computed in a single grouped query.
+   * Returns the survival-rate denominator (cumulative t0 plant density) and numerator (live plants
+   * in plots that have t0 data) for each of the requested species in a t0 plot set, computed in a
+   * single grouped query.
    */
   private fun getSurvivalRateTermsBySpecies(
       plotSet: T0PlotSet,
       speciesIds: Set<SpeciesId>,
   ): Map<SpeciesId, SurvivalRateTerms> {
     val denominatorField = DSL.sum(plotSet.densityField).mul(DSL.inline(HECTARES_PER_PLOT))
+    val numeratorField = DSL.sum(plotSet.liveField).cast(SQLDataType.INTEGER)
 
     return dslContext
-        .select(plotSet.speciesIdField, denominatorField)
+        .select(plotSet.speciesIdField, denominatorField, numeratorField)
         .from(plotSet.table)
         .where(plotSet.condition)
         .and(plotSet.speciesIdField.`in`(speciesIds))
@@ -3775,7 +3756,7 @@ class ObservationStore(
           val speciesId = record.value1()
           val denominator = record.value2()
           if (speciesId != null && denominator != null) {
-            speciesId to SurvivalRateTerms(denominator)
+            speciesId to SurvivalRateTerms(denominator, record.value3() ?: 0)
           } else {
             null
           }
@@ -3828,9 +3809,14 @@ class ObservationStore(
 
   /**
    * SQL expressions for the terms of a scope's survival rate, combining the permanent and temporary
-   * t0 plot sets.
+   * t0 plot sets. The numerator and denominators are aggregated over the same plots, so a plot
+   * without t0 data contributes to none of them.
    */
   private class SurvivalRateTermFields(permanentPlots: T0PlotSet, tempPlots: T0PlotSet) {
+    /** Live plants in plots that have t0 data. Zero rather than null when there are none. */
+    val numerator: Field<Int> =
+        DSL.coalesce(permanentPlots.numerator, 0).plus(DSL.coalesce(tempPlots.numerator, 0))
+
     /** Total t0 density, or SQL null if no plot has t0 data. */
     val denominatorOrNull: Field<BigDecimal> =
         DSL.coalesce(
