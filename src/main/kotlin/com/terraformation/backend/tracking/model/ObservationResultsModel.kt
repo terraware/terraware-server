@@ -19,14 +19,9 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
-import com.terraformation.backend.util.HECTARES_PER_PLOT
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
-import kotlin.math.max
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
@@ -274,113 +269,3 @@ data class RecordedPlantModel(
     val speciesName: String?,
     val status: RecordedPlantStatus,
 )
-
-fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
-    includeTempPlots: Boolean = false
-): Int? {
-  val sumDensity = this.mapNotNull { it.t0Density }.takeIf { it.isNotEmpty() }?.sumOf { it }
-  val numKnownLive =
-      if (includeTempPlots) this.sumOf { it.latestLive } else this.sumOf { it.permanentLive }
-
-  return calculateSurvivalRate(numKnownLive, sumDensity)
-}
-
-fun calculateSurvivalRate(numKnownLive: Int, sumDensity: BigDecimal?): Int? {
-  val numerator = (numKnownLive * 100.0).toBigDecimal()
-
-  return if (sumDensity != null && sumDensity > BigDecimal.ZERO) {
-    val denominator = sumDensity.times(HECTARES_PER_PLOT.toBigDecimal())
-    val scale = max(numerator.scale(), denominator.scale())
-    numerator
-        .setScale(scale)
-        .div(denominator.setScale(scale))
-        .setScale(0, RoundingMode.HALF_UP)
-        .toInt()
-  } else {
-    null
-  }
-}
-
-/**
- * Combining observation species results by summing up numbers for results with matching (certainty,
- * speciesId, speciesName) triple. This is used to build per species data starting from permanent
- * monitoring plots data.
- */
-fun List<ObservationSpeciesResultsModel>.unionSpecies(
-    other: List<ObservationSpeciesResultsModel>,
-    includeTempPlots: Boolean,
-): List<ObservationSpeciesResultsModel> {
-  val combined = this + other
-  return combined
-      .groupBy { Triple(it.certainty, it.speciesId, it.speciesName) }
-      .map { (key, groupedSpecies) ->
-        val permanentLive = groupedSpecies.sumOf { it.permanentLive }
-        val totalLive = groupedSpecies.sumOf { it.totalLive }
-        val t0Density = groupedSpecies.sumOf { it.t0Density ?: BigDecimal.ZERO }
-
-        val survivalRateNumerator = if (includeTempPlots) totalLive else permanentLive
-        val survivalRate =
-            if (t0Density > BigDecimal.ZERO) {
-              ((survivalRateNumerator * 100.0).toBigDecimal() /
-                      (t0Density.times(HECTARES_PER_PLOT.toBigDecimal())))
-                  .setScale(0, RoundingMode.HALF_UP)
-                  .toInt()
-            } else {
-              null
-            }
-
-        ObservationSpeciesResultsModel(
-            certainty = key.first,
-            latestLive = groupedSpecies.sumOf { it.latestLive },
-            permanentLive = permanentLive,
-            speciesId = key.second,
-            speciesName = key.third,
-            survivalRate = survivalRate,
-            t0Density = t0Density,
-            totalDead = groupedSpecies.sumOf { it.totalDead },
-            totalExisting = groupedSpecies.sumOf { it.totalExisting },
-            totalLive = totalLive,
-            totalPlants = groupedSpecies.sumOf { it.totalPlants },
-        )
-      }
-}
-
-/** Calculate standard deviation */
-fun Collection<Int>.calculateStandardDeviation(): Int? {
-  if (this.size <= 1) {
-    return null
-  }
-
-  val numSamples = this.size.toDouble()
-  val samples = this.map { it.toDouble() }
-  val mean = samples.average()
-  val sumSquaredDifferences = samples.sumOf { (it - mean) * (it - mean) }
-  val variance = sumSquaredDifferences / (numSamples - 1)
-
-  return sqrt(variance).roundToInt()
-}
-
-/**
- * Calculate standard deviation from a collection of pairs of (data, weight). Weight must be the
- * number of samples, so we can correctly apply the (n-1) Bessel's correction.
- */
-fun Collection<Pair<Int, Double>>.calculateWeightedStandardDeviation(): Int? {
-  if (this.size == 1) {
-    // If there's only one sample, then by definition there's no variance.
-    return 0
-  }
-
-  val totalWeights = this.sumOf { it.second }
-
-  if (totalWeights <= 0) {
-    return null
-  }
-
-  val weightedMean = this.sumOf { it.first * it.second } / totalWeights
-
-  val weightedSumSquaredDifferences =
-      this.sumOf { (it.first - weightedMean) * (it.first - weightedMean) * it.second }
-  val variance = weightedSumSquaredDifferences / (totalWeights - 1)
-
-  return sqrt(variance).roundToInt()
-}
