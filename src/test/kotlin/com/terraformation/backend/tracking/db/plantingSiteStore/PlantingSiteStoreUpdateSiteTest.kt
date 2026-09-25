@@ -7,7 +7,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistories
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.util.Turtle
@@ -97,14 +97,23 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
           "Planting site histories",
       )
 
-      rateLimitedEventPublisher.assertEventPublished(
-          RateLimitedT0DataAssignedEvent(
+      eventPublisher.assertEventPublished(
+          SurvivalRateIncludesTempPlotsChangedEvent(
               organizationId = organizationId,
               plantingSiteId = initialModel.id,
-              previousSiteTempSetting = false,
-              newSiteTempSetting = true,
+              previousValue = false,
+              newValue = true,
           )
       )
+    }
+
+    @Test
+    fun `does not publish event if survival rate temp plots setting not updated`() {
+      val plantingSiteId = insertPlantingSite()
+
+      store.updatePlantingSite(plantingSiteId) { it.copy(description = "edited") }
+
+      eventPublisher.assertEventNotPublished<SurvivalRateIncludesTempPlotsChangedEvent>()
     }
 
     @Test
