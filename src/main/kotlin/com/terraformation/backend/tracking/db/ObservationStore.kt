@@ -78,6 +78,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesEdite
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -2329,6 +2330,14 @@ class ObservationStore(
       jobScheduler.enqueue<ObservationStore> {
         runRecalculateSurvivalRates(plantingSiteId, event.stratumId)
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: SurvivalRateIncludesTempPlotsChangedEvent) {
+    val plantingSiteId = event.plantingSiteId
+    enqueueSurvivalRateCalculation(plantingSiteId) {
+      jobScheduler.enqueue<ObservationStore> { runRecalculateSurvivalRates(plantingSiteId) }
     }
   }
 

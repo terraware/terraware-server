@@ -69,9 +69,9 @@ import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
-import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyStratumModel
 import com.terraformation.backend.tracking.model.AnySubstratumModel
@@ -555,12 +555,12 @@ class PlantingSiteStore(
       }
 
       if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
-        rateLimitedEventPublisher.publishEvent(
-            RateLimitedT0DataAssignedEvent(
+        eventPublisher.publishEvent(
+            SurvivalRateIncludesTempPlotsChangedEvent(
                 organizationId = edited.organizationId,
                 plantingSiteId = edited.id,
-                previousSiteTempSetting = initial.survivalRateIncludesTempPlots,
-                newSiteTempSetting = edited.survivalRateIncludesTempPlots,
+                previousValue = initial.survivalRateIncludesTempPlots,
+                newValue = edited.survivalRateIncludesTempPlots,
             )
         )
       }
