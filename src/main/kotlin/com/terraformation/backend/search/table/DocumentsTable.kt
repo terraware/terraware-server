@@ -14,6 +14,7 @@ import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -58,7 +59,7 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
           enumField("status", DOCUMENTS.STATUS_ID),
       )
 
-  override fun conditionForVisibility(): Condition =
+  override fun conditionForVisibility(table: Table<*>): Condition =
       if (currentUser().canManageDocumentProducer()) {
         DSL.trueCondition()
       } else {

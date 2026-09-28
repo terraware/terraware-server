@@ -8,9 +8,11 @@ import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTOR
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class FacilityInventoryTotalsTable(private val tables: SearchTables) : SearchTable() {
@@ -69,7 +71,9 @@ class FacilityInventoryTotalsTable(private val tables: SearchTables) : SearchTab
           longField("totalSpecies", FACILITY_INVENTORY_TOTALS.TOTAL_SPECIES, nullable = false),
       )
 
-  override fun conditionForVisibility(): Condition {
-    return FACILITY_INVENTORY_TOTALS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table
+        .column(FACILITY_INVENTORY_TOTALS.ORGANIZATION_ID)
+        .`in`(currentUser().organizationRoles.keys)
   }
 }

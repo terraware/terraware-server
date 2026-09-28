@@ -18,8 +18,10 @@ import com.terraformation.backend.db.nursery.tables.references.SPECIES_PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class SpeciesTable(tables: SearchTables) : SearchTable() {
@@ -115,8 +117,10 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
           enumField("seedStorageBehavior", SPECIES.SEED_STORAGE_BEHAVIOR_ID),
       )
 
-  override fun conditionForVisibility(): Condition {
-    return SPECIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
-        .and(SPECIES.DELETED_TIME.isNull)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table
+        .column(SPECIES.ORGANIZATION_ID)
+        .`in`(currentUser().organizationRoles.keys)
+        .and(table.column(SPECIES.DELETED_TIME).isNull)
   }
 }

@@ -16,9 +16,11 @@ import com.terraformation.backend.search.field.CoordinateField.Companion.LATITUD
 import com.terraformation.backend.search.field.CoordinateField.Companion.LONGITUDE
 import com.terraformation.backend.search.field.CoordinateField.Companion.POINT
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -131,7 +133,7 @@ class MediaFilesTable(tables: SearchTables) : SearchTable() {
             .leftJoin(SPLATS)
             .on(fileIdColumn.eq(SPLATS.FILE_ID))
 
-  override fun conditionForVisibility(): Condition {
-    return organizationIdColumn.`in`(currentUser().organizationRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table.column(organizationIdColumn).`in`(currentUser().organizationRoles.keys)
   }
 }

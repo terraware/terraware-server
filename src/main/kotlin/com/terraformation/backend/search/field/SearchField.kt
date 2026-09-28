@@ -10,6 +10,24 @@ import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.Table
+import org.jooq.impl.QOM
+
+/**
+ * Returns the field from this table with the same name and collation as the requested field. This
+ * can be used to map fields onto aliased tables.
+ */
+fun <T> Table<*>.column(column: Field<T>): Field<T> {
+  val newColumn =
+      field(column)
+          ?: throw IllegalArgumentException("Column ${column.name} not found in table $this")
+  return if (column is QOM.Collated) {
+    @Suppress("UNCHECKED_CAST")
+    newColumn.collate(column.`$collation`()) as Field<T>
+  } else {
+    newColumn
+  }
+}
 
 /**
  * Metadata about a field that can be included in accession search requests. This is used by

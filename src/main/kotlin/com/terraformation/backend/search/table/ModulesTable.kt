@@ -10,9 +10,11 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -47,7 +49,7 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
           textField("workshopDescription", MODULES.WORKSHOP_DESCRIPTION),
       )
 
-  override fun conditionForVisibility(): Condition =
+  override fun conditionForVisibility(table: Table<*>): Condition =
       if (currentUser().canReadAllAcceleratorDetails()) {
         DSL.trueCondition()
       } else {
@@ -56,7 +58,7 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
                 .from(PROJECT_MODULES)
                 .join(PROJECTS)
                 .on(PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID))
-                .where(PROJECT_MODULES.MODULE_ID.eq(MODULES.ID))
+                .where(PROJECT_MODULES.MODULE_ID.eq(table.column(MODULES.ID)))
                 .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
         )
       }

@@ -20,6 +20,7 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
 import java.time.Clock
@@ -30,6 +31,7 @@ import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -143,8 +145,8 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
     )
   }
 
-  override fun conditionForVisibility(): Condition {
-    return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table.column(ACCESSIONS.FACILITY_ID).`in`(currentUser().facilityRoles.keys)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

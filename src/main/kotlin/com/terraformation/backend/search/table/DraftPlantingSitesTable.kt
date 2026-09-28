@@ -10,9 +10,11 @@ import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_S
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 
 class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
@@ -50,10 +52,10 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
           zoneIdField("timeZone", DRAFT_PLANTING_SITES.TIME_ZONE),
       )
 
-  override fun conditionForVisibility(): Condition {
-    return DRAFT_PLANTING_SITES.ORGANIZATION_ID.`in`(
-        currentUser().organizationRoles.filter { it.value != Role.Contributor }.keys
-    )
+  override fun conditionForVisibility(table: Table<*>): Condition {
+    return table
+        .column(DRAFT_PLANTING_SITES.ORGANIZATION_ID)
+        .`in`(currentUser().organizationRoles.filter { it.value != Role.Contributor }.keys)
   }
 
   override val defaultOrderFields: List<OrderField<*>>

@@ -130,8 +130,15 @@ abstract class SearchTable {
    * are available for use in the condition.
    *
    * If this is null, [inheritsVisibilityFrom] must be non-null.
+   *
+   * @param table The instance of this table that the query is reading from. The table may be an
+   *   alias; implementations should look columns up using [column] rather than referring to the
+   *   jOOQ columns directly.
    */
-  open fun conditionForVisibility(): Condition? = null
+  open fun conditionForVisibility(table: Table<*>): Condition? = null
+
+  /** Returns the visibility condition for the instance of this table the query is reading from. */
+  fun conditionForVisibility(): Condition? = conditionForVisibility(fromTable)
 
   /**
    * The default fields to sort on. These are included when doing non-distinct queries; if there are
