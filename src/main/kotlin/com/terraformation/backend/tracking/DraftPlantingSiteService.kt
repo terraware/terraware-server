@@ -1,8 +1,10 @@
 package com.terraformation.backend.tracking
 
-import com.terraformation.backend.gis.GeometryFileErrorCode
-import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.gis.InvalidGeometryException
+import com.terraformation.backend.gis.NoPolygonsException
+import com.terraformation.backend.gis.TooManyVerticesException
+import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.gis.convertToXY
 import com.terraformation.backend.gis.extractPolygons
 import com.terraformation.backend.gis.mergeToMultiPolygon
@@ -30,7 +32,7 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
       filename: String?,
   ): BoundaryFileModel {
     if (!GeometryFileParser.hasSupportedExtension(filename)) {
-      throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+      throw UnsupportedGeometryFileFormatException()
     }
 
     val parsed = geometryFileParser.readWithFormat(content, filename)
@@ -54,34 +56,34 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
         geometries
             .flatMap { geometry ->
               geometry.extractPolygons {
-                throw GeometryFileException(GeometryFileErrorCode.InvalidGeometry)
+                throw InvalidGeometryException()
               }
             }
             .filterNot { it.isEmpty }
             .map { convertToXY(it, precisionModel = null) }
 
     if (polygons.isEmpty()) {
-      throw GeometryFileException(GeometryFileErrorCode.NoPolygons)
+      throw NoPolygonsException()
     }
     if (polygons.any { !it.isValid }) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidGeometry)
+      throw InvalidGeometryException()
     }
 
     val boundary =
         try {
           runBlocking(Dispatchers.Default) { mergeToMultiPolygon(polygons) }
         } catch (e: TopologyException) {
-          throw GeometryFileException(GeometryFileErrorCode.InvalidGeometry, e)
+          throw InvalidGeometryException(e)
         }
 
     if (boundary.isEmpty) {
-      throw GeometryFileException(GeometryFileErrorCode.NoPolygons)
+      throw NoPolygonsException()
     }
     if (!boundary.isValid) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidGeometry)
+      throw InvalidGeometryException()
     }
     if (boundary.numPoints > MAX_BOUNDARY_VERTICES) {
-      throw GeometryFileException(GeometryFileErrorCode.TooManyVertices)
+      throw TooManyVerticesException()
     }
 
     return boundary

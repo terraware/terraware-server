@@ -6,10 +6,17 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.gis.GeometryFileErrorCode
 import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.gis.InvalidGeometryException
+import com.terraformation.backend.gis.InvalidGeometryFileException
+import com.terraformation.backend.gis.MultipleShapefilesException
+import com.terraformation.backend.gis.NoPolygonsException
+import com.terraformation.backend.gis.NoShapefileException
+import com.terraformation.backend.gis.TooManyVerticesException
+import com.terraformation.backend.gis.UnknownCoordinateSystemException
+import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.toMultiPolygon
 import java.io.ByteArrayOutputStream
@@ -21,6 +28,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -123,36 +131,29 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
           ]
   )
   fun `rejects nonpolygonal geometry`(content: String) {
-    assertEquals(
-        GeometryFileErrorCode.InvalidGeometry,
-        assertThrows<GeometryFileException> {
-              service.parseBoundaryFile(content.toByteArray(), "boundary.json")
-            }
-            .code,
-    )
+    assertThrows<InvalidGeometryException> {
+      service.parseBoundaryFile(content.toByteArray(), "boundary.json")
+    }
   }
 
   @ParameterizedTest
   @ValueSource(strings = ["shp", "shx", "dbf", "prj"])
   fun `rejects missing shapefile components`(extension: String) {
-    val error =
-        assertThrows<GeometryFileException> {
-          service.parseBoundaryFile(shapefileZip(extension), "boundary.zip")
-        }
-    assertEquals(
+    val expected =
         when (extension) {
-          "shp" -> GeometryFileErrorCode.NoShapefile
-          "prj" -> GeometryFileErrorCode.UnknownCoordinateSystem
-          else -> GeometryFileErrorCode.InvalidFile
-        },
-        error.code,
-    )
+          "shp" -> NoShapefileException::class.java
+          "prj" -> UnknownCoordinateSystemException::class.java
+          else -> InvalidGeometryFileException::class.java
+        }
+    assertThrows(expected) {
+      service.parseBoundaryFile(shapefileZip(extension), "boundary.zip")
+    }
   }
 
   @Test
   fun `rejects multiple shapefiles`() {
     val content = javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes()
-    assertThrows<GeometryFileException> {
+    assertThrows<MultipleShapefilesException> {
       service.parseBoundaryFile(content, "boundary.zip")
     }
   }
@@ -169,18 +170,14 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   fun `rejects unsupported extensions even when the contents are readable`() {
     val content = javaClass.getResource("/gis/triangle.geojson")!!.readBytes()
 
-    assertEquals(
-        GeometryFileErrorCode.UnsupportedFormat,
-        assertThrows<GeometryFileException> {
-              service.parseBoundaryFile(content, "boundary.gpx")
-            }
-            .code,
-    )
+    assertThrows<UnsupportedGeometryFileFormatException> {
+      service.parseBoundaryFile(content, "boundary.gpx")
+    }
   }
 
   @Test
   fun `requires filename`() {
-    assertThrows<GeometryFileException> {
+    assertThrows<UnsupportedGeometryFileFormatException> {
       service.parseBoundaryFile(byteArrayOf(), null)
     }
   }
@@ -189,19 +186,15 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   fun `classifies invalid geometry separately from malformed files`() {
     val cases =
         mapOf(
-            "{broken" to GeometryFileErrorCode.InvalidFile,
+            "{broken" to InvalidGeometryFileException::class.java,
             """{"type":"Polygon","coordinates":[[[0,0],[2,2],[0,2],[2,0],[0,0]]]}""" to
-                GeometryFileErrorCode.InvalidGeometry,
-            """{"type":"FeatureCollection","features":[]}""" to GeometryFileErrorCode.NoPolygons,
+                InvalidGeometryException::class.java,
+            """{"type":"FeatureCollection","features":[]}""" to NoPolygonsException::class.java,
         )
     cases.forEach { (json, expected) ->
-      assertEquals(
-          expected,
-          assertThrows<GeometryFileException> {
-                service.parseBoundaryFile(json.toByteArray(), "boundary.json")
-              }
-              .code,
-      )
+      assertThrows(expected) {
+        service.parseBoundaryFile(json.toByteArray(), "boundary.json")
+      }
     }
   }
 
@@ -222,19 +215,19 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   @ParameterizedTest
   @ValueSource(strings = ["POINT (10 10)", "LINESTRING (20 20, 21 21)", "MULTIPOINT ((10 10))"])
   fun `rejects nonpolygonal shapes mixed with polygons`(shape: String) {
-    assertBoundaryCode(
-        GeometryFileErrorCode.InvalidGeometry,
-        "GEOMETRYCOLLECTION (POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0)), $shape)",
-    )
+    assertThrows<InvalidGeometryException> {
+      parseShapes("GEOMETRYCOLLECTION (POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0)), $shape)")
+    }
   }
 
   @Test
   fun `rejects self intersecting polygons before union`() {
-    assertBoundaryCode(
-        GeometryFileErrorCode.InvalidGeometry,
-        "GEOMETRYCOLLECTION (POLYGON ((0 0, 2 2, 0 2, 2 0, 0 0)), " +
-            "POLYGON ((-1 -1, 3 -1, 3 3, -1 3, -1 -1)))",
-    )
+    assertThrows<InvalidGeometryException> {
+      parseShapes(
+          "GEOMETRYCOLLECTION (POLYGON ((0 0, 2 2, 0 2, 2 0, 0 0)), " +
+              "POLYGON ((-1 -1, 3 -1, 3 3, -1 3, -1 -1)))"
+      )
+    }
   }
 
   @Test
@@ -270,7 +263,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
 
   @Test
   fun `rejects more than fifty thousand vertices`() {
-    assertBoundaryCode(GeometryFileErrorCode.TooManyVertices, circle(50001))
+    assertThrows<TooManyVerticesException> { parseShapes(circle(50001)) }
   }
 
   @Test
@@ -289,7 +282,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
             arrayOf(circle(20001).exteriorRing),
         )
 
-    assertBoundaryCode(GeometryFileErrorCode.TooManyVertices, withHole)
+    assertThrows<TooManyVerticesException> { parseShapes(withHole) }
   }
 
   @ParameterizedTest
@@ -302,16 +295,6 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
 
   private fun parseShapes(geometry: Geometry) =
       service.parseBoundaryFile(toGeoJson(geometry), "boundary.geojson")
-
-  private fun assertBoundaryCode(code: GeometryFileErrorCode, wkt: String) =
-      assertBoundaryCode(code, wktReader.read(wkt))
-
-  private fun assertBoundaryCode(code: GeometryFileErrorCode, geometry: Geometry) {
-    assertEquals(
-        code,
-        assertThrows<GeometryFileException> { parseShapes(geometry) }.code,
-    )
-  }
 
   private fun toGeoJson(geometry: Geometry): ByteArray =
       GeoJsonWriter().apply { setEncodeCRS(false) }.write(geometry).toByteArray()
