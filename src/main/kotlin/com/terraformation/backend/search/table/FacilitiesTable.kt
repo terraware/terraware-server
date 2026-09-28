@@ -26,23 +26,27 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          accessions.asMultiValueSublist("accessions", FACILITIES.ID.eq(ACCESSIONS.FACILITY_ID)),
-          batches.asMultiValueSublist("batches", FACILITIES.ID.eq(BATCHES.FACILITY_ID)),
+          accessions.asMultiValueSublist("accessions", FACILITIES.ID, ACCESSIONS.FACILITY_ID),
+          batches.asMultiValueSublist("batches", FACILITIES.ID, BATCHES.FACILITY_ID),
           facilityInventoryTotals.asMultiValueSublist(
               "facilityInventoryTotals",
-              FACILITIES.ID.eq(FACILITY_INVENTORY_TOTALS.FACILITY_ID),
+              FACILITIES.ID,
+              FACILITY_INVENTORY_TOTALS.FACILITY_ID,
           ),
           nurseryWithdrawals.asMultiValueSublist(
               "nurseryWithdrawals",
-              FACILITIES.ID.eq(WITHDRAWAL_SUMMARIES.FACILITY_ID),
+              FACILITIES.ID,
+              WITHDRAWAL_SUMMARIES.FACILITY_ID,
           ),
           organizations.asSingleValueSublist(
               "organization",
-              FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              FACILITIES.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
           subLocations.asMultiValueSublist(
               "subLocations",
-              FACILITIES.ID.eq(SUB_LOCATIONS.FACILITY_ID),
+              FACILITIES.ID,
+              SUB_LOCATIONS.FACILITY_ID,
           ),
       )
     }

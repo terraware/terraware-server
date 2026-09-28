@@ -18,7 +18,8 @@ class ProjectLandUseModelTypesTable(private val tables: SearchTables) : SearchTa
       listOf(
           projects.asSingleValueSublist(
               "project",
-              PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID.eq(PROJECTS.ID),
+              PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID,
+              PROJECTS.ID,
           ),
       )
     }

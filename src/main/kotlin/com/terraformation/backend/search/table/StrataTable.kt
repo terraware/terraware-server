@@ -22,23 +22,28 @@ class StrataTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              STRATA.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              STRATA.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           substrata.asMultiValueSublist(
               "plantingSubzones",
-              STRATA.ID.eq(SUBSTRATA.STRATUM_ID),
+              STRATA.ID,
+              SUBSTRATA.STRATUM_ID,
           ),
           substrata.asMultiValueSublist(
               "substrata",
-              STRATA.ID.eq(SUBSTRATA.STRATUM_ID),
+              STRATA.ID,
+              SUBSTRATA.STRATUM_ID,
           ),
           stratumHistories.asMultiValueSublist(
               "histories",
-              STRATA.ID.eq(STRATUM_HISTORIES.STRATUM_ID),
+              STRATA.ID,
+              STRATUM_HISTORIES.STRATUM_ID,
           ),
           stratumPopulations.asMultiValueSublist(
               "populations",
-              STRATA.ID.eq(STRATUM_POPULATIONS.STRATUM_ID),
+              STRATA.ID,
+              STRATUM_POPULATIONS.STRATUM_ID,
           ),
       )
     }

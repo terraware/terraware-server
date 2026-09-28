@@ -22,7 +22,7 @@ class EventsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          modules.asSingleValueSublist("module", MODULES.ID.eq(EVENTS.MODULE_ID)),
+          modules.asSingleValueSublist("module", EVENTS.MODULE_ID, MODULES.ID),
           projects.asMultiValueSublist(
               "projects",
               eventProjectsCondition,

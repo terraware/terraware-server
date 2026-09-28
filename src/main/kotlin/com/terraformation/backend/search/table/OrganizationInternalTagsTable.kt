@@ -21,11 +21,13 @@ class OrganizationInternalTagsTable(tables: SearchTables) : SearchTable() {
       listOf(
           organizations.asSingleValueSublist(
               "organization",
-              ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
           internalTags.asSingleValueSublist(
               "internalTag",
-              ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(INTERNAL_TAGS.ID),
+              ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID,
+              INTERNAL_TAGS.ID,
           ),
       )
     }

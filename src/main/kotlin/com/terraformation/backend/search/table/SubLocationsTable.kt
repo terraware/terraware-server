@@ -21,9 +21,10 @@ class SubLocationsTable(tables: SearchTables) : SearchTable() {
       listOf(
           accessions.asMultiValueSublist(
               "accessions",
-              SUB_LOCATIONS.ID.eq(ACCESSIONS.SUB_LOCATION_ID),
+              SUB_LOCATIONS.ID,
+              ACCESSIONS.SUB_LOCATION_ID,
           ),
-          facilities.asSingleValueSublist("facility", SUB_LOCATIONS.FACILITY_ID.eq(FACILITIES.ID)),
+          facilities.asSingleValueSublist("facility", SUB_LOCATIONS.FACILITY_ID, FACILITIES.ID),
       )
     }
   }

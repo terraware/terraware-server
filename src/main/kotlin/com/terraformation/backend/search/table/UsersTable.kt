@@ -21,11 +21,13 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           organizationUsers.asMultiValueSublist(
               "organizationMemberships",
-              USERS.ID.eq(ORGANIZATION_USERS.USER_ID),
+              USERS.ID,
+              ORGANIZATION_USERS.USER_ID,
           ),
           projectInternalUsers.asMultiValueSublist(
               "projectInternalMemberships",
-              USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID),
+              USERS.ID,
+              PROJECT_INTERNAL_USERS.USER_ID,
           ),
       )
     }

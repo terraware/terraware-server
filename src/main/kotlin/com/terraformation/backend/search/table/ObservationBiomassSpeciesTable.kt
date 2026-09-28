@@ -24,27 +24,28 @@ class ObservationBiomassSpeciesTable(private val tables: SearchTables) : SearchT
       listOf(
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+              OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID,
+              MONITORING_PLOTS.ID,
           ),
           observationPlots.asSingleValueSublist(
               "observationPlot",
-              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_PLOTS.OBSERVATION_PLOT_ID
-              ),
+              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_PLOT_ID,
+              OBSERVATION_PLOTS.OBSERVATION_PLOT_ID,
           ),
           observations.asSingleValueSublist(
               "observation",
-              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID,
+              OBSERVATIONS.ID,
           ),
           observationBiomassQuadratSpecies.asMultiValueSublist(
               "quadratSpecies",
-              OBSERVATION_BIOMASS_SPECIES.ID.eq(
-                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID
-              ),
+              OBSERVATION_BIOMASS_SPECIES.ID,
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID,
           ),
           species.asSingleValueSublist(
               "species",
-              OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID),
+              OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
+              SPECIES.ID,
           ),
       )
     }

@@ -28,40 +28,46 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
       listOf(
           batchWithdrawals.asMultiValueSublist(
               "batchWithdrawals",
-              WITHDRAWAL_SUMMARIES.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID),
+              WITHDRAWAL_SUMMARIES.ID,
+              BATCH_WITHDRAWALS.WITHDRAWAL_ID,
           ),
           deliveries.asMultiValueSublist(
               "deliveries",
-              WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID),
+              WITHDRAWAL_SUMMARIES.ID,
+              DELIVERIES.WITHDRAWAL_ID,
           ),
           // TEMPORARY for backward compatibility; withdrawals can now have multiple deliveries
           // so it's no longer correct to use a single-value sublist. This can be removed once
           // clients are updated to use the "deliveries" sublist instead.
           deliveries.asSingleValueSublist(
               "delivery",
-              WITHDRAWAL_SUMMARIES.DELIVERY_ID.eq(DELIVERIES.ID),
+              WITHDRAWAL_SUMMARIES.DELIVERY_ID,
+              DELIVERIES.ID,
           ),
           facilities.asSingleValueSublist(
               "facility",
-              WITHDRAWAL_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID),
+              WITHDRAWAL_SUMMARIES.FACILITY_ID,
+              FACILITIES.ID,
           ),
           nurseryWithdrawalPhotos.asMultiValueSublist(
               "photos",
-              WITHDRAWAL_SUMMARIES.ID.eq(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID),
+              WITHDRAWAL_SUMMARIES.ID,
+              WITHDRAWAL_PHOTOS.WITHDRAWAL_ID,
           ),
           plantingSeasons.asSingleValueSublist(
               "plantingSeason",
-              WITHDRAWAL_SUMMARIES.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID),
+              WITHDRAWAL_SUMMARIES.PLANTING_SEASON_ID,
+              PLANTING_SEASONS.ID,
           ),
           plantingDateRequests.asSingleValueSublist(
               "plantingDateRequest",
-              WITHDRAWAL_SUMMARIES.SCHEDULED_PLANTING_DATE_REQUEST_ID.eq(
-                  PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID
-              ),
+              WITHDRAWAL_SUMMARIES.SCHEDULED_PLANTING_DATE_REQUEST_ID,
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID,
           ),
           organizations.asSingleValueSublist(
               "organization",
-              WITHDRAWAL_SUMMARIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+              WITHDRAWAL_SUMMARIES.ORGANIZATION_ID,
+              ORGANIZATIONS.ID,
           ),
       )
     }

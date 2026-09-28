@@ -22,15 +22,18 @@ class ObservationPlotResultTable(private val tables: SearchTables) : SearchTable
       listOf(
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+              OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID,
+              MONITORING_PLOTS.ID,
           ),
           monitoringPlotHistories.asSingleValueSublist(
               "monitoringPlotHistory",
-              OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID.eq(MONITORING_PLOT_HISTORIES.ID),
+              OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID,
+              MONITORING_PLOT_HISTORIES.ID,
           ),
           observations.asSingleValueSublist(
               "observation",
-              OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+              OBSERVATION_PLOT_RESULTS.OBSERVATION_ID,
+              OBSERVATIONS.ID,
           ),
           observationPlots.asSingleValueSublist(
               "observationPlot",

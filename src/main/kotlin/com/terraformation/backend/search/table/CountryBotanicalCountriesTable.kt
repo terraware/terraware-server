@@ -18,13 +18,13 @@ class CountryBotanicalCountriesTable(private val tables: SearchTables) : SearchT
       listOf(
           botanicalCountries.asSingleValueSublist(
               "botanicalCountry",
-              COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_CODE.eq(
-                  BOTANICAL_COUNTRIES.LEVEL3_CODE
-              ),
+              COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_CODE,
+              BOTANICAL_COUNTRIES.LEVEL3_CODE,
           ),
           countries.asSingleValueSublist(
               "country",
-              COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_CODE.eq(COUNTRIES.CODE),
+              COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_CODE,
+              COUNTRIES.CODE,
           ),
       )
     }

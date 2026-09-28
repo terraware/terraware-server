@@ -19,14 +19,16 @@ class DeliveriesTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          plantings.asMultiValueSublist("plantings", DELIVERIES.ID.eq(PLANTINGS.DELIVERY_ID)),
+          plantings.asMultiValueSublist("plantings", DELIVERIES.ID, PLANTINGS.DELIVERY_ID),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              DELIVERIES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+              DELIVERIES.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           nurseryWithdrawals.asSingleValueSublist(
               "withdrawal",
-              DELIVERIES.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID),
+              DELIVERIES.WITHDRAWAL_ID,
+              WITHDRAWAL_SUMMARIES.ID,
           ),
       )
     }

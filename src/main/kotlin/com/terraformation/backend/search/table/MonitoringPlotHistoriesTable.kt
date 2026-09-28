@@ -4,8 +4,8 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.search.SearchTable
@@ -25,35 +25,43 @@ class MonitoringPlotHistoriesTable(private val tables: SearchTables) : SearchTab
       listOf(
           users.asSingleValueSublist(
               "createdBy",
-              MONITORING_PLOT_HISTORIES.CREATED_BY.eq(USERS.ID),
+              MONITORING_PLOT_HISTORIES.CREATED_BY,
+              USERS.ID,
           ),
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+              MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
+              MONITORING_PLOTS.ID,
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              MONITORING_PLOT_HISTORIES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID),
+              MONITORING_PLOT_HISTORIES.PLANTING_SITE_ID,
+              PLANTING_SITE_SUMMARIES.ID,
           ),
           plantingSiteHistories.asSingleValueSublist(
               "plantingSiteHistory",
-              MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID),
+              MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID,
+              PLANTING_SITE_HISTORIES.ID,
           ),
           substrata.asSingleValueSublist(
               "plantingSubzone",
-              MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
           substrata.asSingleValueSublist(
               "substratum",
-              MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
           substratumHistories.asSingleValueSublist(
               "plantingSubzoneHistory",
-              MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID),
+              MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
+              SUBSTRATUM_HISTORIES.ID,
           ),
           substratumHistories.asSingleValueSublist(
               "substratumHistory",
-              MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID),
+              MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
+              SUBSTRATUM_HISTORIES.ID,
           ),
       )
     }

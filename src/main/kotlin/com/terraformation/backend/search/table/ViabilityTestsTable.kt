@@ -20,11 +20,13 @@ class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           accessions.asSingleValueSublist(
               "accession",
-              VIABILITY_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID),
+              VIABILITY_TESTS.ACCESSION_ID,
+              ACCESSIONS.ID,
           ),
           viabilityTestResults.asMultiValueSublist(
               "viabilityTestResults",
-              VIABILITY_TESTS.ID.eq(VIABILITY_TEST_RESULTS.TEST_ID),
+              VIABILITY_TESTS.ID,
+              VIABILITY_TEST_RESULTS.TEST_ID,
           ),
       )
     }

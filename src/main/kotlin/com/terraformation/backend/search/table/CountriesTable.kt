@@ -19,15 +19,18 @@ class CountriesTable(tables: SearchTables) : SearchTable() {
       listOf(
           countryBotanicalCountries.asMultiValueSublist(
               "botanicalCountries",
-              COUNTRIES.CODE.eq(COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_CODE),
+              COUNTRIES.CODE,
+              COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_CODE,
           ),
           organizations.asMultiValueSublist(
               "organizations",
-              COUNTRIES.CODE.eq(ORGANIZATIONS.COUNTRY_CODE),
+              COUNTRIES.CODE,
+              ORGANIZATIONS.COUNTRY_CODE,
           ),
           countrySubdivisions.asMultiValueSublist(
               "subdivisions",
-              COUNTRIES.CODE.eq(COUNTRY_SUBDIVISIONS.COUNTRY_CODE),
+              COUNTRIES.CODE,
+              COUNTRY_SUBDIVISIONS.COUNTRY_CODE,
           ),
       )
     }

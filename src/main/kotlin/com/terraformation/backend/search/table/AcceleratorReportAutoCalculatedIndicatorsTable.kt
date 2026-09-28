@@ -40,13 +40,13 @@ class AcceleratorReportAutoCalculatedIndicatorsTable(tables: SearchTables) : Sea
       listOf(
           autoCalculatedIndicators.asSingleValueSublist(
               "indicator",
-              REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.eq(
-                  AUTO_CALCULATED_INDICATORS.ID
-              ),
+              REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
+              AUTO_CALCULATED_INDICATORS.ID,
           ),
           acceleratorReports.asSingleValueSublist(
               "report",
-              REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID.eq(REPORTS.ID),
+              REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID,
+              REPORTS.ID,
           ),
       )
     }

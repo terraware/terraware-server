@@ -18,7 +18,8 @@ class ViabilityTestResultsTable(private val tables: SearchTables) : SearchTable(
       listOf(
           viabilityTests.asSingleValueSublist(
               "viabilityTest",
-              VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID),
+              VIABILITY_TEST_RESULTS.TEST_ID,
+              VIABILITY_TESTS.ID,
           ),
       )
     }

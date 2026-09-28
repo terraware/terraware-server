@@ -21,9 +21,10 @@ class ProjectInternalUsersTable(tables: SearchTables) : SearchTable() {
       listOf(
           projects.asSingleValueSublist(
               "project",
-              PROJECT_INTERNAL_USERS.PROJECT_ID.eq(PROJECTS.ID),
+              PROJECT_INTERNAL_USERS.PROJECT_ID,
+              PROJECTS.ID,
           ),
-          users.asSingleValueSublist("user", PROJECT_INTERNAL_USERS.USER_ID.eq(USERS.ID)),
+          users.asSingleValueSublist("user", PROJECT_INTERNAL_USERS.USER_ID, USERS.ID),
       )
     }
   }

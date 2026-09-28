@@ -20,14 +20,16 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          batches.asSingleValueSublist("batch", BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID)),
+          batches.asSingleValueSublist("batch", BATCH_WITHDRAWALS.BATCH_ID, BATCHES.ID),
           batches.asSingleValueSublist(
               "destinationBatch",
-              BATCH_WITHDRAWALS.DESTINATION_BATCH_ID.eq(BATCHES.ID),
+              BATCH_WITHDRAWALS.DESTINATION_BATCH_ID,
+              BATCHES.ID,
           ),
           nurseryWithdrawals.asSingleValueSublist(
               "withdrawal",
-              BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID),
+              BATCH_WITHDRAWALS.WITHDRAWAL_ID,
+              WITHDRAWAL_SUMMARIES.ID,
           ),
       )
     }

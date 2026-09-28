@@ -22,23 +22,28 @@ class SubstratumHistoriesTable(private val tables: SearchTables) : SearchTable()
       listOf(
           monitoringPlotHistories.asMultiValueSublist(
               "monitoringPlotHistories",
-              SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID),
+              SUBSTRATUM_HISTORIES.ID,
+              MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
           ),
           substrata.asSingleValueSublist(
               "plantingSubzone",
-              SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
           substrata.asSingleValueSublist(
               "substratum",
-              SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+              SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+              SUBSTRATA.ID,
           ),
           stratumHistories.asSingleValueSublist(
               "plantingZoneHistory",
-              SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID),
+              SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID,
+              STRATUM_HISTORIES.ID,
           ),
           stratumHistories.asSingleValueSublist(
               "stratumHistory",
-              SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID),
+              SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID,
+              STRATUM_HISTORIES.ID,
           ),
       )
     }

@@ -36,11 +36,13 @@ class AcceleratorReportCommonIndicatorsTable(tables: SearchTables) : SearchTable
       listOf(
           commonIndicators.asSingleValueSublist(
               "indicator",
-              REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID),
+              REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
+              COMMON_INDICATORS.ID,
           ),
           acceleratorReports.asSingleValueSublist(
               "report",
-              REPORT_COMMON_INDICATORS.REPORT_ID.eq(REPORTS.ID),
+              REPORT_COMMON_INDICATORS.REPORT_ID,
+              REPORTS.ID,
           ),
       )
     }
