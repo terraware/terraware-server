@@ -3,7 +3,6 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
-import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.NotificationNotFoundException
@@ -13,7 +12,6 @@ import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATI
 import jakarta.inject.Named
 import java.time.Clock
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 import org.springframework.context.event.EventListener
 
 @Named
@@ -53,18 +51,6 @@ class NotificationStore(
         .where(isOrganizationIdClause(organizationId))
         .and(NOTIFICATIONS.USER_ID.eq(currentUser().userId))
         .fetch { row -> NotificationModel(row) }
-  }
-
-  /** Retrieves unread count of notifications across all organizations and global scope, for user */
-  fun count(): List<NotificationCountModel> {
-    requirePermissions { countNotifications() }
-    return dslContext
-        .select(NOTIFICATIONS.ORGANIZATION_ID, DSL.count(NOTIFICATIONS.ID))
-        .from(NOTIFICATIONS)
-        .where(NOTIFICATIONS.IS_READ.isFalse)
-        .and(NOTIFICATIONS.USER_ID.eq(currentUser().userId))
-        .groupBy(NOTIFICATIONS.ORGANIZATION_ID)
-        .fetch { row -> NotificationCountModel(row.value1(), row.value2()) }
   }
 
   /** Marks a notification as read or unread */

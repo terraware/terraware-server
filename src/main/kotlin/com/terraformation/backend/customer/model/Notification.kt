@@ -9,8 +9,6 @@ import java.net.URI
 import java.time.Instant
 import org.jooq.Record
 
-data class NotificationCountModel(val organizationId: OrganizationId?, val unread: Int)
-
 data class CreateNotificationModel(
     val notificationType: NotificationType,
     val userId: UserId,

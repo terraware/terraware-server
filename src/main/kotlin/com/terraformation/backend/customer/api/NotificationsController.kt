@@ -6,7 +6,6 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.NotificationStore
-import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.db.default_schema.NotificationCriticality
 import com.terraformation.backend.db.default_schema.NotificationId
@@ -29,19 +28,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/notifications")
 @RestController
 class NotificationsController(private val notificationStore: NotificationStore) {
-
-  /** Retrieves a notification by its id */
-  @ApiResponse(responseCode = "200")
-  @ApiResponse404
-  @GetMapping("/{id}")
-  @Operation(summary = "Retrieve a notification by its id.")
-  fun read(
-      @PathVariable("id") notificationId: NotificationId,
-  ): GetNotificationResponsePayload {
-    val notification = notificationStore.fetchById(notificationId)
-    return GetNotificationResponsePayload(NotificationPayload(notification))
-  }
-
   /**
    * Retrieves notifications specific to an organization. If organization id is unset, globally
    * scoped notifications will be retrieved.
@@ -56,18 +42,6 @@ class NotificationsController(private val notificationStore: NotificationStore) 
   ): GetNotificationsResponsePayload {
     val notifications = notificationStore.fetchByOrganization(organizationId)
     return GetNotificationsResponsePayload(notifications.map { NotificationPayload(it) })
-  }
-
-  /**
-   * Retrieves list of organizations with count of unread notifications, organizations with no
-   * unread notifications will not be included in the list.
-   */
-  @ApiResponse(responseCode = "200")
-  @GetMapping("/count")
-  @Operation(summary = "Retrieve notifications count by organization for current user.")
-  fun count(): GetNotificationsCountResponsePayload {
-    val notifications = notificationStore.count()
-    return GetNotificationsCountResponsePayload(notifications.map { NotificationCountPayload(it) })
   }
 
   /** Marks a notification by id as read or unread */
@@ -124,15 +98,6 @@ data class NotificationPayload(
   )
 }
 
-data class NotificationCountPayload(val organizationId: OrganizationId?, val unread: Int) {
-  constructor(
-      notificationCount: NotificationCountModel
-  ) : this(
-      notificationCount.organizationId,
-      notificationCount.unread,
-  )
-}
-
 data class UpdateNotificationRequestPayload(val read: Boolean)
 
 data class UpdateNotificationsRequestPayload(
@@ -140,11 +105,5 @@ data class UpdateNotificationsRequestPayload(
     val organizationId: OrganizationId?,
 )
 
-data class GetNotificationResponsePayload(val notification: NotificationPayload) :
-    SuccessResponsePayload
-
 data class GetNotificationsResponsePayload(val notifications: List<NotificationPayload>) :
-    SuccessResponsePayload
-
-data class GetNotificationsCountResponsePayload(val notifications: List<NotificationCountPayload>) :
     SuccessResponsePayload
