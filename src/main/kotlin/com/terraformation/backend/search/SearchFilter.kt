@@ -23,7 +23,7 @@ interface SearchNode {
    */
   fun toPartialSearch(): SearchNode
 
-  fun referencedSublists(): Set<SublistField>
+  fun referencedSublists(): Set<ReferencedSublist>
 }
 
 data class OrNode(private val children: List<SearchNode>) : SearchNode {
@@ -42,7 +42,7 @@ data class OrNode(private val children: List<SearchNode>) : SearchNode {
     }
   }
 
-  override fun referencedSublists(): Set<SublistField> {
+  override fun referencedSublists(): Set<ReferencedSublist> {
     return children.flatMap { it.referencedSublists() }.toSet()
   }
 
@@ -67,7 +67,7 @@ data class AndNode(private val children: List<SearchNode>) : SearchNode {
     }
   }
 
-  override fun referencedSublists(): Set<SublistField> {
+  override fun referencedSublists(): Set<ReferencedSublist> {
     return children.flatMap { it.referencedSublists() }.toSet()
   }
 
@@ -91,7 +91,7 @@ data class NotNode(val child: SearchNode) : SearchNode {
     }
   }
 
-  override fun referencedSublists(): Set<SublistField> {
+  override fun referencedSublists(): Set<ReferencedSublist> {
     return child.referencedSublists()
   }
 
@@ -120,12 +120,13 @@ data class FieldNode(
     }
   }
 
-  override fun referencedSublists(): Set<SublistField> {
+  override fun referencedSublists(): Set<ReferencedSublist> {
     return when {
       isFuzzySearchForNull -> emptySet()
       field.searchField is AliasField ->
-          field.sublists.toSet() + field.searchField.targetPath.sublists.toSet()
-      else -> field.sublists.toSet()
+          field.prefix.referencedSublists().toSet() +
+              field.searchField.targetPath.prefix.referencedSublists().toSet()
+      else -> field.prefix.referencedSublists().toSet()
     }
   }
 
@@ -154,7 +155,7 @@ class NoConditionNode : SearchNode {
     return this
   }
 
-  override fun referencedSublists(): Set<SublistField> {
+  override fun referencedSublists(): Set<ReferencedSublist> {
     return emptySet()
   }
 
