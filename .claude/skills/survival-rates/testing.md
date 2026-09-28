@@ -96,9 +96,9 @@ Two families share the site definition files `Strata.csv`, `Substrata.csv`, and 
 
 **Survival rate scenarios** (`SurvivalRate*` folders), run by `runSurvivalRateScenario`:
 
-- Inputs: `T0Densities.csv` (`Plot,Species 0 Density,Species 1 Density,...`, plants per hectare
-  before conversion), optional `T0StratumDensities.csv` for temp plots, and `Observation-1.csv`
-  with per-species Existing/Live/Dead counts per plot.
+- Inputs: `T0Densities.csv` (`Plot,Species 0 Density,Species 1 Density,...`, plants per plot),
+  optional `T0StratumDensities.csv` for temp plots, and `Observation-1.csv` with per-species
+  Existing/Live/Dead counts per plot.
 - Expected: `PlotRates.csv`, `SubstratumRates.csv`, `StratumRates.csv`, `SiteRates.csv`, with the
   aggregate rate first and then one column per species. An optional `AfterUpdate/` folder holds
   the expectations after the scenario's change function runs.

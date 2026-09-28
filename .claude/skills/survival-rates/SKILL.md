@@ -120,7 +120,7 @@ The two helpers are meant to agree: for a substratum the observation actually co
 to that observation, and once `recordSubstratumDependencies` has run every later recalculation uses
 the latest-observation form. The split exists only because of write ordering during completion.
 There is no known case where the two attributions store different values for the same row; the
-null-versus-zero difference described in rule 3 below is a separate matter of how a zero
+null-versus-zero difference described in rule 3 above is a separate matter of how a zero
 denominator is expressed, not of which observation is attributed.
 
 Both helpers feed `permanentT0PlotSet` and `tempT0PlotSet` in `ObservationStore`, which define the
