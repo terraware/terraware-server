@@ -1,3 +1,7 @@
+e068dd08 Remove unused notification endpoints (#4972)
+3df709a0 SW-8909 Remove plaintext-email-specific strings (#4965)
+f28d3210 SW-8909 Remove plaintext email notifications (#4964)
+06040abc SW-8909 Convert facility alert notification to HTML (#4963)
 6907d938 SW-8805 Add migration to backfill germination/loss rates (#4999)
 0442baf9 SW-8805 Adjust batch calculations for added seedlings (#4998)
 d1f9c065 Upgrade to Java 27 (#5019)
