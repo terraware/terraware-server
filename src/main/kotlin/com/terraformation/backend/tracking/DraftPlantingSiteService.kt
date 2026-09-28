@@ -1,8 +1,9 @@
 package com.terraformation.backend.tracking
 
-import com.terraformation.backend.gis.GeometryFileErrorCode
 import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.gis.TooManyVerticesException
+import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.tracking.model.BoundaryFileModel
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
@@ -24,7 +25,7 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
       filename: String?,
   ): BoundaryFileModel {
     if (filename?.substringAfterLast('.', "")?.lowercase() !in SUPPORTED_EXTENSIONS) {
-      throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+      throw UnsupportedGeometryFileFormatException()
     }
 
     return try {
@@ -45,7 +46,7 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
                 it.srid = parsed.geometry.srid
               }
           if (polygons.numPoints > MAX_BOUNDARY_VERTICES) {
-            throw GeometryFileException(GeometryFileErrorCode.TooManyVertices)
+            throw TooManyVerticesException()
           }
 
           BoundaryFileModel(

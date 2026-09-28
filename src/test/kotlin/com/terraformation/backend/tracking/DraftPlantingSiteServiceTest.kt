@@ -6,10 +6,10 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.gis.GeometryFileErrorCode
-import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.gis.TooManyVerticesException
+import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.toMultiPolygon
 import java.io.ByteArrayOutputStream
@@ -150,7 +150,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
 
   @Test
   fun `requires filename`() {
-    assertThrows<GeometryFileException> {
+    assertThrows<UnsupportedGeometryFileFormatException> {
       service.parseBoundaryFile(byteArrayOf(), null)
     }
   }
@@ -159,13 +159,9 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   fun `rejects unsupported extensions even when the contents are readable`() {
     val content = javaClass.getResource("/gis/triangle.geojson")!!.readBytes()
 
-    assertEquals(
-        GeometryFileErrorCode.UnsupportedFormat,
-        assertThrows<GeometryFileException> {
-              service.parseBoundaryFile(content, "boundary.gpx")
-            }
-            .code,
-    )
+    assertThrows<UnsupportedGeometryFileFormatException> {
+      service.parseBoundaryFile(content, "boundary.gpx")
+    }
   }
 
   @Test
@@ -175,7 +171,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
 
   @Test
   fun `rejects more than fifty thousand vertices`() {
-    assertBoundaryCode(GeometryFileErrorCode.TooManyVertices, circle(50001))
+    assertThrows<TooManyVerticesException> { parseShapes(circle(50001)) }
   }
 
   @Test
@@ -194,18 +190,11 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
             arrayOf(circle(20001).exteriorRing),
         )
 
-    assertBoundaryCode(GeometryFileErrorCode.TooManyVertices, withHole)
+    assertThrows<TooManyVerticesException> { parseShapes(withHole) }
   }
 
   private fun parseShapes(geometry: Geometry) =
       service.parseBoundaryFile(toGeoJson(geometry), "boundary.geojson")
-
-  private fun assertBoundaryCode(code: GeometryFileErrorCode, geometry: Geometry) {
-    assertEquals(
-        code,
-        assertThrows<GeometryFileException> { parseShapes(geometry) }.code,
-    )
-  }
 
   private fun toGeoJson(geometry: Geometry): ByteArray =
       GeoJsonWriter().apply { setEncodeCRS(false) }.write(geometry).toByteArray()
