@@ -148,19 +148,19 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
         try {
           Parser(KMLConfiguration()).parse(content.inputStream())
         } catch (e: SAXException) {
-          throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+          throw InvalidGeometryFileException(e)
         } catch (e: IOException) {
-          throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+          throw InvalidGeometryFileException(e)
         } catch (e: RuntimeException) {
           // GeoTools wraps failures to bind malformed coordinates in runtime exceptions.
           if (generateSequence<Throwable>(e) { it.cause }.any { it is IllegalArgumentException }) {
-            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+            throw InvalidGeometryFileException(e)
           }
           throw e
         }
 
     if (root !is SimpleFeature) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+      throw InvalidGeometryFileException()
     }
 
     return parsedFile(kmlGeometries(root), format)
@@ -182,11 +182,11 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
         while (reader.hasNext()) {
           when (reader.next()) {
-            XMLStreamConstants.DTD -> throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+            XMLStreamConstants.DTD -> throw InvalidGeometryFileException()
             XMLStreamConstants.START_ELEMENT -> {
               if (!foundRoot) {
                 if (reader.localName != "kml") {
-                  throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+                  throw UnsupportedGeometryFileFormatException()
                 }
                 foundRoot = true
               }
@@ -203,9 +203,9 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
         reader.close()
       }
     } catch (e: XMLStreamException) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+      throw InvalidGeometryFileException(e)
     } catch (e: NumberFormatException) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+      throw InvalidGeometryFileException(e)
     }
   }
 
@@ -214,13 +214,13 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
         text.trim().split(Regex("\\s+")).map { tuple ->
           val values = tuple.split(',')
           if (values.size < 2) {
-            throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+            throw InvalidGeometryFileException()
           }
           values[0].toDouble() to values[1].toDouble()
         }
 
     if (coordinates.size < 4 || coordinates.first() != coordinates.last()) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+      throw InvalidGeometryFileException()
     }
   }
 
