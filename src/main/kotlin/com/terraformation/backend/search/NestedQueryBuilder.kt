@@ -1281,7 +1281,7 @@ class NestedQueryBuilder(
             rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) },
         )
 
-    val primaryKey = rootTable.primaryKey
+    val primaryKeyFields = rootTable.primaryKeyFields
 
     // the criteria for a sublist filter will already be in conditions instead of the secondary
     // table joins since the conditions don't need the table joined
@@ -1289,19 +1289,22 @@ class NestedQueryBuilder(
 
     val subquery =
         joinWithSecondaryTables(
-                DSL.select(primaryKey).from(rootTable.fromTable),
+                DSL.select(primaryKeyFields).from(rootTable.fromTable),
                 rootPrefix,
                 secondaryTablesCriteria,
             )
             .where(conditions)
 
-    // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
-    // would require adding the primary key class as a type parameter in tons of places throughout
-    // the search code. (Try it if you're bored; you'll see it quickly spirals out of control!)
-    // The tiny amount of extra type safety we'd gain isn't worth the amount of boilerplate it'd
-    // require, especially since the primary key type isn't known at compile time anyway.
-    @Suppress("UNCHECKED_CAST")
-    return primaryKey.`in`(subquery as Select<Nothing>)
+    return if (primaryKeyFields.size > 1) {
+      DSL.row(primaryKeyFields).`in`(subquery)
+    } else {
+      // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
+      // would require adding the primary key class as a type parameter in tons of places throughout
+      // the search code. (Try it if you're bored; you'll see it quickly spirals out of control!)
+      // The tiny amount of extra type safety we'd gain isn't worth the amount of boilerplate it'd
+      // require, especially since the primary key type isn't known at compile time anyway.
+      @Suppress("UNCHECKED_CAST") primaryKeyFields[0].`in`(subquery as Select<Nothing>)
+    }
   }
 
   /**
