@@ -3760,7 +3760,7 @@ class ObservationStore(
 
   /**
    * Returns the survival-rate denominator (cumulative t0 plant density) for each of the requested
-   * species in a t0 plot set, computed in a single grouped query.
+   * species in a t0 plot set.
    */
   private fun getSurvivalRateTermsBySpecies(
       plotSet: T0PlotSet,
