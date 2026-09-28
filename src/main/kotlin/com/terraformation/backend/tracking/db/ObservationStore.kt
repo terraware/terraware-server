@@ -3593,7 +3593,7 @@ class ObservationStore(
       val liveField: Field<Int?>,
   ) {
     /** Sum of t0 densities across the set, or SQL null if the set is empty. */
-    val denominator: Field<BigDecimal> =
+    val denominator: Field<BigDecimal?> =
         DSL.field(
             DSL.select(DSL.sum(densityField).mul(DSL.inline(HECTARES_PER_PLOT)))
                 .from(table)
@@ -3601,7 +3601,7 @@ class ObservationStore(
         )
 
     /** Sum of live plants across the set, or SQL null if the set is empty. */
-    val numerator: Field<Int> =
+    val numerator: Field<Int?> =
         DSL.field(
             DSL.select(DSL.sum(liveField).cast(SQLDataType.INTEGER)).from(table).where(condition)
         )
@@ -3814,10 +3814,12 @@ class ObservationStore(
   private class SurvivalRateTermFields(permanentPlots: T0PlotSet, tempPlots: T0PlotSet) {
     /** Live plants in plots that have t0 data. Zero rather than null when there are none. */
     val numerator: Field<Int> =
-        DSL.coalesce(permanentPlots.numerator, 0).plus(DSL.coalesce(tempPlots.numerator, 0))
+        DSL.coalesce(permanentPlots.numerator, 0)
+            .plus(DSL.coalesce(tempPlots.numerator, 0))
+            .coerce(SQLDataType.INTEGER)
 
     /** Total t0 density, or SQL null if no plot has t0 data. */
-    val denominatorOrNull: Field<BigDecimal> =
+    val denominatorOrNull: Field<BigDecimal?> =
         DSL.coalesce(
             permanentPlots.denominator.plus(tempPlots.denominator),
             permanentPlots.denominator,
@@ -3828,6 +3830,7 @@ class ObservationStore(
     val denominatorOrZero: Field<BigDecimal> =
         DSL.coalesce(permanentPlots.denominator, BigDecimal.ZERO)
             .plus(DSL.coalesce(tempPlots.denominator, BigDecimal.ZERO))
+            .coerce(SQLDataType.NUMERIC)
   }
 
   /**
@@ -3888,7 +3891,7 @@ class ObservationStore(
     )
   }
 
-  private fun getSurvivalRate(numerator: Field<Int>, denominator: Field<BigDecimal>) =
+  private fun getSurvivalRate(numerator: Field<Int>, denominator: Field<BigDecimal?>) =
       DSL.if_(
           denominator.eq(BigDecimal.ZERO),
           DSL.zero(),
