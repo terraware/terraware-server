@@ -553,17 +553,18 @@ class PlantingSiteStore(
             PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone)
         )
       }
+    }
 
-      if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
-        eventPublisher.publishEvent(
-            SurvivalRateIncludesTempPlotsChangedEvent(
-                organizationId = edited.organizationId,
-                plantingSiteId = edited.id,
-                previousValue = initial.survivalRateIncludesTempPlots,
-                newValue = edited.survivalRateIncludesTempPlots,
-            )
-        )
-      }
+    // Published after commit because listeners enqueue background jobs that read the new setting.
+    if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
+      eventPublisher.publishEvent(
+          SurvivalRateIncludesTempPlotsChangedEvent(
+              organizationId = edited.organizationId,
+              plantingSiteId = edited.id,
+              previousValue = initial.survivalRateIncludesTempPlots,
+              newValue = edited.survivalRateIncludesTempPlots,
+          )
+      )
     }
   }
 
