@@ -72,5 +72,9 @@ class TextField(
   // Text fields are always raw.
   override fun raw(): SearchField? = null
 
+  override fun withTable(newTable: SearchTable): SearchField {
+    return TextField(fieldName, getDatabaseField, newTable, collation)
+  }
+
   private val collatedDatabaseField = collation?.let { databaseField.collate(it) } ?: databaseField
 }

@@ -48,4 +48,8 @@ class DateField(
 
   // Dates are always returned in ISO-8601 format.
   override fun raw(): SearchField? = null
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return DateField(fieldName, getDatabaseField, newTable)
+  }
 }

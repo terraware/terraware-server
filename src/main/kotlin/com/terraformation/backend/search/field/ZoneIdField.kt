@@ -45,4 +45,8 @@ class ZoneIdField(
 
   // Zone IDs are always machine-readable.
   override fun raw(): SearchField? = null
+
+  override fun withTable(newTable: SearchTable): SearchField {
+    return ZoneIdField(fieldName, getDatabaseField, newTable)
+  }
 }

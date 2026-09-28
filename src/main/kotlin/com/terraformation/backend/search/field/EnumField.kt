@@ -96,6 +96,10 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     }
   }
 
+  override fun withTable(newTable: SearchTable): SearchField {
+    return EnumField(fieldName, getDatabaseField, newTable, enumClass, localize, exportable)
+  }
+
   private fun T.toSearchValue(): String {
     return if (localize) {
       getDisplayName(currentLocale())
