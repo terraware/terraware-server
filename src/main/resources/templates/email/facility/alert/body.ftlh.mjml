@@ -1,0 +1,20 @@
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityAlertRequested" -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    ${strings("notification.seedBank.alert.email.body", facility.name)}
+                </mj-text>
+
+                <mj-text mj-class="text-body03">
+                    <pre class="wrapped-pre">${body}</pre>
+                </mj-text>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>
