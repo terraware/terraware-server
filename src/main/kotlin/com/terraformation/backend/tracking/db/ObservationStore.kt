@@ -3618,16 +3618,16 @@ class ObservationStore(
       plotObservationCondition: (ObservationPlots) -> Condition,
   ): T0PlotSet {
     val opPerm = OBSERVATION_PLOTS.`as`("opPerm")
-    val liveTotals = OBSERVED_PLOT_SPECIES_TOTALS.`as`("permLiveTotals")
+    val permLiveTotals = OBSERVED_PLOT_SPECIES_TOTALS.`as`("permLiveTotals")
 
     val table =
         PLOT_T0_DENSITIES.join(opPerm)
             .on(opPerm.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
-            .leftJoin(liveTotals)
+            .leftJoin(permLiveTotals)
             .on(
-                liveTotals.OBSERVATION_ID.eq(opPerm.OBSERVATION_ID),
-                liveTotals.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID),
-                liveTotals.SPECIES_ID.eq(PLOT_T0_DENSITIES.SPECIES_ID),
+                permLiveTotals.OBSERVATION_ID.eq(opPerm.OBSERVATION_ID),
+                permLiveTotals.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID),
+                permLiveTotals.SPECIES_ID.eq(PLOT_T0_DENSITIES.SPECIES_ID),
             )
 
     val plotSetCondition =
@@ -3648,7 +3648,7 @@ class ObservationStore(
         plotSetCondition,
         PLOT_T0_DENSITIES.SPECIES_ID,
         PLOT_T0_DENSITIES.PLOT_DENSITY,
-        liveTotals.TOTAL_LIVE,
+        permLiveTotals.TOTAL_LIVE,
     )
   }
 
@@ -3665,7 +3665,7 @@ class ObservationStore(
       plotObservationCondition: (ObservationPlots) -> Condition,
   ): T0PlotSet {
     val opTemp = OBSERVATION_PLOTS.`as`("opTemp")
-    val liveTotals = OBSERVED_PLOT_SPECIES_TOTALS.`as`("tempLiveTotals")
+    val tempLiveTotals = OBSERVED_PLOT_SPECIES_TOTALS.`as`("tempLiveTotals")
 
     return with(STRATUM_T0_TEMP_DENSITIES) {
       val table =
@@ -3675,11 +3675,11 @@ class ObservationStore(
                       STRATUM_ID
                   )
               )
-              .leftJoin(liveTotals)
+              .leftJoin(tempLiveTotals)
               .on(
-                  liveTotals.OBSERVATION_ID.eq(opTemp.OBSERVATION_ID),
-                  liveTotals.MONITORING_PLOT_ID.eq(opTemp.MONITORING_PLOT_ID),
-                  liveTotals.SPECIES_ID.eq(SPECIES_ID),
+                  tempLiveTotals.OBSERVATION_ID.eq(opTemp.OBSERVATION_ID),
+                  tempLiveTotals.MONITORING_PLOT_ID.eq(opTemp.MONITORING_PLOT_ID),
+                  tempLiveTotals.SPECIES_ID.eq(SPECIES_ID),
               )
 
       val plotSetCondition =
@@ -3696,7 +3696,7 @@ class ObservationStore(
               plotObservationCondition(opTemp),
           )
 
-      T0PlotSet(table, plotSetCondition, SPECIES_ID, STRATUM_DENSITY, liveTotals.TOTAL_LIVE)
+      T0PlotSet(table, plotSetCondition, SPECIES_ID, STRATUM_DENSITY, tempLiveTotals.TOTAL_LIVE)
     }
   }
 

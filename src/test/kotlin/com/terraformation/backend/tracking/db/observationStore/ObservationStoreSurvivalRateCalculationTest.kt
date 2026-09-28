@@ -499,6 +499,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     )
   }
 
+  /**
+   * This uses a single plot, separately from the above test of plots without t0 data, because a
+   * plot without t0 data has a null survival rate, which makes the all-species rollup rates null
+   * too. Covering both cases in one test would leave the all-species rollup numerators untested.
+   */
   @Test
   fun `survival rate numerators only include species that have t0 data in the plot`() {
     val speciesWithT0 = insertSpecies()
