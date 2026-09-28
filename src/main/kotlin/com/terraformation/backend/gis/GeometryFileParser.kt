@@ -57,8 +57,6 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
     val combined = elements.reduce { a, b -> a.union(b) }
 
-    // Combining two or more shapes already dissolves them, but a file can hold a single
-    // multi-part shape whose parts overlap.
     return ParsedGeometryFile(
         if (elements.size == 1 && combined is GeometryCollection) combined.union() else combined,
         parsed.format,
@@ -67,8 +65,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
   /**
    * Reads the individual shapes from a file without combining them or checking their topology. The
-   * shape list may be empty; its elements are in WGS 84 coordinates. Callers that enforce boundary
-   * rules need the original shapes rather than a combined one.
+   * shape list may be empty; its elements are in WGS 84 coordinates.
    */
   fun readWithFormat(content: ByteArray, filename: String?): ParsedGeometryShapes {
     val extension = filename?.substringAfterLast('.', "")?.lowercase()
@@ -85,8 +82,6 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       MediaType.APPLICATION_OCTET_STREAM ->
           readByExtension(content, extension) ?: readGeoJson(content)
 
-      // Tika can only tell one XML dialect from another by its root element, which the KML reader
-      // checks; nothing here is GeoJSON.
       MediaType.APPLICATION_XML,
       MediaType.TEXT_XML ->
           readByExtension(content, extension) ?: throw UnsupportedGeometryFileFormatException()
@@ -106,6 +101,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
   private fun parsedFile(geometries: List<Geometry>, format: GeometryFileFormat) =
       ParsedGeometryShapes(
+          // geometryFactory makes a copy of each geometry, setting the SRID to Long/Lat
           geometries.map { geometryFactory.createGeometry(it) },
           format,
       )
