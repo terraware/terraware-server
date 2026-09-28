@@ -3525,7 +3525,7 @@ class ObservationStore(
                 .set(totalDeadField, totalDead)
                 .set(totalExistingField, totalExisting)
                 .set(permanentLiveField, permanentLive)
-                .set(survivalRateField, DSL.castNull(SQLDataType.INTEGER))
+                .setNull(survivalRateField)
                 .onConflictDoNothing()
                 .execute()
 
