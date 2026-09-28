@@ -93,7 +93,7 @@
             </mj-raw>
 
                 <mj-text mj-class="text-body-footer" css-class="text-body-footer">
-                ${link("notification.observation.t0Set.html.footer", manageT0SettingsUrl)}
+                ${link("notification.observation.t0Set.email.footer", manageT0SettingsUrl)}
                 </mj-text>
 
                 <mj-include path="../../footer.ftlh.mjml"/>
