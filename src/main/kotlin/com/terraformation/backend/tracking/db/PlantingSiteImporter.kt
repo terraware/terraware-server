@@ -155,7 +155,7 @@ class PlantingSiteImporter(
 
     val allPolygons =
         exclusionsFile.features
-            .map { convertToXY(it.geometry) }
+            .map { it.geometry.convertToXY() }
             .flatMap { geometry ->
               geometry.extractPolygons {
                 problems.add("Exclusion geometries must all be Polygon or MultiPolygon.")
@@ -260,7 +260,7 @@ class PlantingSiteImporter(
           .map { (stratumName, substratumFeatures) ->
             async {
               val substratumModels = substratumFeatures.map { substratumFeature ->
-                val boundary = convertToXY(substratumFeature.geometry)
+                val boundary = substratumFeature.geometry.convertToXY()
                 val name = substratumFeature.getProperty(substratumNameProperties)!!
                 val fullName = "$stratumName-$name"
                 val stableId =

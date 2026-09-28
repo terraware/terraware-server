@@ -17,6 +17,9 @@ import java.util.Optional
 import kotlin.math.absoluteValue
 import kotlin.math.ceil
 import kotlin.math.log10
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import net.sf.geographiclib.Geodesic
 import net.sf.geographiclib.PolygonArea
 import org.geotools.api.referencing.FactoryException
@@ -95,6 +98,21 @@ fun URI.appendPath(additionalPath: String): URI {
  */
 fun <T> Sequence<T>.onChunk(chunkSize: Int, func: (List<T>) -> Unit): Sequence<T> {
   return chunked(chunkSize).onEach { func(it) }.flatten()
+}
+
+/**
+ * Reduces a collection by applying [reducer] to adjacent pairs of elements in parallel, then
+ * repeating on the results until a single value remains. The reducer should be associative.
+ */
+suspend fun <T> Collection<T>.parallelReduce(reducer: (T, T) -> T): T = coroutineScope {
+  if (size == 1) {
+    first()
+  } else {
+    chunked(2)
+        .map { pair -> async { if (pair.size == 1) pair[0] else reducer(pair[0], pair[1]) } }
+        .awaitAll()
+        .parallelReduce(reducer)
+  }
 }
 
 private val multipleWhitespaceRegex = Regex("\\p{IsWhite_Space}+")

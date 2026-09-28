@@ -7,6 +7,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -182,6 +183,22 @@ class ExtensionsTest {
       assertEquals(
           factory.createMultiPolygon(arrayOf(polygon1, polygon2)),
           geometryCollection.toMultiPolygon(),
+      )
+    }
+  }
+
+  @Nested
+  inner class ParallelReduce {
+    @Test
+    fun `returns single element unchanged`() {
+      assertEquals("a", runBlocking { listOf("a").parallelReduce { x, y -> x + y } })
+    }
+
+    @Test
+    fun `reduces odd number of elements in order`() {
+      assertEquals(
+          "abcdefg",
+          runBlocking { "abcdefg".map { "$it" }.parallelReduce { x, y -> x + y } },
       )
     }
   }
