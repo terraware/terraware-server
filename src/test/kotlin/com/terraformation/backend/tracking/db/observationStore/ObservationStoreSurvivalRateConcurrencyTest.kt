@@ -1,11 +1,13 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteSurvivalRateCalculationsRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -76,6 +78,29 @@ class ObservationStoreSurvivalRateConcurrencyTest : BaseObservationStoreTest() {
 
     assertTableEquals(PlantingSiteSurvivalRateCalculationsRecord(plantingSiteId, false))
     verify(exactly = 2) { jobScheduler.enqueue<ObservationStore>(any()) }
+  }
+
+  @Test
+  fun `temp plots setting change recalculates survival rates for the whole site`() {
+    val spyStore = spyk(store)
+    val slot: CapturingSlot<IocJobLambda<ObservationStore>> = slot()
+    every { jobScheduler.enqueue(capture(slot)) } returns JobId(UUID.randomUUID())
+
+    spyStore.on(
+        SurvivalRateIncludesTempPlotsChangedEvent(
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            previousValue = false,
+            newValue = true,
+        )
+    )
+    assertTableEquals(PlantingSiteSurvivalRateCalculationsRecord(plantingSiteId, false))
+
+    slot.captured.accept(spyStore)
+
+    verify(exactly = 1) { spyStore.recalculateSurvivalRates(plantingSiteId) }
+    assertTableEmpty(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS)
+    assertIsEventListener<SurvivalRateIncludesTempPlotsChangedEvent>(store)
   }
 
   @Test

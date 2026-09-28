@@ -69,9 +69,9 @@ import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
-import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyStratumModel
 import com.terraformation.backend.tracking.model.AnySubstratumModel
@@ -553,17 +553,18 @@ class PlantingSiteStore(
             PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone)
         )
       }
+    }
 
-      if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
-        rateLimitedEventPublisher.publishEvent(
-            RateLimitedT0DataAssignedEvent(
-                organizationId = edited.organizationId,
-                plantingSiteId = edited.id,
-                previousSiteTempSetting = initial.survivalRateIncludesTempPlots,
-                newSiteTempSetting = edited.survivalRateIncludesTempPlots,
-            )
-        )
-      }
+    // Published after commit because listeners enqueue background jobs that read the new setting.
+    if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
+      eventPublisher.publishEvent(
+          SurvivalRateIncludesTempPlotsChangedEvent(
+              organizationId = edited.organizationId,
+              plantingSiteId = edited.id,
+              previousValue = initial.survivalRateIncludesTempPlots,
+              newValue = edited.survivalRateIncludesTempPlots,
+          )
+      )
     }
   }
 
