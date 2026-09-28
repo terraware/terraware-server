@@ -21,6 +21,7 @@ class TextField(
     override val fieldName: String,
     override val databaseField: Field<String?>,
     override val table: SearchTable,
+    val collation: String? = null,
 ) : SingleColumnSearchField<String>() {
   override val localize: Boolean
     get() = false
@@ -37,19 +38,19 @@ class TextField(
       SearchFilterType.Partial ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { DSL.lower(databaseField).contains(it) })
+                  .plus(nonNullValues.map { DSL.lower(collatedDatabaseField).contains(it) })
           )
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { DSL.lower(databaseField).unaccent().eq(it) })
+                  .plus(nonNullValues.map { DSL.lower(collatedDatabaseField).unaccent().eq(it) })
           )
       SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           DSL.or(
               normalizedValues.map { value ->
                 if (value != null) {
-                  databaseField.unaccent().likeFuzzy(value)
+                  collatedDatabaseField.unaccent().likeFuzzy(value)
                 } else {
                   databaseField.isNull
                 }
@@ -58,7 +59,7 @@ class TextField(
       SearchFilterType.PhraseMatch ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(phaseMatchCondition(nonNullValues))
+                  .plus(phraseMatchCondition(nonNullValues, collatedDatabaseField))
           )
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for text fields")
@@ -70,4 +71,6 @@ class TextField(
 
   // Text fields are always raw.
   override fun raw(): SearchField? = null
+
+  private val collatedDatabaseField = collation?.let { databaseField.collate(it) } ?: databaseField
 }

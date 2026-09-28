@@ -296,8 +296,11 @@ abstract class SearchTable {
       resourceBundleName: String = "i18n/Messages",
   ) = NullMessageField(original, nullKey, resourceBundleName)
 
-  fun textField(fieldName: String, databaseField: Field<String?>) =
-      TextField(fieldName, databaseField, this)
+  fun textField(
+      fieldName: String,
+      databaseField: Field<String?>,
+      collation: String? = null,
+  ) = TextField(fieldName, databaseField, this, collation)
 
   fun timestampField(fieldName: String, databaseField: TableField<*, Instant?>) =
       TimestampField(fieldName, databaseField, this)
