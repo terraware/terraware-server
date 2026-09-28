@@ -1065,6 +1065,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // areaHa = 30 * 30 / 10000.0 = 0.09; permanentLive = 2; plantDensity = (2 / 0.09).toInt() = 22
     assertTableEquals(
         ObservationPlotResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             monitoringPlotId = plotId,
             monitoringPlotHistoryId = inserted.monitoringPlotHistoryId,
@@ -1078,6 +1079,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1092,6 +1094,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1107,6 +1110,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1156,6 +1160,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // plot1: permanentLive=1, density=(1/0.09).toInt()=11; STDDEV_SAMP of single value is null
     assertTableEquals(
         ObservationPlotResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             monitoringPlotId = plotId,
             monitoringPlotHistoryId = plot1HistoryId,
@@ -1169,6 +1174,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1183,6 +1189,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1198,6 +1205,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1231,6 +1239,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -1241,6 +1250,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 11,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -1255,6 +1265,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1269,6 +1280,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1284,6 +1296,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1365,6 +1378,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertTableEquals(
         ObservationPlotResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             monitoringPlotId = plotId,
             monitoringPlotHistoryId = plot1HistoryId,
@@ -1379,6 +1393,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1395,6 +1410,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1412,6 +1428,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1447,6 +1464,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -1458,6 +1476,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 11,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -1473,6 +1492,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1489,6 +1509,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1506,6 +1527,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1541,6 +1563,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -1552,6 +1575,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 11,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -1563,6 +1587,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 33,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plot3Id,
                 monitoringPlotHistoryId = plot3HistoryId,
@@ -1580,6 +1605,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // std dev remains the same as after second plot completion.
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1597,6 +1623,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1615,6 +1642,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1708,6 +1736,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertTableEquals(
         ObservationPlotResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             monitoringPlotId = plot1Id,
             monitoringPlotHistoryId = plot1HistoryId,
@@ -1722,6 +1751,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1738,6 +1768,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1755,6 +1786,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             plantingSiteId = inserted.plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1790,6 +1822,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = inserted.observationId,
                 monitoringPlotId = plot1Id,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -1801,6 +1834,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 11,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = inserted.observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -1816,6 +1850,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1832,6 +1867,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1849,6 +1885,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             plantingSiteId = inserted.plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1884,6 +1921,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = inserted.observationId,
                 monitoringPlotId = plot1Id,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -1895,6 +1933,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 11,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = inserted.observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -1906,6 +1945,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 33,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = inserted.observationId,
                 monitoringPlotId = plot3Id,
                 monitoringPlotHistoryId = plot3HistoryId,
@@ -1922,6 +1962,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // plot3 has plantDensity=0, so weight=0, and it does not affect the std dev formula.
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -1939,6 +1980,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -1957,6 +1999,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = inserted.observationId,
             plantingSiteId = inserted.plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -2036,6 +2079,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // plantDensity: AVG(1/0.09, 2/0.09) = 16.67 → 17; plantDensityStdDev: STDDEV_SAMP ≈ 7.86 → 8
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -2052,6 +2096,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -2069,6 +2114,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -2151,6 +2197,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -2162,6 +2209,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 11,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -2182,6 +2230,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // plantDensity: AVG(1/0.09, 2/0.09) = 16.67 → 17; plantDensityStdDev: STDDEV_SAMP ≈ 7.86 → 8
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -2198,6 +2247,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -2215,6 +2265,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -2292,6 +2343,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -2303,6 +2355,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 11,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -2322,6 +2375,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // plantDensity: AVG(1/0.09, 0/0.09) = 5.56 → 6; plantDensityStdDev: STDDEV_SAMP ≈ 7.86 → 8.
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -2339,6 +2393,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -2357,6 +2412,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -2427,6 +2483,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 monitoringPlotHistoryId = plot1HistoryId,
@@ -2438,6 +2495,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
                 plantDensity = 0,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plot2Id,
                 monitoringPlotHistoryId = plot2HistoryId,
@@ -2456,6 +2514,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // survivalRate=0*100/8=0; plantDensity=AVG(0,0)=0; plantDensityStdDev=STDDEV_SAMP(0,0)=0.
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = inserted.substratumId,
             substratumHistoryId = inserted.substratumHistoryId,
@@ -2473,6 +2532,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = inserted.stratumId,
             stratumHistoryId = inserted.stratumHistoryId,
@@ -2491,6 +2551,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -2541,6 +2602,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertTableEquals(
         ObservationPlotResultsRecord(
+            needsRecalculation = false,
             observationId = adHocObservationId,
             monitoringPlotId = adHocPlotId,
             monitoringPlotHistoryId = adHocPlotHistoryId,
