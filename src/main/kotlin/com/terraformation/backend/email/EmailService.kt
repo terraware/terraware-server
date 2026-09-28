@@ -223,11 +223,9 @@ class EmailService(
     }
 
     val subject = renderRequiredTemplate("email/$templateDir/subject.ftl", model).trim()
-    val textBody = renderOptionalTemplate("email/$templateDir/body.txt.ftl", model)
-    val htmlBody = renderOptionalTemplate("email/$templateDir/body.ftlh", model)
+    val htmlBody = renderRequiredTemplate("email/$templateDir/body.ftlh", model)
 
-    val multipart = textBody != null && htmlBody != null
-    val helper = MimeMessageHelper(sender.createMimeMessage(), multipart)
+    val helper = MimeMessageHelper(sender.createMimeMessage())
 
     if (config.email.subjectPrefix != null) {
       helper.setSubject("${config.email.subjectPrefix} $subject")
@@ -235,12 +233,7 @@ class EmailService(
       helper.setSubject(subject)
     }
 
-    when {
-      textBody != null && htmlBody != null -> helper.setText(textBody, htmlBody)
-      textBody != null -> helper.setText(textBody, false)
-      htmlBody != null -> helper.setText(htmlBody, true)
-      else -> throw IllegalStateException("No email templates found in $templateDir")
-    }
+    helper.setText(htmlBody, true)
 
     recipients.forEach { recipient ->
       try {

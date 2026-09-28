@@ -2,17 +2,14 @@
 
 This directory contains templates for server-generated email messages. Each template is in its own subdirectory.
 
-Each subdirectory can contain three template files:
+Each subdirectory contains two template files:
 
 - `subject.ftl` is the subject line of the email message.
-- `body.txt.ftl` is the plaintext body of the message. If it doesn't exist, the message will only be sent as HTML.
-- `body.ftlh.mjml` is the source for the HTML version. It isn't actual HTML; the HTML is generated from [MJML](https://mjml.io/). If it doesn't exist, the message will only be sent as plaintext.
-
-At least one of the `body` files must exist.
+- `body.ftlh.mjml` is the HTML body of the email message. It isn't actual HTML; the HTML is generated from [MJML](https://mjml.io/).
 
 The MJML-to-HTML conversion happens as part of the build process; if you look in `build/resources/main/templates/email` after building the code, you'll see the HTML versions.
 
-Both the plaintext and the MJML files may include placeholders that get replaced with real values at runtime. The placeholders use [FreeMarker](https://freemarker.apache.org/) expression syntax, like `${variable.name}`.
+The MJML files may include placeholders that get replaced with real values at runtime. The placeholders use [FreeMarker](https://freemarker.apache.org/) expression syntax, like `${variable.name}`.
 
 ## Specifying model classes
 
