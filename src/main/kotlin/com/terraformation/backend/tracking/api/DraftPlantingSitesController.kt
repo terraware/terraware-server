@@ -95,12 +95,11 @@ class DraftPlantingSitesController(
   @Operation(
       summary = "Parses a boundary file for a draft planting site.",
       description =
-          "Fully stateless. Accepts KML (.kml), KMZ (.kmz), GeoJSON (.geojson or .json), or a ZIP containing " +
+          "Accepts KML (.kml), KMZ (.kmz), GeoJSON (.geojson or .json), or a ZIP containing " +
               "one shapefile with matching .shp, .shx, .dbf, and .prj files. " +
               "Returns the parsed geometry, original filename, detected format, number of " +
               "separate polygons, and area in hectares on success. Content validation failures " +
-              "also return HTTP 200, with status error and a problems list instead of geometry. " +
-              "Clients must check status and translate problem codes into user-facing messages.",
+              "also return HTTP 200, with status error and a problems list instead of geometry.",
   )
   @ApiResponse200(
       description =
