@@ -47,6 +47,10 @@ class AdminController(
             GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
     model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
+    model.addAttribute(
+        "canBackfillNurseryRates",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canDeleteUsers", currentUser().canDeleteUsers())
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())

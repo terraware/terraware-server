@@ -1373,7 +1373,7 @@ class BatchStore(
    * batch. When this is called as part of a quantity update, the quantity history row for the new
    * update should be inserted before this is called.
    */
-  private fun updateRates(batchId: BatchId) {
+  fun updateRates(batchId: BatchId) {
     val undoneWithdrawals = WITHDRAWALS.`as`("undone_withdrawals")
     val undonePurposeId = undoneWithdrawals.PURPOSE_ID.`as`("undone_purpose_id")
 
