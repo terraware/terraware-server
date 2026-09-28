@@ -94,9 +94,8 @@ class DraftPlantingSitesController(
   )
   @ApiResponse200
   @ApiResponse413(description = "The file exceeds the $MAX_BOUNDARY_FILE_SIZE_MB MB limit.")
-  @PostMapping("/{id}/boundaryFile", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  @PostMapping("/boundaryFile", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   fun parseDraftPlantingSiteBoundary(
-      @PathVariable id: DraftPlantingSiteId,
       @RequestPart("file") file: MultipartFile,
   ): ParseDraftPlantingSiteBoundaryResponsePayload {
     val maxFileSize = MAX_BOUNDARY_FILE_SIZE_MB * 1024 * 1024
@@ -104,7 +103,7 @@ class DraftPlantingSitesController(
       throw MaxUploadSizeExceededException(maxFileSize)
     }
 
-    val model = draftPlantingSiteService.parseBoundaryFile(id, file.bytes, file.originalFilename)
+    val model = draftPlantingSiteService.parseBoundaryFile(file.bytes, file.originalFilename)
 
     return ParseDraftPlantingSiteBoundaryResponsePayload(model)
   }
