@@ -60,7 +60,7 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
               }
             }
             .filterNot { it.isEmpty }
-            .map { convertToXY(it, precisionModel = null) }
+            .map { it.convertToXY(precisionModel = null) }
 
     if (polygons.isEmpty()) {
       throw NoPolygonsException()
