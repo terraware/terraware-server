@@ -21,6 +21,7 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
+import com.terraformation.backend.search.field.columnSupplier
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
 import java.time.Clock
@@ -84,7 +85,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
   override val fields: List<SearchField> by lazy {
     listOf(
         upperCaseTextField("accessionNumber", ACCESSIONS.NUMBER),
-        ActiveField("active"),
+        ActiveField("active", this),
         ageField("ageMonths", ACCESSIONS.COLLECTED_DATE, AgeField.MonthGranularity, clock),
         ageField("ageYears", ACCESSIONS.COLLECTED_DATE, AgeField.YearGranularity, clock),
         aliasField("bagNumber", "bags_number"),
@@ -156,16 +157,20 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
    * Implements the `active` field. This field doesn't actually exist in the database; it is derived
    * from the `state` field.
    */
-  inner class ActiveField(override val fieldName: String, override val localize: Boolean = true) :
-      SearchField {
+  class ActiveField(
+      override val fieldName: String,
+      override val table: SearchTable,
+      override val localize: Boolean = true,
+  ) : SearchField {
     private val activeStrings = ConcurrentHashMap<Locale, String>()
     private val inactiveStrings = ConcurrentHashMap<Locale, String>()
 
-    override val table: SearchTable
-      get() = this@AccessionsTable
+    private val stateIdField: Field<AccessionState?> by lazy {
+      columnSupplier(ACCESSIONS.STATE_ID)(table.fromTable)
+    }
 
     override val selectFields
-      get() = listOf(ACCESSIONS.STATE_ID)
+      get() = listOf(stateIdField)
 
     override val possibleValues = AccessionActive::class.java.enumConstants!!.map { "$it" }
 
@@ -188,22 +193,22 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
       } else {
         // Filter for all the states that map to a requested active value.
         val states = AccessionState.entries.filter { it.toActiveEnum() in values }
-        listOf(ACCESSIONS.STATE_ID.`in`(states))
+        listOf(stateIdField.`in`(states))
       }
     }
 
     override fun computeValue(record: Record): String? {
-      return record[ACCESSIONS.STATE_ID]?.toActiveEnum()?.render()
+      return record[stateIdField]?.toActiveEnum()?.render()
     }
 
     override val orderByField: Field<*>
       get() =
-          DSL.case_(ACCESSIONS.STATE_ID)
+          DSL.case_(stateIdField)
               .mapValues(AccessionState.entries.associateWith { it?.toActiveEnum()?.render() })
 
     override fun raw(): SearchField? {
       return if (localize) {
-        ActiveField(rawFieldName(), false)
+        ActiveField(rawFieldName(), table, false)
       } else {
         null
       }

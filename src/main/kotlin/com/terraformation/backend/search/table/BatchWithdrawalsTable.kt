@@ -43,16 +43,15 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
             "activeGrowthQuantityWithdrawn",
             BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN,
         ),
-        textField(
-            "destinationBatchProjectName",
-            DSL.field(
-                DSL.select(PROJECTS.NAME)
-                    .from(BATCHES)
-                    .leftJoin(PROJECTS)
-                    .on(BATCHES.PROJECT_ID.eq(PROJECTS.ID))
-                    .where(BATCHES.ID.eq(BATCH_WITHDRAWALS.DESTINATION_BATCH_ID))
-            ),
-        ),
+        textField("destinationBatchProjectName") { table ->
+          DSL.field(
+              DSL.select(PROJECTS.NAME)
+                  .from(BATCHES)
+                  .leftJoin(PROJECTS)
+                  .on(BATCHES.PROJECT_ID.eq(PROJECTS.ID))
+                  .where(BATCHES.ID.eq(table.column(BATCH_WITHDRAWALS.DESTINATION_BATCH_ID)))
+          )
+        },
         integerField(
             "germinatingQuantityWithdrawn",
             BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN,

@@ -59,16 +59,15 @@ class ObservationBiomassSpeciesTable(private val tables: SearchTables) : SearchT
           booleanField("isInvasive", OBSERVATION_BIOMASS_SPECIES.IS_INVASIVE),
           booleanField("isThreatened", OBSERVATION_BIOMASS_SPECIES.IS_THREATENED),
           // Emulate the web app's coalescing of observation-level and org-level species names.
-          textField(
-              "name",
-              DSL.coalesce(
-                      OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
-                      DSL.select(SPECIES.SCIENTIFIC_NAME)
-                          .from(SPECIES)
-                          .where(SPECIES.ID.eq(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID)),
-                  )
-                  .cast(SQLDataType.VARCHAR),
-          ),
+          textField("name") { table ->
+            DSL.coalesce(
+                    table.column(OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME),
+                    DSL.select(SPECIES.SCIENTIFIC_NAME)
+                        .from(SPECIES)
+                        .where(SPECIES.ID.eq(table.column(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID))),
+                )
+                .cast(SQLDataType.VARCHAR)
+          },
           textField("scientificName", OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME),
       )
 

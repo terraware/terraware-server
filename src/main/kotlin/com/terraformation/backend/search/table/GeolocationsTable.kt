@@ -6,8 +6,10 @@ import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
+import com.terraformation.backend.search.field.DatabaseFieldSupplier
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
+import com.terraformation.backend.search.field.columnSupplier
 import java.math.BigDecimal
 import org.jooq.Condition
 import org.jooq.Field
@@ -31,7 +33,12 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          GeolocationField("coordinates", GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE),
+          GeolocationField(
+              "coordinates",
+              columnSupplier(GEOLOCATIONS.LATITUDE),
+              columnSupplier(GEOLOCATIONS.LONGITUDE),
+              this,
+          ),
       )
 
   override val inheritsVisibilityFrom: SearchTable
@@ -49,16 +56,17 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
    * string value that includes both latitude and longitude. But in the database, those two values
    * are stored as separate columns.
    */
-  inner class GeolocationField(
+  class GeolocationField(
       override val fieldName: String,
-      private val latitudeField: TableField<*, BigDecimal?>,
-      private val longitudeField: TableField<*, BigDecimal?>,
+      private val getLatitudeField: DatabaseFieldSupplier<BigDecimal>,
+      private val getLongitudeField: DatabaseFieldSupplier<BigDecimal>,
+      override val table: SearchTable,
   ) : SearchField {
+    private val latitudeField: Field<BigDecimal?> by lazy { getLatitudeField(table.fromTable) }
+    private val longitudeField: Field<BigDecimal?> by lazy { getLongitudeField(table.fromTable) }
+
     override val localize: Boolean
       get() = false
-
-    override val table: SearchTable
-      get() = this@GeolocationsTable
 
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = emptySet()

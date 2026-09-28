@@ -100,14 +100,13 @@ class MediaFilesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          nonLocalizableEnumField(
-              "birdnetStatus",
-              DSL.field(
-                  DSL.select(BIRDNET_RESULTS.ASSET_STATUS_ID)
-                      .from(BIRDNET_RESULTS)
-                      .where(BIRDNET_RESULTS.FILE_ID.eq(fileIdColumn))
-              ),
-          ),
+          nonLocalizableEnumField("birdnetStatus") { table ->
+            DSL.field(
+                DSL.select(BIRDNET_RESULTS.ASSET_STATUS_ID)
+                    .from(BIRDNET_RESULTS)
+                    .where(BIRDNET_RESULTS.FILE_ID.eq(table.column(fileIdColumn)))
+            )
+          },
           textField("caption", captionColumn),
           textField("contentType", filesAlias.CONTENT_TYPE),
           timestampField("createdTime", filesAlias.CREATED_TIME),

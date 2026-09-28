@@ -3,16 +3,15 @@ package com.terraformation.backend.search.field
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.SearchTable
 import java.text.NumberFormat
-import org.jooq.Field
 
 /** Search field for columns with floating-point values. */
 class DoubleField(
     fieldName: String,
-    databaseField: Field<Double?>,
+    getDatabaseField: DatabaseFieldSupplier<Double>,
     table: SearchTable,
     localize: Boolean = true,
     exportable: Boolean = true,
-) : NumericSearchField<Double>(fieldName, databaseField, table, localize, exportable) {
+) : NumericSearchField<Double>(fieldName, getDatabaseField, table, localize, exportable) {
   override fun fromString(value: String) =
       if (localize) numberFormat.parse(value).toDouble() else value.toDouble()
 
@@ -24,7 +23,7 @@ class DoubleField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      DoubleField(rawFieldName(), databaseField, table, false, false)
+      DoubleField(rawFieldName(), getDatabaseField, table, false, false)
     } else {
       null
     }

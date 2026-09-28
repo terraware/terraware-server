@@ -21,7 +21,7 @@ import org.jooq.impl.DSL
  */
 class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     override val fieldName: String,
-    override val databaseField: Field<T?>,
+    override val getDatabaseField: DatabaseFieldSupplier<T>,
     override val table: SearchTable,
     private val enumClass: Class<T>,
     override val localize: Boolean = true,
@@ -90,7 +90,7 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      EnumField(rawFieldName(), databaseField, table, enumClass, false, false)
+      EnumField(rawFieldName(), getDatabaseField, table, enumClass, false, false)
     } else {
       null
     }

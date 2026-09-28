@@ -5,9 +5,7 @@ import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import org.jooq.Condition
-import org.jooq.Field
 import org.jooq.Record
-import org.jooq.TableField
 import org.locationtech.jts.geom.Geometry
 
 /**
@@ -16,13 +14,15 @@ import org.locationtech.jts.geom.Geometry
  */
 class GeometryField(
     override val fieldName: String,
-    geometryField: TableField<*, Geometry?>,
+    private val getGeometryField: DatabaseFieldSupplier<Geometry>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<String>() {
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = emptySet()
 
-  override val databaseField: Field<String?> = geometryField.asGeoJson()
+  override val getDatabaseField: DatabaseFieldSupplier<String> = {
+    getGeometryField(it).asGeoJson()
+  }
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     throw IllegalArgumentException("Filters not supported for geometry fields")

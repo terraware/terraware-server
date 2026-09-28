@@ -14,7 +14,7 @@ import org.jooq.impl.DSL
 /** Case-insensitive search for fields whose values are always upper case. */
 class UpperCaseTextField(
     override val fieldName: String,
-    override val databaseField: Field<String?>,
+    override val getDatabaseField: DatabaseFieldSupplier<String>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<String>() {
   override val localize: Boolean

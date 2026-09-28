@@ -74,14 +74,13 @@ class SubstrataTable(private val tables: SearchTables) : SearchTable() {
           textField("name", SUBSTRATA.NAME),
           timestampField("observedTime", SUBSTRATA.OBSERVED_TIME),
           timestampField("plantingCompletedTime", SUBSTRATA.PLANTING_COMPLETED_TIME),
-          bigDecimalField(
-              "totalPlants",
-              DSL.field(
-                  DSL.select(DSL.sum(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS))
-                      .from(SUBSTRATUM_POPULATIONS)
-                      .where(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
-              ),
-          ),
+          bigDecimalField("totalPlants") { table ->
+            DSL.field(
+                DSL.select(DSL.sum(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS))
+                    .from(SUBSTRATUM_POPULATIONS)
+                    .where(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(table.column(SUBSTRATA.ID)))
+            )
+          },
       )
 
   override val inheritsVisibilityFrom: SearchTable
