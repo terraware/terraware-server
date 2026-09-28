@@ -49,7 +49,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
         batch.copy(
             accessionNumbers = mapOf(originalAccessionId to "1", secondAccessionId to "2"),
             germinatingQuantity = 110,
-            lossRate = null,
+            lossRate = 0,
             version = 2,
         ),
         updatedBatch,
@@ -104,30 +104,6 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
     )
 
     assertEquals(originalAccessionId, batchesDao.fetchOneById(batchId)?.accessionId)
-  }
-
-  @Test
-  fun `does not calculate rates for batches with seeds from other accessions`() {
-    store.addToExistingBatch(
-        accessionId = secondAccessionId,
-        batchId = batchId,
-        germinatingQuantity = 1,
-    )
-
-    store.updateQuantities(
-        batchId = batchId,
-        version = 2,
-        germinating = 0,
-        activeGrowth = 12,
-        hardeningOff = 3,
-        ready = 2,
-        historyType = BatchQuantityHistoryType.Computed,
-    )
-
-    val batch = batchesDao.fetchOneById(batchId)!!
-
-    assertEquals(null, batch.germinationRate, "Germination rate")
-    assertEquals(null, batch.lossRate, "Loss rate")
   }
 
   @Test

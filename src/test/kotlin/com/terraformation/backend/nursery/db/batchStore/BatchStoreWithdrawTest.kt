@@ -1091,11 +1091,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       latestObservedTime =
                           ZonedDateTime.of(2022, 10, 1, 0, 0, 0, 0, destinationTimeZone)
                               .toInstant(),
+                      lossRate = 0,
                       modifiedBy = user.userId,
                       modifiedTime = secondWithdrawalTime,
                       organizationId = organizationId,
                       readyByDate = newReadyByDate,
                       speciesId = speciesId,
+                      totalLossCandidates = (2 + 5) + (3 + 6) + (4 + 7),
+                      totalLost = 0,
                       germinatingQuantity = 1 + 4,
                       activeGrowthQuantity = 2 + 5,
                       readyQuantity = 3 + 6,

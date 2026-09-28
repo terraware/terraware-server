@@ -143,22 +143,31 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   }
 
   @Test
-  fun `removes existing rates if more seedlings added via nursery transfer`() {
+  fun `updates rates if more seedlings added via nursery transfer`() {
     val sourceBatchId = createBatch(Quantities(100, 100, 0, 100))
     val withdrawal = addTransfer(sourceBatchId, Quantities(10, 10, 0, 10))
     val batchId = withdrawal.batchWithdrawals.first().destinationBatchId!!
 
-    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 10)
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 6)
+    store.withdraw(
+        newWithdrawalModel(
+            batchId,
+            Quantities(4, 1, 0, 0),
+            WithdrawalPurpose.Dead,
+            facilityId = destinationFacilityId,
+        )
+    )
 
     val beforeTransfer = store.fetchOneById(batchId)
-    assertEquals(100, beforeTransfer.germinationRate, "Germination rate before second transfer")
-    assertEquals(0, beforeTransfer.lossRate, "Loss rate before second transfer")
+    assertEquals(60, beforeTransfer.germinationRate, "Germination rate before second transfer")
+    assertEquals(4, beforeTransfer.lossRate, "Loss rate before second transfer")
 
-    addTransfer(sourceBatchId, Quantities(0, 1, 0, 0))
+    addTransfer(sourceBatchId, Quantities(1, 5, 0, 0))
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 1)
 
     val afterTransfer = store.fetchOneById(batchId)
-    assertNull(afterTransfer.germinationRate, "Germination rate after second transfer")
-    assertNull(afterTransfer.lossRate, "Loss rate after second transfer")
+    assertEquals(64, afterTransfer.germinationRate, "Germination rate after second transfer")
+    assertEquals(3, afterTransfer.lossRate, "Loss rate after second transfer")
   }
 
   @Test
@@ -169,6 +178,20 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         current = Quantities(0, 1, 0, 0),
         expectedGerminationRate = null,
         expectedLossRate = 0,
+    )
+  }
+
+  @Test
+  fun `treats subsequent additions from accessions as part of initial quantity`() {
+    runScenario(
+        initial = Quantities(100, 30, 15, 15),
+        transfer = Quantities(12, 8, 10, 0),
+        dead = Quantities(10, 11, 5, 10),
+        other = Quantities(0, 3, 0, 10),
+        addedFromAccession = Quantities(100, 0, 0, 0),
+        current = Quantities(0, 37, 93, 51),
+        expectedGerminationRate = 95,
+        expectedLossRate = 13,
     )
   }
 
@@ -187,6 +210,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
       transfer: Quantities? = null,
       dead: Quantities? = null,
       other: Quantities? = null,
+      addedFromAccession: Quantities? = null,
       manualEdits: Quantities? = null,
       current: Quantities,
       expectedGerminationRate: Int? = null,
@@ -196,16 +220,17 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
     // Figure out what status change operations are required in order to end up with the requested
     // "current" quantities after all the other operations are done.
+    val initialValueSources = listOfNotNull(initial, manualEdits, addedFromAccession)
     val germinatingChangeNeeded =
-        initial.germinating + (manualEdits?.germinating ?: 0) -
+        initialValueSources.sumOf { it.germinating } -
             operations.sumOf { it.germinating } -
             current.germinating
     val activeGrowthChangeNeeded =
-        initial.activeGrowth + (manualEdits?.activeGrowth ?: 0) -
+        initialValueSources.sumOf { it.activeGrowth } -
             operations.sumOf { it.activeGrowth } -
             current.activeGrowth + germinatingChangeNeeded
     val hardeningOffChangeNeeded =
-        initial.hardeningOff + (manualEdits?.hardeningOff ?: 0) -
+        initialValueSources.sumOf { it.hardeningOff } -
             operations.sumOf { it.hardeningOff } -
             current.hardeningOff + activeGrowthChangeNeeded
 
@@ -218,6 +243,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
     val batchId = createBatch(initial)
 
+    addedFromAccession?.let { store.addToExistingBatch(insertAccession(), batchId, it.germinating) }
     manualEdits?.let { addManualEdits(batchId, it) }
 
     // Do this in three steps to mimic how the web app would behave.
@@ -311,6 +337,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
       quantities: Quantities,
       purpose: WithdrawalPurpose,
       destinationFacilityId: FacilityId? = null,
+      facilityId: FacilityId = this.facilityId,
   ): NewWithdrawalModel {
     return NewWithdrawalModel(
         batchWithdrawals =

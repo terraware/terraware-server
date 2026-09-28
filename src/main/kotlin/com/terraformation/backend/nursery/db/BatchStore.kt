@@ -1414,11 +1414,15 @@ class BatchStore(
     val initialEvent = quantityHistory.first()
     val latestEvent = quantityHistory.last()
 
+    var initialGerminating = initialEvent[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!
+    var initialActiveGrowth = initialEvent[BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY]!!
+    var initialHardeningOff = initialEvent[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY]!!
+    var initialReady = initialEvent[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!
+
     var hasManualGerminatingEdit = false
     var hasManualHardeningOffEdit = false
     var hasManualActiveGrowthEdit = false
     var hasManualReadyEdit = false
-    var hasAdditionalIncomingTransfers = false
     var totalWithdrawnNonGerminating = 0
     var totalNonDeadGerminating = 0
     var totalDeadNonGerminating = 0
@@ -1459,15 +1463,18 @@ class BatchStore(
       val purpose = current[WITHDRAWALS.PURPOSE_ID]
       val undonePurpose = current[undonePurposeId]
 
+      // Count incoming transfers as if they were part of the initial quantities.
       if (
-          purpose == WithdrawalPurpose.NurseryTransfer &&
-              current[BATCH_WITHDRAWALS.BATCH_ID] != batchId
+          current[BATCH_QUANTITY_HISTORY.ACCESSION_ID] != null ||
+              (purpose == WithdrawalPurpose.NurseryTransfer &&
+                  current[BATCH_WITHDRAWALS.BATCH_ID] != batchId)
       ) {
-        hasAdditionalIncomingTransfers = true
-      }
+        fun differenceFromPrevious(field: Field<Int?>): Int = current[field]!! - previous[field]!!
 
-      if (current[BATCH_QUANTITY_HISTORY.ACCESSION_ID] != null) {
-        hasAdditionalIncomingTransfers = true
+        initialGerminating += differenceFromPrevious(BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY)
+        initialHardeningOff += differenceFromPrevious(BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY)
+        initialActiveGrowth += differenceFromPrevious(BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY)
+        initialReady += differenceFromPrevious(BATCH_QUANTITY_HISTORY.READY_QUANTITY)
       }
 
       if (
@@ -1499,10 +1506,6 @@ class BatchStore(
       current
     }
 
-    val initialGerminating = initialEvent[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!
-    val initialActiveGrowth = initialEvent[BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY]!!
-    val initialHardeningOff = initialEvent[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY]!!
-    val initialReady = initialEvent[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!
     val currentGerminating = latestEvent[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!
     val currentHardening = latestEvent[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY]!!
     val currentNonGerminating =
@@ -1523,8 +1526,7 @@ class BatchStore(
                 !hasManualGerminatingEdit &&
                 !hasManualActiveGrowthEdit &&
                 !hasManualHardeningOffEdit &&
-                !hasManualReadyEdit &&
-                !hasAdditionalIncomingTransfers
+                !hasManualReadyEdit
         ) {
           (100.0 * totalGerminated / totalGerminationCandidates).roundToInt()
         } else {
@@ -1538,8 +1540,7 @@ class BatchStore(
             totalLossCandidates > 0 &&
                 !hasManualActiveGrowthEdit &&
                 !hasManualHardeningOffEdit &&
-                !hasManualReadyEdit &&
-                !hasAdditionalIncomingTransfers
+                !hasManualReadyEdit
         ) {
           (100.0 * totalLost / totalLossCandidates).roundToInt()
         } else {
