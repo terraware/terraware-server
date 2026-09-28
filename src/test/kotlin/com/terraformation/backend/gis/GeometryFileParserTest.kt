@@ -281,7 +281,9 @@ class GeometryFileParserTest {
   @ParameterizedTest
   @ValueSource(strings = ["{broken", "{}", "null", "", "{\"type\":\"FeatureCollection\"}"])
   fun `rejects malformed GeoJSON`(json: String) {
-    assertCode(GeometryFileErrorCode.InvalidFile, json.toByteArray(), "boundary.json")
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat(json.toByteArray(), "boundary.json")
+    }
   }
 
   @Test
@@ -323,19 +325,13 @@ class GeometryFileParserTest {
 
   @Test
   fun `unsupported content is rejected`() {
-    assertCode(
-        GeometryFileErrorCode.UnsupportedFormat,
-        """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
-            .toByteArray(),
-        "boundary.gpx",
-    )
-  }
-
-  private fun assertCode(code: GeometryFileErrorCode, content: ByteArray, filename: String?) {
-    assertEquals(
-        code,
-        assertThrows<GeometryFileException> { parser.readWithFormat(content, filename) }.code,
-    )
+    assertThrows<UnsupportedGeometryFileFormatException> {
+      parser.readWithFormat(
+          """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
+              .toByteArray(),
+          "boundary.gpx",
+      )
+    }
   }
 
   private fun readShapes(content: ByteArray, filename: String?): List<Geometry> =

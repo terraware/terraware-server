@@ -52,7 +52,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     val parsed = readWithFormat(content, filename)
     val elements = parsed.geometries
     if (elements.isEmpty()) {
-      throw GeometryFileException(GeometryFileErrorCode.NoPolygons)
+      throw NoPolygonsException()
     }
 
     val combined = elements.reduce { a, b -> a.union(b) }
@@ -89,10 +89,9 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       // checks; nothing here is GeoJSON.
       MediaType.APPLICATION_XML,
       MediaType.TEXT_XML ->
-          readByExtension(content, extension)
-              ?: throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+          readByExtension(content, extension) ?: throw UnsupportedGeometryFileFormatException()
 
-      else -> throw GeometryFileException(GeometryFileErrorCode.UnsupportedFormat)
+      else -> throw UnsupportedGeometryFileFormatException()
     }
   }
 
@@ -115,11 +114,11 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     return try {
       parsedFile(readGeoJsonNode(objectMapper.readTree(content)), GeometryFileFormat.GeoJSON)
     } catch (e: JsonProcessingException) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+      throw InvalidGeometryFileException(e)
     } catch (e: ParseException) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+      throw InvalidGeometryFileException(e)
     } catch (e: IllegalArgumentException) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+      throw InvalidGeometryFileException(e)
     }
   }
 
@@ -133,8 +132,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       "FeatureCollection" -> readGeoJsonChildren(node, "features")
       "GeometryCollection" -> readGeoJsonChildren(node, "geometries")
       "Feature" -> {
-        val geometry =
-            node.get("geometry") ?: throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+        val geometry = node.get("geometry") ?: throw InvalidGeometryFileException()
         if (geometry.isNull) emptyList() else readGeoJsonNode(geometry)
       }
       "Point",
@@ -143,14 +141,14 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       "MultiLineString",
       "Polygon",
       "MultiPolygon" -> listOf(GeoJsonReader(geometryFactory).read(node.toString()))
-      else -> throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+      else -> throw InvalidGeometryFileException()
     }
   }
 
   private fun readGeoJsonChildren(node: JsonNode, property: String): List<Geometry> {
     val children = node.get(property)
     if (children == null || !children.isArray) {
-      throw GeometryFileException(GeometryFileErrorCode.InvalidFile)
+      throw InvalidGeometryFileException()
     }
 
     return children.flatMap { readGeoJsonNode(it) }
