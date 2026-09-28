@@ -5,8 +5,10 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLEC
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class AccessionCollectorsTable(private val tables: SearchTables) : SearchTable() {
@@ -34,7 +36,12 @@ class AccessionCollectorsTable(private val tables: SearchTables) : SearchTable()
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.accessions
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query.join(ACCESSIONS).on(ACCESSION_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
+    return query
+        .join(ACCESSIONS)
+        .on(table.column(ACCESSION_COLLECTORS.ACCESSION_ID).eq(ACCESSIONS.ID))
   }
 }

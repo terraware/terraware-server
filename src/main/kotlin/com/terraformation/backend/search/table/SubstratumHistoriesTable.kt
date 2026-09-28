@@ -8,9 +8,11 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTO
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class SubstratumHistoriesTable(private val tables: SearchTables) : SearchTable() {
@@ -61,10 +63,13 @@ class SubstratumHistoriesTable(private val tables: SearchTables) : SearchTable()
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.stratumHistories
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     return query
         .join(STRATUM_HISTORIES)
-        .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+        .on(table.column(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID).eq(STRATUM_HISTORIES.ID))
   }
 
   override val defaultOrderFields: List<OrderField<*>>

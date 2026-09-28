@@ -3,14 +3,15 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class PlantingDateRequestsTable(private val tables: SearchTables) : SearchTable() {
@@ -50,13 +51,18 @@ class PlantingDateRequestsTable(private val tables: SearchTables) : SearchTable(
     get() = listOf(PLANTING_DATE_REQUESTS.DATE.desc())
 
   override val inheritsVisibilityFrom: SearchTable
-    get() = tables.plantingSeasons
+    get() = tables.plantingSeasonScheduledDates
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     return query
-        .join(PLANTING_SEASONS)
+        .join(SCHEDULED_PLANTING_DATES)
         .on(
-            PLANTING_DATE_REQUESTS.scheduledPlantingDates.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID)
+            table
+                .column(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID)
+                .eq(SCHEDULED_PLANTING_DATES.ID)
         )
   }
 }

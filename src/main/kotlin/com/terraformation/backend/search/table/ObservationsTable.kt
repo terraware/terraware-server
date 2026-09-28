@@ -13,8 +13,10 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SU
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 class ObservationsTable(private val tables: SearchTables) : SearchTable() {
@@ -81,9 +83,12 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.plantingSites
 
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      table: Table<*>,
+  ): SelectJoinStep<T> {
     return query
         .join(PLANTING_SITE_SUMMARIES)
-        .on(OBSERVATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
+        .on(table.column(OBSERVATIONS.PLANTING_SITE_ID).eq(PLANTING_SITE_SUMMARIES.ID))
   }
 }
