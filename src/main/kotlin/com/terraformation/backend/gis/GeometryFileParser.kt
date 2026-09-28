@@ -279,7 +279,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           try {
             ZipFile(path.toFile())
           } catch (e: ZipException) {
-            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+            throw InvalidGeometryFileException(e)
           }
 
       zipFile.use { zip ->
@@ -314,23 +314,18 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       val hasSecondaryFiles = entries.any {
         it.name.substringAfterLast('.').lowercase() in SECONDARY_EXTENSIONS
       }
-      throw GeometryFileException(
-          if (hasSecondaryFiles) GeometryFileErrorCode.NoShapefile
-          else GeometryFileErrorCode.NoKmlInArchive
-      )
+      throw if (hasSecondaryFiles) NoShapefileException() else NoKmlInArchiveException()
     }
     if (shapefiles.size > 1) {
-      throw GeometryFileException(GeometryFileErrorCode.MultipleShapefiles)
+      throw MultipleShapefilesException()
     }
 
     val basename = shapefiles.single().name.substringBeforeLast('.')
     val components =
         (listOf("shp") + SECONDARY_EXTENSIONS).associateWith { extension ->
           entries.singleOrNull { it.name.equals("$basename.$extension", ignoreCase = true) }
-              ?: throw GeometryFileException(
-                  if (extension == "prj") GeometryFileErrorCode.UnknownCoordinateSystem
-                  else GeometryFileErrorCode.InvalidFile
-              )
+              ?: throw if (extension == "prj") UnknownCoordinateSystemException()
+              else InvalidGeometryFileException()
         }
 
     if (components.values.any { it.size > MAX_COMPONENT_BYTES }) {
@@ -374,7 +369,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       try {
         CRS.parseWKT(directory.resolve("boundary.prj").readText())
       } catch (e: FactoryException) {
-        throw GeometryFileException(GeometryFileErrorCode.UnknownCoordinateSystem, e)
+        throw UnknownCoordinateSystemException(e)
       }
 
       val geometries =
@@ -383,15 +378,15 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           } catch (e: GeometryFileException) {
             throw e
           } catch (e: IOException) {
-            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+            throw InvalidGeometryFileException(e)
           } catch (e: BufferUnderflowException) {
-            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+            throw InvalidGeometryFileException(e)
           } catch (e: IllegalArgumentException) {
-            throw GeometryFileException(GeometryFileErrorCode.InvalidFile, e)
+            throw InvalidGeometryFileException(e)
           } catch (e: FactoryException) {
-            throw GeometryFileException(GeometryFileErrorCode.UnknownCoordinateSystem, e)
+            throw UnknownCoordinateSystemException(e)
           } catch (e: TransformException) {
-            throw GeometryFileException(GeometryFileErrorCode.InvalidGeometry, e)
+            throw InvalidGeometryException(e)
           }
 
       parsedFile(geometries, GeometryFileFormat.Shapefile)

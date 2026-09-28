@@ -15,11 +15,14 @@ import java.util.zip.ZipOutputStream
 import org.geotools.util.ContentFormatException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
@@ -27,6 +30,17 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
 
 class GeometryFileParserTest {
+  companion object {
+    @JvmStatic
+    fun missingShapefileComponents() =
+        listOf(
+            Arguments.of("shp", NoShapefileException::class.java),
+            Arguments.of("shx", InvalidGeometryFileException::class.java),
+            Arguments.of("dbf", InvalidGeometryFileException::class.java),
+            Arguments.of("prj", UnknownCoordinateSystemException::class.java),
+        )
+  }
+
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
 
@@ -300,7 +314,9 @@ class GeometryFileParserTest {
           ]
   )
   fun `rejects malformed GeoJSON`(json: String) {
-    assertCode(GeometryFileErrorCode.InvalidFile, json.toByteArray(), "boundary.json")
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat(json.toByteArray(), "boundary.json")
+    }
   }
 
   @Test
@@ -427,66 +443,71 @@ class GeometryFileParserTest {
 
   @Test
   fun `unsupported content is rejected`() {
-    assertCode(
-        GeometryFileErrorCode.UnsupportedFormat,
-        """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
-            .toByteArray(),
-        "boundary.gpx",
-    )
+    assertThrows<UnsupportedGeometryFileFormatException> {
+      parser.readWithFormat(
+          """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
+              .toByteArray(),
+          "boundary.gpx",
+      )
+    }
   }
 
   @Test
   fun `corrupt archive is invalid file`() {
-    assertCode(GeometryFileErrorCode.InvalidFile, "PK broken".toByteArray(), "boundary.zip")
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat("PK broken".toByteArray(), "boundary.zip")
+    }
   }
 
   @Test
   fun `archive without spatial files has a specific code`() {
-    assertCode(
-        GeometryFileErrorCode.NoKmlInArchive,
-        zip(mapOf("readme.txt" to "text".toByteArray())),
-        "boundary.zip",
-    )
+    assertThrows<NoKmlInArchiveException> {
+      parser.readWithFormat(zip(mapOf("readme.txt" to "text".toByteArray())), "boundary.zip")
+    }
   }
 
+  @MethodSource("missingShapefileComponents")
   @ParameterizedTest
-  @CsvSource("shp,NoShapefile", "shx,InvalidFile", "dbf,InvalidFile", "prj,UnknownCoordinateSystem")
-  fun `missing shapefile components have specific codes`(
+  fun `missing shapefile components have specific exceptions`(
       extension: String,
-      code: GeometryFileErrorCode,
+      expected: Class<out GeometryFileException>,
   ) {
-    assertCode(
-        code,
-        zip(shapefileEntries().filterKeys { !it.endsWith(".$extension") }),
-        "boundary.zip",
-    )
+    assertThrows(expected) {
+      parser.readWithFormat(
+          zip(shapefileEntries().filterKeys { !it.endsWith(".$extension") }),
+          "boundary.zip",
+      )
+    }
   }
 
   @Test
   fun `multiple shapefiles have a specific code`() {
-    assertCode(
-        GeometryFileErrorCode.MultipleShapefiles,
-        javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes(),
-        "boundary.zip",
-    )
+    assertThrows<MultipleShapefilesException> {
+      parser.readWithFormat(
+          javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes(),
+          "boundary.zip",
+      )
+    }
   }
 
   @Test
   fun `undecodable CRS is unknown coordinate system`() {
-    assertCode(
-        GeometryFileErrorCode.UnknownCoordinateSystem,
-        zip(shapefileEntries() + ("PlantingSite.prj" to "not a CRS".toByteArray())),
-        "boundary.zip",
-    )
+    assertThrows<UnknownCoordinateSystemException> {
+      parser.readWithFormat(
+          zip(shapefileEntries() + ("PlantingSite.prj" to "not a CRS".toByteArray())),
+          "boundary.zip",
+      )
+    }
   }
 
   @Test
   fun `unreadable shapefile is invalid file`() {
-    assertCode(
-        GeometryFileErrorCode.InvalidFile,
-        zip(shapefileEntries() + ("PlantingSite.shp" to byteArrayOf(1, 2, 3))),
-        "boundary.zip",
-    )
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat(
+          zip(shapefileEntries() + ("PlantingSite.shp" to byteArrayOf(1, 2, 3))),
+          "boundary.zip",
+      )
+    }
   }
 
   @Test
@@ -513,13 +534,6 @@ class GeometryFileParserTest {
             ("boundary.kml" to javaClass.getResource("/gis/triangle.kml")!!.readBytes())
 
     assertEquals(GeometryFileFormat.KMZ, parser.readWithFormat(zip(entries), "boundary.zip").format)
-  }
-
-  private fun assertCode(code: GeometryFileErrorCode, content: ByteArray, filename: String?) {
-    assertEquals(
-        code,
-        assertThrows<GeometryFileException> { parser.readWithFormat(content, filename) }.code,
-    )
   }
 
   private fun readShapes(content: ByteArray, filename: String?): List<Geometry> =
