@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HI
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SPECIES_TARGETS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
+import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -43,21 +44,23 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               PLANTING_SITE_SUMMARIES.ID,
               DELIVERIES.PLANTING_SITE_ID,
           ),
-          monitoringPlots.asMultiValueSublist(
-              "exteriorPlots",
-              PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.SUBSTRATUM_ID.isNull),
-          ),
+          monitoringPlots.asMultiValueSublist("exteriorPlots") { thisTable, otherTable ->
+            thisTable
+                .column(PLANTING_SITE_SUMMARIES.ID)
+                .eq(otherTable.column(MONITORING_PLOTS.PLANTING_SITE_ID))
+                .and(otherTable.column(MONITORING_PLOTS.SUBSTRATUM_ID).isNull)
+          },
           plantingSiteHistories.asMultiValueSublist(
               "histories",
               PLANTING_SITE_SUMMARIES.ID,
               PLANTING_SITE_HISTORIES.PLANTING_SITE_ID,
           ),
-          monitoringPlots.asMultiValueSublist(
-              "monitoringPlots",
-              PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.SUBSTRATUM_ID.isNotNull),
-          ),
+          monitoringPlots.asMultiValueSublist("monitoringPlots") { thisTable, otherTable ->
+            thisTable
+                .column(PLANTING_SITE_SUMMARIES.ID)
+                .eq(otherTable.column(MONITORING_PLOTS.PLANTING_SITE_ID))
+                .and(otherTable.column(MONITORING_PLOTS.SUBSTRATUM_ID).isNotNull)
+          },
           observations.asMultiValueSublist(
               "observations",
               PLANTING_SITE_SUMMARIES.ID,
@@ -68,12 +71,25 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               PLANTING_SITE_SUMMARIES.ORGANIZATION_ID,
               ORGANIZATIONS.ID,
           ),
-          plantingDateRequests.asMultiValueSublist(
-              "plantingDateRequests",
-              PLANTING_SITE_SUMMARIES.ID.eq(
-                  PLANTING_DATE_REQUESTS.scheduledPlantingDates.plantingSeasons.PLANTING_SITE_ID
-              ),
-          ),
+          plantingDateRequests.asMultiValueSublist("plantingDateRequests") { thisTable, otherTable
+            ->
+            DSL.exists(
+                DSL.selectOne()
+                    .from(SCHEDULED_PLANTING_DATES)
+                    .join(PLANTING_SEASONS)
+                    .on(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID))
+                    .where(
+                        SCHEDULED_PLANTING_DATES.ID.eq(
+                            otherTable.column(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID)
+                        )
+                    )
+                    .and(
+                        PLANTING_SEASONS.PLANTING_SITE_ID.eq(
+                            thisTable.column(PLANTING_SITE_SUMMARIES.ID)
+                        )
+                    )
+            )
+          },
           plantingSeasons.asMultiValueSublist(
               "plantingSeasons",
               PLANTING_SITE_SUMMARIES.ID,

@@ -25,19 +25,22 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          variableSelectOptions.asMultiValueSublist(
-              "options",
-              DSL.exists(
-                  DSL.selectOne()
-                      .from(VARIABLE_SELECT_OPTION_VALUES)
-                      .where(
-                          VARIABLE_SELECT_OPTION_VALUES.VARIABLE_VALUE_ID.eq(
-                              PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID
-                          )
-                      )
-                      .and(VARIABLE_SELECT_OPTION_VALUES.OPTION_ID.eq(VARIABLE_SELECT_OPTIONS.ID))
-              ),
-          ),
+          variableSelectOptions.asMultiValueSublist("options") { thisTable, otherTable ->
+            DSL.exists(
+                DSL.selectOne()
+                    .from(VARIABLE_SELECT_OPTION_VALUES)
+                    .where(
+                        VARIABLE_SELECT_OPTION_VALUES.VARIABLE_VALUE_ID.eq(
+                            thisTable.column(PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID)
+                        )
+                    )
+                    .and(
+                        VARIABLE_SELECT_OPTION_VALUES.OPTION_ID.eq(
+                            otherTable.column(VARIABLE_SELECT_OPTIONS.ID)
+                        )
+                    )
+            )
+          },
       )
     }
   }

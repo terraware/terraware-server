@@ -23,11 +23,16 @@ class ProjectVariablesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          projectVariableValues.asMultiValueSublist(
-              "values",
-              PROJECT_VARIABLES.VARIABLE_ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_ID)
-                  .and(PROJECT_VARIABLES.PROJECT_ID.eq(PROJECT_VARIABLE_VALUES.PROJECT_ID)),
-          ),
+          projectVariableValues.asMultiValueSublist("values") { thisTable, otherTable ->
+            thisTable
+                .column(PROJECT_VARIABLES.VARIABLE_ID)
+                .eq(otherTable.column(PROJECT_VARIABLE_VALUES.VARIABLE_ID))
+                .and(
+                    thisTable
+                        .column(PROJECT_VARIABLES.PROJECT_ID)
+                        .eq(otherTable.column(PROJECT_VARIABLE_VALUES.PROJECT_ID))
+                )
+          },
       )
     }
   }

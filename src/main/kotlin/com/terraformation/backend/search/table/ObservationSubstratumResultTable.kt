@@ -39,28 +39,31 @@ class ObservationSubstratumResultTable(private val tables: SearchTables) : Searc
               OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID,
               SUBSTRATUM_HISTORIES.ID,
           ),
-          observationPlotResult.asMultiValueSublist(
-              "plotResults",
-              OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(
-                      OBSERVATION_PLOT_RESULTS.OBSERVATION_ID
-                  )
-                  .and(
-                      DSL.exists(
-                          DSL.selectOne()
-                              .from(MONITORING_PLOT_HISTORIES)
-                              .where(
-                                  MONITORING_PLOT_HISTORIES.ID.eq(
-                                      OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
-                                  )
-                              )
-                              .and(
-                                  MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
-                                      OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
-                                  )
-                              )
-                      )
-                  ),
-          ),
+          observationPlotResult.asMultiValueSublist("plotResults") { thisTable, otherTable ->
+            thisTable
+                .column(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID)
+                .eq(otherTable.column(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID))
+                .and(
+                    DSL.exists(
+                        DSL.selectOne()
+                            .from(MONITORING_PLOT_HISTORIES)
+                            .where(
+                                MONITORING_PLOT_HISTORIES.ID.eq(
+                                    otherTable.column(
+                                        OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
+                                    )
+                                )
+                            )
+                            .and(
+                                MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
+                                    thisTable.column(
+                                        OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
+                                    )
+                                )
+                            )
+                    )
+                )
+          },
       )
     }
   }

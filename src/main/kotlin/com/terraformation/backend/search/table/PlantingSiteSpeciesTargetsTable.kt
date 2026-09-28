@@ -32,15 +32,17 @@ class PlantingSiteSpeciesTargetsTable(private val tables: SearchTables) : Search
               PLANTING_SITE_SPECIES_TARGETS.SPECIES_ID,
               SPECIES.ID,
           ),
-          stratumSpeciesTargets.asMultiValueSublist(
-              "stratumSpeciesTargets",
-              DSL.and(
-                  PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID.eq(
-                      STRATUM_SPECIES_TARGETS.PLANTING_SITE_ID
-                  ),
-                  PLANTING_SITE_SPECIES_TARGETS.SPECIES_ID.eq(STRATUM_SPECIES_TARGETS.SPECIES_ID),
-              ),
-          ),
+          stratumSpeciesTargets.asMultiValueSublist("stratumSpeciesTargets") { thisTable, otherTable
+            ->
+            DSL.and(
+                thisTable
+                    .column(PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID)
+                    .eq(otherTable.column(STRATUM_SPECIES_TARGETS.PLANTING_SITE_ID)),
+                thisTable
+                    .column(PLANTING_SITE_SPECIES_TARGETS.SPECIES_ID)
+                    .eq(otherTable.column(STRATUM_SPECIES_TARGETS.SPECIES_ID)),
+            )
+          },
       )
     }
   }

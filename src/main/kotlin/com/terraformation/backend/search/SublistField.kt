@@ -1,6 +1,8 @@
 package com.terraformation.backend.search
 
+import java.util.Objects
 import org.jooq.Condition
+import org.jooq.Table
 
 /**
  * A container for related search fields. A sublist represents a relationship between two
@@ -37,17 +39,6 @@ data class SublistField(
     val isMultiValue: Boolean,
 
     /**
-     * A condition to add to the `WHERE` clause of a multiset subquery to correlate it with the
-     * database table for the [SearchTable] that contains this field. This will generally be the
-     * condition you would put in the `ON` part of a `LEFT JOIN x ON Y` clause that connects this
-     * sublist to its parent.
-     *
-     * For example, if this is the `sites` sublist field of the `projects` table, the condition
-     * would be `SITES.PROJECT_ID.eq(PROJECTS.ID)`.
-     */
-    val conditionForMultiset: Condition,
-
-    /**
      * If true, the contents of this sublist should be included as if they were fields of the same
      * table where this sublist is located. That is, the contents of the sublist should be pulled up
      * one level so they are not nested any more. If false, this sublist should appear in the search
@@ -67,9 +58,51 @@ data class SublistField(
      * direct path to each table.
      */
     val isTraversedForGetAllFields: Boolean = isMultiValue,
+
+    /**
+     * Returns a condition to add to the `WHERE` clause of a multiset subquery to correlate it with
+     * the database table for the [SearchTable] that contains this field. This will generally be the
+     * condition you would put in the `ON` part of a `LEFT JOIN x ON Y` clause that connects this
+     * sublist to its parent.
+     *
+     * This should look columns up on the tables that are passed to it rather than referring to jOOQ
+     * table objects directly. For example, if this is the `plantingSites` sublist field of the
+     * `organizations` table, this would be a function like
+     *
+     *     { thisTable, otherTable ->
+     *         thisTable.column(ORGANIZATIONS.ID).eq(otherTable.column(PLANTING_SITES.ORGANIZATION_ID))
+     *     }
+     */
+    val getConditionForMultiset: GetConditionForMultiset,
 ) {
   val delimiter: Char
     get() = if (isFlattened) FLATTENED_SUBLIST_DELIMITER else NESTED_SUBLIST_DELIMITER
 
   fun asFlattened(): SublistField = copy(isFlattened = true)
+
+  // Treat two sublist fields as equal even if their getConditionForMultiset properties differ.
+  override fun equals(other: Any?): Boolean =
+      other is SublistField &&
+          other.name == name &&
+          other.searchTable == searchTable &&
+          other.isMultiValue == isMultiValue &&
+          other.isFlattened == isFlattened &&
+          other.isTraversedForGetAllFields == isTraversedForGetAllFields
+
+  override fun hashCode(): Int =
+      Objects.hash(
+          name,
+          searchTable,
+          isMultiValue,
+          isFlattened,
+          isTraversedForGetAllFields,
+      )
+
+  fun interface GetConditionForMultiset {
+    /**
+     * @param thisTable The instance of the table that contains this sublist field.
+     * @param otherTable The instance of the table this sublist points at, [searchTable].
+     */
+    operator fun invoke(thisTable: Table<*>, otherTable: Table<*>): Condition
+  }
 }

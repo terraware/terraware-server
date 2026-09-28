@@ -29,15 +29,18 @@ class StratumSpeciesTargetsTable(private val tables: SearchTables) : SearchTable
               STRATUM_SPECIES_TARGETS.PLANTING_SITE_ID,
               PLANTING_SITE_SUMMARIES.ID,
           ),
-          plantingSiteSpeciesTargets.asSingleValueSublist(
-              "plantingSiteSpeciesTarget",
-              DSL.and(
-                  STRATUM_SPECIES_TARGETS.PLANTING_SITE_ID.eq(
-                      PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID
-                  ),
-                  STRATUM_SPECIES_TARGETS.SPECIES_ID.eq(PLANTING_SITE_SPECIES_TARGETS.SPECIES_ID),
-              ),
-          ),
+          plantingSiteSpeciesTargets.asSingleValueSublist("plantingSiteSpeciesTarget") {
+              thisTable,
+              otherTable ->
+            DSL.and(
+                thisTable
+                    .column(STRATUM_SPECIES_TARGETS.PLANTING_SITE_ID)
+                    .eq(otherTable.column(PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID)),
+                thisTable
+                    .column(STRATUM_SPECIES_TARGETS.SPECIES_ID)
+                    .eq(otherTable.column(PLANTING_SITE_SPECIES_TARGETS.SPECIES_ID)),
+            )
+          },
           species.asSingleValueSublist(
               "species",
               STRATUM_SPECIES_TARGETS.SPECIES_ID,
