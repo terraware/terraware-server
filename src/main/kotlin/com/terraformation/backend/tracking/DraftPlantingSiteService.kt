@@ -1,7 +1,5 @@
 package com.terraformation.backend.tracking
 
-import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.tracking.model.BoundaryFileModel
 import com.terraformation.backend.util.calculateAreaHectares
@@ -15,12 +13,9 @@ import org.xml.sax.SAXException
 @Named
 class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParser) {
   fun parseBoundaryFile(
-      draftPlantingSiteId: DraftPlantingSiteId,
       content: ByteArray,
       filename: String?,
   ): BoundaryFileModel {
-    requirePermissions { updateDraftPlantingSite(draftPlantingSiteId) }
-
     return try {
       when (filename?.substringAfterLast('.', "")?.lowercase()) {
         "kml",

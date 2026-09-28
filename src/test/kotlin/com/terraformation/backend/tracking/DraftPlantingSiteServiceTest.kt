@@ -6,12 +6,10 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.toMultiPolygon
-import io.mockk.every
 import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.util.zip.ZipEntry
@@ -19,13 +17,11 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import org.geotools.util.ContentFormatException
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.locationtech.jts.geom.Geometry
-import org.springframework.security.access.AccessDeniedException
 
 class DraftPlantingSiteServiceTest : RunsAsUser {
   override val user = mockUser()
@@ -33,12 +29,6 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
   private val service = DraftPlantingSiteService(parser)
-  private val draftId = DraftPlantingSiteId(1)
-
-  @BeforeEach
-  fun setUp() {
-    every { user.canUpdateDraftPlantingSite(draftId) } returns true
-  }
 
   @ParameterizedTest
   @ValueSource(strings = ["kml", "kmz", "geojson", "json", "GEOJSON", "zip", "ZIP"])
@@ -51,7 +41,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
           else -> extension
         }
     val content = javaClass.getResource("/gis/triangle.$resourceExtension")!!.readBytes()
-    val result = service.parseBoundaryFile(draftId, content, "boundary.$extension")
+    val result = service.parseBoundaryFile(content, "boundary.$extension")
 
     assertGeometryEquals(parser.parse(content, "triangle.$resourceExtension"), result.geometry)
     assertEquals("boundary.$extension", result.filename)
@@ -69,8 +59,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   @ParameterizedTest
   @ValueSource(strings = ["PlantingSite", "Strata"])
   fun `parses zipped shapefile and transforms coordinates`(basename: String) {
-    val result =
-        service.parseBoundaryFile(draftId, shapefileZip(basename = basename), "boundary.zip")
+    val result = service.parseBoundaryFile(shapefileZip(basename = basename), "boundary.zip")
     val expected =
         javaClass.getResourceAsStream("/gis/$basename.geojson").use {
           objectMapper.readValue<Geometry>(it)
@@ -103,7 +92,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
         """{"type":"GeometryCollection","geometries":[$polygon,$polygon,$otherPolygon]}"""
             .toByteArray()
 
-    val result = service.parseBoundaryFile(draftId, content, "boundary.json")
+    val result = service.parseBoundaryFile(content, "boundary.json")
 
     assertEquals(2, result.numPolygons)
     assertEquals(BigDecimal("203.715"), result.areaHa)
@@ -119,7 +108,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
           ]
   )
   fun `returns zero polygons and area for nonpolygonal geometry`(content: String) {
-    val result = service.parseBoundaryFile(draftId, content.toByteArray(), "boundary.json")
+    val result = service.parseBoundaryFile(content.toByteArray(), "boundary.json")
 
     assertEquals(0, result.numPolygons)
     assertEquals(BigDecimal("0.000"), result.areaHa)
@@ -129,7 +118,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   @ValueSource(strings = ["shp", "shx", "dbf", "prj"])
   fun `rejects missing shapefile components`(extension: String) {
     assertThrows<ContentFormatException> {
-      service.parseBoundaryFile(draftId, shapefileZip(extension), "boundary.zip")
+      service.parseBoundaryFile(shapefileZip(extension), "boundary.zip")
     }
   }
 
@@ -137,7 +126,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   fun `rejects multiple shapefiles`() {
     val content = javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes()
     assertThrows<ContentFormatException> {
-      service.parseBoundaryFile(draftId, content, "boundary.zip")
+      service.parseBoundaryFile(content, "boundary.zip")
     }
   }
 
@@ -145,24 +134,14 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   @ValueSource(strings = ["kml", "kmz", "geojson", "json", "zip", "txt"])
   fun `rejects malformed or unsupported files`(extension: String) {
     assertThrows<ContentFormatException> {
-      service.parseBoundaryFile(draftId, "not a geometry".toByteArray(), "boundary.$extension")
+      service.parseBoundaryFile("not a geometry".toByteArray(), "boundary.$extension")
     }
   }
 
   @Test
   fun `requires filename`() {
     assertThrows<ContentFormatException> {
-      service.parseBoundaryFile(draftId, byteArrayOf(), null)
-    }
-  }
-
-  @Test
-  fun `requires update permission before parsing`() {
-    every { user.canUpdateDraftPlantingSite(draftId) } returns false
-    every { user.canReadDraftPlantingSite(draftId) } returns true
-
-    assertThrows<AccessDeniedException> {
-      service.parseBoundaryFile(draftId, byteArrayOf(), "bad.zip")
+      service.parseBoundaryFile(byteArrayOf(), null)
     }
   }
 
