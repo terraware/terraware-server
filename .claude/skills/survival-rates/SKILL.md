@@ -133,7 +133,7 @@ update.
 Stored rates go stale whenever their inputs change. Changes never recalculate anything directly.
 Instead, the code that changes an input sets `needs_recalculation` on the affected
 `observation_*_results` rows, in the same transaction as the change, and
-`ObservationResultsRecalculator` rebuilds them. When adding a new way to change observation data
+`ObservationResultsRecalculator` recalculates them. When adding a new way to change observation data
 or t0 data, call `ObservationResultsInvalidator` from inside the transaction that makes the
 change.
 
@@ -161,14 +161,16 @@ published values.
 | t0 data is assigned for a stratum                                   | `on(T0StratumDataAssignedEvent)` calls `invalidateStratum`.                                                                                                                                                    |
 | The temp-plot flag changes, or the site map is edited               | `on(SurvivalRateIncludesTempPlotsChangedEvent)` and `on(PlantingSiteMapEditedEvent)` call `invalidateSite`.                                                                                                    |
 | An observation is deleted or merged into another                    | `ObservationService.deleteObservation` and `mergeObservations` call `invalidateSite`.                                                                                                                          |
-| An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then rebuilds them immediately rather than waiting for the job. Use this to correct stored data after deploying a calculation change. |
+| An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then recalculates them immediately rather than waiting for the job. Use this to correct stored data after deploying a calculation change. |
 
-`ObservationResultsRecalculator` is a JobRunr recurring job that runs every 15 minutes. For each
+`ObservationResultsRecalculator` is a JobRunr recurring job that runs every 5 minutes. For each
 planting site with flagged results, in a new REPEATABLE READ transaction holding a per-site
-advisory lock, it calls `ObservationStore.rebuildObservationDerivedData` for each flagged
-observation in completion order, then clears the flags. The snapshot means a rebuild never sees
-a change that lands while it runs; such a change conflicts with the rebuild's writes, the
-rebuild rolls back, and the flags stay set for the next run.
+advisory lock, it calls `ObservationRecalculationStore.recalculateFlaggedResults`, then clears
+the flags. That recalculates only the flagged rows, one level at a time (plots, substrata, strata,
+then the site), with one set-based statement per step, so each level reads only levels that are
+already recalculated. The snapshot means a recalculation never sees a change that lands while it
+runs; such a change conflicts with the recalculation's writes, the recalculation rolls back, and
+the flags stay set for the next run.
 
 ## Code Map
 
@@ -179,15 +181,13 @@ All paths below are under `src/main/kotlin/com/terraformation/backend/`.
 | Function                                                                                                         | Role                                                                                                                                                                                                                                                        |
 |------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `completePlot`                                                                                                   | Entry point when a plot is completed. Writes plot species totals, marks the plot complete, runs `recordSubstratumDependencies`, and flags results. On the last plot, `completeObservation`.                                                                |
-| `rebuildObservationDerivedData`                                                                                  | Called by the recalculation job. Rebuilds an observation's substratum, stratum, and site species totals, results rows, and all survival rates from its plot species totals.                                                                                 |
+| `ObservationRecalculationStore.recalculateFlaggedResults` | Called by the recalculation job. Recalculates a site's flagged results rows and their species totals, level by level. Plot species totals counts are the source; everything above is derived from them. |
+| `ObservationSpeciesPlotRow`, `ObservationResultsPlotRow`, and scopes built from `DSL.select(<table column>)` | Scopes that refer to the row being updated rather than a fixed scope, so one statement can calculate rates for every flagged row at a level. |
 | `updateSpeciesTotalsTable`                                                                                       | Incremental per-species counts for one scope, then survival rates for all species in one update.                                                                                                                                                            |
-| `recalculateSurvivalRates(observationId, plantingSiteId)`                                                        | Rolls substratum species totals forward into stratum and site species totals for an observation, with rates. Called from `rebuildObservationDerivedData` for completed and abandoned observations.                                                                                          |
-| `recalculateSurvivalRate(ObservationSpeciesScope, observationId)`                                                | Recomputes `survival_rate` on a species totals table for a scope in one observation.                                                                                                                                                                        |
-| `updateObservationResults`                                                                                       | Sums species totals into the results tables' count and density columns. Not rates.                                                                                                                                                                          |
-| `recalculateSurvivalRateResults(...)`                                                                            | Recomputes results table rates, std dev, and area for a scope. Only for observations whose plots in scope are all completed.                                                                                                                                |
-| `T0PlotSet`, `permanentT0PlotSet`, `tempT0PlotSet`, `getSurvivalRateTerms`, `getSurvivalRateTermsBySpecies`      | The shared plot-set definition and the terms derived from it. Change these to change what counts.                                                                                                                                                           |
-| `plotHasCompletedObservations`                                                                                   | Completed-plot and permanence check used by the plot sets.                                                                                                                                                                                                  |
-| `getSurvivalRateWeightedStandardDeviation`                                                                       | Std dev across plot results.                                                                                                                                                                                                                                |
+| `updateObservationResults`, `updatePlotObservationResults` | Sum species totals into the results tables' count and density columns for one plot's scopes. Only used when merging observations. |
+| `T0PlotSet`, `permanentT0PlotSet`, `tempT0PlotSet`, `getSurvivalRateTerms` (in `SurvivalRateTerms.kt`), `getSurvivalRateTermsBySpecies` | The shared plot-set definition and the terms derived from it. Change these to change what counts. |
+| `plotHasCompletedObservations` (in `SurvivalRateTerms.kt`) | Completed-plot and permanence check used by the plot sets. |
+| `getSurvivalRateWeightedStandardDeviation` (in `SurvivalRateTerms.kt`) | Std dev across plot results. |
 | `updateMonitoringSpecies`                                                                                        | Edit path for a plot's species counts in a completed observation. Adjusts plot species totals and flags results.                                                                                                                                            |
 
 **Recalculation**
@@ -195,7 +195,7 @@ All paths below are under `src/main/kotlin/com/terraformation/backend/`.
 | Class                                                  | Role                                                                                                                                                         |
 |--------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `tracking/db/ObservationResultsInvalidator.kt`         | Flags results rows for recalculation, following `observation_dependent_substrata` to later observations. Also listens for the t0, temp-plot, and map events. |
-| `tracking/ObservationResultsRecalculator.kt`           | Recurring job that rebuilds flagged results, one planting site per REPEATABLE READ transaction.                                                              |
+| `tracking/ObservationResultsRecalculator.kt`           | Recurring job that recalculates flagged results, one planting site per REPEATABLE READ transaction.                                                              |
 
 **Scopes, `tracking/util/`**
 
