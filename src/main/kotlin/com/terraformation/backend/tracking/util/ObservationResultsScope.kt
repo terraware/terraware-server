@@ -285,6 +285,10 @@ class ObservationResultsSubstratum(
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
+  private val plotStratumIdField =
+      OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories.stratumHistories
+          .STRATUM_ID
+
   override fun anyChildHasNullSurvivalRateCondition(
       observationIdField: Field<ObservationId?>
   ): Condition =
@@ -297,17 +301,42 @@ class ObservationResultsSubstratum(
                       substratumHistorySelect
                   )
               )
-              .and(OBSERVATION_PLOT_RESULTS.observationPlots.IS_PERMANENT.isTrue)
               .and(
-                  DSL.notExists(
-                      DSL.selectOne()
-                          .from(PLOT_T0_DENSITIES)
-                          .where(
-                              PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(
-                                  OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
-                              )
+                  DSL.or(
+                      OBSERVATION_PLOT_RESULTS.observationPlots.IS_PERMANENT.isTrue.and(
+                          DSL.notExists(
+                              DSL.selectOne()
+                                  .from(PLOT_T0_DENSITIES)
+                                  .where(
+                                      PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(
+                                          OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
+                                      )
+                                  )
+                                  .and(PLOT_T0_DENSITIES.PLOT_DENSITY.gt(BigDecimal.ZERO))
                           )
-                          .and(PLOT_T0_DENSITIES.PLOT_DENSITY.gt(BigDecimal.ZERO))
+                      ),
+                      OBSERVATION_PLOT_RESULTS.observationPlots.IS_PERMANENT.isFalse
+                          .and(
+                              OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.plantingSites
+                                  .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
+                                  .isTrue
+                          )
+                          .and(
+                              DSL.or(
+                                  // Null if the plot's stratum has been deleted, in which case its
+                                  // temp densities are gone too.
+                                  plotStratumIdField.isNull,
+                                  plotStratumIdField.notIn(
+                                      DSL.select(STRATUM_T0_TEMP_DENSITIES.STRATUM_ID)
+                                          .from(STRATUM_T0_TEMP_DENSITIES)
+                                          .where(
+                                              STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.gt(
+                                                  BigDecimal.ZERO
+                                              )
+                                          )
+                                  ),
+                              )
+                          ),
                   )
               )
       )
@@ -461,11 +490,29 @@ class ObservationResultsStratum(
   ): Condition =
       DSL.exists(
           DSL.selectOne()
-              .from(OBSERVATION_SUBSTRATUM_RESULTS)
+              .from(OBSERVATION_DEPENDENT_SUBSTRATA)
               .join(SUBSTRATUM_HISTORIES)
-              .on(SUBSTRATUM_HISTORIES.ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID))
-              .where(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
+              .on(SUBSTRATUM_HISTORIES.ID.eq(OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID))
+              .join(OBSERVATION_SUBSTRATUM_RESULTS)
+              .on(
+                  OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(
+                      OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID
+                  ),
+                  OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID.eq(
+                      OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_SUBSTRATUM_HISTORY_ID
+                  ),
+              )
+              .where(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.eq(observationIdField))
               .and(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.`in`(stratumHistorySelect))
+              .and(
+                  DSL.or(
+                      OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(
+                          observationIdField
+                      ),
+                      // Rolled-forward totals skip substrata that have since been deleted.
+                      SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.isNotNull,
+                  )
+              )
               .and(OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE.isNull)
               .and(
                   DSL.or(
@@ -473,7 +520,11 @@ class ObservationResultsStratum(
                       DSL.exists(
                           DSL.selectOne()
                               .from(OBSERVATION_PLOT_RESULTS)
-                              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationIdField))
+                              .where(
+                                  OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(
+                                      OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID
+                                  )
+                              )
                               .and(
                                   OBSERVATION_PLOT_RESULTS.monitoringPlotHistories
                                       .SUBSTRATUM_HISTORY_ID
