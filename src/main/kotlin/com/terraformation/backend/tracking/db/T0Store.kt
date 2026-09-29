@@ -118,7 +118,8 @@ class T0Store(
 
     val plotSpecies = permanentPlotSpecies(plantingSiteId, requireObservations = false)
     val plotSpeciesPlotId = plotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)!!
-    val plotSpeciesSpeciesId = plotSpecies.field("species_id", SpeciesId::class.java)!!
+    val plotSpeciesSpeciesId =
+        plotSpecies.field("species_id", PLOT_T0_DENSITIES.SPECIES_ID.dataType)!!
 
     val t0set =
         DSL.notExists(
@@ -889,7 +890,8 @@ class T0Store(
     val permanentPlotSpecies = permanentPlotSpecies(plantingSiteId)
 
     val permPlotIdField = permanentPlotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)
-    val permSpeciesIdField = permanentPlotSpecies.field("species_id", SpeciesId::class.java)!!
+    val permSpeciesIdField =
+        permanentPlotSpecies.field("species_id", PLOT_T0_DENSITIES.SPECIES_ID.dataType)!!
 
     return !with(MONITORING_PLOTS) {
       dslContext.fetchExists(
@@ -950,7 +952,8 @@ class T0Store(
         }
 
     val tempPlotIdField = tempPlotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)
-    val tempSpeciesIdField = tempPlotSpecies.field("species_id", SpeciesId::class.java)!!
+    val tempSpeciesIdField =
+        tempPlotSpecies.field("species_id", PLOT_T0_DENSITIES.SPECIES_ID.dataType)!!
 
     return !with(MONITORING_PLOTS) {
       dslContext.fetchExists(
