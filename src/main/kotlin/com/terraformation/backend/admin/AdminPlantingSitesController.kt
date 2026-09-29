@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
+import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
@@ -81,6 +82,7 @@ class AdminPlantingSitesController(
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
     private val observationResultsInvalidator: ObservationResultsInvalidator,
+    private val observationResultsRecalculator: ObservationResultsRecalculator,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val organizationsDao: OrganizationsDao,
@@ -620,28 +622,57 @@ class AdminPlantingSitesController(
     try {
       when {
         observationId != null -> {
+          val siteId =
+              plantingSiteId ?: observationStore.fetchObservationById(observationId).plantingSiteId
           observationResultsInvalidator.invalidateObservation(observationId)
-          redirectAttributes.successMessage =
-              "Queued survival rate recalculation for observation $observationId."
+          reportSiteRecalculation(
+              observationResultsRecalculator.recalculateSite(siteId),
+              "observation $observationId",
+              redirectAttributes,
+          )
         }
         plantingSiteId != null -> {
           observationResultsInvalidator.invalidateSite(plantingSiteId)
-          redirectAttributes.successMessage =
-              "Queued survival rate recalculation for planting site $plantingSiteId."
+          reportSiteRecalculation(
+              observationResultsRecalculator.recalculateSite(plantingSiteId),
+              "planting site $plantingSiteId",
+              redirectAttributes,
+          )
         }
         else -> {
           observationResultsInvalidator.invalidateAllSites()
-          redirectAttributes.successMessage =
-              "Queued survival rate recalculation for all planting sites."
+          val notRecalculated = observationResultsRecalculator.recalculateAllSites()
+          if (notRecalculated.isEmpty()) {
+            redirectAttributes.successMessage =
+                "Recalculated survival rates for all planting sites."
+          } else {
+            redirectAttributes.failureMessage =
+                "Could not recalculate survival rates for some planting sites. They will be " +
+                    "retried by the scheduled recalculation job."
+            redirectAttributes.failureDetails = notRecalculated.map { "$it" }
+          }
         }
       }
     } catch (e: Exception) {
       log.warn("Survival rate recalculation failed", e)
-      redirectAttributes.failureMessage =
-          "Failed to queue survival rate recalculation: ${e.message}"
+      redirectAttributes.failureMessage = "Failed to recalculate survival rates: ${e.message}"
     }
 
     return redirectToAdminHome()
+  }
+
+  private fun reportSiteRecalculation(
+      recalculated: Boolean,
+      target: String,
+      redirectAttributes: RedirectAttributes,
+  ) {
+    if (recalculated) {
+      redirectAttributes.successMessage = "Recalculated survival rates for $target."
+    } else {
+      redirectAttributes.failureMessage =
+          "Could not recalculate survival rates for $target now; another recalculation may be " +
+              "running or it failed. It will be retried by the scheduled recalculation job."
+    }
   }
 
   @PostMapping("/backfillObservationResults")

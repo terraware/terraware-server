@@ -174,7 +174,11 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
               SQLException("could not serialize access", "40001"),
           )
 
-      recalculatorWithMocks.recalculateAllSites()
+      assertEquals(
+          listOf(failingSiteId),
+          recalculatorWithMocks.recalculateAllSites(),
+          "Sites that were not recalculated",
+      )
 
       verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(failingSiteId) }
       verify { mockInvalidator.clearRecalculationFlags(succeedingSiteId) }
@@ -185,7 +189,11 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
       every { mockStore.recalculateFlaggedResults(failingSiteId) } throws
           IllegalStateException("Oops")
 
-      recalculatorWithMocks.recalculateAllSites()
+      assertEquals(
+          listOf(failingSiteId),
+          recalculatorWithMocks.recalculateAllSites(),
+          "Sites that were not recalculated",
+      )
 
       verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(failingSiteId) }
       verify { mockInvalidator.clearRecalculationFlags(succeedingSiteId) }

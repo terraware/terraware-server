@@ -54,10 +54,16 @@ class ObservationResultsRecalculator(
     recalculateAllSites()
   }
 
-  /** Recalculates the flagged results of every planting site that has any. */
-  fun recalculateAllSites() {
-    systemUser.run {
-      observationResultsInvalidator.fetchPlantingSiteIdsNeedingRecalculation().forEach {
+  /**
+   * Recalculates the flagged results of every planting site that has any.
+   *
+   * @return The planting sites whose results were not recalculated, either because another
+   *   recalculation was already running or because the recalculation failed. Their results remain
+   *   flagged.
+   */
+  fun recalculateAllSites(): List<PlantingSiteId> {
+    return systemUser.run {
+      observationResultsInvalidator.fetchPlantingSiteIdsNeedingRecalculation().filterNot {
         recalculateSite(it)
       }
     }
