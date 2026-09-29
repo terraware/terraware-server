@@ -65,7 +65,7 @@ class ThumbnailStore(
    * thumbnail eats a lot of memory, and we can run the server out of heap space if we try to
    * generate too many of them at once.
    */
-  private val semaphore = Semaphore(2)
+  private val semaphore = Semaphore(4)
 
   /**
    * How long to wait before giving up trying to generate a thumbnail and returning an error to the
