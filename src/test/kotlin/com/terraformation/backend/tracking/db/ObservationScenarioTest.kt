@@ -81,10 +81,11 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         ParentStore(dslContext),
     )
   }
+  protected val observationResultsInvalidator by lazy { ObservationResultsInvalidator(dslContext) }
   protected val observationResultsRecalculator by lazy {
     ObservationResultsRecalculator(
             LockService(dslContext),
-            ObservationResultsInvalidator(dslContext),
+            observationResultsInvalidator,
             observationStore,
             systemUser,
             transactionManager,
@@ -750,6 +751,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                 plants,
             )
           }
+
+      observationResultsRecalculator.recalculateAllSites()
     }
   }
 
@@ -957,6 +960,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               plants,
           )
         }
+
+    observationResultsRecalculator.recalculateAllSites()
 
     return observationId
   }

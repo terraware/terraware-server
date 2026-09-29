@@ -101,6 +101,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
     )
 
     store.populateObservationResults(observationId)
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -268,6 +269,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
     )
 
     store.populateObservationResults(observation2)
+    recalculator.recalculateAllSites()
 
     // The backfill records B's dependency on observation 1 and re-aggregates the stratum totals.
     val (totalLive, permanentLive) =

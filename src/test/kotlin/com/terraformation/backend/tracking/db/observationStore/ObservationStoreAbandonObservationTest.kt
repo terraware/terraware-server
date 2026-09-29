@@ -22,6 +22,7 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
     val observationId = insertObservation()
     assertNotNull(observationsDao.fetchOneById(observationId), "Before abandon")
     store.abandonObservation(observationId)
+    recalculator.recalculateAllSites()
     assertNull(observationsDao.fetchOneById(observationId), "After abandon")
   }
 
@@ -81,6 +82,7 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
     clock.instant = Instant.ofEpochSecond(500)
 
     store.abandonObservation(observationId)
+    recalculator.recalculateAllSites()
 
     assertSetEquals(
         setOf(

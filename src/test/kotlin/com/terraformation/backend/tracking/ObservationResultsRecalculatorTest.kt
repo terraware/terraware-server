@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.LockType
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
@@ -11,7 +12,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -20,6 +20,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
 import java.sql.SQLException
+import java.time.Instant
 import javax.sql.DataSource
 import org.jooq.Record
 import org.jooq.Table
@@ -63,49 +64,36 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
   @Nested
   inner class Parity {
     @Test
-    fun `recalculates the same results as plot completion for a single observation`() {
+    fun `recalculates scrambled results for a single observation`() {
       importFromCsvFiles("/tracking/observation/TwoObservations", 1, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `recalculates the same results as plot completion for multiple observations`() {
+    fun `recalculates scrambled results for multiple observations`() {
       importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `recalculates the same results as plot completion when substrata are rolled forward`() {
+    fun `recalculates scrambled results when substrata are rolled forward`() {
       importFromCsvFiles("/tracking/observation/DisjointSubstrata", 3, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `recalculates the same results as plot completion when strata are rolled forward`() {
+    fun `recalculates scrambled results when strata are rolled forward`() {
       importFromCsvFiles("/tracking/observation/DisjointStrata", 2, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `recalculates the same results as plot completion when permanent plots change`() {
+    fun `recalculates scrambled results when permanent plots change`() {
       importFromCsvFiles("/tracking/observation/PermanentPlotChanges", 3, 30)
-
-      assertRecalculationMatchesCurrentResults()
-    }
-
-    @Test
-    fun `recalculates the same results as a site recalculation after t0 densities change`() {
-      importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
-
-      dslContext
-          .update(PLOT_T0_DENSITIES)
-          .set(PLOT_T0_DENSITIES.PLOT_DENSITY, PLOT_T0_DENSITIES.PLOT_DENSITY.times(2))
-          .execute()
-      observationStore.recalculateSurvivalRates(plantingSiteId)
 
       assertRecalculationMatchesCurrentResults()
     }
@@ -150,8 +138,10 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
 
     @Test
     fun `skips a site whose results are being recalculated elsewhere`() {
-      importFromCsvFiles("/tracking/observation/TwoObservations", 1, 30)
-      invalidator.invalidateSite(plantingSiteId)
+      // Set up flagged results directly; running the recalculator here would take the site's lock
+      // in this test's transaction and the other session below would wait for it forever.
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
 
       dataSource.connection.use { otherSession ->
         otherSession.prepareStatement("SELECT pg_advisory_lock(?, ?)").use { statement ->

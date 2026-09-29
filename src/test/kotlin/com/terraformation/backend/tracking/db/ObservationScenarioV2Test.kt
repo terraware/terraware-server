@@ -582,6 +582,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
               )
           ),
       )
+      observationResultsRecalculator.recalculateAllSites()
 
       val results = resultsStoreV2.fetchOneById(observationId)
       val stratumResults = results.strata[0]
@@ -646,6 +647,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
               )
           ),
       )
+      observationResultsRecalculator.recalculateAllSites()
 
       // Plot 2: 3 live plants → density = 3/0.09 ≈ 33
       observationStore.completePlot(
@@ -663,6 +665,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
             )
           },
       )
+      observationResultsRecalculator.recalculateAllSites()
 
       val results = resultsStoreV2.fetchOneById(observationId)
       val substratumResults = results.strata[0].substrata[0]
@@ -1064,8 +1067,10 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
               )
           ),
       )
+      observationResultsRecalculator.recalculateAllSites()
 
       observationStore.abandonObservation(inserted.observationId)
+      observationResultsRecalculator.recalculateAllSites()
 
       val results = resultsStoreV2.fetchOneById(inserted.observationId)
       val stratumResults = results.strata[0]
@@ -1186,7 +1191,9 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
           Instant.ofEpochSecond(10),
           emptyList(),
       )
+      observationResultsRecalculator.recalculateAllSites()
       observationStore.abandonObservation(abandonedObservationId)
+      observationResultsRecalculator.recalculateAllSites()
 
       // Newer still, but none of these are eligible.
       clock.instant = Instant.ofEpochSecond(20)

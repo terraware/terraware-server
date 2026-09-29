@@ -53,6 +53,7 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
     // declared. Otherwise the observation would be marked complete after the first plot was
     // finished (since it will look like the last incomplete one).
     children.forEach { it.completePlot() }
+    scenario.observationResultsRecalculator.recalculateAllSites()
   }
 
   inner class Plot(

@@ -108,6 +108,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         observedTime,
         recordedPlants,
     )
+    recalculator.recalculateAllSites()
 
     val expectedConditions =
         setOf(
@@ -302,6 +303,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     val stratum1Plot1Species1Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -684,6 +686,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     // no survival rates here because it's not a permanent plot
     val stratum1Plot2Species1Totals =
@@ -795,6 +798,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     val stratum2Plot1Species1Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -961,6 +965,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         observedTime,
         emptyList(),
     )
+    recalculator.recalculateAllSites()
 
     val expectedConditions =
         setOf(
@@ -1018,6 +1023,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     clock.instant = Instant.ofEpochSecond(123)
     store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+    recalculator.recalculateAllSites()
 
     val observation = store.fetchObservationById(observationId)
 
@@ -1061,6 +1067,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         )
 
     store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, plants)
+    recalculator.recalculateAllSites()
 
     // areaHa = 30 * 30 / 10000.0 = 0.09; permanentLive = 2; plantDensity = (2 / 0.09).toInt() = 22
     assertTableEquals(
@@ -1157,6 +1164,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
     // plot1: permanentLive=1, density=(1/0.09).toInt()=11; STDDEV_SAMP of single value is null
     assertTableEquals(
         ObservationPlotResultsRecord(
@@ -1235,6 +1243,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         },
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -1375,6 +1384,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservationPlotResultsRecord(
@@ -1460,6 +1470,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         },
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -1559,6 +1570,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         },
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -1733,6 +1745,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservationPlotResultsRecord(
@@ -1818,6 +1831,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         },
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -1917,6 +1931,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         },
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -2057,6 +2072,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
     store.completePlot(
         observationId,
         plot2Id,
@@ -2072,6 +2088,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         },
     )
+    recalculator.recalculateAllSites()
 
     // No T0 denominator means survivalRate=null on every plot result row.
     // The SURVIVAL_RATE.isNotNull filter removes all rows, so all SUM aggregates
@@ -2177,6 +2194,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
     // plot2: 2 live, no T0 → survivalRate=null, plantDensity=22
     store.completePlot(
         observationId,
@@ -2193,6 +2211,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         },
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -2330,6 +2349,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
     // plot2: 0 plants → survivalRate=0, plantDensity=0 (weight=0, non-existent in std dev)
     store.completePlot(
         observationId,
@@ -2339,6 +2359,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         Instant.EPOCH,
         emptyList(),
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -2471,6 +2492,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         Instant.EPOCH,
         emptyList(),
     )
+    recalculator.recalculateAllSites()
     store.completePlot(
         observationId,
         plot2Id,
@@ -2479,6 +2501,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         Instant.EPOCH,
         emptyList(),
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -2599,6 +2622,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservationPlotResultsRecord(
@@ -2634,6 +2658,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertThrows<PlotAlreadyCompletedException> {
       store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+      recalculator.recalculateAllSites()
     }
   }
 
@@ -2645,6 +2670,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertThrows<AccessDeniedException> {
       store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+      recalculator.recalculateAllSites()
     }
   }
 
@@ -2652,6 +2678,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
   fun `throws exception if monitoring plot not assigned to observation`() {
     assertThrows<PlotNotInObservationException> {
       store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
+      recalculator.recalculateAllSites()
     }
   }
 }
