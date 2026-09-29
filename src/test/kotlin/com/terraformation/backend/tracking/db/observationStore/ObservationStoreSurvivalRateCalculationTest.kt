@@ -155,7 +155,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
-  fun `survival rate is 0 if plot density is 0`() {
+  fun `survival rate is null above plot level if plot density is 0`() {
     val speciesId = insertSpecies()
     insertPlotT0Density(plotDensity = BigDecimal.ZERO)
     val plotId2 = insertMonitoringPlot(permanentIndex = 2)
@@ -195,11 +195,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(
                 plotId to mapOf(speciesId to BigDecimal.ZERO),
             ),
-            mapOf(substratumId to mapOf(speciesId to BigDecimal.ZERO)),
-            mapOf(stratumId to mapOf(speciesId to BigDecimal.ZERO)),
-            mapOf(plantingSiteId to mapOf(speciesId to BigDecimal.ZERO)),
+            mapOf(substratumId to mapOf(speciesId to null)),
+            mapOf(stratumId to mapOf(speciesId to null)),
+            mapOf(plantingSiteId to mapOf(speciesId to null)),
         ),
-        "All survival rates should be 0",
+        "Plot survival rates should be 0 and others should be null",
     )
 
     // ensure that updating rates also works correctly with 0 for density
@@ -218,11 +218,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                 plotId to mapOf(speciesId to BigDecimal.ZERO),
                 plotId2 to mapOf(speciesId to BigDecimal.ZERO),
             ),
-            mapOf(substratumId to mapOf(speciesId to BigDecimal.ZERO)),
-            mapOf(stratumId to mapOf(speciesId to BigDecimal.ZERO)),
-            mapOf(plantingSiteId to mapOf(speciesId to BigDecimal.ZERO)),
+            mapOf(substratumId to mapOf(speciesId to null)),
+            mapOf(stratumId to mapOf(speciesId to null)),
+            mapOf(plantingSiteId to mapOf(speciesId to null)),
         ),
-        "Updated rates should be 0",
+        "Updated plot rates should be 0 and others should be null",
     )
   }
 

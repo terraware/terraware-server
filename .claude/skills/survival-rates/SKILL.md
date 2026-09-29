@@ -97,11 +97,11 @@ These are product decisions. Do not "fix" them without checking with the user.
    columns count every completed plot regardless of t0 data and exist for the API and search; using
    either as a survival rate numerator inflates the rate.
 
-3. **Zero denominator handling differs by path, and this is known.** When every t0 density in the
-   set is zero, the plot-completion path and the stratum/site roll-forward path store 0%, while the
-   species totals recalculation path and all results table paths store null. The read side in
-   `ObservationMultisets` shows 0 for a null per-species rate whenever a t0 density exists, so the
-   API hides most of the difference.
+3. **A zero denominator stores null.** When every t0 density in the set is zero, every path
+   stores a null rate, in both the species totals and results tables. The read side in
+   `ObservationMultisets` shows 0 for a null per-species plot rate whenever a t0 density exists;
+   per-species rates at substratum, stratum, and site level are returned as stored, so they show
+   as blank and clients decide how to present them.
 
 4. **The site aggregate rate is not numerator over denominator.** In the results tables the site
    rate is the area-weighted average of its strata's rates, weighting each stratum by its
@@ -126,9 +126,7 @@ and using the wrong one silently produces wrong numbers.
 The two helpers are meant to agree: for a substratum the observation actually covers, both resolve
 to that observation, and once `recordSubstratumDependencies` has run every later recalculation uses
 the latest-observation form. The split exists only because of write ordering during completion.
-There is no known case where the two attributions store different values for the same row; the
-null-versus-zero difference described in rule 3 above is a separate matter of how a zero
-denominator is expressed, not of which observation is attributed.
+There is no known case where the two attributions store different values for the same row.
 
 Both helpers feed `permanentT0PlotSet` and `tempT0PlotSet` in `ObservationStore`, which define the
 plot set once. `getSurvivalRateTerms` derives the numerator and both denominator variants from

@@ -3774,17 +3774,13 @@ class ObservationStore(
 
   /**
    * Returns the survival-rate column expression using a precomputed denominator. Returns SQL null
-   * if [denominator] is null.
+   * if [denominator] is null or zero.
    */
   private fun survivalRateValue(numerator: Field<Int>, denominator: BigDecimal?): Field<Int> =
-      if (denominator == null) {
+      if (denominator == null || denominator.signum() == 0) {
         DSL.castNull(SQLDataType.INTEGER)
       } else {
-        DSL.if_(
-            DSL.value(denominator).eq(BigDecimal.ZERO),
-            DSL.zero(),
-            numerator.mul(100).div(DSL.value(denominator)),
-        )
+        numerator.mul(100).div(DSL.value(denominator))
       }
 
   private fun plotHasCompletedObservations(
@@ -3900,12 +3896,9 @@ class ObservationStore(
     )
   }
 
+  /** Returns the survival-rate expression, or null if [denominator] is null or zero. */
   private fun getSurvivalRate(numerator: Field<Int>, denominator: Field<BigDecimal?>) =
-      DSL.if_(
-          denominator.eq(BigDecimal.ZERO),
-          DSL.zero(),
-          numerator.mul(100).div(denominator),
-      )
+      numerator.mul(100).div(DSL.nullif(denominator, BigDecimal.ZERO))
 
   private fun validateAdHocPlotInPlantingSite(
       plantingSiteId: PlantingSiteId,
