@@ -17,6 +17,12 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
+import io.mockk.every
+import io.mockk.mockk
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -404,6 +410,110 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
                   observationId2 to stratumHistoryId1,
               ),
           sites = setOf(observationId1, observationId2),
+      )
+    }
+  }
+
+  @Nested
+  inner class EventListeners {
+    @Test
+    fun `t0 plot data assignment flags the plot in every observation`() {
+      val observationId1 = insertCompletedObservation(1, plotIdA, plotIdB)
+      insertAllResults(observationId1, plotIdA, plotIdB)
+      val observationId2 = insertCompletedObservation(2, plotIdA)
+      insertAllResults(observationId2, plotIdA)
+
+      invalidator.on(T0PlotDataAssignedEvent(plotIdA))
+
+      assertFlagged(
+          plots = setOf(observationId1 to plotIdA, observationId2 to plotIdA),
+          substrata =
+              setOf(observationId1 to substratumHistoryIdA, observationId2 to substratumHistoryIdA),
+          strata = setOf(observationId1 to stratumHistoryId1, observationId2 to stratumHistoryId1),
+          sites = setOf(observationId1, observationId2),
+      )
+    }
+
+    @Test
+    fun `t0 stratum data assignment flags plots in the stratum`() {
+      val observationId = insertCompletedObservation(1, plotIdA, plotIdC)
+      insertAllResults(observationId, plotIdA, plotIdC)
+
+      invalidator.on(T0StratumDataAssignedEvent(stratumId2))
+
+      assertFlagged(
+          plots = setOf(observationId to plotIdC),
+          substrata = setOf(observationId to substratumHistoryIdC),
+          strata = setOf(observationId to stratumHistoryId2),
+          sites = setOf(observationId),
+      )
+    }
+
+    @Test
+    fun `temp plots setting change flags the whole site`() {
+      val observationId = insertCompletedObservation(1, plotIdA, plotIdC)
+      insertAllResults(observationId, plotIdA, plotIdC)
+
+      invalidator.on(
+          SurvivalRateIncludesTempPlotsChangedEvent(
+              inserted.organizationId,
+              inserted.plantingSiteId,
+              previousValue = false,
+              newValue = true,
+          )
+      )
+
+      assertWholeObservationFlagged(observationId)
+    }
+
+    @Test
+    fun `map edit flags the whole site`() {
+      val observationId = insertCompletedObservation(1, plotIdA, plotIdC)
+      insertAllResults(observationId, plotIdA, plotIdC)
+      val plantingSiteId = inserted.plantingSiteId
+
+      invalidator.on(
+          mockk<PlantingSiteMapEditedEvent> {
+            every { edited } returns mockk { every { id } returns plantingSiteId }
+          }
+      )
+
+      assertWholeObservationFlagged(observationId)
+    }
+
+    private fun assertWholeObservationFlagged(observationId: ObservationId) {
+      assertFlagged(
+          plots = setOf(observationId to plotIdA, observationId to plotIdC),
+          substrata =
+              setOf(observationId to substratumHistoryIdA, observationId to substratumHistoryIdC),
+          strata = setOf(observationId to stratumHistoryId1, observationId to stratumHistoryId2),
+          sites = setOf(observationId),
+      )
+    }
+  }
+
+  @Nested
+  inner class PlantingSiteNeedsRecalculation {
+    @Test
+    fun `returns true only for sites with flagged results`() {
+      val observationId = insertCompletedObservation(1, plotIdA)
+      insertAllResults(observationId, plotIdA)
+      val plantingSiteId = inserted.plantingSiteId
+      val otherPlantingSiteId = insertPlantingSite()
+
+      assertEquals(
+          false,
+          invalidator.plantingSiteNeedsRecalculation(plantingSiteId),
+          "Before invalidation",
+      )
+
+      invalidator.invalidatePlot(plotIdA)
+
+      assertEquals(
+          true to false,
+          invalidator.plantingSiteNeedsRecalculation(plantingSiteId) to
+              invalidator.plantingSiteNeedsRecalculation(otherPlantingSiteId),
+          "After invalidation (flagged site, other site)",
       )
     }
   }

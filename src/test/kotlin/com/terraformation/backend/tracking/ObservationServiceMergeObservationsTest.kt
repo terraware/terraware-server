@@ -29,6 +29,7 @@ import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
@@ -64,13 +65,12 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         dslContext,
         entityLocker,
         eventPublisher,
-        mockk(),
+        ObservationResultsInvalidator(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
         parentStore,
-        systemUser,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
@@ -102,6 +102,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         monitoringPlotsDao,
         mockk(),
         observationMediaFilesDao,
+        ObservationResultsInvalidator(dslContext),
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,

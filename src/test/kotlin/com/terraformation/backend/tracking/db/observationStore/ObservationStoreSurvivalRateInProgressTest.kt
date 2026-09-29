@@ -1,7 +1,9 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -22,20 +24,28 @@ class ObservationStoreSurvivalRateInProgressTest : BaseObservationStoreTest() {
     }
 
     @Test
-    fun `returns false when no recalculation is in progress`() {
+    fun `returns false when no results are flagged for recalculation`() {
+      insertStratum()
+      insertSubstratum()
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSubstratumResult()
+
       assertFalse(
           store.fetchSurvivalRateCalculationInProgress(plantingSiteId),
-          "No recalculation marker row means no calculation in progress",
+          "No flagged results means no calculation in progress",
       )
     }
 
     @Test
-    fun `returns true when a recalculation marker exists`() {
-      insertPlantingSiteSurvivalRateCalculation()
+    fun `returns true when any results are flagged for recalculation`() {
+      insertStratum()
+      insertSubstratum()
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSubstratumResult(ObservationSubstratumResultsRow(needsRecalculation = true))
 
       assertTrue(
           store.fetchSurvivalRateCalculationInProgress(plantingSiteId),
-          "Recalculation marker row means a calculation is in progress",
+          "Flagged results mean a calculation is in progress",
       )
     }
   }

@@ -17,10 +17,15 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
+import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import jakarta.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.event.EventListener
 
 /**
  * Marks observation results rows as needing recalculation. Callers should invoke these methods in
@@ -84,6 +89,41 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
                 .from(OBSERVATIONS)
                 .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
         )
+    )
+  }
+
+  /** Flags all the results of every planting site. */
+  fun invalidateAllSites() {
+    invalidate(DSL.trueCondition())
+  }
+
+  @EventListener
+  fun on(event: T0PlotDataAssignedEvent) {
+    invalidatePlot(event.monitoringPlotId)
+  }
+
+  @EventListener
+  fun on(event: T0StratumDataAssignedEvent) {
+    invalidateStratum(event.stratumId)
+  }
+
+  @EventListener
+  fun on(event: SurvivalRateIncludesTempPlotsChangedEvent) {
+    invalidateSite(event.plantingSiteId)
+  }
+
+  @EventListener
+  fun on(event: PlantingSiteMapEditedEvent) {
+    invalidateSite(event.edited.id)
+  }
+
+  /** Returns true if any of a planting site's results rows are flagged for recalculation. */
+  fun plantingSiteNeedsRecalculation(plantingSiteId: PlantingSiteId): Boolean {
+    return dslContext.fetchExists(
+        DSL.selectOne()
+            .from(OBSERVATIONS)
+            .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(observationNeedsRecalculationCondition)
     )
   }
 
