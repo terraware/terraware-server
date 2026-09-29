@@ -76,25 +76,23 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
   /**
    * Returns the SQL expression that produces the survival rate (as an integer percentage) for this
    * scope on a row of [observedTotalsTable], given the observation id field. The numerator and
-   * denominator are both aggregated from the plots in this scope that have t0 data. The default
-   * implementation divides them; the site scope overrides this to return the area-weighted strata
+   * denominator are both aggregated from the plots in this scope that have t0 data; the denominator
+   * is null if none of them do. The default implementation divides them, returning 0 if the t0
+   * densities add up to zero; the site scope overrides this to return the area-weighted strata
    * average.
    */
   fun survivalRateValue(
       observationIdField: Field<ObservationId?>,
       survivalRateNumerator: Field<Int>,
-      survivalRateDenominator: Field<BigDecimal>,
+      survivalRateDenominator: Field<BigDecimal?>,
   ): Field<Int?> =
       DSL.case_()
           .`when`(
               anyChildHasNullSurvivalRateCondition(observationIdField),
               DSL.castNull(SQLDataType.INTEGER),
           )
-          .else_(
-              survivalRateNumerator
-                  .mul(BigDecimal.valueOf(100))
-                  .div(DSL.nullif(survivalRateDenominator, BigDecimal.ZERO))
-          )
+          .`when`(survivalRateDenominator.eq(BigDecimal.ZERO), DSL.zero())
+          .else_(survivalRateNumerator.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator))
 
   /**
    * Returns the SQL expression for this scope's "survival rate area": the total hectares used as
@@ -312,7 +310,6 @@ class ObservationResultsSubstratum(
                                           OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
                                       )
                                   )
-                                  .and(PLOT_T0_DENSITIES.PLOT_DENSITY.gt(BigDecimal.ZERO))
                           )
                       ),
                       OBSERVATION_PLOT_RESULTS.observationPlots.IS_PERMANENT.isFalse
@@ -329,11 +326,6 @@ class ObservationResultsSubstratum(
                                   plotStratumIdField.notIn(
                                       DSL.select(STRATUM_T0_TEMP_DENSITIES.STRATUM_ID)
                                           .from(STRATUM_T0_TEMP_DENSITIES)
-                                          .where(
-                                              STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.gt(
-                                                  BigDecimal.ZERO
-                                              )
-                                          )
                                   ),
                               )
                           ),
@@ -709,7 +701,7 @@ class ObservationResultsSite(
   override fun survivalRateValue(
       observationIdField: Field<ObservationId?>,
       survivalRateNumerator: Field<Int>,
-      survivalRateDenominator: Field<BigDecimal>,
+      survivalRateDenominator: Field<BigDecimal?>,
   ): Field<Int?> {
     val weightedAverage =
         DSL.field(

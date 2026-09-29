@@ -2076,12 +2076,7 @@ class ObservationStore(
 
     dslContext
         .update(table)
-        .set(
-            survivalRateField,
-            terms.numerator
-                .mul(BigDecimal.valueOf(100))
-                .div(DSL.nullif(terms.denominatorOrZero, BigDecimal.ZERO)),
-        )
+        .set(survivalRateField, getSurvivalRate(terms.numerator, terms.denominatorOrNull))
         .where(updateScope.observedTotalsCondition)
         .execute()
   }
@@ -2150,7 +2145,7 @@ class ObservationStore(
         updateScope.survivalRateValue(
             observationIdField,
             terms.numerator,
-            terms.denominatorOrZero,
+            terms.denominatorOrNull,
         )
 
     val recalculationCondition =
@@ -2253,7 +2248,7 @@ class ObservationStore(
     val survivalRateAreaField = table.field("survival_rate_area", BigDecimal::class.java)
 
     val survivalRateValue =
-        updateScope.survivalRateValue(observationIdValue, terms.numerator, terms.denominatorOrZero)
+        updateScope.survivalRateValue(observationIdValue, terms.numerator, terms.denominatorOrNull)
 
     val allPlotsCompleted =
         dslContext
@@ -3834,12 +3829,6 @@ class ObservationStore(
             permanentPlots.denominator,
             tempPlots.denominator,
         )
-
-    /** Total t0 density, or zero if no plot has t0 data. */
-    val denominatorOrZero: Field<BigDecimal> =
-        DSL.coalesce(permanentPlots.denominator, BigDecimal.ZERO)
-            .plus(DSL.coalesce(tempPlots.denominator, BigDecimal.ZERO))
-            .coerce(SQLDataType.NUMERIC)
   }
 
   /**
@@ -3900,6 +3889,7 @@ class ObservationStore(
     )
   }
 
+  /** Returns the survival-rate expression: null if [denominator] is null, 0 if it is zero. */
   private fun getSurvivalRate(numerator: Field<Int>, denominator: Field<BigDecimal?>) =
       DSL.if_(
           denominator.eq(BigDecimal.ZERO),
