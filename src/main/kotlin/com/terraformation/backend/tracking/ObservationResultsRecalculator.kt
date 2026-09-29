@@ -50,7 +50,7 @@ class ObservationResultsRecalculator(
       }
 
   @Job(name = RECALCULATE_JOB_NAME, retries = 0)
-  @Recurring(id = RECALCULATE_JOB_NAME, cron = "* * * * *")
+  @Recurring(id = RECALCULATE_JOB_NAME, cron = "*/15 * * * *")
   fun recalculateFlaggedResults() {
     recalculateAllSites()
   }
