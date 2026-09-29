@@ -89,6 +89,8 @@ class ObservationEditedStep(
               totalLive = live ?: model.totalLive,
           )
         }
+
+        scenario.observationResultsRecalculator.recalculateAllSites()
       }
     }
   }

@@ -2183,6 +2183,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     ) { model ->
       model.copy(totalLive = 6)
     }
+    observationResultsRecalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservedStratumSpeciesTotalsRecord(
@@ -2304,6 +2305,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     ) { model ->
       model.copy(totalLive = 20)
     }
+    observationResultsRecalculator.recalculateAllSites()
 
     assertEquals(
         90,
