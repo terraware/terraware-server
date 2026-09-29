@@ -285,6 +285,10 @@ class ObservationResultsSubstratum(
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
+  private val plotStratumIdField =
+      OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories.stratumHistories
+          .STRATUM_ID
+
   override fun anyChildHasNullSurvivalRateCondition(
       observationIdField: Field<ObservationId?>
   ): Condition =
@@ -318,10 +322,11 @@ class ObservationResultsSubstratum(
                                   .isTrue
                           )
                           .and(
-                              OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
-                                  .stratumHistories
-                                  .STRATUM_ID
-                                  .notIn(
+                              DSL.or(
+                                  // Null if the plot's stratum has been deleted, in which case its
+                                  // temp densities are gone too.
+                                  plotStratumIdField.isNull,
+                                  plotStratumIdField.notIn(
                                       DSL.select(STRATUM_T0_TEMP_DENSITIES.STRATUM_ID)
                                           .from(STRATUM_T0_TEMP_DENSITIES)
                                           .where(
@@ -329,7 +334,8 @@ class ObservationResultsSubstratum(
                                                   BigDecimal.ZERO
                                               )
                                           )
-                                  )
+                                  ),
+                              )
                           ),
                   )
               )

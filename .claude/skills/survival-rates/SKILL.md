@@ -85,11 +85,12 @@ These are product decisions. Do not "fix" them without checking with the user.
    latest result rows at or before the observation (found through
    `observation_dependent_substrata`, the same rows its totals roll forward from) has a null rate
    and either the site includes temp plots or that substratum result had permanent plots. So a
-   null substratum keeps its stratum null in later observations that skip it, until it is
-   observed again with a rate. A rolled-forward substratum that has since been deleted from the
-   site is ignored, matching the rolled-forward totals. The site rate is null if any stratum's
-   latest rate is null. Per-species rates are never nulled by this rule; they simply exclude the
-   plot. Implemented by `anyChildHasNullSurvivalRateCondition` in `ObservationResultsScope.kt`.
+   null substratum survival rate propagates upwards to the stratum's survival rate in later
+   observations that skip the substratum, until it is observed again with a rate. A rolled-
+   forward substratum that has since been deleted from the site is ignored, matching the
+   rolled-forward totals. The site rate is null if any stratum's latest rate is null. Per-
+   species rates are never nulled by this rule; they simply exclude the plot. Implemented
+   by `anyChildHasNullSurvivalRateCondition` in `ObservationResultsScope.kt`.
 
 2. **Excluding plots without t0 is intentional.** The numerator is derived from the same plot set
    as the denominator, never from the stored `total_live` or `permanent_live` columns. Those
