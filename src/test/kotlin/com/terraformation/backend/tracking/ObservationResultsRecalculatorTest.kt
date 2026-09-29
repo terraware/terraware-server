@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.LockType
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
@@ -20,6 +21,7 @@ import io.mockk.verify
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.SQLException
+import java.time.Instant
 import javax.sql.DataSource
 import org.jooq.SQLDialect
 import org.jooq.exception.DataAccessException
@@ -113,8 +115,10 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
 
     @Test
     fun `skips a site whose results are being recalculated elsewhere`() {
-      importFromCsvFiles("/tracking/observation/TwoObservations", 1, 30)
-      invalidator.invalidateSite(plantingSiteId)
+      // Set up flagged results directly; running the recalculator here would take the site's lock
+      // in this test's transaction and the other session below would wait for it forever.
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
 
       dataSource.connection.use { otherSession ->
         lockInSession(otherSession, LockType.OBSERVATION_RESULTS_RECALCULATION)
