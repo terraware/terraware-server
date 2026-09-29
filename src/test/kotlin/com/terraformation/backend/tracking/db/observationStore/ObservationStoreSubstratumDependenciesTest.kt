@@ -48,6 +48,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         Instant.ofEpochSecond(1),
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservationDependentSubstrataRecord(
@@ -98,6 +99,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         clock.instant,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
     observationStore.completePlot(
         observationId1,
         plotIdB,
@@ -106,6 +108,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         clock.instant,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     clock.instant = Instant.ofEpochSecond(2)
     val observationId2 = insertObservation()
@@ -127,6 +130,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         clock.instant,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -201,6 +205,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         clock.instant,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
     observationStore.completePlot(
         observationId1,
         plotIdB,
@@ -209,6 +214,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         clock.instant,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     // observationId2 requests B but completes no plot in it (only A is observed), so B was
     // requested yet never actually observed in this observation.
@@ -233,6 +239,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         clock.instant,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -285,6 +292,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         Instant.ofEpochSecond(1),
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservationDependentSubstrataRecord(
@@ -326,6 +334,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
         Instant.ofEpochSecond(1),
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservationDependentSubstrataRecord(

@@ -133,6 +133,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     clock.instant = Instant.ofEpochSecond(1)
 
@@ -167,6 +168,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     val monitoringPlotHistoryId = inserted.monitoringPlotHistoryId
     val expectedPlotsBeforeMerge =
@@ -303,6 +305,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ),
         ),
     )
+    recalculator.recalculateAllSites()
 
     clock.instant = Instant.ofEpochSecond(1)
 
