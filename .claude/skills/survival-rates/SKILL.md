@@ -111,7 +111,7 @@ These are product decisions. Do not "fix" them without checking with the user.
 
 5. **Temp plots are opt-in per site.** `planting_sites.survival_rate_includes_temp_plots`
    controls whether temporary plots count at all. Changing it fires
-   `SurvivalRateIncludesTempPlotsChangedEvent`, which recalculates the site.
+   `SurvivalRateIncludesTempPlotsChangedEvent`, which flags the whole site for recalculation.
 
 ## Two Write Paths With Different Plot Attribution
 
@@ -120,7 +120,7 @@ and using the wrong one silently produces wrong numbers.
 
 | Path                                                         | Attribution helper                                                                      | Why                                                                                                                                                                        |
 |--------------------------------------------------------------|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Plot completion, species totals (`updateSpeciesTotalsTable`) | `requestedObservationForPlotCondition`, built on `observationIdForPlot` in `Queries.kt` | Runs before `recordSubstratumDependencies`, so `observation_dependent_substrata` has no rows for this observation yet. Uses the observation's requested substrata instead. |
+| Species totals (`updateSpeciesTotalsTable`), used by plot completion and the recalculation job's rebuild | `requestedObservationForPlotCondition`, built on `observationIdForPlot` in `Queries.kt` | At plot completion it runs before `recordSubstratumDependencies`, so `observation_dependent_substrata` has no rows for this observation yet. Uses the observation's requested substrata instead. |
 | Everything else: recalculation, roll-forward, results tables | `latestObservationForPlotCondition`, built on `latestObservationForSubstratumField`     | Attributes each plot to its substratum's latest observation at or before the target, which is how the live totals are rolled up.                                           |
 
 The two helpers are meant to agree: for a substratum the observation actually covers, both resolve
@@ -135,18 +135,45 @@ for the completion path, which then writes all species' rates with one `CASE` up
 
 ## When Rates Are Recalculated
 
-Stored rates go stale whenever their inputs change, so every input change has a recalculation path.
-When adding a new way to change observation data or t0 data, make sure one of these runs.
+Stored rates go stale whenever their inputs change. Changes never recalculate anything directly.
+Instead, the code that changes an input sets `needs_recalculation` on the affected
+`observation_*_results` rows, in the same transaction as the change, and
+`ObservationResultsRecalculator` rebuilds them. When adding a new way to change observation data
+or t0 data, call `ObservationResultsInvalidator` from inside the transaction that makes the
+change.
 
-| Trigger                                                                    | What runs                                                                                                                                                                                                                                                                                                                                                                                      |
-|----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| A plot is completed                                                        | `completePlot` updates species totals and results for that observation immediately. When the last plot completes, `completeObservation` rolls stratum and site totals forward and recalculates results.                                                                                                                                                                                        |
-| An observation is abandoned                                                | `abandonObservation` does the same roll-forward and results recalculation for the plots that were completed.                                                                                                                                                                                                                                                                                   |
-| A plot's species live/dead counts are edited in a completed observation    | `updateMonitoringSpecies` rewrites that plot's totals and recalculates the observation, then walks every later observation that depends on it through `observation_dependent_substrata`, in completion order, recalculating each one's roll-forward totals, results counts, and results rates. It then publishes `MonitoringSpeciesTotalsEditedEvent`.                                         |
-| An edited observation is a plot's t0 observation                           | `T0Store.on(MonitoringSpeciesTotalsEditedEvent)` re-derives that plot's t0 densities, which publishes `T0PlotDataAssignedEvent` and triggers the asynchronous site recalculation below.                                                                                                                                                                                                        |
-| An observation is deleted or merged into another                           | `ObservationService.deleteObservation` and `mergeObservations` call `recalculateSurvivalRates(plantingSiteId)` synchronously for the whole site.                                                                                                                                                                                                                                               |
-| t0 data is assigned for a plot or a stratum, or the temp-plot flag changes | `ObservationStore.on(...)` for `T0PlotDataAssignedEvent`, `T0StratumDataAssignedEvent`, and `SurvivalRateIncludesTempPlotsChangedEvent` enqueues an asynchronous job through `enqueueSurvivalRateCalculation`. The lock table `planting_site_survival_rate_calculations` coalesces concurrent requests, and `fetchSurvivalRateCalculationInProgress` exposes the in-progress state to the API. |
-| An admin requests it                                                       | `POST /admin/recalculateSurvivalRates` for one observation, one site, or every site. Use this to correct stored data after deploying a calculation change.                                                                                                                                                                                                                                     |
+The only values written synchronously are raw data: `recorded_plants`, `observation_plots`, the
+t0 tables, and the counts in `observed_plot_species_totals`. Plot-level species totals counts are
+source data, because species count edits are applied to them directly rather than to
+`recorded_plants`. Everything derived from them is written only by the recalculation job: plot
+species survival rates, the substratum, stratum, and site species totals, and all the results
+tables.
+
+A flagged results row covers that row and all the species totals rows for the same observation
+and scope. When a results row doesn't exist yet, the invalidator inserts a placeholder with zero
+counts so there is somewhere to put the flag. The API reports flagged rows as `pending`, and the
+survival rate calculation in-progress endpoint is true while any of a site's results are flagged.
+Publishing a funder activity skips site results that are flagged, keeping any previously
+published values.
+
+| Trigger                                                             | What gets flagged                                                                                                                                                                                              |
+|---------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| A plot is completed                                                 | `completePlot` writes plot species totals and calls `invalidateObservationPlots` for that observation and plot, which also flags later observations that roll it forward. Earlier observations are not flagged, so a later completion never changes an earlier observation. |
+| An observation is completed or abandoned                            | `completeObservation` and `abandonObservation` call `invalidateObservation`.                                                                                                                                   |
+| A plot's species counts are edited, or an Other species is merged   | `updateMonitoringSpecies` and `mergeOtherSpeciesForMonitoring` adjust plot species totals and call `invalidateObservationPlots`.                                                                                |
+| An edited observation is a plot's t0 observation                    | `T0Store.on(MonitoringSpeciesTotalsEditedEvent)` re-derives that plot's t0 densities and publishes `T0PlotDataAssignedEvent`.                                                                                  |
+| t0 data is assigned for a plot                                      | `ObservationResultsInvalidator.on(T0PlotDataAssignedEvent)` calls `invalidatePlot`, which flags the plot in every observation where it was completed.                                                         |
+| t0 data is assigned for a stratum                                   | `on(T0StratumDataAssignedEvent)` calls `invalidateStratum`.                                                                                                                                                    |
+| The temp-plot flag changes, or the site map is edited               | `on(SurvivalRateIncludesTempPlotsChangedEvent)` and `on(PlantingSiteMapEditedEvent)` call `invalidateSite`.                                                                                                    |
+| An observation is deleted or merged into another                    | `ObservationService.deleteObservation` and `mergeObservations` call `invalidateSite`.                                                                                                                          |
+| An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then rebuilds them immediately rather than waiting for the job. Use this to correct stored data after deploying a calculation change. |
+
+`ObservationResultsRecalculator` is a JobRunr recurring job that runs every 15 minutes. For each
+planting site with flagged results, in a new REPEATABLE READ transaction holding a per-site
+advisory lock, it calls `ObservationStore.rebuildObservationDerivedData` for each flagged
+observation in completion order, then clears the flags. The snapshot means a rebuild never sees
+a change that lands while it runs; such a change conflicts with the rebuild's writes, the
+rebuild rolls back, and the flags stay set for the next run.
 
 ## Code Map
 
@@ -156,18 +183,24 @@ All paths below are under `src/main/kotlin/com/terraformation/backend/`.
 
 | Function                                                                                                         | Role                                                                                                                                                                                                                                                        |
 |------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `completePlot`                                                                                                   | Entry point when a plot is completed. Order matters: species totals, then mark complete, then `recordSubstratumDependencies`, then `updateObservationResults`, then results rates. On the last plot, `completeObservation`.                                 |
+| `completePlot`                                                                                                   | Entry point when a plot is completed. Writes plot species totals, marks the plot complete, runs `recordSubstratumDependencies`, and flags results. On the last plot, `completeObservation`.                                                                |
+| `rebuildObservationDerivedData`                                                                                  | Called by the recalculation job. Rebuilds an observation's substratum, stratum, and site species totals, results rows, and all survival rates from its plot species totals.                                                                                 |
 | `updateSpeciesTotalsTable`                                                                                       | Incremental per-species counts for one scope, then survival rates for all species in one update.                                                                                                                                                            |
-| `recalculateSurvivalRates(observationId, plantingSiteId)`                                                        | Rolls substratum species totals forward into stratum and site species totals for an observation, with rates. Called from `completeObservation`, `abandonObservation`, `populateObservationResults`, and, for later observations, `updateMonitoringSpecies`. |
-| `recalculateSurvivalRate(ObservationSpeciesScope)`                                                               | Recomputes `survival_rate` on a species totals table for a scope, all observations.                                                                                                                                                                         |
+| `recalculateSurvivalRates(observationId, plantingSiteId)`                                                        | Rolls substratum species totals forward into stratum and site species totals for an observation, with rates. Called from `rebuildObservationDerivedData` for completed and abandoned observations.                                                                                          |
+| `recalculateSurvivalRate(ObservationSpeciesScope, observationId)`                                                | Recomputes `survival_rate` on a species totals table for a scope in one observation.                                                                                                                                                                        |
 | `updateObservationResults`                                                                                       | Sums species totals into the results tables' count and density columns. Not rates.                                                                                                                                                                          |
 | `recalculateSurvivalRateResults(...)`                                                                            | Recomputes results table rates, std dev, and area for a scope. Only for observations whose plots in scope are all completed.                                                                                                                                |
-| `recalculateSurvivalRates(plantingSiteId / stratumId / monitoringPlotId)`, `recalculateAllSurvivalRates`         | Public recalculation entry points. Each walks plot, substratum, stratum, site for both table families.                                                                                                                                                      |
 | `T0PlotSet`, `permanentT0PlotSet`, `tempT0PlotSet`, `getSurvivalRateTerms`, `getSurvivalRateTermsBySpecies`      | The shared plot-set definition and the terms derived from it. Change these to change what counts.                                                                                                                                                           |
 | `plotHasCompletedObservations`                                                                                   | Completed-plot and permanence check used by the plot sets.                                                                                                                                                                                                  |
 | `getSurvivalRateWeightedStandardDeviation`                                                                       | Std dev across plot results.                                                                                                                                                                                                                                |
-| `updateMonitoringSpecies`                                                                                        | Edit path for a plot's species counts in a completed observation. See "When Rates Are Recalculated" for the chain it triggers.                                                                                                                              |
-| `on(T0PlotDataAssignedEvent)`, `on(T0StratumDataAssignedEvent)`, `on(SurvivalRateIncludesTempPlotsChangedEvent)` | Enqueue the asynchronous site recalculation described in "When Rates Are Recalculated".                                                                                                                                                                     |
+| `updateMonitoringSpecies`                                                                                        | Edit path for a plot's species counts in a completed observation. Adjusts plot species totals and flags results.                                                                                                                                            |
+
+**Recalculation**
+
+| Class                                                  | Role                                                                                                                                                         |
+|--------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `tracking/db/ObservationResultsInvalidator.kt`         | Flags results rows for recalculation, following `observation_dependent_substrata` to later observations. Also listens for the t0, temp-plot, and map events. |
+| `tracking/ObservationResultsRecalculator.kt`           | Recurring job that rebuilds flagged results, one planting site per REPEATABLE READ transaction.                                                              |
 
 **Scopes, `tracking/util/`**
 
@@ -230,8 +263,8 @@ column's meaning changes.
 
 1. Work in `T0Store`. Remember the zero-density conventions above; the survival rate code treats
    a zero row as t0 data.
-2. Publish or reuse the events so recalculation runs. Recalculation is asynchronous and locked per
-   site.
+2. Publish or reuse the events so the affected results are flagged. The events must be published
+   inside the transaction that changes the t0 data, so the flags commit with the change.
 3. If the test scenario importer's t0 derivation should mirror your change, update both copies of
    the counting logic in `ObservationScenarioTest.kt` (see testing.md).
 
@@ -250,7 +283,8 @@ Work down this list; most reports are one of these.
    completed or marked not observed.
 6. Is a substratum missing from the observation? Its numbers roll forward from its latest earlier
    observation; check `observation_dependent_substrata`.
-7. Is a recalculation still running? Check `planting_site_survival_rate_calculations`.
+7. Is a recalculation pending? Check `needs_recalculation` on the observation's results rows. If
+   flags stay set, look for recalculation job errors in the logs.
 8. Use the admin survival rates page for the site to see all levels at once, then reproduce with a
    Kotlin test before changing code.
 

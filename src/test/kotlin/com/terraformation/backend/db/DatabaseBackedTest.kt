@@ -505,7 +505,6 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteHistoriesD
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteSpeciesTargetsDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteSurvivalRateCalculationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
@@ -558,7 +557,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistories
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteSpeciesTargetsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteSurvivalRateCalculationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
@@ -813,8 +811,6 @@ abstract class DatabaseBackedTest {
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
   protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
   protected val plantingSiteSpeciesTargetsDao: PlantingSiteSpeciesTargetsDao by lazyDao()
-  protected val plantingSiteSurvivalRateCalculationsDao: PlantingSiteSurvivalRateCalculationsDao by
-      lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
   protected val projectIndicatorsDao: ProjectIndicatorsDao by lazyDao()
@@ -3370,18 +3366,6 @@ abstract class DatabaseBackedTest {
             plantingSiteId = plantingSiteId,
             speciesId = speciesId,
             targetPlants = targetPlants,
-        )
-    )
-  }
-
-  fun insertPlantingSiteSurvivalRateCalculation(
-      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
-      additionalCalculationRequested: Boolean = false,
-  ) {
-    plantingSiteSurvivalRateCalculationsDao.insert(
-        PlantingSiteSurvivalRateCalculationsRow(
-            plantingSiteId = plantingSiteId,
-            additionalCalculationRequested = additionalCalculationRequested,
         )
     )
   }
