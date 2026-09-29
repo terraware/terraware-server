@@ -195,8 +195,10 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
 
     private val failingObservationId = ObservationId(1)
     private val succeedingObservationId = ObservationId(2)
-    private val failingSiteId = PlantingSiteId(1)
-    private val succeedingSiteId = PlantingSiteId(2)
+    // IDs that real planting sites in other tests running in parallel won't have, since those
+    // tests hold their sites' recalculation locks until they finish.
+    private val failingSiteId = PlantingSiteId(999_999_001)
+    private val succeedingSiteId = PlantingSiteId(999_999_002)
 
     @BeforeEach
     fun setUpMocks() {
