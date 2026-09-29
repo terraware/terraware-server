@@ -269,11 +269,36 @@ class PublishedActivityStore(
                       )
                   )
                   .where(ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId))
+                  .and(
+                      OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION.isNull.or(
+                          OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION.isFalse
+                      )
+                  )
           )
           .onDuplicateKeyUpdate()
           .set(LIVE_PLANTS, DSL.excluded(LIVE_PLANTS))
           .set(PLANT_DENSITY, DSL.excluded(PLANT_DENSITY))
           .set(SURVIVAL_RATE, DSL.excluded(SURVIVAL_RATE))
+          .execute()
+
+      // Results that are waiting to be recalculated may be incomplete, so don't publish them.
+      // Keep any previously published values; publishing again after the recalculation will
+      // update them.
+      dslContext
+          .insertInto(PUBLISHED_ACTIVITY_OBSERVATIONS, ACTIVITY_ID, OBSERVATION_ID)
+          .select(
+              DSL.select(ACTIVITY_OBSERVATIONS.ACTIVITY_ID, ACTIVITY_OBSERVATIONS.OBSERVATION_ID)
+                  .from(ACTIVITY_OBSERVATIONS)
+                  .join(OBSERVATION_SITE_RESULTS)
+                  .on(
+                      ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(
+                          OBSERVATION_SITE_RESULTS.OBSERVATION_ID
+                      )
+                  )
+                  .where(ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId))
+                  .and(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION.isTrue)
+          )
+          .onConflictDoNothing()
           .execute()
     }
   }
