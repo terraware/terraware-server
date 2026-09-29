@@ -42,7 +42,6 @@ import com.terraformation.backend.tracking.model.ObservationStratumStatsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumStatsModel
 import jakarta.inject.Named
-import java.math.BigDecimal
 import java.time.Instant
 import kotlin.math.roundToInt
 import org.jooq.Condition
@@ -141,7 +140,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                         DSL.selectOne()
                             .from(PLOT_T0_DENSITIES)
                             .where(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                            .and(PLOT_T0_DENSITIES.PLOT_DENSITY.gt(BigDecimal.ZERO))
                     )
                 ),
             )
@@ -155,7 +153,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                                     plotSubstratumHistories.stratumHistories.STRATUM_ID
                                 )
                             )
-                            .and(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.gt(BigDecimal.ZERO))
                     )
                 )
             )

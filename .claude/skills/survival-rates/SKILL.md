@@ -77,8 +77,8 @@ arises for plots with no t0 at all, or manually entered t0 that omits a species.
 
 These are product decisions. Do not "fix" them without checking with the user.
 
-1. **Null rule (results tables only).** If any plot observed in an observation has no t0 row with
-   density greater than zero, that substratum's aggregate rate is null. Permanent plots always
+1. **Null rule (results tables only).** If any plot observed in an observation has no t0 row,
+   that substratum's aggregate rate is null. A t0 density of zero counts as t0 data. Permanent plots always
    count toward this check, using `plot_t0_densities`. Temporary plots count toward it only if the
    site has `survival_rate_includes_temp_plots` set, using their stratum's
    `stratum_t0_temp_densities`. A stratum's aggregate rate is null if any of its substrata's
@@ -92,16 +92,17 @@ These are product decisions. Do not "fix" them without checking with the user.
    species rates are never nulled by this rule; they simply exclude the plot. Implemented
    by `anyChildHasNullSurvivalRateCondition` in `ObservationResultsScope.kt`.
 
-2. **Excluding plots without t0 is intentional.** The numerator is derived from the same plot set
-   as the denominator, never from the stored `total_live` or `permanent_live` columns. Those
+2. **Excluding plots without t0 is intentional.** The plot set has one row per plot and species
+   with t0 data, so a species with no t0 density in a plot contributes neither its live plants nor
+   a density, while a species with a t0 density of 0 still contributes its live plants. The
+   numerator is derived from the same plot set as the denominator, never from the stored
+   `total_live` or `permanent_live` columns. Those
    columns count every completed plot regardless of t0 data and exist for the API and search; using
    either as a survival rate numerator inflates the rate.
 
-3. **Zero denominator handling differs by path, and this is known.** When every t0 density in the
-   set is zero, the plot-completion path and the stratum/site roll-forward path store 0%, while the
-   species totals recalculation path and all results table paths store null. The read side in
-   `ObservationMultisets` shows 0 for a null per-species rate whenever a t0 density exists, so the
-   API hides most of the difference.
+3. **A zero denominator stores 0.** When every t0 density in the set is zero, every path stores a
+   rate of 0, in both the species totals and results tables. A rate is null only when there is no
+   t0 data at all.
 
 4. **The site aggregate rate is not numerator over denominator.** In the results tables the site
    rate is the area-weighted average of its strata's rates, weighting each stratum by its
@@ -126,12 +127,10 @@ and using the wrong one silently produces wrong numbers.
 The two helpers are meant to agree: for a substratum the observation actually covers, both resolve
 to that observation, and once `recordSubstratumDependencies` has run every later recalculation uses
 the latest-observation form. The split exists only because of write ordering during completion.
-There is no known case where the two attributions store different values for the same row; the
-null-versus-zero difference described in rule 3 above is a separate matter of how a zero
-denominator is expressed, not of which observation is attributed.
+There is no known case where the two attributions store different values for the same row.
 
 Both helpers feed `permanentT0PlotSet` and `tempT0PlotSet` in `ObservationStore`, which define the
-plot set once. `getSurvivalRateTerms` derives the numerator and both denominator variants from
+plot set once. `getSurvivalRateTerms` derives the numerator and denominator from
 those sets for SQL expressions; `getSurvivalRateTermsBySpecies` does the same as a grouped query
 for the completion path, which then writes all species' rates with one `CASE` update.
 
@@ -247,8 +246,8 @@ Work down this list; most reports are one of these.
    permanence has changed moves between the permanent and temp sets from that observation on.
 3. Is the site's `survival_rate_includes_temp_plots` flag what the reporter expects?
 4. Is the aggregate null while per-species rates are populated? That is the null rule; find the
-   permanent plot without a positive t0 density, or, if the site includes temp plots, the temp
-   plot whose stratum has no positive t0 temp density.
+   permanent plot without t0 densities, or, if the site includes temp plots, the temp plot whose
+   stratum has no t0 temp densities.
 5. Is the observation complete? Results table rates are only written once every plot in scope is
    completed or marked not observed.
 6. Is a substratum missing from the observation? Its numbers roll forward from its latest earlier
@@ -272,8 +271,8 @@ value is stale (recalculate) or one of the rules above applies.
   table is the same table. Alias it.
 - Treating a rate above 100% as a bug. Zero-density t0 rows and species planted after t0 make it
   legitimate.
-- Treating a density-0 t0 row as "no t0 data". It is t0 data for the calculation, but not for the
-  null rule, which requires density greater than zero.
+- Treating a density-0 t0 row as "no t0 data". It counts as t0 data everywhere, including the
+  null rule.
 - Copying test actuals into expectations without recomputing them by hand from the inputs.
 - Recomputing survival rates in Kotlin at read time. Everything is stored; the read side only
   coalesces null to 0 when t0 data exists.
