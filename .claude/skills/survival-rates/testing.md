@@ -28,6 +28,9 @@ Building blocks:
 - `createPlantsRows(mapOf(speciesA to 40, speciesB to 30), RecordedPlantStatus.Live)` accepts
   several species.
 - `observationStore.completePlot(observationId, plotId, emptySet(), "Notes", observedTime, plants)`
+- `observationResultsRecalculator.recalculateAllSites()` after completing plots or changing t0
+  data. Completion and t0 changes only flag results; nothing is computed until the recalculator
+  runs. The scenario DSL and the CSV importers already run it after each step.
 - To include temp plots, update `PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS` for the site or
   use `insertPlantingSite(survivalRateIncludesTempPlots = true)`.
 
