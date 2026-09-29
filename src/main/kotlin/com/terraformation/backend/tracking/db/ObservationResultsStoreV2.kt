@@ -206,6 +206,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     recordedPlantsField,
                     OBSERVATION_PLOT_RESULTS.PLANT_DENSITY,
                     OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE,
+                    SUBSTRATA.ID,
+                    SUBSTRATA.STRATUM_ID,
                 )
                 .from(OBSERVATION_PLOTS)
                 .join(MONITORING_PLOTS)
@@ -223,6 +225,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID)
                         .and(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                 )
+                .leftJoin(SUBSTRATA)
+                .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                 .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 .and(
                     MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
@@ -261,6 +265,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 completedTime = completedTime,
                 conditions = record[monitoringPlotConditionsMultiset],
                 coordinates = record[observationPlotCoordinatesMultiset],
+                currentStratumId = record[SUBSTRATA.STRATUM_ID],
+                currentSubstratumId = record[SUBSTRATA.ID],
                 elevationMeters = record[MONITORING_PLOTS.ELEVATION_METERS],
                 isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC.asNonNullable()],
                 isPermanent = isPermanent,

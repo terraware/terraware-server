@@ -123,6 +123,18 @@ data class ObservationMonitoringPlotResultsPayload(
         arraySchema = Schema(description = "Observed coordinates, if any, up to one per position.")
     )
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
+    @Schema(
+        description =
+            "ID of the stratum the monitoring plot is currently located in, if any. This may " +
+                "differ from the stratum it was in at the time of the observation."
+    )
+    val currentStratumId: StratumId?,
+    @Schema(
+        description =
+            "ID of the substratum the monitoring plot is currently located in, if any. This " +
+                "may differ from the substratum it was in at the time of the observation."
+    )
+    val currentSubstratumId: SubstratumId?,
     val elevationMeters: BigDecimal?,
     val isAdHoc: Boolean,
     @Schema(
@@ -185,6 +197,8 @@ data class ObservationMonitoringPlotResultsPayload(
       completedTime = model.completedTime,
       conditions = model.conditions,
       coordinates = model.coordinates.map { ObservationMonitoringPlotCoordinatesPayload(it) },
+      currentStratumId = model.currentStratumId,
+      currentSubstratumId = model.currentSubstratumId,
       elevationMeters = model.elevationMeters,
       isAdHoc = model.isAdHoc,
       isPermanent = model.isPermanent,

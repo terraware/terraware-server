@@ -704,6 +704,57 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
     }
 
     @Test
+    fun `uses site structure based on map at time of observation`() {
+      val speciesId = insertSpecies()
+      val originalStratumId = insertStratum(name = "Original Stratum")
+      val originalSubstratumId = insertSubstratum(name = "Original Substratum")
+      val plotId = insertMonitoringPlot()
+      val observationId = insertObservation()
+      insertObservationRequestedSubstratum()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      observationStore.completePlot(
+          observationId,
+          plotId,
+          emptySet(),
+          null,
+          Instant.EPOCH,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId,
+                  statusId = RecordedPlantStatus.Live,
+              )
+          ),
+      )
+
+      // Now there's a map edit and the plot is in a different stratum/substratum.
+      insertPlantingSiteHistory()
+      val newStratumId = insertStratum(name = "New Stratum")
+      val newSubstratumId = insertSubstratum(name = "New Substratum")
+      monitoringPlotsDao.update(
+          monitoringPlotsDao.fetchOneById(plotId)!!.copy(substratumId = newSubstratumId)
+      )
+
+      val results = resultsStoreV2.fetchOneById(observationId)
+      val stratum = results.strata.single()
+      val substratum = stratum.substrata.single()
+      val plot = substratum.monitoringPlots.single()
+
+      assertEquals(originalStratumId, stratum.stratumId, "Stratum ID at time of observation")
+      assertEquals(
+          originalSubstratumId,
+          substratum.substratumId,
+          "Substratum ID at time of observation",
+      )
+      assertEquals("Original Stratum", stratum.name, "Stratum name at time of observation")
+      assertEquals("Original Substratum", substratum.name, "Substratum name at time of observation")
+      assertEquals(newStratumId, plot.currentStratumId, "Current stratum ID")
+      assertEquals(newSubstratumId, plot.currentSubstratumId, "Current substratum ID")
+    }
+
+    @Test
     fun `throws exception if no permission to read observation`() {
       val observationId = insertObservation(completedTime = Instant.EPOCH)
       every { user.canReadObservation(observationId) } returns false
@@ -934,6 +985,8 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                     completedTime = Instant.EPOCH,
                     conditions = emptySet(),
                     coordinates = emptyList(),
+                    currentStratumId = null,
+                    currentSubstratumId = null,
                     elevationMeters = null,
                     isAdHoc = true,
                     isPermanent = false,
