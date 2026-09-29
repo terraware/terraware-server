@@ -77,15 +77,19 @@ arises for plots with no t0 at all, or manually entered t0 that omits a species.
 
 These are product decisions. Do not "fix" them without checking with the user.
 
-1. **Null rule (results tables only).** If any permanent plot observed in an observation has no
-   t0 row with density greater than zero, that substratum's aggregate rate is null. A stratum's
-   aggregate rate is null if any of its substratum result rows in that observation has a null
-   rate and either the site includes temp plots or the substratum had permanent plots in the
-   observation. The site rate is null if any stratum's latest rate is null. Per-species rates are
-   never nulled by this rule; they simply exclude the plot. Implemented by
-   `anyChildHasNullSurvivalRateCondition` in `ObservationResultsScope.kt`. The stratum check only
-   sees substratum rows that exist for that observation, so a substratum skipped by the observation
-   does not trigger it even if it would have.
+1. **Null rule (results tables only).** If any plot observed in an observation has no t0 row with
+   density greater than zero, that substratum's aggregate rate is null. Permanent plots always
+   count toward this check, using `plot_t0_densities`. Temporary plots count toward it only if the
+   site has `survival_rate_includes_temp_plots` set, using their stratum's
+   `stratum_t0_temp_densities`. A stratum's aggregate rate is null if any of its substrata's
+   latest result rows at or before the observation (found through
+   `observation_dependent_substrata`, the same rows its totals roll forward from) has a null rate
+   and either the site includes temp plots or that substratum result had permanent plots. So a
+   null substratum keeps its stratum null in later observations that skip it, until it is
+   observed again with a rate. A rolled-forward substratum that has since been deleted from the
+   site is ignored, matching the rolled-forward totals. The site rate is null if any stratum's
+   latest rate is null. Per-species rates are never nulled by this rule; they simply exclude the
+   plot. Implemented by `anyChildHasNullSurvivalRateCondition` in `ObservationResultsScope.kt`.
 
 2. **Excluding plots without t0 is intentional.** The numerator is derived from the same plot set
    as the denominator, never from the stored `total_live` or `permanent_live` columns. Those
@@ -241,7 +245,8 @@ Work down this list; most reports are one of these.
    permanence has changed moves between the permanent and temp sets from that observation on.
 3. Is the site's `survival_rate_includes_temp_plots` flag what the reporter expects?
 4. Is the aggregate null while per-species rates are populated? That is the null rule; find the
-   permanent plot without a positive t0 density.
+   permanent plot without a positive t0 density, or, if the site includes temp plots, the temp
+   plot whose stratum has no positive t0 temp density.
 5. Is the observation complete? Results table rates are only written once every plot in scope is
    completed or marked not observed.
 6. Is a substratum missing from the observation? Its numbers roll forward from its latest earlier

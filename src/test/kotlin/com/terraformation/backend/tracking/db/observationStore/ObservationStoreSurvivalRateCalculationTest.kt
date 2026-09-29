@@ -541,7 +541,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
-  fun `survival rate rollups only include temp plots that have t0 data`() {
+  fun `temp plot without t0 data nulls aggregate rollups when site includes temp plots`() {
     with(PLANTING_SITES) {
       dslContext
           .update(this)
@@ -586,8 +586,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     val permanentPlotRate = 100.0 * 30 / 50
     val tempPlotRate = 100.0 * 10 / 50
-    // The temp plot with no t0 data contributes neither live plants nor t0 density to the rollups.
-    val siteRate = 100.0 * (30 + 10) / (50 + 50)
+    // The temp plot with no t0 data contributes neither live plants nor t0 density to the
+    // per-species rollups, but it nulls the aggregate rates of its substratum and everything above.
+    val siteSpeciesRate = 100.0 * (30 + 10) / (50 + 50)
 
     assertSurvivalRates(
         SurvivalRates(
@@ -597,16 +598,16 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                 tempPlotWithT0 to mapOf(speciesId to tempPlotRate, null to tempPlotRate),
             ),
             mapOf(
-                substratumId to mapOf(speciesId to permanentPlotRate, null to permanentPlotRate),
+                substratumId to mapOf(speciesId to permanentPlotRate),
                 substratum2 to mapOf(speciesId to tempPlotRate, null to tempPlotRate),
             ),
             mapOf(
-                stratumId to mapOf(speciesId to permanentPlotRate, null to permanentPlotRate),
+                stratumId to mapOf(speciesId to permanentPlotRate),
                 stratum2 to mapOf(speciesId to tempPlotRate, null to tempPlotRate),
             ),
-            mapOf(plantingSiteId to mapOf(speciesId to siteRate, null to siteRate)),
+            mapOf(plantingSiteId to mapOf(speciesId to siteSpeciesRate)),
         ),
-        "Temp plot without t0 data should not contribute to rollups",
+        "Temp plot without t0 data should null aggregate rollups",
     )
   }
 
