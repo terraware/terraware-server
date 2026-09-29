@@ -23,6 +23,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.DeliveryStore
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -79,6 +80,7 @@ class AdminPlantingSitesController(
     private val deliveryStore: DeliveryStore,
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
+    private val observationResultsInvalidator: ObservationResultsInvalidator,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val organizationsDao: OrganizationsDao,
@@ -618,32 +620,25 @@ class AdminPlantingSitesController(
     try {
       when {
         observationId != null -> {
-          val siteId =
-              plantingSiteId ?: observationStore.fetchObservationById(observationId).plantingSiteId
-          observationStore.recalculateSurvivalRates(observationId, siteId)
+          observationResultsInvalidator.invalidateObservation(observationId)
           redirectAttributes.successMessage =
-              "Recalculated survival rates for observation $observationId."
+              "Queued survival rate recalculation for observation $observationId."
         }
         plantingSiteId != null -> {
-          observationStore.recalculateSurvivalRates(plantingSiteId)
+          observationResultsInvalidator.invalidateSite(plantingSiteId)
           redirectAttributes.successMessage =
-              "Recalculated survival rates for planting site $plantingSiteId."
+              "Queued survival rate recalculation for planting site $plantingSiteId."
         }
         else -> {
-          val failures = observationStore.recalculateAllSurvivalRates()
-          if (failures.isEmpty()) {
-            redirectAttributes.successMessage =
-                "Recalculated survival rates for all planting sites."
-          } else {
-            redirectAttributes.failureMessage =
-                "Failed to recalculate survival rates for some planting sites."
-            redirectAttributes.failureDetails = failures.map { (id, message) -> "$id: $message" }
-          }
+          observationResultsInvalidator.invalidateAllSites()
+          redirectAttributes.successMessage =
+              "Queued survival rate recalculation for all planting sites."
         }
       }
     } catch (e: Exception) {
       log.warn("Survival rate recalculation failed", e)
-      redirectAttributes.failureMessage = "Failed to recalculate survival rates: ${e.message}"
+      redirectAttributes.failureMessage =
+          "Failed to queue survival rate recalculation: ${e.message}"
     }
 
     return redirectToAdminHome()
