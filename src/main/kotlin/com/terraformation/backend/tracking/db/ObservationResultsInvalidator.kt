@@ -87,6 +87,80 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
     )
   }
 
+  /** Returns the planting sites that have any results rows flagged for recalculation. */
+  fun fetchPlantingSiteIdsNeedingRecalculation(): List<PlantingSiteId> {
+    return dslContext
+        .select(OBSERVATIONS.PLANTING_SITE_ID.asNonNullable())
+        .from(OBSERVATIONS)
+        .where(observationNeedsRecalculationCondition)
+        .groupBy(OBSERVATIONS.PLANTING_SITE_ID)
+        .orderBy(OBSERVATIONS.PLANTING_SITE_ID)
+        .fetch(OBSERVATIONS.PLANTING_SITE_ID.asNonNullable())
+  }
+
+  /**
+   * Returns the observations of a planting site that have any results rows flagged for
+   * recalculation, in the order they should be recalculated: completed observations in completion
+   * order, so data rolled forward from earlier observations is up to date before later observations
+   * read it, followed by observations that aren't completed yet.
+   */
+  fun fetchObservationIdsNeedingRecalculation(plantingSiteId: PlantingSiteId): List<ObservationId> {
+    return dslContext
+        .select(OBSERVATIONS.ID.asNonNullable())
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(observationNeedsRecalculationCondition)
+        .orderBy(OBSERVATIONS.COMPLETED_TIME.asc().nullsLast(), OBSERVATIONS.ID)
+        .fetch(OBSERVATIONS.ID.asNonNullable())
+  }
+
+  /** Clears the recalculation flags on all the results rows of a set of observations. */
+  fun clearRecalculationFlags(observationIds: Collection<ObservationId>) {
+    if (observationIds.isEmpty()) {
+      return
+    }
+
+    listOf(
+            OBSERVATION_PLOT_RESULTS.OBSERVATION_ID to OBSERVATION_PLOT_RESULTS.NEEDS_RECALCULATION,
+            OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID to
+                OBSERVATION_SUBSTRATUM_RESULTS.NEEDS_RECALCULATION,
+            OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID to
+                OBSERVATION_STRATUM_RESULTS.NEEDS_RECALCULATION,
+            OBSERVATION_SITE_RESULTS.OBSERVATION_ID to OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION,
+        )
+        .forEach { (observationIdField, needsRecalculationField) ->
+          dslContext
+              .update(needsRecalculationField.table!!)
+              .set(needsRecalculationField, false)
+              .where(observationIdField.`in`(observationIds))
+              .and(needsRecalculationField)
+              .execute()
+        }
+  }
+
+  private val observationNeedsRecalculationCondition: Condition
+    get() =
+        DSL.or(
+            listOf(
+                    OBSERVATION_PLOT_RESULTS.OBSERVATION_ID to
+                        OBSERVATION_PLOT_RESULTS.NEEDS_RECALCULATION,
+                    OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID to
+                        OBSERVATION_SUBSTRATUM_RESULTS.NEEDS_RECALCULATION,
+                    OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID to
+                        OBSERVATION_STRATUM_RESULTS.NEEDS_RECALCULATION,
+                    OBSERVATION_SITE_RESULTS.OBSERVATION_ID to
+                        OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION,
+                )
+                .map { (observationIdField, needsRecalculationField) ->
+                  DSL.exists(
+                      DSL.selectOne()
+                          .from(needsRecalculationField.table)
+                          .where(observationIdField.eq(OBSERVATIONS.ID))
+                          .and(needsRecalculationField)
+                  )
+                }
+        )
+
   /**
    * Flags the results rows affected by a set of observation plots, identified by a condition on
    * [OBSERVATION_PLOTS]. Only completed plots of monitoring observations are considered.

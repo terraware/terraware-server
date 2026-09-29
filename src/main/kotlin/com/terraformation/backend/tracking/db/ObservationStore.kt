@@ -2065,7 +2065,8 @@ class ObservationStore(
   }
 
   private fun <ID : Any, HistoryId : Any> recalculateSurvivalRate(
-      updateScope: ObservationSpeciesScope<ID, HistoryId>
+      updateScope: ObservationSpeciesScope<ID, HistoryId>,
+      observationId: ObservationId? = null,
   ) {
     val table = updateScope.observedTotalsTable
     val speciesIdField = table.field("species_id", SPECIES.ID.dataType)
@@ -2083,6 +2084,7 @@ class ObservationStore(
                 .div(DSL.nullif(terms.denominatorOrZero, BigDecimal.ZERO)),
         )
         .where(updateScope.observedTotalsCondition)
+        .apply { if (observationId != null) and(observationIdField.eq(observationId)) }
         .execute()
   }
 
@@ -2759,6 +2761,161 @@ class ObservationStore(
     }
   }
 
+  /**
+   * Rebuilds everything derived from an observation's plot-level species totals: the substratum,
+   * stratum, and site species totals, the results tables, and all survival rates. Plot-level
+   * species totals counts are treated as the source of truth, since edits to species counts are
+   * applied to them directly.
+   *
+   * Does not lock anything; the caller is responsible for serializing rebuilds of a planting site.
+   */
+  fun rebuildObservationDerivedData(observationId: ObservationId) {
+    requirePermissions { manageObservation(observationId) }
+
+    val observation = fetchObservationById(observationId)
+    val plantingSiteId = observation.plantingSiteId
+    val plantingSiteHistoryId =
+        observation.plantingSiteHistoryId
+            ?: throw IllegalStateException(
+                "Observation $observationId has no planting site history"
+            )
+    val plantingSite =
+        dslContext
+            .select()
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.ID.eq(plantingSiteId))
+            .fetchOneInto(PlantingSitesRow::class.java)
+            ?: throw PlantingSiteNotFoundException(plantingSiteId)
+
+    if (!observation.isAdHoc) {
+      dslContext
+          .deleteFrom(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+          .where(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVED_STRATUM_SPECIES_TOTALS)
+          .where(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVED_SITE_SPECIES_TOTALS)
+          .where(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+          .execute()
+    }
+
+    val completedPlots =
+        with(OBSERVATION_PLOTS) {
+          dslContext
+              .select(
+                  MONITORING_PLOT_ID,
+                  MONITORING_PLOT_HISTORY_ID,
+                  IS_PERMANENT,
+                  monitoringPlotHistories.SUBSTRATUM_ID,
+                  monitoringPlotHistories.SUBSTRATUM_HISTORY_ID,
+                  monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID,
+                  monitoringPlotHistories.substratumHistories.stratumHistories.STRATUM_ID,
+              )
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(STATUS_ID.eq(ObservationPlotStatus.Completed))
+              .orderBy(MONITORING_PLOT_ID)
+              .fetch()
+        }
+
+    val plotCounts = fetchPlotSpeciesTotalsCounts(observationId)
+
+    completedPlots.forEach { record ->
+      val monitoringPlotId = record[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!!
+      val monitoringPlotHistoryId = record[OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID]!!
+      val stratumId =
+          record[
+              OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                  .STRATUM_ID]
+      val stratumHistoryId =
+          record[OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID]
+      val substratumId = record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_ID]
+      val substratumHistoryId =
+          record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID]
+
+      updateSpeciesTotals(
+          observationId,
+          plantingSite,
+          plantingSiteHistoryId,
+          stratumId,
+          stratumHistoryId,
+          substratumId,
+          substratumHistoryId,
+          monitoringPlotId,
+          monitoringPlotHistoryId,
+          observation.isAdHoc,
+          record[OBSERVATION_PLOTS.IS_PERMANENT]!!,
+          plotCounts[monitoringPlotId] ?: emptyMap(),
+          includePlot = false,
+      )
+
+      recalculateSurvivalRate(
+          ObservationSpeciesPlot(monitoringPlotId, monitoringPlotHistoryId),
+          observationId,
+      )
+
+      updateObservationResults(
+          observationId,
+          plantingSite,
+          stratumId,
+          stratumHistoryId,
+          substratumId,
+          substratumHistoryId,
+          monitoringPlotId,
+          observation.isAdHoc,
+      )
+    }
+
+    if (!observation.isAdHoc) {
+      if (
+          observation.state == ObservationState.Completed ||
+              observation.state == ObservationState.Abandoned
+      ) {
+        recalculateSurvivalRates(observationId, plantingSiteId)
+      }
+
+      recalculateSurvivalRateResults(observationId, plantingSiteId)
+    }
+  }
+
+  /** Returns each plot's species counts from the plot-level species totals of an observation. */
+  private fun fetchPlotSpeciesTotalsCounts(
+      observationId: ObservationId
+  ): Map<MonitoringPlotId, Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>> {
+    return with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      dslContext
+          .select(
+              MONITORING_PLOT_ID.asNonNullable(),
+              CERTAINTY_ID.asNonNullable(),
+              SPECIES_ID,
+              SPECIES_NAME,
+              TOTAL_LIVE.asNonNullable(),
+              TOTAL_DEAD.asNonNullable(),
+              TOTAL_EXISTING.asNonNullable(),
+          )
+          .from(OBSERVED_PLOT_SPECIES_TOTALS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .fetchGroups(MONITORING_PLOT_ID.asNonNullable())
+          .mapValues { (_, records) ->
+            records.associate { record ->
+              RecordedSpeciesKey(
+                  record[CERTAINTY_ID.asNonNullable()],
+                  record[SPECIES_ID],
+                  record[SPECIES_NAME],
+              ) to
+                  mapOf(
+                      RecordedPlantStatus.Live to record[TOTAL_LIVE.asNonNullable()],
+                      RecordedPlantStatus.Dead to record[TOTAL_DEAD.asNonNullable()],
+                      RecordedPlantStatus.Existing to record[TOTAL_EXISTING.asNonNullable()],
+                  )
+            }
+          }
+    }
+  }
+
   fun deleteObservation(observationId: ObservationId) {
     val t0PlotIds =
         dslContext
@@ -2950,9 +3107,10 @@ class ObservationStore(
       isAdHoc: Boolean,
       isPermanent: Boolean,
       plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
+      includePlot: Boolean = true,
   ) {
     if (plantCountsBySpecies.isNotEmpty()) {
-      if (monitoringPlotId != null && monitoringPlotHistoryId != null) {
+      if (includePlot && monitoringPlotId != null && monitoringPlotHistoryId != null) {
         updateSpeciesTotalsTable(
             observationId,
             isPermanent,
