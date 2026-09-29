@@ -31,12 +31,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 
 class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
   @Autowired private lateinit var dataSource: DataSource
-  @Autowired private lateinit var transactionManager: PlatformTransactionManager
 
   private val invalidator: ObservationResultsInvalidator by lazy {
     ObservationResultsInvalidator(dslContext)
