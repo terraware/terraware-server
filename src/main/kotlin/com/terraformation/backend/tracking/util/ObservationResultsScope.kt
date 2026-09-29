@@ -776,3 +776,63 @@ class ObservationResultsSite(
               .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
       )
 }
+
+/**
+ * Results scope for each row of [OBSERVATION_PLOT_RESULTS] being updated, rather than for one fixed
+ * plot, so the survival rates of many plots can be calculated in a single statement.
+ */
+object ObservationResultsPlotRow :
+    ObservationResultsScope<MonitoringPlotId, MonitoringPlotHistoryId> {
+  private val plotIdField = OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
+
+  override val scopeId: Select<Record1<MonitoringPlotId?>> = DSL.select(plotIdField)
+
+  override val scopeHistoryId: Select<Record1<MonitoringPlotHistoryId?>> =
+      DSL.select(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID)
+
+  override val rollupSpeciesTable = OBSERVED_PLOT_SPECIES_TOTALS
+
+  override val rollupSpeciesCondition =
+      OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(plotIdField)
+
+  override val plotResultsCondition: Condition = DSL.trueCondition()
+
+  override val observedTotalsCondition: Condition = DSL.trueCondition()
+
+  override val survivalRateRecalculationCondition: Condition
+    get() = observedTotalsCondition
+
+  override val observedTotalsPlantingSiteTempCondition =
+      OBSERVATION_PLOT_RESULTS.monitoringPlots.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
+          true
+      )
+
+  override val observedTotalsScopeField = OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
+
+  override val observedTotalsScopeHistoryField = OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
+
+  override val observedTotalsTable = OBSERVATION_PLOT_RESULTS
+
+  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
+      DSL.falseCondition()
+
+  override fun anyChildHasNullSurvivalRateCondition(observationIdField: Field<ObservationId?>) =
+      DSL.falseCondition()
+
+  override fun observationPlotsCondition(observationIdField: Field<ObservationId?>) =
+      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
+          .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotIdField))
+
+  override fun latestPlotResultsCondition(
+      plotResults: ObservationPlotResults,
+      observationIdField: Field<ObservationId?>,
+  ) =
+      plotResults.MONITORING_PLOT_ID.eq(plotIdField)
+          .and(plotResults.OBSERVATION_ID.eq(observationIdField))
+
+  override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
+      tempStratumTable.MONITORING_PLOT_ID.eq(plotIdField)
+
+  override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
+      PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotIdField)
+}

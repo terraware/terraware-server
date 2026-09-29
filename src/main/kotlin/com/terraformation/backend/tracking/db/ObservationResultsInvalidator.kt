@@ -98,27 +98,12 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
         .fetch(OBSERVATIONS.PLANTING_SITE_ID.asNonNullable())
   }
 
-  /**
-   * Returns the observations of a planting site that have any results rows flagged for
-   * recalculation, in the order they should be recalculated: completed observations in completion
-   * order, so data rolled forward from earlier observations is up to date before later observations
-   * read it, followed by observations that aren't completed yet.
-   */
-  fun fetchObservationIdsNeedingRecalculation(plantingSiteId: PlantingSiteId): List<ObservationId> {
-    return dslContext
-        .select(OBSERVATIONS.ID.asNonNullable())
-        .from(OBSERVATIONS)
-        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(observationNeedsRecalculationCondition)
-        .orderBy(OBSERVATIONS.COMPLETED_TIME.asc().nullsLast(), OBSERVATIONS.ID)
-        .fetch(OBSERVATIONS.ID.asNonNullable())
-  }
-
-  /** Clears the recalculation flags on all the results rows of a set of observations. */
-  fun clearRecalculationFlags(observationIds: Collection<ObservationId>) {
-    if (observationIds.isEmpty()) {
-      return
-    }
+  /** Clears the recalculation flags on all the results rows of a planting site's observations. */
+  fun clearRecalculationFlags(plantingSiteId: PlantingSiteId) {
+    val siteObservationIds =
+        DSL.select(OBSERVATIONS.ID)
+            .from(OBSERVATIONS)
+            .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
 
     listOf(
             OBSERVATION_PLOT_RESULTS.OBSERVATION_ID to OBSERVATION_PLOT_RESULTS.NEEDS_RECALCULATION,
@@ -132,7 +117,7 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
           dslContext
               .update(needsRecalculationField.table!!)
               .set(needsRecalculationField, false)
-              .where(observationIdField.`in`(observationIds))
+              .where(observationIdField.`in`(siteObservationIds))
               .and(needsRecalculationField)
               .execute()
         }

@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.LockType
-import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
@@ -25,6 +24,7 @@ import javax.sql.DataSource
 import org.jooq.Record
 import org.jooq.Table
 import org.jooq.exception.DataAccessException
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -193,8 +193,6 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
       )
     }
 
-    private val failingObservationId = ObservationId(1)
-    private val succeedingObservationId = ObservationId(2)
     // IDs that real planting sites in other tests running in parallel won't have, since those
     // tests hold their sites' recalculation locks until they finish.
     private val failingSiteId = PlantingSiteId(999_999_001)
@@ -204,16 +202,12 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
     fun setUpMocks() {
       every { mockInvalidator.fetchPlantingSiteIdsNeedingRecalculation() } returns
           listOf(failingSiteId, succeedingSiteId)
-      every { mockInvalidator.fetchObservationIdsNeedingRecalculation(failingSiteId) } returns
-          listOf(failingObservationId)
-      every { mockInvalidator.fetchObservationIdsNeedingRecalculation(succeedingSiteId) } returns
-          listOf(succeedingObservationId)
-      every { mockStore.rebuildObservationDerivedData(succeedingObservationId) } returns Unit
+      every { mockStore.rebuildFlaggedResults(succeedingSiteId) } returns Unit
     }
 
     @Test
     fun `serialization failure leaves flags set and does not block other sites`() {
-      every { mockStore.rebuildObservationDerivedData(failingObservationId) } throws
+      every { mockStore.rebuildFlaggedResults(failingSiteId) } throws
           DataAccessException(
               "Serialization failure",
               SQLException("could not serialize access", "40001"),
@@ -221,19 +215,18 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
 
       recalculatorWithMocks.recalculateAllSites()
 
-      verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(listOf(failingObservationId)) }
-      verify { mockInvalidator.clearRecalculationFlags(listOf(succeedingObservationId)) }
+      verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(failingSiteId) }
+      verify { mockInvalidator.clearRecalculationFlags(succeedingSiteId) }
     }
 
     @Test
     fun `unexpected failure leaves flags set and does not block other sites`() {
-      every { mockStore.rebuildObservationDerivedData(failingObservationId) } throws
-          IllegalStateException("Oops")
+      every { mockStore.rebuildFlaggedResults(failingSiteId) } throws IllegalStateException("Oops")
 
       recalculatorWithMocks.recalculateAllSites()
 
-      verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(listOf(failingObservationId)) }
-      verify { mockInvalidator.clearRecalculationFlags(listOf(succeedingObservationId)) }
+      verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(failingSiteId) }
+      verify { mockInvalidator.clearRecalculationFlags(succeedingSiteId) }
     }
   }
 
@@ -255,6 +248,26 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
    * scrambling.
    */
   private fun assertRecalculationMatchesCurrentResults() {
+    // Rolled-forward stratum species totals for strata an observation didn't observe have no
+    // stratum results row and are never read; the recalculation removes them.
+    dslContext
+        .deleteFrom(OBSERVED_STRATUM_SPECIES_TOTALS)
+        .whereNotExists(
+            DSL.selectOne()
+                .from(OBSERVATION_STRATUM_RESULTS)
+                .where(
+                    OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(
+                        OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID
+                    )
+                )
+                .and(
+                    OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(
+                        OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_HISTORY_ID
+                    )
+                )
+        )
+        .execute()
+
     val expected = derivedTables.associate { it.name to fetchSorted(it) }
 
     scrambleSurvivalRates()

@@ -84,18 +84,10 @@ class ObservationResultsRecalculator(
             log.info("Results of planting site $plantingSiteId are already being recalculated")
             false
           } else {
-            val observationIds =
-                observationResultsInvalidator.fetchObservationIdsNeedingRecalculation(
-                    plantingSiteId
-                )
+            observationStore.rebuildFlaggedResults(plantingSiteId)
+            observationResultsInvalidator.clearRecalculationFlags(plantingSiteId)
 
-            observationIds.forEach { observationStore.rebuildObservationDerivedData(it) }
-            observationResultsInvalidator.clearRecalculationFlags(observationIds)
-
-            log.info(
-                "Recalculated results of observations $observationIds of planting site " +
-                    "$plantingSiteId"
-            )
+            log.info("Recalculated flagged results of planting site $plantingSiteId")
             true
           }
         } == true
