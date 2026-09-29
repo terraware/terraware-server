@@ -1,3 +1,4 @@
+64417c3b SW-8919 Return current (sub)stratum IDs in observation results (#5052)
 f124943a SW-8947 Increase thumbnail concurrency limit (#5051)
 7194a8e0 SW-943 Support duplicate tables in search queries (#5030)
 a4616d15 SW-943 Add functions to reparent search paths, prefixes (#5029)
