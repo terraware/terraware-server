@@ -104,6 +104,18 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   }
 
   @ExceptionHandler
+  fun handleServerBusyException(
+      ex: ServerBusyException,
+      request: WebRequest,
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(
+        ex.message ?: "Server is busy.",
+        HttpStatus.TOO_MANY_REQUESTS,
+        request,
+    )
+  }
+
+  @ExceptionHandler
   fun handleUnsupportedMediaTypeException(
       ex: UnsupportedMediaTypeException,
       request: WebRequest,

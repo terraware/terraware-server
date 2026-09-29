@@ -1,5 +1,6 @@
 package com.terraformation.backend.file
 
+import com.terraformation.backend.api.ServerBusyException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EntityStaleException
 import com.terraformation.backend.db.default_schema.FileId
@@ -16,6 +17,9 @@ class UploadFailedException(message: String, cause: Exception) : RuntimeExceptio
 
 class ThumbnailNotReadyException(fileId: FileId) :
     EntityStaleException("Thumbnail not ready for file $fileId")
+
+class ThumbnailServiceBusyException(val fileId: FileId) :
+    ServerBusyException("No thumbnail generation capacity is available for file $fileId")
 
 class VideoStreamNotFoundException(val fileId: FileId) :
     EntityNotFoundException("No video stream found for file $fileId")
