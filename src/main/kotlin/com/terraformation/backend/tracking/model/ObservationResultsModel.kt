@@ -118,6 +118,8 @@ data class ObservationMonitoringPlotResultsModel(
     val completedTime: Instant?,
     val conditions: Set<ObservableCondition>,
     val coordinates: List<ObservedPlotCoordinatesModel>,
+    val currentStratumId: StratumId?,
+    val currentSubstratumId: SubstratumId?,
     val elevationMeters: BigDecimal?,
     val isAdHoc: Boolean,
     val isPermanent: Boolean,
