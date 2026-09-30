@@ -59,6 +59,7 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = 80,
                 latestObservationT0Density = BigDecimal.TEN,
                 latestObservationTotalLive = 5,
+                latestObservationTotalPlants = 7,
                 scientificName = "Aaa",
                 speciesId = speciesIdA,
             ),
@@ -69,6 +70,7 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = null,
                 latestObservationT0Density = null,
                 latestObservationTotalLive = 5,
+                latestObservationTotalPlants = 7,
                 scientificName = "Bbb",
                 speciesId = speciesIdB,
             ),
@@ -79,12 +81,39 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = null,
                 latestObservationT0Density = null,
                 latestObservationTotalLive = null,
+                latestObservationTotalPlants = null,
                 scientificName = "Ccc",
                 speciesId = speciesIdC,
             ),
         ),
         speciesSurvivalRateRows(sources, speciesNames),
     )
+  }
+
+  @Test
+  fun `survival rate text falls back to latest available rate`() {
+    val rows =
+        speciesSurvivalRateRows(
+            listOf(
+                SpeciesResultsSource(
+                    ObservationId(2),
+                    null,
+                    listOf(
+                        species(speciesIdA, survivalRate = 80),
+                        species(speciesIdB, survivalRate = null),
+                        species(speciesIdC, survivalRate = null),
+                    ),
+                ),
+                SpeciesResultsSource(
+                    ObservationId(1),
+                    null,
+                    listOf(species(speciesIdB, survivalRate = 70)),
+                ),
+            ),
+            speciesNames,
+        )
+
+    assertEquals(listOf("80%", "— (70% in obs 1)", "—"), rows.map { it.survivalRateText })
   }
 
   private fun species(

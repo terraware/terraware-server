@@ -36,7 +36,53 @@
             color: #999;
             text-align: center;
         }
+
+        table.grouped tbody tr.parent-row {
+            background-color: #fff;
+        }
+
+        table.grouped tbody:nth-of-type(even) tr.parent-row {
+            background-color: #f4f4f4;
+        }
+
+        table.grouped tbody tr.species-row {
+            background-color: #eef4fb;
+        }
+
+        table.grouped tbody tr.parent-row:hover, table.grouped tbody tr.species-row:hover {
+            background-color: #ffffcc;
+        }
+
+        table.grouped td.species-name {
+            padding-left: 1.5em;
+        }
+
+        button.species-toggle {
+            font-size: smaller;
+            margin-right: .5em;
+        }
     </style>
+    <script th:fragment="additionalScript">
+        function toggleSpeciesRows(button) {
+            const rows = button.closest('tbody').querySelectorAll('tr.species-row');
+            const expand = rows.length > 0 && rows[0].hidden;
+            setSpeciesRowsVisible(button, rows, expand);
+        }
+
+        function setSpeciesRowsVisible(button, rows, visible) {
+            rows.forEach(row => row.hidden = !visible);
+            button.textContent = (visible ? '▾ ' : '▸ ') + rows.length;
+        }
+
+        function setAllSpeciesRowsVisible(tableId, visible) {
+            document.querySelectorAll(`#${tableId} tbody`).forEach(tbody => {
+                const button = tbody.querySelector('button.species-toggle');
+                if (button) {
+                    setSpeciesRowsVisible(button, tbody.querySelectorAll('tr.species-row'), visible);
+                }
+            });
+        }
+    </script>
 </head>
 <body>
 
@@ -163,7 +209,12 @@
 
     <h3>Strata</h3>
 
-    <table class="bordered">
+    <p>
+        <button type="button" onclick="setAllSpeciesRowsVisible('strata-table', true)">Expand all species</button>
+        <button type="button" onclick="setAllSpeciesRowsVisible('strata-table', false)">Collapse all species</button>
+    </p>
+
+    <table class="bordered grouped" id="strata-table">
         <thead>
         <tr>
             <th>ID</th>
@@ -177,38 +228,66 @@
             <th>Total Plants</th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="row : ${model.strata}">
-            <td class="numeric" th:text="${row.id}">1</td>
-            <td th:text="${row.name}">Stratum</td>
-            <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
-                th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
-            </td>
-            <td th:class="${row.survivalRateStdDev != null ? 'numeric' : 'missing'}"
-                th:text="${row.survivalRateStdDev ?: '—'}">5
-            </td>
-            <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
-                th:text="${row.observationId ?: 'Never observed'}">1
-            </td>
-            <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
-                th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
-            </td>
-            <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
-                th:text="${row.plantingDensity ?: '—'}">100
-            </td>
-            <td th:classappend="${row.plantingCompleted == null ? 'missing' : ''}"
-                th:text="${row.plantingCompleted ?: '—'}">true
-            </td>
-            <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
-                th:text="${row.totalPlants ?: '—'}">100
-            </td>
-        </tr>
+        <tbody th:each="row : ${model.strata}">
+            <tr class="parent-row">
+                <td class="numeric">
+                    <button type="button" class="species-toggle" onclick="toggleSpeciesRows(this)"
+                            th:if="${!row.species.isEmpty()}" th:text="|▸ ${row.species.size()}|">▸ 3
+                    </button>
+                    <span th:text="${row.id}">1</span>
+                </td>
+                <td th:text="${row.name}">Stratum</td>
+                <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
+                    th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
+                </td>
+                <td th:class="${row.survivalRateStdDev != null ? 'numeric' : 'missing'}"
+                    th:text="${row.survivalRateStdDev ?: '—'}">5
+                </td>
+                <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
+                    th:text="${row.observationId ?: 'Never observed'}">1
+                </td>
+                <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
+                    th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
+                </td>
+                <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
+                    th:text="${row.plantingDensity ?: '—'}">100
+                </td>
+                <td th:classappend="${row.plantingCompleted == null ? 'missing' : ''}"
+                    th:text="${row.plantingCompleted ?: '—'}">true
+                </td>
+                <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
+                    th:text="${row.totalPlants ?: '—'}">100
+                </td>
+            </tr>
+            <tr class="species-row" hidden th:each="sp : ${row.species}">
+                <td class="numeric" th:text="${sp.speciesId}">1</td>
+                <td class="species-name" th:text="${sp.scientificName}">Species name</td>
+                <td th:class="${sp.latestObservationSurvivalRate != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.survivalRateText}">75%
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td th:class="${sp.latestObservationT0Density != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.latestObservationT0Density != null ? #numbers.formatDecimal(sp.latestObservationT0Density, 1, 1) : '—'}">
+                    100
+                </td>
+                <td></td>
+                <td th:class="${sp.latestObservationTotalPlants != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.latestObservationTotalPlants ?: '—'}">100
+                </td>
+            </tr>
         </tbody>
     </table>
 
     <h3>Substrata</h3>
 
-    <table class="bordered">
+    <p>
+        <button type="button" onclick="setAllSpeciesRowsVisible('substrata-table', true)">Expand all species</button>
+        <button type="button" onclick="setAllSpeciesRowsVisible('substrata-table', false)">Collapse all species</button>
+    </p>
+
+    <table class="bordered grouped" id="substrata-table">
         <thead>
         <tr>
             <th>ID</th>
@@ -223,39 +302,67 @@
             <th>Total Plants</th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="row : ${model.substrata}">
-            <td class="numeric" th:text="${row.id}">1</td>
-            <td th:text="${row.stratumName}">Stratum</td>
-            <td th:text="${row.name}">Substratum</td>
-            <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
-                th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
-            </td>
-            <td th:class="${row.survivalRateStdDev != null ? 'numeric' : 'missing'}"
-                th:text="${row.survivalRateStdDev ?: '—'}">5
-            </td>
-            <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
-                th:text="${row.observationId ?: 'Never observed'}">1
-            </td>
-            <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
-                th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
-            </td>
-            <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
-                th:text="${row.plantingDensity ?: '—'}">100
-            </td>
-            <td th:classappend="${row.plantingCompleted == null ? 'missing' : ''}"
-                th:text="${row.plantingCompleted ?: '—'}">true
-            </td>
-            <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
-                th:text="${row.totalPlants ?: '—'}">100
-            </td>
-        </tr>
+        <tbody th:each="row : ${model.substrata}">
+            <tr class="parent-row">
+                <td class="numeric">
+                    <button type="button" class="species-toggle" onclick="toggleSpeciesRows(this)"
+                            th:if="${!row.species.isEmpty()}" th:text="|▸ ${row.species.size()}|">▸ 3
+                    </button>
+                    <span th:text="${row.id}">1</span>
+                </td>
+                <td th:text="${row.stratumName}">Stratum</td>
+                <td th:text="${row.name}">Substratum</td>
+                <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
+                    th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
+                </td>
+                <td th:class="${row.survivalRateStdDev != null ? 'numeric' : 'missing'}"
+                    th:text="${row.survivalRateStdDev ?: '—'}">5
+                </td>
+                <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
+                    th:text="${row.observationId ?: 'Never observed'}">1
+                </td>
+                <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
+                    th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
+                </td>
+                <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
+                    th:text="${row.plantingDensity ?: '—'}">100
+                </td>
+                <td th:classappend="${row.plantingCompleted == null ? 'missing' : ''}"
+                    th:text="${row.plantingCompleted ?: '—'}">true
+                </td>
+                <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
+                    th:text="${row.totalPlants ?: '—'}">100
+                </td>
+            </tr>
+            <tr class="species-row" hidden th:each="sp : ${row.species}">
+                <td class="numeric" th:text="${sp.speciesId}">1</td>
+                <td class="species-name" colspan="2" th:text="${sp.scientificName}">Species name</td>
+                <td th:class="${sp.latestObservationSurvivalRate != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.survivalRateText}">75%
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td th:class="${sp.latestObservationT0Density != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.latestObservationT0Density != null ? #numbers.formatDecimal(sp.latestObservationT0Density, 1, 1) : '—'}">
+                    100
+                </td>
+                <td></td>
+                <td th:class="${sp.latestObservationTotalPlants != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.latestObservationTotalPlants ?: '—'}">100
+                </td>
+            </tr>
         </tbody>
     </table>
 
     <h3>Monitoring Plots</h3>
 
-    <table class="bordered">
+    <p>
+        <button type="button" onclick="setAllSpeciesRowsVisible('plots-table', true)">Expand all species</button>
+        <button type="button" onclick="setAllSpeciesRowsVisible('plots-table', false)">Collapse all species</button>
+    </p>
+
+    <table class="bordered grouped" id="plots-table">
         <thead>
         <tr>
             <th>ID</th>
@@ -271,35 +378,58 @@
             <th>Total Plants</th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="row : ${model.monitoringPlots}">
-            <td class="numeric" th:text="${row.id}">1</td>
-            <td th:text="${row.stratumName}">Stratum</td>
-            <td th:text="${row.substratumName}">Substratum</td>
-            <td class="numeric" th:text="${row.plotNumber}">1</td>
-            <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
-                th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
-            </td>
-            <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
-                th:text="${row.observationId ?: 'Never observed'}">1
-            </td>
-            <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
-                th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
-            </td>
-            <td th:classappend="${row.isPermanent == null ? 'missing' : ''}"
-                th:text="${row.isPermanent == null ? '—' : (row.isPermanent ? 'Permanent' : 'Temporary')}">
-                Permanent
-            </td>
-            <td th:classappend="${row.status == null ? 'missing' : ''}"
-                th:text="${row.status ?: '—'}">Completed
-            </td>
-            <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
-                th:text="${row.plantingDensity ?: '—'}">100
-            </td>
-            <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
-                th:text="${row.totalPlants ?: '—'}">100
-            </td>
-        </tr>
+        <tbody th:each="row : ${model.monitoringPlots}">
+            <tr class="parent-row">
+                <td class="numeric">
+                    <button type="button" class="species-toggle" onclick="toggleSpeciesRows(this)"
+                            th:if="${!row.species.isEmpty()}" th:text="|▸ ${row.species.size()}|">▸ 3
+                    </button>
+                    <span th:text="${row.id}">1</span>
+                </td>
+                <td th:text="${row.stratumName}">Stratum</td>
+                <td th:text="${row.substratumName}">Substratum</td>
+                <td class="numeric" th:text="${row.plotNumber}">1</td>
+                <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
+                    th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
+                </td>
+                <td th:class="${row.observationId != null ? 'numeric' : 'missing'}"
+                    th:text="${row.observationId ?: 'Never observed'}">1
+                </td>
+                <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
+                    th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
+                </td>
+                <td th:classappend="${row.isPermanent == null ? 'missing' : ''}"
+                    th:text="${row.isPermanent == null ? '—' : (row.isPermanent ? 'Permanent' : 'Temporary')}">
+                    Permanent
+                </td>
+                <td th:classappend="${row.status == null ? 'missing' : ''}"
+                    th:text="${row.status ?: '—'}">Completed
+                </td>
+                <td th:class="${row.plantingDensity != null ? 'numeric' : 'missing'}"
+                    th:text="${row.plantingDensity ?: '—'}">100
+                </td>
+                <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
+                    th:text="${row.totalPlants ?: '—'}">100
+                </td>
+            </tr>
+            <tr class="species-row" hidden th:each="sp : ${row.species}">
+                <td class="numeric" th:text="${sp.speciesId}">1</td>
+                <td class="species-name" colspan="3" th:text="${sp.scientificName}">Species name</td>
+                <td th:class="${sp.latestObservationSurvivalRate != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.survivalRateText}">75%
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td th:class="${sp.latestObservationT0Density != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.latestObservationT0Density != null ? #numbers.formatDecimal(sp.latestObservationT0Density, 1, 1) : '—'}">
+                    100
+                </td>
+                <td th:class="${sp.latestObservationTotalPlants != null ? 'numeric' : 'missing'}"
+                    th:text="${sp.latestObservationTotalPlants ?: '—'}">100
+                </td>
+            </tr>
         </tbody>
     </table>
     <h3>Plot Observations Included in Latest Observation</h3>

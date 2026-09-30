@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.tracking.model.BaseMonitoringResult
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ObservationIncludedPlotModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
@@ -23,6 +24,7 @@ data class StratumSurvivalRateRow(
     val observationId: ObservationId?,
     val plantingCompleted: Boolean?,
     val plantingDensity: Int?,
+    val species: List<SpeciesSurvivalRateRow>,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
     val totalPlants: Int?,
@@ -35,6 +37,7 @@ data class SubstratumSurvivalRateRow(
     val observationId: ObservationId?,
     val plantingCompleted: Boolean?,
     val plantingDensity: Int?,
+    val species: List<SpeciesSurvivalRateRow>,
     val stratumName: String,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
@@ -48,6 +51,7 @@ data class MonitoringPlotSurvivalRateRow(
     val observationId: ObservationId?,
     val plantingDensity: Int?,
     val plotNumber: Long,
+    val species: List<SpeciesSurvivalRateRow>,
     val status: ObservationPlotStatus?,
     val stratumName: String,
     val substratumName: String,
@@ -62,9 +66,23 @@ data class SpeciesSurvivalRateRow(
     val latestObservationSurvivalRate: Int?,
     val latestObservationT0Density: BigDecimal?,
     val latestObservationTotalLive: Int?,
+    val latestObservationTotalPlants: Int?,
     val scientificName: String,
     val speciesId: SpeciesId,
-)
+) {
+  /**
+   * The survival rate from the latest observation, or if that is null, the latest available rate
+   * and the observation it came from.
+   */
+  val survivalRateText: String
+    get() =
+        when {
+          latestObservationSurvivalRate != null -> "$latestObservationSurvivalRate%"
+          latestAvailableSurvivalRate != null ->
+              "— ($latestAvailableSurvivalRate% in obs $latestAvailableObservationId)"
+          else -> "—"
+        }
+}
 
 data class IncludedPlotRow(
     /**
@@ -126,7 +144,7 @@ data class SurvivalRatesPageModel(
                   }
                 }
               }
-              .toMapKeepingFirst()
+              .groupHistories()
       val substrataById =
           results
               .flatMap { result ->
@@ -138,7 +156,7 @@ data class SurvivalRatesPageModel(
                   }
                 }
               }
-              .toMapKeepingFirst()
+              .groupHistories()
       val monitoringPlotsById =
           results
               .flatMap { result ->
@@ -151,7 +169,7 @@ data class SurvivalRatesPageModel(
                   }
                 }
               }
-              .toMapKeepingFirst()
+              .groupHistories()
 
       return SurvivalRatesPageModel(
           latestCompletedObservationId = latestCompleted?.observationId,
@@ -181,7 +199,8 @@ data class SurvivalRatesPageModel(
               site.strata.flatMap { stratum ->
                 stratum.substrata.flatMap { substratum ->
                   substratum.monitoringPlots.map { plot ->
-                    val source = monitoringPlotsById[plot.id]
+                    val history = monitoringPlotsById[plot.id] ?: emptyList()
+                    val source = history.firstOrNull()
                     MonitoringPlotSurvivalRateRow(
                         id = plot.id,
                         isPermanent = source?.value?.isPermanent,
@@ -189,6 +208,7 @@ data class SurvivalRatesPageModel(
                         observationId = source?.observationId,
                         plantingDensity = source?.value?.plantingDensity,
                         plotNumber = plot.plotNumber,
+                        species = speciesSurvivalRateRows(history.toSpeciesSources(), speciesNames),
                         status = source?.value?.status,
                         stratumName = stratum.name,
                         substratumName = substratum.name,
@@ -215,7 +235,8 @@ data class SurvivalRatesPageModel(
               ),
           strata =
               site.strata.map { stratum ->
-                val source = strataById[stratum.id]
+                val history = strataById[stratum.id] ?: emptyList()
+                val source = history.firstOrNull()
                 StratumSurvivalRateRow(
                     id = stratum.id,
                     name = stratum.name,
@@ -223,6 +244,7 @@ data class SurvivalRatesPageModel(
                     observationId = source?.observationId,
                     plantingCompleted = source?.value?.plantingCompleted,
                     plantingDensity = source?.value?.plantingDensity,
+                    species = speciesSurvivalRateRows(history.toSpeciesSources(), speciesNames),
                     survivalRate = source?.value?.survivalRate,
                     survivalRateStdDev = source?.value?.survivalRateStdDev,
                     totalPlants = source?.value?.totalPlants,
@@ -231,7 +253,8 @@ data class SurvivalRatesPageModel(
           substrata =
               site.strata.flatMap { stratum ->
                 stratum.substrata.map { substratum ->
-                  val source = substrataById[substratum.id]
+                  val history = substrataById[substratum.id] ?: emptyList()
+                  val source = history.firstOrNull()
                   SubstratumSurvivalRateRow(
                       id = substratum.id,
                       name = substratum.name,
@@ -239,6 +262,7 @@ data class SurvivalRatesPageModel(
                       observationId = source?.observationId,
                       plantingCompleted = source?.value?.plantingCompleted,
                       plantingDensity = source?.value?.plantingDensity,
+                      species = speciesSurvivalRateRows(history.toSpeciesSources(), speciesNames),
                       stratumName = stratum.name,
                       survivalRate = source?.value?.survivalRate,
                       survivalRateStdDev = source?.value?.survivalRateStdDev,
@@ -258,13 +282,16 @@ private data class ResultSource<T>(
     val value: T,
 )
 
-/**
- * Builds a map without replacing existing keys. Observation results are ordered newest-first, so
- * this keeps the newest result for each entity.
- */
-private fun <K, V> Iterable<Pair<K, V>>.toMapKeepingFirst(): Map<K, V> = buildMap {
-  this@toMapKeepingFirst.forEach { (key, value) -> putIfAbsent(key, value) }
+private fun <T : BaseMonitoringResult> List<ResultSource<T>>.toSpeciesSources() = map {
+  SpeciesResultsSource(it.observationId, it.observationCompletedTime, it.value.species)
 }
+
+/**
+ * Groups results by entity. Observation results are ordered newest-first, so each entity's list
+ * starts with its newest result.
+ */
+private fun <K, V> Iterable<Pair<K, V>>.groupHistories(): Map<K, List<V>> =
+    groupBy({ it.first }, { it.second })
 
 /** One observation's species results for a single site, stratum, substratum, or plot. */
 data class SpeciesResultsSource(
@@ -307,6 +334,7 @@ fun speciesSurvivalRateRows(
             latestObservationSurvivalRate = latest?.survivalRate,
             latestObservationT0Density = latest?.t0Density,
             latestObservationTotalLive = latest?.totalLive,
+            latestObservationTotalPlants = latest?.totalPlants,
             scientificName = speciesNames[speciesId] ?: "Species $speciesId",
             speciesId = speciesId,
         )
