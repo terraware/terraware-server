@@ -64,6 +64,13 @@
     This planting site has observations, but none have been completed.
 </p>
 
+<p th:if="${model.survivalRateIncludesTempPlots}">
+    Survival rates include temporary monitoring plots.
+</p>
+<p th:unless="${model.survivalRateIncludesTempPlots}">
+    Survival rates only include permanent monitoring plots.
+</p>
+
 <p th:if="!${allT0DataSet}">
     <strong>Warning:</strong>
     T0 data is incomplete, so aggregate survival rates may be missing for some areas.
@@ -73,13 +80,6 @@
 </p>
 
 <th:block th:if="${hasCompletedObservations}">
-    <p th:if="${model.survivalRateIncludesTempPlots}">
-        Survival rates include temporary monitoring plots.
-    </p>
-    <p th:unless="${model.survivalRateIncludesTempPlots}">
-        Survival rates only include permanent monitoring plots.
-    </p>
-
     <p th:if="${model.latestCompletedSurvivalRate == null}">
         <strong>Warning:</strong>
         The latest completed observation
@@ -251,7 +251,8 @@
 
     <p>
         Completed plot observations whose data is rolled up into the results of observation
-        <th:block th:text="${model.latestCompletedObservationId}">1</th:block>.
+        <th:block th:text="${model.latestCompletedObservationId}">1</th:block>
+        .
         Substrata not covered by that observation use plot observations from their latest earlier
         observation. A plot that counts toward the survival rate but has no T0 density
         makes its substratum's aggregate survival rate null.
