@@ -324,7 +324,8 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     val components =
         (listOf("shp") + SECONDARY_EXTENSIONS).associateWith { extension ->
           entries.singleOrNull { it.name.equals("$basename.$extension", ignoreCase = true) }
-              ?: throw if (extension == "prj") UnknownCoordinateSystemException()
+              ?: throw if (extension == "prj")
+                  UnknownCoordinateSystemException(message = "Shapefile is missing .prj")
               else InvalidGeometryFileException(message = "Shapefile is missing .$extension")
         }
 
