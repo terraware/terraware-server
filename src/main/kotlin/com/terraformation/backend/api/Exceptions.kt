@@ -10,3 +10,5 @@ class DuplicateNameException(message: String = "A resource with that name alread
 
 class ResourceInUseException(message: String = "The resource is currently in use") :
     ClientErrorException(message, Response.Status.CONFLICT)
+
+open class ServerBusyException(message: String? = null) : RuntimeException(message)

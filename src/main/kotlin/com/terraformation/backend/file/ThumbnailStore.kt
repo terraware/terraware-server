@@ -20,7 +20,6 @@ import java.nio.file.NoSuchFileException
 import java.time.Clock
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import javax.imageio.ImageIO
 import kotlin.io.path.nameWithoutExtension
 import net.coobird.thumbnailator.Thumbnails
@@ -259,7 +258,7 @@ class ThumbnailStore(
         log.debug("Maximum number of thumbnails already being generated; waiting for one to finish")
         if (!semaphore.tryAcquire(thumbnailTimeoutSecs, TimeUnit.SECONDS)) {
           log.error("Timed out waiting for thumbnail generation")
-          throw TimeoutException("No thumbnail generation capacity is available")
+          throw ThumbnailServiceBusyException(fileId)
         }
       }
 
