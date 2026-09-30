@@ -41,8 +41,8 @@ class NoShapefileException(cause: Throwable? = null) :
 class MultipleShapefilesException(cause: Throwable? = null) :
     GeometryFileException(GeometryFileErrorCode.MultipleShapefiles, cause)
 
-class UnknownCoordinateSystemException(cause: Throwable? = null) :
-    GeometryFileException(GeometryFileErrorCode.UnknownCoordinateSystem, cause)
+class UnknownCoordinateSystemException(cause: Throwable? = null, message: String? = null) :
+    GeometryFileException(GeometryFileErrorCode.UnknownCoordinateSystem, cause, message)
 
 class NoPolygonsException(cause: Throwable? = null) :
     GeometryFileException(GeometryFileErrorCode.NoPolygons, cause)
