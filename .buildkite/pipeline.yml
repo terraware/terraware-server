@@ -91,7 +91,7 @@ steps:
     key: "run-tests"
     depends_on: "build"
     plugins:
-      - artifacts#v1.9.4:
+      - artifacts#v1.10.0:
           # We need to upload the test results as individual files so they can be consumed by the
           # junit-annotate plugin.
           upload: "build/test-results/**/*.xml"
@@ -106,7 +106,7 @@ steps:
     if: "build.branch != 'main' && build.tag == null"
     plugins:
       - *load-secrets
-      - artifacts#v1.9.4:
+      - artifacts#v1.10.0:
           # We need to upload the test results as individual files so they can be consumed by the
           # junit-annotate plugin.
           upload: "build/test-results/**/*.xml"
