@@ -124,6 +124,7 @@ class ViabilityTestStore(
           staffResponsible = record[STAFF_RESPONSIBLE],
           startDate = record[START_DATE],
           substrate = record[SUBSTRATE_ID],
+          substrateNotes = record[SUBSTRATE_NOTES],
           testResults = record[viabilityTestResultsMultiset]?.ifEmpty { null },
           testType = record[TEST_TYPE]!!,
           totalSeedsGerminated = record[TOTAL_SEEDS_GERMINATED],
@@ -184,6 +185,7 @@ class ViabilityTestStore(
               .set(STAFF_RESPONSIBLE, calculatedTest.staffResponsible)
               .set(START_DATE, calculatedTest.startDate)
               .set(SUBSTRATE_ID, calculatedTest.substrate)
+              .set(SUBSTRATE_NOTES, calculatedTest.substrateNotes)
               .set(TEST_TYPE, calculatedTest.testType)
               .set(TOTAL_PERCENT_GERMINATED, calculatedTest.viabilityPercent)
               .set(TOTAL_SEEDS_GERMINATED, calculatedTest.totalSeedsGerminated)
@@ -204,6 +206,7 @@ class ViabilityTestStore(
             testType = calculatedTest.testType,
             seedsTested = calculatedTest.seedsTested,
             substrate = calculatedTest.substrate,
+            substrateNotes = calculatedTest.substrateNotes,
             treatment = calculatedTest.treatment,
             startDate = calculatedTest.startDate,
             endDate = calculatedTest.endDate,
@@ -288,6 +291,7 @@ class ViabilityTestStore(
                     .set(SEEDS_FILLED, desiredTest.seedsFilled)
                     .set(SEEDS_SOWN, desiredTest.seedsTested)
                     .set(SUBSTRATE_ID, desiredTest.substrate)
+                    .set(SUBSTRATE_NOTES, desiredTest.substrateNotes)
                     .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
                     .set(START_DATE, desiredTest.startDate)
                     .set(TOTAL_PERCENT_GERMINATED, desiredTest.viabilityPercent)
@@ -311,6 +315,8 @@ class ViabilityTestStore(
                           existingTest.staffResponsible.nullIfEquals(desiredTest.staffResponsible),
                       startDate = existingTest.startDate.nullIfEquals(desiredTest.startDate),
                       substrate = existingTest.substrate.nullIfEquals(desiredTest.substrate),
+                      substrateNotes =
+                          existingTest.substrateNotes.nullIfEquals(desiredTest.substrateNotes),
                       totalSeedsGerminated =
                           existingTest.totalSeedsGerminated.nullIfEquals(
                               desiredTest.totalSeedsGerminated
@@ -332,6 +338,8 @@ class ViabilityTestStore(
                       staffResponsible =
                           desiredTest.staffResponsible.nullIfEquals(existingTest.staffResponsible),
                       startDate = desiredTest.startDate.nullIfEquals(existingTest.startDate),
+                      substrateNotes =
+                          desiredTest.substrateNotes.nullIfEquals(existingTest.substrateNotes),
                       substrate = desiredTest.substrate.nullIfEquals(existingTest.substrate),
                       totalSeedsGerminated =
                           desiredTest.totalSeedsGerminated.nullIfEquals(

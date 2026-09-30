@@ -57,6 +57,7 @@ data class ViabilityTestCreatedEventV1(
         staffResponsible = missingValues.staffResponsible,
         startDate = startDate,
         substrate = substrate,
+        substrateNotes = null,
         testType = testType,
         treatment = treatment,
         viabilityTestId = viabilityTestId,
@@ -76,6 +77,7 @@ data class ViabilityTestCreatedEventV2(
     val staffResponsible: String? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
+    val substrateNotes: String? = null,
     val testType: ViabilityTestType,
     val treatment: SeedTreatment? = null,
     override val viabilityTestId: ViabilityTestId,
@@ -89,6 +91,7 @@ data class ViabilityTestCreatedEventV2(
           createInitialField("staffResponsible", staffResponsible),
           createInitialField("startDate", startDate?.toString()),
           createInitialField("substrate", substrate?.getDisplayName(currentLocale())),
+          createInitialField("substrateNotes", substrateNotes),
           createInitialField("testType", testType.getDisplayName(currentLocale())),
           createInitialField("treatment", treatment?.getDisplayName(currentLocale())),
       )
@@ -118,6 +121,7 @@ data class ViabilityTestUpdatedEventV1(
       val staffResponsible: String? = null,
       val startDate: LocalDate? = null,
       val substrate: ViabilityTestSubstrate? = null,
+      val substrateNotes: String? = null,
       val totalSeedsGerminated: Int? = null,
       val treatment: SeedTreatment? = null,
       val viabilityPercent: Int? = null,
@@ -170,6 +174,11 @@ data class ViabilityTestUpdatedEventV1(
               "substrate",
               changedFrom.substrate?.getDisplayName(currentLocale()),
               changedTo.substrate?.getDisplayName(currentLocale()),
+          ),
+          createUpdatedField(
+              "substrateNotes",
+              changedFrom.substrateNotes,
+              changedTo.substrateNotes,
           ),
           createUpdatedField(
               "totalSeedsGerminated",

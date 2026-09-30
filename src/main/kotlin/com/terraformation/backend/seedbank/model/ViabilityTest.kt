@@ -31,6 +31,7 @@ data class ViabilityTestModel(
     val staffResponsible: String? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
+    val substrateNotes: String? = null,
     val testResults: Collection<ViabilityTestResultModel>? = null,
     val testType: ViabilityTestType,
     val totalSeedsGerminated: Int? = null,
@@ -103,6 +104,7 @@ data class ViabilityTestModel(
         staffResponsible == other.staffResponsible &&
         startDate == other.startDate &&
         substrate == other.substrate &&
+        substrateNotes == other.substrateNotes &&
         testType == other.testType &&
         totalSeedsGerminated == other.totalSeedsGerminated &&
         treatment == other.treatment &&
