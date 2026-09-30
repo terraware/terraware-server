@@ -436,10 +436,10 @@ class SupportRequestSubmitted(
 
 class PlantingSiteMapEdited(
     config: TerrawareServerConfig,
-    val addedToOrRemovedFrom: String,
-    val areaHaDifference: String,
+    val areaDifferenceMessage: String,
     val organizationName: String,
     val plantingSiteName: String,
+    val plantingSiteUrl: String,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "plantingSite/mapEdited"

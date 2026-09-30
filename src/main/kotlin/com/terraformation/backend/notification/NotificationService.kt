@@ -749,16 +749,26 @@ class NotificationService(
     val organization =
         organizationStore.fetchOneById(event.plantingSiteEdit.existingModel.organizationId)
 
+    val areaHaDifference = event.plantingSiteEdit.areaHaDifference
+    val areaDifferenceMessage =
+        when (areaHaDifference.signum()) {
+          -1 -> "Area removed from site: ${areaHaDifference.abs().toPlainString()} hectares"
+          0 ->
+              "The planting site map was updated, but there was no resulting change to the total area."
+          else -> "Area added to site: ${areaHaDifference.toPlainString()} hectares"
+        }
+
     sendToOrganizationContact(
         organization,
         PlantingSiteMapEdited(
             config = config,
-            addedToOrRemovedFrom =
-                if (event.plantingSiteEdit.areaHaDifference.signum() < 0) "removed from"
-                else "added to",
-            areaHaDifference = event.plantingSiteEdit.areaHaDifference.abs().toPlainString(),
+            areaDifferenceMessage = areaDifferenceMessage,
             organizationName = organization.name,
             plantingSiteName = event.plantingSiteEdit.existingModel.name,
+            plantingSiteUrl =
+                webAppUrls
+                    .fullPlantingSite(organization.id, event.plantingSiteEdit.existingModel.id)
+                    .toString(),
         ),
     )
   }
