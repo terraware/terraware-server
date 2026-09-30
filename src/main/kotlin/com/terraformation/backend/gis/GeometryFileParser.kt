@@ -166,7 +166,12 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     return parsedFile(kmlGeometries(root), format)
   }
 
-  /** GeoTools closes unclosed rings, so reject them before binding rather than repairing them. */
+  /**
+   * Checks the raw XML for problems that GeoTools would silently accept or repair. Rejects files
+   * that contain a DTD or whose root element isn't `<kml>`, and requires every `LinearRing` to have
+   * at least four coordinates with the first and last being identical. GeoTools closes unclosed
+   * rings on its own, so they need to be caught here rather than after binding.
+   */
   private fun validateKmlStructure(content: ByteArray) {
     val factory =
         XMLInputFactory.newFactory().apply {
