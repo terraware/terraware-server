@@ -757,6 +757,8 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
 
     @Test
     fun `returns one entry for an unobserved species with both permanent and temporary t0 densities`() {
+      // a species that has permanent and temp density but hasn't been recorded in an observation
+      // should only return one row in multisets
       every { user.canReadPlantingSite(any()) } returns true
 
       scenario {
