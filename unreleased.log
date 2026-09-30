@@ -1,3 +1,4 @@
+d7adefc5 SW-8947 Return better HTTP status code on thumbnail overload (#5053)
 67ba9e17 Remove startup warning (#5065)
 669cbc70 SW-8959 Temp plots without t0 data also cause null aggregate survival rates (#5054)
 64417c3b SW-8919 Return current (sub)stratum IDs in observation results (#5052)
