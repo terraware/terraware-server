@@ -1813,7 +1813,7 @@ internal class NotificationServiceEmailTest {
     val message = sentMessageWithSubject("has had a change to planting site")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(siteName, message = message)
-    assertBodyContains("13.2 hectares have been removed from the", message = message)
+    assertBodyContains("Area removed from site: 13.2 hectares", message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
 
@@ -1835,7 +1835,7 @@ internal class NotificationServiceEmailTest {
         PlantingSiteMapEditedEvent(
             existingModel,
             PlantingSiteEdit(
-                areaHaDifference = BigDecimal("-13.2"),
+                areaHaDifference = BigDecimal("0.0"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 stratumEdits = emptyList(),
@@ -1850,7 +1850,7 @@ internal class NotificationServiceEmailTest {
     val message = sentMessageWithSubject("has had a change to planting site")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(siteName, message = message)
-    assertBodyContains("13.2 hectares have been removed from the", message = message)
+    assertBodyContains("there was no resulting change to the total area", message = message)
 
     assertRecipientsEqual(setOf(supportContactEmail))
 
@@ -1872,7 +1872,7 @@ internal class NotificationServiceEmailTest {
         PlantingSiteMapEditedEvent(
             existingModel,
             PlantingSiteEdit(
-                areaHaDifference = BigDecimal("-13.2"),
+                areaHaDifference = BigDecimal("13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 stratumEdits = emptyList(),
@@ -1887,7 +1887,7 @@ internal class NotificationServiceEmailTest {
     val message = sentMessageWithSubject("has had a change to planting site")
     assertSubjectContains(organization.name, message = message)
     assertSubjectContains(siteName, message = message)
-    assertBodyContains("13.2 hectares have been removed from the", message = message)
+    assertBodyContains("Area added to site: 13.2 hectares", message = message)
 
     assertRecipientsEqual(setOf(supportContactEmail))
 

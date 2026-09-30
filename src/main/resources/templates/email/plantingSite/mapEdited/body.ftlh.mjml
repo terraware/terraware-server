@@ -8,10 +8,16 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-body03">
-                    The planting site ${plantingSiteName} has had change to its total area.
-                    ${areaHaDifference} hectares have been ${addedToOrRemovedFrom} the planting
-                    site.
+                    The planting site ${plantingSiteName} has had a change to its area.
                 </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${areaDifferenceMessage}
+                </mj-text>
+
+                <mj-button mj-class="btn-productive-primary-md" href="${plantingSiteUrl?no_esc}">
+                    See Planting Site
+                </mj-button>
+
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
 
                 <mj-include path="../../footer.ftlh.mjml"/>
