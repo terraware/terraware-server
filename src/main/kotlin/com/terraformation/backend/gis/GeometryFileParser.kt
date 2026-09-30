@@ -300,10 +300,10 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           if (kmlContent.size > MAX_COMPONENT_BYTES) {
             throw ContentFormatException("KML exceeds $MAX_COMPONENT_BYTES uncompressed bytes")
           }
-          return@use readKml(kmlContent, GeometryFileFormat.KMZ)
+          readKml(kmlContent, GeometryFileFormat.KMZ)
+        } else {
+          readZippedShapefile(zip, entries)
         }
-
-        readZippedShapefile(zip, entries)
       }
     }
   }
