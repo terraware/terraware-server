@@ -1,8 +1,8 @@
 package com.terraformation.backend.gis
 
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.terraformation.backend.db.GeometryDeserializer
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.tracking.model.Shapefile
@@ -23,8 +23,6 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
-import org.locationtech.jts.io.ParseException
-import org.locationtech.jts.io.geojson.GeoJsonReader
 
 /**
  * Reads geometry from the file formats the clients can upload: KML, KMZ, GeoJSON, and ZIP archives
@@ -107,48 +105,26 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       )
 
   private fun readGeoJson(content: ByteArray): ParsedGeometryShapes {
-    return try {
-      parsedFile(readGeoJsonNode(objectMapper.readTree(content)), GeometryFileFormat.GeoJSON)
-    } catch (e: JsonProcessingException) {
-      throw InvalidGeometryFileException(e)
-    } catch (e: ParseException) {
-      throw InvalidGeometryFileException(e)
-    } catch (e: IllegalArgumentException) {
-      throw InvalidGeometryFileException(e)
-    }
+    val geometry =
+        try {
+          objectMapper
+              .readerFor(Geometry::class.java)
+              .withAttribute(GeometryDeserializer.SKIP_VALIDATION, true)
+              .readValue<Geometry?>(content) ?: throw InvalidGeometryFileException()
+        } catch (e: JsonProcessingException) {
+          throw InvalidGeometryFileException(e)
+        }
+
+    return parsedFile(flattenCollections(geometry), GeometryFileFormat.GeoJSON)
   }
 
-  /**
-   * Turns a GeoJSON document into a list of shapes. This deliberately avoids the object mapper's
-   * geometry binding, which rejects invalid topology as a parsing failure; a bow-tie polygon is a
-   * readable file with an unusable shape, not a malformed one.
-   */
-  private fun readGeoJsonNode(node: JsonNode): List<Geometry> {
-    return when (node.path("type").asText()) {
-      "FeatureCollection" -> readGeoJsonChildren(node, "features")
-      "GeometryCollection" -> readGeoJsonChildren(node, "geometries")
-      "Feature" -> {
-        val geometry = node.get("geometry") ?: throw InvalidGeometryFileException()
-        if (geometry.isNull) emptyList() else readGeoJsonNode(geometry)
+  /** Splits collections into their members, keeping multi-geometries such as MultiPolygon whole. */
+  private fun flattenCollections(geometry: Geometry): List<Geometry> =
+      if (geometry.javaClass == GeometryCollection::class.java) {
+        (0 until geometry.numGeometries).flatMap { flattenCollections(geometry.getGeometryN(it)) }
+      } else {
+        listOf(geometry)
       }
-      "Point",
-      "MultiPoint",
-      "LineString",
-      "MultiLineString",
-      "Polygon",
-      "MultiPolygon" -> listOf(GeoJsonReader(geometryFactory).read(node.toString()))
-      else -> throw InvalidGeometryFileException()
-    }
-  }
-
-  private fun readGeoJsonChildren(node: JsonNode, property: String): List<Geometry> {
-    val children = node.get(property)
-    if (children == null || !children.isArray) {
-      throw InvalidGeometryFileException()
-    }
-
-    return children.flatMap { readGeoJsonNode(it) }
-  }
 
   private fun readKml(
       content: ByteArray,

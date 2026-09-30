@@ -279,7 +279,17 @@ class GeometryFileParserTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["{broken", "{}", "null", "", "{\"type\":\"FeatureCollection\"}"])
+  @ValueSource(
+      strings =
+          [
+              "{broken",
+              "{}",
+              "null",
+              "",
+              "{\"type\":\"FeatureCollection\"}",
+              "{\"type\":\"Feature\",\"geometry\":null}",
+          ]
+  )
   fun `rejects malformed GeoJSON`(json: String) {
     assertThrows<InvalidGeometryFileException> {
       parser.readWithFormat(json.toByteArray(), "boundary.json")
@@ -303,7 +313,6 @@ class GeometryFileParserTest {
           [
               "{\"type\":\"FeatureCollection\",\"features\":[]}",
               "{\"type\":\"GeometryCollection\",\"geometries\":[]}",
-              "{\"type\":\"Feature\",\"geometry\":null}",
           ]
   )
   fun `readWithFormat accepts empty collections`(json: String) {

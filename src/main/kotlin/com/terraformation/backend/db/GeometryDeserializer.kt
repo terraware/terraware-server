@@ -14,14 +14,28 @@ import org.locationtech.jts.operation.valid.IsValidOp
 
 /** Deserializes GeoJSON strings into JTS [Geometry] objects of the appropriate types. */
 class GeometryDeserializer : JsonDeserializer<Geometry>() {
+  companion object {
+    /**
+     * Deserialization context attribute that, when true, accepts geometries with invalid topology
+     * or no coordinates. For callers that want to report unusable shapes themselves rather than
+     * treat them as parse failures.
+     */
+    const val SKIP_VALIDATION = "GeometryDeserializer.skipValidation"
+  }
+
   private val geoJsonReader =
       GeoJsonReader(GeometryFactory(PrecisionModel(PrecisionModel.FLOATING), SRID.LONG_LAT))
 
   override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): Geometry {
-    return readGeometry(jp, jp.readValueAsTree(), null)
+    return readGeometry(jp, ctxt, jp.readValueAsTree(), null)
   }
 
-  private fun readGeometry(jp: JsonParser, tree: JsonNode, expectedType: String?): Geometry {
+  private fun readGeometry(
+      jp: JsonParser,
+      ctxt: DeserializationContext,
+      tree: JsonNode,
+      expectedType: String?,
+  ): Geometry {
     val type =
         tree.findValuesAsText("type").getOrNull(0)
             ?: throw JsonParseException(jp, "Missing geometry type", jp.currentLocation())
@@ -36,14 +50,15 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
           throw JsonParseException(jp, e.message, e)
         }
 
-    val validator = IsValidOp(geometry)
-    val error = validator.validationError
-    if (error != null) {
-      throw JsonParseException(jp, error.message)
-    }
+    if (ctxt.getAttribute(SKIP_VALIDATION) != true) {
+      val error = IsValidOp(geometry).validationError
+      if (error != null) {
+        throw JsonParseException(jp, error.message)
+      }
 
-    if (geometry.isEmpty) {
-      throw JsonParseException(jp, "$type has no coordinates")
+      if (geometry.isEmpty) {
+        throw JsonParseException(jp, "$type has no coordinates")
+      }
     }
 
     return geometry
@@ -54,7 +69,7 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
     private val expectedType = subclass.simpleName
 
     override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): T {
-      val geom = readGeometry(jp, jp.readValueAsTree(), expectedType)
+      val geom = readGeometry(jp, ctxt, jp.readValueAsTree(), expectedType)
 
       if (subclass.isInstance(geom)) {
         @Suppress("UNCHECKED_CAST")
