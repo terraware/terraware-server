@@ -231,15 +231,15 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   }
 
   @Test
-  fun `preserves holes and disjoint polygons`() {
+  fun `preserves holes and disjoint polygons without enforcing editor area limits`() {
     val result =
         parseShapes(
-            "MULTIPOLYGON (((0 0, 3 0, 3 3, 0 3, 0 0),(1 1, 1 2, 2 2, 2 1, 1 1)), " +
-                "((10 10, 11 10, 10 11, 10 10)))"
+            "MULTIPOLYGON (((0 0, 30 0, 30 30, 0 30, 0 0),(1 1, 1 2, 2 2, 2 1, 1 1)), " +
+                "((40 40, 40.000001 40, 40 40.000001, 40 40)))"
         )
 
     assertEquals(2, result.numPolygons)
-    assertEquals(8.5, result.geometry.area)
+    assertEquals(899.0, result.geometry.area, 0.000001)
     assertEquals(14, result.geometry.numPoints)
   }
 
@@ -283,12 +283,6 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
         )
 
     assertThrows<TooManyVerticesException> { parseShapes(withHole) }
-  }
-
-  @ParameterizedTest
-  @ValueSource(doubles = [0.000001, 10.0])
-  fun `does not enforce editor area limits`(radius: Double) {
-    assertEquals(1, parseShapes(circle(4, radius)).numPolygons)
   }
 
   private fun parseShapes(wkt: String) = parseShapes(wktReader.read(wkt))
