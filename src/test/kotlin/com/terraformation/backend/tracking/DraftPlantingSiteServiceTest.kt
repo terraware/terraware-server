@@ -171,7 +171,10 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
 
   @Test
   fun `rejects more than fifty thousand vertices`() {
-    assertThrows<TooManyVerticesException> { parseShapes(circle(50001)) }
+    assertThrows<TooManyVerticesException>("Polygon") { parseShapes(circle(50001)) }
+    assertThrows<TooManyVerticesException>("LineString") {
+      parseShapes(geometryFactory.createLineString(circle(50001).coordinates))
+    }
   }
 
   @Test

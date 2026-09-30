@@ -45,7 +45,7 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
               parsed.geometry.factory.createMultiPolygon(polygonArray).also {
                 it.srid = parsed.geometry.srid
               }
-          if (polygons.numPoints > MAX_BOUNDARY_VERTICES) {
+          if (parsed.geometry.numPoints > MAX_BOUNDARY_VERTICES) {
             throw TooManyVerticesException()
           }
 
