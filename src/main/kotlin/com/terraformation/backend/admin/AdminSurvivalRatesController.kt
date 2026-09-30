@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -27,6 +28,7 @@ class AdminSurvivalRatesController(
     private val observationStore: ObservationStore,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val speciesStore: SpeciesStore,
     private val t0Store: T0Store,
 ) {
   @GetMapping("/plantingSite/{plantingSiteId}/survivalRates")
@@ -44,13 +46,15 @@ class AdminSurvivalRatesController(
     val latestIncludedPlots =
         results.firstOrNull()?.let { observationResultsStore.fetchIncludedPlots(it.observationId) }
             ?: emptyList()
+    val speciesNames =
+        speciesStore.findAllSpecies(site.organizationId).associate { it.id to it.scientificName }
 
     model.addAttribute("allT0DataSet", allT0DataSet)
     model.addAttribute("hasCompletedObservations", results.isNotEmpty())
     model.addAttribute("hasObservations", observations.isNotEmpty())
     model.addAttribute(
         "model",
-        SurvivalRatesPageModel.of(site, organization, results, latestIncludedPlots),
+        SurvivalRatesPageModel.of(site, organization, results, latestIncludedPlots, speciesNames),
     )
 
     return "/admin/survivalRates"

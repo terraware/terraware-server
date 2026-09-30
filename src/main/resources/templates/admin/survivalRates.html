@@ -73,7 +73,8 @@
 
 <p th:if="!${allT0DataSet}">
     <strong>Warning:</strong>
-    T0 data is incomplete, so aggregate survival rates may be missing for some areas.
+    T0 data is incomplete, so aggregate survival rates may be missing for some areas. Per-species
+    survival rates are still calculated for plots that have T0 data.
 </p>
 <p th:unless="!${allT0DataSet}">
     All T0 data is set.
@@ -105,6 +106,60 @@
     <p th:if="${model.siteSurvivalRate == null}">
         No completed observation has produced a site-level survival rate.
     </p>
+
+    <h3>Species</h3>
+
+    <p>
+        Site-level survival rates for each species. The latest observation columns are from
+        observation
+        <th:block th:text="${model.latestCompletedObservationId}">1</th:block>;
+        the latest available columns are from the most recent completed observation with a survival
+        rate for the species.
+    </p>
+
+    <p th:if="${model.species.isEmpty()}">No species have been observed.</p>
+
+    <table class="bordered" th:unless="${model.species.isEmpty()}">
+        <thead>
+        <tr>
+            <th>Species ID</th>
+            <th>Scientific Name</th>
+            <th>Latest Observation Survival Rate</th>
+            <th>Latest Observation T0 Density</th>
+            <th>Latest Observation Live Plants</th>
+            <th>Latest Available Survival Rate</th>
+            <th>Latest Available Observation ID</th>
+            <th>Latest Available Observation Completed</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${model.species}">
+            <td class="numeric" th:text="${row.speciesId}">1</td>
+            <td th:text="${row.scientificName}">Species name</td>
+            <td th:class="${row.latestObservationSurvivalRate != null ? 'numeric' : 'missing'}"
+                th:text="${row.latestObservationSurvivalRate != null ? row.latestObservationSurvivalRate + '%' : '—'}">
+                75%
+            </td>
+            <td th:class="${row.latestObservationT0Density != null ? 'numeric' : 'missing'}"
+                th:text="${row.latestObservationT0Density ?: '—'}">100
+            </td>
+            <td th:class="${row.latestObservationTotalLive != null ? 'numeric' : 'missing'}"
+                th:text="${row.latestObservationTotalLive ?: '—'}">100
+            </td>
+            <td th:class="${row.latestAvailableSurvivalRate != null ? 'numeric' : 'missing'}"
+                th:text="${row.latestAvailableSurvivalRate != null ? row.latestAvailableSurvivalRate + '%' : '—'}">
+                75%
+            </td>
+            <td th:class="${row.latestAvailableObservationId != null ? 'numeric' : 'missing'}"
+                th:text="${row.latestAvailableObservationId ?: '—'}">1
+            </td>
+            <td th:classappend="${row.latestAvailableObservationCompletedTime == null ? 'missing' : ''}"
+                th:text="${row.latestAvailableObservationCompletedTime ?: '—'}">
+                Wed, 1 Jan 2025 00:00:00 GMT
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
     <h3>Strata</h3>
 
