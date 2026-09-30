@@ -11,6 +11,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
@@ -190,8 +191,11 @@ class ExtensionsTest {
   @Nested
   inner class ParallelReduce {
     @Test
-    fun `returns single element unchanged`() {
+    fun `returns single element unchanged and rejects empty collection`() {
       assertEquals("a", runBlocking { listOf("a").parallelReduce { x, y -> x + y } })
+      assertThrows<IllegalArgumentException> {
+        runBlocking { emptyList<String>().parallelReduce { x, y -> x + y } }
+      }
     }
 
     @Test

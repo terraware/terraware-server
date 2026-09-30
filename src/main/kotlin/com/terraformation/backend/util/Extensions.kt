@@ -103,8 +103,12 @@ fun <T> Sequence<T>.onChunk(chunkSize: Int, func: (List<T>) -> Unit): Sequence<T
 /**
  * Reduces a collection by applying [reducer] to adjacent pairs of elements in parallel, then
  * repeating on the results until a single value remains. The reducer should be associative.
+ *
+ * @throws IllegalArgumentException The collection is empty.
  */
 suspend fun <T> Collection<T>.parallelReduce(reducer: (T, T) -> T): T = coroutineScope {
+  require(isNotEmpty()) { "Cannot reduce an empty collection" }
+
   if (size == 1) {
     first()
   } else {
