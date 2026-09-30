@@ -1235,6 +1235,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                   listOf(
                       ObservationStratumStatsModel(
                           completedTime = null,
+                          name = "Alpha",
                           observationId = null,
                           plantingDensity = null,
                           stratumId = stratumIds["Alpha"]!!,

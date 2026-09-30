@@ -1099,6 +1099,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       DSL.multiset(
               DSL.select(
                       STRATA.ID,
+                      STRATA.NAME,
                       OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
                       OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY,
                       OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE,
@@ -1126,6 +1127,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             result.map { record ->
               ObservationStratumStatsModel(
                   completedTime = record[stratumObservations.COMPLETED_TIME],
+                  name = record[STRATA.NAME.asNonNullable()],
                   observationId = record[OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID],
                   plantingDensity = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY],
                   stratumId = record[STRATA.ID.asNonNullable()],

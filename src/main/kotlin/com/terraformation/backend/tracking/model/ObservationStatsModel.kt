@@ -18,6 +18,7 @@ data class ObservationSubstratumStatsModel(
 
 data class ObservationStratumStatsModel(
     val completedTime: Instant?,
+    val name: String,
     val observationId: ObservationId?,
     val plantingDensity: Int?,
     val stratumId: StratumId,

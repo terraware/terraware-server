@@ -66,6 +66,7 @@ data class ObservationSubstratumStatsPayload(
 )
 data class ObservationStratumStatsPayload(
     val completedTime: Instant?,
+    val name: String,
     @Schema(
         description =
             "Which observation these statistics came from. This can differ between strata."
@@ -100,6 +101,7 @@ data class ObservationStratumStatsPayload(
       model: ObservationStratumStatsModel
   ) : this(
       completedTime = model.completedTime,
+      name = model.name,
       observationId = model.observationId,
       plantingDensity = model.plantingDensity,
       stratumId = model.stratumId,
