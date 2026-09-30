@@ -352,9 +352,10 @@ class GeometryFileParserTest {
   fun `reads KML placemarks at any depth`(containers: String) {
     val closing =
         when (containers) {
+          "" -> ""
           "<Folder>" -> "</Folder>"
           "<Document><Folder>" -> "</Folder></Document>"
-          else -> ""
+          else -> throw IllegalArgumentException("No closing tags defined for $containers")
         }
     val content =
         """<kml xmlns="http://www.opengis.net/kml/2.2">$containers<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0,5 1,0,5 0,1,5 0,0,5</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>$closing</kml>"""
@@ -400,24 +401,14 @@ class GeometryFileParserTest {
     }
   }
 
-  @Test
-  fun `renamed GPX is unsupported`() {
+  @ParameterizedTest
+  @ValueSource(strings = ["boundary.gpx", "boundary.kml"])
+  fun `GPX content is unsupported regardless of filename`(filename: String) {
     assertThrows<UnsupportedGeometryFileFormatException> {
       parser.readWithFormat(
           """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
               .toByteArray(),
-          "boundary.kml",
-      )
-    }
-  }
-
-  @Test
-  fun `unsupported content is rejected`() {
-    assertThrows<UnsupportedGeometryFileFormatException> {
-      parser.readWithFormat(
-          """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
-              .toByteArray(),
-          "boundary.gpx",
+          filename,
       )
     }
   }
