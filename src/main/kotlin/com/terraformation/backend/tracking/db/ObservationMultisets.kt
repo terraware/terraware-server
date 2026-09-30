@@ -441,11 +441,13 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
                     .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
             )
             .fullOuterJoin(tempSubstratumT0)
+            // Match against the permanent t0 row too, so a species with both permanent and
+            // temporary t0 data but no observed totals row comes out as a single row.
             .on(
                 tempSubstratumCol
-                    .eq(SUBSTRATUM_ID)
-                    .and(tempSpeciesCol.eq(SPECIES_ID))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                    .eq(DSL.coalesce(SUBSTRATUM_ID, permSubstratumCol))
+                    .and(tempSpeciesCol.eq(DSL.coalesce(SPECIES_ID, permSpeciesCol)))
+                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             )
             .where(
                 SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID)
@@ -587,11 +589,13 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
                     .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
             )
             .fullOuterJoin(tempStratumT0)
+            // Match against the permanent t0 row too, so a species with both permanent and
+            // temporary t0 data but no observed totals row comes out as a single row.
             .on(
                 tempStratumCol
-                    .eq(STRATUM_ID)
-                    .and(tempSpeciesCol.eq(SPECIES_ID))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                    .eq(DSL.coalesce(STRATUM_ID, permStratumCol))
+                    .and(tempSpeciesCol.eq(DSL.coalesce(SPECIES_ID, permSpeciesCol)))
+                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             )
             .where(
                 STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID)
@@ -751,11 +755,13 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                     .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
             )
             .fullOuterJoin(tempSiteT0)
+            // Match against the permanent t0 row too, so a species with both permanent and
+            // temporary t0 data but no observed totals row comes out as a single row.
             .on(
                 tempSiteCol
-                    .eq(PLANTING_SITE_ID)
-                    .and(tempSpeciesCol.eq(SPECIES_ID))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                    .eq(DSL.coalesce(PLANTING_SITE_ID, permSiteCol))
+                    .and(tempSpeciesCol.eq(DSL.coalesce(SPECIES_ID, permSpeciesCol)))
+                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             )
             .where(
                 PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
