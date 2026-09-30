@@ -65,13 +65,14 @@
 </p>
 
 <p th:if="!${allT0DataSet}">
-    T0 data is incomplete, so survival rates cannot be calculated for the whole planting site.
+    <strong>Warning:</strong>
+    T0 data is incomplete, so aggregate survival rates may be missing for some areas.
 </p>
 <p th:unless="!${allT0DataSet}">
     All T0 data is set.
 </p>
 
-<th:block th:if="${hasCompletedObservations and allT0DataSet}">
+<th:block th:if="${hasCompletedObservations}">
     <p th:if="${model.survivalRateIncludesTempPlots}">
         Survival rates include temporary monitoring plots.
     </p>
@@ -242,6 +243,62 @@
             </td>
             <td th:class="${row.totalPlants != null ? 'numeric' : 'missing'}"
                 th:text="${row.totalPlants ?: '—'}">100
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <h3>Plot Observations Included in Latest Observation</h3>
+
+    <p>
+        Completed plot observations whose data is rolled up into the results of observation
+        <th:block th:text="${model.latestCompletedObservationId}">1</th:block>.
+        Substrata not covered by that observation use plot observations from their latest earlier
+        observation. A plot that counts toward the survival rate but has no T0 density
+        makes its substratum's aggregate survival rate null.
+    </p>
+
+    <p th:if="${model.latestIncludedPlots.isEmpty()}">No plot observations are included.</p>
+
+    <table class="bordered" th:unless="${model.latestIncludedPlots.isEmpty()}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Stratum</th>
+            <th>Substratum</th>
+            <th>Plot Number</th>
+            <th>Observation ID</th>
+            <th>Plot Completed</th>
+            <th>Observed As</th>
+            <th>Counts Toward Survival Rate</th>
+            <th>Has T0 Density</th>
+            <th>Blocks Aggregate Rate</th>
+            <th>Survival Rate</th>
+            <th>Live Plants</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${model.latestIncludedPlots}">
+            <td class="numeric" th:text="${row.id}">1</td>
+            <td th:classappend="${row.stratumName == null ? 'missing' : ''}"
+                th:text="${row.stratumName ?: 'Deleted'}">Stratum
+            </td>
+            <td th:classappend="${row.substratumName == null ? 'missing' : ''}"
+                th:text="${row.substratumName ?: 'Deleted'}">Substratum
+            </td>
+            <td class="numeric" th:text="${row.plotNumber}">1</td>
+            <td class="numeric" th:text="${row.observationId}">1</td>
+            <td th:classappend="${row.observationCompletedTime == null ? 'missing' : ''}"
+                th:text="${row.observationCompletedTime ?: '—'}">Wed, 1 Jan 2025 00:00:00 GMT
+            </td>
+            <td th:text="${row.isPermanent ? 'Permanent' : 'Temporary'}">Permanent</td>
+            <td th:text="${row.countsTowardSurvivalRate}">true</td>
+            <td th:text="${row.hasT0Density}">true</td>
+            <td th:text="${row.blocksAggregateRate ? 'Yes' : ''}"></td>
+            <td th:class="${row.survivalRate != null ? 'numeric' : 'missing'}"
+                th:text="${row.survivalRate != null ? row.survivalRate + '%' : '—'}">75%
+            </td>
+            <td th:class="${row.totalLive != null ? 'numeric' : 'missing'}"
+                th:text="${row.totalLive ?: '—'}">100
             </td>
         </tr>
         </tbody>

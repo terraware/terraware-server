@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.ObservationIncludedPlotModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import java.time.Instant
 
@@ -51,10 +52,30 @@ data class MonitoringPlotSurvivalRateRow(
     val totalPlants: Int?,
 )
 
+data class IncludedPlotRow(
+    /**
+     * True if the plot counts toward the aggregate survival rate but has no t0 density, which makes
+     * the aggregate rate null.
+     */
+    val blocksAggregateRate: Boolean,
+    val countsTowardSurvivalRate: Boolean,
+    val hasT0Density: Boolean,
+    val id: MonitoringPlotId,
+    val isPermanent: Boolean,
+    val observationCompletedTime: String?,
+    val observationId: ObservationId,
+    val plotNumber: Long,
+    val stratumName: String?,
+    val substratumName: String?,
+    val survivalRate: Int?,
+    val totalLive: Int?,
+)
+
 data class SurvivalRatesPageModel(
     val latestCompletedObservationId: ObservationId?,
     val latestCompletedSurvivalRate: Int?,
     val latestCompletedTime: String?,
+    val latestIncludedPlots: List<IncludedPlotRow>,
     val monitoringPlots: List<MonitoringPlotSurvivalRateRow>,
     val organizationId: OrganizationId,
     val organizationName: String,
@@ -72,8 +93,13 @@ data class SurvivalRatesPageModel(
         site: ExistingPlantingSiteModel,
         organization: OrganizationModel,
         results: List<ObservationResultsModel>,
+        latestIncludedPlots: List<ObservationIncludedPlotModel>,
     ): SurvivalRatesPageModel {
       val latestCompleted = results.firstOrNull()
+
+      val stratumNames = site.strata.associate { it.id to it.name }
+      val substratumNames =
+          site.strata.flatMap { stratum -> stratum.substrata.map { it.id to it.name } }.toMap()
       val siteSurvivalRateSource = results.firstOrNull { it.survivalRate != null }
 
       val strataById =
@@ -116,6 +142,25 @@ data class SurvivalRatesPageModel(
           latestCompletedObservationId = latestCompleted?.observationId,
           latestCompletedSurvivalRate = latestCompleted?.survivalRate,
           latestCompletedTime = latestCompleted?.completedTime?.toString(),
+          latestIncludedPlots =
+              latestIncludedPlots.map { plot ->
+                val countsTowardSurvivalRate =
+                    plot.isPermanent || site.survivalRateIncludesTempPlots
+                IncludedPlotRow(
+                    blocksAggregateRate = countsTowardSurvivalRate && !plot.hasT0Density,
+                    countsTowardSurvivalRate = countsTowardSurvivalRate,
+                    hasT0Density = plot.hasT0Density,
+                    id = plot.monitoringPlotId,
+                    isPermanent = plot.isPermanent,
+                    observationCompletedTime = plot.completedTime?.toString(),
+                    observationId = plot.observationId,
+                    plotNumber = plot.monitoringPlotNumber,
+                    stratumName = plot.stratumId?.let { stratumNames[it] },
+                    substratumName = plot.substratumId?.let { substratumNames[it] },
+                    survivalRate = plot.survivalRate,
+                    totalLive = plot.totalLive,
+                )
+              },
           monitoringPlots =
               site.strata.flatMap { stratum ->
                 stratum.substrata.flatMap { substratum ->

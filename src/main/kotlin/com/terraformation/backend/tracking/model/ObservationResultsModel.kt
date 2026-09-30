@@ -271,3 +271,25 @@ data class RecordedPlantModel(
     val speciesName: String?,
     val status: RecordedPlantStatus,
 )
+
+/**
+ * A completed monitoring plot observation whose data is included in an observation's rolled-up
+ * results. For substrata the observation did not cover, this is a plot observation from the
+ * substratum's latest earlier observation.
+ */
+data class ObservationIncludedPlotModel(
+    val completedTime: Instant?,
+    /**
+     * Whether the plot has t0 density for at least one species. Zero-density rows don't count, to
+     * match the survival rate null rule.
+     */
+    val hasT0Density: Boolean,
+    val isPermanent: Boolean,
+    val monitoringPlotId: MonitoringPlotId,
+    val monitoringPlotNumber: Long,
+    val observationId: ObservationId,
+    val stratumId: StratumId?,
+    val substratumId: SubstratumId?,
+    val survivalRate: Int?,
+    val totalLive: Int?,
+)
