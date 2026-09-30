@@ -20,14 +20,17 @@ enum class GeometryFileErrorCode {
  * A content failure with a stable code. Clients translate the code into a message in the user's
  * language; the exception message is for server-side diagnostics only.
  */
-abstract class GeometryFileException(val code: GeometryFileErrorCode, cause: Throwable? = null) :
-    ContentFormatException(code.name, cause)
+abstract class GeometryFileException(
+    val code: GeometryFileErrorCode,
+    cause: Throwable? = null,
+    message: String? = null,
+) : ContentFormatException(if (message != null) "${code.name}: $message" else code.name, cause)
 
 class UnsupportedGeometryFileFormatException(cause: Throwable? = null) :
     GeometryFileException(GeometryFileErrorCode.UnsupportedFormat, cause)
 
-class InvalidGeometryFileException(cause: Throwable? = null) :
-    GeometryFileException(GeometryFileErrorCode.InvalidFile, cause)
+class InvalidGeometryFileException(cause: Throwable? = null, message: String? = null) :
+    GeometryFileException(GeometryFileErrorCode.InvalidFile, cause, message)
 
 class NoKmlInArchiveException(cause: Throwable? = null) :
     GeometryFileException(GeometryFileErrorCode.NoKmlInArchive, cause)
