@@ -279,7 +279,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           try {
             ZipFile(path.toFile())
           } catch (e: ZipException) {
-            throw InvalidGeometryFileException(e)
+            throw InvalidGeometryFileException(e, "Malformed ZIP archive")
           }
 
       zipFile.use { zip ->
@@ -325,7 +325,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
         (listOf("shp") + SECONDARY_EXTENSIONS).associateWith { extension ->
           entries.singleOrNull { it.name.equals("$basename.$extension", ignoreCase = true) }
               ?: throw if (extension == "prj") UnknownCoordinateSystemException()
-              else InvalidGeometryFileException()
+              else InvalidGeometryFileException(message = "Shapefile is missing .$extension")
         }
 
     if (components.values.any { it.size > MAX_COMPONENT_BYTES }) {
@@ -378,11 +378,11 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           } catch (e: GeometryFileException) {
             throw e
           } catch (e: IOException) {
-            throw InvalidGeometryFileException(e)
+            throw InvalidGeometryFileException(e, "Unable to read shapefile")
           } catch (e: BufferUnderflowException) {
-            throw InvalidGeometryFileException(e)
+            throw InvalidGeometryFileException(e, "Truncated shapefile")
           } catch (e: IllegalArgumentException) {
-            throw InvalidGeometryFileException(e)
+            throw InvalidGeometryFileException(e, "Invalid shapefile contents")
           } catch (e: FactoryException) {
             throw UnknownCoordinateSystemException(e)
           } catch (e: TransformException) {
