@@ -242,6 +242,7 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
             ViabilityTestModel(
                 seedsTested = 5,
                 startDate = startDate,
+                substrateNotes = "Water",
                 testType = ViabilityTestType.Lab,
             )
         )
@@ -250,13 +251,14 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
 
       publisher.assertEventPublished { event ->
         event is ViabilityTestCreatedEvent &&
-            event.viabilityTestId == test.id &&
-            event.testType == ViabilityTestType.Lab &&
-            event.seedsTested == 5 &&
-            event.startDate == startDate &&
             event.accessionId == initial.id &&
             event.facilityId == facilityId &&
-            event.organizationId == organizationId
+            event.organizationId == organizationId &&
+            event.seedsTested == 5 &&
+            event.startDate == startDate &&
+            event.substrateNotes == "Water" &&
+            event.testType == ViabilityTestType.Lab &&
+            event.viabilityTestId == test.id
       }
     }
 
@@ -294,6 +296,7 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
                           id = testId,
                           notes = "new notes",
                           seedsTested = 5,
+                          substrateNotes = "substrate",
                           testType = ViabilityTestType.Lab,
                       )
                   )
@@ -302,13 +305,14 @@ internal class AccessionStoreEventTest : AccessionStoreTest() {
 
       publisher.assertEventPublished { event ->
         event is ViabilityTestUpdatedEvent &&
-            event.viabilityTestId == testId &&
             event.accessionId == initial.id &&
+            event.changedFrom.seedsTested == 1 &&
+            event.changedTo.notes == "new notes" &&
+            event.changedTo.seedsTested == 5 &&
+            event.changedTo.substrateNotes == "substrate" &&
             event.facilityId == facilityId &&
             event.organizationId == organizationId &&
-            event.changedFrom.seedsTested == 1 &&
-            event.changedTo.seedsTested == 5 &&
-            event.changedTo.notes == "new notes"
+            event.viabilityTestId == testId
       }
     }
 

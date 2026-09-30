@@ -598,6 +598,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 testType = ViabilityTestType.Lab,
                 seedsTested = 1,
                 substrate = ViabilityTestSubstrate.Agar,
+                substrateNotes = "Very sticky",
                 treatment = SeedTreatment.Soak,
                 startDate = LocalDate.of(2021, 1, 1),
                 notes = "initial notes",
@@ -612,8 +613,16 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         eventLogEntry(
             knownUserId,
             ViabilityTestUpdatedEvent(
-                changedFrom = ViabilityTestUpdatedEventValues(seedsTested = 1),
-                changedTo = ViabilityTestUpdatedEventValues(seedsTested = 2),
+                changedFrom =
+                    ViabilityTestUpdatedEventValues(
+                        seedsTested = 1,
+                        substrateNotes = "Very sticky",
+                    ),
+                changedTo =
+                    ViabilityTestUpdatedEventValues(
+                        seedsTested = 2,
+                        substrateNotes = "Still sticky",
+                    ),
                 viabilityTestId = viabilityTestId,
                 accessionId = accessionId,
                 facilityId = facilityId,
@@ -652,6 +661,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                             CreatedFieldPayload("staffResponsible", listOf("Some Person")),
                             CreatedFieldPayload("startDate", listOf("2021-01-01")),
                             CreatedFieldPayload("substrate", listOf("Agar")),
+                            CreatedFieldPayload("substrateNotes", listOf("Very sticky")),
                             CreatedFieldPayload("testType", listOf("Lab")),
                             CreatedFieldPayload("treatment", listOf("Soak")),
                         )
@@ -667,6 +677,18 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         fieldName = "seeds tested",
                         changedFrom = listOf("1"),
                         changedTo = listOf("2"),
+                    ),
+                subject = subject,
+                timestamp = updateEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "substrate notes",
+                        changedFrom = listOf("Very sticky"),
+                        changedTo = listOf("Still sticky"),
                     ),
                 subject = subject,
                 timestamp = updateEntry.createdTime,

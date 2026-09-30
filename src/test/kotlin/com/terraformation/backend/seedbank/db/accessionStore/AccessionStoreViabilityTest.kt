@@ -37,6 +37,8 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                   ViabilityTestModel(
                       seedsTested = 1,
                       startDate = startDate,
+                      substrate = ViabilityTestSubstrate.Other,
+                      substrateNotes = "Peat moss",
                       testType = ViabilityTestType.Lab,
                   )
               )
@@ -49,6 +51,8 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 accessionId = initial.id,
                 seedsSown = 1,
                 startDate = startDate,
+                substrateId = ViabilityTestSubstrate.Other,
+                substrateNotes = "Peat moss",
                 testType = ViabilityTestType.Lab,
             )
         ),
@@ -85,6 +89,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                         seedsTested = 5,
                         seedType = ViabilityTestSeedType.Fresh,
                         substrate = ViabilityTestSubstrate.Paper,
+                        substrateNotes = "Newsprint",
                         testType = ViabilityTestType.Lab,
                         treatment = SeedTreatment.Scarify,
                     )
@@ -102,6 +107,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 seedTypeId = ViabilityTestSeedType.Fresh,
                 treatmentId = SeedTreatment.Scarify,
                 substrateId = ViabilityTestSubstrate.Paper,
+                substrateNotes = "Newsprint",
                 notes = "notes",
                 seedsSown = 5,
             )
