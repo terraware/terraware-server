@@ -285,6 +285,7 @@ data class ObservationIncludedPlotModel(
      */
     val hasT0Density: Boolean,
     val isPermanent: Boolean,
+    val isRolledForwardFromDeletedSubstratum: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotNumber: Long,
     val observationId: ObservationId,

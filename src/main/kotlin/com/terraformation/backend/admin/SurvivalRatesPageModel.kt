@@ -145,7 +145,8 @@ data class SurvivalRatesPageModel(
           latestIncludedPlots =
               latestIncludedPlots.map { plot ->
                 val countsTowardSurvivalRate =
-                    plot.isPermanent || site.survivalRateIncludesTempPlots
+                    !plot.isRolledForwardFromDeletedSubstratum &&
+                        (plot.isPermanent || site.survivalRateIncludesTempPlots)
                 IncludedPlotRow(
                     blocksAggregateRate = countsTowardSurvivalRate && !plot.hasT0Density,
                     countsTowardSurvivalRate = countsTowardSurvivalRate,

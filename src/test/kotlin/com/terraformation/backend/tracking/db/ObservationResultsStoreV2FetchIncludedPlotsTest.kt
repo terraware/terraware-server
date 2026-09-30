@@ -59,6 +59,7 @@ class ObservationResultsStoreV2FetchIncludedPlotsTest : ObservationScenarioTest(
                 completedTime = time2,
                 hasT0Density = true,
                 isPermanent = true,
+                isRolledForwardFromDeletedSubstratum = false,
                 monitoringPlotId = plotIdA,
                 monitoringPlotNumber = 1,
                 observationId = observationId2,
@@ -71,6 +72,7 @@ class ObservationResultsStoreV2FetchIncludedPlotsTest : ObservationScenarioTest(
                 completedTime = time1,
                 hasT0Density = false,
                 isPermanent = true,
+                isRolledForwardFromDeletedSubstratum = false,
                 monitoringPlotId = plotIdB1,
                 monitoringPlotNumber = 2,
                 observationId = observationId1,
@@ -83,6 +85,7 @@ class ObservationResultsStoreV2FetchIncludedPlotsTest : ObservationScenarioTest(
                 completedTime = time1,
                 hasT0Density = true,
                 isPermanent = false,
+                isRolledForwardFromDeletedSubstratum = false,
                 monitoringPlotId = plotIdB2,
                 monitoringPlotNumber = 3,
                 observationId = observationId1,
@@ -134,6 +137,47 @@ class ObservationResultsStoreV2FetchIncludedPlotsTest : ObservationScenarioTest(
           null,
           includedPlots.single { it.monitoringPlotId == monitoringPlotIds[2L] }.substratumId,
           "Substratum ID of plot in deleted substratum",
+      )
+      assertEquals(
+          listOf(false, true),
+          includedPlots.map { it.isRolledForwardFromDeletedSubstratum },
+          "Is rolled forward from deleted substratum",
+      )
+    }
+  }
+
+  @Test
+  fun `does not flag plots in deleted substrata that were observed by the observation itself`() {
+    allowSiteEdits()
+
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1) }
+          substratum(2) { plot(2) }
+        }
+      }
+
+      observation(1) {
+        plot(1) { species(0, live = 1) }
+        plot(2) { species(0, live = 1) }
+      }
+
+      siteEdited {
+        stratum(1) { substratum(1) { plot(1) } }
+        substratumDeleted(2)
+      }
+
+      val includedPlot =
+          resultsStoreV2.fetchIncludedPlots(observationIds[1]!!).single {
+            it.monitoringPlotId == monitoringPlotIds[2L]
+          }
+
+      assertEquals(null, includedPlot.substratumId, "Substratum ID")
+      assertEquals(
+          false,
+          includedPlot.isRolledForwardFromDeletedSubstratum,
+          "Is rolled forward from deleted substratum",
       )
     }
   }

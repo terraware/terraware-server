@@ -160,10 +160,18 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 )
             )
 
+    val isRolledForwardFromDeletedSubstratumField =
+        DSL.field(
+            SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.isNull.and(
+                OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.ne(observationId)
+            )
+        )
+
     return dslContext
         .select(
             OBSERVATION_PLOTS.COMPLETED_TIME,
             OBSERVATION_PLOTS.IS_PERMANENT,
+            isRolledForwardFromDeletedSubstratumField,
             OBSERVATION_PLOTS.MONITORING_PLOT_ID,
             OBSERVATION_PLOTS.OBSERVATION_ID,
             MONITORING_PLOTS.PLOT_NUMBER,
@@ -206,6 +214,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
               completedTime = record[OBSERVATION_PLOTS.COMPLETED_TIME],
               hasT0Density = record[hasT0DensityField] == true,
               isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()],
+              isRolledForwardFromDeletedSubstratum =
+                  record[isRolledForwardFromDeletedSubstratumField] == true,
               monitoringPlotId = record[OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable()],
               monitoringPlotNumber = record[MONITORING_PLOTS.PLOT_NUMBER.asNonNullable()],
               observationId = record[OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()],
