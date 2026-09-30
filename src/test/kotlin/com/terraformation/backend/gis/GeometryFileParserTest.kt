@@ -188,9 +188,9 @@ class GeometryFileParserTest {
   @Test
   fun `parse dissolves the parts of a single multi-part shape`() {
     val content =
-        """{"type":"MultiPolygon","coordinates":[[[[0,0],[2,0],[2,2],[0,2],[0,0]]],[[[1,0],[3,0],[3,2],[1,2],[1,0]]]]}"""
+        """<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0 2,0 2,2 0,2 0,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>1,0 3,0 3,2 1,2 1,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry></Placemark></Document></kml>"""
 
-    val geometry = parser.parse(content.toByteArray(), "overlapping.geojson")
+    val geometry = parser.parse(content.toByteArray(), "overlapping.kml")
 
     assertEquals("Polygon", geometry.geometryType)
     assertEquals(6.0, geometry.area)
@@ -220,16 +220,25 @@ class GeometryFileParserTest {
   }
 
   @ParameterizedTest
-  @ValueSource(booleans = [false, true])
-  fun `rejects oversized shapefile component`(understateSizes: Boolean) {
+  @CsvSource(
+      "PlantingSite.dbf, false, Shapefile component",
+      "PlantingSite.dbf, true, Shapefile component",
+      "doc.kml, false, KML",
+      "doc.kml, true, KML",
+  )
+  fun `rejects oversized archive entry`(
+      entryName: String,
+      understateSizes: Boolean,
+      expectedSubject: String,
+  ) {
     val content =
         shapefileZip(
             omitExtension = "dbf",
-            extraEntries = mapOf("PlantingSite.dbf" to 100 * 1024 * 1024 + 1),
+            extraEntries = mapOf(entryName to 100 * 1024 * 1024 + 1),
             understateSizes = understateSizes,
         )
     val exception = assertThrows<ContentFormatException> { parser.parse(content, "boundary.zip") }
-    assertEquals("Shapefile component exceeds 104857600 uncompressed bytes", exception.message)
+    assertEquals("$expectedSubject exceeds 104857600 uncompressed bytes", exception.message)
   }
 
   @ParameterizedTest
@@ -297,14 +306,12 @@ class GeometryFileParserTest {
   }
 
   @Test
-  fun `readWithFormat preserves invalid geometry for boundary validation`() {
-    val shapes =
-        readShapes(
-            """{"type":"Polygon","coordinates":[[[0,0],[2,2],[0,2],[2,0],[0,0]]]}""".toByteArray(),
-            "boundary.geojson",
-        )
+  fun `readWithFormat preserves invalid geometry that parse rejects`() {
+    val content =
+        """{"type":"Polygon","coordinates":[[[0,0],[2,2],[0,2],[2,0],[0,0]]]}""".toByteArray()
 
-    assertFalse(shapes.single().isValid)
+    assertFalse(readShapes(content, "boundary.geojson").single().isValid)
+    assertThrows<InvalidGeometryFileException> { parser.parse(content, "boundary.geojson") }
   }
 
   @ParameterizedTest
@@ -321,15 +328,23 @@ class GeometryFileParserTest {
 
   @Test
   fun `readWithFormat unwraps features and geometry collections without union`() {
-    val parsed =
+    val geoJson =
         parser.readWithFormat(
             """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[1,2]},{"type":"Polygon","coordinates":[[[0,0],[1,0],[0,1],[0,0]]]}]}}]}"""
                 .toByteArray(),
             "boundary.geojson",
         )
+    val kml =
+        parser.readWithFormat(
+            """<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><MultiGeometry><Point><coordinates>1,2</coordinates></Point><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0 1,0 0,1 0,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry></Placemark></Document></kml>"""
+                .toByteArray(),
+            "boundary.kml",
+        )
 
-    assertEquals(listOf("Point", "Polygon"), parsed.geometries.map { it.geometryType })
-    assertEquals(GeometryFileFormat.GeoJSON, parsed.format)
+    assertEquals(listOf("Point", "Polygon"), geoJson.geometries.map { it.geometryType })
+    assertEquals(GeometryFileFormat.GeoJSON, geoJson.format)
+    assertEquals(listOf("Point", "Polygon"), kml.geometries.map { it.geometryType })
+    assertEquals(GeometryFileFormat.KML, kml.format)
   }
 
   @Test

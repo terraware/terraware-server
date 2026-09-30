@@ -45,9 +45,11 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     return parseWithFormat(content, filename).geometry
   }
 
-  /** Reads a file and combines its shapes into a single geometry. */
+  /**
+   * Reads a file and combines its shapes into a single geometry. Rejects invalid GeoJSON shapes.
+   */
   fun parseWithFormat(content: ByteArray, filename: String?): ParsedGeometryFile {
-    val parsed = readWithFormat(content, filename)
+    val parsed = read(content, filename, validateGeoJson = true)
     val elements = parsed.geometries
     if (elements.isEmpty()) {
       throw NoPolygonsException()
@@ -65,20 +67,27 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
    * Reads the individual shapes from a file without combining them or checking their topology. The
    * shape list may be empty; its elements are in WGS 84 coordinates.
    */
-  fun readWithFormat(content: ByteArray, filename: String?): ParsedGeometryShapes {
+  fun readWithFormat(content: ByteArray, filename: String?): ParsedGeometryShapes =
+      read(content, filename, validateGeoJson = false)
+
+  private fun read(
+      content: ByteArray,
+      filename: String?,
+      validateGeoJson: Boolean,
+  ): ParsedGeometryShapes {
     val extension = filename?.substringAfterLast('.', "")?.lowercase()
 
     return when (Tika().detect(content, filename)) {
       "application/vnd.google-earth.kml+xml" -> readKml(content, GeometryFileFormat.KML)
       "application/vnd.google-earth.kmz",
       "application/zip" -> readZip(content)
-      MediaType.APPLICATION_JSON -> readGeoJson(content)
+      MediaType.APPLICATION_JSON -> readGeoJson(content, validateGeoJson)
 
       // Tika reports GeoJSON as text/plain unless the filename ends in .json, and callers don't
       // always have a usable filename to give us.
       MediaType.TEXT_PLAIN,
       MediaType.APPLICATION_OCTET_STREAM ->
-          readByExtension(content, extension) ?: readGeoJson(content)
+          readByExtension(content, extension) ?: readGeoJson(content, validateGeoJson)
 
       MediaType.APPLICATION_XML,
       MediaType.TEXT_XML ->
@@ -104,12 +113,12 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           format,
       )
 
-  private fun readGeoJson(content: ByteArray): ParsedGeometryShapes {
+  private fun readGeoJson(content: ByteArray, validate: Boolean): ParsedGeometryShapes {
     val geometry =
         try {
           objectMapper
               .readerFor(Geometry::class.java)
-              .withAttribute(GeometryDeserializer.SKIP_VALIDATION, true)
+              .withAttribute(GeometryDeserializer.SKIP_VALIDATION, !validate)
               .readValue<Geometry?>(content) ?: throw InvalidGeometryFileException()
         } catch (e: JsonProcessingException) {
           throw InvalidGeometryFileException(e)
@@ -136,9 +145,10 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     val childFeatures =
         parentFeature.getAttribute("Feature") as? Collection<*>
             ?: throw ContentFormatException("No features found in KML file")
-    val geometries = childFeatures.mapNotNull {
-      (it as? SimpleFeature)?.defaultGeometry as? Geometry
-    }
+    val geometries =
+        childFeatures
+            .mapNotNull { (it as? SimpleFeature)?.defaultGeometry as? Geometry }
+            .flatMap { flattenCollections(it) }
 
     return parsedFile(geometries, format)
   }
@@ -167,7 +177,12 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           !it.isDirectory && it.name.endsWith(".kml", ignoreCase = true)
         } ?: return null
 
-    return zip.getInputStream(entry).use { readKml(it.readAllBytes(), GeometryFileFormat.KMZ) }
+    val content = zip.getInputStream(entry).use { it.readNBytes(MAX_COMPONENT_BYTES.toInt() + 1) }
+    if (content.size > MAX_COMPONENT_BYTES) {
+      throw ContentFormatException("KML exceeds $MAX_COMPONENT_BYTES uncompressed bytes")
+    }
+
+    return readKml(content, GeometryFileFormat.KMZ)
   }
 
   private fun readZippedShapefile(zip: ZipFile): ParsedGeometryShapes {
