@@ -1,3 +1,4 @@
+d6415ed1 Update Gradle to v9.8.0 (#5073)
 d7adefc5 SW-8947 Return better HTTP status code on thumbnail overload (#5053)
 67ba9e17 Remove startup warning (#5065)
 669cbc70 SW-8959 Temp plots without t0 data also cause null aggregate survival rates (#5054)
