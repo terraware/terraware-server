@@ -208,7 +208,12 @@ data class SurvivalRatesPageModel(
                         observationId = source?.observationId,
                         plantingDensity = source?.value?.plantingDensity,
                         plotNumber = plot.plotNumber,
-                        species = speciesSurvivalRateRows(history.toSpeciesSources(), speciesNames),
+                        species =
+                            speciesSurvivalRateRows(
+                                history.toSpeciesSources(),
+                                speciesNames,
+                                ::plotSpeciesTotalPlants,
+                            ),
                         status = source?.value?.status,
                         stratumName = stratum.name,
                         substratumName = substratum.name,
@@ -232,6 +237,7 @@ data class SurvivalRatesPageModel(
                     SpeciesResultsSource(it.observationId, it.completedTime, it.species)
                   },
                   speciesNames,
+                  ::aggregateSpeciesTotalPlants,
               ),
           strata =
               site.strata.map { stratum ->
@@ -244,7 +250,12 @@ data class SurvivalRatesPageModel(
                     observationId = source?.observationId,
                     plantingCompleted = source?.value?.plantingCompleted,
                     plantingDensity = source?.value?.plantingDensity,
-                    species = speciesSurvivalRateRows(history.toSpeciesSources(), speciesNames),
+                    species =
+                        speciesSurvivalRateRows(
+                            history.toSpeciesSources(),
+                            speciesNames,
+                            ::aggregateSpeciesTotalPlants,
+                        ),
                     survivalRate = source?.value?.survivalRate,
                     survivalRateStdDev = source?.value?.survivalRateStdDev,
                     totalPlants = source?.value?.totalPlants,
@@ -262,7 +273,12 @@ data class SurvivalRatesPageModel(
                       observationId = source?.observationId,
                       plantingCompleted = source?.value?.plantingCompleted,
                       plantingDensity = source?.value?.plantingDensity,
-                      species = speciesSurvivalRateRows(history.toSpeciesSources(), speciesNames),
+                      species =
+                          speciesSurvivalRateRows(
+                              history.toSpeciesSources(),
+                              speciesNames,
+                              ::aggregateSpeciesTotalPlants,
+                          ),
                       stratumName = stratum.name,
                       survivalRate = source?.value?.survivalRate,
                       survivalRateStdDev = source?.value?.survivalRateStdDev,
@@ -300,14 +316,24 @@ data class SpeciesResultsSource(
     val species: List<ObservationSpeciesResultsModel>,
 )
 
+/** Matches a plot's total plants, which counts existing plants. */
+fun plotSpeciesTotalPlants(species: ObservationSpeciesResultsModel): Int =
+    species.totalLive + species.totalExisting + species.totalDead
+
+/** Matches a substratum's, stratum's, or site's total plants, which don't count existing plants. */
+fun aggregateSpeciesTotalPlants(species: ObservationSpeciesResultsModel): Int =
+    species.totalLive + species.totalDead
+
 /**
  * Builds a row for each known species in an entity's results. [sources] must be ordered
  * newest-first. The latest observation values come from the first source; the latest available rate
- * comes from the newest source with a non-null rate for the species.
+ * comes from the newest source with a non-null rate for the species. [totalPlants] computes a
+ * species' total plants the same way as the entity's own total.
  */
 fun speciesSurvivalRateRows(
     sources: List<SpeciesResultsSource>,
     speciesNames: Map<SpeciesId, String>,
+    totalPlants: (ObservationSpeciesResultsModel) -> Int,
 ): List<SpeciesSurvivalRateRow> {
   val latestSpeciesById =
       sources
@@ -334,7 +360,7 @@ fun speciesSurvivalRateRows(
             latestObservationSurvivalRate = latest?.survivalRate,
             latestObservationT0Density = latest?.t0Density,
             latestObservationTotalLive = latest?.totalLive,
-            latestObservationTotalPlants = latest?.totalPlants,
+            latestObservationTotalPlants = latest?.let(totalPlants),
             scientificName = speciesNames[speciesId] ?: "Species $speciesId",
             speciesId = speciesId,
         )

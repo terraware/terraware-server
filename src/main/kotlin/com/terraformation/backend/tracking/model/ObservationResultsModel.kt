@@ -72,7 +72,7 @@ data class ObservationSpeciesResultsModel(
     val totalDead: Int,
     val totalExisting: Int,
     val totalLive: Int,
-    /** Total number of live and existing plants of this species. */
+    /** Total number of live, dead, and existing plants of this species. */
     val totalPlants: Int,
 )
 

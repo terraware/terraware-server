@@ -59,7 +59,7 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = 80,
                 latestObservationT0Density = BigDecimal.TEN,
                 latestObservationTotalLive = 5,
-                latestObservationTotalPlants = 7,
+                latestObservationTotalPlants = 8,
                 scientificName = "Aaa",
                 speciesId = speciesIdA,
             ),
@@ -70,7 +70,7 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = null,
                 latestObservationT0Density = null,
                 latestObservationTotalLive = 5,
-                latestObservationTotalPlants = 7,
+                latestObservationTotalPlants = 8,
                 scientificName = "Bbb",
                 speciesId = speciesIdB,
             ),
@@ -86,7 +86,7 @@ class SpeciesSurvivalRateRowsTest {
                 speciesId = speciesIdC,
             ),
         ),
-        speciesSurvivalRateRows(sources, speciesNames),
+        speciesSurvivalRateRows(sources, speciesNames, ::plotSpeciesTotalPlants),
     )
   }
 
@@ -111,9 +111,37 @@ class SpeciesSurvivalRateRowsTest {
                 ),
             ),
             speciesNames,
+            ::aggregateSpeciesTotalPlants,
         )
 
     assertEquals(listOf("80%", "— (70% in obs 1)", "—"), rows.map { it.survivalRateText })
+  }
+
+  @Test
+  fun `species total plants matches the containing entity's definition`() {
+    val sources =
+        listOf(
+            SpeciesResultsSource(
+                ObservationId(1),
+                null,
+                listOf(species(speciesIdA, survivalRate = 80)),
+            )
+        )
+
+    assertEquals(
+        8,
+        speciesSurvivalRateRows(sources, speciesNames, ::plotSpeciesTotalPlants)
+            .single()
+            .latestObservationTotalPlants,
+        "Plot total includes live, existing, and dead plants",
+    )
+    assertEquals(
+        6,
+        speciesSurvivalRateRows(sources, speciesNames, ::aggregateSpeciesTotalPlants)
+            .single()
+            .latestObservationTotalPlants,
+        "Aggregate total includes live and dead plants",
+    )
   }
 
   private fun species(
@@ -133,6 +161,6 @@ class SpeciesSurvivalRateRowsTest {
           totalDead = 1,
           totalExisting = 2,
           totalLive = 5,
-          totalPlants = 7,
+          totalPlants = 8,
       )
 }
