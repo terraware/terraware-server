@@ -129,6 +129,10 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
   fun fetchIncludedPlots(observationId: ObservationId): List<ObservationIncludedPlotModel> {
     requirePermissions { readObservation(observationId) }
 
+    // The substratum history from the observation the plot was observed in, which can differ
+    // from the consuming observation's if the substratum was later moved to another stratum.
+    val plotSubstratumHistories = SUBSTRATUM_HISTORIES.`as`("plot_substratum_histories")
+
     val hasT0DensityField =
         DSL.`when`(
                 OBSERVATION_PLOTS.IS_PERMANENT.isTrue,
@@ -148,7 +152,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                             .from(STRATUM_T0_TEMP_DENSITIES)
                             .where(
                                 STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
-                                    STRATUM_HISTORIES.STRATUM_ID
+                                    plotSubstratumHistories.stratumHistories.STRATUM_ID
                                 )
                             )
                             .and(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.gt(BigDecimal.ZERO))
@@ -182,13 +186,19 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         )
         .join(MONITORING_PLOT_HISTORIES)
         .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
+        .and(
+            MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
+                OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_SUBSTRATUM_HISTORY_ID
+            )
+        )
+        .join(plotSubstratumHistories)
+        .on(plotSubstratumHistories.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
         .join(MONITORING_PLOTS)
         .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
         .leftJoin(OBSERVATION_PLOT_RESULTS)
         .on(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
         .and(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
         .where(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.eq(observationId))
-        .and(MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
         .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         .orderBy(MONITORING_PLOTS.PLOT_NUMBER, OBSERVATION_PLOTS.OBSERVATION_ID)
         .fetch { record ->

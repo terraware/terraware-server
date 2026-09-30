@@ -12,6 +12,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.ObservationIncludedPlotModel
 import com.terraformation.backend.util.toPlantsPerHectare
+import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -96,6 +97,90 @@ class ObservationResultsStoreV2FetchIncludedPlotsTest : ObservationScenarioTest(
   }
 
   @Test
+  fun `includes plots from earlier observations of substrata that have since been deleted`() {
+    allowSiteEdits()
+
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1) }
+          substratum(2) { plot(2) }
+        }
+      }
+
+      observation(1) {
+        plot(1) { species(0, live = 1) }
+        plot(2) { species(0, live = 1) }
+      }
+
+      observation(2) { plot(1) { species(0, live = 1) } }
+
+      siteEdited {
+        stratum(1) { substratum(1) { plot(1) } }
+        substratumDeleted(2)
+      }
+
+      val includedPlots = resultsStoreV2.fetchIncludedPlots(observationIds[2]!!)
+
+      assertEquals(
+          listOf(
+              monitoringPlotIds[1L] to observationIds[2],
+              monitoringPlotIds[2L] to observationIds[1],
+          ),
+          includedPlots.map { it.monitoringPlotId to it.observationId },
+          "Included plots",
+      )
+      assertEquals(
+          null,
+          includedPlots.single { it.monitoringPlotId == monitoringPlotIds[2L] }.substratumId,
+          "Substratum ID of plot in deleted substratum",
+      )
+    }
+  }
+
+  @Test
+  fun `checks temporary plot t0 density against the stratum the plot was observed in`() {
+    allowSiteEdits()
+
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1, permanentIndex = null) }
+          substratum(3) { plot(3) }
+        }
+        stratum(2) { substratum(2) { plot(2) } }
+      }
+
+      t0DensitySet { stratum(1) { species(0, density = 10) } }
+
+      observation(1) {
+        plot(1, isPermanent = false) { species(0, live = 1) }
+        plot(2) { species(0, live = 1) }
+        plot(3) { species(0, live = 1) }
+      }
+
+      siteEdited {
+        stratum(1) { substratum(3) { plot(3) } }
+        stratum(2) {
+          substratum(1) { plot(1) } // Moved from stratum 1
+          substratum(2) { plot(2) }
+        }
+      }
+
+      observation(2) { plot(2) { species(0, live = 1) } }
+
+      val includedPlot =
+          resultsStoreV2.fetchIncludedPlots(observationIds[2]!!).single {
+            it.monitoringPlotId == monitoringPlotIds[1L]
+          }
+
+      assertEquals(observationIds[1], includedPlot.observationId, "Observation ID")
+      assertEquals(stratumIds[2], includedPlot.stratumId, "Stratum ID")
+      assertEquals(true, includedPlot.hasT0Density, "Has t0 density")
+    }
+  }
+
+  @Test
   fun `does not include plots that were not completed`() {
     val speciesId = insertSpecies()
     insertStratum()
@@ -155,5 +240,10 @@ class ObservationResultsStoreV2FetchIncludedPlotsTest : ObservationScenarioTest(
             )
         ),
     )
+  }
+
+  private fun allowSiteEdits() {
+    every { user.canReadPlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
   }
 }
