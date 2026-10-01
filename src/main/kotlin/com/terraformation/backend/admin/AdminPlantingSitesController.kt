@@ -664,6 +664,35 @@ class AdminPlantingSitesController(
     return redirectToAdminHome()
   }
 
+  @PostMapping("/backfillAdHocPlotSubstrata")
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
+  fun backfillAdHocPlotSubstrata(
+      @RequestParam(required = false) plantingSiteId: PlantingSiteId?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      if (plantingSiteId != null) {
+        val count = systemUser.run { plantingSiteStore.backfillAdHocPlotSubstrata(plantingSiteId) }
+        redirectAttributes.successMessage =
+            "Updated $count ad-hoc plot rows for planting site $plantingSiteId."
+      } else {
+        val failures = systemUser.run { plantingSiteStore.backfillAllAdHocPlotSubstrata() }
+        if (failures.isEmpty()) {
+          redirectAttributes.successMessage = "Backfilled ad-hoc plot substrata for all sites."
+        } else {
+          redirectAttributes.failureMessage =
+              "Failed to backfill ad-hoc plot substrata for some planting sites."
+          redirectAttributes.failureDetails = failures.map { (id, message) -> "$id: $message" }
+        }
+      }
+    } catch (e: Exception) {
+      log.error("Ad-hoc plot substratum backfill failed", e)
+      redirectAttributes.failureMessage = "Failed to backfill ad-hoc plot substrata: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
   @PostMapping("/recalculatePopulations")
   @RequireGlobalRole([GlobalRole.SuperAdmin])
   fun recalculatePopulations(

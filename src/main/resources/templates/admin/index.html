@@ -271,6 +271,25 @@
         </form>
     </th:block>
 
+    <th:block th:if="${canBackfillAdHocPlotSubstrata}">
+        <h3>Backfill Ad-Hoc Plot Substrata</h3>
+
+        <p>
+            Sets the substratum of each ad-hoc monitoring plot based on its location, both on the
+            current site map and on every earlier version of the map. Specify a planting site to
+            backfill just that site, or leave it blank to backfill every site with ad-hoc plots.
+            Re-running is safe.
+        </p>
+
+        <form method="POST" action="/admin/backfillAdHocPlotSubstrata">
+            <label>
+                Planting Site ID:
+                <input type="text" name="plantingSiteId"/>
+            </label>
+            <input type="submit" value="Backfill"/>
+        </form>
+    </th:block>
+
     <th:block th:if="${canRecalculatePopulations}">
         <h3>Recalculate Planting Site Populations</h3>
 

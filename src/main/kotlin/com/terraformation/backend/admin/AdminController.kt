@@ -85,6 +85,10 @@ class AdminController(
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
     model.addAttribute(
+        "canBackfillAdHocPlotSubstrata",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
+    model.addAttribute(
         "canRecalculateSurvivalRates",
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )

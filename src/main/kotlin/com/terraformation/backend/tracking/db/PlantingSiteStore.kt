@@ -2558,4 +2558,105 @@ class PlantingSiteStore(
           }
     }
   }
+
+  /**
+   * Sets the substrata of a planting site's ad-hoc monitoring plots based on their locations, both
+   * on the current map and on every earlier version of the map. Returns the number of plot and plot
+   * history rows that changed.
+   */
+  fun backfillAdHocPlotSubstrata(plantingSiteId: PlantingSiteId): Int {
+    return entityLocker.withLockedPlantingSite(plantingSiteId) {
+      updateAdHocPlotSubstrata(plantingSiteId) + updateAdHocPlotHistorySubstrata(plantingSiteId)
+    }
+  }
+
+  /**
+   * Backfills ad-hoc plot substrata for every planting site that has ad-hoc plots. Returns error
+   * messages by planting site ID for any sites that failed.
+   */
+  fun backfillAllAdHocPlotSubstrata(): Map<PlantingSiteId, String?> {
+    val plantingSiteIds =
+        dslContext
+            .selectDistinct(MONITORING_PLOTS.PLANTING_SITE_ID)
+            .from(MONITORING_PLOTS)
+            .where(MONITORING_PLOTS.IS_AD_HOC.isTrue)
+            .orderBy(MONITORING_PLOTS.PLANTING_SITE_ID)
+            .fetch(MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable())
+
+    val failures = mutableMapOf<PlantingSiteId, String?>()
+
+    plantingSiteIds.forEach { plantingSiteId ->
+      try {
+        backfillAdHocPlotSubstrata(plantingSiteId)
+      } catch (e: Exception) {
+        log.warn("Failed to backfill ad-hoc plot substrata for planting site $plantingSiteId", e)
+        failures[plantingSiteId] = e.message
+      }
+    }
+
+    return failures
+  }
+
+  private fun updateAdHocPlotHistorySubstrata(plantingSiteId: PlantingSiteId): Int {
+    val histories =
+        dslContext
+            .select(
+                MONITORING_PLOT_HISTORIES.ID.asNonNullable(),
+                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.asNonNullable(),
+                MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
+                MONITORING_PLOTS.BOUNDARY.asNonNullable(),
+            )
+            .from(MONITORING_PLOT_HISTORIES)
+            .join(MONITORING_PLOTS)
+            .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+            .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(MONITORING_PLOTS.IS_AD_HOC.isTrue)
+            .fetch()
+
+    val substratumHistoriesBySiteHistory =
+        dslContext
+            .select(
+                STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.asNonNullable(),
+                SUBSTRATUM_HISTORIES.ID.asNonNullable(),
+                SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                SUBSTRATUM_HISTORIES.BOUNDARY.asNonNullable(),
+            )
+            .from(SUBSTRATUM_HISTORIES)
+            .join(STRATUM_HISTORIES)
+            .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+            .join(PLANTING_SITE_HISTORIES)
+            .on(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
+            .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId))
+            .orderBy(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.asc().nullsLast(), SUBSTRATUM_HISTORIES.ID)
+            .fetchGroups(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.asNonNullable())
+
+    return histories.count {
+        (historyId, plantingSiteHistoryId, currentSubstratumHistoryId, boundary) ->
+      val candidates = substratumHistoriesBySiteHistory[plantingSiteHistoryId].orEmpty()
+      val substratumHistoryId =
+          boundary.findLargestOverlap(
+              candidates.associate {
+                it[SUBSTRATUM_HISTORIES.ID.asNonNullable()] to
+                    it[SUBSTRATUM_HISTORIES.BOUNDARY.asNonNullable()]
+              }
+          )
+
+      if (substratumHistoryId != currentSubstratumHistoryId) {
+        val substratumId =
+            candidates
+                .firstOrNull { it[SUBSTRATUM_HISTORIES.ID.asNonNullable()] == substratumHistoryId }
+                ?.get(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID)
+
+        dslContext
+            .update(MONITORING_PLOT_HISTORIES)
+            .set(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID, substratumHistoryId)
+            .set(MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID, substratumId)
+            .where(MONITORING_PLOT_HISTORIES.ID.eq(historyId))
+            .execute()
+        true
+      } else {
+        false
+      }
+    }
+  }
 }
