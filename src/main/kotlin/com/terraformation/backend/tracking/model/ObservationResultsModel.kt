@@ -142,6 +142,14 @@ data class ObservationMonitoringPlotResultsModel(
     val sizeMeters: Int,
     override val species: List<ObservationSpeciesResultsModel>,
     val status: ObservationPlotStatus,
+    /** Stratum the plot was in at the time of the observation, if it still exists. */
+    val stratumId: StratumId?,
+    /** Name of the stratum the plot was in at the time of the observation, if any. */
+    val stratumName: String?,
+    /** Substratum the plot was in at the time of the observation, if it still exists. */
+    val substratumId: SubstratumId?,
+    /** Full name of the substratum the plot was in at the time of the observation, if any. */
+    val substratumName: String?,
     /**
      * If this is a permanent monitoring plot in this observation, percentage of plants of all
      * species that have survived since the t0 point. Existing plants are not counted because the

@@ -287,6 +287,12 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       condition: Condition,
       depth: ObservationResultsDepth,
   ): Field<List<ObservationMonitoringPlotResultsModel>> {
+    // The plot history the observation recorded when the plot was observed. This can be from an
+    // earlier map than the observation's own if the plot was merged in from another observation.
+    val observedPlotHistories = MONITORING_PLOT_HISTORIES.`as`("observed_plot_histories")
+    val plotSubstratumHistories = SUBSTRATUM_HISTORIES.`as`("plot_substratum_histories")
+    val plotStratumHistories = STRATUM_HISTORIES.`as`("plot_stratum_histories")
+
     val recordedPlantsField =
         if (depth == ObservationResultsDepth.Plant) {
           recordedPlantsMultiset
@@ -320,6 +326,10 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE,
                     SUBSTRATA.ID,
                     SUBSTRATA.STRATUM_ID,
+                    plotSubstratumHistories.SUBSTRATUM_ID,
+                    plotSubstratumHistories.FULL_NAME,
+                    plotStratumHistories.STRATUM_ID,
+                    plotStratumHistories.NAME,
                 )
                 .from(OBSERVATION_PLOTS)
                 .join(MONITORING_PLOTS)
@@ -330,6 +340,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                         MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
                     )
                 )
+                .join(observedPlotHistories)
+                .on(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.eq(observedPlotHistories.ID))
                 .leftJoin(USERS)
                 .on(OBSERVATION_PLOTS.CLAIMED_BY.eq(USERS.ID))
                 .leftJoin(OBSERVATION_PLOT_RESULTS)
@@ -339,6 +351,10 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 )
                 .leftJoin(SUBSTRATA)
                 .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+                .leftJoin(plotSubstratumHistories)
+                .on(observedPlotHistories.SUBSTRATUM_HISTORY_ID.eq(plotSubstratumHistories.ID))
+                .leftJoin(plotStratumHistories)
+                .on(plotSubstratumHistories.STRATUM_HISTORY_ID.eq(plotStratumHistories.ID))
                 .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 .and(
                     MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
@@ -393,6 +409,10 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 sizeMeters = sizeMeters,
                 species = species,
                 status = status,
+                stratumId = record[plotStratumHistories.STRATUM_ID],
+                stratumName = record[plotStratumHistories.NAME],
+                substratumId = record[plotSubstratumHistories.SUBSTRATUM_ID],
+                substratumName = record[plotSubstratumHistories.FULL_NAME],
                 survivalRate = survivalRate,
                 totalPlants = totalPlants,
                 totalSpecies = totalLiveSpeciesExceptUnknown,

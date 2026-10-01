@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.rectanglePolygon
@@ -357,6 +358,57 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
           },
           "Monitoring plot IDs in observation",
       )
+    }
+
+    @Test
+    fun `reports historical substratum names for plots whose substratum was deleted`() {
+      insertStratum(name = "S1")
+      val substratumId = insertSubstratum(fullName = "S1-Sub1", name = "Sub1")
+      insertMonitoringPlot()
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      substrataDao.deleteById(substratumId)
+
+      val plot =
+          resultsStoreV2
+              .fetchByPlantingSiteId(plantingSiteId)[0]
+              .strata
+              .flatMap { stratum -> stratum.substrata.flatMap { it.monitoringPlots } }
+              .single()
+
+      assertEquals("S1", plot.stratumName, "Stratum name")
+      assertNull(plot.substratumId, "Substratum ID")
+      assertEquals("S1-Sub1", plot.substratumName, "Substratum name")
+    }
+
+    @Test
+    fun `includes plots merged from an observation that used an earlier site map`() {
+      every { user.canManageObservation(any()) } returns true
+
+      insertStratum(name = "S1")
+      val substratumId = insertSubstratum(fullName = "S1-Sub1", name = "Sub1")
+      val plotId = insertMonitoringPlot()
+      val sourceObservationId = insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      // A map edit renames the substratum before the target observation starts.
+      insertPlantingSiteHistory()
+      insertStratumHistory()
+      insertSubstratumHistory(fullName = "S1-Renamed", name = "Renamed")
+      insertMonitoringPlotHistory()
+      val targetObservationId = insertObservation(completedTime = Instant.ofEpochSecond(1))
+
+      observationStore.mergeObservationData(sourceObservationId, targetObservationId)
+
+      val substratum =
+          resultsStoreV2.fetchOneById(targetObservationId).strata.single().substrata.single()
+      val plot = substratum.monitoringPlots.single()
+
+      assertEquals("Renamed", substratum.name, "Substratum name in target observation's map")
+      assertEquals(plotId, plot.monitoringPlotId, "Plot ID")
+      assertEquals(substratumId, plot.substratumId, "Substratum ID when plot was observed")
+      assertEquals("S1-Sub1", plot.substratumName, "Substratum name when plot was observed")
     }
 
     @Test
@@ -820,6 +872,32 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
   @Nested
   inner class AdHocResults {
     @Test
+    fun `includes substratum at time of observation and current substratum`() {
+      val stratumId = insertStratum(name = "S1")
+      val substratumId1 = insertSubstratum(fullName = "S1-Sub1", name = "Sub1")
+      val plotId = insertMonitoringPlot(isAdHoc = true)
+      val observationId = insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      // A later map edit moves the plot to another substratum.
+      val substratumId2 = insertSubstratum(fullName = "S1-Sub2", name = "Sub2")
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.SUBSTRATUM_ID, substratumId2)
+          .where(MONITORING_PLOTS.ID.eq(plotId))
+          .execute()
+
+      val plot = resultsStoreV2.fetchOneById(observationId).adHocPlot!!
+
+      assertEquals(substratumId1, plot.substratumId, "Substratum ID")
+      assertEquals("S1-Sub1", plot.substratumName, "Substratum name")
+      assertEquals(stratumId, plot.stratumId, "Stratum ID")
+      assertEquals("S1", plot.stratumName, "Stratum name")
+      assertEquals(substratumId2, plot.currentSubstratumId, "Current substratum ID")
+      assertEquals(stratumId, plot.currentStratumId, "Current stratum ID")
+    }
+
+    @Test
     fun `fetches ad-hoc plot details at every depth`() {
       insertMonitoringPlot(isAdHoc = true)
       val observationId = insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
@@ -1089,6 +1167,10 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                     sizeMeters = 30,
                     species = emptyList(),
                     status = ObservationPlotStatus.Completed,
+                    stratumId = null,
+                    stratumName = null,
+                    substratumId = null,
+                    substratumName = null,
                     survivalRate = null,
                     totalPlants = null,
                     totalSpecies = null,
