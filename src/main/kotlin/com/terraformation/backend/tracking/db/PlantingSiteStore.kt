@@ -98,6 +98,7 @@ import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
+import com.terraformation.backend.util.findLargestOverlap
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
@@ -1639,6 +1640,8 @@ class PlantingSiteStore(
             NumericIdentifierType.PlotNumber,
         )
 
+    val substratumId = plotBoundary.findLargestOverlap(fetchSubstratumBoundaries(plantingSiteId))
+
     val monitoringPlotsRow =
         MonitoringPlotsRow(
             boundary = plotBoundary,
@@ -1652,6 +1655,7 @@ class PlantingSiteStore(
             plantingSiteId = plantingSiteId,
             plotNumber = plotNumber,
             sizeMeters = MONITORING_PLOT_SIZE_INT,
+            substratumId = substratumId,
         )
     monitoringPlotsDao.insert(monitoringPlotsRow)
 
@@ -2373,6 +2377,16 @@ class PlantingSiteStore(
           )
         }
   }
+
+  private fun fetchSubstratumBoundaries(
+      plantingSiteId: PlantingSiteId
+  ): Map<SubstratumId, Geometry> =
+      dslContext
+          .select(SUBSTRATA.ID, SUBSTRATA.BOUNDARY)
+          .from(SUBSTRATA)
+          .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
+          .orderBy(SUBSTRATA.ID)
+          .fetchMap(SUBSTRATA.ID.asNonNullable(), SUBSTRATA.BOUNDARY.asNonNullable())
 
   private fun insertPlantingSiteHistory(
       newModel: AnyPlantingSiteModel,

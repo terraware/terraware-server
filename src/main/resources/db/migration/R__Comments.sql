@@ -475,7 +475,7 @@ COMMENT ON COLUMN tracking.monitoring_plots.created_time IS 'When the monitoring
 COMMENT ON COLUMN tracking.monitoring_plots.modified_by IS 'Which user most recently modified the monitoring plot.';
 COMMENT ON COLUMN tracking.monitoring_plots.modified_time IS 'When the monitoring plot was most recently modified.';
 COMMENT ON COLUMN tracking.monitoring_plots.permanent_index IS 'If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the stratum. Starts at 1 for each stratum. If null, this plot is not currently a candidate for selection as a permanent plot but may still be chosen as a temporary plot.';
-COMMENT ON COLUMN tracking.monitoring_plots.substratum_id IS 'Which substratum this monitoring plot is currently part of, if any. May be null if the substratum was edited or removed after the plot was created, or if the plot was created outside the site boundary.';
+COMMENT ON COLUMN tracking.monitoring_plots.substratum_id IS 'Which substratum this monitoring plot is currently part of, if any. Ad-hoc plots are part of the substratum they overlap the most. May be null if the substratum was edited or removed after the plot was created, or if the plot is outside every substratum.';
 COMMENT ON COLUMN tracking.monitoring_plots.plot_number IS 'User-visible identifier of this plot. Plot numbers are sequential and start at 1 for each organization.';
 COMMENT ON COLUMN tracking.monitoring_plots.size_meters IS 'Length in meters of one side of the monitoring plot. Plots are always squares, so for a 30x30m plot, this would be 30.';
 

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
+import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import org.junit.jupiter.api.assertThrows
 
 class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDatabaseUser {
@@ -59,6 +61,42 @@ class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDa
 
   @Nested
   inner class CreateAdHocMonitoringPlots {
+    @Test
+    fun `places plot in the substratum with the most overlap`() {
+      val plantingSiteId = insertPlantingSite(width = 6)
+      insertStratum(width = 6)
+      insertSubstratum(width = 3)
+      val substratumId = insertSubstratum(x = 3, width = 3)
+      val substratumHistoryId = inserted.substratumHistoryId
+
+      // 10 meters in the first substratum, 20 in the second.
+      val coordinates = rectanglePolygon(1, x = 80).coordinates[0]
+      val monitoringPlotId =
+          store.createAdHocMonitoringPlot(plantingSiteId, point(coordinates.x, coordinates.y))
+
+      assertEquals(substratumId, monitoringPlotsDao.fetchOneById(monitoringPlotId)!!.substratumId)
+      val history = monitoringPlotHistoriesDao.fetchByMonitoringPlotId(monitoringPlotId).single()
+      assertEquals(substratumId, history.substratumId, "History substratum ID")
+      assertEquals(
+          substratumHistoryId,
+          history.substratumHistoryId,
+          "History substratum history ID",
+      )
+    }
+
+    @Test
+    fun `does not place plot outside site boundary in a substratum`() {
+      val plantingSiteId = insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+
+      val monitoringPlotId = store.createAdHocMonitoringPlot(plantingSiteId, point(50))
+
+      assertNull(monitoringPlotsDao.fetchOneById(monitoringPlotId)!!.substratumId, "Substratum ID")
+      val history = monitoringPlotHistoriesDao.fetchByMonitoringPlotId(monitoringPlotId).single()
+      assertNull(history.substratumHistoryId, "Substratum history ID")
+    }
+
     @Test
     fun `inserts a monitoring plot row`() {
       val plantingSiteId = insertPlantingSite(boundary = multiPolygon(2.0))

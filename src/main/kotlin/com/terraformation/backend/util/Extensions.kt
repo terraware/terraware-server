@@ -315,6 +315,28 @@ fun Geometry.intersectsFast(other: Geometry): Boolean {
 }
 
 /**
+ * Returns the key of the candidate geometry with the largest intersection area with this one, or
+ * null if no candidate overlaps it by a nonzero area. Ties go to the earliest candidate in the
+ * map's iteration order.
+ */
+fun <K> Geometry.findLargestOverlap(candidates: Map<K, Geometry>): K? {
+  var bestKey: K? = null
+  var bestArea = 0.0
+
+  candidates.forEach { (key, candidate) ->
+    if (candidate.intersects(this)) {
+      val area = candidate.intersection(this).area
+      if (area > bestArea) {
+        bestKey = key
+        bestArea = area
+      }
+    }
+  }
+
+  return bestKey
+}
+
+/**
  * Returns the difference between this geometry and another geometry, or this geometry if the other
  * one is null.
  */
