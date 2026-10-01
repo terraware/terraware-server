@@ -284,6 +284,7 @@ class ObservationResultsStoreV2FetchIncludedPlotsTest : ObservationScenarioTest(
             )
         ),
     )
+    observationResultsRecalculator.recalculateAllSites()
   }
 
   private fun allowSiteEdits() {
