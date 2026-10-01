@@ -8,12 +8,14 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.emptyMultiset
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
@@ -24,10 +26,13 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
+import com.terraformation.backend.tracking.model.ObservationIncludedPlotModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
@@ -37,6 +42,7 @@ import com.terraformation.backend.tracking.model.ObservationStratumStatsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumStatsModel
 import jakarta.inject.Named
+import java.math.BigDecimal
 import java.time.Instant
 import kotlin.math.roundToInt
 import org.jooq.Condition
@@ -113,6 +119,112 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         limit,
         isAdHoc,
     )
+  }
+
+  /**
+   * Returns the completed monitoring plot observations whose data is rolled up into an
+   * observation's results, including plots from earlier observations of substrata the observation
+   * did not cover. Only used for survival rates admin page.
+   */
+  fun fetchIncludedPlots(observationId: ObservationId): List<ObservationIncludedPlotModel> {
+    requirePermissions { readObservation(observationId) }
+
+    // The substratum history from the observation the plot was observed in, which can differ
+    // from the consuming observation's if the substratum was later moved to another stratum.
+    val plotSubstratumHistories = SUBSTRATUM_HISTORIES.`as`("plot_substratum_histories")
+
+    val hasT0DensityField =
+        DSL.`when`(
+                OBSERVATION_PLOTS.IS_PERMANENT.isTrue,
+                DSL.field(
+                    DSL.exists(
+                        DSL.selectOne()
+                            .from(PLOT_T0_DENSITIES)
+                            .where(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                            .and(PLOT_T0_DENSITIES.PLOT_DENSITY.gt(BigDecimal.ZERO))
+                    )
+                ),
+            )
+            .otherwise(
+                DSL.field(
+                    DSL.exists(
+                        DSL.selectOne()
+                            .from(STRATUM_T0_TEMP_DENSITIES)
+                            .where(
+                                STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
+                                    plotSubstratumHistories.stratumHistories.STRATUM_ID
+                                )
+                            )
+                            .and(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.gt(BigDecimal.ZERO))
+                    )
+                )
+            )
+
+    val isRolledForwardFromDeletedSubstratumField =
+        DSL.field(
+            SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.isNull.and(
+                OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.ne(observationId)
+            )
+        )
+
+    return dslContext
+        .select(
+            OBSERVATION_PLOTS.COMPLETED_TIME,
+            OBSERVATION_PLOTS.IS_PERMANENT,
+            isRolledForwardFromDeletedSubstratumField,
+            OBSERVATION_PLOTS.MONITORING_PLOT_ID,
+            OBSERVATION_PLOTS.OBSERVATION_ID,
+            MONITORING_PLOTS.PLOT_NUMBER,
+            STRATUM_HISTORIES.STRATUM_ID,
+            SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+            OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE,
+            OBSERVATION_PLOT_RESULTS.TOTAL_LIVE,
+            hasT0DensityField,
+        )
+        .from(OBSERVATION_DEPENDENT_SUBSTRATA)
+        .join(SUBSTRATUM_HISTORIES)
+        .on(SUBSTRATUM_HISTORIES.ID.eq(OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID))
+        .join(STRATUM_HISTORIES)
+        .on(STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
+        .join(OBSERVATION_PLOTS)
+        .on(
+            OBSERVATION_PLOTS.OBSERVATION_ID.eq(
+                OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID
+            )
+        )
+        .join(MONITORING_PLOT_HISTORIES)
+        .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
+        .and(
+            MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
+                OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_SUBSTRATUM_HISTORY_ID
+            )
+        )
+        .join(plotSubstratumHistories)
+        .on(plotSubstratumHistories.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+        .join(MONITORING_PLOTS)
+        .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+        .leftJoin(OBSERVATION_PLOT_RESULTS)
+        .on(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+        .and(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+        .where(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.eq(observationId))
+        .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+        .orderBy(MONITORING_PLOTS.PLOT_NUMBER, OBSERVATION_PLOTS.OBSERVATION_ID)
+        .fetch { record ->
+          ObservationIncludedPlotModel(
+              completedTime = record[OBSERVATION_PLOTS.COMPLETED_TIME],
+              hasT0Density = record[hasT0DensityField] == true,
+              isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()],
+              isRolledForwardFromDeletedSubstratum =
+                  record[isRolledForwardFromDeletedSubstratumField] == true,
+              monitoringPlotId = record[OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable()],
+              monitoringPlotNumber = record[MONITORING_PLOTS.PLOT_NUMBER.asNonNullable()],
+              observationId = record[OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()],
+              stratumId = record[STRATUM_HISTORIES.STRATUM_ID],
+              substratumId = record[SUBSTRATUM_HISTORIES.SUBSTRATUM_ID],
+              survivalRate = record[OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE],
+              totalLive = record[OBSERVATION_PLOT_RESULTS.TOTAL_LIVE],
+          )
+        }
   }
 
   /**

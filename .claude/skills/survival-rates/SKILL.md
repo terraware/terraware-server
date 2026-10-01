@@ -196,7 +196,8 @@ observation that is its t0 observation re-derives its t0 (`on(MonitoringSpeciesT
 - `admin/AdminPlantingSitesController.kt`: `POST /admin/recalculateSurvivalRates` for one
   observation, one site, or every site.
 - `admin/AdminSurvivalRatesController.kt` and `SurvivalRatesPageModel.kt`: an admin page showing
-  every level's latest rate for a site, useful when debugging a real site.
+  various values related to calculating a survival rate and the aggregate values. Useful when
+  debugging a real site.
 - `tracking/api/PlantingSitesController.kt`, `T0Controller.kt`, `MonitoringResultsPayloads.kt`:
   the user-facing API.
 

@@ -41,11 +41,17 @@ class AdminSurvivalRatesController(
             depth = ObservationResultsDepth.Plot,
             states = setOf(ObservationState.Completed),
         )
+    val latestIncludedPlots =
+        results.firstOrNull()?.let { observationResultsStore.fetchIncludedPlots(it.observationId) }
+            ?: emptyList()
 
     model.addAttribute("allT0DataSet", allT0DataSet)
     model.addAttribute("hasCompletedObservations", results.isNotEmpty())
     model.addAttribute("hasObservations", observations.isNotEmpty())
-    model.addAttribute("model", SurvivalRatesPageModel.of(site, organization, results))
+    model.addAttribute(
+        "model",
+        SurvivalRatesPageModel.of(site, organization, results, latestIncludedPlots),
+    )
 
     return "/admin/survivalRates"
   }
