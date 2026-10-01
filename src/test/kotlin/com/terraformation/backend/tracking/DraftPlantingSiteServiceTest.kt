@@ -220,14 +220,17 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
     }
   }
 
-  @Test
-  fun `rejects self intersecting polygons before union`() {
-    assertThrows<InvalidGeometryException> {
-      parseShapes(
-          "GEOMETRYCOLLECTION (POLYGON ((0 0, 2 2, 0 2, 2 0, 0 0)), " +
-              "POLYGON ((-1 -1, 3 -1, 3 3, -1 3, -1 -1)))"
-      )
-    }
+  @ParameterizedTest
+  @ValueSource(
+      strings =
+          [
+              "GEOMETRYCOLLECTION (POLYGON ((0 0, 2 2, 0 2, 2 0, 0 0)), " +
+                  "POLYGON ((-1 -1, 3 -1, 3 3, -1 3, -1 -1)))",
+              "MULTIPOLYGON (((0 0, 2 0, 2 2, 0 2, 0 0)), ((1 0, 3 0, 3 2, 1 2, 1 0)))",
+          ]
+  )
+  fun `rejects invalid shapes before union`(wkt: String) {
+    assertThrows<InvalidGeometryException> { parseShapes(wkt) }
   }
 
   @Test

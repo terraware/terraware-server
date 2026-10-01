@@ -55,18 +55,17 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
     val polygons =
         geometries
             .flatMap { geometry ->
-              geometry.extractPolygons {
+              val polygons = geometry.extractPolygons { throw InvalidGeometryException() }
+              if (!geometry.isValid) {
                 throw InvalidGeometryException()
               }
+              polygons
             }
             .filterNot { it.isEmpty }
             .map { it.convertToXY(precisionModel = null) }
 
     if (polygons.isEmpty()) {
       throw NoPolygonsException()
-    }
-    if (polygons.any { !it.isValid }) {
-      throw InvalidGeometryException()
     }
 
     val boundary =
