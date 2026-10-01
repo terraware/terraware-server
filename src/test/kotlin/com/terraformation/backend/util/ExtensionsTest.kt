@@ -2,6 +2,7 @@ package com.terraformation.backend.util
 
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.point
+import com.terraformation.backend.polygon
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -11,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.GeometryFactory
@@ -24,6 +26,25 @@ class ExtensionsTest {
     val timeZone = ZoneId.of("America/Los_Angeles")
 
     assertEquals(Instant.ofEpochSecond(1672567384), date.toInstant(timeZone, time))
+  }
+
+  @Nested
+  inner class FindLargestOverlap {
+    private val left = polygon(0, 0, 10, 10)
+    private val right = polygon(10, 0, 20, 10)
+
+    @Test
+    fun `returns candidate with the largest intersection area`() {
+      assertEquals(
+          "right",
+          polygon(6, 0, 16, 2).findLargestOverlap(mapOf("left" to left, "right" to right)),
+      )
+    }
+
+    @Test
+    fun `returns null if geometry does not overlap any candidates`() {
+      assertNull(polygon(25, 0, 30, 2).findLargestOverlap(mapOf("left" to left, "right" to right)))
+    }
   }
 
   @Nested
