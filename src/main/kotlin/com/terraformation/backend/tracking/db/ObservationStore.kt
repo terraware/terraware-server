@@ -2763,27 +2763,28 @@ class ObservationStore(
   }
 
   /**
-   * Rebuilds a planting site's observation results rows that are flagged for recalculation, along
-   * with the species totals rows for the same observations and scopes. Plot-level species totals
-   * counts are treated as the source of truth, since edits to species counts are applied to them
-   * directly.
+   * Recalculates a planting site's observation results rows that are flagged for recalculation,
+   * along with the species totals rows for the same observations and scopes. Plot-level species
+   * totals counts are treated as the source of truth, since edits to species counts are applied to
+   * them directly.
    *
    * Works one level at a time, from plots up to the planting site, so each level only reads levels
-   * that have already been rebuilt. Each step is a single statement covering every flagged row at
-   * that level. Does not clear the flags.
+   * that have already been recalculated. Each step is a single statement covering every flagged row
+   * at that level. Does not clear the flags.
    *
-   * Does not lock anything; the caller is responsible for serializing rebuilds of a planting site.
+   * Does not lock anything; the caller is responsible for serializing recalculations of a planting
+   * site.
    */
-  fun rebuildFlaggedResults(plantingSiteId: PlantingSiteId) {
+  fun recalculateFlaggedResults(plantingSiteId: PlantingSiteId) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    rebuildFlaggedPlotResults(plantingSiteId)
-    rebuildFlaggedSubstratumResults(plantingSiteId)
-    rebuildFlaggedStratumResults(plantingSiteId)
-    rebuildFlaggedSiteResults(plantingSiteId)
+    recalculateFlaggedPlotResults(plantingSiteId)
+    recalculateFlaggedSubstratumResults(plantingSiteId)
+    recalculateFlaggedStratumResults(plantingSiteId)
+    recalculateFlaggedSiteResults(plantingSiteId)
   }
 
-  private fun rebuildFlaggedPlotResults(plantingSiteId: PlantingSiteId) {
+  private fun recalculateFlaggedPlotResults(plantingSiteId: PlantingSiteId) {
     val flaggedPlotSpecies =
         DSL.exists(
             DSL.selectOne()
@@ -2862,7 +2863,7 @@ class ObservationStore(
     recalculateFlaggedResultsRates(ObservationResultsPlotRow, plantingSiteId)
   }
 
-  private fun rebuildFlaggedSubstratumResults(plantingSiteId: PlantingSiteId) {
+  private fun recalculateFlaggedSubstratumResults(plantingSiteId: PlantingSiteId) {
     val speciesTotals = OBSERVED_SUBSTRATUM_SPECIES_TOTALS
     val flaggedSpecies =
         flaggedResultsCondition(
@@ -2930,7 +2931,7 @@ class ObservationStore(
     }
   }
 
-  private fun rebuildFlaggedStratumResults(plantingSiteId: PlantingSiteId) {
+  private fun recalculateFlaggedStratumResults(plantingSiteId: PlantingSiteId) {
     val speciesTotals = OBSERVED_STRATUM_SPECIES_TOTALS
     val flaggedSpecies =
         flaggedResultsCondition(
@@ -3031,7 +3032,7 @@ class ObservationStore(
     }
   }
 
-  private fun rebuildFlaggedSiteResults(plantingSiteId: PlantingSiteId) {
+  private fun recalculateFlaggedSiteResults(plantingSiteId: PlantingSiteId) {
     val speciesTotals = OBSERVED_SITE_SPECIES_TOTALS
     val flaggedSpecies =
         flaggedResultsCondition(OBSERVATION_SITE_RESULTS, speciesTotals.OBSERVATION_ID)

@@ -53,7 +53,7 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
             transactionManager,
         )
         .apply {
-          // Join the test's transaction so the rebuild can see the test data.
+          // Join the test's transaction so the recalculation can see the test data.
           siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED
         }
   }
@@ -66,42 +66,42 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
   @Nested
   inner class Parity {
     @Test
-    fun `rebuilds the same results as plot completion for a single observation`() {
+    fun `recalculates the same results as plot completion for a single observation`() {
       importFromCsvFiles("/tracking/observation/TwoObservations", 1, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `rebuilds the same results as plot completion for multiple observations`() {
+    fun `recalculates the same results as plot completion for multiple observations`() {
       importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `rebuilds the same results as plot completion when substrata are rolled forward`() {
+    fun `recalculates the same results as plot completion when substrata are rolled forward`() {
       importFromCsvFiles("/tracking/observation/DisjointSubstrata", 3, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `rebuilds the same results as plot completion when strata are rolled forward`() {
+    fun `recalculates the same results as plot completion when strata are rolled forward`() {
       importFromCsvFiles("/tracking/observation/DisjointStrata", 2, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `rebuilds the same results as plot completion when permanent plots change`() {
+    fun `recalculates the same results as plot completion when permanent plots change`() {
       importFromCsvFiles("/tracking/observation/PermanentPlotChanges", 3, 30)
 
       assertRecalculationMatchesCurrentResults()
     }
 
     @Test
-    fun `rebuilds the same results as a site recalculation after t0 densities change`() {
+    fun `recalculates the same results as a site recalculation after t0 densities change`() {
       importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
 
       dslContext
@@ -117,7 +117,7 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
   @Nested
   inner class Flags {
     @Test
-    fun `clears flags on the rebuilt observations`() {
+    fun `clears flags on the recalculated observations`() {
       importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
       invalidator.invalidateSite(plantingSiteId)
 
@@ -202,12 +202,12 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
     fun setUpMocks() {
       every { mockInvalidator.fetchPlantingSiteIdsNeedingRecalculation() } returns
           listOf(failingSiteId, succeedingSiteId)
-      every { mockStore.rebuildFlaggedResults(succeedingSiteId) } returns Unit
+      every { mockStore.recalculateFlaggedResults(succeedingSiteId) } returns Unit
     }
 
     @Test
     fun `serialization failure leaves flags set and does not block other sites`() {
-      every { mockStore.rebuildFlaggedResults(failingSiteId) } throws
+      every { mockStore.recalculateFlaggedResults(failingSiteId) } throws
           DataAccessException(
               "Serialization failure",
               SQLException("could not serialize access", "40001"),
@@ -221,7 +221,8 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
 
     @Test
     fun `unexpected failure leaves flags set and does not block other sites`() {
-      every { mockStore.rebuildFlaggedResults(failingSiteId) } throws IllegalStateException("Oops")
+      every { mockStore.recalculateFlaggedResults(failingSiteId) } throws
+          IllegalStateException("Oops")
 
       recalculatorWithMocks.recalculateAllSites()
 
