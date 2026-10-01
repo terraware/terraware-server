@@ -34,6 +34,7 @@ import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -752,6 +753,59 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       assertEquals("Original Substratum", substratum.name, "Substratum name at time of observation")
       assertEquals(newStratumId, plot.currentStratumId, "Current stratum ID")
       assertEquals(newSubstratumId, plot.currentSubstratumId, "Current substratum ID")
+    }
+
+    @Test
+    fun `returns one entry for an unobserved species with both permanent and temporary t0 densities`() {
+      every { user.canReadPlantingSite(any()) } returns true
+
+      scenario {
+        siteCreated(survivalRateIncludesTempPlots = true) {
+          stratum(1) {
+            substratum(1) {
+              plot(1)
+              plot(2, permanentIndex = null)
+            }
+          }
+        }
+
+        t0DensitySet {
+          plot(1) {
+            species(0, density = 10)
+            species(1, density = 20)
+          }
+          stratum(1) {
+            species(0, density = 10)
+            species(1, density = 30)
+          }
+        }
+
+        observation(1) {
+          plot(1) { species(0, live = 5) }
+          plot(2, isPermanent = false) { species(0, live = 5) }
+        }
+
+        val unobservedSpeciesId = speciesIds[1]!!
+        val expectedT0Density = BigDecimal(20 + 30).toPlantsPerHectare()
+        val results = resultsStoreV2.fetchOneById(observationIds[1]!!)
+        val stratum = results.strata.single()
+        val substratum = stratum.substrata.single()
+
+        listOf(
+                "Site" to results.species,
+                "Stratum" to stratum.species,
+                "Substratum" to substratum.species,
+            )
+            .forEach { (level, species) ->
+              val entries = species.filter { it.speciesId == unobservedSpeciesId }
+              assertEquals(1, entries.size, "$level entries for unobserved species")
+              assertEquals(
+                  expectedT0Density.setScale(2, RoundingMode.HALF_UP),
+                  entries.single().t0Density?.setScale(2, RoundingMode.HALF_UP),
+                  "$level t0 density for unobserved species",
+              )
+            }
+      }
     }
 
     @Test
