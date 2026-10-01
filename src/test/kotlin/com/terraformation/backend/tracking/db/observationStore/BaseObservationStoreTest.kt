@@ -50,7 +50,6 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
             transactionManager,
         )
         .apply {
-          // Join the test's transaction so the rebuild can see the test data.
           siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED
         }
   }
