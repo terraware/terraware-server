@@ -384,6 +384,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="seeds_compromised" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="seeds_empty" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="seeds_filled" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="substrate_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="viability_tests_pkey" unique="true">
             <column ascending="true" name="id"/>

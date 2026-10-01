@@ -53,9 +53,9 @@
 </g>
 </g>
 <!-- batches -->
-<g id="node8" class="node">
+<g id="node9" class="node">
 <title>batches</title>
-<g id="a_node8"><a xlink:href="../../tables/batches.html" xlink:title="batches" target="_top">
+<g id="a_node9"><a xlink:href="../../tables/batches.html" xlink:title="batches" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="293,-1909 293,-2763 553,-2763 553,-1909 293,-1909"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="293,-2741 293,-2763 553,-2763 553,-2741 293,-2741"/>
 <polygon fill="none" stroke="black" points="293,-2741 293,-2763 553,-2763 553,-2741 293,-2741"/>
@@ -995,6 +995,49 @@
 </a>
 </g>
 </g>
+<!-- withdrawal_photos -->
+<g id="node8" class="node">
+<title>withdrawal_photos</title>
+<g id="a_node8"><a xlink:href="../../tables/withdrawal_photos.html" xlink:title="withdrawal_photos" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="639,-4319 639,-4403 797,-4403 797,-4319 639,-4319"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="639,-4381 639,-4403 797,-4403 797,-4381 639,-4381"/>
+<polygon fill="none" stroke="black" points="639,-4381 639,-4403 797,-4403 797,-4381 639,-4381"/>
+<text text-anchor="start" x="644" y="-4390.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">withdrawal_photos</text>
+<text text-anchor="start" x="758" y="-4389.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="639,-4359 639,-4381 797,-4381 797,-4359 639,-4359"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="644" y="-4376"/>
+<text text-anchor="start" x="671" y="-4367.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="639,-4337 639,-4359 797,-4359 797,-4337 639,-4337"/>
+<polygon fill="none" stroke="black" points="639,-4337 639,-4359 797,-4359 797,-4337 639,-4337"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="644" y="-4354"/>
+<text text-anchor="start" x="671" y="-4345.2" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawal_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="639,-4319 639,-4337 716,-4337 716,-4319 639,-4319"/>
+<polygon fill="none" stroke="black" points="639,-4319 639,-4337 716,-4337 716,-4319 639,-4319"/>
+<text text-anchor="start" x="642" y="-4325.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="716,-4319 716,-4337 756,-4337 756,-4319 716,-4319"/>
+<polygon fill="none" stroke="black" points="716,-4319 716,-4337 756,-4337 756,-4319 716,-4319"/>
+<text text-anchor="start" x="746" y="-4325.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="756,-4319 756,-4337 797,-4337 797,-4319 756,-4319"/>
+<polygon fill="none" stroke="black" points="756,-4319 756,-4337 797,-4337 797,-4319 756,-4319"/>
+<text text-anchor="start" x="787" y="-4325.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- withdrawal_photos&#45;&gt;withdrawals -->
+<g id="edge36" class="edge">
+<title>withdrawal_photos:w&#45;&gt;withdrawals:e</title>
+<path fill="none" stroke="black" d="M623.89,-4344.93C536.13,-4303.07 650.16,-3847 542,-3847"/>
+<polygon fill="black" stroke="black" points="630.18,-4346.3 637.23,-4351.52 634.09,-4347.15 638,-4348 638,-4348 638,-4348 634.09,-4347.15 638.77,-4344.48 630.18,-4346.3 630.18,-4346.3"/>
+<ellipse fill="none" stroke="black" cx="627.06" cy="-4345.62" rx="3.2" ry="3.2"/>
+</g>
+<!-- withdrawal_photos&#45;&gt;public.files -->
+<g id="edge35" class="edge">
+<title>withdrawal_photos:w&#45;&gt;public.files:e</title>
+<path fill="none" stroke="black" d="M627.27,-4370.51C568.46,-4376.28 559.99,-4429 495,-4429"/>
+<polygon fill="black" stroke="black" points="637.01,-4366.04 637.39,-4374.03 635.79,-4374.11 635.41,-4366.12 637.01,-4366.04"/>
+<polyline fill="none" stroke="black" points="638,-4370 634,-4370.19 "/>
+<ellipse fill="none" stroke="black" cx="630.81" cy="-4370.34" rx="3.2" ry="3.2"/>
+</g>
 <!-- batches&#45;&gt;batch_substrates -->
 <g id="edge33" class="edge">
 <title>batches:w&#45;&gt;batch_substrates:e</title>
@@ -1264,49 +1307,6 @@
 <path fill="none" stroke="black" d="M277.44,-2685.67C253.96,-2684.56 243.31,-2681 214,-2681"/>
 <polygon fill="black" stroke="black" points="284,-2685.82 291.92,-2689.6 288,-2685.91 292,-2686 292,-2686 292,-2686 288,-2685.91 292.08,-2682.4 284,-2685.82 284,-2685.82"/>
 <ellipse fill="none" stroke="black" cx="280.8" cy="-2685.75" rx="3.2" ry="3.2"/>
-</g>
-<!-- withdrawal_photos -->
-<g id="node9" class="node">
-<title>withdrawal_photos</title>
-<g id="a_node9"><a xlink:href="../../tables/withdrawal_photos.html" xlink:title="withdrawal_photos" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="639,-4319 639,-4403 797,-4403 797,-4319 639,-4319"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="639,-4381 639,-4403 797,-4403 797,-4381 639,-4381"/>
-<polygon fill="none" stroke="black" points="639,-4381 639,-4403 797,-4403 797,-4381 639,-4381"/>
-<text text-anchor="start" x="644" y="-4390.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">withdrawal_photos</text>
-<text text-anchor="start" x="758" y="-4389.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="639,-4359 639,-4381 797,-4381 797,-4359 639,-4359"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="644" y="-4376"/>
-<text text-anchor="start" x="671" y="-4367.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="639,-4337 639,-4359 797,-4359 797,-4337 639,-4337"/>
-<polygon fill="none" stroke="black" points="639,-4337 639,-4359 797,-4359 797,-4337 639,-4337"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="644" y="-4354"/>
-<text text-anchor="start" x="671" y="-4345.2" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawal_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="639,-4319 639,-4337 716,-4337 716,-4319 639,-4319"/>
-<polygon fill="none" stroke="black" points="639,-4319 639,-4337 716,-4337 716,-4319 639,-4319"/>
-<text text-anchor="start" x="642" y="-4325.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="716,-4319 716,-4337 756,-4337 756,-4319 716,-4319"/>
-<polygon fill="none" stroke="black" points="716,-4319 716,-4337 756,-4337 756,-4319 716,-4319"/>
-<text text-anchor="start" x="746" y="-4325.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="756,-4319 756,-4337 797,-4337 797,-4319 756,-4319"/>
-<polygon fill="none" stroke="black" points="756,-4319 756,-4337 797,-4337 797,-4319 756,-4319"/>
-<text text-anchor="start" x="787" y="-4325.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- withdrawal_photos&#45;&gt;withdrawals -->
-<g id="edge36" class="edge">
-<title>withdrawal_photos:w&#45;&gt;withdrawals:e</title>
-<path fill="none" stroke="black" d="M623.89,-4344.93C536.13,-4303.07 650.16,-3847 542,-3847"/>
-<polygon fill="black" stroke="black" points="630.18,-4346.3 637.23,-4351.52 634.09,-4347.15 638,-4348 638,-4348 638,-4348 634.09,-4347.15 638.77,-4344.48 630.18,-4346.3 630.18,-4346.3"/>
-<ellipse fill="none" stroke="black" cx="627.06" cy="-4345.62" rx="3.2" ry="3.2"/>
-</g>
-<!-- withdrawal_photos&#45;&gt;public.files -->
-<g id="edge35" class="edge">
-<title>withdrawal_photos:w&#45;&gt;public.files:e</title>
-<path fill="none" stroke="black" d="M627.27,-4370.51C568.46,-4376.28 559.99,-4429 495,-4429"/>
-<polygon fill="black" stroke="black" points="637.01,-4366.04 637.39,-4374.03 635.79,-4374.11 635.41,-4366.12 637.01,-4366.04"/>
-<polyline fill="none" stroke="black" points="638,-4370 634,-4370.19 "/>
-<ellipse fill="none" stroke="black" cx="630.81" cy="-4370.34" rx="3.2" ry="3.2"/>
 </g>
 <!-- batch_details_history -->
 <g id="node10" class="node">
