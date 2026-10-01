@@ -24,12 +24,11 @@ import org.jooq.impl.DSL
 
 /**
  * Marks observation results rows as needing recalculation. Callers should invoke these methods in
- * the same transaction as the data change that makes the results stale, so the flags become visible
- * exactly when the change does.
+ * the same transaction as the data change that makes the results stale.
  *
  * A flagged results row means the row itself and all the species totals rows for the same
- * observation and scope will be rebuilt. If a results row doesn't exist yet, a placeholder with
- * zero counts is inserted so there is somewhere to put the flag.
+ * observation and scope will be recalculated. If a results row doesn't exist yet, a placeholder
+ * with zero counts is inserted so there is somewhere to put the flag.
  */
 @Named
 class ObservationResultsInvalidator(private val dslContext: DSLContext) {
@@ -61,7 +60,7 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
     invalidate(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
   }
 
-  /** Flags the results that depend on plots that were in a stratum at the time of observation. */
+  /** Flags results of plots that were in the stratum when observed. */
   fun invalidateStratum(stratumId: StratumId) {
     invalidate(
         OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.`in`(
