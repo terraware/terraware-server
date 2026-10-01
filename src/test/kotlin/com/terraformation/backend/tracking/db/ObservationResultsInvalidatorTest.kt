@@ -190,7 +190,7 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `only flags plot rows for ad-hoc observations`() {
+    fun `does not flag non-plot rows for ad-hoc observations`() {
       val observationId =
           insertObservation(completedTime = Instant.ofEpochSecond(1), isAdHoc = true)
       insertObservationPlot(monitoringPlotId = plotIdA, completedBy = user.userId)
