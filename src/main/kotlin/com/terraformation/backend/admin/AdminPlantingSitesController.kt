@@ -626,7 +626,7 @@ class AdminPlantingSitesController(
               plantingSiteId ?: observationStore.fetchObservationById(observationId).plantingSiteId
           observationResultsInvalidator.invalidateObservation(observationId)
           reportSiteRecalculation(
-              observationResultsRecalculator.recalculateSite(siteId),
+              observationResultsRecalculator.forceSiteRecalculation(siteId),
               "observation $observationId",
               redirectAttributes,
           )
@@ -634,14 +634,14 @@ class AdminPlantingSitesController(
         plantingSiteId != null -> {
           observationResultsInvalidator.invalidateSite(plantingSiteId)
           reportSiteRecalculation(
-              observationResultsRecalculator.recalculateSite(plantingSiteId),
+              observationResultsRecalculator.forceSiteRecalculation(plantingSiteId),
               "planting site $plantingSiteId",
               redirectAttributes,
           )
         }
         else -> {
           observationResultsInvalidator.invalidateAllSites()
-          val notRecalculated = observationResultsRecalculator.recalculateAllSites()
+          val notRecalculated = observationResultsRecalculator.forceAllSitesRecalculation()
           if (notRecalculated.isEmpty()) {
             redirectAttributes.successMessage =
                 "Recalculated survival rates for all planting sites."
@@ -670,8 +670,8 @@ class AdminPlantingSitesController(
       redirectAttributes.successMessage = "Recalculated survival rates for $target."
     } else {
       redirectAttributes.failureMessage =
-          "Could not recalculate survival rates for $target now; another recalculation may be " +
-              "running or it failed. It will be retried by the scheduled recalculation job."
+          "Could not recalculate survival rates for $target. It will be retried by the " +
+              "scheduled recalculation job."
     }
   }
 

@@ -21,8 +21,11 @@ import io.mockk.verify
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.SQLException
+import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.CountDownLatch
 import javax.sql.DataSource
+import kotlin.concurrent.thread
 import org.jooq.SQLDialect
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.TransactionDefinition
 
@@ -133,6 +137,76 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
           listOf(plantingSiteId),
           invalidator.fetchPlantingSiteIdsNeedingRecalculation(),
           "Sites needing recalculation",
+      )
+    }
+  }
+
+  @Nested
+  inner class Conflicts {
+    @Test
+    fun `recalculation does not wait for locks held by other transactions`() {
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+
+      recalculator.recalculateSite(plantingSiteId)
+
+      // The recalculator joined the test's transaction, so its setting is visible here.
+      assertEquals("100ms", dslContext.fetchValue("SHOW lock_timeout"), "Lock timeout")
+    }
+
+    @Test
+    fun `forced recalculation cancels a recalculation that is already running`() {
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+
+      val lockAcquired = CountDownLatch(1)
+      var runningRecalculationError: SQLException? = null
+
+      val runningRecalculation = thread {
+        dataSource.connection.use { otherSession ->
+          otherSession.autoCommit = false
+          try {
+            otherSession.prepareStatement("SELECT pg_advisory_xact_lock(?, ?)").use { statement ->
+              statement.setInt(1, LockType.OBSERVATION_RESULTS_RECALCULATION.key.toInt())
+              statement.setInt(2, plantingSiteId.value.toInt())
+              statement.execute()
+            }
+            lockAcquired.countDown()
+            otherSession.prepareStatement("SELECT pg_sleep(30)").use { it.execute() }
+          } catch (e: SQLException) {
+            runningRecalculationError = e
+          } finally {
+            otherSession.rollback()
+          }
+        }
+      }
+
+      lockAcquired.await()
+      val startTime = System.nanoTime()
+
+      assertTrue(recalculator.forceSiteRecalculation(plantingSiteId), "Completed")
+      runningRecalculation.join()
+
+      assertAll(
+          {
+            assertEquals(
+                "57014",
+                runningRecalculationError?.sqlState,
+                "Running recalculation's error",
+            )
+          },
+          {
+            assertTrue(
+                Duration.ofNanos(System.nanoTime() - startTime) < Duration.ofSeconds(20),
+                "Should not have waited for the running recalculation to finish",
+            )
+          },
+          {
+            assertFalse(
+                invalidator.plantingSiteNeedsRecalculation(plantingSiteId),
+                "Still flagged",
+            )
+          },
       )
     }
   }
