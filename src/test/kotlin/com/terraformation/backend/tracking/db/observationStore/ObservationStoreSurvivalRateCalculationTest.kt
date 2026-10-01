@@ -12,7 +12,9 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservedStratumSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
@@ -51,6 +53,46 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     observationId = insertObservation()
     insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+  }
+
+  @Test
+  fun `site recalculation leaves ad-hoc plot survival rates null`() {
+    dslContext
+        .update(PLANTING_SITES)
+        .set(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, true)
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
+    insertStratum()
+    insertSubstratum()
+    val speciesId = insertSpecies()
+    insertStratumT0TempDensity(speciesId = speciesId)
+    val adHocPlotId = insertMonitoringPlot(isAdHoc = true)
+    val adHocObservationId = insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+    insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+    insertObservedPlotSpeciesTotals(totalLive = 1)
+    insertObservationPlotResult(totalLive = 1)
+
+    observationStore.recalculateSurvivalRates(plantingSiteId)
+
+    assertEquals(
+        listOf(null),
+        dslContext
+            .select(OBSERVED_PLOT_SPECIES_TOTALS.SURVIVAL_RATE)
+            .from(OBSERVED_PLOT_SPECIES_TOTALS)
+            .where(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(adHocPlotId))
+            .and(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(adHocObservationId))
+            .fetch(OBSERVED_PLOT_SPECIES_TOTALS.SURVIVAL_RATE),
+        "Plot species survival rate",
+    )
+    assertEquals(
+        listOf(null),
+        dslContext
+            .select(OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE)
+            .from(OBSERVATION_PLOT_RESULTS)
+            .where(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(adHocPlotId))
+            .fetch(OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE),
+        "Plot results survival rate",
+    )
   }
 
   @Test
