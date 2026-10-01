@@ -32,6 +32,7 @@ import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
@@ -99,6 +100,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
+            ObservationResultsInvalidator(dslContext),
             parentStore,
             plantingSitesDao,
             publisher,

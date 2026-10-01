@@ -9,6 +9,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
@@ -36,6 +37,7 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         mockGeometrySimplifier,
         identifierGenerator,
         monitoringPlotsDao,
+        ObservationResultsInvalidator(dslContext),
         ParentStore(dslContext),
         plantingSitesDao,
         rateLimitedEventPublisher,
