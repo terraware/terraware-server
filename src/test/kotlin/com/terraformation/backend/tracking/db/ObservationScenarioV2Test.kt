@@ -809,6 +809,53 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
     }
 
     @Test
+    fun `returns temporary t0 density for species another plot observed but this plot did not`() {
+      every { user.canReadPlantingSite(any()) } returns true
+
+      scenario {
+        siteCreated(survivalRateIncludesTempPlots = true) {
+          stratum(1) {
+            substratum(1) {
+              plot(1, permanentIndex = null)
+              plot(2, permanentIndex = null)
+            }
+          }
+        }
+
+        t0DensitySet {
+          stratum(1) {
+            species(0, density = 10)
+            species(1, density = 20)
+          }
+        }
+
+        observation(1) {
+          plot(1, isPermanent = false) {
+            species(0, live = 5)
+            species(1, live = 5)
+          }
+          plot(2, isPermanent = false) { species(0, live = 5) }
+        }
+
+        val unobservedSpeciesId = speciesIds[1]!!
+        val results = resultsStoreV2.fetchOneById(observationIds[1]!!)
+        val plot2 =
+            results.strata.single().substrata.single().monitoringPlots.single {
+              it.monitoringPlotNumber == 2L
+            }
+
+        val entry = plot2.species.single { it.speciesId == unobservedSpeciesId }
+        assertEquals(0, entry.totalLive, "Live plants of unobserved species")
+        assertEquals(0, entry.survivalRate, "Survival rate of unobserved species")
+        assertEquals(
+            BigDecimal(20).toPlantsPerHectare().setScale(2, RoundingMode.HALF_UP),
+            entry.t0Density?.setScale(2, RoundingMode.HALF_UP),
+            "t0 density of unobserved species",
+        )
+      }
+    }
+
+    @Test
     fun `throws exception if no permission to read observation`() {
       val observationId = insertObservation(completedTime = Instant.EPOCH)
       every { user.canReadObservation(observationId) } returns false
