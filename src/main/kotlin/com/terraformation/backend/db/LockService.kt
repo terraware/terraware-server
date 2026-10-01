@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
 import jakarta.inject.Named
+import java.time.Duration
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
@@ -63,20 +64,57 @@ class LockService(private val dslContext: DSLContext) {
    * @return `true` if the lock was successfully acquired. `false` if the lock was already held.
    */
   fun tryExclusiveTransactional(lockType: LockType, entityId: Long): Boolean {
-    val foldedId = (entityId xor (entityId ushr 32)).toInt()
-
     return dslContext
         .select(
             DSL.function(
                 "pg_try_advisory_xact_lock",
                 Boolean::class.java,
                 DSL.value(lockType.key.toInt()),
-                DSL.value(foldedId),
+                DSL.value(foldEntityId(entityId)),
             )
         )
         .fetchOne()
         ?.value1() == true
   }
+
+  /**
+   * Asks the database sessions holding a lock acquired with [tryExclusiveTransactional] to cancel
+   * whatever statement they're running. A transaction whose statement is canceled fails and
+   * releases the lock when it's rolled back. Has no effect if a holder is between statements when
+   * this is called, so callers that need the lock should keep trying.
+   *
+   * @return `true` if any session held the lock.
+   */
+  fun cancelExclusiveTransactionalHolders(lockType: LockType, entityId: Long): Boolean {
+    return dslContext
+        .resultQuery(
+            """
+            SELECT pg_cancel_backend(pid)
+            FROM pg_locks
+            WHERE locktype = 'advisory'
+              AND classid::bigint = ?
+              AND objid::bigint = ?
+              AND objsubid = 2
+              AND granted
+              AND pid <> pg_backend_pid()
+            """
+                .trimIndent(),
+            lockType.key.toInt().toLong(),
+            foldEntityId(entityId).toLong() and 0xffffffffL,
+        )
+        .fetch()
+        .isNotEmpty
+  }
+
+  /**
+   * Makes the current transaction fail, rather than wait, if it has to wait longer than [timeout]
+   * for any row or table lock. Applies until the end of the current transaction.
+   */
+  fun setTransactionLockTimeout(timeout: Duration) {
+    dslContext.execute("SET LOCAL lock_timeout = '${timeout.toMillis()}ms'")
+  }
+
+  private fun foldEntityId(entityId: Long): Int = (entityId xor (entityId ushr 32)).toInt()
 
   /**
    * Attempts to acquire an exclusive lock on the given key. If acquired, the lock is held until it

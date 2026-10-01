@@ -166,7 +166,7 @@ published values.
 | t0 data is assigned for a stratum                                   | `on(T0StratumDataAssignedEvent)` calls `invalidateStratum`.                                                                                                                                                    |
 | The temp-plot flag changes, or the site map is edited               | `on(SurvivalRateIncludesTempPlotsChangedEvent)` and `on(PlantingSiteMapEditedEvent)` call `invalidateSite`.                                                                                                    |
 | An observation is deleted or merged into another                    | `ObservationService.deleteObservation` and `mergeObservations` call `invalidateSite`.                                                                                                                          |
-| An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then rebuilds them immediately rather than waiting for the job. Use this to correct stored data after deploying a calculation change. |
+| An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then rebuilds them immediately, canceling any rebuild of the same site that is already running. Use this to correct stored data after deploying a calculation change. |
 
 `ObservationResultsRecalculator` is a JobRunr recurring job that runs every 15 minutes. For each
 planting site with flagged results, in a new REPEATABLE READ transaction holding a per-site
@@ -174,7 +174,10 @@ advisory lock, it calls `ObservationStore.rebuildFlaggedResults`, then clears th
 rebuilds only the flagged rows, one level at a time (plots, substrata, strata, then the site), with
 one set-based statement per step, so each level reads only levels that are already rebuilt. The snapshot means a rebuild never sees
 a change that lands while it runs; such a change conflicts with the rebuild's writes, the
-rebuild rolls back, and the flags stay set for the next run.
+rebuild rolls back, and the flags stay set for the next run. The rebuild also sets a short
+`lock_timeout`, so it gives up instead of waiting whenever a user's edit holds a row it needs:
+user edits never deadlock with or wait behind a rebuild's lock requests, though an edit can still
+wait for a rebuild to commit rows it already wrote.
 
 ## Code Map
 
