@@ -345,6 +345,7 @@ internal val recordedPlantsMultiset =
 internal val monitoringPlotsBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
 
 internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
+  val substratumTotals = OBSERVED_SUBSTRATUM_SPECIES_TOTALS.`as`("substratum_totals")
   val permanentSubstratumT0 =
       with(PLOT_T0_DENSITIES) {
         DSL.select(
@@ -408,7 +409,7 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
       )!!
   val tempDensityCol = tempSubstratumT0.field("plot_density", BigDecimal::class.java)!!
 
-  return with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
+  return with(substratumTotals) {
     observationSpeciesTotalsMultiset(
         DSL.select(
                 DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
@@ -430,16 +431,11 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
                 DSL.coalesce(permDensityCol.plus(tempDensityCol), permDensityCol, tempDensityCol),
                 DSL.coalesce(TOTAL_LIVE, 0),
             )
-            .from(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+            .from(substratumTotals.where(OBSERVATION_ID.eq(OBSERVATIONS.ID)))
             // full outer join because we want survival rate to be 0 if a species wasn't observed
             // but has t0 density data set
             .fullOuterJoin(permanentSubstratumT0)
-            .on(
-                permSubstratumCol
-                    .eq(SUBSTRATUM_ID)
-                    .and(permSpeciesCol.eq(SPECIES_ID))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-            )
+            .on(permSubstratumCol.eq(SUBSTRATUM_ID).and(permSpeciesCol.eq(SPECIES_ID)))
             .fullOuterJoin(tempSubstratumT0)
             // Match against the permanent t0 row too, so a species with both permanent and
             // temporary t0 data but no observed totals row comes out as a single row.
@@ -447,20 +443,19 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
                 tempSubstratumCol
                     .eq(DSL.coalesce(SUBSTRATUM_ID, permSubstratumCol))
                     .and(tempSpeciesCol.eq(DSL.coalesce(SPECIES_ID, permSpeciesCol)))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             )
             .where(
                 SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID)
                     .or(permSubstratumCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
                     .or(tempSubstratumCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
             )
-            .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             .orderBy(SPECIES_ID, SPECIES_NAME)
     )
   }
 }
 
 internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
+  val stratumTotals = OBSERVED_STRATUM_SPECIES_TOTALS.`as`("stratum_totals")
   val stratumHistoryAlias = STRATUM_HISTORIES.`as`("stratum_histories_2")
   val permStratumT0 =
       with(PLOT_T0_DENSITIES) {
@@ -542,13 +537,13 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
                 .join(this)
                 .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                 .where(
-                    SUBSTRATA.STRATUM_ID.eq(OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID)
-                        .and(SPECIES_ID.eq(OBSERVED_STRATUM_SPECIES_TOTALS.SPECIES_ID))
+                    SUBSTRATA.STRATUM_ID.eq(stratumTotals.STRATUM_ID)
+                        .and(SPECIES_ID.eq(stratumTotals.SPECIES_ID))
                 )
                 .and(
                     OBSERVATION_ID.eq(
                         latestObservationForSubstratumField(
-                            OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID,
+                            stratumTotals.OBSERVATION_ID,
                             SUBSTRATUM_ID,
                         )
                     )
@@ -556,7 +551,7 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
         )
       }
 
-  return with(OBSERVED_STRATUM_SPECIES_TOTALS) {
+  return with(stratumTotals) {
     observationSpeciesTotalsMultiset(
         DSL.select(
                 DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
@@ -578,16 +573,11 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
                 DSL.coalesce(permDensityCol.plus(tempDensityCol), permDensityCol, tempDensityCol),
                 DSL.coalesce(latestLiveField, 0),
             )
-            .from(OBSERVED_STRATUM_SPECIES_TOTALS)
+            .from(stratumTotals.where(OBSERVATION_ID.eq(OBSERVATIONS.ID)))
             // full outer join because we want survival rate to be 0 if a species wasn't observed
             // but has t0 density data set
             .fullOuterJoin(permStratumT0)
-            .on(
-                permStratumCol
-                    .eq(STRATUM_ID)
-                    .and(permSpeciesCol.eq(SPECIES_ID))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-            )
+            .on(permStratumCol.eq(STRATUM_ID).and(permSpeciesCol.eq(SPECIES_ID)))
             .fullOuterJoin(tempStratumT0)
             // Match against the permanent t0 row too, so a species with both permanent and
             // temporary t0 data but no observed totals row comes out as a single row.
@@ -595,14 +585,12 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
                 tempStratumCol
                     .eq(DSL.coalesce(STRATUM_ID, permStratumCol))
                     .and(tempSpeciesCol.eq(DSL.coalesce(SPECIES_ID, permSpeciesCol)))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             )
             .where(
                 STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID)
                     .or(permStratumCol.eq(STRATUM_HISTORIES.STRATUM_ID))
                     .or(tempStratumCol.eq(STRATUM_HISTORIES.STRATUM_ID))
             )
-            .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             .orderBy(SPECIES_ID, SPECIES_NAME)
     )
   }
@@ -622,6 +610,7 @@ internal val stratumPlantingCompletedField =
     )
 
 internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
+  val siteTotals = OBSERVED_SITE_SPECIES_TOTALS.`as`("site_totals")
   val permSiteT0 =
       with(PLOT_T0_DENSITIES) {
         DSL.select(
@@ -696,15 +685,15 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                 .join(this)
                 .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                 .where(
-                    SUBSTRATA.PLANTING_SITE_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID)
+                    SUBSTRATA.PLANTING_SITE_ID.eq(siteTotals.PLANTING_SITE_ID)
                         .and(
-                            SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
+                            SPECIES_ID.eq(siteTotals.SPECIES_ID)
                                 .or(
                                     SPECIES_ID.isNull
-                                        .and(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNull)
+                                        .and(siteTotals.SPECIES_ID.isNull)
                                         .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
                                         .and(
-                                            OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.eq(
+                                            siteTotals.CERTAINTY_ID.eq(
                                                 RecordedSpeciesCertainty.Other
                                             )
                                         )
@@ -714,7 +703,7 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                 .and(
                     OBSERVATION_ID.eq(
                         latestObservationForSubstratumField(
-                            OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID,
+                            siteTotals.OBSERVATION_ID,
                             SUBSTRATUM_ID,
                         )
                     )
@@ -722,7 +711,7 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
         )
       }
 
-  return with(OBSERVED_SITE_SPECIES_TOTALS) {
+  return with(siteTotals) {
     observationSpeciesTotalsMultiset(
         DSL.select(
                 DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
@@ -744,16 +733,11 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                 DSL.coalesce(permDensityCol.plus(tempDensityCol), permDensityCol, tempDensityCol),
                 DSL.coalesce(latestLiveField, 0),
             )
-            .from(OBSERVED_SITE_SPECIES_TOTALS)
+            .from(siteTotals.where(OBSERVATION_ID.eq(OBSERVATIONS.ID)))
             // full outer join because we want survival rate to be 0 if a species wasn't observed
             // but has t0 density data set
             .fullOuterJoin(permSiteT0)
-            .on(
-                permSiteCol
-                    .eq(PLANTING_SITE_ID)
-                    .and(permSpeciesCol.eq(SPECIES_ID))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-            )
+            .on(permSiteCol.eq(PLANTING_SITE_ID).and(permSpeciesCol.eq(SPECIES_ID)))
             .fullOuterJoin(tempSiteT0)
             // Match against the permanent t0 row too, so a species with both permanent and
             // temporary t0 data but no observed totals row comes out as a single row.
@@ -761,14 +745,12 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                 tempSiteCol
                     .eq(DSL.coalesce(PLANTING_SITE_ID, permSiteCol))
                     .and(tempSpeciesCol.eq(DSL.coalesce(SPECIES_ID, permSpeciesCol)))
-                    .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             )
             .where(
                 PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
                     .or(permSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
                     .or(tempSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
             )
-            .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
             .orderBy(SPECIES_ID, SPECIES_NAME)
     )
   }
