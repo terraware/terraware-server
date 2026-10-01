@@ -183,9 +183,16 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
     private val mockInvalidator: ObservationResultsInvalidator = mockk(relaxed = true)
     private val mockStore: ObservationStore = mockk()
 
+    // The real lock would be shared with other tests running in parallel, which could make these
+    // tests' sites look like they're already being recalculated.
+    private val mockLockService: LockService =
+        mockk(relaxed = true) {
+          every { tryExclusiveTransactional(any(), any<Long>()) } returns true
+        }
+
     private val recalculatorWithMocks by lazy {
       ObservationResultsRecalculator(
-          LockService(dslContext),
+          mockLockService,
           mockInvalidator,
           mockStore,
           systemUser,
@@ -193,10 +200,8 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
       )
     }
 
-    // IDs that real planting sites in other tests running in parallel won't have, since those
-    // tests hold their sites' recalculation locks until they finish.
-    private val failingSiteId = PlantingSiteId(999_999_001)
-    private val succeedingSiteId = PlantingSiteId(999_999_002)
+    private val failingSiteId = PlantingSiteId(1)
+    private val succeedingSiteId = PlantingSiteId(2)
 
     @BeforeEach
     fun setUpMocks() {
