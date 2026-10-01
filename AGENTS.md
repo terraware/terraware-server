@@ -17,12 +17,29 @@ Run ./gradlew commands one at a time, serially, rather than launching multiple o
 - Always include trailing newlines in source files, including HTML and MJML files.
 - Avoid adding comments that say obvious things about what the code does.
 - The intended audience for comments is someone looking at the code in the future, long after your change has been merged. Don't write comments about how the code used to work or about why it was changed; future readers will care about the current behavior of the code, not its evolution over time.
+- Prefer imperative present tense in commit titles and in the parts of commit bodies that say what is changing.
 
 ## Workflow
+
+Check whether the current repo is using Jujutsu (jj) rather than plain git; if so, prefer jj commands for examining history and checkpointing your work.
 
 If you are making the same change across lots of files, prefer writing a temporary script rather than editing each file one by one yourself. Always test the script against a few files first to make sure it's working as intended. If you can't get the script working right after a couple attempts, give up and manually edit the files.
 
 Format the code when you're done working. There's no need to rerun tests after code formatting.
+
+## Pull Requests
+
+PR descriptions should focus on why the change was needed and what changed at a high level. Don't talk about choices that were considered and ruled out, and don't go into detail about the actual implementation; people can read the code diff to see low-level details.
+
+We use stacked pull requests for changes of significant size. Stacks should be organized such that merging the first part of the stack still leaves the code base in a working, deployable state. That is, no PR in a stack can leave the system nonfunctional.
+
+A stack of PRs should represent a clear, logical sequence of internally-consistent incremental steps that add up to the desired goal. It is expected for later PRs in a stack to depend on earlier ones. It's also fine for a PR to include small amounts of temporary code that gets rewritten or removed by later PRs, if that helps the earlier PRs stay coherent.
+
+When possible, keep each PR in a stack under 350 lines of changes, but only if you can meet the "each PR is a complete change that leaves the code base in a working state" goal. 350 lines is a maximum, not a minimum; it's fine to split a change into smaller chunks than that.
+
+If the repo is using jj, you can use jj commands to manage the stack of revisions, including splitting, combining, and reordering revisions.
+
+Don't push or submit the pull requests yourself; that'll be done manually.
 
 ## Tool Use
 
