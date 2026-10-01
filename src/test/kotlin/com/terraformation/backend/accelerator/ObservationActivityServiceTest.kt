@@ -88,6 +88,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         mockGeometrySimplifier,
         mockk(),
         monitoringPlotsDao,
+        ObservationResultsInvalidator(dslContext),
         parentStore,
         plantingSitesDao,
         eventPublisher,

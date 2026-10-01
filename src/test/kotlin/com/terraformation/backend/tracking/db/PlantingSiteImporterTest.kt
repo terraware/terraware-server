@@ -45,6 +45,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
+            ObservationResultsInvalidator(dslContext),
             ParentStore(dslContext),
             plantingSitesDao,
             eventPublisher,

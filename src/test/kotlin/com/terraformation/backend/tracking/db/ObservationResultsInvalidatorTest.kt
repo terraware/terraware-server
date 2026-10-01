@@ -18,7 +18,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
-import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import io.mockk.every
@@ -447,23 +446,6 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
           strata = setOf(observationId to stratumHistoryId2),
           sites = setOf(observationId),
       )
-    }
-
-    @Test
-    fun `temp plots setting change flags the whole site`() {
-      val observationId = insertCompletedObservation(1, plotIdA, plotIdC)
-      insertAllResults(observationId, plotIdA, plotIdC)
-
-      invalidator.on(
-          SurvivalRateIncludesTempPlotsChangedEvent(
-              inserted.organizationId,
-              inserted.plantingSiteId,
-              previousValue = false,
-              newValue = true,
-          )
-      )
-
-      assertWholeObservationFlagged(observationId)
     }
 
     @Test

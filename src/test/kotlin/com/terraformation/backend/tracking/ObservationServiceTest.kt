@@ -190,6 +190,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
+        ObservationResultsInvalidator(dslContext),
         parentStore,
         plantingSitesDao,
         eventPublisher,
