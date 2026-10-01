@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRA
 import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.TransactionDefinition
 
@@ -278,6 +280,84 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
   }
 
   @Nested
+  inner class CompleteSiteRecalculation {
+    @Test
+    fun `recalculates all flagged results of the site`() {
+      importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
+      invalidator.invalidateSite(plantingSiteId)
+
+      assertTrue(recalculator.completeSiteRecalculation(plantingSiteId), "Completed")
+      assertFalse(invalidator.plantingSiteNeedsRecalculation(plantingSiteId), "Still flagged")
+    }
+
+    @Test
+    fun `waits for a recalculation that is already running`() {
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+
+      withSiteLockedByOtherSession(releaseAfter = Duration.ofMillis(1500)) {
+        assertTrue(recalculator.completeSiteRecalculation(plantingSiteId), "Completed")
+      }
+
+      assertFalse(invalidator.plantingSiteNeedsRecalculation(plantingSiteId), "Still flagged")
+    }
+
+    @Test
+    fun `gives up if a running recalculation takes too long`() {
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+
+      withSiteLockedByOtherSession(releaseAfter = null) {
+        assertFalse(
+            recalculator.completeSiteRecalculation(plantingSiteId, Duration.ofMillis(100)),
+            "Completed",
+        )
+      }
+
+      assertTrue(invalidator.plantingSiteNeedsRecalculation(plantingSiteId), "Still flagged")
+    }
+
+    @Test
+    fun `throws exception if user cannot read planting site`() {
+      every { user.canReadPlantingSite(plantingSiteId) } returns false
+
+      assertThrows<PlantingSiteNotFoundException> {
+        recalculator.completeSiteRecalculation(plantingSiteId)
+      }
+    }
+
+    /**
+     * Holds the site's recalculation lock in another database session while running [func]. If
+     * [releaseAfter] is non-null, the lock is released from a background thread after that long.
+     */
+    private fun withSiteLockedByOtherSession(releaseAfter: Duration?, func: () -> Unit) {
+      dataSource.connection.use { otherSession ->
+        otherSession.prepareStatement("SELECT pg_advisory_lock(?, ?)").use { statement ->
+          statement.setInt(1, LockType.OBSERVATION_RESULTS_RECALCULATION.key.toInt())
+          statement.setInt(2, plantingSiteId.value.toInt())
+          statement.execute()
+        }
+
+        val releaser = releaseAfter?.let { delay ->
+          thread {
+            Thread.sleep(delay.toMillis())
+            otherSession.prepareStatement("SELECT pg_advisory_unlock_all()").use {
+              it.execute()
+            }
+          }
+        }
+
+        try {
+          func()
+        } finally {
+          releaser?.join()
+          otherSession.prepareStatement("SELECT pg_advisory_unlock_all()").use { it.execute() }
+        }
+      }
+    }
+  }
+
+  @Nested
   inner class Failures {
     private val mockInvalidator: ObservationResultsInvalidator = mockk(relaxed = true)
     private val mockStore: ObservationRecalculationStore = mockk()
@@ -325,6 +405,34 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
 
       verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(failingSiteId) }
       verify { mockInvalidator.clearRecalculationFlags(succeedingSiteId) }
+    }
+
+    @Test
+    fun `complete recalculation keeps retrying when the data changes during a recalculation`() {
+      every { user.canReadPlantingSite(any()) } returns true
+      every { mockInvalidator.plantingSiteNeedsRecalculation(failingSiteId) } returnsMany
+          listOf(true, true, true, true, false)
+      every { mockStore.recalculateFlaggedResults(failingSiteId) } throws
+          DataAccessException("Lock timeout", SQLException("lock timeout", "55P03")) andThenThrows
+          DataAccessException("Lock timeout", SQLException("lock timeout", "55P03")) andThenThrows
+          DataAccessException("Lock timeout", SQLException("lock timeout", "55P03")) andThen
+          Unit
+
+      assertTrue(recalculatorWithMocks.completeSiteRecalculation(failingSiteId), "Completed")
+
+      verify(exactly = 4) { mockStore.recalculateFlaggedResults(failingSiteId) }
+    }
+
+    @Test
+    fun `complete recalculation gives up after repeated failures`() {
+      every { user.canReadPlantingSite(any()) } returns true
+      every { mockInvalidator.plantingSiteNeedsRecalculation(failingSiteId) } returns true
+      every { mockStore.recalculateFlaggedResults(failingSiteId) } throws
+          IllegalStateException("Oops")
+
+      assertFalse(recalculatorWithMocks.completeSiteRecalculation(failingSiteId), "Completed")
+
+      verify(exactly = 3) { mockStore.recalculateFlaggedResults(failingSiteId) }
     }
 
     @Test

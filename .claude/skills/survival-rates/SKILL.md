@@ -150,6 +150,10 @@ counts so there is somewhere to put the flag. The API reports flagged rows as `p
 survival rate calculation in-progress endpoint is true while any of a site's results are flagged.
 Publishing a funder activity skips site results that are flagged, keeping any previously
 published values.
+`POST /api/v1/tracking/sites/{id}/completeSurvivalRateCalculation` recalculates a site's flagged
+results synchronously through `ObservationResultsRecalculator.completeSiteRecalculation`, waiting
+for any recalculation that is already running. Clients use it to let users wait for pending numbers, and
+it is handy when testing.
 
 | Trigger                                                             | What gets flagged                                                                                                                                                                                              |
 |---------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

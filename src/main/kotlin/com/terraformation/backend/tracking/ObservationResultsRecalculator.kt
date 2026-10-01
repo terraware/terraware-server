@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.LockType
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -82,6 +83,22 @@ class ObservationResultsRecalculator(
       tryRecalculateSite(plantingSiteId) == SiteRecalculationResult.Recalculated
 
   /**
+   * Recalculates all the flagged results of one planting site, waiting for any recalculation that's
+   * already running and retrying if edits land while the recalculation is in progress. Returns once
+   * none of the site's results are flagged, or gives up after repeated failures or [maxWait].
+   *
+   * @return true if none of the site's results are flagged for recalculation anymore.
+   */
+  fun completeSiteRecalculation(
+      plantingSiteId: PlantingSiteId,
+      maxWait: Duration = DEFAULT_MAX_WAIT,
+  ): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return recalculateUntilDone(plantingSiteId, maxWait, cancelRunning = false)
+  }
+
+  /**
    * Recalculates all the flagged results of one planting site right away, canceling any
    * recalculation of the site that's already running unless it is also a forced one, in which case
    * this waits for it to finish. Retries if edits land while the recalculation is in progress.
@@ -93,7 +110,7 @@ class ObservationResultsRecalculator(
   fun forceSiteRecalculation(
       plantingSiteId: PlantingSiteId,
       maxWait: Duration = DEFAULT_MAX_WAIT,
-  ): Boolean = recalculateUntilDone(plantingSiteId, maxWait)
+  ): Boolean = recalculateUntilDone(plantingSiteId, maxWait, cancelRunning = true)
 
   /**
    * Recalculates the flagged results of every planting site right away, canceling any
@@ -110,7 +127,11 @@ class ObservationResultsRecalculator(
     }
   }
 
-  private fun recalculateUntilDone(plantingSiteId: PlantingSiteId, maxWait: Duration): Boolean {
+  private fun recalculateUntilDone(
+      plantingSiteId: PlantingSiteId,
+      maxWait: Duration,
+      cancelRunning: Boolean,
+  ): Boolean {
     val deadline = System.nanoTime() + maxWait.toNanos()
     var failures = 0
 
@@ -120,16 +141,21 @@ class ObservationResultsRecalculator(
         break
       }
 
-      when (tryRecalculateSite(plantingSiteId, forced = true)) {
+      when (tryRecalculateSite(plantingSiteId, forced = cancelRunning)) {
         SiteRecalculationResult.Recalculated -> {}
         SiteRecalculationResult.AlreadyRunning -> {
-          // Canceling another forced recalculation would let two of them keep canceling each other.
-          lockService.cancelExclusiveTransactionalHolders(
-              LockType.OBSERVATION_RESULTS_RECALCULATION,
-              plantingSiteId.value,
-              unlessHolding = LockType.OBSERVATION_RESULTS_FORCED_RECALCULATION,
-          )
-          Thread.sleep(CANCEL_POLL_INTERVAL.toMillis())
+          if (cancelRunning) {
+            // Canceling another forced recalculation would let two of them keep canceling each
+            // other.
+            lockService.cancelExclusiveTransactionalHolders(
+                LockType.OBSERVATION_RESULTS_RECALCULATION,
+                plantingSiteId.value,
+                unlessHolding = LockType.OBSERVATION_RESULTS_FORCED_RECALCULATION,
+            )
+            Thread.sleep(CANCEL_POLL_INTERVAL.toMillis())
+          } else {
+            Thread.sleep(LOCK_POLL_INTERVAL.toMillis())
+          }
         }
         // The data changed while the recalculation was running. Give the change a moment to finish
         // and try again with a fresh snapshot.
@@ -223,6 +249,7 @@ class ObservationResultsRecalculator(
     private val CANCEL_POLL_INTERVAL: Duration = Duration.ofMillis(200)
     private val CONFLICT_RETRY_INTERVAL: Duration = Duration.ofMillis(200)
     private val DEFAULT_MAX_WAIT: Duration = Duration.ofMinutes(10)
+    private val LOCK_POLL_INTERVAL: Duration = Duration.ofSeconds(1)
     private val LOCK_TIMEOUT: Duration = Duration.ofMillis(100)
     private const val MAX_FAILURES = 3
     private const val RECALCULATE_JOB_NAME = "ObservationResultsRecalculator.recalculate"
