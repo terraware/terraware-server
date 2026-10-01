@@ -286,6 +286,7 @@ internal val monitoringPlotSpeciesMultiset =
                       )
                       .and(STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                       .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
+                      .and(MONITORING_PLOTS.IS_AD_HOC.eq(false))
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .where(
@@ -297,6 +298,7 @@ internal val monitoringPlotSpeciesMultiset =
                       .or(
                           MONITORING_PLOT_ID.isNull
                               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
+                              .and(MONITORING_PLOTS.IS_AD_HOC.eq(false))
                               .and(
                                   STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
                                       OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories
@@ -380,6 +382,7 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
             .and(observationIdForPlot(MONITORING_PLOT_ID, OBSERVATIONS.ID, false).isNotNull)
             .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
             .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
+            .and(monitoringPlots.IS_AD_HOC.eq(false))
             .groupBy(SUBSTRATUM_ID, STRATUM_T0_TEMP_DENSITIES.SPECIES_ID)
             .asTable()
       }
@@ -503,6 +506,7 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
             .and(observationIdForPlot(MONITORING_PLOT_ID, OBSERVATIONS.ID, false).isNotNull)
             .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
             .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
+            .and(monitoringPlots.IS_AD_HOC.eq(false))
             .groupBy(
                 substratumHistories.stratumHistories.STRATUM_ID,
                 STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
@@ -653,10 +657,13 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                     substratumHistories.stratumHistories.STRATUM_ID
                 )
             )
+            .join(MONITORING_PLOTS)
+            .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
             .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
             .and(observationIdForPlot(MONITORING_PLOT_ID, OBSERVATIONS.ID, false).isNotNull)
             .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
             .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
+            .and(MONITORING_PLOTS.IS_AD_HOC.eq(false))
             .groupBy(
                 plantingSiteHistories.plantingSites.ID,
                 STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,

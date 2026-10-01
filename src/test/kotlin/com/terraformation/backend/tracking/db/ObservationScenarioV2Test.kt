@@ -880,6 +880,40 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
     }
 
     @Test
+    fun `ad-hoc plot results ignore stratum temporary plot t0 densities`() {
+      insertPlantingSite(survivalRateIncludesTempPlots = true)
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot(isAdHoc = true)
+      val observationId = insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      val speciesId = insertSpecies()
+      insertObservedPlotSpeciesTotals(totalLive = 1)
+      insertStratumT0TempDensity(speciesId = speciesId)
+      val unobservedSpeciesId = insertSpecies()
+      insertStratumT0TempDensity(speciesId = unobservedSpeciesId)
+
+      assertEquals(
+          listOf(
+              ObservationSpeciesResultsModel(
+                  certainty = RecordedSpeciesCertainty.Known,
+                  latestLive = 1,
+                  permanentLive = 0,
+                  speciesId = speciesId,
+                  speciesName = null,
+                  survivalRate = null,
+                  t0Density = null,
+                  totalDead = 0,
+                  totalExisting = 0,
+                  totalLive = 1,
+                  totalPlants = 1,
+              )
+          ),
+          resultsStoreV2.fetchOneById(observationId).adHocPlot!!.species,
+      )
+    }
+
+    @Test
     fun `fetches only ad-hoc results for the requested site or organization`() {
       insertMonitoringPlot(isAdHoc = true)
       insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)

@@ -962,7 +962,7 @@ class ObservationStore(
           isAdHoc,
       )
 
-      if (substratumId != null) {
+      if (!isAdHoc && substratumId != null) {
         updateSubstratumObservedTime(substratumId, observedTime)
       }
 
@@ -1972,7 +1972,10 @@ class ObservationStore(
               .from(MONITORING_PLOT_HISTORIES)
               .join(SUBSTRATUM_HISTORIES)
               .on(ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+              .join(MONITORING_PLOTS)
+              .on(MONITORING_PLOTS.ID.eq(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID))
               .where(stratumHistories.STRATUM_ID.eq(stratumId))
+              .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
               .fetchGroups(
                   ID.asNonNullable(),
                   MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.asNonNullable(),
@@ -2007,7 +2010,10 @@ class ObservationStore(
               .from(MONITORING_PLOT_HISTORIES)
               .join(SUBSTRATUM_HISTORIES)
               .on(ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+              .join(MONITORING_PLOTS)
+              .on(MONITORING_PLOTS.ID.eq(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID))
               .where(stratumHistories.strata.PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
               .fetchGroups(
                   ID.asNonNullable(),
                   MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.asNonNullable(),
@@ -3702,6 +3708,7 @@ class ObservationStore(
                   updateScope.alternateCompletedCondition(opTemp.MONITORING_PLOT_ID),
               ),
               opTemp.IS_PERMANENT.isFalse,
+              opTemp.monitoringPlots.IS_AD_HOC.isFalse,
               plotObservationCondition(opTemp),
           )
 
