@@ -35,8 +35,7 @@ import org.jooq.impl.DSL
 class ObservationResultsInvalidator(private val dslContext: DSLContext) {
   /**
    * Flags the results that depend on a monitoring plot in every observation where the plot was
-   * completed. Use this for changes, such as t0 data or plot completion, that can affect the plot's
-   * contribution to earlier observations as well as later ones.
+   * completed.
    */
   fun invalidatePlot(monitoringPlotId: MonitoringPlotId) {
     invalidate(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
