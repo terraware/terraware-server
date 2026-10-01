@@ -18,7 +18,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
-import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import jakarta.inject.Named
@@ -104,11 +103,6 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
   @EventListener
   fun on(event: T0StratumDataAssignedEvent) {
     invalidateStratum(event.stratumId)
-  }
-
-  @EventListener
-  fun on(event: SurvivalRateIncludesTempPlotsChangedEvent) {
-    invalidateSite(event.plantingSiteId)
   }
 
   @EventListener

@@ -66,6 +66,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
+        ObservationResultsInvalidator(dslContext),
         parentStore,
         plantingSitesDao,
         eventPublisher,

@@ -26,6 +26,7 @@ import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
+import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -114,6 +115,7 @@ class ObservationScenario(
                 geometrySimplifier,
                 identifierGenerator,
                 MonitoringPlotsDao(configuration),
+                ObservationResultsInvalidator(test.dslContext),
                 parentStore,
                 PlantingSitesDao(configuration),
                 eventPublisher,
@@ -125,7 +127,7 @@ class ObservationScenario(
             ObservationResultsRecalculator(
                     LockService(test.dslContext),
                     observationResultsInvalidator,
-                    observationStore,
+                    ObservationRecalculationStore(test.dslContext),
                     SystemUser(UsersDao(configuration)),
                     test.transactionManager,
                 )
