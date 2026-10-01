@@ -231,7 +231,7 @@ internal val monitoringPlotOverlapsMultiset =
         }
 
 internal val monitoringPlotSpeciesMultiset =
-    with(OBSERVED_PLOT_SPECIES_TOTALS) {
+    with(OBSERVED_PLOT_SPECIES_TOTALS.`as`("plot_totals")) {
       observationSpeciesTotalsMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
@@ -267,7 +267,12 @@ internal val monitoringPlotSpeciesMultiset =
                       .else_(null as BigDecimal?),
                   DSL.coalesce(TOTAL_LIVE, 0),
               )
-              .from(OBSERVED_PLOT_SPECIES_TOTALS)
+              .from(
+                  where(
+                      OBSERVATION_ID.eq(OBSERVATIONS.ID)
+                          .and(MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  )
+              )
               // full outer join because we want survival rate to be 0 if a species wasn't
               // observed but has t0 density data set
               .fullOuterJoin(PLOT_T0_DENSITIES)
@@ -275,7 +280,6 @@ internal val monitoringPlotSpeciesMultiset =
                   PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID)
                       .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                       .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
-                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .fullOuterJoin(STRATUM_T0_TEMP_DENSITIES)
               .on(
@@ -287,10 +291,9 @@ internal val monitoringPlotSpeciesMultiset =
                       .and(STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                       .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
                       .and(MONITORING_PLOTS.IS_AD_HOC.eq(false))
-                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .where(
-                  MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
+                  MONITORING_PLOT_ID.isNotNull
                       .or(
                           OBSERVATION_PLOTS.IS_PERMANENT.eq(true)
                               .and(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
@@ -309,7 +312,6 @@ internal val monitoringPlotSpeciesMultiset =
                       )
               )
               .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
-              .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
               .orderBy(SPECIES_ID, SPECIES_NAME)
       )
     }
