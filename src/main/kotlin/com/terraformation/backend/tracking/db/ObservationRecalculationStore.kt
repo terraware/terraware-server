@@ -16,16 +16,19 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.tracking.util.ObservationResultsPlotRow
 import com.terraformation.backend.tracking.util.ObservationResultsScope
+import com.terraformation.backend.tracking.util.ObservationResultsSite
 import com.terraformation.backend.tracking.util.ObservationResultsStratum
 import com.terraformation.backend.tracking.util.ObservationResultsSubstratum
 import com.terraformation.backend.tracking.util.ObservationSpeciesPlotRow
 import com.terraformation.backend.tracking.util.ObservationSpeciesScope
+import com.terraformation.backend.tracking.util.ObservationSpeciesSite
 import com.terraformation.backend.tracking.util.ObservationSpeciesStratum
 import com.terraformation.backend.tracking.util.ObservationSpeciesSubstratum
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
@@ -64,6 +67,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
     recalculateFlaggedPlotResults(plantingSiteId)
     recalculateFlaggedSubstratumResults(plantingSiteId)
     recalculateFlaggedStratumResults(plantingSiteId)
+    recalculateFlaggedSiteResults(plantingSiteId)
   }
 
   private fun recalculateFlaggedPlotResults(plantingSiteId: PlantingSiteId) {
@@ -302,6 +306,108 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
           .set(PERMANENT_LIVE, sumOfTotals(totals.PERMANENT_LIVE))
           .set(PLANT_DENSITY, scope.latestPlantDensityField(OBSERVATION_ID))
           .set(PLANT_DENSITY_STD_DEV, scope.latestPlantDensityStdDevField(OBSERVATION_ID))
+          .set(OBSERVED_DENSITY, scope.observedPlantDensityField(OBSERVATION_ID))
+          .where(NEEDS_RECALCULATION.eq(true))
+          .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
+          .and(nonAdHocObservationCondition(OBSERVATION_ID))
+          .execute()
+
+      recalculateFlaggedResultsRates(scope, plantingSiteId)
+    }
+  }
+
+  private fun recalculateFlaggedSiteResults(plantingSiteId: PlantingSiteId) {
+    val speciesTotals = OBSERVED_SITE_SPECIES_TOTALS
+    val flaggedSpecies =
+        flaggedResultsCondition(OBSERVATION_SITE_RESULTS, speciesTotals.OBSERVATION_ID)
+
+    dslContext
+        .deleteFrom(speciesTotals)
+        .where(flaggedSpecies)
+        .and(siteObservationCondition(speciesTotals.OBSERVATION_ID, plantingSiteId))
+        .execute()
+
+    insertPlotSpeciesRollup(
+        plantingSiteId,
+        speciesTotals,
+        speciesTotals.PLANTING_SITE_ID,
+        speciesTotals.PLANTING_SITE_HISTORY_ID,
+        { plots -> plots.plantingSiteId },
+        { plots -> plots.plantingSiteHistoryId },
+        { plots -> flaggedResultsCondition(OBSERVATION_SITE_RESULTS, plots.observationId) },
+    )
+
+    rollForwardPermanentLive(
+        plantingSiteId,
+        speciesTotals,
+        speciesTotals.PLANTING_SITE_ID,
+        speciesTotals.PLANTING_SITE_HISTORY_ID,
+        { _ -> OBSERVATIONS.PLANTING_SITE_ID },
+        { _ -> OBSERVATIONS.PLANTING_SITE_HISTORY_ID },
+        { observationIdField, _ ->
+          flaggedResultsCondition(OBSERVATION_SITE_RESULTS, observationIdField)
+        },
+    )
+
+    recalculateFlaggedSpeciesRates(
+        ObservationSpeciesSite(
+            DSL.select(speciesTotals.PLANTING_SITE_ID),
+            DSL.select(speciesTotals.PLANTING_SITE_HISTORY_ID),
+        ),
+        flaggedSpecies,
+        plantingSiteId,
+        { _ -> DSL.trueCondition() },
+    )
+
+    with(OBSERVATION_SITE_RESULTS) {
+      val scope =
+          ObservationResultsSite(
+              DSL.select(PLANTING_SITE_HISTORY_ID),
+              DSL.select(PLANTING_SITE_ID),
+          )
+      val totals = OBSERVED_SITE_SPECIES_TOTALS.`as`("site_rollup")
+      fun sumOfTotals(field: Field<Int?>): Field<Int> =
+          DSL.field(
+              DSL.select(rollup(field))
+                  .from(totals)
+                  .where(totals.OBSERVATION_ID.eq(OBSERVATION_ID))
+                  .and(totals.PLANTING_SITE_ID.eq(PLANTING_SITE_ID))
+          )
+
+      // Site density rolls each substratum's plots forward from its latest observation, including
+      // plots whose history is from an older version of the site map.
+      val densityPlots = OBSERVATION_PLOT_RESULTS.`as`("site_density_plots")
+      val densityPlotHistories = MONITORING_PLOT_HISTORIES.`as`("site_density_mph")
+      val densitySubstrata = SUBSTRATUM_HISTORIES.`as`("site_density_ssh")
+      fun densityField(aggregate: (Field<Int?>) -> Field<*>): Field<Int?> =
+          DSL.field(
+              DSL.select(aggregate(densityPlots.PLANT_DENSITY).cast(SQLDataType.INTEGER))
+                  .from(densityPlots)
+                  .join(MONITORING_PLOTS)
+                  .on(MONITORING_PLOTS.ID.eq(densityPlots.MONITORING_PLOT_ID))
+                  .join(densityPlotHistories)
+                  .on(densityPlotHistories.ID.eq(densityPlots.MONITORING_PLOT_HISTORY_ID))
+                  .join(densitySubstrata)
+                  .on(densitySubstrata.ID.eq(densityPlotHistories.SUBSTRATUM_HISTORY_ID))
+                  .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_ID))
+                  .and(
+                      densityPlots.OBSERVATION_ID.eq(
+                          latestObservationForSubstratumField(
+                              OBSERVATION_ID,
+                              densitySubstrata.SUBSTRATUM_ID,
+                          )
+                      )
+                  )
+          )
+
+      dslContext
+          .update(OBSERVATION_SITE_RESULTS)
+          .set(TOTAL_LIVE, sumOfTotals(totals.TOTAL_LIVE))
+          .set(TOTAL_DEAD, sumOfTotals(totals.TOTAL_DEAD))
+          .set(TOTAL_EXISTING, sumOfTotals(totals.TOTAL_EXISTING))
+          .set(PERMANENT_LIVE, sumOfTotals(totals.PERMANENT_LIVE))
+          .set(PLANT_DENSITY, densityField { DSL.avg(it) })
+          .set(PLANT_DENSITY_STD_DEV, densityField { DSL.stddevSamp(it) })
           .set(OBSERVED_DENSITY, scope.observedPlantDensityField(OBSERVATION_ID))
           .where(NEEDS_RECALCULATION.eq(true))
           .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
