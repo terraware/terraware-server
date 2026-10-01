@@ -1,8 +1,4 @@
-99fb30a4 SW-8971 Move shared survival rate SQL out of ObservationStore
-ff8a9db0 SW-8971 Store 0 survival rates for zero t0 denominators
-0384d93d SW-8971 Simplify invalidator comments and test name
-8b5489b8 SW-8971 Trim invalidatePlot documentation
-6d033499 SW-8971 Add results recalculation flag and invalidator
+a0dbcd88 Remove the local docker volume for postgres (#5066)
 a92f5d4a Update database dependencies (#5070)
 60f93c04 SW-8958 Add species rows to all tables (#5079)
 ea1709c2 SW-8958 Show per-species survival rates on admin page (#5078)
