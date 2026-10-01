@@ -138,8 +138,7 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
 
     @Test
     fun `skips a site whose results are being recalculated elsewhere`() {
-      // Set up flagged results directly; running the recalculator here would take the site's lock
-      // in this test's transaction and the other session below would wait for it forever.
+      // Set up flagged results directly to prevent locking.
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
 
