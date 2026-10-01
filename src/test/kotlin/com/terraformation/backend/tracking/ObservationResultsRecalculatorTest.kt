@@ -53,7 +53,6 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
             transactionManager,
         )
         .apply {
-          // Join the test's transaction so the recalculation can see the test data.
           siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED
         }
   }
