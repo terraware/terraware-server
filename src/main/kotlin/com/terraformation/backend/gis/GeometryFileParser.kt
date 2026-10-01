@@ -10,6 +10,7 @@ import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
 import java.io.IOException
 import java.nio.BufferUnderflowException
+import java.nio.charset.CharacterCodingException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
@@ -368,8 +369,12 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       }
 
       try {
-        CRS.parseWKT(directory.resolve("boundary.prj").readText())
+        SRID.byCRS(CRS.parseWKT(directory.resolve("boundary.prj").readText()))
+      } catch (e: CharacterCodingException) {
+        throw UnknownCoordinateSystemException(e, "Shapefile .prj is not valid text")
       } catch (e: FactoryException) {
+        throw UnknownCoordinateSystemException(e)
+      } catch (e: IllegalArgumentException) {
         throw UnknownCoordinateSystemException(e)
       }
 

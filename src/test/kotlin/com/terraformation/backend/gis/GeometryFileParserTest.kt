@@ -39,6 +39,16 @@ class GeometryFileParserTest {
             Arguments.of("dbf", InvalidGeometryFileException::class.java),
             Arguments.of("prj", UnknownCoordinateSystemException::class.java),
         )
+
+    @JvmStatic
+    fun unknownCoordinateSystems() =
+        listOf(
+            "not a CRS".toByteArray(),
+            byteArrayOf(0xC3.toByte(), 0x28),
+            ("GEOGCS[\"Made Up\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]]," +
+                    "PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]")
+                .toByteArray(),
+        )
   }
 
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
@@ -490,11 +500,12 @@ class GeometryFileParserTest {
     }
   }
 
-  @Test
-  fun `undecodable CRS is unknown coordinate system`() {
+  @ParameterizedTest
+  @MethodSource("unknownCoordinateSystems")
+  fun `undecodable or unrecognized CRS is unknown coordinate system`(prj: ByteArray) {
     assertThrows<UnknownCoordinateSystemException> {
       parser.readWithFormat(
-          zip(shapefileEntries() + ("PlantingSite.prj" to "not a CRS".toByteArray())),
+          zip(shapefileEntries() + ("PlantingSite.prj" to prj)),
           "boundary.zip",
       )
     }
