@@ -59,6 +59,7 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = 80,
                 latestObservationT0Density = BigDecimal.TEN,
                 latestObservationTotalLive = 5,
+                latestObservationTotalPlants = 8,
                 scientificName = "Aaa",
                 speciesId = speciesIdA,
             ),
@@ -69,6 +70,7 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = null,
                 latestObservationT0Density = null,
                 latestObservationTotalLive = 5,
+                latestObservationTotalPlants = 8,
                 scientificName = "Bbb",
                 speciesId = speciesIdB,
             ),
@@ -79,11 +81,66 @@ class SpeciesSurvivalRateRowsTest {
                 latestObservationSurvivalRate = null,
                 latestObservationT0Density = null,
                 latestObservationTotalLive = null,
+                latestObservationTotalPlants = null,
                 scientificName = "Ccc",
                 speciesId = speciesIdC,
             ),
         ),
-        speciesSurvivalRateRows(sources, speciesNames),
+        speciesSurvivalRateRows(sources, speciesNames, ::plotSpeciesTotalPlants),
+    )
+  }
+
+  @Test
+  fun `survival rate text falls back to latest available rate`() {
+    val rows =
+        speciesSurvivalRateRows(
+            listOf(
+                SpeciesResultsSource(
+                    ObservationId(2),
+                    null,
+                    listOf(
+                        species(speciesIdA, survivalRate = 80),
+                        species(speciesIdB, survivalRate = null),
+                        species(speciesIdC, survivalRate = null),
+                    ),
+                ),
+                SpeciesResultsSource(
+                    ObservationId(1),
+                    null,
+                    listOf(species(speciesIdB, survivalRate = 70)),
+                ),
+            ),
+            speciesNames,
+            ::aggregateSpeciesTotalPlants,
+        )
+
+    assertEquals(listOf("80%", "— (70% in obs 1)", "—"), rows.map { it.survivalRateText })
+  }
+
+  @Test
+  fun `species total plants matches the containing entity's definition`() {
+    val sources =
+        listOf(
+            SpeciesResultsSource(
+                ObservationId(1),
+                null,
+                listOf(species(speciesIdA, survivalRate = 80)),
+            )
+        )
+
+    assertEquals(
+        8,
+        speciesSurvivalRateRows(sources, speciesNames, ::plotSpeciesTotalPlants)
+            .single()
+            .latestObservationTotalPlants,
+        "Plot total includes live, existing, and dead plants",
+    )
+    assertEquals(
+        6,
+        speciesSurvivalRateRows(sources, speciesNames, ::aggregateSpeciesTotalPlants)
+            .single()
+            .latestObservationTotalPlants,
+        "Aggregate total includes live and dead plants",
     )
   }
 
@@ -104,6 +161,6 @@ class SpeciesSurvivalRateRowsTest {
           totalDead = 1,
           totalExisting = 2,
           totalLive = 5,
-          totalPlants = 7,
+          totalPlants = 8,
       )
 }
