@@ -358,7 +358,7 @@ class GeometryFileParserTest {
           else -> throw IllegalArgumentException("No closing tags defined for $containers")
         }
     val content =
-        """<kml xmlns="http://www.opengis.net/kml/2.2">$containers<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0,5 1,0,5 0,1,5 0,0,5</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>$closing</kml>"""
+        """<kml xmlns="http://www.opengis.net/kml/2.2">$containers<Placemark><ExtendedData xmlns:app="urn:example:app"><app:LinearRing><app:coordinates>metadata</app:coordinates></app:LinearRing></ExtendedData><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0,5 1,0,5 0,1,5 -0,0,5</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>$closing</kml>"""
 
     val parsed = parser.readWithFormat(content.toByteArray(), "boundary.kml")
 

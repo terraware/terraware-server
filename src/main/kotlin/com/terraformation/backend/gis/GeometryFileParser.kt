@@ -23,6 +23,7 @@ import org.geotools.api.feature.simple.SimpleFeature
 import org.geotools.kml.v22.KMLConfiguration
 import org.geotools.util.ContentFormatException
 import org.geotools.xsd.Parser
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
@@ -169,9 +170,10 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
   /**
    * Checks the raw XML for problems that GeoTools would silently accept or repair. Rejects files
-   * that contain a DTD or whose root element isn't `<kml>`, and requires every `LinearRing` to have
-   * at least four coordinates with the first and last being identical. GeoTools closes unclosed
-   * rings on its own, so they need to be caught here rather than after binding.
+   * that contain a DTD or whose root element isn't `<kml>`, and requires every `LinearRing` in the
+   * root element's namespace to have at least four coordinates with the first and last being
+   * identical. GeoTools closes unclosed rings on its own, so they need to be caught here rather
+   * than after binding. Elements in other namespaces, such as extension data, are ignored.
    */
   private fun validateKmlStructure(content: ByteArray) {
     val factory =
@@ -183,7 +185,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     try {
       val reader = factory.createXMLStreamReader(content.inputStream())
       try {
-        var foundRoot = false
+        var kmlNamespace: String? = null
         var inRing = false
 
         while (reader.hasNext()) {
@@ -191,19 +193,26 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
             XMLStreamConstants.DTD ->
                 throw InvalidGeometryFileException(message = "KML contains a DTD")
             XMLStreamConstants.START_ELEMENT -> {
-              if (!foundRoot) {
+              if (kmlNamespace == null) {
                 if (reader.localName != "kml") {
                   throw UnsupportedGeometryFileFormatException()
                 }
-                foundRoot = true
+                kmlNamespace = reader.namespaceURI ?: ""
               }
 
-              when (reader.localName) {
-                "LinearRing" -> inRing = true
-                "coordinates" -> if (inRing) validateRingCoordinates(reader.elementText)
+              if ((reader.namespaceURI ?: "") == kmlNamespace) {
+                when (reader.localName) {
+                  "LinearRing" -> inRing = true
+                  "coordinates" -> if (inRing) validateRingCoordinates(reader.elementText)
+                }
               }
             }
-            XMLStreamConstants.END_ELEMENT -> if (reader.localName == "LinearRing") inRing = false
+            XMLStreamConstants.END_ELEMENT ->
+                if (
+                    reader.localName == "LinearRing" && (reader.namespaceURI ?: "") == kmlNamespace
+                ) {
+                  inRing = false
+                }
           }
         }
       } finally {
@@ -223,10 +232,10 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           if (values.size < 2) {
             throw InvalidGeometryFileException(message = "KML coordinate has fewer than 2 values")
           }
-          values[0].toDouble() to values[1].toDouble()
+          Coordinate(values[0].toDouble(), values[1].toDouble())
         }
 
-    if (coordinates.size < 4 || coordinates.first() != coordinates.last()) {
+    if (coordinates.size < 4 || !coordinates.first().equals2D(coordinates.last())) {
       throw InvalidGeometryFileException(
           message = "KML LinearRing has fewer than 4 coordinates or is not closed"
       )
