@@ -1485,8 +1485,6 @@ class ObservationStore(
     updateObservationState(observationId, ObservationState.Completed)
     if (!isAdHoc) {
       recordSubstratumDependencies(observationId)
-      // Completion rolls stratum and site data forward and can add zero-density t0 rows for newly
-      // seen species, so the whole observation and its dependents need to be rebuilt.
       observationResultsInvalidator.invalidateObservation(observationId)
     }
 
