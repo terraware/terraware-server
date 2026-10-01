@@ -48,7 +48,12 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
             thisTable
                 .column(PLANTING_SITE_SUMMARIES.ID)
                 .eq(otherTable.column(MONITORING_PLOTS.PLANTING_SITE_ID))
-                .and(otherTable.column(MONITORING_PLOTS.SUBSTRATUM_ID).isNull)
+                .and(
+                    otherTable
+                        .column(MONITORING_PLOTS.SUBSTRATUM_ID)
+                        .isNull
+                        .or(otherTable.column(MONITORING_PLOTS.IS_AD_HOC).isTrue)
+                )
           },
           plantingSiteHistories.asMultiValueSublist(
               "histories",
@@ -60,6 +65,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
                 .column(PLANTING_SITE_SUMMARIES.ID)
                 .eq(otherTable.column(MONITORING_PLOTS.PLANTING_SITE_ID))
                 .and(otherTable.column(MONITORING_PLOTS.SUBSTRATUM_ID).isNotNull)
+                .and(otherTable.column(MONITORING_PLOTS.IS_AD_HOC).isFalse)
           },
           observations.asMultiValueSublist(
               "observations",

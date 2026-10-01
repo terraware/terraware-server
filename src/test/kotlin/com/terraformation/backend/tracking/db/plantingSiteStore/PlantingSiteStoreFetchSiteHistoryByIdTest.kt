@@ -313,4 +313,22 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
       store.fetchSiteHistoryById(plantingSiteId, historyId, PlantingSiteDepth.Site)
     }
   }
+
+  @Test
+  fun `does not include ad-hoc plots in substratum histories`() {
+    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(200), gridOrigin = point(1))
+    val plantingSiteHistoryId = inserted.plantingSiteHistoryId
+    insertStratum()
+    insertSubstratum()
+    val regularPlotId = insertMonitoringPlot()
+    insertMonitoringPlot(isAdHoc = true)
+
+    val actual =
+        store.fetchSiteHistoryById(plantingSiteId, plantingSiteHistoryId, PlantingSiteDepth.Plot)
+
+    assertEquals(
+        listOf(regularPlotId),
+        actual.strata.single().substrata.single().monitoringPlots.map { it.monitoringPlotId },
+    )
+  }
 }

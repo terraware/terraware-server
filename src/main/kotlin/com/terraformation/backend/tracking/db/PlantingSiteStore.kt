@@ -361,6 +361,7 @@ class PlantingSiteStore(
                     .join(SUBSTRATA)
                     .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                     .where(SUBSTRATA.STRATUM_ID.eq(STRATA.ID))
+                    .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
                     .groupBy(SUBSTRATA.ID)
             )
             .convertFrom { results -> results.associate { it.value1() to it.value2() } }
@@ -1918,6 +1919,7 @@ class PlantingSiteStore(
                   .where(
                       SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID)
                   )
+                  .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
                   .orderBy(MONITORING_PLOTS.PLOT_NUMBER)
           )
           .convertFrom { result ->

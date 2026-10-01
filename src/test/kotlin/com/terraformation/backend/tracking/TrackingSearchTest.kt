@@ -1182,4 +1182,72 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         .get(0)!!
         .toString()
   }
+
+  @Test
+  fun `substratum plot sublists exclude ad-hoc plots`() {
+    val plantingSiteId = insertPlantingSite()
+    insertStratum()
+    val substratumId = insertSubstratum()
+    val substratumHistoryId = inserted.substratumHistoryId
+    val regularPlotId = insertMonitoringPlot()
+    val regularPlotHistoryId = inserted.monitoringPlotHistoryId
+    val adHocPlotId = insertMonitoringPlot(isAdHoc = true)
+    val exteriorPlotId = insertMonitoringPlot(substratumId = null)
+
+    val sitePrefix = SearchFieldPrefix(searchTables.plantingSites)
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$plantingSiteId",
+                    "exteriorPlots" to
+                        listOf(mapOf("id" to "$adHocPlotId"), mapOf("id" to "$exteriorPlotId")),
+                    "monitoringPlots" to listOf(mapOf("id" to "$regularPlotId")),
+                )
+            )
+        ),
+        searchService.search(
+            sitePrefix,
+            listOf("id", "exteriorPlots.id", "monitoringPlots.id").map { sitePrefix.resolve(it) },
+            mapOf(sitePrefix to NoConditionNode()),
+        ),
+        "Planting site plots",
+    )
+
+    val substratumPrefix = SearchFieldPrefix(searchTables.substrata)
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$substratumId",
+                    "monitoringPlots" to listOf(mapOf("id" to "$regularPlotId")),
+                )
+            )
+        ),
+        searchService.search(
+            substratumPrefix,
+            listOf("id", "monitoringPlots.id").map { substratumPrefix.resolve(it) },
+            mapOf(substratumPrefix to NoConditionNode()),
+        ),
+        "Substratum plots",
+    )
+
+    val historyPrefix = SearchFieldPrefix(searchTables.substratumHistories)
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$substratumHistoryId",
+                    "monitoringPlotHistories" to listOf(mapOf("id" to "$regularPlotHistoryId")),
+                )
+            )
+        ),
+        searchService.search(
+            historyPrefix,
+            listOf("id", "monitoringPlotHistories.id").map { historyPrefix.resolve(it) },
+            mapOf(historyPrefix to NoConditionNode()),
+        ),
+        "Substratum history plots",
+    )
+  }
 }

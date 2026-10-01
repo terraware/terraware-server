@@ -658,4 +658,21 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       )
     }
   }
+
+  @Nested
+  inner class CountMonitoringPlots {
+    @Test
+    fun `does not count ad-hoc plots`() {
+      val plantingSiteId = insertPlantingSite()
+      val stratumId = insertStratum()
+      val substratumId = insertSubstratum()
+      insertMonitoringPlot()
+      insertMonitoringPlot(isAdHoc = true)
+
+      assertEquals(
+          mapOf(stratumId to mapOf(substratumId to 1)),
+          store.countMonitoringPlots(plantingSiteId),
+      )
+    }
+  }
 }
