@@ -1282,6 +1282,27 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             "Observation media table should only have file from other observation",
         )
       }
+
+      @Test
+      fun `deletes media for plots that are not in any substratum`() {
+        val adHocPlotId = insertMonitoringPlot(isAdHoc = true, substratumId = null)
+        val adHocObservationId = insertObservation(isAdHoc = true)
+        insertObservationPlot()
+
+        service.storeMediaFile(
+            observationId = adHocObservationId,
+            monitoringPlotId = adHocPlotId,
+            position = ObservationPlotPosition.NortheastCorner,
+            data = onePixelPng.inputStream(),
+            metadata = metadata,
+            caption = null,
+            isOriginal = true,
+        )
+
+        service.on(PlantingSiteDeletionStartedEvent(plantingSiteId))
+
+        assertTableEmpty(OBSERVATION_MEDIA_FILES)
+      }
     }
   }
 
