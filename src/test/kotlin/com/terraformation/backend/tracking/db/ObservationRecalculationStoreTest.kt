@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import io.mockk.every
+import java.math.BigDecimal
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -39,6 +40,14 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
     scenario.import()
 
     assertRecalculationRestores { scramblePlots() }
+  }
+
+  @MethodSource("scenarios")
+  @ParameterizedTest(name = "{0}")
+  fun `recalculates scrambled substratum results`(scenario: Scenario) {
+    scenario.import()
+
+    assertRecalculationRestores { scrambleSubstrata() }
   }
 
   data class Scenario(val prefix: String, val numObservations: Int) {
@@ -86,6 +95,21 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
         .set(OBSERVATION_PLOT_RESULTS.TOTAL_LIVE, -1)
         .set(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY, -1)
         .set(OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE, -1)
+        .execute()
+  }
+
+  private fun scrambleSubstrata() {
+    dslContext
+        .update(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+        .set(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_LIVE, -1)
+        .set(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SURVIVAL_RATE, -1)
+        .execute()
+    dslContext
+        .update(OBSERVATION_SUBSTRATUM_RESULTS)
+        .set(OBSERVATION_SUBSTRATUM_RESULTS.TOTAL_LIVE, -1)
+        .set(OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY, -1)
+        .set(OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE, -1)
+        .set(OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE_AREA, BigDecimal(-1))
         .execute()
   }
 
