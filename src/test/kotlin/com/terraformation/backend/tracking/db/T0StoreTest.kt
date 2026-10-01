@@ -47,8 +47,6 @@ import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZoneOffset
-import kotlin.IllegalArgumentException
-import kotlin.lazy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -546,6 +544,44 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class FetchSiteSpeciesByPlot {
     @Test
+    fun `excludes ad-hoc plots`() {
+      insertSubstratumPopulation(substratumId = substratumId, speciesId = speciesId2, 100)
+      val adHocPlotId = insertMonitoringPlot(isAdHoc = true, plotNumber = 20)
+      val adHocPlotHistoryId = inserted.monitoringPlotHistoryId
+      insertObservation(
+          isAdHoc = true,
+          startDate = observationStartDate,
+          completedTime = observationTime,
+      )
+      insertObservationPlot(
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+      )
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = adHocPlotId,
+          monitoringPlotHistoryId = adHocPlotHistoryId,
+          speciesId = speciesId1,
+          totalLive = 1,
+      )
+
+      val expected =
+          setOf(
+              PlotSpeciesModel(
+                  monitoringPlotId = monitoringPlotId,
+                  species = createSpeciesDensityList(speciesId2 to BigDecimal.valueOf(100.0)),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = tempPlotId,
+                  species = createSpeciesDensityList(speciesId2 to BigDecimal.valueOf(100.0)),
+              ),
+          )
+
+      assertSetEquals(expected, store.fetchSiteSpeciesByPlot(plantingSiteId).toSet())
+    }
+
+    @Test
     fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()
 
@@ -696,6 +732,31 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class AssignT0PlotObservation {
+    @Test
+    fun `throws exception for ad-hoc observation`() {
+      val adHocPlotId = insertMonitoringPlot(isAdHoc = true, plotNumber = 20)
+      val adHocObservationId =
+          insertObservation(
+              isAdHoc = true,
+              startDate = observationStartDate,
+              completedTime = observationTime,
+          )
+      insertObservationPlot(
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+      )
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+
+      assertThrows<AdHocPlotNotAllowedException> {
+        store.assignT0PlotObservation(adHocPlotId, adHocObservationId)
+      }
+
+      assertTableEmpty(PLOT_T0_OBSERVATIONS)
+      assertTableEmpty(PLOT_T0_DENSITIES)
+    }
+
     @Test
     fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()
@@ -1482,6 +1543,19 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class AssignNewObservationSpeciesZero {
+    @Test
+    fun `completing an ad-hoc observation does not add zero t0 densities`() {
+      insertMonitoringPlot(isAdHoc = true, plotNumber = 20)
+      val adHocObservationId = insertObservation(isAdHoc = true)
+      insertObservationPlot()
+      insertPlotT0Observation()
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+
+      store.on(ObservationStateUpdatedEvent(adHocObservationId, ObservationState.Completed))
+
+      assertTableEmpty(PLOT_T0_DENSITIES)
+    }
+
     @Test
     fun `t0 densities are not changed when no new species in observation`() {
       val speciesId1 = insertSpecies()
