@@ -332,18 +332,12 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
      */
     private fun withSiteLockedByOtherSession(releaseAfter: Duration?, func: () -> Unit) {
       dataSource.connection.use { otherSession ->
-        otherSession.prepareStatement("SELECT pg_advisory_lock(?, ?)").use { statement ->
-          statement.setInt(1, LockType.OBSERVATION_RESULTS_RECALCULATION.key.toInt())
-          statement.setInt(2, plantingSiteId.value.toInt())
-          statement.execute()
-        }
+        lockInSession(otherSession, LockType.OBSERVATION_RESULTS_RECALCULATION)
 
         val releaser = releaseAfter?.let { delay ->
           thread {
             Thread.sleep(delay.toMillis())
-            otherSession.prepareStatement("SELECT pg_advisory_unlock_all()").use {
-              it.execute()
-            }
+            otherSession.rollback()
           }
         }
 
@@ -351,7 +345,7 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
           func()
         } finally {
           releaser?.join()
-          otherSession.prepareStatement("SELECT pg_advisory_unlock_all()").use { it.execute() }
+          otherSession.rollback()
         }
       }
     }
