@@ -12,6 +12,7 @@ import io.mockk.every
 import java.math.BigDecimal
 import org.jooq.Record
 import org.jooq.Table
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
@@ -50,6 +51,14 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
     assertRecalculationRestores { scrambleSubstrata() }
   }
 
+  @MethodSource("scenarios")
+  @ParameterizedTest(name = "{0}")
+  fun `recalculates scrambled stratum results`(scenario: Scenario) {
+    scenario.import()
+
+    assertRecalculationRestores { scrambleStrata() }
+  }
+
   data class Scenario(val prefix: String, val numObservations: Int) {
     override fun toString() = "${prefix.substringAfterLast('/')} ($numObservations)"
   }
@@ -59,6 +68,26 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
   }
 
   private fun assertRecalculationRestores(scramble: () -> Unit) {
+    // Rolled-forward stratum species totals for strata an observation didn't observe have no
+    // stratum results row and are never read; the recalculation removes them.
+    dslContext
+        .deleteFrom(OBSERVED_STRATUM_SPECIES_TOTALS)
+        .whereNotExists(
+            DSL.selectOne()
+                .from(OBSERVATION_STRATUM_RESULTS)
+                .where(
+                    OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(
+                        OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID
+                    )
+                )
+                .and(
+                    OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(
+                        OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_HISTORY_ID
+                    )
+                )
+        )
+        .execute()
+
     ObservationResultsInvalidator(dslContext).invalidateSite(plantingSiteId)
     val expected = snapshot()
 
@@ -110,6 +139,22 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
         .set(OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY, -1)
         .set(OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE, -1)
         .set(OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE_AREA, BigDecimal(-1))
+        .execute()
+  }
+
+  private fun scrambleStrata() {
+    dslContext
+        .update(OBSERVED_STRATUM_SPECIES_TOTALS)
+        .set(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_LIVE, -1)
+        .set(OBSERVED_STRATUM_SPECIES_TOTALS.PERMANENT_LIVE, -1)
+        .set(OBSERVED_STRATUM_SPECIES_TOTALS.SURVIVAL_RATE, -1)
+        .execute()
+    dslContext
+        .update(OBSERVATION_STRATUM_RESULTS)
+        .set(OBSERVATION_STRATUM_RESULTS.TOTAL_LIVE, -1)
+        .set(OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY, -1)
+        .set(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE, -1)
+        .set(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA, BigDecimal(-1))
         .execute()
   }
 
