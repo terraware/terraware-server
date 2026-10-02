@@ -819,8 +819,8 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
     @Test
     fun `counts plots with a t0 density of zero toward survival rates`() {
       assertSurvivalRatesWithT0Densities(
-          plot1Density = 0,
-          plot2Density = 10,
+          plot1T0Density = 0,
+          plot2T0Density = 10,
           expectedPlotRates = listOf(0, 100),
           expectedRate = 200,
       )
@@ -829,16 +829,16 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
     @Test
     fun `survival rate is zero if every t0 density is zero`() {
       assertSurvivalRatesWithT0Densities(
-          plot1Density = 0,
-          plot2Density = 0,
+          plot1T0Density = 0,
+          plot2T0Density = 0,
           expectedPlotRates = listOf(0, 0),
           expectedRate = 0,
       )
     }
 
     private fun assertSurvivalRatesWithT0Densities(
-        plot1Density: Int,
-        plot2Density: Int,
+        plot1T0Density: Int,
+        plot2T0Density: Int,
         expectedPlotRates: List<Int>,
         expectedRate: Int,
     ) {
@@ -855,8 +855,8 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
         }
 
         t0DensitySet {
-          plot(1) { species(0, density = plot1Density) }
-          plot(2) { species(0, density = plot2Density) }
+          plot(1) { species(0, density = plot1T0Density) }
+          plot(2) { species(0, density = plot2T0Density) }
         }
 
         observation(1) {
