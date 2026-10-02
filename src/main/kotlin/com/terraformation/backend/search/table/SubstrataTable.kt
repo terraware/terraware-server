@@ -25,11 +25,12 @@ class SubstrataTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          monitoringPlots.asMultiValueSublist(
-              "monitoringPlots",
-              SUBSTRATA.ID,
-              MONITORING_PLOTS.SUBSTRATUM_ID,
-          ),
+          monitoringPlots.asMultiValueSublist("monitoringPlots") { thisTable, otherTable ->
+            thisTable
+                .column(SUBSTRATA.ID)
+                .eq(otherTable.column(MONITORING_PLOTS.SUBSTRATUM_ID))
+                .and(otherTable.column(MONITORING_PLOTS.IS_AD_HOC).isFalse)
+          },
           plantings.asMultiValueSublist(
               "plantings",
               SUBSTRATA.ID,
