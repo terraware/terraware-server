@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
@@ -38,6 +39,11 @@ class ObservationPlotsTable(private val tables: SearchTables) : SearchTable() {
               "monitoringPlot",
               OBSERVATION_PLOTS.MONITORING_PLOT_ID,
               MONITORING_PLOTS.ID,
+          ),
+          monitoringPlotHistories.asSingleValueSublist(
+              "monitoringPlotHistory",
+              OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID,
+              MONITORING_PLOT_HISTORIES.ID,
           ),
           observations.asSingleValueSublist(
               "observation",
