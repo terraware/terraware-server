@@ -15,11 +15,14 @@ import java.util.zip.ZipOutputStream
 import org.geotools.util.ContentFormatException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
@@ -27,6 +30,27 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
 
 class GeometryFileParserTest {
+  companion object {
+    @JvmStatic
+    fun missingShapefileComponents() =
+        listOf(
+            Arguments.of("shp", NoShapefileException::class.java),
+            Arguments.of("shx", InvalidGeometryFileException::class.java),
+            Arguments.of("dbf", InvalidGeometryFileException::class.java),
+            Arguments.of("prj", UnknownCoordinateSystemException::class.java),
+        )
+
+    @JvmStatic
+    fun unknownCoordinateSystems() =
+        listOf(
+            "not a CRS".toByteArray(),
+            byteArrayOf(0xC3.toByte(), 0x28),
+            ("GEOGCS[\"Made Up\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]]," +
+                    "PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]")
+                .toByteArray(),
+        )
+  }
+
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
 
@@ -427,8 +451,128 @@ class GeometryFileParserTest {
     }
   }
 
+  @Test
+  fun `unsupported content is rejected`() {
+    assertThrows<UnsupportedGeometryFileFormatException> {
+      parser.readWithFormat(
+          """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
+              .toByteArray(),
+          "boundary.gpx",
+      )
+    }
+  }
+
+  @Test
+  fun `corrupt archive is invalid file`() {
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat("PK broken".toByteArray(), "boundary.zip")
+    }
+  }
+
+  @Test
+  fun `archive without spatial files has a specific code`() {
+    assertThrows<NoKmlInArchiveException> {
+      parser.readWithFormat(zip(mapOf("readme.txt" to "text".toByteArray())), "boundary.zip")
+    }
+  }
+
+  @MethodSource("missingShapefileComponents")
+  @ParameterizedTest
+  fun `missing shapefile components have specific exceptions`(
+      extension: String,
+      expected: Class<out GeometryFileException>,
+  ) {
+    assertThrows(expected) {
+      parser.readWithFormat(
+          zip(shapefileEntries().filterKeys { !it.endsWith(".$extension") }),
+          "boundary.zip",
+      )
+    }
+  }
+
+  @Test
+  fun `multiple shapefiles have a specific code`() {
+    assertThrows<MultipleShapefilesException> {
+      parser.readWithFormat(
+          javaClass.getResource("/tracking/TwoShapefiles.zip")!!.readBytes(),
+          "boundary.zip",
+      )
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("unknownCoordinateSystems")
+  fun `undecodable or unrecognized CRS is unknown coordinate system`(prj: ByteArray) {
+    assertThrows<UnknownCoordinateSystemException> {
+      parser.readWithFormat(
+          zip(shapefileEntries() + ("PlantingSite.prj" to prj)),
+          "boundary.zip",
+      )
+    }
+  }
+
+  @Test
+  fun `unreadable shapefile is invalid file`() {
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat(
+          zip(shapefileEntries() + ("PlantingSite.shp" to byteArrayOf(1, 2, 3))),
+          "boundary.zip",
+      )
+    }
+  }
+
+  @Test
+  fun `ignores metadata and normalizes nested uppercase secondary files`() {
+    val entries =
+        shapefileEntries().mapKeys { "nested/" + it.key.uppercase() } +
+            mapOf(
+                "__MACOSX/PlantingSite.shp" to byteArrayOf(),
+                "nested/._PlantingSite.shp" to byteArrayOf(),
+                ".hidden/other.shp" to byteArrayOf(),
+            )
+
+    val parsed = parser.readWithFormat(zip(entries), "boundary.ZIP")
+
+    assertEquals(GeometryFileFormat.Shapefile, parsed.format)
+    assertFalse(parsed.geometries.isEmpty())
+    assertTrue(parsed.geometries.all { it.srid == SRID.LONG_LAT })
+  }
+
+  @Test
+  fun `KML takes precedence over shapefile`() {
+    val entries =
+        shapefileEntries() +
+            ("boundary.kml" to javaClass.getResource("/gis/triangle.kml")!!.readBytes())
+
+    assertEquals(GeometryFileFormat.KMZ, parser.readWithFormat(zip(entries), "boundary.zip").format)
+  }
+
   private fun readShapes(content: ByteArray, filename: String?): List<Geometry> =
       parser.readWithFormat(content, filename).geometries
+
+  private fun shapefileEntries(): Map<String, ByteArray> {
+    return ZipInputStream(javaClass.getResourceAsStream("/tracking/TwoShapefiles.zip")!!).use {
+        input ->
+      buildMap {
+        generateSequence { input.nextEntry }
+            .forEach { entry ->
+              if (entry.name.startsWith("PlantingSite.")) put(entry.name, input.readAllBytes())
+            }
+      }
+    }
+  }
+
+  private fun zip(entries: Map<String, ByteArray>): ByteArray {
+    val output = ByteArrayOutputStream()
+    ZipOutputStream(output).use { zip ->
+      entries.forEach { (name, content) ->
+        zip.putNextEntry(ZipEntry(name))
+        zip.write(content)
+        zip.closeEntry()
+      }
+    }
+    return output.toByteArray()
+  }
 
   private fun shapefileZip(
       omitExtension: String? = null,
