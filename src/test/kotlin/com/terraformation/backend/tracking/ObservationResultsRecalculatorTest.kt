@@ -18,9 +18,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
+import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
+import org.jooq.SQLDialect
 import org.jooq.exception.DataAccessException
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -55,6 +58,22 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
   @BeforeEach
   fun setUp() {
     every { user.canReadOrganization(organizationId) } returns true
+  }
+
+  /**
+   * Acquires locks on the test's planting site in a transaction on another database session, the
+   * same way a recalculation running elsewhere would. The locks are held until the session's
+   * transaction is rolled back.
+   */
+  private fun lockInSession(session: Connection, vararg lockTypes: LockType) {
+    session.autoCommit = false
+    val lockService = LockService(DSL.using(session, SQLDialect.POSTGRES))
+    lockTypes.forEach { lockType ->
+      assertTrue(
+          lockService.tryExclusiveTransactional(lockType, plantingSiteId.value),
+          "Acquired $lockType",
+      )
+    }
   }
 
   @Nested
@@ -100,16 +119,12 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
       invalidator.invalidateSite(plantingSiteId)
 
       dataSource.connection.use { otherSession ->
-        otherSession.prepareStatement("SELECT pg_advisory_lock(?, ?)").use { statement ->
-          statement.setInt(1, LockType.OBSERVATION_RESULTS_RECALCULATION.key.toInt())
-          statement.setInt(2, plantingSiteId.value.toInt())
-          statement.execute()
-        }
+        lockInSession(otherSession, LockType.OBSERVATION_RESULTS_RECALCULATION)
 
         try {
           assertFalse(recalculator.recalculateSite(plantingSiteId), "Recalculated")
         } finally {
-          otherSession.prepareStatement("SELECT pg_advisory_unlock_all()").use { it.execute() }
+          otherSession.rollback()
         }
       }
 
