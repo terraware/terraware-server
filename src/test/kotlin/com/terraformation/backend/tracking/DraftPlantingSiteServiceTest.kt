@@ -8,6 +8,8 @@ import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.gis.TooManyVerticesException
+import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.toMultiPolygon
 import java.io.ByteArrayOutputStream
@@ -15,13 +17,20 @@ import java.math.BigDecimal
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import org.geotools.util.ContentFormatException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.io.geojson.GeoJsonWriter
 
 class DraftPlantingSiteServiceTest : RunsAsUser {
   override val user = mockUser()
@@ -29,6 +38,7 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
   private val service = DraftPlantingSiteService(parser)
+  private val geometryFactory = GeometryFactory()
 
   @ParameterizedTest
   @ValueSource(strings = ["kml", "kmz", "geojson", "json", "GEOJSON", "zip", "ZIP"])
@@ -131,8 +141,8 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["kml", "kmz", "geojson", "json", "zip", "txt"])
-  fun `rejects malformed or unsupported files`(extension: String) {
+  @ValueSource(strings = ["kml", "kmz", "geojson", "json", "zip"])
+  fun `rejects malformed files`(extension: String) {
     assertThrows<ContentFormatException> {
       service.parseBoundaryFile("not a geometry".toByteArray(), "boundary.$extension")
     }
@@ -140,9 +150,67 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
 
   @Test
   fun `requires filename`() {
-    assertThrows<ContentFormatException> {
+    assertThrows<UnsupportedGeometryFileFormatException> {
       service.parseBoundaryFile(byteArrayOf(), null)
     }
+  }
+
+  @Test
+  fun `rejects unsupported extensions even when the contents are readable`() {
+    val content = javaClass.getResource("/gis/triangle.geojson")!!.readBytes()
+
+    assertThrows<UnsupportedGeometryFileFormatException> {
+      service.parseBoundaryFile(content, "boundary.gpx")
+    }
+  }
+
+  @Test
+  fun `permits exactly fifty thousand vertices`() {
+    assertEquals(50000, parseShapes(circle(50000)).geometry.numPoints)
+  }
+
+  @Test
+  fun `rejects more than fifty thousand vertices`() {
+    assertThrows<TooManyVerticesException>("Polygon") { parseShapes(circle(50001)) }
+    assertThrows<TooManyVerticesException>("LineString") {
+      parseShapes(geometryFactory.createLineString(circle(50001).coordinates))
+    }
+  }
+
+  @Test
+  fun `counts vertices after union`() {
+    val circle = circle(30000)
+    val collection = geometryFactory.createGeometryCollection(arrayOf(circle, circle))
+
+    assertEquals(30000, parseShapes(collection).geometry.numPoints)
+  }
+
+  @Test
+  fun `includes holes in vertex limit`() {
+    val withHole =
+        geometryFactory.createPolygon(
+            circle(30000, 2.0).exteriorRing,
+            arrayOf(circle(20001).exteriorRing),
+        )
+
+    assertThrows<TooManyVerticesException> { parseShapes(withHole) }
+  }
+
+  private fun parseShapes(geometry: Geometry) =
+      service.parseBoundaryFile(toGeoJson(geometry), "boundary.geojson")
+
+  private fun toGeoJson(geometry: Geometry): ByteArray =
+      GeoJsonWriter().apply { setEncodeCRS(false) }.write(geometry).toByteArray()
+
+  /** Builds a polygon approximating a circle with a given total number of coordinates. */
+  private fun circle(numPoints: Int, radius: Double = 1.0): Polygon {
+    val coordinates =
+        (0 until numPoints - 1).map { index ->
+          val angle = 2 * PI * index / (numPoints - 1)
+          Coordinate(radius * cos(angle), radius * sin(angle))
+        }
+
+    return geometryFactory.createPolygon((coordinates + coordinates.first()).toTypedArray())
   }
 
   private fun shapefileZip(

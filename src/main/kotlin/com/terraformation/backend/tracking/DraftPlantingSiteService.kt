@@ -1,6 +1,9 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.gis.TooManyVerticesException
+import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.tracking.model.BoundaryFileModel
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
@@ -12,10 +15,19 @@ import org.xml.sax.SAXException
 
 @Named
 class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParser) {
+  companion object {
+    private const val MAX_BOUNDARY_VERTICES = 50000
+    private val SUPPORTED_EXTENSIONS = setOf("kml", "kmz", "geojson", "json", "zip")
+  }
+
   fun parseBoundaryFile(
       content: ByteArray,
       filename: String?,
   ): BoundaryFileModel {
+    if (filename?.substringAfterLast('.', "")?.lowercase() !in SUPPORTED_EXTENSIONS) {
+      throw UnsupportedGeometryFileFormatException()
+    }
+
     return try {
       when (filename?.substringAfterLast('.', "")?.lowercase()) {
         "kml",
@@ -33,6 +45,10 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
               parsed.geometry.factory.createMultiPolygon(polygonArray).also {
                 it.srid = parsed.geometry.srid
               }
+          if (parsed.geometry.numPoints > MAX_BOUNDARY_VERTICES) {
+            throw TooManyVerticesException()
+          }
+
           BoundaryFileModel(
               areaHa = polygons.calculateAreaHectares(),
               filename = filename,
@@ -46,6 +62,8 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
                 "Boundary file must be .kml, .kmz, .geojson, .json, or .zip"
             )
       }
+    } catch (e: GeometryFileException) {
+      throw e
     } catch (e: IOException) {
       throw ContentFormatException("Unable to read boundary file: ${e.message}")
     } catch (e: SAXException) {
