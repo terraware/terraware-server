@@ -23,7 +23,7 @@ import org.junit.jupiter.params.provider.MethodSource
 
 /**
  * Checks that recalculating flagged results reproduces the stored results. Each test scrambles the
- * values one level is responsible for, flags every result of the site, recalculates, and expects
+ * values every level is responsible for, flags every result of the site, recalculates, and expects
  * every derived table to match what it was before scrambling.
  */
 class ObservationRecalculationStoreTest : ObservationScenarioTest() {
@@ -39,47 +39,10 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
 
   @MethodSource("scenarios")
   @ParameterizedTest(name = "{0}")
-  fun `recalculates scrambled plot results`(scenario: Scenario) {
-    scenario.import()
-
-    assertRecalculationRestores { scramblePlots() }
-  }
-
-  @MethodSource("scenarios")
-  @ParameterizedTest(name = "{0}")
-  fun `recalculates scrambled substratum results`(scenario: Scenario) {
-    scenario.import()
-
-    assertRecalculationRestores { scrambleSubstrata() }
-  }
-
-  @MethodSource("scenarios")
-  @ParameterizedTest(name = "{0}")
-  fun `recalculates scrambled stratum results`(scenario: Scenario) {
-    scenario.import()
-
-    assertRecalculationRestores { scrambleStrata() }
-  }
-
-  @MethodSource("scenarios")
-  @ParameterizedTest(name = "{0}")
-  fun `recalculates scrambled site results`(scenario: Scenario) {
-    scenario.import()
-
-    assertRecalculationRestores { scrambleSite() }
-  }
-
-  @MethodSource("scenarios")
-  @ParameterizedTest(name = "{0}")
   fun `recalculates scrambled results at every level`(scenario: Scenario) {
     scenario.import()
 
-    assertRecalculationRestores {
-      scramblePlots()
-      scrambleSubstrata()
-      scrambleStrata()
-      scrambleSite()
-    }
+    assertRecalculationRestores()
   }
 
   @Test
@@ -92,12 +55,7 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
         .execute()
     observationStore.recalculateSurvivalRates(plantingSiteId)
 
-    assertRecalculationRestores {
-      scramblePlots()
-      scrambleSubstrata()
-      scrambleStrata()
-      scrambleSite()
-    }
+    assertRecalculationRestores()
   }
 
   data class Scenario(val prefix: String, val numObservations: Int) {
@@ -108,7 +66,7 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
     importFromCsvFiles(prefix, numObservations, 30)
   }
 
-  private fun assertRecalculationRestores(scramble: () -> Unit) {
+  private fun assertRecalculationRestores() {
     // Rolled-forward stratum species totals for strata an observation didn't observe have no
     // stratum results row and are never read; the recalculation removes them.
     dslContext
@@ -132,7 +90,10 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
     ObservationResultsInvalidator(dslContext).invalidateSite(plantingSiteId)
     val expected = snapshot()
 
-    scramble()
+    scramblePlots()
+    scrambleSubstrata()
+    scrambleStrata()
+    scrambleSite()
     recalculationStore.recalculateFlaggedResults(plantingSiteId)
     val actual = snapshot()
 
