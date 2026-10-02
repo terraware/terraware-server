@@ -908,6 +908,20 @@ class ObservationStore(
                     .mapValues { (_, rowsForStatus) -> rowsForStatus.size }
               }
 
+      observationPlotsDao.update(
+          observationPlotsRow.copy(
+              completedBy = currentUser().userId,
+              completedTime = clock.instant(),
+              notes = notes,
+              observedTime = observedTime,
+              statusId = ObservationPlotStatus.Completed,
+          )
+      )
+
+      if (!isAdHoc) {
+        recordSubstratumDependencies(observationId)
+      }
+
       updateSpeciesTotals(
           observationId,
           plantingSite,
@@ -923,20 +937,6 @@ class ObservationStore(
           plantCountsBySpecies,
           includeAggregates = false,
       )
-
-      observationPlotsDao.update(
-          observationPlotsRow.copy(
-              completedBy = currentUser().userId,
-              completedTime = clock.instant(),
-              notes = notes,
-              observedTime = observedTime,
-              statusId = ObservationPlotStatus.Completed,
-          )
-      )
-
-      if (!isAdHoc) {
-        recordSubstratumDependencies(observationId)
-      }
 
       observationResultsInvalidator.invalidateObservationPlots(
           observationId,
@@ -2474,25 +2474,16 @@ class ObservationStore(
       // it can only be calculated once this plot's totals rows are in place. A temporary plot only
       // affects survival rates if the planting site includes temporary plots in them.
       if (speciesIds.isNotEmpty() && (includesTempPlots || isPermanent)) {
-        // While the plot is being completed, its observation's substratum dependencies haven't
-        // been recorded yet, so attribute plots to observations using the requested substrata.
+        val plotObservationCondition = latestObservationForPlotCondition(observationIdValue)
         val permanentTerms =
             getSurvivalRateTermsBySpecies(
-                permanentT0PlotSet(
-                    updateScope,
-                    null,
-                    requestedObservationForPlotCondition(observationIdValue, true),
-                ),
+                permanentT0PlotSet(updateScope, null, plotObservationCondition),
                 speciesIds,
             )
         val tempTerms =
             if (includesTempPlots) {
               getSurvivalRateTermsBySpecies(
-                  tempT0PlotSet(
-                      updateScope,
-                      null,
-                      requestedObservationForPlotCondition(observationIdValue, false),
-                  ),
+                  tempT0PlotSet(updateScope, null, plotObservationCondition),
                   speciesIds,
               )
             } else {

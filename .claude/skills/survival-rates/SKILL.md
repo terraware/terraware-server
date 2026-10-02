@@ -114,25 +114,19 @@ These are product decisions. Do not "fix" them without checking with the user.
    controls whether temporary plots count at all. Changing it fires
    `SurvivalRateIncludesTempPlotsChangedEvent`, which recalculates the site.
 
-## Two Write Paths With Different Plot Attribution
+## Plot Attribution
 
-Every rate needs to know which observation a plot's live counts come from. There are two answers,
-and using the wrong one silently produces wrong numbers.
+Every rate needs to know which observation a plot's live counts come from.
+`latestObservationForPlotCondition`, built on `latestObservationForSubstratumField`, attributes each
+plot to its substratum's latest observation at or before the target, which is how the live totals
+are rolled up. It reads `observation_dependent_substrata`, so `completePlot` marks the plot complete
+and runs `recordSubstratumDependencies` before it writes the plot's species totals.
 
-| Path                                                         | Attribution helper                                                                      | Why                                                                                                                                                                        |
-|--------------------------------------------------------------|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Plot completion, species totals (`updateSpeciesTotalsTable`) | `requestedObservationForPlotCondition`, built on `observationIdForPlot` in `Queries.kt` | Runs before `recordSubstratumDependencies`, so `observation_dependent_substrata` has no rows for this observation yet. Uses the observation's requested substrata instead. |
-| Everything else: recalculation, roll-forward, results tables | `latestObservationForPlotCondition`, built on `latestObservationForSubstratumField`     | Attributes each plot to its substratum's latest observation at or before the target, which is how the live totals are rolled up.                                           |
-
-The two helpers are meant to agree: for a substratum the observation actually covers, both resolve
-to that observation, and once `recordSubstratumDependencies` has run every later recalculation uses
-the latest-observation form. The split exists only because of write ordering during completion.
-There is no known case where the two attributions store different values for the same row.
-
-Both helpers feed `permanentT0PlotSet` and `tempT0PlotSet` in `ObservationStore`, which define the
-plot set once. `getSurvivalRateTerms` derives the numerator and denominator from
-those sets for SQL expressions; `getSurvivalRateTermsBySpecies` does the same as a grouped query
-for the completion path, which then writes all species' rates with one `CASE` update.
+`latestObservationForPlotCondition` feeds `permanentT0PlotSet` and `tempT0PlotSet` in
+`SurvivalRateTerms.kt`, which define the plot set once. `getSurvivalRateTerms` derives the numerator
+and denominator from those sets for SQL expressions; `getSurvivalRateTermsBySpecies` does the same
+as a grouped query for the completion path, which then writes all species' rates with one `CASE`
+update.
 
 ## When Rates Are Recalculated
 
