@@ -177,6 +177,10 @@ class ObservationResultsRecalculator(
             observationRecalculationStore.recalculateFlaggedResults(plantingSiteId)
             observationResultsInvalidator.clearRecalculationFlags(plantingSiteId)
 
+            // The timeout lasts until the end of the transaction, which is an enclosing one if
+            // siteTransactionPropagation joins it.
+            lockService.resetTransactionLockTimeout()
+
             log.info("Recalculated flagged results of planting site $plantingSiteId")
             SiteRecalculationResult.Recalculated
           }

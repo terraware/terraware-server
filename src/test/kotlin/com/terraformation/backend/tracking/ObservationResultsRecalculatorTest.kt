@@ -149,10 +149,38 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
 
-      recalculator.recalculateSite(plantingSiteId)
+      val defaultLockTimeout = dslContext.fetchValue("SHOW lock_timeout")
+      var lockTimeoutDuringRecalculation: Any? = null
+      val store = ObservationRecalculationStore(dslContext)
+      val recalculatorWithTimeoutCheck =
+          ObservationResultsRecalculator(
+                  LockService(dslContext),
+                  invalidator,
+                  mockk {
+                    every { recalculateFlaggedResults(any()) } answers
+                        {
+                          lockTimeoutDuringRecalculation =
+                              dslContext.fetchValue("SHOW lock_timeout")
+                          store.recalculateFlaggedResults(firstArg())
+                        }
+                  },
+                  systemUser,
+                  transactionManager,
+              )
+              .apply { siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED }
 
-      // The recalculator joined the test's transaction, so its setting is visible here.
-      assertEquals("100ms", dslContext.fetchValue("SHOW lock_timeout"), "Lock timeout")
+      recalculatorWithTimeoutCheck.recalculateSite(plantingSiteId)
+
+      assertAll(
+          { assertEquals("100ms", lockTimeoutDuringRecalculation, "Lock timeout during") },
+          {
+            assertEquals(
+                defaultLockTimeout,
+                dslContext.fetchValue("SHOW lock_timeout"),
+                "Lock timeout after",
+            )
+          },
+      )
     }
 
     @Test

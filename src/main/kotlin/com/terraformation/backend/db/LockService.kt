@@ -132,6 +132,11 @@ class LockService(private val dslContext: DSLContext) {
     dslContext.execute("SET LOCAL lock_timeout = '${timeout.toMillis()}ms'")
   }
 
+  /** Undoes [setTransactionLockTimeout] for the rest of the current transaction. */
+  fun resetTransactionLockTimeout() {
+    dslContext.execute("SET LOCAL lock_timeout = DEFAULT")
+  }
+
   private fun foldEntityId(entityId: Long): Int = (entityId xor (entityId ushr 32)).toInt()
 
   /**
