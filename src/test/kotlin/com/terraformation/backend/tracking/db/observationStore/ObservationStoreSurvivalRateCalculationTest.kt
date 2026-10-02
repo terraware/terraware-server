@@ -84,6 +84,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertSurvivalRates(
         SurvivalRates(
@@ -139,6 +140,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           observedTime,
           recordedPlants,
       )
+      observationResultsRecalculator.recalculateAllSites()
     }
 
     val substratumRow = observationSubstratumResultsDao.fetchBySubstratumId(substratumId).single()
@@ -189,6 +191,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertSurvivalRates(
         SurvivalRates(
@@ -211,6 +214,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertSurvivalRates(
         SurvivalRates(
@@ -250,6 +254,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
     observationStore.completePlot(
         observation2,
         plotId,
@@ -258,6 +263,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime.plusSeconds(30),
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertSurvivalRates(
         SurvivalRates(
@@ -297,6 +303,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         recordedPlants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     val allSurvivalRate = (100.0 * 1 / 11)
     assertSurvivalRates(
@@ -370,6 +377,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         plot1Plants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     val plot1SurvivalRates: Map<Any, Map<SpeciesId?, Double?>> =
         mapOf(
@@ -423,6 +431,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         plot2Plants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     // Plot 2 has no t0 density for species 3, so its species 3 plants don't count toward any
     // survival rate.
@@ -473,6 +482,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 40), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
     observationStore.completePlot(
         observationId,
         plotWithoutT0,
@@ -481,6 +491,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 30), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     val survivalRate = 100.0 * 40 / 50
     val rollupRates: Map<SpeciesId?, Number?> = mapOf(speciesId to survivalRate)
@@ -524,6 +535,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             RecordedPlantStatus.Live,
         ),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     val survivalRate = 100.0 * 40 / 50
     val rates: Map<SpeciesId?, Number?> =
@@ -582,6 +594,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           observedTime,
           createPlantsRows(mapOf(speciesId to live), RecordedPlantStatus.Live),
       )
+      observationResultsRecalculator.recalculateAllSites()
     }
 
     val permanentPlotRate = 100.0 * 30 / 50
@@ -653,6 +666,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         plot1Plants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     val plot1SurvivalRates: Map<SpeciesId?, Double?> =
         mapOf(
@@ -680,6 +694,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         plot2Plants,
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     val plot2SurvivalRates: Map<SpeciesId?, Double?> =
         mapOf(
@@ -766,6 +781,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           observedTime,
           plantsList,
       )
+      observationResultsRecalculator.recalculateAllSites()
     }
 
     val permPlot1Rates = mapOf(speciesId to 100.0 * 1 / 10, null to 100.0 * 1 / 10)
@@ -838,6 +854,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           observedTime.plusSeconds(10),
           plantsList,
       )
+      observationResultsRecalculator.recalculateAllSites()
     }
 
     val obs2AllPlotsRates = mapOf(speciesId to 100.0 * 2 / 30, null to 100.0 * 2 / 30)
@@ -859,7 +876,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           .and(SPECIES_ID.eq(speciesId))
           .execute()
     }
-    observationStore.recalculateSurvivalRates(stratumId)
+    observationResultsInvalidator.invalidateStratum(stratumId)
+    observationResultsRecalculator.recalculateAllSites()
 
     val actualResults = resultsStoreV2.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)
     val obs1UpdatedResults = ratesObjectFromResults(actualResults[1], plantingSiteId)
@@ -933,6 +951,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             ),
         ),
     )
+    observationResultsRecalculator.recalculateAllSites()
     val rates1 = mapOf(species1 to 0, species2 to 0, null to 0)
     val expected1 =
         SurvivalRates(
@@ -961,6 +980,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             )
         ),
     )
+    observationResultsRecalculator.recalculateAllSites()
     val rates2 = mapOf(species1 to 100.0 * 1 / 10, species2 to 0, null to 100.0 * 1 / 30)
     val expected2 =
         SurvivalRates(
@@ -996,6 +1016,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             )
         ),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     val observation2 = insertObservation()
     insertObservationRequestedSubstratum()
@@ -1020,6 +1041,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             )
         ),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     // Stamp a sentinel into observation 2's stratum survival rate after completion. A correct
     // recalc scoped to dependents of observation 1 must leave this untouched.
@@ -1042,7 +1064,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     ) { model ->
       model.copy(totalLive = model.totalLive + 1)
     }
-    observationStore.recalculateSurvivalRates(plotId)
+    observationResultsInvalidator.invalidatePlot(plotId)
+    observationResultsRecalculator.recalculateAllSites()
 
     val obs1StratumRate =
         observationStratumResultsDao
@@ -2014,6 +2037,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 8), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
     observationStore.completePlot(
         observationId,
         plotB,
@@ -2022,6 +2046,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 16), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     // observation 2 requests A and B and has plots in both, but only A's plot is completed before
     // the observation is abandoned, leaving B requested-but-unobserved.
@@ -2048,8 +2073,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime.plusSeconds(10),
         createPlantsRows(mapOf(speciesId to 9), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     observationStore.abandonObservation(observation2)
+    observationResultsRecalculator.recalculateAllSites()
 
     // B was never observed in observation 2, so its dependency row rolls forward to observation 1.
     val bDependency =
@@ -2118,6 +2145,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 8), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
     observationStore.completePlot(
         observationId,
         plotB,
@@ -2126,6 +2154,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 16), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     // observation 2 observes only A and is abandoned
     val observation2 = insertObservation()
@@ -2153,8 +2182,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime.plusSeconds(10),
         createPlantsRows(mapOf(speciesId to 9), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     observationStore.abandonObservation(observation2)
+    observationResultsRecalculator.recalculateAllSites()
 
     assertTableEquals(
         ObservedStratumSpeciesTotalsRecord(
@@ -2239,6 +2270,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 10), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
     observationStore.completePlot(
         observationId,
         plotB,
@@ -2247,6 +2279,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime,
         createPlantsRows(mapOf(speciesId to 10), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     // Observation 2 observes only stratum A: 8/10 = 80%.
     clock.instant = Instant.ofEpochSecond(10)
@@ -2266,6 +2299,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         observedTime.plusSeconds(10),
         createPlantsRows(mapOf(speciesId to 8), RecordedPlantStatus.Live),
     )
+    observationResultsRecalculator.recalculateAllSites()
 
     assertEquals(
         emptyList<Any>(),

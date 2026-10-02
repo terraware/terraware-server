@@ -153,6 +153,7 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
         Instant.EPOCH,
         listOf(livePlant()),
     )
+    recalculator.recalculateAllSites()
 
     insertFile()
     insertObservationMediaFile(observationId = sourceObservationId)
@@ -220,6 +221,7 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
         Instant.EPOCH,
         listOf(livePlant(), deadPlant()),
     )
+    recalculator.recalculateAllSites()
 
     store.completePlot(
         observationId,
@@ -229,6 +231,7 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
         Instant.EPOCH,
         listOf(livePlant(speciesId), livePlant(speciesId2), livePlant(speciesId2)),
     )
+    recalculator.recalculateAllSites()
 
     val expectedTotals = helper.fetchAllTotals()
     val expectedResults = helper.fetchAllResults()
@@ -454,5 +457,6 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
         Instant.EPOCH,
         List(plantCount) { livePlant() },
     )
+    recalculator.recalculateAllSites()
   }
 }

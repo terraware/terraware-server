@@ -8,7 +8,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import io.mockk.every
 import java.math.BigDecimal
 import org.jooq.Record
@@ -16,7 +15,6 @@ import org.jooq.Table
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -41,19 +39,6 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
   @ParameterizedTest(name = "{0}")
   fun `recalculates scrambled results at every level`(scenario: Scenario) {
     scenario.import()
-
-    assertRecalculationRestores()
-  }
-
-  @Test
-  fun `recalculates scrambled results after t0 densities change`() {
-    importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
-
-    dslContext
-        .update(PLOT_T0_DENSITIES)
-        .set(PLOT_T0_DENSITIES.PLOT_DENSITY, PLOT_T0_DENSITIES.PLOT_DENSITY.times(2))
-        .execute()
-    observationStore.recalculateSurvivalRates(plantingSiteId)
 
     assertRecalculationRestores()
   }
