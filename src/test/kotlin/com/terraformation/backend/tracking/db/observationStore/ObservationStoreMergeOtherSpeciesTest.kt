@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpecies
 import com.terraformation.backend.db.tracking.tables.records.ObservedStratumSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedSubstratumSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
@@ -21,6 +22,7 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import kotlin.math.roundToInt
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -61,6 +63,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         "Species to merge",
         speciesId,
     )
+
+    recalculator.recalculateAllSites()
 
     assertTableEquals(
         listOf(
@@ -226,6 +230,23 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
 
     store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, false, "Merge", speciesId)
 
+    assertEquals(
+        mapOf(observationId1 to true, observationId2 to false),
+        dslContext
+            .select(
+                OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
+                OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION,
+            )
+            .from(OBSERVATION_SITE_RESULTS)
+            .fetchMap(
+                OBSERVATION_SITE_RESULTS.OBSERVATION_ID,
+                OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION,
+            ),
+        "Site results flagged for recalculation after merge",
+    )
+
+    recalculator.recalculateAllSites()
+
     val expectedPlotsAfterMerge =
         listOf(
             expectedPlotsBeforeMerge[0].apply {
@@ -319,6 +340,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
 
     store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, true, "Merge", speciesId)
+
+    recalculator.recalculateAllSites()
 
     val expectedPlotsAfterMerge =
         listOf(
