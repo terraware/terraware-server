@@ -159,20 +159,6 @@ internal fun latestObservationForPlotCondition(
   )
 }
 
-/**
- * Attributes each plot to an observation based on which substrata [observationIdField] requested,
- * for use while a plot is being completed and the observation's substratum dependencies haven't
- * been recorded yet.
- */
-internal fun requestedObservationForPlotCondition(
-    observationIdField: Field<ObservationId?>,
-    isPermanent: Boolean,
-): (ObservationPlots) -> Condition = { observationPlots ->
-  observationPlots.OBSERVATION_ID.eq(
-      observationIdForPlot(observationPlots.MONITORING_PLOT_ID, observationIdField, isPermanent)
-  )
-}
-
 internal fun plotHasCompletedObservations(
     monitoringPlotIdField: Field<MonitoringPlotId?>,
     isPermanent: Boolean,
