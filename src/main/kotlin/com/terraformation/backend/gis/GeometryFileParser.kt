@@ -330,15 +330,6 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
               else InvalidGeometryFileException(message = "Shapefile is missing .$extension")
         }
 
-    if (components.values.any { it.size > MAX_COMPONENT_BYTES }) {
-      throw ContentFormatException(
-          "Shapefile component exceeds $MAX_COMPONENT_BYTES uncompressed bytes"
-      )
-    }
-    if (components.values.sumOf { maxOf(0L, it.size) } > MAX_TOTAL_BYTES) {
-      throw ContentFormatException("Shapefile exceeds $MAX_TOTAL_BYTES total uncompressed bytes")
-    }
-
     // The shapefile reader needs the secondary files next to the main one under a common basename.
     return createTempDirectory().useAndDelete { directory ->
       var totalBytes = 0L
