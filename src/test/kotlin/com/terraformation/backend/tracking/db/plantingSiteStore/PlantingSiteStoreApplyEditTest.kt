@@ -4,6 +4,7 @@ import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstratumHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -20,6 +22,7 @@ import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
+import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
@@ -38,6 +41,7 @@ import com.terraformation.backend.util.nearlyCoveredBy
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.fail
@@ -708,6 +712,136 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           editedSubstratum.monitoringPlots[0],
           "Monitoring plot in moved substratum",
       )
+    }
+
+    @Nested
+    inner class AdHocPlots {
+      @Test
+      fun `moves ad-hoc plot to the substratum it overlaps after an edit`() {
+        val existing = createSite(newSite { stratum { substratum() } })
+        val adHocPlotId =
+            insertAdHocPlot(existing, x = 300, substratumId = existing.strata[0].substrata[0].id)
+
+        val edited =
+            store.applyPlantingSiteEdit(
+                calculateSiteEdit(
+                    existing,
+                    newSite {
+                      stratum {
+                        substratum(width = 250)
+                        substratum()
+                      }
+                    },
+                )
+            )
+
+        val sub2Id = edited.strata.single().substrata.single { it.name == "Sub2" }.id
+        assertAdHocPlotSubstratum(adHocPlotId, sub2Id)
+        assertNull(monitoringPlotsDao.fetchOneById(adHocPlotId)!!.permanentIndex, "Permanent index")
+        assertEquals(
+            emptyList<Any>(),
+            edited.strata
+                .flatMap { it.substrata }
+                .flatMap { it.monitoringPlots }
+                .filter { it.id == adHocPlotId },
+            "Ad-hoc plot should not be in site model",
+        )
+      }
+
+      @Test
+      fun `points ad-hoc plot history at new substratum history when substratum is unchanged`() {
+        val existing = createSite(newSite(width = 500) { stratum { substratum() } })
+        val substratumId = existing.strata[0].substrata[0].id
+        val adHocPlotId = insertAdHocPlot(existing, x = 30, substratumId = substratumId)
+
+        store.applyPlantingSiteEdit(
+            calculateSiteEdit(existing, newSite(width = 600) { stratum { substratum() } })
+        )
+
+        assertAdHocPlotSubstratum(adHocPlotId, substratumId)
+      }
+
+      @Test
+      fun `removes ad-hoc plot from deleted substratum`() {
+        val existing =
+            createSite(
+                newSite(width = 750) {
+                  stratum(width = 750) {
+                    substratum(width = 500)
+                    substratum()
+                  }
+                }
+            )
+        val adHocPlotId =
+            insertAdHocPlot(existing, x = 600, substratumId = existing.strata[0].substrata[1].id)
+
+        store.applyPlantingSiteEdit(calculateSiteEdit(existing, newSite(width = 500)))
+
+        assertAdHocPlotSubstratum(adHocPlotId, null)
+      }
+
+      @Test
+      fun `adds ad-hoc plot to substratum when site expands to cover it`() {
+        val existing = createSite(newSite(width = 500))
+        val adHocPlotId = insertAdHocPlot(existing, x = 600, substratumId = null)
+
+        val edited = store.applyPlantingSiteEdit(calculateSiteEdit(existing, newSite(width = 750)))
+
+        assertAdHocPlotSubstratum(adHocPlotId, edited.strata.single().substrata.single().id)
+      }
+
+      private fun insertAdHocPlot(
+          site: ExistingPlantingSiteModel,
+          x: Int,
+          substratumId: SubstratumId?,
+      ): MonitoringPlotId =
+          insertMonitoringPlot(
+              boundary = rectanglePolygon(30, 30, x, 0),
+              isAdHoc = true,
+              isAvailable = false,
+              plantingSiteId = site.id,
+              substratumId = substratumId,
+          )
+
+      private fun assertAdHocPlotSubstratum(
+          monitoringPlotId: MonitoringPlotId,
+          expectedSubstratumId: SubstratumId?,
+      ) {
+        val plantingSiteId = monitoringPlotsDao.fetchOneById(monitoringPlotId)!!.plantingSiteId!!
+        val latestSiteHistoryId =
+            dslContext
+                .select(DSL.max(PLANTING_SITE_HISTORIES.ID))
+                .from(PLANTING_SITE_HISTORIES)
+                .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId))
+                .fetchSingle()
+                .value1()
+        val expectedSubstratumHistoryId = expectedSubstratumId?.let {
+          dslContext
+              .select(DSL.max(SUBSTRATUM_HISTORIES.ID))
+              .from(SUBSTRATUM_HISTORIES)
+              .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(it))
+              .fetchSingle()
+              .value1()
+        }
+        val history =
+            dslContext
+                .selectFrom(MONITORING_PLOT_HISTORIES)
+                .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(latestSiteHistoryId))
+                .fetchSingle()
+
+        assertEquals(
+            expectedSubstratumId,
+            monitoringPlotsDao.fetchOneById(monitoringPlotId)!!.substratumId,
+            "Current substratum ID",
+        )
+        assertEquals(expectedSubstratumId, history.substratumId, "History substratum ID")
+        assertEquals(
+            expectedSubstratumHistoryId,
+            history.substratumHistoryId,
+            "Substratum history ID",
+        )
+      }
     }
 
     private fun createSite(initial: NewPlantingSiteModel): ExistingPlantingSiteModel {
