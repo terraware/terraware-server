@@ -346,6 +346,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     )
                 )
                 .and(condition)
+                .orderBy(MONITORING_PLOTS.ID)
         )
         .convertFrom { results ->
           results.map { record: Record ->
@@ -509,6 +510,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                             )
                     )
                 )
+                .orderBy(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID, SUBSTRATUM_HISTORIES.ID)
         )
         .convertFrom { results ->
           results.map { record: Record ->
@@ -680,6 +682,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                             )
                     )
                 )
+                .orderBy(STRATUM_HISTORIES.STRATUM_ID, STRATUM_HISTORIES.ID)
         )
         .convertFrom { results ->
           results.map { record: Record ->
