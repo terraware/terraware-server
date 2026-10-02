@@ -139,6 +139,7 @@ class ObservationResultsRecalculator(
           if (failures >= MAX_FAILURES) {
             break
           }
+          Thread.sleep(CONFLICT_RETRY_INTERVAL.toMillis())
         }
       }
     }
