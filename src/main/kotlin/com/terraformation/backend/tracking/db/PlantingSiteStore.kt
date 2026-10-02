@@ -126,6 +126,7 @@ class PlantingSiteStore(
     private val geometrySimplifier: GeometrySimplifier,
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
+    private val observationResultsInvalidator: ObservationResultsInvalidator,
     private val parentStore: ParentStore,
     private val plantingSitesDao: PlantingSitesDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
@@ -553,9 +554,12 @@ class PlantingSiteStore(
             PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone)
         )
       }
+
+      if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
+        observationResultsInvalidator.invalidateSite(plantingSiteId)
+      }
     }
 
-    // Published after commit because listeners enqueue background jobs that read the new setting.
     if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
       eventPublisher.publishEvent(
           SurvivalRateIncludesTempPlotsChangedEvent(

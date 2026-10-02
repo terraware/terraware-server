@@ -72,6 +72,7 @@ import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
@@ -160,6 +161,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
   private val jobScheduler: JobScheduler = mockk()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
+  private val observationResultsInvalidator: ObservationResultsInvalidator by lazy {
+    spyk(ObservationResultsInvalidator(dslContext))
+  }
   private val observationStore: ObservationStore by lazy {
     spyk(
         ObservationStore(
@@ -167,13 +171,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             dslContext,
             entityLocker,
             eventPublisher,
-            jobScheduler,
+            observationResultsInvalidator,
             observationsDao,
             observationPlotConditionsDao,
             observationPlotsDao,
             observationRequestedSubstrataDao,
             parentStore,
-            systemUser,
         )
     )
   }
@@ -187,6 +190,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
+        ObservationResultsInvalidator(dslContext),
         parentStore,
         plantingSitesDao,
         eventPublisher,
@@ -206,6 +210,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         monitoringPlotsDao,
         muxService,
         observationMediaFilesDao,
+        observationResultsInvalidator,
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
@@ -1330,7 +1335,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       )
 
-      verify { observationStore.recalculateSurvivalRates(plantingSiteId) }
+      verify { observationResultsInvalidator.invalidateSite(plantingSiteId) }
     }
 
     @Test
@@ -2634,6 +2639,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               monitoringPlotsDao,
               muxService,
               observationMediaFilesDao,
+              observationResultsInvalidator,
               spyStore,
               PlantingSiteNotificationStore(clock, dslContext),
               plantingSiteStore,

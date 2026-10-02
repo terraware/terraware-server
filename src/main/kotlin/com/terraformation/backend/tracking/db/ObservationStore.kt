@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
@@ -59,7 +58,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
@@ -76,9 +74,6 @@ import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesEdite
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
-import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
-import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
-import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.EditableMonitoringSpeciesModel
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
@@ -107,8 +102,6 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
-import org.jobrunr.jobs.JobId
-import org.jobrunr.scheduling.JobScheduler
 import org.jooq.CaseWhenStep
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -118,8 +111,6 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.context.annotation.Lazy
-import org.springframework.context.event.EventListener
 
 @Named
 class ObservationStore(
@@ -127,13 +118,12 @@ class ObservationStore(
     private val dslContext: DSLContext,
     private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
-    @Lazy private val jobScheduler: JobScheduler,
+    private val observationResultsInvalidator: ObservationResultsInvalidator,
     private val observationsDao: ObservationsDao,
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubstrataDao: ObservationRequestedSubstrataDao,
     private val parentStore: ParentStore,
-    private val systemUser: SystemUser,
 ) {
   companion object {
     val requestedSubstratumIdsField: Field<Set<SubstratumId>> =
@@ -1750,12 +1740,13 @@ class ObservationStore(
     }
   }
 
+  /**
+   * Returns true if any of a planting site's observation results are waiting to be recalculated.
+   */
   fun fetchSurvivalRateCalculationInProgress(plantingSiteId: PlantingSiteId): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
-      dslContext.fetchExists(DSL.selectOne().from(this).where(PLANTING_SITE_ID.eq(plantingSiteId)))
-    }
+    return observationResultsInvalidator.plantingSiteNeedsRecalculation(plantingSiteId)
   }
 
   /**
@@ -2037,30 +2028,6 @@ class ObservationStore(
     recalculateSurvivalRateResults(ObservationResultsSite(plantingSiteId))
   }
 
-  /**
-   * Recalculates survival rates for all planting sites. Returns a map of error messages by planting
-   * site ID for any sites that failed.
-   */
-  fun recalculateAllSurvivalRates(): Map<PlantingSiteId, String?> {
-    val plantingSiteIds =
-        with(PLANTING_SITES) {
-          dslContext.select(ID).from(PLANTING_SITES).orderBy(ID).fetch(ID.asNonNullable())
-        }
-
-    val failures = mutableMapOf<PlantingSiteId, String?>()
-
-    plantingSiteIds.forEach { id ->
-      try {
-        recalculateSurvivalRates(id)
-      } catch (e: Exception) {
-        log.warn("Failed to recalculate survival rates for planting site $id", e)
-        failures[id] = e.message
-      }
-    }
-
-    return failures
-  }
-
   private fun <ID : Any, HistoryId : Any> recalculateSurvivalRate(
       updateScope: ObservationSpeciesScope<ID, HistoryId>
   ) {
@@ -2301,119 +2268,6 @@ class ObservationStore(
             )
             .where(recalculationCondition)
             .execute()
-      }
-    }
-  }
-
-  @EventListener
-  fun on(event: T0PlotDataAssignedEvent) {
-    val plantingSiteId = parentStore.getPlantingSiteId(event.monitoringPlotId) ?: return
-    enqueueSurvivalRateCalculation(plantingSiteId) {
-      jobScheduler.enqueue<ObservationStore> {
-        runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
-      }
-    }
-  }
-
-  @EventListener
-  fun on(event: T0StratumDataAssignedEvent) {
-    val plantingSiteId = parentStore.getPlantingSiteId(event.stratumId) ?: return
-    enqueueSurvivalRateCalculation(plantingSiteId) {
-      jobScheduler.enqueue<ObservationStore> {
-        runRecalculateSurvivalRates(plantingSiteId, event.stratumId)
-      }
-    }
-  }
-
-  @EventListener
-  fun on(event: SurvivalRateIncludesTempPlotsChangedEvent) {
-    val plantingSiteId = event.plantingSiteId
-    enqueueSurvivalRateCalculation(plantingSiteId) {
-      jobScheduler.enqueue<ObservationStore> { runRecalculateSurvivalRates(plantingSiteId) }
-    }
-  }
-
-  fun runRecalculateSurvivalRates(
-      plantingSiteId: PlantingSiteId,
-      monitoringPlotId: MonitoringPlotId,
-  ) {
-    systemUser.run {
-      try {
-        recalculateSurvivalRates(monitoringPlotId)
-      } catch (e: Exception) {
-        log.error("Survival rate recalculation failed for planting site $plantingSiteId", e)
-      } finally {
-        maybeRerunCalculateSurvivalRates(plantingSiteId)
-      }
-    }
-  }
-
-  fun runRecalculateSurvivalRates(plantingSiteId: PlantingSiteId, stratumId: StratumId) {
-    systemUser.run {
-      try {
-        recalculateSurvivalRates(stratumId)
-      } catch (e: Exception) {
-        log.error("Survival rate recalculation failed for planting site $plantingSiteId", e)
-      } finally {
-        maybeRerunCalculateSurvivalRates(plantingSiteId)
-      }
-    }
-  }
-
-  fun runRecalculateSurvivalRates(plantingSiteId: PlantingSiteId) {
-    systemUser.run {
-      try {
-        recalculateSurvivalRates(plantingSiteId)
-      } catch (e: Exception) {
-        log.error("Survival rate recalculation failed for planting site $plantingSiteId", e)
-      } finally {
-        maybeRerunCalculateSurvivalRates(plantingSiteId)
-      }
-    }
-  }
-
-  private fun maybeRerunCalculateSurvivalRates(plantingSiteId: PlantingSiteId) =
-      withLockedSurvivalRateCalculation(plantingSiteId) {
-        val additionalCalculationRequested =
-            survivalRateAdditionalCalculationRequested(plantingSiteId)
-
-        if (!additionalCalculationRequested) {
-          deleteSurvivalRateCalculation(plantingSiteId)
-          log.info("Planting Site $plantingSiteId survival rate calculation completed.")
-        } else {
-          setSurvivalRateAdditionalCalculationRequested(plantingSiteId, false)
-          // Re-run recalculating survival rates asynchronously to unlock the survival rate
-          // recalculation rows. Extend scope to the entire site to handle all updates at once
-          val jobId =
-              jobScheduler.enqueue<ObservationStore> { runRecalculateSurvivalRates(plantingSiteId) }
-          log.info(
-              "Planting Site $plantingSiteId additional survival rate calculation requested. Enqueuing new job $jobId."
-          )
-        }
-      }
-
-  /**
-   * Immediately enqueue an async recalculation jobs, or set the existing job to rerun on
-   * completion.
-   */
-  private fun enqueueSurvivalRateCalculation(
-      plantingSiteId: PlantingSiteId,
-      enqueueJob: () -> JobId,
-  ) {
-    withLockedSurvivalRateCalculation(plantingSiteId) {
-      val calculationInProgress = survivalRateCalculationInProgress(plantingSiteId)
-
-      if (!calculationInProgress) {
-        insertSurvivalRateCalculation(plantingSiteId)
-        // The recalculation job is often long-running and is run asynchronously to prevent
-        // client call from blocking and timing-out
-        val jobId = enqueueJob()
-        log.info("Enqueuing planting Site $plantingSiteId survival rate calculation job $jobId.")
-      } else {
-        log.info(
-            "Planting Site $plantingSiteId survival rate calculation in-progress. Additional calculation requested."
-        )
-        setSurvivalRateAdditionalCalculationRequested(plantingSiteId, true)
       }
     }
   }
@@ -3679,59 +3533,6 @@ class ObservationStore(
       }
     }
   }
-
-  private fun <T> withLockedSurvivalRateCalculation(plantingSiteId: PlantingSiteId, func: () -> T) =
-      dslContext.transactionResult { _ ->
-        // Lock the always-present planting_sites row as the mutex. Locking the
-        // planting_site_survival_rate_calculations row would not serialize concurrent first-events
-        // for a site, because SELECT ... FOR UPDATE locks nothing when that row does not yet exist.
-        dslContext
-            .selectOne()
-            .from(PLANTING_SITES)
-            .where(PLANTING_SITES.ID.eq(plantingSiteId))
-            .forUpdate()
-            .execute()
-
-        func()
-      }
-
-  private fun survivalRateCalculationInProgress(plantingSiteId: PlantingSiteId) =
-      with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
-        dslContext.fetchExists(
-            DSL.selectOne().from(this).where(PLANTING_SITE_ID.eq(plantingSiteId))
-        )
-      }
-
-  private fun survivalRateAdditionalCalculationRequested(plantingSiteId: PlantingSiteId) =
-      with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
-        dslContext
-            .select(ADDITIONAL_CALCULATION_REQUESTED)
-            .from(this)
-            .where(PLANTING_SITE_ID.eq(plantingSiteId))
-            .fetchOne(ADDITIONAL_CALCULATION_REQUESTED) ?: false
-      }
-
-  private fun insertSurvivalRateCalculation(plantingSiteId: PlantingSiteId) =
-      with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
-        dslContext.insertInto(this).set(PLANTING_SITE_ID, plantingSiteId).execute()
-      }
-
-  private fun deleteSurvivalRateCalculation(plantingSiteId: PlantingSiteId) =
-      with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
-        dslContext.deleteFrom(this).where(PLANTING_SITE_ID.eq(plantingSiteId)).execute()
-      }
-
-  private fun setSurvivalRateAdditionalCalculationRequested(
-      plantingSiteId: PlantingSiteId,
-      additionalCalculationRequested: Boolean,
-  ): Int =
-      with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
-        dslContext
-            .update(this)
-            .set(ADDITIONAL_CALCULATION_REQUESTED, additionalCalculationRequested)
-            .where(PLANTING_SITE_ID.eq(plantingSiteId))
-            .execute()
-      }
 
   data class RecordedSpeciesKey(
       val certainty: RecordedSpeciesCertainty,

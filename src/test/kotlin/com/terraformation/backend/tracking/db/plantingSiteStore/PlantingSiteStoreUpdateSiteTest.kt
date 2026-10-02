@@ -13,6 +13,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.util.Turtle
 import io.mockk.every
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
@@ -114,6 +115,44 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       store.updatePlantingSite(plantingSiteId) { it.copy(description = "edited") }
 
       eventPublisher.assertEventNotPublished<SurvivalRateIncludesTempPlotsChangedEvent>()
+    }
+
+    @Test
+    fun `flags observation results for recalculation if survival rate temp plots setting updated`() {
+      val plantingSiteId = insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      val observationId = insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(completedBy = user.userId)
+      insertObservationSiteResult()
+
+      store.updatePlantingSite(plantingSiteId) { it.copy(survivalRateIncludesTempPlots = true) }
+
+      assertEquals(
+          true,
+          observationSiteResultsDao.fetchOneByObservationId(observationId)?.needsRecalculation,
+          "Site results flagged for recalculation",
+      )
+    }
+
+    @Test
+    fun `does not flag observation results if survival rate temp plots setting not updated`() {
+      val plantingSiteId = insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      val observationId = insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(completedBy = user.userId)
+      insertObservationSiteResult()
+
+      store.updatePlantingSite(plantingSiteId) { it.copy(description = "edited") }
+
+      assertEquals(
+          false,
+          observationSiteResultsDao.fetchOneByObservationId(observationId)?.needsRecalculation,
+          "Site results flagged for recalculation",
+      )
     }
 
     @Test

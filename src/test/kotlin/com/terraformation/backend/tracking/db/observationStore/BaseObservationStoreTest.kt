@@ -10,6 +10,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import io.mockk.every
@@ -29,13 +30,12 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
         dslContext,
         EntityLocker(dslContext),
         eventPublisher,
-        jobScheduler,
+        ObservationResultsInvalidator(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
         ParentStore(dslContext),
-        systemUser,
     )
   }
   protected val helper: ObservationTestHelper by lazy {

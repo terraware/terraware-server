@@ -31,12 +31,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 
 class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
   @Autowired private lateinit var dataSource: DataSource
-  @Autowired private lateinit var transactionManager: PlatformTransactionManager
 
   private val invalidator: ObservationResultsInvalidator by lazy {
     ObservationResultsInvalidator(dslContext)
@@ -176,7 +174,11 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
               SQLException("could not serialize access", "40001"),
           )
 
-      recalculatorWithMocks.recalculateAllSites()
+      assertEquals(
+          listOf(failingSiteId),
+          recalculatorWithMocks.recalculateAllSites(),
+          "Sites that were not recalculated",
+      )
 
       verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(failingSiteId) }
       verify { mockInvalidator.clearRecalculationFlags(succeedingSiteId) }
@@ -187,7 +189,11 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
       every { mockStore.recalculateFlaggedResults(failingSiteId) } throws
           IllegalStateException("Oops")
 
-      recalculatorWithMocks.recalculateAllSites()
+      assertEquals(
+          listOf(failingSiteId),
+          recalculatorWithMocks.recalculateAllSites(),
+          "Sites that were not recalculated",
+      )
 
       verify(exactly = 0) { mockInvalidator.clearRecalculationFlags(failingSiteId) }
       verify { mockInvalidator.clearRecalculationFlags(succeedingSiteId) }
