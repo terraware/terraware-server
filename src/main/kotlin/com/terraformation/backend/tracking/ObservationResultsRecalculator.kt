@@ -83,9 +83,10 @@ class ObservationResultsRecalculator(
 
   /**
    * Recalculates all the flagged results of one planting site right away, canceling any
-   * recalculation of the site that's already running. Retries if edits land while the recalculation
-   * is in progress. Returns once none of the site's results are flagged, or gives up after repeated
-   * failures or [maxWait].
+   * recalculation of the site that's already running unless it is also a forced one, in which case
+   * this waits for it to finish. Retries if edits land while the recalculation is in progress.
+   * Returns once none of the site's results are flagged, or gives up after repeated failures or
+   * [maxWait].
    *
    * @return true if none of the site's results are flagged for recalculation anymore.
    */
@@ -119,12 +120,14 @@ class ObservationResultsRecalculator(
         break
       }
 
-      when (tryRecalculateSite(plantingSiteId)) {
+      when (tryRecalculateSite(plantingSiteId, forced = true)) {
         SiteRecalculationResult.Recalculated -> {}
         SiteRecalculationResult.AlreadyRunning -> {
+          // Canceling another forced recalculation would let two of them keep canceling each other.
           lockService.cancelExclusiveTransactionalHolders(
               LockType.OBSERVATION_RESULTS_RECALCULATION,
               plantingSiteId.value,
+              unlessHolding = LockType.OBSERVATION_RESULTS_FORCED_RECALCULATION,
           )
           Thread.sleep(CANCEL_POLL_INTERVAL.toMillis())
         }
@@ -143,7 +146,10 @@ class ObservationResultsRecalculator(
     return !observationResultsInvalidator.plantingSiteNeedsRecalculation(plantingSiteId)
   }
 
-  private fun tryRecalculateSite(plantingSiteId: PlantingSiteId): SiteRecalculationResult {
+  private fun tryRecalculateSite(
+      plantingSiteId: PlantingSiteId,
+      forced: Boolean = false,
+  ): SiteRecalculationResult {
     return try {
       systemUser.run {
         siteTransaction.propagationBehavior = siteTransactionPropagation
@@ -157,6 +163,13 @@ class ObservationResultsRecalculator(
             log.info("Results of planting site $plantingSiteId are already being recalculated")
             SiteRecalculationResult.AlreadyRunning
           } else {
+            if (forced) {
+              lockService.tryExclusiveTransactional(
+                  LockType.OBSERVATION_RESULTS_FORCED_RECALCULATION,
+                  plantingSiteId.value,
+              )
+            }
+
             // Never wait for user edits. If an edit holds a row this recalculation needs, its
             // results would be stale anyway, so give up and let a later run redo it.
             lockService.setTransactionLockTimeout(LOCK_TIMEOUT)

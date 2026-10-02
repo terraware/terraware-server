@@ -83,9 +83,16 @@ class LockService(private val dslContext: DSLContext) {
    * releases the lock when it's rolled back. Has no effect if a holder is between statements when
    * this is called, so callers that need the lock should keep trying.
    *
-   * @return `true` if any session held the lock.
+   * @param unlessHolding Sessions that also hold this lock on the same entity are left alone.
+   * @return `true` if any session was asked to cancel.
    */
-  fun cancelExclusiveTransactionalHolders(lockType: LockType, entityId: Long): Boolean {
+  fun cancelExclusiveTransactionalHolders(
+      lockType: LockType,
+      entityId: Long,
+      unlessHolding: LockType? = null,
+  ): Boolean {
+    val objectId = foldEntityId(entityId).toLong() and 0xffffffffL
+
     return dslContext
         .resultQuery(
             """
@@ -97,10 +104,21 @@ class LockService(private val dslContext: DSLContext) {
               AND objsubid = 2
               AND granted
               AND pid <> pg_backend_pid()
+              AND pid NOT IN (
+                  SELECT pid
+                  FROM pg_locks
+                  WHERE locktype = 'advisory'
+                    AND classid::bigint = ?
+                    AND objid::bigint = ?
+                    AND objsubid = 2
+                    AND granted
+              )
             """
                 .trimIndent(),
             lockType.key.toInt().toLong(),
-            foldEntityId(entityId).toLong() and 0xffffffffL,
+            objectId,
+            (unlessHolding?.key ?: -1L).toInt().toLong(),
+            objectId,
         )
         .fetch()
         .isNotEmpty
