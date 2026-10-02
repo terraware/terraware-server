@@ -8,8 +8,12 @@ import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
+import java.io.IOException
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
+import javax.xml.stream.XMLInputFactory
+import javax.xml.stream.XMLStreamConstants
+import javax.xml.stream.XMLStreamException
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.outputStream
@@ -19,10 +23,13 @@ import org.geotools.api.feature.simple.SimpleFeature
 import org.geotools.kml.v22.KMLConfiguration
 import org.geotools.util.ContentFormatException
 import org.geotools.xsd.Parser
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.PrecisionModel
+import org.xml.sax.SAXException
 
 /**
  * Reads geometry from the file formats the clients can upload: KML, KMZ, GeoJSON, and ZIP archives
@@ -119,9 +126,10 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
           objectMapper
               .readerFor(Geometry::class.java)
               .withAttribute(GeometryDeserializer.SKIP_VALIDATION, !validate)
-              .readValue<Geometry?>(content) ?: throw InvalidGeometryFileException()
+              .readValue<Geometry?>(content)
+              ?: throw InvalidGeometryFileException(message = "GeoJSON document is null")
         } catch (e: JsonProcessingException) {
-          throw InvalidGeometryFileException(e)
+          throw InvalidGeometryFileException(e, "Malformed or unreadable GeoJSON")
         }
 
     return parsedFile(flattenCollections(geometry), GeometryFileFormat.GeoJSON)
@@ -135,23 +143,125 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
         listOf(geometry)
       }
 
-  private fun readKml(
-      content: ByteArray,
-      format: GeometryFileFormat = GeometryFileFormat.KML,
-  ): ParsedGeometryShapes {
-    val parentFeature =
-        Parser(KMLConfiguration()).parse(content.inputStream()) as? SimpleFeature
-            ?: throw ContentFormatException("Unable to extract top-level information from KML file")
-    val childFeatures =
-        parentFeature.getAttribute("Feature") as? Collection<*>
-            ?: throw ContentFormatException("No features found in KML file")
-    val geometries =
-        childFeatures
-            .mapNotNull { (it as? SimpleFeature)?.defaultGeometry as? Geometry }
-            .flatMap { flattenCollections(it) }
+  private fun readKml(content: ByteArray, format: GeometryFileFormat): ParsedGeometryShapes {
+    validateKmlStructure(content)
 
-    return parsedFile(geometries, format)
+    val root =
+        try {
+          Parser(KMLConfiguration()).parse(content.inputStream())
+        } catch (e: SAXException) {
+          throw InvalidGeometryFileException(e, "Malformed KML")
+        } catch (e: IOException) {
+          throw InvalidGeometryFileException(e, "Unable to read KML")
+        } catch (e: RuntimeException) {
+          // GeoTools wraps failures to bind malformed coordinates in runtime exceptions.
+          if (generateSequence<Throwable>(e) { it.cause }.any { it is IllegalArgumentException }) {
+            throw InvalidGeometryFileException(e, "Invalid KML coordinates")
+          }
+          throw e
+        }
+
+    if (root !is SimpleFeature) {
+      throw InvalidGeometryFileException(message = "KML root is not a feature")
+    }
+
+    return parsedFile(kmlGeometries(root), format)
   }
+
+  /**
+   * Checks the raw XML for problems that GeoTools would silently accept or repair. Rejects files
+   * that contain a DTD or whose root element isn't `<kml>`, and requires every `LinearRing` in the
+   * root element's namespace to have at least four coordinates with the first and last being
+   * identical. GeoTools closes unclosed rings on its own, so they need to be caught here rather
+   * than after binding. Elements in other namespaces, such as extension data, are ignored.
+   */
+  private fun validateKmlStructure(content: ByteArray) {
+    val factory =
+        XMLInputFactory.newFactory().apply {
+          setProperty(XMLInputFactory.SUPPORT_DTD, false)
+          setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
+        }
+
+    try {
+      val reader = factory.createXMLStreamReader(content.inputStream())
+      try {
+        var kmlNamespace: String? = null
+        var ringDepth = 0
+
+        while (reader.hasNext()) {
+          when (reader.next()) {
+            XMLStreamConstants.DTD ->
+                throw InvalidGeometryFileException(message = "KML contains a DTD")
+            XMLStreamConstants.START_ELEMENT -> {
+              if (kmlNamespace == null) {
+                if (reader.localName != "kml") {
+                  throw UnsupportedGeometryFileFormatException()
+                }
+                kmlNamespace = reader.namespaceURI ?: ""
+              }
+
+              if ((reader.namespaceURI ?: "") == kmlNamespace) {
+                when (reader.localName) {
+                  "LinearRing" -> ringDepth++
+                  "coordinates" -> if (ringDepth > 0) validateRingCoordinates(reader.elementText)
+                }
+              }
+            }
+            XMLStreamConstants.END_ELEMENT ->
+                if (
+                    reader.localName == "LinearRing" && (reader.namespaceURI ?: "") == kmlNamespace
+                ) {
+                  ringDepth--
+                }
+          }
+        }
+      } finally {
+        reader.close()
+      }
+    } catch (e: XMLStreamException) {
+      throw InvalidGeometryFileException(e, "Malformed KML")
+    } catch (e: NumberFormatException) {
+      throw InvalidGeometryFileException(e, "Non-numeric KML coordinate")
+    }
+  }
+
+  private fun validateRingCoordinates(text: String) {
+    val coordinates =
+        text
+            .split(Regex("\\s+"))
+            .filter { it.isNotEmpty() }
+            .map { tuple ->
+              val values = tuple.split(',')
+              if (values.size < 2) {
+                throw InvalidGeometryFileException(
+                    message = "KML coordinate has fewer than 2 values"
+                )
+              }
+              Coordinate(values[0].toDouble(), values[1].toDouble())
+            }
+
+    if (coordinates.size < 4 || !coordinates.first().equals2D(coordinates.last())) {
+      throw InvalidGeometryFileException(
+          message = "KML LinearRing has fewer than 4 coordinates or is not closed"
+      )
+    }
+  }
+
+  /** Collects the geometry of placemarks at any depth, including nested documents and folders. */
+  private fun kmlGeometries(value: Any?): List<Geometry> =
+      when (value) {
+        is SimpleFeature ->
+            (value.defaultGeometry as? Geometry)?.let { kmlGeometries(it) }
+                ?: value.properties.flatMap { kmlGeometries(it.value) }
+        is Geometry ->
+            if (value is GeometryCollection && value !is MultiPolygon) {
+              (0 until value.numGeometries).flatMap { kmlGeometries(value.getGeometryN(it)) }
+            } else {
+              listOf(value)
+            }
+        is Collection<*> -> value.flatMap { kmlGeometries(it) }
+        else -> emptyList()
+      }
 
   /** Parses an archive containing KML or a shapefile and its secondary files. */
   private fun readZip(content: ByteArray): ParsedGeometryShapes {

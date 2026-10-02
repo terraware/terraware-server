@@ -347,13 +347,82 @@ class GeometryFileParserTest {
     assertEquals(GeometryFileFormat.KML, kml.format)
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = ["", "<Folder>", "<Document><Folder>"])
+  fun `reads KML placemarks at any depth`(containers: String) {
+    val closing =
+        when (containers) {
+          "" -> ""
+          "<Folder>" -> "</Folder>"
+          "<Document><Folder>" -> "</Folder></Document>"
+          else -> throw IllegalArgumentException("No closing tags defined for $containers")
+        }
+    val content =
+        """<kml xmlns="http://www.opengis.net/kml/2.2">$containers<Placemark><ExtendedData xmlns:app="urn:example:app"><app:LinearRing><app:coordinates>metadata</app:coordinates></app:LinearRing></ExtendedData><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0,5 1,0,5 0,1,5 -0,0,5</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>$closing</kml>"""
+
+    val parsed = parser.readWithFormat(content.toByteArray(), "boundary.kml")
+
+    assertEquals(1, parsed.geometries.size)
+    assertEquals(GeometryFileFormat.KML, parsed.format)
+  }
+
   @Test
-  fun `unsupported content is rejected`() {
+  fun `empty KML has no geometries`() {
+    val content = """<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>"""
+
+    assertTrue(readShapes(content.toByteArray(), "empty.kml").isEmpty())
+  }
+
+  @Test
+  fun `malformed KML is invalid file`() {
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat("<kml><broken".toByteArray(), "boundary.kml")
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      delimiter = '|',
+      value =
+          [
+              "<coordinates>a,b 1,0 0,1 0,0</coordinates> | Non-numeric KML coordinate",
+              "<coordinates>0,0 1,0 0,1</coordinates> | KML LinearRing has fewer than 4 coordinates or is not closed",
+              "<coordinates> </coordinates> | KML LinearRing has fewer than 4 coordinates or is not closed",
+              "<LinearRing><coordinates>0,0 1,0 0,1 0,0</coordinates></LinearRing><coordinates>0,0 1,0 0,1</coordinates> | KML LinearRing has fewer than 4 coordinates or is not closed",
+          ],
+  )
+  fun `rejects malformed KML rings instead of repairing them`(
+      ringContents: String,
+      expectedMessage: String,
+  ) {
+    val content =
+        """<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Polygon><outerBoundaryIs><LinearRing>$ringContents</LinearRing></outerBoundaryIs></Polygon></Placemark></kml>"""
+
+    val exception =
+        assertThrows<InvalidGeometryFileException> {
+          parser.readWithFormat(content.toByteArray(), "boundary.kml")
+        }
+    assertEquals("InvalidFile: $expectedMessage", exception.message)
+  }
+
+  @Test
+  fun `malformed KML point is invalid file`() {
+    val content =
+        """<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Point><coordinates>a,b</coordinates></Point></Placemark></kml>"""
+
+    assertThrows<InvalidGeometryFileException> {
+      parser.readWithFormat(content.toByteArray(), "boundary.kml")
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["boundary.gpx", "boundary.kml"])
+  fun `GPX content is unsupported regardless of filename`(filename: String) {
     assertThrows<UnsupportedGeometryFileFormatException> {
       parser.readWithFormat(
           """<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"/>"""
               .toByteArray(),
-          "boundary.gpx",
+          filename,
       )
     }
   }
