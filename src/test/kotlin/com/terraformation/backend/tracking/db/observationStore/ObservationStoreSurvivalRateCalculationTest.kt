@@ -193,7 +193,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertSurvivalRates(
         SurvivalRates(
             mapOf(
-                plotId to mapOf(speciesId to BigDecimal.ZERO),
+                plotId to mapOf(speciesId to BigDecimal.ZERO, null to BigDecimal.ZERO),
             ),
             mapOf(substratumId to mapOf(speciesId to BigDecimal.ZERO)),
             mapOf(stratumId to mapOf(speciesId to BigDecimal.ZERO)),
@@ -215,12 +215,12 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertSurvivalRates(
         SurvivalRates(
             mapOf(
-                plotId to mapOf(speciesId to BigDecimal.ZERO),
-                plotId2 to mapOf(speciesId to BigDecimal.ZERO),
+                plotId to mapOf(speciesId to BigDecimal.ZERO, null to BigDecimal.ZERO),
+                plotId2 to mapOf(speciesId to BigDecimal.ZERO, null to BigDecimal.ZERO),
             ),
-            mapOf(substratumId to mapOf(speciesId to BigDecimal.ZERO)),
-            mapOf(stratumId to mapOf(speciesId to BigDecimal.ZERO)),
-            mapOf(plantingSiteId to mapOf(speciesId to BigDecimal.ZERO)),
+            mapOf(substratumId to mapOf(speciesId to BigDecimal.ZERO, null to BigDecimal.ZERO)),
+            mapOf(stratumId to mapOf(speciesId to BigDecimal.ZERO, null to BigDecimal.ZERO)),
+            mapOf(plantingSiteId to mapOf(speciesId to BigDecimal.ZERO, null to BigDecimal.ZERO)),
         ),
         "Updated rates should be 0",
     )
