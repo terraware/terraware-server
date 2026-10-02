@@ -1,3 +1,4 @@
+f3415933 Upgrade build to Java 27 (#5076)
 a50f9fea Temporarily work around Buildkite failures (#5107)
 a0dbcd88 Remove the local docker volume for postgres (#5066)
 a92f5d4a Update database dependencies (#5070)
