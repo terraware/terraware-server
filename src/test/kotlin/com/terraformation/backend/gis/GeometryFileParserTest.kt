@@ -381,10 +381,17 @@ class GeometryFileParserTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["a,b 1,0 0,1 0,0", "0,0 1,0 0,1"])
-  fun `rejects malformed KML rings instead of repairing them`(coordinates: String) {
+  @ValueSource(
+      strings =
+          [
+              "<coordinates>a,b 1,0 0,1 0,0</coordinates>",
+              "<coordinates>0,0 1,0 0,1</coordinates>",
+              "<LinearRing><coordinates>0,0 1,0 0,1 0,0</coordinates></LinearRing><coordinates>0,0 1,0 0,1</coordinates>",
+          ]
+  )
+  fun `rejects malformed KML rings instead of repairing them`(ringContents: String) {
     val content =
-        """<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>$coordinates</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></kml>"""
+        """<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Polygon><outerBoundaryIs><LinearRing>$ringContents</LinearRing></outerBoundaryIs></Polygon></Placemark></kml>"""
 
     assertThrows<InvalidGeometryFileException> {
       parser.readWithFormat(content.toByteArray(), "boundary.kml")

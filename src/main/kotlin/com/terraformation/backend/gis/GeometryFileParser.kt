@@ -186,7 +186,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
       val reader = factory.createXMLStreamReader(content.inputStream())
       try {
         var kmlNamespace: String? = null
-        var inRing = false
+        var ringDepth = 0
 
         while (reader.hasNext()) {
           when (reader.next()) {
@@ -202,8 +202,8 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
               if ((reader.namespaceURI ?: "") == kmlNamespace) {
                 when (reader.localName) {
-                  "LinearRing" -> inRing = true
-                  "coordinates" -> if (inRing) validateRingCoordinates(reader.elementText)
+                  "LinearRing" -> ringDepth++
+                  "coordinates" -> if (ringDepth > 0) validateRingCoordinates(reader.elementText)
                 }
               }
             }
@@ -211,7 +211,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
                 if (
                     reader.localName == "LinearRing" && (reader.namespaceURI ?: "") == kmlNamespace
                 ) {
-                  inRing = false
+                  ringDepth--
                 }
           }
         }
