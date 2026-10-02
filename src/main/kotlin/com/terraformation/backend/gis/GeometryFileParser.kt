@@ -227,13 +227,18 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
 
   private fun validateRingCoordinates(text: String) {
     val coordinates =
-        text.trim().split(Regex("\\s+")).map { tuple ->
-          val values = tuple.split(',')
-          if (values.size < 2) {
-            throw InvalidGeometryFileException(message = "KML coordinate has fewer than 2 values")
-          }
-          Coordinate(values[0].toDouble(), values[1].toDouble())
-        }
+        text
+            .split(Regex("\\s+"))
+            .filter { it.isNotEmpty() }
+            .map { tuple ->
+              val values = tuple.split(',')
+              if (values.size < 2) {
+                throw InvalidGeometryFileException(
+                    message = "KML coordinate has fewer than 2 values"
+                )
+              }
+              Coordinate(values[0].toDouble(), values[1].toDouble())
+            }
 
     if (coordinates.size < 4 || !coordinates.first().equals2D(coordinates.last())) {
       throw InvalidGeometryFileException(

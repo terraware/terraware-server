@@ -381,21 +381,28 @@ class GeometryFileParserTest {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings =
+  @CsvSource(
+      delimiter = '|',
+      value =
           [
-              "<coordinates>a,b 1,0 0,1 0,0</coordinates>",
-              "<coordinates>0,0 1,0 0,1</coordinates>",
-              "<LinearRing><coordinates>0,0 1,0 0,1 0,0</coordinates></LinearRing><coordinates>0,0 1,0 0,1</coordinates>",
-          ]
+              "<coordinates>a,b 1,0 0,1 0,0</coordinates> | Non-numeric KML coordinate",
+              "<coordinates>0,0 1,0 0,1</coordinates> | KML LinearRing has fewer than 4 coordinates or is not closed",
+              "<coordinates> </coordinates> | KML LinearRing has fewer than 4 coordinates or is not closed",
+              "<LinearRing><coordinates>0,0 1,0 0,1 0,0</coordinates></LinearRing><coordinates>0,0 1,0 0,1</coordinates> | KML LinearRing has fewer than 4 coordinates or is not closed",
+          ],
   )
-  fun `rejects malformed KML rings instead of repairing them`(ringContents: String) {
+  fun `rejects malformed KML rings instead of repairing them`(
+      ringContents: String,
+      expectedMessage: String,
+  ) {
     val content =
         """<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Polygon><outerBoundaryIs><LinearRing>$ringContents</LinearRing></outerBoundaryIs></Polygon></Placemark></kml>"""
 
-    assertThrows<InvalidGeometryFileException> {
-      parser.readWithFormat(content.toByteArray(), "boundary.kml")
-    }
+    val exception =
+        assertThrows<InvalidGeometryFileException> {
+          parser.readWithFormat(content.toByteArray(), "boundary.kml")
+        }
+    assertEquals("InvalidFile: $expectedMessage", exception.message)
   }
 
   @Test
