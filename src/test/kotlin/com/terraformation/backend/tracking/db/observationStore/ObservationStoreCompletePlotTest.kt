@@ -2558,6 +2558,47 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
   }
 
   @Test
+  fun `does not update substratum observed time or aggregates for ad-hoc plots in substrata`() {
+    val speciesId = insertSpecies()
+    val adHocPlotId = insertMonitoringPlot(isAdHoc = true)
+    val adHocObservationId = insertObservation(isAdHoc = true)
+    insertObservationPlot(
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = adHocPlotId,
+        observationId = adHocObservationId,
+    )
+
+    store.completePlot(
+        adHocObservationId,
+        adHocPlotId,
+        emptySet(),
+        null,
+        Instant.ofEpochSecond(1),
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        ),
+    )
+
+    assertEquals(
+        null,
+        substrataDao.fetchOneById(inserted.substratumId)?.observedTime,
+        "Substratum observed time",
+    )
+    assertTableEmpty(OBSERVATION_SUBSTRATUM_RESULTS)
+    assertTableEmpty(OBSERVATION_STRATUM_RESULTS)
+    assertTableEmpty(OBSERVATION_SITE_RESULTS)
+    assertTableEmpty(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+    assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS)
+    assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
+  }
+
+  @Test
   fun `throws exception if plot was already completed`() {
     insertObservationPlot(
         ObservationPlotsRow(
