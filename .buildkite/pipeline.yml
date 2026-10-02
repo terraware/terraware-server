@@ -136,9 +136,11 @@ steps:
             - "file"
     command: .buildkite/scripts/check-scripts.sh
 
+  # This step hits an issue with restoring artifact files; it's disabled for now.
   - <<: *use-existing-checkout
     label: ":junit: Annotate build with test results"
     key: "junit-annotate"
+    if: "false"
     depends_on:
       - step: "compare-openapi"
       - step: "check-scripts"
@@ -151,7 +153,10 @@ steps:
   - <<: *use-existing-checkout
     label: ":docker: Build and push Docker image"
     key: "docker"
-    depends_on: "junit-annotate"
+    depends_on:
+      - step: "junit-annotate"
+      - step: "compare-openapi"
+      - step: "check-scripts"
     plugins:
       - *load-secrets
       - cache#v1.12.0:
