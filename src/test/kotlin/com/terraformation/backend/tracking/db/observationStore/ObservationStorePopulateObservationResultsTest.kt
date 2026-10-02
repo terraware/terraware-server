@@ -105,6 +105,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
     assertTableEquals(
         listOf(
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId1,
                 monitoringPlotHistoryId = plotHistoryId1,
@@ -116,6 +117,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
                 survivalRate = null,
             ),
             ObservationPlotResultsRecord(
+                needsRecalculation = false,
                 observationId = observationId,
                 monitoringPlotId = plotId2,
                 monitoringPlotHistoryId = plotHistoryId2,
@@ -133,6 +135,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
     // stddev_samp(100, 200) = |200 - 100| / sqrt(2) ≈ 70.71, cast-to-int rounds to 71.
     assertTableEquals(
         ObservationSubstratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             substratumId = substratumId,
             substratumHistoryId = substratumHistoryId,
@@ -151,6 +154,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
 
     assertTableEquals(
         ObservationStratumResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             stratumId = stratumId,
             stratumHistoryId = stratumHistoryId,
@@ -169,6 +173,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
 
     assertTableEquals(
         ObservationSiteResultsRecord(
+            needsRecalculation = false,
             observationId = observationId,
             plantingSiteId = plantingSiteId,
             plantingSiteHistoryId = plantingSiteHistoryId,

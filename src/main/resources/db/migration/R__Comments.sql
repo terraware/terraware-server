@@ -497,6 +497,7 @@ COMMENT ON TABLE tracking.observation_plot_conditions IS 'List of conditions obs
 COMMENT ON TABLE tracking.observation_plot_positions IS '(Enum) Positions in a monitoring plot where users can take photos or record coordinates.';
 
 COMMENT ON TABLE tracking.observation_plot_results IS 'Observation results for a monitoring plot.';
+COMMENT ON COLUMN tracking.observation_plot_results.needs_recalculation IS 'If true, this row and the species totals for the same observation and scope are stale and will be rebuilt by the observation results recalculation job. Existing values are the last computed ones.';
 
 COMMENT ON TABLE tracking.observation_plots IS 'Information about monitoring plots that are required to be surveyed as part of observations. This is not populated until the scheduled start time of the observation.';
 COMMENT ON COLUMN tracking.observation_plots.completed_time IS 'Server-generated completion date and time. This is the time the observation was submitted to the server, not the time it was performed in the field.';
@@ -506,16 +507,19 @@ COMMENT ON COLUMN tracking.observation_plots.observed_time IS 'Client-supplied o
 COMMENT ON TABLE tracking.observation_requested_substrata IS 'If an observation should only cover a specific set of substrata, the substratum IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.';
 
 COMMENT ON TABLE tracking.observation_site_results IS 'Observation results for a planting site.';
+COMMENT ON COLUMN tracking.observation_site_results.needs_recalculation IS 'If true, this row and the species totals for the same observation and scope are stale and will be rebuilt by the observation results recalculation job. Existing values are the last computed ones.';
 COMMENT ON COLUMN tracking.observation_site_results.observed_density IS 'Plant density (plants per hectare) based only on the plots observed in this observation, without carrying forward last-observed data for substrata that were not observed.';
 COMMENT ON COLUMN tracking.observation_site_results.survival_rate_area IS 'Total area in hectares of substrata whose observation results contributed to the survival rate.';
 
 COMMENT ON TABLE tracking.observation_states IS '(Enum) Where in the observation lifecycle a particular observation is.';
 
 COMMENT ON TABLE tracking.observation_stratum_results IS 'Observation results for a stratum.';
+COMMENT ON COLUMN tracking.observation_stratum_results.needs_recalculation IS 'If true, this row and the species totals for the same observation and scope are stale and will be rebuilt by the observation results recalculation job. Existing values are the last computed ones.';
 COMMENT ON COLUMN tracking.observation_stratum_results.observed_density IS 'Plant density (plants per hectare) based only on the plots observed in this observation, without carrying forward last-observed data for substrata that were not observed.';
 COMMENT ON COLUMN tracking.observation_stratum_results.survival_rate_area IS 'Total area in hectares of substrata whose observation results contributed to the survival rate.';
 
 COMMENT ON TABLE tracking.observation_substratum_results IS 'Observation results for a substratum.';
+COMMENT ON COLUMN tracking.observation_substratum_results.needs_recalculation IS 'If true, this row and the species totals for the same observation and scope are stale and will be rebuilt by the observation results recalculation job. Existing values are the last computed ones.';
 COMMENT ON COLUMN tracking.observation_substratum_results.survival_rate_area IS 'This substratum''s area in hectares at the time of the observation.';
 
 COMMENT ON TABLE tracking.observation_types IS '(Enum) Type of observation, currently only used for ad hoc observations.';
