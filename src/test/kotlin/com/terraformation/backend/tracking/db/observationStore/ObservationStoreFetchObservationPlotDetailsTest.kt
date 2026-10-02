@@ -182,4 +182,36 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
 
     assertThrows<ObservationNotFoundException> { store.fetchObservationPlotDetails(observationId) }
   }
+
+  @Test
+  fun `returns null substratum and stratum details for plot that was not in a substratum`() {
+    val monitoringPlotId =
+        insertMonitoringPlot(boundary = polygon(1), isAdHoc = true, substratumId = null)
+    val observationId = insertObservation(isAdHoc = true)
+    insertObservationPlot()
+
+    val expected =
+        listOf(
+            AssignedPlotDetails(
+                model =
+                    ObservationPlotModel(
+                        isPermanent = false,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                    ),
+                boundary = polygon(1),
+                claimedByName = null,
+                completedByName = null,
+                elevationMeters = null,
+                isFirstObservation = true,
+                substratumId = null,
+                substratumName = null,
+                stratumName = null,
+                plotNumber = 1,
+                sizeMeters = 30,
+            )
+        )
+
+    assertEquals(expected, store.fetchObservationPlotDetails(observationId))
+  }
 }
