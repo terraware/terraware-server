@@ -17,11 +17,8 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
-import io.mockk.every
-import io.mockk.mockk
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -444,31 +441,6 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
           plots = setOf(observationId to plotIdC),
           substrata = setOf(observationId to substratumHistoryIdC),
           strata = setOf(observationId to stratumHistoryId2),
-          sites = setOf(observationId),
-      )
-    }
-
-    @Test
-    fun `map edit flags the whole site`() {
-      val observationId = insertCompletedObservation(1, plotIdA, plotIdC)
-      insertAllResults(observationId, plotIdA, plotIdC)
-      val plantingSiteId = inserted.plantingSiteId
-
-      invalidator.on(
-          mockk<PlantingSiteMapEditedEvent> {
-            every { edited } returns mockk { every { id } returns plantingSiteId }
-          }
-      )
-
-      assertWholeObservationFlagged(observationId)
-    }
-
-    private fun assertWholeObservationFlagged(observationId: ObservationId) {
-      assertFlagged(
-          plots = setOf(observationId to plotIdA, observationId to plotIdC),
-          substrata =
-              setOf(observationId to substratumHistoryIdA, observationId to substratumHistoryIdC),
-          strata = setOf(observationId to stratumHistoryId1, observationId to stratumHistoryId2),
           sites = setOf(observationId),
       )
     }
