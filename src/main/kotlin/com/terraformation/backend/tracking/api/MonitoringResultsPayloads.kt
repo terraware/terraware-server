@@ -168,6 +168,32 @@ data class ObservationMonitoringPlotResultsPayload(
     val status: ObservationPlotStatus,
     @Schema(
         description =
+            "ID of the stratum the monitoring plot was in at the time of the observation, if " +
+                "any. Null if the plot wasn't in a stratum or if the stratum has since been " +
+                "deleted."
+    )
+    val stratumId: StratumId?,
+    @Schema(
+        description =
+            "Name of the stratum the monitoring plot was in at the time of the observation, if " +
+                "any."
+    )
+    val stratumName: String?,
+    @Schema(
+        description =
+            "ID of the substratum the monitoring plot was in at the time of the observation, if " +
+                "any. Null if the plot wasn't in a substratum or if the substratum has since " +
+                "been deleted."
+    )
+    val substratumId: SubstratumId?,
+    @Schema(
+        description =
+            "Full name of the substratum the monitoring plot was in at the time of the " +
+                "observation, if any."
+    )
+    val substratumName: String?,
+    @Schema(
+        description =
             "If this is a permanent monitoring plot in this observation, percentage of plants that " +
                 "have survived since t0 data."
     )
@@ -217,6 +243,10 @@ data class ObservationMonitoringPlotResultsPayload(
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
       status = model.status,
+      stratumId = model.stratumId,
+      stratumName = model.stratumName,
+      substratumId = model.substratumId,
+      substratumName = model.substratumName,
       survivalRate = model.survivalRate,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
