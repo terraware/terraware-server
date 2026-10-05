@@ -1,3 +1,4 @@
+8b436b5f Update database dependencies (#5111)
 409d6d51 Update dependency com.google.apis:google-api-services-drive to v3-rev20260916-2.0.0 (#5112)
 ad67a6b5 SW-8925 Add backfill migration for ad-hoc plot substrata (#5105)
 dc13bca2 SW-8925 Include observation stratum, substratum in plot results (#5104)
