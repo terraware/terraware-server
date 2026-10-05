@@ -268,9 +268,14 @@ class Messages {
 
   fun monitoringPlotDescription(
       plotType: String,
-      stratumName: String,
-      substratumName: String,
-  ) = getMessage("monitoringPlotDescription", plotType, stratumName, substratumName)
+      stratumName: String?,
+      substratumName: String?,
+  ) =
+      if (stratumName != null && substratumName != null) {
+        getMessage("monitoringPlotDescription", plotType, stratumName, substratumName)
+      } else {
+        getMessage("monitoringPlotDescriptionNoStratum", plotType)
+      }
 
   fun monitoringPlotTypePermanent() = getMessage("monitoringPlotTypePermanent")
 

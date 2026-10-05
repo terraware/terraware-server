@@ -839,8 +839,8 @@ data class AssignedPlotPayload(
     val isPermanent: Boolean,
     val observationId: ObservationId,
     val substratumId: SubstratumId?,
-    val substratumName: String,
-    val stratumName: String,
+    val substratumName: String?,
+    val stratumName: String?,
     val plotId: MonitoringPlotId,
     val plotName: String,
     val plotNumber: Long,
@@ -874,11 +874,11 @@ data class AssignedPlotPayload(
     get() = substratumId
 
   @Deprecated("Use substratumName instead")
-  val plantingSubzoneName: String
+  val plantingSubzoneName: String?
     get() = substratumName
 
   @Deprecated("Use stratumName instead")
-  val plantingZoneName: String
+  val plantingZoneName: String?
     get() = stratumName
 }
 

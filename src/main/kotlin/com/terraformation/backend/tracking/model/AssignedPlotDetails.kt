@@ -18,8 +18,10 @@ data class AssignedPlotDetails(
     val isFirstObservation: Boolean,
     /** Null if the monitoring plot no longer falls within a substratum (due to a map edit). */
     val substratumId: SubstratumId?,
-    val substratumName: String,
-    val stratumName: String,
+    /** Null if the monitoring plot wasn't in a substratum at the time of the observation. */
+    val substratumName: String?,
+    /** Null if the monitoring plot wasn't in a stratum at the time of the observation. */
+    val stratumName: String?,
     val plotNumber: Long,
     val sizeMeters: Int,
 ) {

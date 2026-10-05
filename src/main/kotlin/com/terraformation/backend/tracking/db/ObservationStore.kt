@@ -279,11 +279,11 @@ class ObservationStore(
                   record[
                       OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID],
               substratumName =
-                  record[OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.FULL_NAME]!!,
+                  record[OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.FULL_NAME],
               stratumName =
                   record[
                       OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
-                          .NAME]!!,
+                          .NAME],
               plotNumber = record[OBSERVATION_PLOTS.monitoringPlots.PLOT_NUMBER]!!,
               sizeMeters = record[OBSERVATION_PLOTS.monitoringPlots.SIZE_METERS]!!,
           )
