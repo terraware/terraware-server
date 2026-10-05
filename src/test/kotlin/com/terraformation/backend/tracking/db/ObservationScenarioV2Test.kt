@@ -379,7 +379,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
 
       assertEquals("S1", plot.stratumName, "Stratum name")
       assertNull(plot.substratumId, "Substratum ID")
-      assertEquals("S1-Sub1", plot.substratumName, "Substratum name")
+      assertEquals("Sub1", plot.substratumName, "Substratum name")
     }
 
     @Test
@@ -408,7 +408,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       assertEquals("Renamed", substratum.name, "Substratum name in target observation's map")
       assertEquals(plotId, plot.monitoringPlotId, "Plot ID")
       assertEquals(substratumId, plot.substratumId, "Substratum ID when plot was observed")
-      assertEquals("S1-Sub1", plot.substratumName, "Substratum name when plot was observed")
+      assertEquals("Sub1", plot.substratumName, "Substratum name when plot was observed")
     }
 
     @Test
@@ -937,7 +937,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       val plot = resultsStoreV2.fetchOneById(observationId).adHocPlot!!
 
       assertEquals(substratumId1, plot.substratumId, "Substratum ID")
-      assertEquals("S1-Sub1", plot.substratumName, "Substratum name")
+      assertEquals("Sub1", plot.substratumName, "Substratum name")
       assertEquals(stratumId, plot.stratumId, "Stratum ID")
       assertEquals("S1", plot.stratumName, "Stratum name")
       assertEquals(substratumId2, plot.currentSubstratumId, "Current substratum ID")
