@@ -652,6 +652,8 @@ class PlantingSiteStore(
         }
       }
 
+      updateAdHocPlotSubstrata(plantingSiteId)
+
       // If any monitoring plots weren't edited, we still want to include them in the history too.
       dslContext
           .select(MONITORING_PLOTS.ID.asNonNullable(), MONITORING_PLOTS.SUBSTRATUM_ID)
@@ -991,8 +993,8 @@ class PlantingSiteStore(
 
         eventPublisher.publishEvent(SubstratumDeletionStartedEvent(substratumIdToDelete))
 
-        // Plots will be deleted by ON DELETE CASCADE. This may legitimately delete 0 rows if the
-        // parent stratum has already been deleted.
+        // Plots in the substratum will have their substratum IDs set to null by ON DELETE SET
+        // NULL. This may legitimately delete 0 rows if the parent stratum has already been deleted.
         dslContext.deleteFrom(SUBSTRATA).where(SUBSTRATA.ID.eq(substratumIdToDelete)).execute()
 
         replacementResults.add(
@@ -2520,6 +2522,40 @@ class PlantingSiteStore(
           .set(boundaryField, simplifiedBoundary)
           .apply { exclusionField?.let { this.set(exclusionField, simplifiedExclusion) } }
           .execute()
+    }
+  }
+
+  /**
+   * Sets each of a planting site's ad-hoc monitoring plots to be in the substratum it overlaps the
+   * most, or in no substratum if it doesn't overlap any. Returns the number of plots whose
+   * substratum changed.
+   */
+  private fun updateAdHocPlotSubstrata(plantingSiteId: PlantingSiteId): Int {
+    val substratumBoundaries = fetchSubstratumBoundaries(plantingSiteId)
+    val userId = currentUser().userId
+
+    return with(MONITORING_PLOTS) {
+      dslContext
+          .select(ID.asNonNullable(), BOUNDARY.asNonNullable(), SUBSTRATUM_ID)
+          .from(MONITORING_PLOTS)
+          .where(PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(IS_AD_HOC.isTrue)
+          .fetch()
+          .count { (monitoringPlotId, boundary, currentSubstratumId) ->
+            val substratumId = boundary.findLargestOverlap(substratumBoundaries)
+            if (substratumId != currentSubstratumId) {
+              dslContext
+                  .update(MONITORING_PLOTS)
+                  .set(MODIFIED_BY, userId)
+                  .set(MODIFIED_TIME, clock.instant())
+                  .set(SUBSTRATUM_ID, substratumId)
+                  .where(ID.eq(monitoringPlotId))
+                  .execute()
+              true
+            } else {
+              false
+            }
+          }
     }
   }
 }
