@@ -304,8 +304,8 @@ class ObservationSpeciesSite(
 }
 
 /**
- * Species totals scope for each row of [OBSERVED_PLOT_SPECIES_TOTALS] being updated, rather than
- * for one fixed plot, so the survival rates of many plots can be calculated in a single statement.
+ * Species totals scope for each row of [OBSERVED_PLOT_SPECIES_TOTALS] being updated, so the
+ * survival rates of many plots can be calculated in a single statement.
  */
 object ObservationSpeciesPlotRow :
     ObservationSpeciesScope<MonitoringPlotId, MonitoringPlotHistoryId> {

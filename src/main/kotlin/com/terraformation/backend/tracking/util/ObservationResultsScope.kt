@@ -770,8 +770,8 @@ class ObservationResultsSite(
 }
 
 /**
- * Results scope for each row of [OBSERVATION_PLOT_RESULTS] being updated, rather than for one fixed
- * plot, so the survival rates of many plots can be calculated in a single statement.
+ * Results scope for each row of [OBSERVATION_PLOT_RESULTS] being updated, so the survival rates of
+ * many plots can be calculated in a single statement.
  */
 object ObservationResultsPlotRow :
     ObservationResultsScope<MonitoringPlotId, MonitoringPlotHistoryId> {
