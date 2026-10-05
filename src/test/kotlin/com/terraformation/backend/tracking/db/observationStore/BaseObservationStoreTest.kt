@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
+import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
@@ -45,7 +46,7 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
     ObservationResultsRecalculator(
             LockService(dslContext),
             ObservationResultsInvalidator(dslContext),
-            store,
+            ObservationRecalculationStore(dslContext),
             systemUser,
             transactionManager,
         )

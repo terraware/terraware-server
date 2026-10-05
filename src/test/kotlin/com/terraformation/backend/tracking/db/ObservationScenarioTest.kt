@@ -85,7 +85,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     ObservationResultsRecalculator(
             LockService(dslContext),
             ObservationResultsInvalidator(dslContext),
-            observationStore,
+            ObservationRecalculationStore(dslContext),
             systemUser,
             transactionManager,
         )
