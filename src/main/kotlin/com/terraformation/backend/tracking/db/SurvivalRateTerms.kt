@@ -208,7 +208,7 @@ internal fun plotHasCompletedObservations(
  * t0 data contributes to neither.
  */
 internal class SurvivalRateTermFields(permanentPlots: T0PlotSet, tempPlots: T0PlotSet) {
-  /** Live plants in plots that have t0 data. Zero rather than null when there are none. */
+  /** Live plants in plots that have t0 data, or zero if there are none. */
   val numerator: Field<Int> =
       DSL.coalesce(permanentPlots.numerator, 0)
           .plus(DSL.coalesce(tempPlots.numerator, 0))
