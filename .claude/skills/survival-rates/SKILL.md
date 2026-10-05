@@ -112,7 +112,7 @@ These are product decisions. Do not "fix" them without checking with the user.
 
 5. **Temp plots are opt-in per site.** `planting_sites.survival_rate_includes_temp_plots`
    controls whether temporary plots count at all. Changing it fires
-   `SurvivalRateIncludesTempPlotsChangedEvent`, which flags the whole site for recalculation.
+   `SurvivalRateIncludesTempPlotsChangedEvent`, and the whole site is flagged for recalculation.
 
 ## Plot Attribution
 
@@ -159,9 +159,13 @@ observations' site results are flagged.
 | An edited observation is a plot's t0 observation                    | `T0Store.on(MonitoringSpeciesTotalsEditedEvent)` re-derives that plot's t0 densities and publishes `T0PlotDataAssignedEvent`.                                                                                  |
 | t0 data is assigned for a plot                                      | `ObservationResultsInvalidator.on(T0PlotDataAssignedEvent)` calls `invalidatePlot`, which flags the plot in every observation where it was completed.                                                         |
 | t0 data is assigned for a stratum                                   | `on(T0StratumDataAssignedEvent)` calls `invalidateStratum`.                                                                                                                                                    |
-| The temp-plot flag changes, or the site map is edited               | `on(SurvivalRateIncludesTempPlotsChangedEvent)` and `on(PlantingSiteMapEditedEvent)` call `invalidateSite`.                                                                                                    |
+| The temp-plot flag changes                                          | `PlantingSiteStore.updatePlantingSite` calls `invalidateSite` in the same transaction.                                                                                                                         |
 | An observation is deleted or merged into another                    | `ObservationService.deleteObservation` and `mergeObservations` call `invalidateSite`.                                                                                                                          |
 | An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then recalculates them immediately rather than waiting for the job. Use this to correct stored data after deploying a calculation change. |
+
+Editing a site's map doesn't flag anything, because each observation's results use the site's
+geometry at the time of that observation. Active observations in edited strata are abandoned,
+which flags them like any other abandonment.
 
 `ObservationResultsRecalculator` is a JobRunr recurring job that runs every 5 minutes. For each
 planting site with flagged results, in a new REPEATABLE READ transaction holding a per-site
