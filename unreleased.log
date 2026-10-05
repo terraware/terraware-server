@@ -1,3 +1,4 @@
+eec2f36b SW-8925 Add history sublist to observation plots table (#5114)
 893d75f2 Show unobserved t0 species on temporary plots (#5109)
 d5c8de51 Filter species totals by observation before joining t0 densities (#5108)
 8b436b5f Update database dependencies (#5111)
