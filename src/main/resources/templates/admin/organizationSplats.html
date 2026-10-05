@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        table.bordered {
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+
+        table.bordered th, table.bordered td {
+            border: 1px solid #999;
+            padding: .25em .5em;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        table.bordered thead th {
+            background-color: #e0e0e0;
+            position: sticky;
+            text-align: left;
+            top: 0;
+        }
+
+        table.bordered tbody tr:nth-child(even) {
+            background-color: #f4f4f4;
+        }
+
+        table.bordered tbody tr:hover {
+            background-color: #ffffcc;
+        }
+
+        table.bordered td.numeric {
+            text-align: right;
+        }
+
+        table.bordered td.error {
+            cursor: pointer;
+            max-width: 30em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+
+    <script th:fragment="additionalScript">
+        function copyError(cell) {
+            navigator.clipboard.writeText(cell.dataset.error).then(() => {
+                const original = cell.textContent;
+                cell.textContent = 'Copied!';
+                setTimeout(() => cell.textContent = original, 1000);
+            });
+        }
+    </script>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a> -
+<a th:href="|/admin/organization/${organization.id}|"
+   th:text="${organization.name}">Organization</a>
+
+<h2 th:text="|Splats for ${organization.name} (${organization.id})|">Splats</h2>
+
+<p th:if="${splats.isEmpty()}">This organization has no splats.</p>
+
+<table class="bordered" th:unless="${splats.isEmpty()}">
+    <thead>
+    <tr>
+        <th>Thumbnail</th>
+        <th>File ID</th>
+        <th>Status</th>
+        <th>Date Uploaded</th>
+        <th>Filename</th>
+        <th>AWS Filename</th>
+        <th>Model</th>
+        <th>Job</th>
+        <th>Error</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="splat : ${splats}">
+        <td>
+            <a th:if="${splat.hasThumbnail}"
+               th:href="|/admin/splats/${splat.fileId}/thumbnail?fullSize=true|"
+               target="_blank">
+                <img th:src="|/admin/splats/${splat.fileId}/thumbnail|" alt="Thumbnail"/>
+            </a>
+        </td>
+        <td class="numeric" th:text="${splat.fileId}">1</td>
+        <td>
+            <th:block th:text="${splat.status}">Ready</th:block>
+            <strong th:if="${splat.needsAttention}">(needs attention)</strong>
+        </td>
+        <td th:text="${#temporals.format(splat.uploadedTime, 'yyyy-MM-dd HH:mm:ss', 'UTC')}">
+            2026-01-01 00:00:00
+        </td>
+        <td th:text="${splat.filename}">video.mp4</td>
+        <td th:text="${splat.storageFilename}">210008-3C6DFBDC1864FBF1.mp4</td>
+        <td>
+            <a th:if="${splat.hasModel}"
+               th:href="|/admin/splats/${splat.fileId}/model|">Download .sog</a>
+        </td>
+        <td>
+            <a th:if="${splat.hasJobArchive}"
+               th:href="|/admin/splats/${splat.fileId}/job|">Download job</a>
+        </td>
+        <td class="error"
+            th:if="${splat.errorMessage}"
+            th:data-error="${splat.errorMessage}"
+            th:title="|${splat.errorMessage} (click to copy)|"
+            th:text="${splat.errorMessage}"
+            onclick="copyError(this)">
+            Error message
+        </td>
+        <td th:unless="${splat.errorMessage}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
