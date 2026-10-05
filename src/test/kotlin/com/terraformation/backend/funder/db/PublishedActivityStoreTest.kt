@@ -23,11 +23,11 @@ import com.terraformation.backend.db.funder.tables.records.PublishedActivityMedi
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityObservationMediaFilesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityObservationsRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
 import com.terraformation.backend.funder.model.PublishedActivityModel
@@ -383,7 +383,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `does not publish observation details that are pending recalculation`() {
+    fun `throws exception if observation results are pending recalculation`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       activitiesDao.update(
@@ -393,76 +393,14 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertStratum()
       insertSubstratum()
       insertMonitoringPlot()
-      val observationId = insertObservation()
-      insertObservationPlot(completedBy = user.userId)
-      insertObservationSiteResult(totalLive = 123, plantDensity = 4, survivalRate = 56)
-      insertActivityObservation()
-
-      store.publish(activityId)
-
-      dslContext
-          .update(OBSERVATION_SITE_RESULTS)
-          .set(OBSERVATION_SITE_RESULTS.TOTAL_LIVE, 0)
-          .set(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION, true)
-          .execute()
-
-      store.publish(activityId)
-
-      assertTableEquals(
-          PublishedActivityObservationsRecord(
-              activityId = activityId,
-              observationId = observationId,
-              livePlants = 123,
-              plantDensity = 4,
-              survivalRate = 56,
-          ),
-          "Previously published values are kept while results are pending",
-      )
-
-      dslContext
-          .update(OBSERVATION_SITE_RESULTS)
-          .set(OBSERVATION_SITE_RESULTS.TOTAL_LIVE, 125)
-          .set(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION, false)
-          .execute()
-
-      store.publish(activityId)
-
-      assertTableEquals(
-          PublishedActivityObservationsRecord(
-              activityId = activityId,
-              observationId = observationId,
-              livePlants = 125,
-              plantDensity = 4,
-              survivalRate = 56,
-          ),
-          "Recalculated values are published",
-      )
-    }
-
-    @Test
-    fun `publishes empty observation details if results are pending and were never published`() {
-      insertUserGlobalRole(role = GlobalRole.TFExpert)
-
-      activitiesDao.update(
-          activitiesDao.fetchOneById(activityId)!!.copy(activityTypeId = ActivityType.Monitoring)
-      )
-      insertPlantingSite()
-      insertStratum()
-      insertSubstratum()
-      insertMonitoringPlot()
-      val observationId = insertObservation()
+      insertObservation()
       insertObservationPlot(completedBy = user.userId)
       insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
       insertActivityObservation()
 
-      store.publish(activityId)
+      assertThrows<ObservationResultsPendingException> { store.publish(activityId) }
 
-      assertTableEquals(
-          PublishedActivityObservationsRecord(
-              activityId = activityId,
-              observationId = observationId,
-          )
-      )
+      assertTableEmpty(PUBLISHED_ACTIVITIES)
     }
 
     @Test

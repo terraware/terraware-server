@@ -46,6 +46,7 @@ class PublishedActivityStore(
     ensureVerified(activityId)
 
     dslContext.transaction { _ ->
+      ensureObservationResultsReady(activityId)
       publishActivityDetails(activityId)
       publishMediaFileDeletions(activityId)
       publishCurrentMediaFiles(activityId)
@@ -244,19 +245,6 @@ class PublishedActivityStore(
     }
 
     with(PUBLISHED_ACTIVITY_OBSERVATIONS) {
-      // Results that are waiting to be recalculated may be incomplete, so don't publish them.
-      // Keep any previously published values; publishing again after the recalculation will
-      // update them. This is a single statement so every observation is published even if a
-      // recalculation clears its flag while this runs.
-      val isPending = OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION.isTrue
-      val publishedIsPending =
-          DSL.exists(
-              DSL.selectOne()
-                  .from(OBSERVATION_SITE_RESULTS)
-                  .where(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(OBSERVATION_ID))
-                  .and(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION.isTrue)
-          )
-
       dslContext
           .insertInto(
               PUBLISHED_ACTIVITY_OBSERVATIONS,
@@ -270,12 +258,9 @@ class PublishedActivityStore(
               DSL.select(
                       ACTIVITY_OBSERVATIONS.ACTIVITY_ID,
                       ACTIVITY_OBSERVATIONS.OBSERVATION_ID,
-                      DSL.`when`(isPending, DSL.castNull(LIVE_PLANTS))
-                          .otherwise(OBSERVATION_SITE_RESULTS.TOTAL_LIVE),
-                      DSL.`when`(isPending, DSL.castNull(PLANT_DENSITY))
-                          .otherwise(OBSERVATION_SITE_RESULTS.PLANT_DENSITY),
-                      DSL.`when`(isPending, DSL.castNull(SURVIVAL_RATE))
-                          .otherwise(OBSERVATION_SITE_RESULTS.SURVIVAL_RATE),
+                      OBSERVATION_SITE_RESULTS.TOTAL_LIVE,
+                      OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
+                      OBSERVATION_SITE_RESULTS.SURVIVAL_RATE,
                   )
                   .from(ACTIVITY_OBSERVATIONS)
                   .leftJoin(OBSERVATION_SITE_RESULTS)
@@ -287,18 +272,9 @@ class PublishedActivityStore(
                   .where(ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId))
           )
           .onDuplicateKeyUpdate()
-          .set(
-              LIVE_PLANTS,
-              DSL.`when`(publishedIsPending, LIVE_PLANTS).otherwise(DSL.excluded(LIVE_PLANTS)),
-          )
-          .set(
-              PLANT_DENSITY,
-              DSL.`when`(publishedIsPending, PLANT_DENSITY).otherwise(DSL.excluded(PLANT_DENSITY)),
-          )
-          .set(
-              SURVIVAL_RATE,
-              DSL.`when`(publishedIsPending, SURVIVAL_RATE).otherwise(DSL.excluded(SURVIVAL_RATE)),
-          )
+          .set(LIVE_PLANTS, DSL.excluded(LIVE_PLANTS))
+          .set(PLANT_DENSITY, DSL.excluded(PLANT_DENSITY))
+          .set(SURVIVAL_RATE, DSL.excluded(SURVIVAL_RATE))
           .execute()
     }
   }
@@ -406,6 +382,29 @@ class PublishedActivityStore(
       deletedFileIds.forEach { fileId ->
         eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
       }
+    }
+  }
+
+  /**
+   * Throws if any of the activity's observations have results waiting to be recalculated, since
+   * those results may be incomplete. Locks the results rows so their flags can't change before the
+   * activity is published.
+   */
+  private fun ensureObservationResultsReady(activityId: ActivityId) {
+    val anyPending =
+        dslContext
+            .select(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION)
+            .from(ACTIVITY_OBSERVATIONS)
+            .join(OBSERVATION_SITE_RESULTS)
+            .on(ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID))
+            .where(ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId))
+            .forShare()
+            .of(OBSERVATION_SITE_RESULTS)
+            .fetch(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION)
+            .any { it == true }
+
+    if (anyPending) {
+      throw ObservationResultsPendingException(activityId)
     }
   }
 
