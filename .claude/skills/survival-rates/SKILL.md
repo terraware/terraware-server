@@ -148,8 +148,8 @@ A flagged results row covers that row and all the species totals rows for the sa
 and scope. When a results row doesn't exist yet, the invalidator inserts a placeholder with zero
 counts so there is somewhere to put the flag. The API reports flagged rows as `pending`, and the
 survival rate calculation in-progress endpoint is true while any of a site's results are flagged.
-Publishing a funder activity skips site results that are flagged, keeping any previously
-published values.
+Publishing a funder activity fails with `ObservationResultsPendingException` if any of its
+observations' site results are flagged.
 
 | Trigger                                                             | What gets flagged                                                                                                                                                                                              |
 |---------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
