@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
@@ -14,6 +15,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.Table
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class SubstratumHistoriesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -22,11 +24,23 @@ class SubstratumHistoriesTable(private val tables: SearchTables) : SearchTable()
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          monitoringPlotHistories.asMultiValueSublist(
-              "monitoringPlotHistories",
-              SUBSTRATUM_HISTORIES.ID,
-              MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
-          ),
+          monitoringPlotHistories.asMultiValueSublist("monitoringPlotHistories") {
+              thisTable,
+              otherTable ->
+            thisTable
+                .column(SUBSTRATUM_HISTORIES.ID)
+                .eq(otherTable.column(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+                .andNotExists(
+                    DSL.selectOne()
+                        .from(MONITORING_PLOTS)
+                        .where(
+                            MONITORING_PLOTS.ID.eq(
+                                otherTable.column(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID)
+                            )
+                        )
+                        .and(MONITORING_PLOTS.IS_AD_HOC.isTrue)
+                )
+          },
           substrata.asSingleValueSublist(
               "plantingSubzone",
               SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
