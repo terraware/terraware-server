@@ -255,6 +255,7 @@ class T0Store(
             .join(SUBSTRATA)
             .on(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
             .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
             .and(densityField.ge(BigDecimal.valueOf(0.05)))
 
     val observedNotWithdrawnSpecies =
@@ -333,6 +334,10 @@ class T0Store(
 
     if (!wasMonitoringPlotInObservation(monitoringPlotId, observationId)) {
       throw PlotNotInObservationException(observationId, monitoringPlotId)
+    }
+
+    if (isAdHocObservation(observationId)) {
+      throw AdHocPlotNotAllowedException("Cannot use ad-hoc plot as T0 observation")
     }
 
     val now = clock.instant()
@@ -635,7 +640,10 @@ class T0Store(
 
   @EventListener
   fun on(event: ObservationStateUpdatedEvent) {
-    if (event.newState in listOf(ObservationState.Completed, ObservationState.Abandoned)) {
+    if (
+        event.newState in listOf(ObservationState.Completed, ObservationState.Abandoned) &&
+            !isAdHocObservation(event.observationId)
+    ) {
       assignNewObservationSpeciesZero(event.observationId)
     }
   }
@@ -649,7 +657,7 @@ class T0Store(
                 .and(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.eq(event.monitoringPlotId)),
         )
 
-    if (isT0Observation) {
+    if (isT0Observation && !isAdHocObservation(event.observationId)) {
       assignT0PlotObservation(event.monitoringPlotId, event.observationId)
     }
   }
@@ -829,6 +837,12 @@ class T0Store(
       )
     }
   }
+
+  private fun isAdHocObservation(observationId: ObservationId): Boolean =
+      dslContext.fetchExists(
+          OBSERVATIONS,
+          OBSERVATIONS.ID.eq(observationId).and(OBSERVATIONS.IS_AD_HOC.isTrue),
+      )
 
   private fun wasMonitoringPlotInObservation(
       monitoringPlotId: MonitoringPlotId,
@@ -1042,4 +1056,5 @@ class T0Store(
 
   private val completedObservationsCondition =
       OBSERVATIONS.STATE_ID.`in`(listOf(ObservationState.Completed, ObservationState.Abandoned))
+          .and(OBSERVATIONS.IS_AD_HOC.isFalse)
 }

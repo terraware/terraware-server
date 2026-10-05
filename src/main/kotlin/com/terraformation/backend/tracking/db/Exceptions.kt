@@ -18,6 +18,10 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import java.time.LocalDate
 
+class AdHocPlotNotAllowedException(
+    message: String = "Ad-hoc plots are not allowed for this operation"
+) : MismatchedStateException(message)
+
 class BiomassSpeciesNotFoundException(val speciesId: SpeciesId?, val speciesName: String?) :
     EntityNotFoundException("Species ${speciesId ?: speciesName} not found in observation")
 
