@@ -75,19 +75,19 @@ class ObservationResultsRecalculator(
         siteTransaction.propagationBehavior = siteTransactionPropagation
         siteTransaction.execute {
           if (
-              !lockService.tryExclusiveTransactional(
+              lockService.tryExclusiveTransactional(
                   LockType.OBSERVATION_RESULTS_RECALCULATION,
                   plantingSiteId.value,
               )
           ) {
-            log.info("Results of planting site $plantingSiteId are already being recalculated")
-            false
-          } else {
             observationRecalculationStore.recalculateFlaggedResults(plantingSiteId)
             observationResultsInvalidator.clearRecalculationFlags(plantingSiteId)
 
             log.info("Recalculated flagged results of planting site $plantingSiteId")
             true
+          } else {
+            log.info("Results of planting site $plantingSiteId are already being recalculated")
+            false
           }
         } == true
       }
