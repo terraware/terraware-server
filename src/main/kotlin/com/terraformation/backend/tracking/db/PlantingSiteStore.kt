@@ -127,7 +127,6 @@ class PlantingSiteStore(
     private val geometrySimplifier: GeometrySimplifier,
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
-    private val observationResultsInvalidator: ObservationResultsInvalidator,
     private val parentStore: ParentStore,
     private val plantingSitesDao: PlantingSitesDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
@@ -558,19 +557,15 @@ class PlantingSiteStore(
       }
 
       if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
-        observationResultsInvalidator.invalidateSite(plantingSiteId)
+        eventPublisher.publishEvent(
+            SurvivalRateIncludesTempPlotsChangedEvent(
+                organizationId = edited.organizationId,
+                plantingSiteId = edited.id,
+                previousValue = initial.survivalRateIncludesTempPlots,
+                newValue = edited.survivalRateIncludesTempPlots,
+            )
+        )
       }
-    }
-
-    if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
-      eventPublisher.publishEvent(
-          SurvivalRateIncludesTempPlotsChangedEvent(
-              organizationId = edited.organizationId,
-              plantingSiteId = edited.id,
-              previousValue = initial.survivalRateIncludesTempPlots,
-              newValue = edited.survivalRateIncludesTempPlots,
-          )
-      )
     }
   }
 

@@ -14,7 +14,6 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
-import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.util.GeometrySimplifier
@@ -41,7 +40,6 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        ObservationResultsInvalidator(dslContext),
         ParentStore(dslContext),
         plantingSitesDao,
         eventPublisher,

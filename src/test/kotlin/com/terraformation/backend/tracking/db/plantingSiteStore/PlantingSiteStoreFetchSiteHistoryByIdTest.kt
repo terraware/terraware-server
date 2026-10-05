@@ -15,7 +15,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
-import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.PlantingSiteHistoryNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -50,7 +49,6 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        ObservationResultsInvalidator(dslContext),
         ParentStore(dslContext),
         plantingSitesDao,
         eventPublisher,

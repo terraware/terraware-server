@@ -83,7 +83,6 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         geometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        ObservationResultsInvalidator(dslContext),
         parentStore,
         plantingSitesDao,
         eventPublisher,

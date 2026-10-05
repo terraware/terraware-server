@@ -115,7 +115,6 @@ class ObservationScenario(
                 geometrySimplifier,
                 identifierGenerator,
                 MonitoringPlotsDao(configuration),
-                ObservationResultsInvalidator(test.dslContext),
                 parentStore,
                 PlantingSitesDao(configuration),
                 eventPublisher,

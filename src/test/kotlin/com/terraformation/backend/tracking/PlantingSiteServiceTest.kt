@@ -18,7 +18,6 @@ import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsR
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.DeliveryStore
-import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -57,7 +56,6 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        ObservationResultsInvalidator(dslContext),
         parentStore,
         plantingSitesDao,
         eventPublisher,
