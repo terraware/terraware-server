@@ -462,6 +462,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                 mapOf(
                                                     "id" to "$monitoringPlotId5",
                                                 ),
+                                            "monitoringPlotHistory" to
+                                                mapOf("id" to "$monitoringPlotHistoryId5"),
                                             "notes" to "Plot notes",
                                         ),
                                         mapOf(
@@ -470,6 +472,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                 mapOf(
                                                     "id" to "$monitoringPlotId6",
                                                 ),
+                                            "monitoringPlotHistory" to
+                                                mapOf("id" to "$monitoringPlotHistoryId6"),
                                         ),
                                     ),
                                 "plotResults" to
@@ -542,6 +546,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                 mapOf(
                                                     "id" to "$monitoringPlotId5",
                                                 ),
+                                            "monitoringPlotHistory" to
+                                                mapOf("id" to "$monitoringPlotHistoryId5"),
                                         ),
                                     ),
                             ),
@@ -598,6 +604,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "monitoringPlot" to
                                                 mapOf(
                                                     "id" to "$exteriorPlotId9",
+                                                ),
+                                            "monitoringPlotHistory" to
+                                                mapOf(
+                                                    "id" to "$exteriorPlotHistoryId9",
                                                 ),
                                             "recordedTrees" to
                                                 listOf(
@@ -1020,6 +1030,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "observations.observationPlots.conditions.condition",
                 "observations.observationPlots.isPermanent",
                 "observations.observationPlots.monitoringPlot.id",
+                "observations.observationPlots.monitoringPlotHistory.id",
                 "observations.observationPlots.notes",
                 "observations.observationPlots.recordedTrees.boleHeight",
                 "observations.observationPlots.recordedTrees.description",
