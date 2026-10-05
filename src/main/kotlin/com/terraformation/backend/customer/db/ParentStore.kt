@@ -373,7 +373,7 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(
           monitoringPlotId,
           MONITORING_PLOTS.ID,
-          MONITORING_PLOTS.substrata.plantingSites.PROJECT_ID,
+          MONITORING_PLOTS.plantingSites.PROJECT_ID,
       )
 
   fun getProjectId(observationId: ObservationId): ProjectId? =
