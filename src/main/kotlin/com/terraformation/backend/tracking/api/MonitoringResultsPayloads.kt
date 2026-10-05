@@ -188,8 +188,8 @@ data class ObservationMonitoringPlotResultsPayload(
     val substratumId: SubstratumId?,
     @Schema(
         description =
-            "Full name of the substratum the monitoring plot was in at the time of the " +
-                "observation, if any."
+            "Name of the substratum the monitoring plot was in at the time of the observation, " +
+                "if any."
     )
     val substratumName: String?,
     @Schema(

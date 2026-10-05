@@ -327,7 +327,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     SUBSTRATA.ID,
                     SUBSTRATA.STRATUM_ID,
                     plotSubstratumHistories.SUBSTRATUM_ID,
-                    plotSubstratumHistories.FULL_NAME,
+                    plotSubstratumHistories.NAME,
                     plotStratumHistories.STRATUM_ID,
                     plotStratumHistories.NAME,
                 )
@@ -413,7 +413,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 stratumId = record[plotStratumHistories.STRATUM_ID],
                 stratumName = record[plotStratumHistories.NAME],
                 substratumId = record[plotSubstratumHistories.SUBSTRATUM_ID],
-                substratumName = record[plotSubstratumHistories.FULL_NAME],
+                substratumName = record[plotSubstratumHistories.NAME],
                 survivalRate = survivalRate,
                 totalPlants = totalPlants,
                 totalSpecies = totalLiveSpeciesExceptUnknown,

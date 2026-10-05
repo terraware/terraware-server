@@ -148,7 +148,7 @@ data class ObservationMonitoringPlotResultsModel(
     val stratumName: String?,
     /** Substratum the plot was in at the time of the observation, if it still exists. */
     val substratumId: SubstratumId?,
-    /** Full name of the substratum the plot was in at the time of the observation, if any. */
+    /** Name of the substratum the plot was in at the time of the observation, if any. */
     val substratumName: String?,
     /**
      * If this is a permanent monitoring plot in this observation, percentage of plants of all
