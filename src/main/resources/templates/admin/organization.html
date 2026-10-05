@@ -301,6 +301,14 @@
     <input id="mapSubmit" type="submit" disabled value=" Create Planting Site "/>
 </form>
 
+<th:block th:if="${canViewSplats}">
+    <hr style="margin-top: 20px"/>
+
+    <h3>Splats</h3>
+
+    <a th:href="|/admin/splats/organization/${organization.id}|">View Org Splats</a>
+</th:block>
+
 <hr style="margin-top: 20px"/>
 
 <h3>Reports</h3>

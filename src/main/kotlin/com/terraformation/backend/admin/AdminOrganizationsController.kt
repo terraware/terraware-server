@@ -58,6 +58,7 @@ class AdminOrganizationsController(
     model.addAttribute("canCreateReport", isSuperAdmin)
     model.addAttribute("canDeleteReport", isSuperAdmin)
     model.addAttribute("canExportReport", isSuperAdmin && config.report.exportEnabled)
+    model.addAttribute("canViewSplats", isSuperAdmin && config.splatter.enabled)
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.entries)
     model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
