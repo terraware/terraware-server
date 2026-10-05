@@ -767,11 +767,6 @@ data class MonitoringSpeciesTotalsEditedEventV1(
   ): List<FieldsUpdatedPersistentEvent.UpdatedField> {
     return listOfNotNull(
         createUpdatedField(
-            "totalDead",
-            messages.numericValueOrNull(changedFrom.totalDead),
-            messages.numericValueOrNull(changedTo.totalDead),
-        ),
-        createUpdatedField(
             "totalExisting",
             messages.numericValueOrNull(changedFrom.totalExisting),
             messages.numericValueOrNull(changedTo.totalExisting),
@@ -780,6 +775,11 @@ data class MonitoringSpeciesTotalsEditedEventV1(
             "totalLive",
             messages.numericValueOrNull(changedFrom.totalLive),
             messages.numericValueOrNull(changedTo.totalLive),
+        ),
+        createUpdatedField(
+            "totalDead",
+            messages.numericValueOrNull(changedFrom.totalDead),
+            messages.numericValueOrNull(changedTo.totalDead),
         ),
     )
   }
