@@ -1,3 +1,5 @@
+893d75f2 Show unobserved t0 species on temporary plots (#5109)
+d5c8de51 Filter species totals by observation before joining t0 densities (#5108)
 8b436b5f Update database dependencies (#5111)
 409d6d51 Update dependency com.google.apis:google-api-services-drive to v3-rev20260916-2.0.0 (#5112)
 ad67a6b5 SW-8925 Add backfill migration for ad-hoc plot substrata (#5105)
