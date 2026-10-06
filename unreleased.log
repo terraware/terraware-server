@@ -1,3 +1,5 @@
+b583d4a3 SW-8748 Allow observation media to be marked original (#5120)
+d85aad5d Upgrade Springdoc-OpenAPI to v2.9.1 (#5121)
 338dc9f7 SW-8967 Change order of edited plant counts (#5119)
 80775f48 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.55 (#5113)
 07bd2ade Create splats admin page (#5118)
