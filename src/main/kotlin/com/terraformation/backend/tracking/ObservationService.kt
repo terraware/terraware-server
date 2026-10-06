@@ -294,10 +294,6 @@ class ObservationService(
         parentStore.getOrganizationId(plantingSiteId)
             ?: throw ObservationNotFoundException(observationId)
 
-    if (metadata.geolocation == null && isOriginal) {
-      throw IllegalArgumentException("Geolocation is required for original observation photos")
-    }
-
     if (type == ObservationMediaType.Explanation) {
       if (caption.isNullOrBlank()) {
         throw IllegalArgumentException("Caption is required for explanation media file")
