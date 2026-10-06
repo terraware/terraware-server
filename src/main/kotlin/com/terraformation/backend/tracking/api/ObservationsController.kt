@@ -604,6 +604,7 @@ class ObservationsController(
       @RequestPart("payload") payload: UploadPlotMediaRequestPayload?,
       @RequestParam caption: String?,
       @RequestParam fileBatchId: FileBatchId?,
+      @RequestParam isOriginal: Boolean?,
       @RequestParam position: ObservationPlotPosition?,
       @RequestParam type: ObservationMediaType?,
   ): UploadPlotMediaResponsePayload {
@@ -618,7 +619,7 @@ class ObservationsController(
             data = file.inputStream,
             metadata = FileMetadata.of(contentType, filename, file.size),
             caption = payload?.caption ?: caption,
-            isOriginal = false,
+            isOriginal = payload?.isOriginal ?: isOriginal ?: true,
             type = payload?.type ?: type ?: ObservationMediaType.Plot,
             fileBatchId = payload?.fileBatchId ?: fileBatchId,
         )
@@ -1099,6 +1100,11 @@ data class UpdatePlotPhotoRequestPayload(
 
 data class UploadPlotMediaRequestPayload(
     val caption: String?,
+    @Schema(
+        description = "If false, this file is not considered part of the original observation.",
+        defaultValue = "true",
+    )
+    val isOriginal: Boolean?,
     val position: ObservationPlotPosition?,
     @Schema(description = "Type of subject the uploaded file depicts.", defaultValue = "Plot")
     val type: ObservationMediaType?,
