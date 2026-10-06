@@ -1,3 +1,8 @@
+338dc9f7 SW-8967 Change order of edited plant counts (#5119)
+80775f48 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.55 (#5113)
+07bd2ade Create splats admin page (#5118)
+767b6927 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.54.0 (#5116)
+2d66f573 SW-8925 Don't return full substratum name in results (#5115)
 eec2f36b SW-8925 Add history sublist to observation plots table (#5114)
 893d75f2 Show unobserved t0 species on temporary plots (#5109)
 d5c8de51 Filter species totals by observation before joining t0 densities (#5108)
