@@ -156,6 +156,12 @@ springdoc:
     - "com.terraformation.backend.time.api"
     - "com.terraformation.backend.tracking.api"
   default-produces-media-type: "application/json"
+  model-converters:
+    kotlin-nullable-property-customizer:
+      # We configure Jackson to omit properties with null values, so we don't want the OpenAPI
+      # schema to label optional properties as both nullable: true and required: false, just
+      # the latter.
+      enabled: false
   swagger-ui:
     # Disable the demo API (pet store)
     disable-swagger-default-url: true
