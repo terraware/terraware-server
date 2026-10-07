@@ -7,7 +7,6 @@ import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.SelectJoinStep
 import org.jooq.SortField
 import org.jooq.Table
 
@@ -64,16 +63,8 @@ class AliasedSearchTable(val baseTable: SearchTable, val alias: String) : Search
   override val visibilitySublistName: String?
     get() = baseTable.visibilitySublistName
 
-  override val inheritsVisibilityFrom: SearchTable?
-    get() = visibilitySublist?.searchTable ?: baseTable.inheritsVisibilityFrom
-
   override fun conditionForVisibility(table: Table<*>): Condition? =
       baseTable.conditionForVisibility(table)
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> = baseTable.joinForVisibility(query, table)
 
   override fun equals(other: Any?): Boolean {
     return other is AliasedSearchTable && other.baseTable == baseTable && other.alias == alias
