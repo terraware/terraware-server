@@ -1,3 +1,8 @@
+1c5fdc5d SW-8972 Remove SearchTable.joinForVisibility (#5128)
+dd4c4de3 SW-8972 Use visibility sublists for planting site tables (#5127)
+c1f1c22b SW-8972 Use visibility sublists for observation tables (#5126)
+e9b2c88f SW-8972 Use visibility sublists for seedbank, nursery, species, accelerator tables (#5125)
+9d112724 SW-8972 Reuse aliased search tables for visibility checks (#5124)
 3d3ab063 SW-8748 Backfill is_original for existing photos (#5122)
 b583d4a3 SW-8748 Allow observation media to be marked original (#5120)
 d85aad5d Upgrade Springdoc-OpenAPI to v2.9.1 (#5121)
