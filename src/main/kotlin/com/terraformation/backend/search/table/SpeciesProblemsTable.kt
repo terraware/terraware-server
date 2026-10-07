@@ -6,10 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PR
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class SpeciesProblemsTable(private val tables: SearchTables) : SearchTable() {
@@ -32,13 +29,6 @@ class SpeciesProblemsTable(private val tables: SearchTables) : SearchTable() {
           enumField("type", SPECIES_PROBLEMS.TYPE_ID),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.species
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query.join(SPECIES).on(table.column(SPECIES_PROBLEMS.SPECIES_ID).eq(SPECIES.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "species"
 }

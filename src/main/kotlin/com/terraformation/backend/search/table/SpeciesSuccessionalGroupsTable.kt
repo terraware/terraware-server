@@ -5,10 +5,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SU
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class SpeciesSuccessionalGroupsTable(private val tables: SearchTables) : SearchTable() {
@@ -32,15 +29,6 @@ class SpeciesSuccessionalGroupsTable(private val tables: SearchTables) : SearchT
           enumField("successionalGroup", SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.species
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(SPECIES)
-        .on(table.column(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID).eq(SPECIES.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "species"
 }

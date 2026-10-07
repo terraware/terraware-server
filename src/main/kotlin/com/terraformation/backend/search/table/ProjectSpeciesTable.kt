@@ -8,10 +8,7 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class ProjectSpeciesTable(tables: SearchTables) : SearchTable() {
@@ -67,14 +64,8 @@ class ProjectSpeciesTable(tables: SearchTables) : SearchTable() {
           dateField("pendingNativitySourceDate", PROJECT_SPECIES.PENDING_NATIVITY_DATASET_DATE),
       )
 
-  override val inheritsVisibilityFrom: SearchTable = tables.species
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query.join(SPECIES).on(table.column(PROJECT_SPECIES.SPECIES_ID).eq(SPECIES.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "species"
 
   override val defaultOrderFields =
       listOf(
