@@ -10,7 +10,6 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.SelectJoinStep
 import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
@@ -46,15 +45,6 @@ class NurseryWithdrawalPhotosTable(private val tables: SearchTables) : SearchTab
           DSL.select(field).from(FILES).where(FILES.ID.eq(table.column(WITHDRAWAL_PHOTOS.FILE_ID)))
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.nurseryWithdrawals
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(WITHDRAWAL_SUMMARIES)
-        .on(WITHDRAWAL_SUMMARIES.ID.eq(table.column(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID)))
-  }
+  override val visibilitySublistName: String
+    get() = "withdrawal"
 }

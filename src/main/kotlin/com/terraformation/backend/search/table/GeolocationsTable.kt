@@ -8,14 +8,11 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.DatabaseFieldSupplier
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import com.terraformation.backend.search.field.columnSupplier
 import java.math.BigDecimal
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -41,15 +38,8 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
           ),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.accessions
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query.join(ACCESSIONS).on(table.column(GEOLOCATIONS.ACCESSION_ID).eq(ACCESSIONS.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "accession"
 
   /**
    * Search field for geolocation data. Geolocation is represented in search results as a single

@@ -8,10 +8,8 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.Condition
 import org.jooq.Record
-import org.jooq.SelectJoinStep
 import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
@@ -45,25 +43,14 @@ class ParticipantProjectSpeciesTable(private val tables: SearchTables) : SearchT
           enumField("submissionStatus", PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID),
       )
 
-  override val inheritsVisibilityFrom: SearchTable?
+  override val visibilitySublistName: String?
     get() {
       return if (currentUser().canReadAllAcceleratorDetails()) {
         null
       } else {
-        tables.projects
+        "project"
       }
     }
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return if (currentUser().canReadAllAcceleratorDetails()) {
-      query
-    } else {
-      query.join(PROJECTS).on(table.column(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID).eq(PROJECTS.ID))
-    }
-  }
 
   override fun conditionForVisibility(table: Table<*>): Condition? {
     return if (currentUser().canReadAllAcceleratorDetails()) {
