@@ -1,0 +1,6 @@
+ALTER TABLE gbif_names ALTER COLUMN name SET STATISTICS 500;
+ALTER TABLE gbif_name_words ALTER COLUMN gbif_name_id SET STATISTICS 500;
+ALTER TABLE gbif_name_words ALTER COLUMN word SET STATISTICS 500;
+
+ANALYZE gbif_names;
+ANALYZE gbif_name_words;
