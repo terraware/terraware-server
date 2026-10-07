@@ -10,8 +10,6 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -53,19 +51,6 @@ class PlantingSiteSpeciesTargetsTable(private val tables: SearchTables) : Search
           longField("targetPlants", PLANTING_SITE_SPECIES_TARGETS.TARGET_PLANTS),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.plantingSites
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(PLANTING_SITE_SUMMARIES)
-        .on(
-            table
-                .column(PLANTING_SITE_SPECIES_TARGETS.PLANTING_SITE_ID)
-                .eq(PLANTING_SITE_SUMMARIES.ID)
-        )
-  }
+  override val visibilitySublistName: String
+    get() = "plantingSite"
 }
