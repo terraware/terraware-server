@@ -11,11 +11,8 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTO
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class MonitoringPlotHistoriesTable(private val tables: SearchTables) : SearchTable() {
@@ -75,17 +72,8 @@ class MonitoringPlotHistoriesTable(private val tables: SearchTables) : SearchTab
           idWrapperField("id", MONITORING_PLOT_HISTORIES.ID) { MonitoringPlotHistoryId(it) },
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.monitoringPlots
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(MONITORING_PLOTS)
-        .on(table.column(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID).eq(MONITORING_PLOTS.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "monitoringPlot"
 
   override val defaultOrderFields: List<OrderField<*>>
     get() = listOf(MONITORING_PLOT_HISTORIES.ID)

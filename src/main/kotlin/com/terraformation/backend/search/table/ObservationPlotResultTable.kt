@@ -11,8 +11,6 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class ObservationPlotResultTable(private val tables: SearchTables) : SearchTable() {
@@ -68,15 +66,6 @@ class ObservationPlotResultTable(private val tables: SearchTables) : SearchTable
             OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID,
         )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.observations
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(OBSERVATIONS)
-        .on(table.column(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID).eq(OBSERVATIONS.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "observation"
 }

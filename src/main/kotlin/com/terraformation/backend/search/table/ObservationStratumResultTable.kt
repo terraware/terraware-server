@@ -12,8 +12,6 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -88,15 +86,6 @@ class ObservationStratumResultTable(private val tables: SearchTables) : SearchTa
             OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID,
         )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.observations
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(OBSERVATIONS)
-        .on(table.column(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID).eq(OBSERVATIONS.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "observation"
 }

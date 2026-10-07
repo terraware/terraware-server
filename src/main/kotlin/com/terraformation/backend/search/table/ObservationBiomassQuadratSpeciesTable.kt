@@ -11,8 +11,6 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class ObservationBiomassQuadratSpeciesTable(private val tables: SearchTables) : SearchTable() {
@@ -60,15 +58,6 @@ class ObservationBiomassQuadratSpeciesTable(private val tables: SearchTables) : 
           enumField("position", OBSERVATION_BIOMASS_QUADRAT_SPECIES.POSITION_ID),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.observations
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(OBSERVATIONS)
-        .on(table.column(OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID).eq(OBSERVATIONS.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "observation"
 }

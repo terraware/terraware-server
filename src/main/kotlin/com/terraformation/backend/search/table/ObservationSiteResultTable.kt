@@ -11,8 +11,6 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -80,15 +78,6 @@ class ObservationSiteResultTable(private val tables: SearchTables) : SearchTable
           integerField("totalLive", OBSERVATION_SITE_RESULTS.TOTAL_LIVE),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.observations
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(OBSERVATIONS)
-        .on(table.column(OBSERVATION_SITE_RESULTS.OBSERVATION_ID).eq(OBSERVATIONS.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "observation"
 }
