@@ -1327,7 +1327,8 @@ class NestedQueryBuilder(
       referencedTables: Set<SearchTable>,
       searchTable: SearchTable,
   ): SelectJoinStep<T> {
-    val inheritsVisibilityFrom = searchTable.inheritsVisibilityFrom ?: return query
+    val visibilitySublist = searchTable.visibilitySublist ?: return query
+    val inheritsVisibilityFrom = visibilitySublist.searchTable
 
     return if (inheritsVisibilityFrom in referencedTables) {
       // We've already joined with the next table in the chain, so no need to do it again. But we
@@ -1337,20 +1338,15 @@ class NestedQueryBuilder(
       // The query doesn't already include the table we need to join with from this one in order to
       // evaluate visibility; join with it and then see if there are additional tables that also
       // need to be joined.
-      val visibilitySublist = searchTable.visibilitySublist
       val joinedQuery =
-          if (visibilitySublist != null) {
-            query
-                .join(inheritsVisibilityFrom.fromTable)
-                .on(
-                    visibilitySublist.getConditionForMultiset(
-                        searchTable.fromTable,
-                        inheritsVisibilityFrom.fromTable,
-                    )
-                )
-          } else {
-            searchTable.joinForVisibility(query)
-          }
+          query
+              .join(inheritsVisibilityFrom.fromTable)
+              .on(
+                  visibilitySublist.getConditionForMultiset(
+                      searchTable.fromTable,
+                      inheritsVisibilityFrom.fromTable,
+                  )
+              )
 
       joinForVisibility(
           joinedQuery,

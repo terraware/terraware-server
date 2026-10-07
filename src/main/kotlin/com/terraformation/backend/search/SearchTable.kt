@@ -43,7 +43,6 @@ import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.SelectJoinStep
 import org.jooq.Table
 import org.jooq.TableField
 import org.locationtech.jts.geom.Geometry
@@ -122,7 +121,7 @@ abstract class SearchTable {
    * The table that the query needs to join with in order to check whether a row in this table is
    * visible.
    */
-  open val inheritsVisibilityFrom: SearchTable?
+  val inheritsVisibilityFrom: SearchTable?
     get() = visibilitySublist?.searchTable
 
   /**
@@ -136,47 +135,11 @@ abstract class SearchTable {
       javaClass.simpleName.substringBeforeLast("Table").replaceFirstChar { it.lowercaseChar() }
 
   /**
-   * Adds a JOIN clause to a query to connect this table to another table to calculate whether the
-   * user is allowed to see a row in this table.
-   *
-   * This must join to the same table referenced by [inheritsVisibilityFrom]. It isn't called for
-   * tables that set [visibilitySublistName]; the join condition comes from the sublist instead.
-   *
-   * The default no-op implementation will work for any tables that have the required information
-   * already, e.g., if a table has a facility ID column, there's no need to join with another table
-   * to get a facility ID. The default implementation is only valid if [inheritsVisibilityFrom]
-   * returns null.
-   *
-   * @param table The instance of this table that the query is reading from. The table may be an
-   *   alias; implementations should look columns up using [column] rather than referring to the
-   *   jOOQ columns directly.
-   */
-  open fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    if (inheritsVisibilityFrom == null) {
-      return query
-    } else {
-      throw IllegalStateException(
-          "BUG! Must override joinForVisibility if visibility is inherited from another table."
-      )
-    }
-  }
-
-  /** Adds visibility JOIN clauses for the instance of this table that the query is reading from. */
-  fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> =
-      joinForVisibility(query, fromTable)
-
-  /**
    * Returns a condition that restricts this table's values to ones the user has the ability to see.
    * Visibility is usually a question of permissions, but may include other non-permission-related
    * criteria such as an "is deleted" flag.
    *
-   * This method can safely assume that [joinForVisibility] was called, so any tables added there
-   * are available for use in the condition.
-   *
-   * If this is null, [inheritsVisibilityFrom] must be non-null.
+   * If this is null, [visibilitySublistName] must be non-null.
    *
    * @param table The instance of this table that the query is reading from. The table may be an
    *   alias; implementations should look columns up using [column] rather than referring to the
