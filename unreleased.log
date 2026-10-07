@@ -1,3 +1,4 @@
+65a120fe SW-8718 Increase number of analyze samples for GBIF (#5123)
 1c5fdc5d SW-8972 Remove SearchTable.joinForVisibility (#5128)
 dd4c4de3 SW-8972 Use visibility sublists for planting site tables (#5127)
 c1f1c22b SW-8972 Use visibility sublists for observation tables (#5126)
