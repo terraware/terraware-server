@@ -61,8 +61,11 @@ class AliasedSearchTable(val baseTable: SearchTable, val alias: String) : Search
   override val name: String
     get() = baseTable.name
 
+  override val visibilitySublistName: String?
+    get() = baseTable.visibilitySublistName
+
   override val inheritsVisibilityFrom: SearchTable?
-    get() = baseTable.inheritsVisibilityFrom
+    get() = visibilitySublist?.searchTable ?: baseTable.inheritsVisibilityFrom
 
   override fun conditionForVisibility(table: Table<*>): Condition? =
       baseTable.conditionForVisibility(table)

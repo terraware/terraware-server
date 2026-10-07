@@ -1336,8 +1336,24 @@ class NestedQueryBuilder(
     } else {
       // The query doesn't already include the table we need to join with from this one in order to
       // evaluate visibility; join with it and then see if there are additional tables that also
+      // need to be joined.
+      val visibilitySublist = searchTable.visibilitySublist
+      val joinedQuery =
+          if (visibilitySublist != null) {
+            query
+                .join(inheritsVisibilityFrom.fromTable)
+                .on(
+                    visibilitySublist.getConditionForMultiset(
+                        searchTable.fromTable,
+                        inheritsVisibilityFrom.fromTable,
+                    )
+                )
+          } else {
+            searchTable.joinForVisibility(query)
+          }
+
       joinForVisibility(
-          searchTable.joinForVisibility(query),
+          joinedQuery,
           referencedTables + inheritsVisibilityFrom,
           inheritsVisibilityFrom,
       )
