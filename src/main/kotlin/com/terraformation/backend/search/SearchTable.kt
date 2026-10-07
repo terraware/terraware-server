@@ -100,14 +100,30 @@ abstract class SearchTable {
 
   /**
    * If the user's ability to see a particular row in this table can't be determined directly from
-   * the contents of the row itself, the other table that the query needs to left join with in order
-   * to check whether the row is visible.
+   * the contents of the row itself, the name of the single-value sublist that points to the table
+   * the query needs to join with in order to check whether the row is visible.
    *
    * Null if the current table has the required information to determine whether the user can see a
    * given row. In that case, [conditionForVisibility] must be non-null.
    */
-  open val inheritsVisibilityFrom: SearchTable?
+  open val visibilitySublistName: String?
     get() = null
+
+  /** The sublist named by [visibilitySublistName], if any. */
+  val visibilitySublist: SublistField?
+    get() = visibilitySublistName?.let { sublistName ->
+      getSublistOrNull(sublistName)
+          ?: throw IllegalStateException(
+              "BUG! Visibility sublist $sublistName not found in table $name"
+          )
+    }
+
+  /**
+   * The table that the query needs to join with in order to check whether a row in this table is
+   * visible.
+   */
+  open val inheritsVisibilityFrom: SearchTable?
+    get() = visibilitySublist?.searchTable
 
   /**
    * The table's name as it appears in the identifiers of the descriptions of field names in
@@ -123,7 +139,8 @@ abstract class SearchTable {
    * Adds a JOIN clause to a query to connect this table to another table to calculate whether the
    * user is allowed to see a row in this table.
    *
-   * This must join to the same table referenced by [inheritsVisibilityFrom].
+   * This must join to the same table referenced by [inheritsVisibilityFrom]. It isn't called for
+   * tables that set [visibilitySublistName]; the join condition comes from the sublist instead.
    *
    * The default no-op implementation will work for any tables that have the required information
    * already, e.g., if a table has a facility ID column, there's no need to join with another table
