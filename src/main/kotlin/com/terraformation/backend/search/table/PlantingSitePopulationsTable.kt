@@ -6,11 +6,8 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SU
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTable() {
@@ -39,17 +36,8 @@ class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTab
           integerField("totalPlants", PLANTING_SITE_POPULATIONS.TOTAL_PLANTS),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.plantingSites
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(PLANTING_SITE_SUMMARIES)
-        .on(table.column(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID).eq(PLANTING_SITE_SUMMARIES.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "plantingSite"
 
   override val defaultOrderFields: List<OrderField<*>>
     get() = listOf(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID, PLANTING_SITE_POPULATIONS.SPECIES_ID)

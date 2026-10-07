@@ -13,8 +13,6 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -84,13 +82,6 @@ class SubstrataTable(private val tables: SearchTables) : SearchTable() {
           },
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.strata
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query.join(STRATA).on(table.column(SUBSTRATA.STRATUM_ID).eq(STRATA.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "plantingSite"
 }

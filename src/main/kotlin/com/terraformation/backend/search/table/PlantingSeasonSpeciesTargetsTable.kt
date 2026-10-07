@@ -7,10 +7,7 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class PlantingSeasonSpeciesTargetsTable(private val tables: SearchTables) : SearchTable() {
@@ -44,17 +41,6 @@ class PlantingSeasonSpeciesTargetsTable(private val tables: SearchTables) : Sear
           integerField("quantity", PLANTING_SEASON_SPECIES_TARGETS.QUANTITY),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.plantingSeasons
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(PLANTING_SEASONS)
-        .on(
-            table.column(PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID).eq(PLANTING_SEASONS.ID)
-        )
-  }
+  override val visibilitySublistName: String
+    get() = "plantingSeason"
 }

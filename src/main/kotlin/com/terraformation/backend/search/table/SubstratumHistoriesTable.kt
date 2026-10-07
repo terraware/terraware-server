@@ -12,8 +12,6 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.column
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -74,17 +72,8 @@ class SubstratumHistoriesTable(private val tables: SearchTables) : SearchTable()
           stableIdField("stableId", SUBSTRATUM_HISTORIES.STABLE_ID),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.stratumHistories
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(STRATUM_HISTORIES)
-        .on(table.column(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID).eq(STRATUM_HISTORIES.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "stratumHistory"
 
   override val defaultOrderFields: List<OrderField<*>>
     get() = listOf(SUBSTRATUM_HISTORIES.ID)
