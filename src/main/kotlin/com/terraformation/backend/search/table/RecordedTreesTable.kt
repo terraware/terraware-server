@@ -9,10 +9,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.field.column
 import org.jooq.Record
-import org.jooq.SelectJoinStep
-import org.jooq.Table
 import org.jooq.TableField
 
 class RecordedTreesTable(private val tables: SearchTables) : SearchTable() {
@@ -62,15 +59,6 @@ class RecordedTreesTable(private val tables: SearchTables) : SearchTable() {
           integerField("trunkNumber", RECORDED_TREES.TRUNK_NUMBER),
       )
 
-  override val inheritsVisibilityFrom: SearchTable
-    get() = tables.observations
-
-  override fun <T : Record> joinForVisibility(
-      query: SelectJoinStep<T>,
-      table: Table<*>,
-  ): SelectJoinStep<T> {
-    return query
-        .join(OBSERVATIONS)
-        .on(table.column(RECORDED_TREES.OBSERVATION_ID).eq(OBSERVATIONS.ID))
-  }
+  override val visibilitySublistName: String
+    get() = "observation"
 }
