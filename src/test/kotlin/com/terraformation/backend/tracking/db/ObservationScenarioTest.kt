@@ -70,13 +70,12 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         dslContext,
         EntityLocker(dslContext),
         eventPublisher,
-        jobScheduler,
+        ObservationResultsInvalidator(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
         ParentStore(dslContext),
-        systemUser,
     )
   }
   protected val resultsStoreV2 by lazy { ObservationResultsStoreV2(dslContext) }

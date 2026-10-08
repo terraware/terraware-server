@@ -7,7 +7,9 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseBackedTest
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -23,6 +25,9 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.gis.CountryDetector
+import com.terraformation.backend.tracking.ObservationResultsRecalculator
+import com.terraformation.backend.tracking.db.ObservationRecalculationStore
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -32,10 +37,9 @@ import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.util.GeometrySimplifier
-import io.mockk.mockk
 import java.time.temporal.ChronoUnit
-import org.jobrunr.scheduling.JobScheduler
 import org.jooq.Configuration
+import org.springframework.transaction.TransactionDefinition
 
 /**
  * Top-level element of the observation scenario testing DSL. This is intended to make it easy to
@@ -66,6 +70,8 @@ class ObservationScenario(
     val clock: TestClock,
     val eventPublisher: TestEventPublisher,
     val observationResultsStoreV2: ObservationResultsStoreV2,
+    val observationResultsInvalidator: ObservationResultsInvalidator,
+    val observationResultsRecalculator: ObservationResultsRecalculator,
     val observationStore: ObservationStore,
     val plantingSiteStore: PlantingSiteStore,
     val t0Store: T0Store,
@@ -84,21 +90,20 @@ class ObservationScenario(
             ObservationResultsStoreV2(test.dslContext),
         parentStore: ParentStore = ParentStore(test.dslContext),
         configuration: Configuration = test.dslContext.configuration(),
-        jobScheduler: JobScheduler = mockk(),
-        systemUser: SystemUser = mockk(relaxed = true),
+        observationResultsInvalidator: ObservationResultsInvalidator =
+            ObservationResultsInvalidator(test.dslContext),
         observationStore: ObservationStore =
             ObservationStore(
                 clock,
                 test.dslContext,
                 entityLocker,
                 eventPublisher,
-                jobScheduler,
+                ObservationResultsInvalidator(test.dslContext),
                 ObservationsDao(configuration),
                 ObservationPlotConditionsDao(configuration),
                 ObservationPlotsDao(configuration),
                 ObservationRequestedSubstrataDao(configuration),
                 parentStore,
-                systemUser,
             ),
         plantingSiteStore: PlantingSiteStore =
             PlantingSiteStore(
@@ -117,14 +122,27 @@ class ObservationScenario(
                 SubstrataDao(configuration),
             ),
         t0Store: T0Store = T0Store(clock, test.dslContext, eventPublisher),
+        observationResultsRecalculator: ObservationResultsRecalculator =
+            ObservationResultsRecalculator(
+                    LockService(test.dslContext),
+                    observationResultsInvalidator,
+                    ObservationRecalculationStore(test.dslContext),
+                    SystemUser(UsersDao(configuration)),
+                    test.transactionManager,
+                )
+                .apply {
+                  siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED
+                },
     ): ObservationScenario {
       if (registerListeners) {
         eventPublisher.register<MonitoringSpeciesTotalsEditedEvent> { t0Store.on(it) }
         eventPublisher.register<T0PlotDataAssignedEvent> {
-          observationStore.recalculateSurvivalRates(it.monitoringPlotId)
+          observationResultsInvalidator.on(it)
+          observationResultsRecalculator.recalculateAllSites()
         }
         eventPublisher.register<T0StratumDataAssignedEvent> {
-          observationStore.recalculateSurvivalRates(it.stratumId)
+          observationResultsInvalidator.on(it)
+          observationResultsRecalculator.recalculateAllSites()
         }
       }
 
@@ -132,6 +150,8 @@ class ObservationScenario(
           clock,
           eventPublisher,
           observationResultsStoreV2,
+          observationResultsInvalidator,
+          observationResultsRecalculator,
           observationStore,
           plantingSiteStore,
           t0Store,

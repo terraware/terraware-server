@@ -21,8 +21,10 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
+import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.DeliveryStore
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -79,6 +81,8 @@ class AdminPlantingSitesController(
     private val deliveryStore: DeliveryStore,
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
+    private val observationResultsInvalidator: ObservationResultsInvalidator,
+    private val observationResultsRecalculator: ObservationResultsRecalculator,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val organizationsDao: OrganizationsDao,
@@ -620,24 +624,32 @@ class AdminPlantingSitesController(
         observationId != null -> {
           val siteId =
               plantingSiteId ?: observationStore.fetchObservationById(observationId).plantingSiteId
-          observationStore.recalculateSurvivalRates(observationId, siteId)
-          redirectAttributes.successMessage =
-              "Recalculated survival rates for observation $observationId."
+          observationResultsInvalidator.invalidateObservation(observationId)
+          reportSiteRecalculation(
+              observationResultsRecalculator.recalculateSite(siteId),
+              "observation $observationId",
+              redirectAttributes,
+          )
         }
         plantingSiteId != null -> {
-          observationStore.recalculateSurvivalRates(plantingSiteId)
-          redirectAttributes.successMessage =
-              "Recalculated survival rates for planting site $plantingSiteId."
+          observationResultsInvalidator.invalidateSite(plantingSiteId)
+          reportSiteRecalculation(
+              observationResultsRecalculator.recalculateSite(plantingSiteId),
+              "planting site $plantingSiteId",
+              redirectAttributes,
+          )
         }
         else -> {
-          val failures = observationStore.recalculateAllSurvivalRates()
-          if (failures.isEmpty()) {
+          observationResultsInvalidator.invalidateAllSites()
+          val notRecalculated = observationResultsRecalculator.recalculateAllSites()
+          if (notRecalculated.isEmpty()) {
             redirectAttributes.successMessage =
                 "Recalculated survival rates for all planting sites."
           } else {
             redirectAttributes.failureMessage =
-                "Failed to recalculate survival rates for some planting sites."
-            redirectAttributes.failureDetails = failures.map { (id, message) -> "$id: $message" }
+                "Could not recalculate survival rates for some planting sites. They will be " +
+                    "retried by the scheduled recalculation job."
+            redirectAttributes.failureDetails = notRecalculated.map { "$it" }
           }
         }
       }
@@ -647,6 +659,20 @@ class AdminPlantingSitesController(
     }
 
     return redirectToAdminHome()
+  }
+
+  private fun reportSiteRecalculation(
+      recalculated: Boolean,
+      target: String,
+      redirectAttributes: RedirectAttributes,
+  ) {
+    if (recalculated) {
+      redirectAttributes.successMessage = "Recalculated survival rates for $target."
+    } else {
+      redirectAttributes.failureMessage =
+          "Could not recalculate survival rates for $target now; another recalculation may be " +
+              "running or it failed. It will be retried by the scheduled recalculation job."
+    }
   }
 
   @PostMapping("/backfillObservationResults")

@@ -45,6 +45,7 @@ import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedExceptio
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
@@ -107,6 +108,7 @@ class ObservationService(
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val muxService: MuxService,
     private val observationMediaFilesDao: ObservationMediaFilesDao,
+    private val observationResultsInvalidator: ObservationResultsInvalidator,
     private val observationStore: ObservationStore,
     private val plantingSiteNotificationStore: PlantingSiteNotificationStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -866,9 +868,10 @@ class ObservationService(
 
       deleteMediaWhere(OBSERVATION_MEDIA_FILES.OBSERVATION_ID.eq(observationId))
 
-      observationStore.deleteObservation(observationId)
-
-      observationStore.recalculateSurvivalRates(observation.plantingSiteId)
+      dslContext.transaction { _ ->
+        observationStore.deleteObservation(observationId)
+        observationResultsInvalidator.invalidateSite(observation.plantingSiteId)
+      }
     }
   }
 
@@ -920,7 +923,7 @@ class ObservationService(
       dslContext.transaction { _ ->
         observationStore.mergeObservationData(sourceObservationId, targetObservationId)
         observationStore.recalculateObservationTotals(targetObservationId)
-        observationStore.recalculateSurvivalRates(source.plantingSiteId)
+        observationResultsInvalidator.invalidateSite(source.plantingSiteId)
       }
     }
   }

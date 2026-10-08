@@ -643,6 +643,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestExecutionListeners
 import org.springframework.test.context.support.TestPropertySourceUtils
 import org.springframework.test.context.transaction.InheritedTransactionRemover
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
@@ -689,6 +690,10 @@ abstract class DatabaseBackedTest {
   @Autowired
   @Suppress("SpringJavaInjectionPointsAutowiringInspection") // Spurious IntelliJ warning
   lateinit var dslContext: DSLContext
+
+  @Autowired
+  @Suppress("SpringJavaInjectionPointsAutowiringInspection") // Spurious IntelliJ warning
+  lateinit var transactionManager: PlatformTransactionManager
 
   /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
   val inserted = InsertedDatabaseIds()

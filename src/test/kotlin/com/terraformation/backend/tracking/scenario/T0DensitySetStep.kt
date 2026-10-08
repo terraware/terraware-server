@@ -24,7 +24,8 @@ class T0DensitySetStep(val scenario: ObservationScenario) :
         initChild(Species(speciesId, density), init)
 
     override fun finish() {
-      scenario.observationStore.recalculateSurvivalRates(stratumId)
+      scenario.observationResultsInvalidator.invalidateStratum(stratumId)
+      scenario.observationResultsRecalculator.recalculateAllSites()
     }
 
     inner class Species(val number: Int, val density: Int?) : ScenarioNode {
@@ -63,7 +64,8 @@ class T0DensitySetStep(val scenario: ObservationScenario) :
         initChild(Species(speciesId, density), init)
 
     override fun finish() {
-      scenario.observationStore.recalculateSurvivalRates(monitoringPlotId)
+      scenario.observationResultsInvalidator.invalidatePlot(monitoringPlotId)
+      scenario.observationResultsRecalculator.recalculateAllSites()
     }
 
     inner class Species(val number: Int, val density: Int?) : ScenarioNode {
