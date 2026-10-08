@@ -430,9 +430,7 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
                 DSL.coalesce(
                     SURVIVAL_RATE,
                     DSL.`when`(
-                        DSL.coalesce(permDensityCol, BigDecimal.ZERO)
-                            .plus(DSL.coalesce(tempDensityCol, BigDecimal.ZERO))
-                            .gt(BigDecimal.ZERO),
+                        DSL.coalesce(permDensityCol, tempDensityCol).isNotNull,
                         BigDecimal.ZERO,
                     ),
                 ),
@@ -573,9 +571,7 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
                 DSL.coalesce(
                     SURVIVAL_RATE,
                     DSL.`when`(
-                        DSL.coalesce(permDensityCol, BigDecimal.ZERO)
-                            .plus(DSL.coalesce(tempDensityCol, BigDecimal.ZERO))
-                            .gt(BigDecimal.ZERO),
+                        DSL.coalesce(permDensityCol, tempDensityCol).isNotNull,
                         BigDecimal.ZERO,
                     ),
                 ),
@@ -736,9 +732,7 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                 DSL.coalesce(
                     SURVIVAL_RATE,
                     DSL.`when`(
-                        DSL.coalesce(permDensityCol, BigDecimal.ZERO)
-                            .plus(DSL.coalesce(tempDensityCol, BigDecimal.ZERO))
-                            .gt(BigDecimal.ZERO),
+                        DSL.coalesce(permDensityCol, tempDensityCol).isNotNull,
                         BigDecimal.ZERO,
                     ),
                 ),

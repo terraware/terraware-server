@@ -914,6 +914,78 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
 
       assertThrows<ObservationNotFoundException> { resultsStoreV2.fetchOneById(observationId) }
     }
+
+    @Test
+    fun `counts plots with a t0 density of zero toward survival rates`() {
+      assertSurvivalRatesWithT0Densities(
+          plot1T0Density = 0,
+          plot2T0Density = 10,
+          expectedPlotRates = listOf(0, 100),
+          expectedRate = 200,
+      )
+    }
+
+    @Test
+    fun `survival rate is zero if every t0 density is zero`() {
+      assertSurvivalRatesWithT0Densities(
+          plot1T0Density = 0,
+          plot2T0Density = 0,
+          expectedPlotRates = listOf(0, 0),
+          expectedRate = 0,
+      )
+    }
+
+    private fun assertSurvivalRatesWithT0Densities(
+        plot1T0Density: Int,
+        plot2T0Density: Int,
+        expectedPlotRates: List<Int>,
+        expectedRate: Int,
+    ) {
+      every { user.canReadPlantingSite(any()) } returns true
+
+      scenario {
+        siteCreated {
+          stratum(1) {
+            substratum(1) {
+              plot(1)
+              plot(2)
+            }
+          }
+        }
+
+        t0DensitySet {
+          plot(1) { species(0, density = plot1T0Density) }
+          plot(2) { species(0, density = plot2T0Density) }
+        }
+
+        observation(1) {
+          plot(1) { species(0, live = 10) }
+          plot(2) { species(0, live = 10) }
+        }
+
+        val results = resultsStoreV2.fetchOneById(observationIds[1]!!)
+        val stratum = results.strata.single()
+        val substratum = stratum.substrata.single()
+
+        assertEquals(
+            mapOf(
+                "Plots" to expectedPlotRates,
+                "Substratum" to expectedRate,
+                "Stratum" to expectedRate,
+                "Site" to expectedRate,
+            ),
+            mapOf(
+                "Plots" to
+                    substratum.monitoringPlots
+                        .sortedBy { it.monitoringPlotNumber }
+                        .map { it.survivalRate },
+                "Substratum" to substratum.survivalRate,
+                "Stratum" to stratum.survivalRate,
+                "Site" to results.survivalRate,
+            ),
+        )
+      }
+    }
   }
 
   @Nested
