@@ -137,6 +137,8 @@ data class ObservationMonitoringPlotResultsModel(
      * because the intent is to track how many of the plants that were introduced to the site are
      * still alive.
      */
+    /** True if these results are stale and waiting to be recalculated. */
+    val pending: Boolean,
     override val plantingDensity: Int?,
     val plants: List<RecordedPlantModel>?,
     val sizeMeters: Int,
@@ -204,6 +206,8 @@ data class ObservationSubstratumResultsModel(
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
     val name: String,
     override val plantingCompleted: Boolean,
+    /** True if these results are stale and waiting to be recalculated. */
+    val pending: Boolean,
     override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     override val species: List<ObservationSpeciesResultsModel>,
@@ -228,6 +232,8 @@ data class ObservationStratumResultsModel(
      */
     val observedDensity: Int? = null,
     override val plantingCompleted: Boolean,
+    /** True if these results are stale and waiting to be recalculated. */
+    val pending: Boolean,
     override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     override val species: List<ObservationSpeciesResultsModel>,
@@ -256,6 +262,8 @@ data class ObservationResultsModel(
      */
     val observedDensity: Int? = null,
     override val plantingCompleted: Boolean,
+    /** True if these results are stale and waiting to be recalculated. */
+    val pending: Boolean,
     override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     val plantingSiteHistoryId: PlantingSiteHistoryId?,

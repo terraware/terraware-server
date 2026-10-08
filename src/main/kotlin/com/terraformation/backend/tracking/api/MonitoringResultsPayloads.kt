@@ -159,6 +159,12 @@ data class ObservationMonitoringPlotResultsPayload(
     val overlappedByPlotIds: Set<MonitoringPlotId>,
     @Schema(description = "IDs of any older monitoring plots this one overlaps with.")
     val overlapsWithPlotIds: Set<MonitoringPlotId>,
+    @Schema(
+        description =
+            "True if the numbers in these results are stale and will be updated shortly. The " +
+                "values shown are the most recently calculated ones."
+    )
+    val pending: Boolean,
     @Schema(description = "Number of live plants per hectare.") //
     val plantingDensity: Int?,
     val plants: List<RecordedPlantPayload>?,
@@ -235,6 +241,7 @@ data class ObservationMonitoringPlotResultsPayload(
       notes = model.notes,
       overlappedByPlotIds = model.overlappedByPlotIds,
       overlapsWithPlotIds = model.overlapsWithPlotIds,
+      pending = model.pending,
       plantingDensity = model.plantingDensity,
       plants = model.plants?.map { RecordedPlantPayload(it) },
       sizeMeters = model.sizeMeters,
@@ -280,6 +287,12 @@ data class ObservationSubstratumResultsPayload(
     val name: String,
     @Schema(
         description =
+            "True if the numbers in these results are stale and will be updated shortly. The " +
+                "values shown are the most recently calculated ones."
+    )
+    val pending: Boolean,
+    @Schema(
+        description =
             "Estimated planting density for the substratum based on the observed planting densities " +
                 "of monitoring plots."
     )
@@ -315,6 +328,7 @@ data class ObservationSubstratumResultsPayload(
       estimatedPlants = model.estimatedPlants,
       monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
       name = model.name,
+      pending = model.pending,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       substratumId = model.substratumId,
@@ -348,6 +362,12 @@ data class ObservationStratumResultsPayload(
                 "In contrast to plantingDensity, which uses each substratum's most recent observation."
     )
     val observedDensity: Int?,
+    @Schema(
+        description =
+            "True if the numbers in these results are stale and will be updated shortly. The " +
+                "values shown are the most recently calculated ones."
+    )
+    val pending: Boolean,
     @Schema(
         description =
             "Estimated planting density for the stratum based on the observed planting densities " +
@@ -390,6 +410,7 @@ data class ObservationStratumResultsPayload(
       estimatedPlants = model.estimatedPlants,
       name = model.name,
       observedDensity = model.observedDensity,
+      pending = model.pending,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       stratumId = model.stratumId,
@@ -433,6 +454,12 @@ data class ObservationResultsPayload(
     val observedDensity: Int?,
     @Schema(
         description =
+            "True if the numbers in these results are stale and will be updated shortly. The " +
+                "values shown are the most recently calculated ones."
+    )
+    val pending: Boolean,
+    @Schema(
+        description =
             "Estimated planting density for the site, based on the observed planting densities " +
                 "of monitoring plots."
     )
@@ -461,6 +488,7 @@ data class ObservationResultsPayload(
       isAdHoc = model.isAdHoc,
       observationId = model.observationId,
       observedDensity = model.observedDensity,
+      pending = model.pending,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSiteHistoryId = model.plantingSiteHistoryId,

@@ -737,6 +737,54 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
   }
 
   @Nested
+  inner class Pending {
+    @Test
+    fun `results at every level are pending until they are recalculated`() {
+      insertStratum()
+      insertSubstratum()
+      val plotId = insertMonitoringPlot(permanentIndex = 1)
+      val observationId = insertObservation()
+      insertObservationRequestedSubstratum()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      observationStore.completePlot(
+          observationId,
+          plotId,
+          emptySet(),
+          null,
+          Instant.EPOCH,
+          emptyList(),
+      )
+
+      fun pendingFlags(): Map<String, Boolean> {
+        val results = resultsStoreV2.fetchOneById(observationId)
+        val stratum = results.strata.single()
+        val substratum = stratum.substrata.single()
+        return mapOf(
+            "site" to results.pending,
+            "stratum" to stratum.pending,
+            "substratum" to substratum.pending,
+            "plot" to substratum.monitoringPlots.single().pending,
+        )
+      }
+
+      assertEquals(
+          mapOf("site" to true, "stratum" to true, "substratum" to true, "plot" to true),
+          pendingFlags(),
+          "Before recalculation",
+      )
+
+      observationResultsRecalculator.recalculateAllSites()
+
+      assertEquals(
+          mapOf("site" to false, "stratum" to false, "substratum" to false, "plot" to false),
+          pendingFlags(),
+          "After recalculation",
+      )
+    }
+  }
+
+  @Nested
   inner class FetchOneById {
     @Test
     fun `returns observation results by ID`() {
@@ -1284,6 +1332,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                     overlappedByPlotIds = emptySet(),
                     overlapsWithPlotIds = emptySet(),
                     media = emptyList(),
+                    pending = false,
                     plantingDensity = null,
                     plants = null,
                     sizeMeters = 30,
@@ -1307,6 +1356,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
             observationType = ObservationType.Monitoring,
             observedDensity = null,
             plantingCompleted = false,
+            pending = false,
             plantingDensity = null,
             plantingDensityStdDev = null,
             plantingSiteHistoryId = inserted.plantingSiteHistoryId,

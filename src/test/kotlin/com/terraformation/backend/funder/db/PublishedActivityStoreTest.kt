@@ -23,9 +23,11 @@ import com.terraformation.backend.db.funder.tables.records.PublishedActivityMedi
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityObservationMediaFilesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityObservationsRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
 import com.terraformation.backend.funder.model.PublishedActivityModel
@@ -378,6 +380,27 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               typeId = ObservationMediaType.Plot,
           )
       )
+    }
+
+    @Test
+    fun `throws exception if observation results are pending recalculation`() {
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+      activitiesDao.update(
+          activitiesDao.fetchOneById(activityId)!!.copy(activityTypeId = ActivityType.Monitoring)
+      )
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      insertObservation()
+      insertObservationPlot(completedBy = user.userId)
+      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+      insertActivityObservation()
+
+      assertThrows<ObservationResultsPendingException> { store.publish(activityId) }
+
+      assertTableEmpty(PUBLISHED_ACTIVITIES)
     }
 
     @Test

@@ -46,6 +46,7 @@ class PublishedActivityStore(
     ensureVerified(activityId)
 
     dslContext.transaction { _ ->
+      ensureObservationResultsReady(activityId)
       publishActivityDetails(activityId)
       publishMediaFileDeletions(activityId)
       publishCurrentMediaFiles(activityId)
@@ -381,6 +382,29 @@ class PublishedActivityStore(
       deletedFileIds.forEach { fileId ->
         eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
       }
+    }
+  }
+
+  /**
+   * Throws if any of the activity's observations have results waiting to be recalculated, since
+   * those results may be incomplete. Locks the results rows so their flags can't change before the
+   * activity is published.
+   */
+  private fun ensureObservationResultsReady(activityId: ActivityId) {
+    val anyPending =
+        dslContext
+            .select(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION)
+            .from(ACTIVITY_OBSERVATIONS)
+            .join(OBSERVATION_SITE_RESULTS)
+            .on(ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID))
+            .where(ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId))
+            .forShare()
+            .of(OBSERVATION_SITE_RESULTS)
+            .fetch(OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION)
+            .any { it == true }
+
+    if (anyPending) {
+      throw ObservationResultsPendingException(activityId)
     }
   }
 
