@@ -165,7 +165,7 @@ numbers, and it is handy when testing.
 | t0 data is assigned for a stratum                                   | `on(T0StratumDataAssignedEvent)` calls `invalidateStratum`.                                                                                                                                                    |
 | The temp-plot flag changes                                          | `on(SurvivalRateIncludesTempPlotsChangedEvent)` calls `invalidateSite`. The event is published inside the transaction that changes the setting.                                                                |
 | An observation is deleted or merged into another                    | `ObservationService.deleteObservation` and `mergeObservations` call `invalidateSite`.                                                                                                                          |
-| An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then recalculates them immediately rather than waiting for the job. Use this to correct stored data after deploying a calculation change. |
+| An admin requests it                                                | `POST /admin/recalculateSurvivalRates` flags one observation, one site, or every site, then recalculates them immediately, canceling any recalculation of the same site that is already running. Use this to correct stored data after deploying a calculation change. |
 
 Editing a site's map doesn't flag anything, because each observation's results use the site's
 geometry at the time of that observation. Active observations in edited strata are abandoned,
@@ -178,7 +178,10 @@ the flags. That recalculates only the flagged rows, one level at a time (plots, 
 then the site), with one set-based statement per step, so each level reads only levels that are
 already recalculated. The snapshot means a recalculation never sees a change that lands while it
 runs; such a change conflicts with the recalculation's writes, the recalculation rolls back, and
-the flags stay set for the next run.
+the flags stay set for the next run. The recalculation also sets a short `lock_timeout`, so it
+gives up instead of waiting whenever a user's edit holds a row it needs: user edits never deadlock
+with or wait behind a recalculation's lock requests, though an edit can still wait for a
+recalculation to commit rows it already wrote.
 
 ## Code Map
 

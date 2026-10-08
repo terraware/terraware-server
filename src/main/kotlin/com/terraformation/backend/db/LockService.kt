@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
 import jakarta.inject.Named
+import java.time.Duration
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
@@ -63,20 +64,80 @@ class LockService(private val dslContext: DSLContext) {
    * @return `true` if the lock was successfully acquired. `false` if the lock was already held.
    */
   fun tryExclusiveTransactional(lockType: LockType, entityId: Long): Boolean {
-    val foldedId = (entityId xor (entityId ushr 32)).toInt()
-
     return dslContext
         .select(
             DSL.function(
                 "pg_try_advisory_xact_lock",
                 Boolean::class.java,
                 DSL.value(lockType.key.toInt()),
-                DSL.value(foldedId),
+                DSL.value(foldEntityId(entityId)),
             )
         )
         .fetchOne()
         ?.value1() == true
   }
+
+  /**
+   * Asks the database sessions holding a lock acquired with [tryExclusiveTransactional] to cancel
+   * whatever statement they're running. A transaction whose statement is canceled fails and
+   * releases the lock when it's rolled back. Has no effect if a holder is between statements when
+   * this is called, so callers that need the lock should keep trying.
+   *
+   * @param unlessHolding Sessions that also hold this lock on the same entity are left alone.
+   * @return `true` if any session was asked to cancel.
+   */
+  fun cancelExclusiveTransactionalHolders(
+      lockType: LockType,
+      entityId: Long,
+      unlessHolding: LockType? = null,
+  ): Boolean {
+    val objectId = foldEntityId(entityId).toLong() and 0xffffffffL
+
+    return dslContext
+        .resultQuery(
+            """
+            SELECT pg_cancel_backend(pid)
+            FROM pg_locks
+            WHERE locktype = 'advisory'
+              AND classid::bigint = ?
+              AND objid::bigint = ?
+              AND objsubid = 2
+              AND granted
+              AND pid <> pg_backend_pid()
+              AND pid NOT IN (
+                  SELECT pid
+                  FROM pg_locks
+                  WHERE locktype = 'advisory'
+                    AND classid::bigint = ?
+                    AND objid::bigint = ?
+                    AND objsubid = 2
+                    AND granted
+              )
+            """
+                .trimIndent(),
+            lockType.key.toInt().toLong(),
+            objectId,
+            (unlessHolding?.key ?: -1L).toInt().toLong(),
+            objectId,
+        )
+        .fetch()
+        .isNotEmpty
+  }
+
+  /**
+   * Makes the current transaction fail if it has to wait longer than [timeout] for any row or table
+   * lock. Applies until the end of the current transaction.
+   */
+  fun setTransactionLockTimeout(timeout: Duration) {
+    dslContext.execute("SET LOCAL lock_timeout = '${timeout.toMillis()}ms'")
+  }
+
+  /** Undoes [setTransactionLockTimeout] for the rest of the current transaction. */
+  fun resetTransactionLockTimeout() {
+    dslContext.execute("SET LOCAL lock_timeout = DEFAULT")
+  }
+
+  private fun foldEntityId(entityId: Long): Int = (entityId xor (entityId ushr 32)).toInt()
 
   /**
    * Attempts to acquire an exclusive lock on the given key. If acquired, the lock is held until it
