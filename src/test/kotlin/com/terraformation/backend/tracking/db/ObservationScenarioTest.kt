@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
+import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
@@ -27,6 +28,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.toBigDecimal
+import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSiteStatsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
@@ -46,6 +48,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
 import org.locationtech.jts.geom.MultiPolygon
+import org.springframework.transaction.TransactionDefinition
 
 abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -77,6 +80,18 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         observationRequestedSubstrataDao,
         ParentStore(dslContext),
     )
+  }
+  protected val observationResultsRecalculator by lazy {
+    ObservationResultsRecalculator(
+            LockService(dslContext),
+            ObservationResultsInvalidator(dslContext),
+            ObservationRecalculationStore(dslContext),
+            systemUser,
+            transactionManager,
+        )
+        .apply {
+          siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED
+        }
   }
   protected val resultsStoreV2 by lazy { ObservationResultsStoreV2(dslContext) }
 

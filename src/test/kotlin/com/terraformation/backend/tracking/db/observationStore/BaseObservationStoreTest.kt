@@ -7,9 +7,12 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
+import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.ObservationResultsRecalculator
+import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
@@ -17,6 +20,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.BeforeEach
+import org.springframework.transaction.TransactionDefinition
 
 abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -37,6 +41,18 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
         observationRequestedSubstrataDao,
         ParentStore(dslContext),
     )
+  }
+  protected val recalculator: ObservationResultsRecalculator by lazy {
+    ObservationResultsRecalculator(
+            LockService(dslContext),
+            ObservationResultsInvalidator(dslContext),
+            ObservationRecalculationStore(dslContext),
+            systemUser,
+            transactionManager,
+        )
+        .apply {
+          siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED
+        }
   }
   protected val helper: ObservationTestHelper by lazy {
     ObservationTestHelper(this, store, user.userId)

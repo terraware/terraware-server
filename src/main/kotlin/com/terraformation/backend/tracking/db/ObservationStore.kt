@@ -1047,8 +1047,8 @@ class ObservationStore(
     }
 
     // We need to adjust the plot-level summary statistics for all the sightings of the Other
-    // species in this observation. Updating the plot-level statistics will automatically also
-    // update the site- and stratum-level ones.
+    // species in this observation. The aggregate statistics are rebuilt from the plot-level ones
+    // by the results recalculation job.
     val plotTotals: List<ObservedPlotSpeciesTotalsRecord> =
         with(OBSERVED_PLOT_SPECIES_TOTALS) {
           dslContext
@@ -1076,8 +1076,7 @@ class ObservationStore(
               .fetchOneInto(PlantingSitesRow::class.java)
               ?: throw PlantingSiteNotFoundException(plantingSiteId)
 
-      // Add the plot-level live/dead/existing counts to the target species. This propagates the
-      // changes up to the stratum and site totals.
+      // Add the plot-level live/dead/existing counts to the target species.
       updateSpeciesTotals(
           observationId,
           plantingSite,
@@ -1098,6 +1097,7 @@ class ObservationStore(
                       RecordedPlantStatus.Existing to (plotTotal.totalExisting ?: 0),
                   ),
           ),
+          includeAggregates = false,
       )
     }
 
@@ -1113,32 +1113,10 @@ class ObservationStore(
           .execute()
     }
 
-    with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
-      dslContext
-          .deleteFrom(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
-          .where(OBSERVATION_ID.eq(observationId))
-          .and(SPECIES_NAME.eq(otherSpeciesName))
-          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
-          .execute()
-    }
-
-    with(OBSERVED_STRATUM_SPECIES_TOTALS) {
-      dslContext
-          .deleteFrom(OBSERVED_STRATUM_SPECIES_TOTALS)
-          .where(OBSERVATION_ID.eq(observationId))
-          .and(SPECIES_NAME.eq(otherSpeciesName))
-          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
-          .execute()
-    }
-
-    with(OBSERVED_SITE_SPECIES_TOTALS) {
-      dslContext
-          .deleteFrom(OBSERVED_SITE_SPECIES_TOTALS)
-          .where(OBSERVATION_ID.eq(observationId))
-          .and(SPECIES_NAME.eq(otherSpeciesName))
-          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
-          .execute()
-    }
+    observationResultsInvalidator.invalidateObservationPlots(
+        observationId,
+        plotTotals.map { it.monitoringPlotId!! },
+    )
   }
 
   /**
@@ -1358,68 +1336,13 @@ class ObservationStore(
             observation.isAdHoc,
             isPermanent,
             plantCountAdjustments,
+            includeAggregates = false,
         )
-        // Propagate the new totals from species to aggregate totals
-        updateObservationResults(observationId, observation.plantingSiteId)
-        recalculateSurvivalRateResults(observationId, monitoringPlotId)
 
-        // Aggregation from substratum to stratum (and then to site) works by adding up the most
-        // recent data for each substratum at the time of the observation in question.
-        //
-        // Edits to an observation can affect stratum and site data for later observations, but only
-        // if the edited observation hasn't been superseded by a newer observation of the same
-        // substratum. A later observation's site results can roll forward a stratum row covering
-        // any of that stratum's substrata, including ones since removed from the site, so the set
-        // of affected observations is every observation that depends on this one for any
-        // substratum, plus everything that in turn depends on those. Recalculating one of them
-        // rewrites the stratum rows its own dependents read, so the set has to be closed
-        // transitively and then walked in completion order.
-
-        val laterObservationsDependentOnThisObservation = mutableSetOf<ObservationId>()
-        var dependencySources = setOf(observationId)
-
-        while (dependencySources.isNotEmpty()) {
-          dependencySources =
-              dslContext
-                  .select(OBSERVATIONS.ID.asNonNullable())
-                  .from(OBSERVATIONS)
-                  .where(OBSERVATIONS.PLANTING_SITE_ID.eq(observation.plantingSiteId))
-                  .and(OBSERVATIONS.COMPLETED_TIME.gt(observation.completedTime))
-                  .and(
-                      OBSERVATIONS.ID.`in`(
-                          DSL.select(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
-                              .from(OBSERVATION_DEPENDENT_SUBSTRATA)
-                              .where(
-                                  OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.`in`(
-                                      dependencySources
-                                  )
-                              )
-                      )
-                  )
-                  .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
-                  .fetchSet(OBSERVATIONS.ID.asNonNullable())
-                  .minus(laterObservationsDependentOnThisObservation)
-
-          laterObservationsDependentOnThisObservation += dependencySources
-        }
-
-        val orderedDependentObservationIds =
-            if (laterObservationsDependentOnThisObservation.isEmpty()) {
-              emptyList()
-            } else {
-              dslContext
-                  .select(OBSERVATIONS.ID.asNonNullable())
-                  .from(OBSERVATIONS)
-                  .where(OBSERVATIONS.ID.`in`(laterObservationsDependentOnThisObservation))
-                  .orderBy(OBSERVATIONS.COMPLETED_TIME, OBSERVATIONS.ID)
-                  .fetch(OBSERVATIONS.ID.asNonNullable())
-            }
-
-        orderedDependentObservationIds.forEach { laterObservationId ->
-          recalculateSurvivalRates(laterObservationId, observation.plantingSiteId)
-          updateObservationResults(laterObservationId, observation.plantingSiteId)
-          recalculateSurvivalRateResults(laterObservationId, observation.plantingSiteId)
-        }
+        observationResultsInvalidator.invalidateObservationPlots(
+            observationId,
+            listOf(monitoringPlotId),
+        )
 
         eventPublisher.publishEvent(
             MonitoringSpeciesTotalsEditedEvent(
@@ -2802,6 +2725,7 @@ class ObservationStore(
       isAdHoc: Boolean,
       isPermanent: Boolean,
       plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
+      includeAggregates: Boolean = true,
   ) {
     if (plantCountsBySpecies.isNotEmpty()) {
       if (monitoringPlotId != null && monitoringPlotHistoryId != null) {
@@ -2814,7 +2738,7 @@ class ObservationStore(
         )
       }
 
-      if (!isAdHoc) {
+      if (includeAggregates && !isAdHoc) {
         if (substratumHistoryId != null) {
           updateSpeciesTotalsTable(
               observationId,
