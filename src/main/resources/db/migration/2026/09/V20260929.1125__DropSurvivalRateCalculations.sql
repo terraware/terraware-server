@@ -1,0 +1,1 @@
+DROP TABLE tracking.planting_site_survival_rate_calculations;

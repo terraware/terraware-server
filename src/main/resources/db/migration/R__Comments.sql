@@ -595,8 +595,6 @@ COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants o
 
 COMMENT ON TABLE tracking.planting_site_species_targets IS 'Which species are intended to be planted at each planting site.';
 
-COMMENT ON TABLE tracking.planting_site_survival_rate_calculations IS 'In progress survival rate calculations for planting sites.';
-
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one stratum.';
 COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. strata will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_sites.exclusion IS 'Optional area to exclude from a site. No monitoring plots will be located in this area.';
