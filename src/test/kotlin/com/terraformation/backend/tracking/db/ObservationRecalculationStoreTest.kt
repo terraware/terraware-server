@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import io.mockk.every
 import java.math.BigDecimal
 import org.jooq.Record
@@ -15,13 +16,14 @@ import org.jooq.Table
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 /**
  * Checks that recalculating flagged results reproduces the stored results. Each test scrambles the
- * values one level is responsible for, flags every result of the site, recalculates, and expects
+ * values every level is responsible for, flags every result of the site, recalculates, and expects
  * every derived table to match what it was before scrambling.
  */
 class ObservationRecalculationStoreTest : ObservationScenarioTest() {
@@ -37,26 +39,23 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
 
   @MethodSource("scenarios")
   @ParameterizedTest(name = "{0}")
-  fun `recalculates scrambled plot results`(scenario: Scenario) {
+  fun `recalculates scrambled results at every level`(scenario: Scenario) {
     scenario.import()
 
-    assertRecalculationRestores { scramblePlots() }
+    assertRecalculationRestores()
   }
 
-  @MethodSource("scenarios")
-  @ParameterizedTest(name = "{0}")
-  fun `recalculates scrambled substratum results`(scenario: Scenario) {
-    scenario.import()
+  @Test
+  fun `recalculates scrambled results after t0 densities change`() {
+    importFromCsvFiles("/tracking/observation/TwoObservations", 2, 30)
 
-    assertRecalculationRestores { scrambleSubstrata() }
-  }
+    dslContext
+        .update(PLOT_T0_DENSITIES)
+        .set(PLOT_T0_DENSITIES.PLOT_DENSITY, PLOT_T0_DENSITIES.PLOT_DENSITY.times(2))
+        .execute()
+    observationStore.recalculateSurvivalRates(plantingSiteId)
 
-  @MethodSource("scenarios")
-  @ParameterizedTest(name = "{0}")
-  fun `recalculates scrambled stratum results`(scenario: Scenario) {
-    scenario.import()
-
-    assertRecalculationRestores { scrambleStrata() }
+    assertRecalculationRestores()
   }
 
   data class Scenario(val prefix: String, val numObservations: Int) {
@@ -67,7 +66,7 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
     importFromCsvFiles(prefix, numObservations, 30)
   }
 
-  private fun assertRecalculationRestores(scramble: () -> Unit) {
+  private fun assertRecalculationRestores() {
     // Rolled-forward stratum species totals for strata an observation didn't observe have no
     // stratum results row and are never read; the recalculation removes them.
     dslContext
@@ -91,7 +90,10 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
     ObservationResultsInvalidator(dslContext).invalidateSite(plantingSiteId)
     val expected = snapshot()
 
-    scramble()
+    scramblePlots()
+    scrambleSubstrata()
+    scrambleStrata()
+    scrambleSite()
     recalculationStore.recalculateFlaggedResults(plantingSiteId)
     val actual = snapshot()
 
@@ -155,6 +157,22 @@ class ObservationRecalculationStoreTest : ObservationScenarioTest() {
         .set(OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY, -1)
         .set(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE, -1)
         .set(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA, BigDecimal(-1))
+        .execute()
+  }
+
+  private fun scrambleSite() {
+    dslContext
+        .update(OBSERVED_SITE_SPECIES_TOTALS)
+        .set(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_LIVE, -1)
+        .set(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE, -1)
+        .set(OBSERVED_SITE_SPECIES_TOTALS.SURVIVAL_RATE, -1)
+        .execute()
+    dslContext
+        .update(OBSERVATION_SITE_RESULTS)
+        .set(OBSERVATION_SITE_RESULTS.TOTAL_LIVE, -1)
+        .set(OBSERVATION_SITE_RESULTS.PLANT_DENSITY, -1)
+        .set(OBSERVATION_SITE_RESULTS.SURVIVAL_RATE, -1)
+        .set(OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_AREA, BigDecimal(-1))
         .execute()
   }
 
