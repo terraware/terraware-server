@@ -52,6 +52,33 @@ class LockService(private val dslContext: DSLContext) {
   }
 
   /**
+   * Attempts to acquire an exclusive lock on one entity of a given type, e.g., one planting site.
+   * If acquired, the lock is held until the current transaction is committed or rolled back. Does
+   * not block waiting for the lock to become available.
+   *
+   * The entity ID is folded into 32 bits, so two entities can share a lock. That makes this
+   * suitable for work that can safely be skipped and retried later, but not for mutual exclusion
+   * that must never block unrelated entities.
+   *
+   * @return `true` if the lock was successfully acquired. `false` if the lock was already held.
+   */
+  fun tryExclusiveTransactional(lockType: LockType, entityId: Long): Boolean {
+    val foldedId = (entityId xor (entityId ushr 32)).toInt()
+
+    return dslContext
+        .select(
+            DSL.function(
+                "pg_try_advisory_xact_lock",
+                Boolean::class.java,
+                DSL.value(lockType.key.toInt()),
+                DSL.value(foldedId),
+            )
+        )
+        .fetchOne()
+        ?.value1() == true
+  }
+
+  /**
    * Attempts to acquire an exclusive lock on the given key. If acquired, the lock is held until it
    * is released or the current database session is closed.
    *
