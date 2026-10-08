@@ -6,21 +6,27 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.StratumHistories
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.tracking.util.ObservationResultsPlotRow
 import com.terraformation.backend.tracking.util.ObservationResultsScope
+import com.terraformation.backend.tracking.util.ObservationResultsStratum
 import com.terraformation.backend.tracking.util.ObservationResultsSubstratum
 import com.terraformation.backend.tracking.util.ObservationSpeciesPlotRow
 import com.terraformation.backend.tracking.util.ObservationSpeciesScope
+import com.terraformation.backend.tracking.util.ObservationSpeciesStratum
 import com.terraformation.backend.tracking.util.ObservationSpeciesSubstratum
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
@@ -57,6 +63,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
 
     recalculateFlaggedPlotResults(plantingSiteId)
     recalculateFlaggedSubstratumResults(plantingSiteId)
+    recalculateFlaggedStratumResults(plantingSiteId)
   }
 
   private fun recalculateFlaggedPlotResults(plantingSiteId: PlantingSiteId) {
@@ -204,6 +211,107 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
     }
   }
 
+  private fun recalculateFlaggedStratumResults(plantingSiteId: PlantingSiteId) {
+    val speciesTotals = OBSERVED_STRATUM_SPECIES_TOTALS
+    val flaggedSpecies =
+        flaggedResultsCondition(
+            OBSERVATION_STRATUM_RESULTS,
+            speciesTotals.OBSERVATION_ID,
+            OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(speciesTotals.STRATUM_HISTORY_ID),
+        )
+
+    dslContext
+        .deleteFrom(speciesTotals)
+        .where(flaggedSpecies)
+        .and(siteObservationCondition(speciesTotals.OBSERVATION_ID, plantingSiteId))
+        .execute()
+
+    // Stratum species totals are only read alongside their stratum results, so rows for strata an
+    // observation didn't observe are never used. Remove any left over from earlier calculations.
+    dslContext
+        .deleteFrom(speciesTotals)
+        .where(flaggedResultsCondition(OBSERVATION_SITE_RESULTS, speciesTotals.OBSERVATION_ID))
+        .and(siteObservationCondition(speciesTotals.OBSERVATION_ID, plantingSiteId))
+        .andNotExists(
+            DSL.selectOne()
+                .from(OBSERVATION_STRATUM_RESULTS)
+                .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(speciesTotals.OBSERVATION_ID))
+                .and(
+                    OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(
+                        speciesTotals.STRATUM_HISTORY_ID
+                    )
+                )
+        )
+        .execute()
+
+    insertPlotSpeciesRollup(
+        plantingSiteId,
+        speciesTotals,
+        speciesTotals.STRATUM_ID,
+        speciesTotals.STRATUM_HISTORY_ID,
+        { plots -> plots.stratumId },
+        { plots -> plots.stratumHistoryId },
+        { plots ->
+          flaggedResultsCondition(
+              OBSERVATION_STRATUM_RESULTS,
+              plots.observationId,
+              OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(plots.stratumHistoryId),
+          )
+        },
+    )
+
+    rollForwardPermanentLive(
+        plantingSiteId,
+        speciesTotals,
+        speciesTotals.STRATUM_ID,
+        speciesTotals.STRATUM_HISTORY_ID,
+        { strata -> strata.STRATUM_ID },
+        { strata -> strata.ID },
+        { observationIdField, strata ->
+          flaggedResultsCondition(
+              OBSERVATION_STRATUM_RESULTS,
+              observationIdField,
+              OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.eq(strata.ID),
+          )
+        },
+    )
+
+    recalculateFlaggedSpeciesRates(
+        ObservationSpeciesStratum(DSL.select(speciesTotals.STRATUM_HISTORY_ID)),
+        flaggedSpecies,
+        plantingSiteId,
+        { plots -> plots.stratumHistoryId.eq(speciesTotals.STRATUM_HISTORY_ID) },
+    )
+
+    with(OBSERVATION_STRATUM_RESULTS) {
+      val scope = ObservationResultsStratum(DSL.select(STRATUM_HISTORY_ID))
+      val totals = OBSERVED_STRATUM_SPECIES_TOTALS.`as`("stratum_rollup")
+      fun sumOfTotals(field: Field<Int?>): Field<Int> =
+          DSL.field(
+              DSL.select(rollup(field))
+                  .from(totals)
+                  .where(totals.OBSERVATION_ID.eq(OBSERVATION_ID))
+                  .and(totals.STRATUM_HISTORY_ID.eq(STRATUM_HISTORY_ID))
+          )
+
+      dslContext
+          .update(OBSERVATION_STRATUM_RESULTS)
+          .set(TOTAL_LIVE, sumOfTotals(totals.TOTAL_LIVE))
+          .set(TOTAL_DEAD, sumOfTotals(totals.TOTAL_DEAD))
+          .set(TOTAL_EXISTING, sumOfTotals(totals.TOTAL_EXISTING))
+          .set(PERMANENT_LIVE, sumOfTotals(totals.PERMANENT_LIVE))
+          .set(PLANT_DENSITY, scope.latestPlantDensityField(OBSERVATION_ID))
+          .set(PLANT_DENSITY_STD_DEV, scope.latestPlantDensityStdDevField(OBSERVATION_ID))
+          .set(OBSERVED_DENSITY, scope.observedPlantDensityField(OBSERVATION_ID))
+          .where(NEEDS_RECALCULATION.eq(true))
+          .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
+          .and(nonAdHocObservationCondition(OBSERVATION_ID))
+          .execute()
+
+      recalculateFlaggedResultsRates(scope, plantingSiteId)
+    }
+  }
+
   /**
    * The completed plots of a planting site's observations joined with their plot-level species
    * totals and the substratum, stratum, and site versions the plots belonged to at the time of the
@@ -311,6 +419,126 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
                     plotSpecies.SPECIES_ID,
                     plotSpecies.SPECIES_NAME,
                 )
+        )
+        .execute()
+  }
+
+  /**
+   * For flagged stratum or site species totals in completed and abandoned observations, replaces
+   * the permanent live counts with the sum of the substratum species totals rolled forward from
+   * each substratum's latest observation, adding rows for species that only appear in
+   * rolled-forward substrata.
+   */
+  private fun rollForwardPermanentLive(
+      plantingSiteId: PlantingSiteId,
+      table: Table<out Record>,
+      scopeIdField: Field<*>,
+      scopeHistoryIdField: Field<*>,
+      strataScopeId: (StratumHistories) -> Field<*>,
+      strataScopeHistoryId: (StratumHistories) -> Field<*>,
+      flaggedCondition: (Field<ObservationId?>, StratumHistories) -> Condition,
+  ) {
+    val snapshotStrata = STRATUM_HISTORIES.`as`("rf_sh")
+    val snapshotSubstrata = SUBSTRATUM_HISTORIES.`as`("rf_ssh")
+    val substratumSpecies = OBSERVED_SUBSTRATUM_SPECIES_TOTALS.`as`("rf_sst")
+
+    val rolledForward =
+        DSL.select(
+                OBSERVATIONS.ID.`as`("rf_observation_id"),
+                strataScopeId(snapshotStrata).`as`("rf_scope_id"),
+                strataScopeHistoryId(snapshotStrata).`as`("rf_scope_history_id"),
+                substratumSpecies.CERTAINTY_ID.`as`("rf_certainty_id"),
+                substratumSpecies.SPECIES_ID.`as`("rf_species_id"),
+                substratumSpecies.SPECIES_NAME.`as`("rf_species_name"),
+                rollup(substratumSpecies.PERMANENT_LIVE).`as`("rf_permanent_live"),
+            )
+            .from(OBSERVATIONS)
+            .join(snapshotStrata)
+            .on(snapshotStrata.PLANTING_SITE_HISTORY_ID.eq(OBSERVATIONS.PLANTING_SITE_HISTORY_ID))
+            .join(snapshotSubstrata)
+            .on(snapshotSubstrata.STRATUM_HISTORY_ID.eq(snapshotStrata.ID))
+            .join(substratumSpecies)
+            .on(substratumSpecies.SUBSTRATUM_ID.eq(snapshotSubstrata.SUBSTRATUM_ID))
+            .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+            .and(OBSERVATIONS.STATE_ID.`in`(ObservationState.Completed, ObservationState.Abandoned))
+            .and(flaggedCondition(OBSERVATIONS.ID, snapshotStrata))
+            .and(
+                substratumSpecies.OBSERVATION_ID.eq(
+                    latestObservationForSubstratumField(
+                        OBSERVATIONS.ID,
+                        substratumSpecies.SUBSTRATUM_ID,
+                    )
+                )
+            )
+            .groupBy(
+                OBSERVATIONS.ID,
+                strataScopeId(snapshotStrata),
+                strataScopeHistoryId(snapshotStrata),
+                substratumSpecies.CERTAINTY_ID,
+                substratumSpecies.SPECIES_ID,
+                substratumSpecies.SPECIES_NAME,
+            )
+            .asTable("rolled_forward")
+
+    val rfObservationId = rolledForward.field("rf_observation_id", OBSERVATIONS.ID.dataType)!!
+    val rfScopeId = rolledForward.field("rf_scope_id")!!
+    val rfScopeHistoryId = rolledForward.field("rf_scope_history_id")!!
+    val rfCertaintyId =
+        rolledForward.field("rf_certainty_id", OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.dataType)!!
+    val rfSpeciesId = rolledForward.field("rf_species_id", SPECIES.ID.dataType)!!
+    val rfSpeciesName = rolledForward.field("rf_species_name", String::class.java)!!
+    val rfPermanentLive = rolledForward.field("rf_permanent_live", Int::class.java)!!
+
+    val observationIdField = table.field("observation_id", OBSERVATIONS.ID.dataType)!!
+    val certaintyIdField =
+        table.field("certainty_id", OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.dataType)!!
+    val speciesIdField = table.field("species_id", SPECIES.ID.dataType)!!
+    val speciesNameField = table.field("species_name", String::class.java)!!
+    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
+
+    @Suppress("UNCHECKED_CAST")
+    val matchesRolledForward =
+        DSL.and(
+            observationIdField.eq(rfObservationId),
+            (scopeHistoryIdField as Field<Any?>).eq(rfScopeHistoryId as Field<Any?>),
+            certaintyIdField.eq(rfCertaintyId),
+            speciesIdField.isNotDistinctFrom(rfSpeciesId),
+            speciesNameField.isNotDistinctFrom(rfSpeciesName),
+        )
+
+    dslContext
+        .update(table)
+        .set(permanentLiveField, rfPermanentLive)
+        .from(rolledForward)
+        .where(matchesRolledForward)
+        .execute()
+
+    dslContext
+        .insertInto(table)
+        .columns(
+            listOf(
+                observationIdField,
+                scopeIdField,
+                scopeHistoryIdField,
+                certaintyIdField,
+                speciesIdField,
+                speciesNameField,
+                permanentLiveField,
+            )
+        )
+        .select(
+            DSL.select(
+                    rfObservationId,
+                    rfScopeId,
+                    rfScopeHistoryId,
+                    rfCertaintyId,
+                    rfSpeciesId,
+                    rfSpeciesName,
+                    rfPermanentLive,
+                )
+                .from(rolledForward)
+                .whereNotExists(DSL.selectOne().from(table).where(matchesRolledForward))
         )
         .execute()
   }
