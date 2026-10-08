@@ -302,3 +302,38 @@ class ObservationSpeciesSite(
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect)
 }
+
+/**
+ * Species totals scope for each row of [OBSERVED_PLOT_SPECIES_TOTALS] being updated, so the
+ * survival rates of many plots can be calculated in a single statement.
+ */
+object ObservationSpeciesPlotRow :
+    ObservationSpeciesScope<MonitoringPlotId, MonitoringPlotHistoryId> {
+  override val scopeId: Select<Record1<MonitoringPlotId?>> =
+      DSL.select(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID)
+
+  override val scopeHistoryId: Select<Record1<MonitoringPlotHistoryId?>> =
+      DSL.select(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_HISTORY_ID)
+
+  override val observedTotalsCondition: Condition = DSL.trueCondition()
+
+  override val observedTotalsPlantingSiteTempCondition =
+      OBSERVED_PLOT_SPECIES_TOTALS.monitoringPlots.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
+          .eq(true)
+
+  override val observedTotalsScopeField = OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID
+
+  override val observedTotalsScopeHistoryField =
+      OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_HISTORY_ID
+
+  override val observedTotalsTable = OBSERVED_PLOT_SPECIES_TOTALS
+
+  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
+      DSL.falseCondition()
+
+  override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
+      tempStratumTable.MONITORING_PLOT_ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID)
+
+  override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
+      PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID)
+}
