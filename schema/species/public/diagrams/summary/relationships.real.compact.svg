@@ -408,79 +408,10 @@
 </a>
 </g>
 </g>
-<!-- gbif_names -->
-<g id="node7" class="node">
-<title>gbif_names</title>
-<g id="a_node7"><a xlink:href="../../tables/gbif_names.html" xlink:title="gbif_names" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="547,-3644 547,-3790 658,-3790 658,-3644 547,-3644"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="547.5,-3768 547.5,-3790 658.5,-3790 658.5,-3768 547.5,-3768"/>
-<polygon fill="none" stroke="black" points="547.5,-3768 547.5,-3790 658.5,-3790 658.5,-3768 547.5,-3768"/>
-<text text-anchor="start" x="552.5" y="-3777.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">gbif_names</text>
-<text text-anchor="start" x="619.5" y="-3776.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="547.5,-3746 547.5,-3768 658.5,-3768 658.5,-3746 547.5,-3746"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="552.5" y="-3763"/>
-<text text-anchor="start" x="578.5" y="-3754.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="547.5,-3724 547.5,-3746 658.5,-3746 658.5,-3724 547.5,-3724"/>
-<polygon fill="none" stroke="black" points="547.5,-3724 547.5,-3746 658.5,-3746 658.5,-3724 547.5,-3724"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="552.5" y="-3741"/>
-<text text-anchor="start" x="578.5" y="-3732.2" font-family="Helvetica,sans-Serif" font-size="11.00">taxon_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="547.5,-3702 547.5,-3724 658.5,-3724 658.5,-3702 547.5,-3702"/>
-<polygon fill="none" stroke="black" points="547.5,-3702 547.5,-3724 658.5,-3724 658.5,-3702 547.5,-3702"/>
-<text text-anchor="start" x="578.5" y="-3710.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="547.5,-3680 547.5,-3702 658.5,-3702 658.5,-3680 547.5,-3680"/>
-<polygon fill="none" stroke="black" points="547.5,-3680 547.5,-3702 658.5,-3702 658.5,-3680 547.5,-3680"/>
-<text text-anchor="start" x="578.5" y="-3688.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_scientific</text>
-<polygon fill="none" stroke="black" points="547.5,-3662 547.5,-3680 658.5,-3680 658.5,-3662 547.5,-3662"/>
-<text text-anchor="start" x="550.5" y="-3668.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="547.5,-3644 547.5,-3662 596.5,-3662 596.5,-3644 547.5,-3644"/>
-<polygon fill="none" stroke="black" points="547.5,-3644 547.5,-3662 596.5,-3662 596.5,-3644 547.5,-3644"/>
-<text text-anchor="start" x="550.5" y="-3650.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="596.5,-3644 596.5,-3662 622.5,-3662 622.5,-3644 596.5,-3644"/>
-<polygon fill="none" stroke="black" points="596.5,-3644 596.5,-3662 622.5,-3662 622.5,-3644 596.5,-3644"/>
-<text text-anchor="start" x="612.5" y="-3650.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="622.5,-3644 622.5,-3662 658.5,-3662 658.5,-3644 622.5,-3644"/>
-<polygon fill="none" stroke="black" points="622.5,-3644 622.5,-3662 658.5,-3662 658.5,-3644 622.5,-3644"/>
-<text text-anchor="start" x="639.5" y="-3650.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- gbif_taxa -->
-<g id="node23" class="node">
-<title>gbif_taxa</title>
-<g id="a_node23"><a xlink:href="../../tables/gbif_taxa.html" xlink:title="gbif_taxa" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="239.5,-3688 239.5,-3768 409.5,-3768 409.5,-3688 239.5,-3688"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="239.5,-3746 239.5,-3768 409.5,-3768 409.5,-3746 239.5,-3746"/>
-<polygon fill="none" stroke="black" points="239.5,-3746 239.5,-3768 409.5,-3768 409.5,-3746 239.5,-3746"/>
-<text text-anchor="start" x="244.5" y="-3755.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">gbif_taxa</text>
-<text text-anchor="start" x="370.5" y="-3754.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="239.5,-3724 239.5,-3746 409.5,-3746 409.5,-3724 239.5,-3724"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="244.5" y="-3741"/>
-<text text-anchor="start" x="259.5" y="-3732.2" font-family="Helvetica,sans-Serif" font-size="11.00">taxon_id</text>
-<polygon fill="none" stroke="black" points="239.5,-3706 239.5,-3724 409.5,-3724 409.5,-3706 239.5,-3706"/>
-<text text-anchor="start" x="242.5" y="-3712.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="239.5,-3688 239.5,-3706 313.5,-3706 313.5,-3688 239.5,-3688"/>
-<polygon fill="none" stroke="black" points="239.5,-3688 239.5,-3706 313.5,-3706 313.5,-3688 239.5,-3688"/>
-<text text-anchor="start" x="242.5" y="-3694.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="313.5,-3688 313.5,-3706 356.5,-3706 356.5,-3688 313.5,-3688"/>
-<polygon fill="none" stroke="black" points="313.5,-3688 313.5,-3706 356.5,-3706 356.5,-3688 313.5,-3688"/>
-<text text-anchor="start" x="346.5" y="-3694.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="356.5,-3688 356.5,-3706 409.5,-3706 409.5,-3688 356.5,-3688"/>
-<polygon fill="none" stroke="black" points="356.5,-3688 356.5,-3706 409.5,-3706 409.5,-3688 356.5,-3688"/>
-<text text-anchor="start" x="390.5" y="-3694.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- gbif_names&#45;&gt;gbif_taxa -->
-<g id="edge8" class="edge">
-<title>gbif_names:w&#45;&gt;gbif_taxa:e</title>
-<path fill="none" stroke="black" d="M531.86,-3735C483.12,-3735 465.75,-3735 410.5,-3735"/>
-<polygon fill="black" stroke="black" points="538.5,-3735 546.5,-3738.6 542.5,-3735 546.5,-3735 546.5,-3735 546.5,-3735 542.5,-3735 546.5,-3731.4 538.5,-3735 538.5,-3735"/>
-<ellipse fill="none" stroke="black" cx="535.3" cy="-3735" rx="3.2" ry="3.2"/>
-</g>
 <!-- country_botanical_countries -->
-<g id="node8" class="node">
+<g id="node7" class="node">
 <title>country_botanical_countries</title>
-<g id="a_node8"><a xlink:href="../../tables/country_botanical_countries.html" xlink:title="country_botanical_countries" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/country_botanical_countries.html" xlink:title="country_botanical_countries" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="218,-1437 218,-1521 431,-1521 431,-1437 218,-1437"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="218.5,-1499 218.5,-1521 431.5,-1521 431.5,-1499 218.5,-1499"/>
 <polygon fill="none" stroke="black" points="218.5,-1499 218.5,-1521 431.5,-1521 431.5,-1499 218.5,-1499"/>
@@ -537,6 +468,75 @@
 <polygon fill="black" stroke="black" points="211.37,-1471.14 219.81,-1468.76 214.44,-1468.57 217.5,-1466 217.5,-1466 217.5,-1466 214.44,-1468.57 215.19,-1463.24 211.37,-1471.14 211.37,-1471.14"/>
 <ellipse fill="none" stroke="black" cx="208.92" cy="-1473.2" rx="3.2" ry="3.2"/>
 </g>
+<!-- gbif_names -->
+<g id="node8" class="node">
+<title>gbif_names</title>
+<g id="a_node8"><a xlink:href="../../tables/gbif_names.html" xlink:title="gbif_names" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="547,-3644 547,-3790 658,-3790 658,-3644 547,-3644"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="547.5,-3768 547.5,-3790 658.5,-3790 658.5,-3768 547.5,-3768"/>
+<polygon fill="none" stroke="black" points="547.5,-3768 547.5,-3790 658.5,-3790 658.5,-3768 547.5,-3768"/>
+<text text-anchor="start" x="552.5" y="-3777.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">gbif_names</text>
+<text text-anchor="start" x="619.5" y="-3776.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="547.5,-3746 547.5,-3768 658.5,-3768 658.5,-3746 547.5,-3746"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="552.5" y="-3763"/>
+<text text-anchor="start" x="578.5" y="-3754.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="547.5,-3724 547.5,-3746 658.5,-3746 658.5,-3724 547.5,-3724"/>
+<polygon fill="none" stroke="black" points="547.5,-3724 547.5,-3746 658.5,-3746 658.5,-3724 547.5,-3724"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="552.5" y="-3741"/>
+<text text-anchor="start" x="578.5" y="-3732.2" font-family="Helvetica,sans-Serif" font-size="11.00">taxon_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="547.5,-3702 547.5,-3724 658.5,-3724 658.5,-3702 547.5,-3702"/>
+<polygon fill="none" stroke="black" points="547.5,-3702 547.5,-3724 658.5,-3724 658.5,-3702 547.5,-3702"/>
+<text text-anchor="start" x="578.5" y="-3710.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="547.5,-3680 547.5,-3702 658.5,-3702 658.5,-3680 547.5,-3680"/>
+<polygon fill="none" stroke="black" points="547.5,-3680 547.5,-3702 658.5,-3702 658.5,-3680 547.5,-3680"/>
+<text text-anchor="start" x="578.5" y="-3688.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_scientific</text>
+<polygon fill="none" stroke="black" points="547.5,-3662 547.5,-3680 658.5,-3680 658.5,-3662 547.5,-3662"/>
+<text text-anchor="start" x="550.5" y="-3668.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="547.5,-3644 547.5,-3662 582.5,-3662 582.5,-3644 547.5,-3644"/>
+<polygon fill="none" stroke="black" points="547.5,-3644 547.5,-3662 582.5,-3662 582.5,-3644 547.5,-3644"/>
+<text text-anchor="start" x="550.5" y="-3650.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="582.5,-3644 582.5,-3662 629.5,-3662 629.5,-3644 582.5,-3644"/>
+<polygon fill="none" stroke="black" points="582.5,-3644 582.5,-3662 629.5,-3662 629.5,-3644 582.5,-3644"/>
+<text text-anchor="start" x="592.5" y="-3650.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="629.5,-3644 629.5,-3662 658.5,-3662 658.5,-3644 629.5,-3644"/>
+<polygon fill="none" stroke="black" points="629.5,-3644 629.5,-3662 658.5,-3662 658.5,-3644 629.5,-3644"/>
+<text text-anchor="start" x="639.5" y="-3650.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- gbif_taxa -->
+<g id="node23" class="node">
+<title>gbif_taxa</title>
+<g id="a_node23"><a xlink:href="../../tables/gbif_taxa.html" xlink:title="gbif_taxa" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="239.5,-3688 239.5,-3768 409.5,-3768 409.5,-3688 239.5,-3688"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="239.5,-3746 239.5,-3768 409.5,-3768 409.5,-3746 239.5,-3746"/>
+<polygon fill="none" stroke="black" points="239.5,-3746 239.5,-3768 409.5,-3768 409.5,-3746 239.5,-3746"/>
+<text text-anchor="start" x="244.5" y="-3755.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">gbif_taxa</text>
+<text text-anchor="start" x="370.5" y="-3754.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="239.5,-3724 239.5,-3746 409.5,-3746 409.5,-3724 239.5,-3724"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="244.5" y="-3741"/>
+<text text-anchor="start" x="259.5" y="-3732.2" font-family="Helvetica,sans-Serif" font-size="11.00">taxon_id</text>
+<polygon fill="none" stroke="black" points="239.5,-3706 239.5,-3724 409.5,-3724 409.5,-3706 239.5,-3706"/>
+<text text-anchor="start" x="242.5" y="-3712.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="239.5,-3688 239.5,-3706 313.5,-3706 313.5,-3688 239.5,-3688"/>
+<polygon fill="none" stroke="black" points="239.5,-3688 239.5,-3706 313.5,-3706 313.5,-3688 239.5,-3688"/>
+<text text-anchor="start" x="242.5" y="-3694.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="313.5,-3688 313.5,-3706 356.5,-3706 356.5,-3688 313.5,-3688"/>
+<polygon fill="none" stroke="black" points="313.5,-3688 313.5,-3706 356.5,-3706 356.5,-3688 313.5,-3688"/>
+<text text-anchor="start" x="346.5" y="-3694.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="356.5,-3688 356.5,-3706 409.5,-3706 409.5,-3688 356.5,-3688"/>
+<polygon fill="none" stroke="black" points="356.5,-3688 356.5,-3706 409.5,-3706 409.5,-3688 356.5,-3688"/>
+<text text-anchor="start" x="390.5" y="-3694.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- gbif_names&#45;&gt;gbif_taxa -->
+<g id="edge8" class="edge">
+<title>gbif_names:w&#45;&gt;gbif_taxa:e</title>
+<path fill="none" stroke="black" d="M531.86,-3735C483.12,-3735 465.75,-3735 410.5,-3735"/>
+<polygon fill="black" stroke="black" points="538.5,-3735 546.5,-3738.6 542.5,-3735 546.5,-3735 546.5,-3735 546.5,-3735 542.5,-3735 546.5,-3731.4 538.5,-3735 538.5,-3735"/>
+<ellipse fill="none" stroke="black" cx="535.3" cy="-3735" rx="3.2" ry="3.2"/>
+</g>
 <!-- organizations&#45;&gt;botanical_countries -->
 <g id="edge11" class="edge">
 <title>organizations:w&#45;&gt;botanical_countries:e</title>
@@ -560,14 +560,14 @@
 <polygon fill="#ffffff" stroke="transparent" points="858.5,-3724 858.5,-3746 1005.5,-3746 1005.5,-3724 858.5,-3724"/>
 <polygon fill="none" stroke="black" points="858.5,-3724 858.5,-3746 1005.5,-3746 1005.5,-3724 858.5,-3724"/>
 <text text-anchor="start" x="890.5" y="-3732.2" font-family="Helvetica,sans-Serif" font-size="11.00">word</text>
-<polygon fill="#ffffff" stroke="transparent" points="858.5,-3706 858.5,-3724 929.5,-3724 929.5,-3706 858.5,-3706"/>
-<polygon fill="none" stroke="black" points="858.5,-3706 858.5,-3724 929.5,-3724 929.5,-3706 858.5,-3706"/>
+<polygon fill="#ffffff" stroke="transparent" points="858.5,-3706 858.5,-3724 916.5,-3724 916.5,-3706 858.5,-3706"/>
+<polygon fill="none" stroke="black" points="858.5,-3706 858.5,-3724 916.5,-3724 916.5,-3706 858.5,-3706"/>
 <text text-anchor="start" x="861.5" y="-3712.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="929.5,-3706 929.5,-3724 967.5,-3724 967.5,-3706 929.5,-3706"/>
-<polygon fill="none" stroke="black" points="929.5,-3706 929.5,-3724 967.5,-3724 967.5,-3706 929.5,-3706"/>
-<text text-anchor="start" x="957.5" y="-3712.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="967.5,-3706 967.5,-3724 1005.5,-3724 1005.5,-3706 967.5,-3706"/>
-<polygon fill="none" stroke="black" points="967.5,-3706 967.5,-3724 1005.5,-3724 1005.5,-3706 967.5,-3706"/>
+<polygon fill="#ffffff" stroke="transparent" points="916.5,-3706 916.5,-3724 974.5,-3724 974.5,-3706 916.5,-3706"/>
+<polygon fill="none" stroke="black" points="916.5,-3706 916.5,-3724 974.5,-3724 974.5,-3706 916.5,-3706"/>
+<text text-anchor="start" x="937.5" y="-3712.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="974.5,-3706 974.5,-3724 1005.5,-3724 1005.5,-3706 974.5,-3706"/>
+<polygon fill="none" stroke="black" points="974.5,-3706 974.5,-3724 1005.5,-3724 1005.5,-3706 974.5,-3706"/>
 <text text-anchor="start" x="995.5" y="-3712.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
