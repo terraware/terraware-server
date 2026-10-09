@@ -1,3 +1,4 @@
+6e181ff3 SW-8718 Add variable value composite index (#5136)
 eb8f7edc SW-9079 Allow srid WGS84 without a space (#5135)
 a121f40c SW-9075 Show correct error message for files with no polygons (#5134)
 1977e7e6 SW-8971 Add endpoint to complete a site's survival rate calculation (#5062)
