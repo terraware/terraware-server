@@ -17,7 +17,7 @@
             </mj-raw>
                         <mj-text mj-class="text-body01-regular" padding-top="4px">
                             <strong>
-                                Plot ${plot.monitoringPlotNumber}:
+                                Plot ${plot.monitoringPlotNumber?string["0"]}:
                                 ${change.speciesScientificName}&nbsp;-&nbsp;
                             </strong>
                             <mj-raw>

@@ -26,7 +26,7 @@
                     </mj-raw>
                             <tr>
                                 <td>${change.observationName}</td>
-                                <td>${change.monitoringPlotNumber}</td>
+                                <td>${change.monitoringPlotNumber?string["0"]}</td>
                                 <td>${change.speciesName}</td>
                                 <td>${change.plantStatus}</td>
                                 <td class="number">${change.changedFrom}</td>

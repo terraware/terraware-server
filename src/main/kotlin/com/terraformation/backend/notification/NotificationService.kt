@@ -1362,7 +1362,12 @@ class NotificationService(
     systemUser.run {
       val organization = organizationStore.fetchOneById(event.organizationId)
       val plantingSite =
-          plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Plot)
+          plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+      val plotNumbers =
+          plantingSiteStore.fetchMonitoringPlotNumbers(
+              event.plantingSiteId,
+              event.changes.map { it.monitoringPlotId }.distinct(),
+          )
       val observations =
           event.changes
               .map { it.observationId }
@@ -1374,11 +1379,6 @@ class NotificationService(
               .mapNotNull { it.speciesId }
               .distinct()
               .associateWith { speciesStore.fetchSpeciesById(it).scientificName }
-      val monitoringPlots =
-          plantingSite.strata.flatMap { stratum ->
-            stratum.substrata.flatMap { substratum -> substratum.monitoringPlots }
-          }
-      val plotNumbers = monitoringPlots.associate { it.id to it.plotNumber }
 
       val timeZone = plantingSite.timeZone ?: organization.timeZone ?: ZoneOffset.UTC
 
@@ -1395,7 +1395,8 @@ class NotificationService(
                 changedFrom = change.changedFrom,
                 changedTo = change.changedTo,
                 monitoringPlotId = change.monitoringPlotId,
-                monitoringPlotNumber = plotNumbers[change.monitoringPlotId] ?: -1,
+                monitoringPlotNumber =
+                    plotNumbers[change.monitoringPlotId] ?: change.monitoringPlotId.value,
                 observationId = change.observationId,
                 observationName = observationName,
                 plantStatus = change.plantStatus,
