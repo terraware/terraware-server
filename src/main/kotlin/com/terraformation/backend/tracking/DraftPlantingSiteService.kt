@@ -49,17 +49,14 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
   }
 
   /**
-   * Combines the polygons from an uploaded file into a single boundary. Files with no polygons are
-   * rejected, as are files mixing polygons with other shapes and invalid polygons; geometries are
-   * not repaired.
+   * Combines the polygons from an uploaded file into a single boundary. Non-polygonal shapes such
+   * as points and lines are ignored. Files with no polygons are rejected, as are invalid polygons;
+   * geometries are not repaired.
    */
   private fun combineBoundary(geometries: List<Geometry>): MultiPolygon {
-    if (geometries.none { it is Polygon || it is MultiPolygon }) {
-      throw NoPolygonsException()
-    }
-
     val polygons =
         geometries
+            .filter { it is Polygon || it is MultiPolygon }
             .flatMap { geometry ->
               val polygons = geometry.extractPolygons { throw InvalidGeometryException() }
               if (!geometry.isValid) {
