@@ -189,6 +189,31 @@ class PlantingSiteStore(
         .firstOrNull() ?: throw PlantingSiteHistoryNotFoundException(plantingSiteHistoryId)
   }
 
+  /**
+   * Returns the plot numbers for a set of monitoring plot IDs at a particular site. This can be
+   * used to fetch plot numbers for plots that aren't associated with substrata; those plots aren't
+   * included in the hierarchy returned by site-level functions like [fetchSiteById].)
+   */
+  fun fetchMonitoringPlotNumbers(
+      plantingSiteId: PlantingSiteId,
+      monitoringPlotIds: Collection<MonitoringPlotId>,
+  ): Map<MonitoringPlotId, Long> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    if (monitoringPlotIds.isEmpty()) {
+      return emptyMap()
+    }
+
+    return with(MONITORING_PLOTS) {
+      dslContext
+          .select(ID, PLOT_NUMBER)
+          .from(MONITORING_PLOTS)
+          .where(PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(ID.`in`(monitoringPlotIds))
+          .fetchMap(ID.asNonNullable(), PLOT_NUMBER.asNonNullable())
+    }
+  }
+
   private fun fetchSitesByCondition(
       condition: Condition,
       depth: PlantingSiteDepth,

@@ -340,7 +340,7 @@ internal class NotificationServiceEmailTest {
           boundary = polygon(1),
           isAdHoc = false,
           isAvailable = false,
-          plotNumber = 11L,
+          plotNumber = 5432L,
           sizeMeters = 30,
           elevationMeters = BigDecimal.ONE,
       )
@@ -597,6 +597,9 @@ internal class NotificationServiceEmailTest {
     every { parentStore.hasAcceleratorOrApplicationProjects(any()) } returns false
     every { parentStore.hasAcceleratorOrApplicationProjects(organization.id) } returns true
     every { parentStore.getPlantingSiteId(monitoringPlot.id) } returns plantingSite.id
+    every {
+      plantingSiteStore.fetchMonitoringPlotNumbers(plantingSite.id, listOf(monitoringPlot.id))
+    } returns mapOf(monitoringPlot.id to monitoringPlot.plotNumber)
     every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns plantingSite
     every { projectAcceleratorDetailsService.fetchOneById(project.id) } returns
         projectAcceleratorDetails
