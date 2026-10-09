@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
 
 class PlantingSitesControllerTest : ControllerIntegrationTest() {
   private val svgMediaType = MediaType.valueOf("image/svg+xml")
@@ -16,6 +17,36 @@ class PlantingSitesControllerTest : ControllerIntegrationTest() {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser()
+  }
+
+  @Nested
+  inner class CompleteSurvivalRateCalculation {
+    @Test
+    fun `accepts a maximum wait`() {
+      val plantingSiteId = insertPlantingSite()
+
+      mockMvc
+          .post(
+              "/api/v1/tracking/sites/$plantingSiteId/completeSurvivalRateCalculation" +
+                  "?maxWaitSeconds=5"
+          )
+          .andExpect {
+            status { isOk() }
+            jsonPath("$.calculationInProgress") { value(false) }
+          }
+    }
+
+    @Test
+    fun `rejects a maximum wait that is not positive`() {
+      val plantingSiteId = insertPlantingSite()
+
+      mockMvc
+          .post(
+              "/api/v1/tracking/sites/$plantingSiteId/completeSurvivalRateCalculation" +
+                  "?maxWaitSeconds=0"
+          )
+          .andExpect { status { isBadRequest() } }
+    }
   }
 
   @Nested

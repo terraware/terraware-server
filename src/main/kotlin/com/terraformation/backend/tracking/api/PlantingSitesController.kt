@@ -46,10 +46,12 @@ import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.GeometrySvgRenderer
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
@@ -160,8 +162,21 @@ class PlantingSitesController(
   @PostMapping("/{id}/completeSurvivalRateCalculation")
   fun completeSurvivalRateCalculation(
       @PathVariable id: PlantingSiteId,
+      @Parameter(
+          description =
+              "Maximum number of seconds to wait for the recalculation to finish. Defaults to 600."
+      )
+      @RequestParam
+      maxWaitSeconds: Int? = null,
   ): GetSurvivalRateCalculationInProgressResponsePayload {
-    observationResultsRecalculator.completeSiteRecalculation(id)
+    if (maxWaitSeconds != null && maxWaitSeconds <= 0) {
+      throw IllegalArgumentException("maxWaitSeconds must be greater than 0")
+    }
+
+    observationResultsRecalculator.completeSiteRecalculation(
+        id,
+        maxWaitSeconds?.let { Duration.ofSeconds(it.toLong()) },
+    )
 
     return GetSurvivalRateCalculationInProgressResponsePayload(
         observationStore.fetchSurvivalRateCalculationInProgress(id)

@@ -100,17 +100,18 @@ class ObservationResultsRecalculator(
   /**
    * Recalculates all the flagged results of one planting site, waiting for any recalculation that's
    * already running and retrying if edits land while the recalculation is in progress. Returns once
-   * none of the site's results are flagged, or gives up after repeated failures or [maxWait].
+   * none of the site's results are flagged, or gives up after repeated failures or [maxWait], which
+   * defaults to 10 minutes.
    *
    * @return true if none of the site's results are flagged for recalculation anymore.
    */
   fun completeSiteRecalculation(
       plantingSiteId: PlantingSiteId,
-      maxWait: Duration = DEFAULT_MAX_WAIT,
+      maxWait: Duration? = null,
   ): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    val deadline = System.nanoTime() + maxWait.toNanos()
+    val deadline = System.nanoTime() + (maxWait ?: DEFAULT_MAX_WAIT).toNanos()
     var failures = 0
     var loggedWaiting = false
 
