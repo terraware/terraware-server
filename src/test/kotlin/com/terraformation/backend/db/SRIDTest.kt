@@ -5,6 +5,8 @@ import com.terraformation.backend.db.default_schema.tables.references.SPATIAL_RE
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class SRIDTest : DatabaseTest() {
   @Test
@@ -12,9 +14,10 @@ class SRIDTest : DatabaseTest() {
     assertEquals(2976, SRID.byName("Tahiti_1952_UTM_6S"))
   }
 
-  @Test
-  fun `can look up SRIDs whose names have whitespace`() {
-    assertEquals(4326, SRID.byName("WGS 84"))
+  @ParameterizedTest
+  @ValueSource(strings = ["WGS 84", "WGS84", "GCS_WGS_1984"])
+  fun `can look up WGS 84 by its common names, including ones with whitespace`(name: String) {
+    assertEquals(SRID.LONG_LAT, SRID.byName(name))
   }
 
   @Test
