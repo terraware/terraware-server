@@ -128,10 +128,16 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
           [
               "{\"type\":\"Point\",\"coordinates\":[0,0]}",
               "{\"type\":\"LineString\",\"coordinates\":[[0,0],[1,1]]}",
+              "{\"type\":\"MultiLineString\",\"coordinates\":[[[0,0],[1,1]],[[2,2],[3,3]]]}",
+              "{\"type\":\"FeatureCollection\",\"features\":[" +
+                  "{\"type\":\"Feature\",\"properties\":{}," +
+                  "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[0,0],[1,1]]}}," +
+                  "{\"type\":\"Feature\",\"properties\":{}," +
+                  "\"geometry\":{\"type\":\"Point\",\"coordinates\":[2,2]}}]}",
           ]
   )
-  fun `rejects nonpolygonal geometry`(content: String) {
-    assertThrows<InvalidGeometryException> {
+  fun `rejects files with no polygons`(content: String) {
+    assertThrows<NoPolygonsException> {
       service.parseBoundaryFile(content.toByteArray(), "boundary.json")
     }
   }

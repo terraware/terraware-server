@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.TopologyException
 
 @Named
@@ -48,10 +49,15 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
   }
 
   /**
-   * Combines the polygons from an uploaded file into a single boundary. Non-polygonal shapes are
-   * rejected, as are invalid polygons; geometries are not repaired.
+   * Combines the polygons from an uploaded file into a single boundary. Files with no polygons are
+   * rejected, as are files mixing polygons with other shapes and invalid polygons; geometries are
+   * not repaired.
    */
   private fun combineBoundary(geometries: List<Geometry>): MultiPolygon {
+    if (geometries.none { it is Polygon || it is MultiPolygon }) {
+      throw NoPolygonsException()
+    }
+
     val polygons =
         geometries
             .flatMap { geometry ->
