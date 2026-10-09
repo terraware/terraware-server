@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.MEDIA_TYPE_SVG
+import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -45,10 +46,12 @@ import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.GeometrySvgRenderer
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
@@ -75,6 +78,7 @@ private const val MAX_THUMBNAIL_SIZE = 4096
 @TrackingEndpoint
 class PlantingSitesController(
     private val geometrySvgRenderer: GeometrySvgRenderer,
+    private val observationResultsRecalculator: ObservationResultsRecalculator,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteService: PlantingSiteService,
@@ -145,6 +149,38 @@ class PlantingSitesController(
     val calculationInProgress = observationStore.fetchSurvivalRateCalculationInProgress(id)
 
     return GetSurvivalRateCalculationInProgressResponsePayload(calculationInProgress)
+  }
+
+  @Operation(
+      summary = "Completes any pending survival rate recalculation for a planting site",
+      description =
+          "Recalculates all of the planting site's observation results that are pending " +
+              "recalculation, and waits for the recalculation to finish. If a recalculation is " +
+              "already running, waits for it and then recalculates anything still pending. " +
+              "This can take a while for large planting sites.",
+  )
+  @PostMapping("/{id}/completeSurvivalRateCalculation")
+  fun completeSurvivalRateCalculation(
+      @PathVariable id: PlantingSiteId,
+      @Parameter(
+          description =
+              "Maximum number of seconds to wait for the recalculation to finish. Defaults to 600."
+      )
+      @RequestParam
+      maxWaitSeconds: Int? = null,
+  ): GetSurvivalRateCalculationInProgressResponsePayload {
+    if (maxWaitSeconds != null && maxWaitSeconds <= 0) {
+      throw IllegalArgumentException("maxWaitSeconds must be greater than 0")
+    }
+
+    observationResultsRecalculator.completeSiteRecalculation(
+        id,
+        maxWaitSeconds?.let { Duration.ofSeconds(it.toLong()) },
+    )
+
+    return GetSurvivalRateCalculationInProgressResponsePayload(
+        observationStore.fetchSurvivalRateCalculationInProgress(id)
+    )
   }
 
   @GetMapping("/{id}/history/{historyId}")
