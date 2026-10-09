@@ -1,3 +1,4 @@
+74a2dd93 Sort admin orgs by name instead of id (#5131)
 8b2610db SW-8971 Drop the survival rate calculations table (#5061)
 af8fdcc2 SW-8971 Add pending flag to observation results (#5060)
 27a6a3dc SW-8971 Invalidate results when plots and observations are completed (#5059)
