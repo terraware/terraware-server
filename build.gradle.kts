@@ -116,7 +116,7 @@ dependencies {
   implementation("com.opencsv:opencsv:5.12.0")
   implementation("com.pgvector:pgvector:0.1.6")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.16.0")
-  implementation("commons-codec:commons-codec:1.22.1")
+  implementation("commons-codec:commons-codec:1.23.0")
   implementation("commons-validator:commons-validator:1.11.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.1")
   implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
