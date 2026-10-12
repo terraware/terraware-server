@@ -219,11 +219,37 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["POINT (10 10)", "LINESTRING (20 20, 21 21)", "MULTIPOINT ((10 10))"])
-  fun `rejects nonpolygonal shapes mixed with polygons`(shape: String) {
-    assertThrows<InvalidGeometryException> {
-      parseShapes("GEOMETRYCOLLECTION (POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0)), $shape)")
-    }
+  @ValueSource(
+      strings =
+          [
+              "POINT (10 10)",
+              "LINESTRING (20 20, 21 21)",
+              "MULTIPOINT ((10 10))",
+              "MULTILINESTRING ((20 20, 21 21))",
+          ]
+  )
+  fun `ignores nonpolygonal shapes mixed with polygons`(shape: String) {
+    val result = parseShapes("GEOMETRYCOLLECTION (POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0)), $shape)")
+
+    assertEquals(1, result.numPolygons)
+    assertEquals(4.0, result.geometry.area)
+  }
+
+  @Test
+  fun `ignores points and lines mixed with polygons in KML`() {
+    val content =
+        """<kml xmlns="http://www.opengis.net/kml/2.2"><Document>""" +
+            "<Placemark><Point><coordinates>5,5</coordinates></Point></Placemark>" +
+            "<Placemark><LineString><coordinates>5,5 6,6</coordinates></LineString></Placemark>" +
+            "<Placemark><Polygon><outerBoundaryIs><LinearRing>" +
+            "<coordinates>0,0 1,0 1,1 0,1 0,0</coordinates>" +
+            "</LinearRing></outerBoundaryIs></Polygon></Placemark>" +
+            "</Document></kml>"
+
+    val result = service.parseBoundaryFile(content.toByteArray(), "boundary.kml")
+
+    assertEquals(1, result.numPolygons)
+    assertEquals(1.0, result.geometry.area)
   }
 
   @ParameterizedTest
