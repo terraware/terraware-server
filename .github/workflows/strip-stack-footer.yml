@@ -1,0 +1,40 @@
+# Removes the "Stack created with GitHub Stacks CLI" footer that gh-stack appends to PR
+# descriptions. Runs on edits too, since adding an existing PR to a stack later rewrites
+# its description.
+#
+# This uses GitHub Actions rather than Buildkite because Buildkite builds aren't triggered
+# by PR description edits.
+#
+# pull_request_target is safe here because the workflow never checks out PR code; it only
+# rewrites the description.
+
+name: Strip gh-stack footer
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  strip:
+    if: contains(github.event.pull_request.body, 'github.com/github/gh-stack')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { number } = context.payload.pull_request;
+            // Re-fetch rather than using the event payload so we don't clobber an edit
+            // made between the event firing and this job running.
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
+            const body = (pr.body ?? '').replace(
+              /\s*(?:-{3,}\s*)?<sub>Stack created with <a href="https:\/\/github\.com\/github\/gh-stack">[\s\S]*?<\/sub>\s*$/,
+              '',
+            );
+            if (body !== pr.body) {
+              await github.rest.pulls.update({ ...context.repo, pull_number: number, body });
+              core.info(`Removed gh-stack footer from #${number}`);
+            }
