@@ -1,3 +1,7 @@
+89980e75 Update Gradle to v9.8.1 (#5145)
+5f5e6c58 SW-9060 Fix observations notification link (#5139)
+e7bb8ba9 Update plugin com.diffplug.spotless to v8.10.4 (#5142)
+bb834c50 Update dependency commons-codec:commons-codec to v1.23.0 (#5144)
 153c5fbe SW-9085 Ignore non-polygons in site boundary files (#5138)
 fa65d839 Add a GHA for auto-removing the gh stacks footer (#5137)
 c23e664b Update buildkite plugin artifacts to v1.11.0 (#5143)
