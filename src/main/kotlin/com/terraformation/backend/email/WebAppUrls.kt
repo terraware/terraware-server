@@ -225,14 +225,16 @@ class WebAppUrls(
 
   fun fullObservations(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path("/observations/$plantingSiteId")
+        .path("/observations")
         .queryParam("organizationId", organizationId)
+        .queryParam("plantingSiteId", plantingSiteId)
         .build()
   }
 
   fun observations(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {
-    return UriBuilder.fromPath("/observations/$plantingSiteId")
+    return UriBuilder.fromPath("/observations")
         .queryParam("organizationId", organizationId)
+        .queryParam("plantingSiteId", plantingSiteId)
         .build()
   }
 
