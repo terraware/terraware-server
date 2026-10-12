@@ -29,12 +29,6 @@ import org.jooq.impl.DSL
 class DeliverableStore(
     private val dslContext: DSLContext,
 ) {
-  fun deliverableIdExists(id: DeliverableId): Boolean {
-    requirePermissions { readAllDeliverables() }
-
-    return dslContext.fetchExists(DELIVERABLES, DELIVERABLES.ID.eq(id))
-  }
-
   fun fetchDeliverableCategory(deliverableId: DeliverableId): DeliverableCategory {
     return dslContext
         .select(DELIVERABLES.DELIVERABLE_CATEGORY_ID)
