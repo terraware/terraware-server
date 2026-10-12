@@ -13,7 +13,7 @@ import org.locationtech.jts.geom.Polygon
  *
  * A stratum can hold fewer plots than it is configured for. When that happens, 75% of the plots
  * that fit are allocated as permanent, 25% as temporary. This can mean demoting a permanent plot to
- * temporary even though its permanent index is less than [StratumModel.numPermanentPlots].
+ * temporary even though its permanent index is less than [StratumPlotCounts.numPermanentPlots].
  *
  * A permanent plot that has already been observed is never demoted, even if that pushes the split
  * away from the target ratio.
@@ -39,13 +39,15 @@ class StratumPlotAllocator(
    * @throws StratumFullException The stratum has no room for any monitoring plots at all.
    */
   fun allocate(requestedSubstratumIds: Set<SubstratumId>): Allocation {
-    val numConfigured = stratum.numPermanentPlots + stratum.numTemporaryPlots
+    val numConfigured =
+        stratum.plantPlotCounts.numPermanentPlots + stratum.plantPlotCounts.numTemporaryPlots
 
     val existingPermanent =
         stratum.substrata
             .flatMap { it.monitoringPlots }
             .filter { plot ->
-              plot.permanentIndex != null && plot.permanentIndex <= stratum.numPermanentPlots
+              plot.permanentIndex != null &&
+                  plot.permanentIndex <= stratum.plantPlotCounts.numPermanentPlots
             }
             .sortedBy { it.permanentIndex }
 
@@ -122,7 +124,7 @@ class StratumPlotAllocator(
       val temporaryPlotBoundaries: Collection<Polygon>,
       /**
        * Number of monitoring plots configured for the stratum. This is the sum of
-       * [StratumModel.numPermanentPlots] and [StratumModel.numTemporaryPlots].
+       * [StratumPlotCounts.numPermanentPlots] and [StratumPlotCounts.numTemporaryPlots].
        */
       val numConfigured: Int,
       /**

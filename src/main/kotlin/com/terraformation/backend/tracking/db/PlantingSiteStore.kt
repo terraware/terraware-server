@@ -92,6 +92,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.StratumHistoryModel
+import com.terraformation.backend.tracking.model.StratumPlotCounts
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
@@ -901,14 +902,14 @@ class PlantingSiteStore(
                           .set(BOUNDARY_MODIFIED_TIME, now)
                     }
                   }
-                  .set(ERROR_MARGIN, edit.desiredModel.errorMargin)
+                  .set(ERROR_MARGIN, edit.desiredModel.plantPlotCounts.errorMargin)
                   .set(INITIAL_PLANTING_DENSITY, edit.desiredModel.initialPlantingDensity)
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
-                  .set(NUM_PERMANENT_PLOTS, edit.desiredModel.numPermanentPlots)
-                  .set(STUDENTS_T, edit.desiredModel.studentsT)
-                  .set(VARIANCE, edit.desiredModel.variance)
+                  .set(NUM_PERMANENT_PLOTS, edit.desiredModel.plantPlotCounts.numPermanentPlots)
+                  .set(STUDENTS_T, edit.desiredModel.plantPlotCounts.studentsT)
+                  .set(VARIANCE, edit.desiredModel.plantPlotCounts.variance)
                   .where(ID.eq(edit.existingModel.id))
                   .execute()
           if (rowsUpdated != 1) {
@@ -1301,18 +1302,18 @@ class PlantingSiteStore(
             boundaryModifiedTime = now,
             createdBy = userId,
             createdTime = now,
-            errorMargin = stratum.errorMargin,
+            errorMargin = stratum.plantPlotCounts.errorMargin,
             initialPlantingDensity = stratum.initialPlantingDensity,
             modifiedBy = userId,
             modifiedTime = now,
             name = stratum.name,
-            numPermanentPlots = stratum.numPermanentPlots,
-            numTemporaryPlots = stratum.numTemporaryPlots,
+            numPermanentPlots = stratum.plantPlotCounts.numPermanentPlots,
+            numTemporaryPlots = stratum.plantPlotCounts.numTemporaryPlots,
             plantingSiteId = plantingSiteId,
             stableId = stratum.stableId,
-            studentsT = stratum.studentsT,
+            studentsT = stratum.plantPlotCounts.studentsT,
             targetPlantDensity = stratum.targetPlantDensity,
-            variance = stratum.variance,
+            variance = stratum.plantPlotCounts.variance,
         )
 
     strataDao.insert(strataRow)
@@ -1636,7 +1637,9 @@ class PlantingSiteStore(
 
       plantingSite.strata.flatMap { stratum ->
         val missingPermanentIndexes: List<Int> =
-            (1..stratum.numPermanentPlots).filterNot { stratum.permanentIndexExists(it) }
+            (1..stratum.plantPlotCounts.numPermanentPlots).filterNot {
+              stratum.permanentIndexExists(it)
+            }
 
         createPermanentPlots(plantingSite, stratum, missingPermanentIndexes)
       }
@@ -2170,19 +2173,22 @@ class PlantingSiteStore(
                 areaHa = record[STRATA.AREA_HA]!!,
                 boundary = record[boundaryField]!! as MultiPolygon,
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
-                errorMargin = record[STRATA.ERROR_MARGIN]!!,
                 id = record[STRATA.ID]!!,
                 initialPlantingDensity = record[STRATA.INITIAL_PLANTING_DENSITY]!!,
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
                 name = record[STRATA.NAME]!!,
-                numPermanentPlots = record[STRATA.NUM_PERMANENT_PLOTS]!!,
-                numTemporaryPlots = record[STRATA.NUM_TEMPORARY_PLOTS]!!,
+                plantPlotCounts =
+                    StratumPlotCounts(
+                        errorMargin = record[STRATA.ERROR_MARGIN]!!,
+                        numPermanentPlots = record[STRATA.NUM_PERMANENT_PLOTS]!!,
+                        numTemporaryPlots = record[STRATA.NUM_TEMPORARY_PLOTS]!!,
+                        studentsT = record[STRATA.STUDENTS_T]!!,
+                        variance = record[STRATA.VARIANCE]!!,
+                    ),
                 stableId = record[STRATA.STABLE_ID]!!,
-                studentsT = record[STRATA.STUDENTS_T]!!,
                 substrata = substrataField?.let { record[it] } ?: emptyList(),
                 targetPlantDensity = record[STRATA.TARGET_PLANT_DENSITY],
-                variance = record[STRATA.VARIANCE]!!,
             )
           }
         }

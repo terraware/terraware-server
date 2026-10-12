@@ -142,14 +142,14 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   },
           )
 
-      assertEquals(newErrorMargin, edited.strata[0].errorMargin, "Error margin")
-      assertEquals(newStudentsT, edited.strata[0].studentsT, "Student's t")
+      assertEquals(newErrorMargin, edited.strata[0].plantPlotCounts.errorMargin, "Error margin")
+      assertEquals(newStudentsT, edited.strata[0].plantPlotCounts.studentsT, "Student's t")
       assertEquals(
           newInitialPlantingDensity,
           edited.strata[0].initialPlantingDensity,
           "Target planting density",
       )
-      assertEquals(newVariance, edited.strata[0].variance, "Variance")
+      assertEquals(newVariance, edited.strata[0].plantPlotCounts.variance, "Variance")
     }
 
     @Test

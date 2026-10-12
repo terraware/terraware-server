@@ -229,33 +229,33 @@
                 <td>
                     <input type="number" required min="0.001" step="0.001" name="variance" size="8"
                            th:id="|variance-${stratum.id}|"
-                           th:value="${stratum.variance}" th:form="|stratum-${stratum.id}|"/>
+                           th:value="${stratum.plantPlotCounts.variance}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
                     <input type="number" required min="0.001" step="0.001" name="errorMargin"
                            th:id="|errorMargin-${stratum.id}|"
-                           th:value="${stratum.errorMargin}" th:form="|stratum-${stratum.id}|"/>
+                           th:value="${stratum.plantPlotCounts.errorMargin}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
                     <input type="number" required min="0.001" step="0.001" name="studentsT"
                            th:id="|studentsT-${stratum.id}|"
-                           th:value="${stratum.studentsT}" th:form="|stratum-${stratum.id}|"/>
+                           th:value="${stratum.plantPlotCounts.studentsT}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
                     <input type="number" required min="1" name="numPermanent"
                            th:id="|numPermanent-${stratum.id}|"
-                           th:value="${stratum.numPermanentPlots}"
+                           th:value="${stratum.plantPlotCounts.numPermanentPlots}"
                            th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
                     <input type="number" required min="0" name="numTemporary"
                            th:id="|numTemporary-${stratum.id}|"
-                           th:value="${stratum.numTemporaryPlots}"
+                           th:value="${stratum.plantPlotCounts.numTemporaryPlots}"
                            th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
                     <span th:id="|total-${stratum.id}|"
-                          th:text="${stratum.numPermanentPlots != null || stratum.numTemporaryPlots != null ? (stratum.numPermanentPlots ?: 0) + (stratum.numTemporaryPlots ?: 0) : ''}">
+                          th:text="${stratum.plantPlotCounts.numPermanentPlots + stratum.plantPlotCounts.numTemporaryPlots}">
                         123
                     </span>
                 </td>

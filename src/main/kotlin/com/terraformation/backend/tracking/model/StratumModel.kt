@@ -5,6 +5,11 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_ERROR_MARGIN
+import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_NUM_PERMANENT_PLOTS
+import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_NUM_TEMPORARY_PLOTS
+import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_STUDENTS_T
+import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_VARIANCE
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.differenceNullable
@@ -14,6 +19,7 @@ import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
+import java.util.Objects
 import kotlin.math.max
 import kotlin.math.roundToInt
 import org.locationtech.jts.geom.Coordinate
@@ -21,6 +27,31 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
+
+data class StratumPlotCounts(
+    val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+    val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
+    val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
+    val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
+    val variance: BigDecimal = DEFAULT_VARIANCE,
+) {
+  override fun equals(other: Any?) =
+      other is StratumPlotCounts &&
+          numPermanentPlots == other.numPermanentPlots &&
+          numTemporaryPlots == other.numTemporaryPlots &&
+          errorMargin.equalsIgnoreScale(other.errorMargin) &&
+          studentsT.equalsIgnoreScale(other.studentsT) &&
+          variance.equalsIgnoreScale(other.variance)
+
+  override fun hashCode() =
+      Objects.hash(
+          errorMargin.stripTrailingZeros(),
+          numPermanentPlots,
+          numTemporaryPlots,
+          studentsT.stripTrailingZeros(),
+          variance.stripTrailingZeros(),
+      )
+}
 
 data class StratumModel<
     SID : StratumId?,
@@ -30,7 +61,6 @@ data class StratumModel<
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val boundaryModifiedTime: TIMESTAMP,
-    val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
     val id: SID,
     val initialPlantingDensity: BigDecimal = DEFAULT_INITIAL_PLANTING_DENSITY,
     /** The time of the latest observation, if the stratum has completed observations */
@@ -38,17 +68,14 @@ data class StratumModel<
     /** The ID of the latest observation, if the stratum has completed observations */
     val latestObservationId: ObservationId? = null,
     val name: String,
-    val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
-    val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
+    val plantPlotCounts: StratumPlotCounts = StratumPlotCounts(),
     val substrata: List<SubstratumModel<SSID>>,
     val stableId: StableId,
-    val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
     val targetPlantDensity: BigDecimal? = null,
-    val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
   /**
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
-   * by [numPermanentPlots].
+   * by [StratumPlotCounts.numPermanentPlots].
    *
    * Only plots in requested substrata are returned, meaning there may be fewer plots than
    * configured, or none at all.
@@ -61,7 +88,7 @@ data class StratumModel<
     val requestedSubstrata = substrata.filter { it.id != null && it.id in requestedSubstratumIds }
     val plotsInRequestedSubstrata = requestedSubstrata.flatMap { substratum ->
       substratum.monitoringPlots.filter { plot ->
-        plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
+        plot.permanentIndex != null && plot.permanentIndex <= plantPlotCounts.numPermanentPlots
       }
     }
 
@@ -82,10 +109,11 @@ data class StratumModel<
    *   other requested substrata, one plot at a time so the plots stay as evenly spread as the
    *   available space allows. Quotas belonging to unrequested substrata are dropped rather than
    *   passed on.
-   * - If plots can't be exactly evenly spread across substrata (that is, [numTemporaryPlots] is not
-   *   a multiple of the number of substrata), the substrata for the remaining plots are determined
-   *   using the following criteria in order (with the later criteria used as a tiebreaker if more
-   *   than one substratum matches the earlier ones):
+   * - If plots can't be exactly evenly spread across substrata (that is,
+   *   [StratumPlotCounts.numTemporaryPlots] is not a multiple of the number of substrata), the
+   *   substrata for the remaining plots are determined using the following criteria in order (with
+   *   the later criteria used as a tiebreaker if more than one substratum matches the earlier
+   *   ones):
    *     - Substrata with the fewest number of permanent plots.
    *     - Substrata that were requested for the observation.
    *     - Substrata with the lowest substratum IDs. Note that it is possible for unrequested
@@ -98,7 +126,8 @@ data class StratumModel<
    *   with a small number of requested substrata, we would end up piling the entire stratum's worth
    *   of temporary plots into a handful of substrata.
    *
-   * @param count Number of temporary plots to allocate. Defaults to [numTemporaryPlots].
+   * @param count Number of temporary plots to allocate. Defaults to
+   *   [StratumPlotCounts.numTemporaryPlots].
    * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent instead of
    *   using the stratum's configured permanent plot count.
    * @return A collection of plot boundaries. These may or may not be the boundaries of plots that
@@ -112,7 +141,7 @@ data class StratumModel<
       requestedSubstratumIds: Set<SubstratumId>,
       gridOrigin: Point,
       exclusion: MultiPolygon? = null,
-      count: Int = numTemporaryPlots,
+      count: Int = plantPlotCounts.numTemporaryPlots,
       permanentPlotIds: Set<MonitoringPlotId>? = null,
   ): Collection<Polygon> {
     if (substrata.isEmpty()) {
@@ -226,8 +255,9 @@ data class StratumModel<
    *   some or all plots with permanent indexes are treated as permanent, depending on
    *   [includeAllIndexes].
    * @param includeAllIndexes If true, treat every plot with a permanent index as permanent
-   *   regardless of [numPermanentPlots]. If false, only treat plots with permanent indexes less
-   *   than or equal to [numPermanentPlots] as permanent. Ignored when [permanentPlotIds] is set.
+   *   regardless of [StratumPlotCounts.numPermanentPlots]. If false, only treat plots with
+   *   permanent indexes less than or equal to [StratumPlotCounts.numPermanentPlots] as permanent.
+   *   Ignored when [permanentPlotIds] is set.
    */
   private fun isPermanent(
       plot: MonitoringPlotModel,
@@ -236,7 +266,8 @@ data class StratumModel<
   ): Boolean {
     return when {
       permanentPlotIds != null -> plot.id in permanentPlotIds
-      plot.permanentIndex != null -> includeAllIndexes || plot.permanentIndex <= numPermanentPlots
+      plot.permanentIndex != null ->
+          includeAllIndexes || plot.permanentIndex <= plantPlotCounts.numPermanentPlots
       else -> false
     }
   }
@@ -274,7 +305,7 @@ data class StratumModel<
    *   used in previous observations but won't be used in the next one).
    * @param exclusion Areas to exclude from the stratum, or null if the whole stratum is available.
    * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent instead of
-   *   using [numPermanentPlots].
+   *   using [StratumPlotCounts.numPermanentPlots].
    * @return List of unused squares. If there is not enough room for the requested number of
    *   squares, this may be shorter than [count] elements; if there's no room for even a single
    *   square, the list will be empty.
@@ -467,12 +498,13 @@ data class StratumModel<
         id == other.id &&
         name == other.name &&
         boundaryModifiedTime == other.boundaryModifiedTime &&
-        numPermanentPlots == other.numPermanentPlots &&
-        numTemporaryPlots == other.numTemporaryPlots &&
+        plantPlotCounts == other.plantPlotCounts &&
+        plantPlotCounts.numPermanentPlots == other.plantPlotCounts.numPermanentPlots &&
+        plantPlotCounts.numTemporaryPlots == other.plantPlotCounts.numTemporaryPlots &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
-        errorMargin.equalsIgnoreScale(other.errorMargin) &&
-        studentsT.equalsIgnoreScale(other.studentsT) &&
-        variance.equalsIgnoreScale(other.variance) &&
+        plantPlotCounts.errorMargin.equalsIgnoreScale(other.plantPlotCounts.errorMargin) &&
+        plantPlotCounts.studentsT.equalsIgnoreScale(other.plantPlotCounts.studentsT) &&
+        plantPlotCounts.variance.equalsIgnoreScale(other.plantPlotCounts.variance) &&
         initialPlantingDensity.equalsIgnoreScale(other.initialPlantingDensity) &&
         targetPlantDensity.equalsIgnoreScale(other.targetPlantDensity) &&
         substrata.zip(other.substrata).all { (a, b) -> a.equals(b, tolerance) } &&
@@ -484,17 +516,13 @@ data class StratumModel<
           areaHa = areaHa,
           boundary = boundary,
           boundaryModifiedTime = null,
-          errorMargin = errorMargin,
           id = null,
           initialPlantingDensity = initialPlantingDensity,
           name = name,
-          numPermanentPlots = numPermanentPlots,
-          numTemporaryPlots = numTemporaryPlots,
+          plantPlotCounts = plantPlotCounts,
           substrata = substrata.map { it.toNew() },
           stableId = stableId,
-          studentsT = studentsT,
           targetPlantDensity = targetPlantDensity,
-          variance = variance,
       )
 
   companion object {
@@ -538,17 +566,20 @@ data class StratumModel<
           areaHa = areaHa,
           boundary = boundary,
           boundaryModifiedTime = null,
-          errorMargin = errorMargin,
           id = null,
           initialPlantingDensity = initialPlantingDensity,
           name = name,
-          numPermanentPlots = numPermanentPlots ?: defaultPermanentPlots,
-          numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
+          plantPlotCounts =
+              StratumPlotCounts(
+                  errorMargin = errorMargin,
+                  numPermanentPlots = numPermanentPlots ?: defaultPermanentPlots,
+                  numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
+                  studentsT = studentsT,
+                  variance = variance,
+              ),
           substrata = substrata,
           stableId = stableId,
-          studentsT = studentsT,
           targetPlantDensity = targetPlantDensity,
-          variance = variance,
       )
     }
   }
