@@ -1,0 +1,52 @@
+# See .buildkite/README.md for details about this pipeline.
+
+common:
+  - &cache-common-args
+    backend: s3
+    compression: tgz
+    restore: pipeline
+
+  - _: &cache-gradle-home-manifest
+      - "build.gradle.kts"
+      - "gradle.properties"
+      - "settings.gradle.kts"
+
+  - &cache-gradle-home-args
+    <<: *cache-common-args
+    path: ".gradle-home"
+    manifest: *cache-gradle-home-manifest
+
+  - &load-secrets
+    seek-oss/aws-sm#v2.4.1:
+      json-to-env:
+        - secret-id: "buildkite_build_secrets"
+        - secret-id: "terraware_server_build_secrets"
+
+  - &use-existing-checkout
+    checkout:
+      skip: true
+    retry:
+      manual:
+        allowed: false
+    agents:
+      # Run all steps on the same runner that uploaded the pipeline initially.
+      "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
+
+steps:
+  - <<: *use-existing-checkout
+    label: ":slack: Release notes & Jira transitions"
+    key: "release-notes"
+    plugins:
+      - *load-secrets
+    command: .buildkite/scripts/release-notes.sh
+
+  - <<: *use-existing-checkout
+    label: ":books: Generate and deploy docs"
+    key: "generate-docs"
+    depends_on:
+      - "release-notes"
+    plugins:
+      - *load-secrets
+      - cache#v1.12.0:
+          <<: *cache-gradle-home-args
+    command: .buildkite/scripts/deploy-release-docs.sh

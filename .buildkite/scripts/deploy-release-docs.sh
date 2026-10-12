@@ -12,7 +12,7 @@ echo "--- :gradle: Generate schema docs"
 mkdir -p docs/schema
 export SCHEMA_DOCS_DIR=docs/schema
 export LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=ERROR
-./gradlew -x generateJooqClasses test --tests SchemaDocsGenerator --info
+./gradlew test --tests SchemaDocsGenerator --info
 
 echo "--- :gradle: Generate license report"
 
