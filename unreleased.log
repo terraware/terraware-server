@@ -1,3 +1,4 @@
+83005006 SW-9099 Calculate biomass plant totals server-side (#5147)
 6b850dc8 Allow ECS deployment to run on any Buildkite host (#5146)
 89980e75 Update Gradle to v9.8.1 (#5145)
 5f5e6c58 SW-9060 Fix observations notification link (#5139)
