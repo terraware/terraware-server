@@ -1541,7 +1541,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
 
-      helper.insertPlantedSite(numPermanentPlots = 2, numTemporaryPlots = 3)
+      helper.insertPlantedSite(plantNumPermanentPlots = 2, plantNumTemporaryPlots = 3)
 
       val observationId =
           service.scheduleObservation(

@@ -20,11 +20,13 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns create edits for newly added stratum and substratum`() {
     val existing =
-        existingSite(width = 500) { stratum(numPermanent = 1) { substratum { permanent() } } }
+        existingSite(width = 500) {
+          stratum(plantNumPermanent = 1) { substratum { permanent() } }
+        }
     val desired =
         newSite(width = 750) {
-          stratum(width = 500, numPermanent = 1)
-          stratum(width = 250, numPermanent = 1)
+          stratum(width = 500, plantNumPermanent = 1)
+          stratum(width = 250, plantNumPermanent = 1)
         }
 
     assertEditResult(
@@ -87,7 +89,7 @@ class PlantingSiteEditCalculatorTest {
     val existingBoundary = existing.boundary!!
     val desired =
         newSite(width = 750) {
-          stratum(numPermanent = 6) {
+          stratum(plantNumPermanent = 6) {
             substratum(width = 500)
             substratum()
           }
@@ -147,20 +149,22 @@ class PlantingSiteEditCalculatorTest {
 
   @Test
   fun `returns stratum update for settings change`() {
-    val newErrorMargin = BigDecimal(101)
+    val newPlantErrorMargin = BigDecimal(101)
     val newInitialPlantingDensity = BigDecimal(1100)
-    val newStudentsT = BigDecimal("1.646")
-    val newVariance = BigDecimal(40001)
+    val newPlantStudentsT = BigDecimal("1.646")
+    val newPlantVariance = BigDecimal(40001)
 
     val existing = existingSite {
-      stratum(numPermanent = 8, numTemporary = 3) { substratum { repeat(8) { permanent() } } }
+      stratum(plantNumPermanent = 8, plantNumTemporary = 3) {
+        substratum { repeat(8) { permanent() } }
+      }
     }
     val desired = newSite {
-      stratum(numPermanent = 8, numTemporary = 3) {
-        errorMargin = newErrorMargin
+      stratum(plantNumPermanent = 8, plantNumTemporary = 3) {
+        plantErrorMargin = newPlantErrorMargin
         initialPlantingDensity = newInitialPlantingDensity
-        studentsT = newStudentsT
-        variance = newVariance
+        plantStudentsT = newPlantStudentsT
+        plantVariance = newPlantVariance
       }
     }
 
@@ -210,7 +214,7 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns updates with both added and removed regions if boundary change was not a simple expansion`() {
     val existing = existingSite(x = 0, width = 500, height = 500)
-    val desired = newSite(x = 100, width = 600, height = 500) { stratum(numPermanent = 1) }
+    val desired = newSite(x = 100, width = 600, height = 500) { stratum(plantNumPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -259,8 +263,8 @@ class PlantingSiteEditCalculatorTest {
         }
     val desired =
         newSite(width = 1000, height = 500) {
-          stratum(name = "B", width = 500, numPermanent = 1) { substratum(name = "B-1") }
-          stratum(name = "A", width = 500, numPermanent = 1) { substratum(name = "A-1") }
+          stratum(name = "B", width = 500, plantNumPermanent = 1) { substratum(name = "B-1") }
+          stratum(name = "A", width = 500, plantNumPermanent = 1) { substratum(name = "A-1") }
         }
 
     assertEditResult(
@@ -338,15 +342,17 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `moves existing substrata to new strata`() {
     val existing = existingSite {
-      stratum(name = "A", numPermanent = 2) {
+      stratum(name = "A", plantNumPermanent = 2) {
         substratum(name = "Substratum 1", width = 250) { permanent() }
         substratum(name = "Substratum 2", width = 250) { permanent() }
       }
     }
 
     val desired = newSite {
-      stratum(name = "A", numPermanent = 1, width = 250) { substratum(name = "Substratum 1") }
-      stratum(name = "B", numPermanent = 2, width = 250) {
+      stratum(name = "A", plantNumPermanent = 1, width = 250) {
+        substratum(name = "Substratum 1")
+      }
+      stratum(name = "B", plantNumPermanent = 2, width = 250) {
         substratum(name = "Substratum 2", stableId = StableId("A-Substratum 2"))
       }
     }
@@ -412,24 +418,24 @@ class PlantingSiteEditCalculatorTest {
   fun `moves existing substrata between existing strata`() {
     val existing =
         existingSite(width = 750) {
-          stratum(name = "A", width = 500, numPermanent = 3) {
+          stratum(name = "A", width = 500, plantNumPermanent = 3) {
             substratum(name = "Substratum 1", width = 250) { permanent() }
             substratum(name = "Substratum 2", width = 250) {
               permanent()
               permanent()
             }
           }
-          stratum(name = "B", width = 250, numPermanent = 1) {
+          stratum(name = "B", width = 250, plantNumPermanent = 1) {
             substratum(name = "Substratum 3", width = 250) { permanent() }
           }
         }
 
     val desired =
         newSite(width = 750) {
-          stratum(name = "A", numPermanent = 1, width = 250) {
+          stratum(name = "A", plantNumPermanent = 1, width = 250) {
             substratum(name = "Substratum 1", width = 250)
           }
-          stratum(name = "B", numPermanent = 2, width = 500) {
+          stratum(name = "B", plantNumPermanent = 2, width = 500) {
             substratum(name = "Substratum 2", stableId = StableId("A-Substratum 2"), width = 250)
             substratum(name = "Substratum 3", width = 250)
           }
@@ -516,8 +522,8 @@ class PlantingSiteEditCalculatorTest {
         }
     val desired =
         newSite(width = 1000, height = 500) {
-          stratum(name = "A", width = 500, numPermanent = 1) { substratum(name = "A-1") }
-          stratum(name = "B", width = 500, numPermanent = 1) { substratum(name = "B-1") }
+          stratum(name = "A", width = 500, plantNumPermanent = 1) { substratum(name = "A-1") }
+          stratum(name = "B", width = 500, plantNumPermanent = 1) { substratum(name = "B-1") }
         }
 
     assertEditResult(
@@ -609,7 +615,9 @@ class PlantingSiteEditCalculatorTest {
 
     // 44% overlaps with old stratum A, 56% doesn't.
     val desired =
-        newSite(x = 280, width = 500) { stratum(name = "A", numPermanent = 11, numTemporary = 3) }
+        newSite(x = 280, width = 500) {
+          stratum(name = "A", plantNumPermanent = 11, plantNumTemporary = 3)
+        }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -709,7 +717,7 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `adopts existing exterior plots when site expands to cover them`() {
     val existing = existingSite(width = 100) { exteriorPlot(x = 500) }
-    val desired = newSite(width = 600) { stratum(numPermanent = 1) }
+    val desired = newSite(width = 600) { stratum(plantNumPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -762,7 +770,7 @@ class PlantingSiteEditCalculatorTest {
             }
           }
         }
-    val desired = newSite(width = 500) { stratum(numPermanent = 1) }
+    val desired = newSite(width = 500) { stratum(plantNumPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -814,7 +822,7 @@ class PlantingSiteEditCalculatorTest {
     val desired =
         newSite(width = 1000, height = 500) {
           exclusion = rectangle(width = 100, height = 500)
-          stratum(numPermanent = 10)
+          stratum(plantNumPermanent = 10)
         }
     val addedRegion = rectangle(x = 100, width = 200, height = 500)
     val existingRegion = rectangle(x = 300, width = 700, height = 500)
@@ -870,14 +878,14 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `increases number of permanent plots even if geometry stayed the same`() {
     val existing = existingSite {
-      stratum(numPermanent = 2) {
+      stratum(plantNumPermanent = 2) {
         substratum {
           permanent()
           permanent()
         }
       }
     }
-    val desired = newSite { stratum(numPermanent = 3) }
+    val desired = newSite { stratum(plantNumPermanent = 3) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -920,7 +928,7 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `reduces number of permanent plots even if geometry stayed the same`() {
     val existing = existingSite {
-      stratum(numPermanent = 3) {
+      stratum(plantNumPermanent = 3) {
         substratum {
           permanent()
           permanent()
@@ -928,7 +936,7 @@ class PlantingSiteEditCalculatorTest {
         }
       }
     }
-    val desired = newSite { stratum(numPermanent = 2) }
+    val desired = newSite { stratum(plantNumPermanent = 2) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -972,10 +980,10 @@ class PlantingSiteEditCalculatorTest {
   fun `returns deletion of stratum that no longer exists`() {
     val existing =
         existingSite(width = 1000) {
-          stratum(width = 750, numPermanent = 1) { substratum { permanent() } }
-          stratum(width = 250, numPermanent = 1) { substratum { permanent() } }
+          stratum(width = 750, plantNumPermanent = 1) { substratum { permanent() } }
+          stratum(width = 250, plantNumPermanent = 1) { substratum { permanent() } }
         }
-    val desired = newSite(width = 750) { stratum(numPermanent = 1) }
+    val desired = newSite(width = 750) { stratum(plantNumPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -1031,7 +1039,7 @@ class PlantingSiteEditCalculatorTest {
             substratum(width = 500)
           }
         }
-    val desired = newSite(width = 500) { stratum(numPermanent = 1) }
+    val desired = newSite(width = 500) { stratum(plantNumPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -1066,10 +1074,10 @@ class PlantingSiteEditCalculatorTest {
   fun `detects renames of strata and substrata`() {
     val existing =
         existingSite(width = 1000) {
-          stratum(name = "A", width = 500, numPermanent = 1) {
+          stratum(name = "A", width = 500, plantNumPermanent = 1) {
             substratum(name = "1") { permanent() }
           }
-          stratum(name = "B", width = 500, numPermanent = 1) {
+          stratum(name = "B", width = 500, plantNumPermanent = 1) {
             substratum(name = "2") { permanent() }
           }
         }
@@ -1077,10 +1085,10 @@ class PlantingSiteEditCalculatorTest {
     // Swap the names; the substrata should stay in their original strata.
     val desired =
         newSite(width = 1000) {
-          stratum(name = "B", stableId = StableId("A"), width = 500, numPermanent = 1) {
+          stratum(name = "B", stableId = StableId("A"), width = 500, plantNumPermanent = 1) {
             substratum(name = "2", stableId = StableId("A-1"))
           }
-          stratum(name = "A", stableId = StableId("B"), width = 500, numPermanent = 1) {
+          stratum(name = "A", stableId = StableId("B"), width = 500, plantNumPermanent = 1) {
             substratum(name = "1", stableId = StableId("B-2"))
           }
         }
@@ -1143,19 +1151,19 @@ class PlantingSiteEditCalculatorTest {
   fun `updates existing substratum if original stratum is deleted and new stratum has a substratum with its stable ID`() {
     val existing =
         existingSite(width = 1000) {
-          stratum(name = "A", width = 500, numPermanent = 1) {
+          stratum(name = "A", width = 500, plantNumPermanent = 1) {
             substratum(name = "1") { permanent() }
           }
-          stratum(name = "B", width = 500, numPermanent = 1) {
+          stratum(name = "B", width = 500, plantNumPermanent = 1) {
             substratum(name = "2") { permanent() }
           }
         }
     val desired =
         newSite(width = 1000) {
-          stratum(name = "C", width = 500, numPermanent = 1) {
+          stratum(name = "C", width = 500, plantNumPermanent = 1) {
             substratum(name = "1", stableId = StableId("A-1"))
           }
-          stratum(name = "B", width = 500, numPermanent = 1) { substratum(name = "2") }
+          stratum(name = "B", width = 500, plantNumPermanent = 1) { substratum(name = "2") }
         }
 
     assertEditResult(
@@ -1221,7 +1229,7 @@ class PlantingSiteEditCalculatorTest {
     }
     val desired = newSite {
       exclusion = rectangle(25)
-      stratum(numPermanent = 1)
+      stratum(plantNumPermanent = 1)
     }
 
     assertEditResult(
@@ -1264,14 +1272,14 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `ejects monitoring plots that no longer lie in site`() {
     val existing = existingSite {
-      stratum(numPermanent = 1) {
+      stratum(plantNumPermanent = 1) {
         substratum {
           plot(permanentIndex = 1)
           plot(permanentIndex = 2)
         }
       }
     }
-    val desired = newSite(x = 10) { stratum(numPermanent = 1) }
+    val desired = newSite(x = 10) { stratum(plantNumPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -1312,7 +1320,9 @@ class PlantingSiteEditCalculatorTest {
 
   @Test
   fun `accepts existing monitoring plots if nothing changed`() {
-    val existing = existingSite { stratum(numPermanent = 1) { substratum { permanent() } } }
+    val existing = existingSite {
+      stratum(plantNumPermanent = 1) { substratum { permanent() } }
+    }
     val desired = existing.toNew()
 
     assertEditResult(

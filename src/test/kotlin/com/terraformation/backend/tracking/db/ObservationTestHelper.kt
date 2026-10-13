@@ -96,8 +96,8 @@ class ObservationTestHelper(
   fun insertPlantedSite(
       height: Int = 10,
       width: Int = 10,
-      numPermanentPlots: Int = 1,
-      numTemporaryPlots: Int = 1,
+      plantNumPermanentPlots: Int = 1,
+      plantNumTemporaryPlots: Int = 1,
       plantingCreatedTime: Instant = Instant.EPOCH,
       substratumCompletedTime: Instant? = null,
       timeZone: ZoneId? = null,
@@ -118,8 +118,8 @@ class ObservationTestHelper(
         )
     test.insertStratum(
         height = height,
-        plantNumPermanentPlots = numPermanentPlots,
-        plantNumTemporaryPlots = numTemporaryPlots,
+        plantNumPermanentPlots = plantNumPermanentPlots,
+        plantNumTemporaryPlots = plantNumTemporaryPlots,
         width = width,
     )
     test.insertSubstratum(

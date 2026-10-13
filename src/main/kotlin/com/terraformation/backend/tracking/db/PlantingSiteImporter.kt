@@ -310,16 +310,16 @@ class PlantingSiteImporter(
               if (errorMargin != null && variance != null) {
                 StratumModel.create(
                     boundary = stratumBoundary,
-                    errorMargin = errorMargin,
                     exclusion = exclusion,
                     initialPlantingDensity = initialPlantingDensity,
                     name = stratumName,
-                    numPermanentPlots = numPermanentPlots,
-                    numTemporaryPlots = numTemporaryPlots,
-                    substrata = substratumModels,
+                    plantErrorMargin = errorMargin,
+                    plantNumPermanentPlots = numPermanentPlots,
+                    plantNumTemporaryPlots = numTemporaryPlots,
+                    plantStudentsT = studentsT,
+                    plantVariance = variance,
                     stableId = stableIdsByStratum[stratumName]!!,
-                    studentsT = studentsT,
-                    variance = variance,
+                    substrata = substratumModels,
                 )
               } else {
                 if (errorMargin == null) {

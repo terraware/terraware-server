@@ -22,7 +22,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `only chooses plots that lie in requested substrata`() {
       val model =
           stratumModel(
-              numPermanentPlots = 4,
+              plantNumPermanentPlots = 4,
               substrata =
                   listOf(
                       substratumModel(
@@ -49,7 +49,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `does not choose permanent plots`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 1,
+              plantNumTemporaryPlots = 1,
               substrata =
                   listOf(
                       substratumModel(
@@ -75,7 +75,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `can choose plots with permanent indexes that are not permanent currently`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 1,
+              plantNumTemporaryPlots = 1,
               substrata =
                   listOf(
                       substratumModel(plots = listOf(monitoringPlotModel(10, permanentIndex = 2)))
@@ -96,7 +96,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `uses explicit count instead of configured number of temporary plots`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 1,
+              plantNumTemporaryPlots = 1,
               substrata =
                   listOf(
                       substratumModel(
@@ -116,8 +116,8 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `treats explicit permanent plot IDs as the permanent set`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 1,
-              numPermanentPlots = 1,
+              plantNumTemporaryPlots = 1,
+              plantNumPermanentPlots = 1,
               substrata =
                   listOf(substratumModel(plots = monitoringPlotModels(permanentIds = listOf(10)))),
           )
@@ -138,7 +138,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `does not choose unavailable plots`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 1,
+              plantNumTemporaryPlots = 1,
               substrata =
                   listOf(
                       substratumModel(
@@ -189,7 +189,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
       val model =
           stratumModel(
-              numTemporaryPlots = 1,
+              plantNumTemporaryPlots = 1,
               substrata =
                   listOf(
                       substratumModel(
@@ -229,7 +229,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `spreads monitoring plots evenly across substrata`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 6,
+              plantNumTemporaryPlots = 6,
               substrata =
                   listOf(
                       substratumModel(
@@ -281,8 +281,8 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `places excess plots in substrata with fewest permanent plots`() {
       val model =
           stratumModel(
-              numPermanentPlots = 12,
-              numTemporaryPlots = 5,
+              plantNumPermanentPlots = 12,
+              plantNumTemporaryPlots = 5,
               substrata =
                   listOf(
                       substratumModel(
@@ -346,8 +346,8 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `places excess plots in requested substrata if no difference in permanent plots`() {
       val model =
           stratumModel(
-              numPermanentPlots = 9,
-              numTemporaryPlots = 5,
+              plantNumPermanentPlots = 9,
+              plantNumTemporaryPlots = 5,
               substrata =
                   listOf(
                       substratumModel(
@@ -407,7 +407,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `excludes plots that would have been placed in unrequested substrata`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 5,
+              plantNumTemporaryPlots = 5,
               substrata =
                   listOf(
                       substratumModel(
@@ -449,7 +449,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
     @Test
     fun `throws exception if no substrata`() {
-      val model = stratumModel(numTemporaryPlots = 1, substrata = emptyList())
+      val model = stratumModel(plantNumTemporaryPlots = 1, substrata = emptyList())
 
       assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), siteOrigin) }
     }
@@ -458,7 +458,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `returns fewer plots if substratum does not have room for all of them`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 6,
+              plantNumTemporaryPlots = 6,
               substrata =
                   listOf(substratumModel(plots = monitoringPlotModels(permanentIds = listOf(10)))),
           )
@@ -474,7 +474,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `spreads a full substratum's plots across the requested substrata that have room`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 6,
+              plantNumTemporaryPlots = 6,
               substrata =
                   listOf(
                       // Full substratum
@@ -531,7 +531,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `redistributes remaining plots to substrata with fewest temporary plots`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 4,
+              plantNumTemporaryPlots = 4,
               substrata =
                   listOf(
                       substratumModel(
@@ -569,7 +569,7 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `returns fewer plots when no substratum has room for the remainder`() {
       val model =
           stratumModel(
-              numTemporaryPlots = 6,
+              plantNumTemporaryPlots = 6,
               substrata =
                   listOf(
                       substratumModel(

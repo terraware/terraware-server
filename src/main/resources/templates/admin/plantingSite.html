@@ -39,52 +39,56 @@
     <th:block th:fragment="additionalScript">
         <script th:inline="javascript">
             function registerPlotCalculator(stratumId) {
-                const errorMarginField = document.getElementById(`errorMargin-${stratumId}`);
-                const permanentPlotsField = document.getElementById(`numPermanent-${stratumId}`);
-                const studentsTField = document.getElementById(`studentsT-${stratumId}`);
-                const temporaryPlotsField = document.getElementById(`numTemporary-${stratumId}`);
-                const totalPlotsField = document.getElementById(`total-${stratumId}`);
-                const varianceField = document.getElementById(`variance-${stratumId}`);
+                function registerCalculator(prefix) {
+                    const errorMarginField = document.getElementById(`${prefix}ErrorMargin-${stratumId}`);
+                    const permanentPlotsField = document.getElementById(`${prefix}NumPermanent-${stratumId}`);
+                    const studentsTField = document.getElementById(`${prefix}StudentsT-${stratumId}`);
+                    const temporaryPlotsField = document.getElementById(`${prefix}NumTemporary-${stratumId}`);
+                    const totalPlotsField = document.getElementById(`${prefix}TotalPlots-${stratumId}`);
+                    const varianceField = document.getElementById(`${prefix}Variance-${stratumId}`);
 
-                const calculateDefaultTotalPlots = () => {
-                    const errorMargin = Number.parseFloat(errorMarginField.value);
-                    const studentsT = Number.parseFloat(studentsTField.value);
-                    const variance = Number.parseFloat(varianceField.value);
-                    return Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin);
-                };
+                    const calculateDefaultTotalPlots = () => {
+                        const errorMargin = Number.parseFloat(errorMarginField.value);
+                        const studentsT = Number.parseFloat(studentsTField.value);
+                        const variance = Number.parseFloat(varianceField.value);
+                        return Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin);
+                    };
 
-                const recalculateTotalPlots = () => {
-                    const permanentPlots = Number.parseFloat(permanentPlotsField.value) || 0;
-                    const temporaryPlots = Number.parseFloat(temporaryPlotsField.value) || 0;
-                    const totalPlots = permanentPlots + temporaryPlots;
+                    const recalculateTotalPlots = () => {
+                        const permanentPlots = Number.parseFloat(permanentPlotsField.value) || 0;
+                        const temporaryPlots = Number.parseFloat(temporaryPlotsField.value) || 0;
+                        const totalPlots = permanentPlots + temporaryPlots;
 
-                    totalPlotsField.innerText = `${totalPlots}`;
-                };
+                        totalPlotsField.innerText = `${totalPlots}`;
+                    };
 
-                const recalculateTemporaryPlots = () => {
-                    const defaultTotalPlots = calculateDefaultTotalPlots();
-                    const permanentPlots = Number.parseFloat(permanentPlotsField.value);
-                    const temporaryPlots = Math.max(1, defaultTotalPlots - permanentPlots);
+                    const recalculateTemporaryPlots = () => {
+                        const defaultTotalPlots = calculateDefaultTotalPlots();
+                        const permanentPlots = Number.parseFloat(permanentPlotsField.value);
+                        const temporaryPlots = Math.max(1, defaultTotalPlots - permanentPlots);
 
-                    temporaryPlotsField.value = `${temporaryPlots}`;
+                        temporaryPlotsField.value = `${temporaryPlots}`;
 
-                    recalculateTotalPlots();
-                };
+                        recalculateTotalPlots();
+                    };
 
-                const recalculatePermanentPlots = () => {
-                    const defaultTotalPlots = calculateDefaultTotalPlots();
-                    const permanentPlots = Math.round(defaultTotalPlots * 0.75);
+                    const recalculatePermanentPlots = () => {
+                        const defaultTotalPlots = calculateDefaultTotalPlots();
+                        const permanentPlots = Math.round(defaultTotalPlots * 0.75);
 
-                    permanentPlotsField.value = `${permanentPlots}`;
+                        permanentPlotsField.value = `${permanentPlots}`;
 
-                    recalculateTemporaryPlots();
-                };
+                        recalculateTemporaryPlots();
+                    };
 
-                errorMarginField.addEventListener('change', recalculatePermanentPlots);
-                studentsTField.addEventListener('change', recalculatePermanentPlots);
-                varianceField.addEventListener('change', recalculatePermanentPlots);
-                permanentPlotsField.addEventListener('change', recalculateTemporaryPlots);
-                temporaryPlotsField.addEventListener('change', recalculateTotalPlots);
+                    errorMarginField.addEventListener('change', recalculatePermanentPlots);
+                    studentsTField.addEventListener('change', recalculatePermanentPlots);
+                    varianceField.addEventListener('change', recalculatePermanentPlots);
+                    permanentPlotsField.addEventListener('change', recalculateTemporaryPlots);
+                    temporaryPlotsField.addEventListener('change', recalculateTotalPlots);
+                }
+
+                registerCalculator('plant');
             }
 
             function showMapPopup() {
@@ -227,34 +231,34 @@
                            th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="variance" size="8"
-                           th:id="|variance-${stratum.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="plantVariance" size="8"
+                           th:id="|plantVariance-${stratum.id}|"
                            th:value="${stratum.plantPlotCounts.variance}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="errorMargin"
-                           th:id="|errorMargin-${stratum.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="plantErrorMargin"
+                           th:id="|plantErrorMargin-${stratum.id}|"
                            th:value="${stratum.plantPlotCounts.errorMargin}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="studentsT"
-                           th:id="|studentsT-${stratum.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="plantStudentsT"
+                           th:id="|plantStudentsT-${stratum.id}|"
                            th:value="${stratum.plantPlotCounts.studentsT}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="1" name="numPermanent"
-                           th:id="|numPermanent-${stratum.id}|"
+                    <input type="number" required min="1" name="plantNumPermanent"
+                           th:id="|plantNumPermanent-${stratum.id}|"
                            th:value="${stratum.plantPlotCounts.numPermanentPlots}"
                            th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0" name="numTemporary"
-                           th:id="|numTemporary-${stratum.id}|"
+                    <input type="number" required min="0" name="plantNumTemporary"
+                           th:id="|plantNumTemporary-${stratum.id}|"
                            th:value="${stratum.plantPlotCounts.numTemporaryPlots}"
                            th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <span th:id="|total-${stratum.id}|"
+                    <span th:id="|plantTotalPlots-${stratum.id}|"
                           th:text="${stratum.plantPlotCounts.numPermanentPlots + stratum.plantPlotCounts.numTemporaryPlots}">
                         123
                     </span>

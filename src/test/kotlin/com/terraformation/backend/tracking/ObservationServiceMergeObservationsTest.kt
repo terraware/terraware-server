@@ -128,7 +128,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
 
   @Test
   fun `combines disjoint plot totals into the target site totals`() {
-    helper.insertPlantedSite(numPermanentPlots = 2)
+    helper.insertPlantedSite(plantNumPermanentPlots = 2)
     val speciesId = inserted.speciesId
     val plotA = insertMonitoringPlot()
     val plotB = insertMonitoringPlot()
@@ -165,7 +165,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
 
   @Test
   fun `conflicting plot overwrites target media and deletes the old target files`() {
-    val plantingSiteId = helper.insertPlantedSite(numPermanentPlots = 2)
+    val plantingSiteId = helper.insertPlantedSite(plantNumPermanentPlots = 2)
     val speciesId = inserted.speciesId
     val plotId = insertMonitoringPlot()
     val sourceObservationId = insertObservation()
@@ -206,7 +206,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
 
   @Test
   fun `recalculates survival rate for the target observation`() {
-    helper.insertPlantedSite(numPermanentPlots = 2)
+    helper.insertPlantedSite(plantNumPermanentPlots = 2)
     val speciesId = inserted.speciesId
     val plotId = insertMonitoringPlot()
     val sourceObservationId = insertObservation()
@@ -275,7 +275,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
 
   @Test
   fun `cannot merge upcoming observations`() {
-    helper.insertPlantedSite(numPermanentPlots = 2)
+    helper.insertPlantedSite(plantNumPermanentPlots = 2)
     val speciesId = inserted.speciesId
     val plotId = insertMonitoringPlot()
     val sourceObservationId = insertObservation()

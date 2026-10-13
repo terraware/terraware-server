@@ -123,10 +123,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
     @Test
     fun `updates settings`() {
-      val newErrorMargin = BigDecimal(101)
+      val newPlantErrorMargin = BigDecimal(101)
       val newInitialPlantingDensity = BigDecimal(1100)
-      val newStudentsT = BigDecimal("1.646")
-      val newVariance = BigDecimal(40001)
+      val newPlantStudentsT = BigDecimal("1.646")
+      val newPlantVariance = BigDecimal(40001)
 
       val (edited) =
           runScenario(
@@ -134,22 +134,26 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               desired =
                   newSite {
                     stratum {
-                      errorMargin = newErrorMargin
+                      plantErrorMargin = newPlantErrorMargin
                       initialPlantingDensity = newInitialPlantingDensity
-                      studentsT = newStudentsT
-                      variance = newVariance
+                      plantStudentsT = newPlantStudentsT
+                      plantVariance = newPlantVariance
                     }
                   },
           )
 
-      assertEquals(newErrorMargin, edited.strata[0].plantPlotCounts.errorMargin, "Error margin")
-      assertEquals(newStudentsT, edited.strata[0].plantPlotCounts.studentsT, "Student's t")
+      assertEquals(
+          newPlantErrorMargin,
+          edited.strata[0].plantPlotCounts.errorMargin,
+          "Error margin",
+      )
+      assertEquals(newPlantStudentsT, edited.strata[0].plantPlotCounts.studentsT, "Student's t")
       assertEquals(
           newInitialPlantingDensity,
           edited.strata[0].initialPlantingDensity,
           "Target planting density",
       )
-      assertEquals(newVariance, edited.strata[0].plantPlotCounts.variance, "Variance")
+      assertEquals(newPlantVariance, edited.strata[0].plantPlotCounts.variance, "Variance")
     }
 
     @Test
@@ -304,18 +308,18 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       runScenario(
           initial =
               newSite {
-                stratum(numPermanent = 10, numTemporary = 5) {
-                  errorMargin = BigDecimal(11)
-                  studentsT = BigDecimal(12)
-                  variance = BigDecimal(13)
+                stratum(plantNumPermanent = 10, plantNumTemporary = 5) {
+                  plantErrorMargin = BigDecimal(11)
+                  plantStudentsT = BigDecimal(12)
+                  plantVariance = BigDecimal(13)
                 }
               },
           desired =
               newSite {
-                stratum(numPermanent = 20, numTemporary = 9) {
-                  errorMargin = BigDecimal(14)
-                  studentsT = BigDecimal(15)
-                  variance = BigDecimal(16)
+                stratum(plantNumPermanent = 20, plantNumTemporary = 9) {
+                  plantErrorMargin = BigDecimal(14)
+                  plantStudentsT = BigDecimal(15)
+                  plantVariance = BigDecimal(16)
                 }
               },
       )
@@ -326,7 +330,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       runScenario(
           initial =
               newSite {
-                stratum(numPermanent = 1) {
+                stratum(plantNumPermanent = 1) {
                   substratum(width = 250) {
                     plantingCompletedTime = Instant.EPOCH
                     permanent()
@@ -336,14 +340,14 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           desired =
               newSite(height = 600) {
-                stratum(numPermanent = 1) {
+                stratum(plantNumPermanent = 1) {
                   substratum(width = 250)
                   substratum(width = 250)
                 }
               },
           expected =
               newSite(height = 600) {
-                stratum(numPermanent = 1) {
+                stratum(plantNumPermanent = 1) {
                   substratum(width = 250) { plantingCompletedTime = Instant.EPOCH }
                   substratum(width = 250) { plantingCompletedTime = null }
                 }
@@ -398,8 +402,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `does not publish event if edit was a no-op`() {
       runScenario(
-          initial = newSite { stratum(numPermanent = 1) { substratum { permanent() } } },
-          desired = newSite { stratum(numPermanent = 1) },
+          initial = newSite { stratum(plantNumPermanent = 1) { substratum { permanent() } } },
+          desired = newSite { stratum(plantNumPermanent = 1) },
       )
 
       eventPublisher.assertEventNotPublished<PlantingSiteMapEditedEvent>()
@@ -452,7 +456,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `creates new monitoring plots in requested regions`() {
       val initial = newSite(width = 501)
-      val expected = newSite(width = 1000) { stratum(numPermanent = 4) }
+      val expected = newSite(width = 1000) { stratum(plantNumPermanent = 4) }
       val existingArea = initial.boundary!!
       val newArea = rectangle(x = 500, width = 500, height = 500)
 
@@ -487,7 +491,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         }
       }
       val expected = newSite {
-        stratum(numPermanent = 4) {
+        stratum(plantNumPermanent = 4) {
           substratum(width = 250)
           substratum(width = 250)
         }
@@ -507,7 +511,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       // PlantingSiteEditCalculatorV2Test.
       val initial =
           newSite(x = 0, width = 1000) {
-            stratum(name = "A", x = 0, width = 500, numPermanent = 8, numTemporary = 3) {
+            stratum(name = "A", x = 0, width = 500, plantNumPermanent = 8, plantNumTemporary = 3) {
               substratum {
                 permanent(plotNumber = 1, x = 300, y = 0)
                 permanent(plotNumber = 2, x = 300, y = 30)
@@ -515,7 +519,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 permanent(plotNumber = 7, x = 300, y = 90)
               }
             }
-            stratum(name = "B", x = 500, width = 500, numPermanent = 8, numTemporary = 3) {
+            stratum(
+                name = "B",
+                x = 500,
+                width = 500,
+                plantNumPermanent = 8,
+                plantNumTemporary = 3,
+            ) {
               substratum {
                 permanent(plotNumber = 16, x = 600, y = 0)
                 permanent(plotNumber = 18, x = 600, y = 30)
@@ -532,7 +542,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val desired =
           newSite(x = 280, width = 500) {
             gridOrigin = point(1)
-            stratum(name = "A", numPermanent = 11, numTemporary = 3) {}
+            stratum(name = "A", plantNumPermanent = 11, plantNumTemporary = 3) {}
           }
 
       runScenario(initial = initial, desired = desired)
@@ -569,8 +579,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       }
 
       val desired = newSite {
-        stratum(width = 300, name = "A", numPermanent = 1)
-        stratum(name = "B", numPermanent = 1)
+        stratum(width = 300, name = "A", plantNumPermanent = 1)
+        stratum(name = "B", plantNumPermanent = 1)
       }
 
       val (edited) = runScenario(initial = initial, desired = desired)
@@ -582,15 +592,19 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `retains stratum and substratum IDs on rename`() {
       val initial = newSite {
-        stratum(name = "A", numPermanent = 1, width = 250) { substratum(name = "Substratum") }
-        stratum(name = "B", numPermanent = 1, width = 250) { substratum(name = "Substratum") }
+        stratum(name = "A", plantNumPermanent = 1, width = 250) {
+          substratum(name = "Substratum")
+        }
+        stratum(name = "B", plantNumPermanent = 1, width = 250) {
+          substratum(name = "Substratum")
+        }
       }
 
       val desired = newSite {
-        stratum(name = "C", stableId = StableId("A"), numPermanent = 1, width = 250) {
+        stratum(name = "C", stableId = StableId("A"), plantNumPermanent = 1, width = 250) {
           substratum(name = "Substratum", stableId = StableId("A-Substratum"))
         }
-        stratum(name = "D", stableId = StableId("B"), numPermanent = 1, width = 250) {
+        stratum(name = "D", stableId = StableId("B"), plantNumPermanent = 1, width = 250) {
           substratum(name = "Substratum", stableId = StableId("B-Substratum"))
         }
       }
@@ -622,10 +636,22 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       }
 
       val desired = newSite {
-        stratum(name = "A", stableId = StableId("B"), x = 250, width = 250, numPermanent = 3) {
+        stratum(
+            name = "A",
+            stableId = StableId("B"),
+            x = 250,
+            width = 250,
+            plantNumPermanent = 3,
+        ) {
           substratum(stableId = StableId("B-S2"))
         }
-        stratum(name = "B", stableId = StableId("A"), x = 0, width = 250, numPermanent = 4) {
+        stratum(
+            name = "B",
+            stableId = StableId("A"),
+            x = 0,
+            width = 250,
+            plantNumPermanent = 4,
+        ) {
           substratum(stableId = StableId("A-S1"))
         }
       }
@@ -685,15 +711,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `moves existing substrata between strata`() {
       val initial = newSite {
-        stratum(name = "A", numPermanent = 2) {
+        stratum(name = "A", plantNumPermanent = 2) {
           substratum(name = "Substratum 1", width = 250) { permanent() }
           substratum(name = "Substratum 2", width = 250) { permanent() }
         }
       }
 
       val desired = newSite {
-        stratum(name = "A", numPermanent = 1, width = 250) { substratum(name = "Substratum 1") }
-        stratum(name = "B", numPermanent = 1, width = 250) {
+        stratum(name = "A", plantNumPermanent = 1, width = 250) {
+          substratum(name = "Substratum 1")
+        }
+        stratum(name = "B", plantNumPermanent = 1, width = 250) {
           substratum(name = "Substratum 2", stableId = StableId("A-Substratum 2"))
         }
       }
@@ -714,11 +742,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `moves substratum from deleted stratum to new one, perhaps because the stratum was renamed`() {
       val initial = newSite {
-        stratum(name = "A", numPermanent = 1) { substratum(name = "Substratum") { permanent() } }
+        stratum(name = "A", plantNumPermanent = 1) {
+          substratum(name = "Substratum") { permanent() }
+        }
       }
 
       val desired = newSite {
-        stratum(name = "B", numPermanent = 1) {
+        stratum(name = "B", plantNumPermanent = 1) {
           substratum(name = "Substratum", stableId = StableId("A-Substratum"))
         }
       }
