@@ -411,6 +411,29 @@ class BiomassPayloadsTest {
               soilType = SoilType.Loam,
               tide = null,
               tideTime = null,
+              totalDead = 1,
+              totalLive = 3,
+              treeSpecies =
+                  listOf(
+                      BiomassTreeSpeciesResultsPayload(
+                          speciesId = SpeciesId(11),
+                          speciesName = null,
+                          totalLive = 1,
+                          totalDead = 0,
+                      ),
+                      BiomassTreeSpeciesResultsPayload(
+                          speciesId = null,
+                          speciesName = "Tree species",
+                          totalLive = 0,
+                          totalDead = 1,
+                      ),
+                      BiomassTreeSpeciesResultsPayload(
+                          speciesId = SpeciesId(12),
+                          speciesName = null,
+                          totalLive = 2,
+                          totalDead = 0,
+                      ),
+                  ),
               treeSpeciesCount = 3,
               trees =
                   listOf(

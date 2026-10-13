@@ -18,6 +18,7 @@ import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
@@ -294,6 +295,20 @@ data class NewTreeWithTrunksPayload(
   }
 }
 
+data class BiomassTreeSpeciesResultsPayload(
+    val speciesId: SpeciesId?,
+    @Schema(
+        description =
+            "Scientific name of the species. Only set for species that were recorded by name " +
+                "rather than by species ID."
+    )
+    val speciesName: String?,
+    @Schema(description = "Number of live recorded trees, trunks, and shrubs of this species.")
+    val totalLive: Int,
+    @Schema(description = "Number of dead recorded trees, trunks, and shrubs of this species.")
+    val totalDead: Int,
+)
+
 data class ExistingBiomassMeasurementPayload(
     val additionalSpecies: List<BiomassSpeciesPayload>,
     val description: String?,
@@ -327,6 +342,14 @@ data class ExistingBiomassMeasurementPayload(
                 "that there was no water."
     )
     val tideTime: Instant?,
+    @Schema(description = "Number of dead recorded trees, trunks, and shrubs across all species.")
+    val totalDead: Int,
+    @Schema(description = "Number of live recorded trees, trunks, and shrubs across all species.")
+    val totalLive: Int,
+    @ArraySchema(
+        arraySchema = Schema(description = "Live and dead plant counts per recorded species.")
+    )
+    val treeSpecies: List<BiomassTreeSpeciesResultsPayload>,
     val treeSpeciesCount: Int,
     val trees: List<ExistingTreePayload>,
     @Schema(
@@ -355,6 +378,24 @@ data class ExistingBiomassMeasurementPayload(
         treeSpecies[it] == null && quadratSpecies[it] == null
       }
 
+      val treeSpeciesResults =
+          model.trees
+              .groupBy { tree ->
+                if (tree.speciesId != null) {
+                  BiomassSpeciesKey(speciesId = tree.speciesId)
+                } else {
+                  BiomassSpeciesKey(scientificName = tree.speciesName)
+                }
+              }
+              .map { (key, trees) ->
+                BiomassTreeSpeciesResultsPayload(
+                    speciesId = key.speciesId,
+                    speciesName = key.scientificName,
+                    totalLive = trees.count { !it.isDead },
+                    totalDead = trees.count { it.isDead },
+                )
+              }
+
       return ExistingBiomassMeasurementPayload(
           additionalSpecies = additionalSpecies.map { BiomassSpeciesPayload(it.value) },
           description = model.description,
@@ -372,6 +413,9 @@ data class ExistingBiomassMeasurementPayload(
           soilType = model.soilType,
           tide = model.tide,
           tideTime = model.tideTime,
+          totalDead = model.trees.count { it.isDead },
+          totalLive = model.trees.count { !it.isDead },
+          treeSpecies = treeSpeciesResults,
           treeSpeciesCount = treeSpecies.size,
           trees = model.trees.map { ExistingTreePayload(it, species) },
           waterDepth = model.waterDepthCm,
