@@ -22,7 +22,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSiteId =
           insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0), insertHistory = false)
       val plantingSiteHistoryId = insertPlantingSiteHistory()
-      insertStratum(boundary = siteBoundary, numPermanentPlots = 4)
+      insertStratum(boundary = siteBoundary, plantNumPermanentPlots = 4)
       val substratumId = insertSubstratum(boundary = siteBoundary, insertHistory = false)
       val substratumHistoryId = insertSubstratumHistory()
 
@@ -62,7 +62,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
           }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
-      insertStratum(boundary = siteBoundary, numPermanentPlots = 4)
+      insertStratum(boundary = siteBoundary, plantNumPermanentPlots = 4)
       insertSubstratum(boundary = siteBoundary)
 
       // Stratum is configured for 4 permanent plots, but there's only room for 2.
@@ -89,7 +89,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
               insertHistory = false,
           )
       val plantingSiteHistoryId = insertPlantingSiteHistory()
-      insertStratum(boundary = siteBoundary, numPermanentPlots = 3)
+      insertStratum(boundary = siteBoundary, plantNumPermanentPlots = 3)
       val substratumId = insertSubstratum(boundary = siteBoundary, insertHistory = false)
       val substratumHistoryId = insertSubstratumHistory()
       insertMonitoringPlot(
@@ -138,7 +138,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
           }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertStratum(boundary = siteBoundary, numPermanentPlots = 2)
+      insertStratum(boundary = siteBoundary, plantNumPermanentPlots = 2)
       insertSubstratum(boundary = siteBoundary)
       val existingPlotId = insertMonitoringPlot(boundary = existingPlotBoundary)
 
@@ -158,7 +158,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertStratum(boundary = siteBoundary, numPermanentPlots = 2)
+      insertStratum(boundary = siteBoundary, plantNumPermanentPlots = 2)
       insertSubstratum(boundary = siteBoundary)
       insertMonitoringPlot(boundary = plotBoundary, permanentIndex = 1)
       insertMonitoringPlot(boundary = plotBoundary, permanentIndex = 2)
@@ -186,7 +186,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertStratum(boundary = siteBoundary, numPermanentPlots = 2)
+      insertStratum(boundary = siteBoundary, plantNumPermanentPlots = 2)
       insertSubstratum(boundary = siteBoundary)
       insertMonitoringPlot(boundary = existingPlotBoundary, plotNumber = 1, permanentIndex = 1)
 

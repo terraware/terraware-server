@@ -118,8 +118,8 @@ class ObservationTestHelper(
         )
     test.insertStratum(
         height = height,
-        numPermanentPlots = numPermanentPlots,
-        numTemporaryPlots = numTemporaryPlots,
+        plantNumPermanentPlots = numPermanentPlots,
+        plantNumTemporaryPlots = numTemporaryPlots,
         width = width,
     )
     test.insertSubstratum(
