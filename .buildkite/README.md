@@ -1,10 +1,15 @@
-# NOTES ABOUT THIS PIPELINE
+# NOTES ABOUT PIPELINES
+
+There are two pipelines here: `pipeline.yml` and `pipeline-post-release.yml`. The first is
+the default one that's used for all builds including release builds. The second is triggered
+at the end of a release build, after the release has successfully deployed to production.
 
 ## Uploading
 
-The pipeline file here doesn't do anything in and of itself; it needs to be uploaded using the
-Buildkite agent. On the Buildkite side, in the repo configuration, we define the starting point
-of the pipeline; the step defined here is the thing that uploads `pipeline.yml` to Buildkite.
+The pipeline files here don't do anything in and of themselves; they need to be uploaded using
+the Buildkite agent. On the Buildkite side, in the repo configuration's "Steps" setting, we
+define the starting point of the pipeline. The step defined there is the thing that uploads
+the appropriate pipeline file to Buildkite.
 
 ```yaml
 env:
@@ -23,11 +28,7 @@ steps:
           # from which the current branch was forked, but small enough to keep the clone
           # operation reasonably fast.
           depth: 200
-    command: |
-      if [[ "$$BUILDKITE_BRANCH" == "$$BUILDKITE_PIPELINE_DEFAULT_BRANCH" ]]; then
-        export BUILDKITE_GIT_DIFF_BASE="HEAD~1"
-      fi
-      buildkite-agent pipeline upload
+    command: ".buildkite/scripts/upload-pipeline.sh"
 ```
 
 ## YAML anchors

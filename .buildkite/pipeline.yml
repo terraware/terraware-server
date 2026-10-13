@@ -51,11 +51,9 @@ common:
     retry:
       manual:
         allowed: false
-
-
-agents:
-  # Run all steps on the same runner that uploaded the pipeline initially.
-  "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
+    agents:
+      # Run all steps on the same runner that uploaded the pipeline initially.
+      "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
 
 env:
   BUILDKITE_ARTIFACT_UPLOAD_DESTINATION: "s3://$BUILDKITE_PLUGIN_S3_CACHE_BUCKET/artifacts/$BUILDKITE_PIPELINE_SLUG/$BUILDKITE_BUILD_ID"
@@ -230,8 +228,7 @@ steps:
           force: true
     command: "true"
 
-  - <<: *use-existing-checkout
-    label: ":amazon-ecs: Deploy to ECS"
+  - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
     concurrency: 1
     concurrency_group: "terraware-server/deploy"
@@ -246,28 +243,31 @@ steps:
       - *load-secrets
     command: .buildkite/scripts/deploy-ecs.sh
 
-  - <<: *use-existing-checkout
-    label: ":slack: Release notes & Jira transitions"
-    key: "release-notes"
-    depends_on: "deploy"
+  - label: ":buildkite: Trigger separate release documentation build"
+    key: "release-docs-build"
+    trigger: "terraware-server"
+    async: true
     if: "build.tag =~ /^v2[0-9]+\\.[0-9]+/"
-    plugins:
-      - *load-secrets
-    command: .buildkite/scripts/release-notes.sh
+    depends_on:
+      - "deploy"
+    build:
+      message: "Build and deploy release documentation"
+      commit: "$BUILDKITE_COMMIT"
+      branch: "$BUILDKITE_BRANCH"
+      env:
+        UPLOAD_PIPELINE_FILE: ".buildkite/pipeline-post-release.yml"
 
-  - <<: *use-existing-checkout
-    label: ":speech_balloon: Notify PR of staging deploy"
+  - label: ":speech_balloon: Notify PR of staging deploy"
     key: "notify-pr"
     depends_on:
       - "deploy"
-      - "release-notes"
+      - "release-docs-build"
     branches: "main"
     plugins:
       - *load-secrets
     command: .buildkite/scripts/notify-pr.sh
 
-  - <<: *use-existing-checkout
-    label: ":books: Generate and deploy unreleased commits log"
+  - label: ":books: Generate and deploy unreleased commits log"
     key: "generate-unreleased"
     depends_on:
       - "notify-pr"
@@ -276,18 +276,6 @@ steps:
     plugins:
       - *load-secrets
     command: .buildkite/scripts/deploy-main-docs.sh
-
-  - <<: *use-existing-checkout
-    label: ":books: Generate and deploy docs"
-    key: "generate-docs"
-    depends_on:
-      - "deploy"
-      - "generate-unreleased"
-      - "release-notes"
-    if: "build.tag =~ /^v2[0-9]+\\.[0-9]+/"
-    plugins:
-      - *load-secrets
-    command: .buildkite/scripts/deploy-release-docs.sh
 
 notify:
   - slack:
