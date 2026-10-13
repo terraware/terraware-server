@@ -63,17 +63,7 @@ sealed interface StratumEdit {
           existingModel.initialPlantingDensity.equalsIgnoreScale(
               desiredModel.initialPlantingDensity
           ) &&
-          existingModel.plantPlotCounts.errorMargin.equalsIgnoreScale(
-              desiredModel.plantPlotCounts.errorMargin
-          ) &&
-          existingModel.plantPlotCounts.numPermanentPlots ==
-              desiredModel.plantPlotCounts.numPermanentPlots &&
-          existingModel.plantPlotCounts.studentsT.equalsIgnoreScale(
-              desiredModel.plantPlotCounts.studentsT
-          ) &&
-          existingModel.plantPlotCounts.variance.equalsIgnoreScale(
-              desiredModel.plantPlotCounts.variance
-          ) &&
+          existingModel.plantPlotCounts == desiredModel.plantPlotCounts &&
           monitoringPlotEdits.isEmpty() &&
           substratumEdits.all { edit ->
             edit.isNoOp() && existingModel.substrata.any { it.id == edit.existingModel?.id }
