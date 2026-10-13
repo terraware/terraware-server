@@ -59,6 +59,7 @@ data class StratumModel<
     TIMESTAMP : Instant?,
 >(
     val areaHa: BigDecimal,
+    val biomassPlotCounts: StratumPlotCounts = StratumPlotCounts(),
     val boundary: MultiPolygon,
     val boundaryModifiedTime: TIMESTAMP,
     val id: SID,
@@ -497,6 +498,7 @@ data class StratumModel<
     return other is AnyStratumModel &&
         id == other.id &&
         name == other.name &&
+        biomassPlotCounts == other.biomassPlotCounts &&
         boundaryModifiedTime == other.boundaryModifiedTime &&
         plantPlotCounts == other.plantPlotCounts &&
         plantPlotCounts.numPermanentPlots == other.plantPlotCounts.numPermanentPlots &&
@@ -514,6 +516,7 @@ data class StratumModel<
   fun toNew(): NewStratumModel =
       NewStratumModel(
           areaHa = areaHa,
+          biomassPlotCounts = biomassPlotCounts,
           boundary = boundary,
           boundaryModifiedTime = null,
           id = null,
@@ -553,17 +556,28 @@ data class StratumModel<
         plantVariance: BigDecimal = DEFAULT_VARIANCE,
         stableId: StableId = StableId(name),
         targetPlantDensity: BigDecimal? = null,
+        biomassErrorMargin: BigDecimal = plantErrorMargin,
+        biomassNumPermanentPlots: Int? = plantNumPermanentPlots,
+        biomassNumTemporaryPlots: Int? = plantNumTemporaryPlots,
+        biomassStudentsT: BigDecimal = plantStudentsT,
+        biomassVariance: BigDecimal = plantVariance,
     ): NewStratumModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
-      val defaultPlantTotalPlots =
-          (plantStudentsT * plantStudentsT * plantVariance / plantErrorMargin / plantErrorMargin)
-              .setScale(0, RoundingMode.UP)
-              .toInt()
-      val defaultPlantPermanentPlots = max((defaultPlantTotalPlots * 0.75).roundToInt(), 1)
-      val defaultPlantTemporaryPlots = max(defaultPlantTotalPlots - defaultPlantPermanentPlots, 1)
+      val (defaultBiomassPermanentPlots, defaultBiomassTemporaryPlots) =
+          calculatePlotCounts(biomassErrorMargin, biomassStudentsT, biomassVariance)
+      val (defaultPlantPermanentPlots, defaultPlantTemporaryPlots) =
+          calculatePlotCounts(plantErrorMargin, plantStudentsT, plantVariance)
 
       return NewStratumModel(
           areaHa = areaHa,
+          biomassPlotCounts =
+              StratumPlotCounts(
+                  errorMargin = biomassErrorMargin,
+                  numPermanentPlots = biomassNumPermanentPlots ?: defaultBiomassPermanentPlots,
+                  numTemporaryPlots = biomassNumTemporaryPlots ?: defaultBiomassTemporaryPlots,
+                  studentsT = biomassStudentsT,
+                  variance = biomassVariance,
+              ),
           boundary = boundary,
           boundaryModifiedTime = null,
           id = null,
@@ -581,6 +595,22 @@ data class StratumModel<
           stableId = stableId,
           targetPlantDensity = targetPlantDensity,
       )
+    }
+
+    /** Returns the permanent and temporary plot counts based on the statistical formula inputs. */
+    private fun calculatePlotCounts(
+        errorMargin: BigDecimal,
+        studentsT: BigDecimal,
+        variance: BigDecimal,
+    ): Pair<Int, Int> {
+      val defaultTotalPlots =
+          (studentsT * studentsT * variance / errorMargin / errorMargin)
+              .setScale(0, RoundingMode.UP)
+              .toInt()
+      val permanentPlots = max((defaultTotalPlots * 0.75).roundToInt(), 1)
+      val temporaryPlots = max(defaultTotalPlots - permanentPlots, 1)
+
+      return Pair(permanentPlots, temporaryPlots)
     }
   }
 }

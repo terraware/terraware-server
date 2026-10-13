@@ -895,6 +895,17 @@ class PlantingSiteStore(
               dslContext
                   .update(STRATA)
                   .set(AREA_HA, edit.desiredModel.areaHa)
+                  .set(BIOMASS_ERROR_MARGIN, edit.desiredModel.biomassPlotCounts.errorMargin)
+                  .set(
+                      BIOMASS_NUM_PERMANENT_PLOTS,
+                      edit.desiredModel.biomassPlotCounts.numPermanentPlots,
+                  )
+                  .set(
+                      BIOMASS_NUM_TEMPORARY_PLOTS,
+                      edit.desiredModel.biomassPlotCounts.numTemporaryPlots,
+                  )
+                  .set(BIOMASS_STUDENTS_T, edit.desiredModel.biomassPlotCounts.studentsT)
+                  .set(BIOMASS_VARIANCE, edit.desiredModel.biomassPlotCounts.variance)
                   .set(BOUNDARY, edit.desiredModel.boundary)
                   .apply {
                     if (boundaryChanged) {
@@ -1168,6 +1179,11 @@ class PlantingSiteStore(
       with(STRATA) {
         dslContext
             .update(STRATA)
+            .set(BIOMASS_ERROR_MARGIN, edited.biomassErrorMargin)
+            .set(BIOMASS_NUM_PERMANENT_PLOTS, edited.biomassNumPermanentPlots)
+            .set(BIOMASS_NUM_TEMPORARY_PLOTS, edited.biomassNumTemporaryPlots)
+            .set(BIOMASS_STUDENTS_T, edited.biomassStudentsT)
+            .set(BIOMASS_VARIANCE, edited.biomassVariance)
             .set(INITIAL_PLANTING_DENSITY, edited.initialPlantingDensity)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
@@ -1304,6 +1320,11 @@ class PlantingSiteStore(
     val strataRow =
         StrataRow(
             areaHa = stratum.areaHa,
+            biomassErrorMargin = stratum.biomassPlotCounts.errorMargin,
+            biomassNumPermanentPlots = stratum.biomassPlotCounts.numPermanentPlots,
+            biomassNumTemporaryPlots = stratum.biomassPlotCounts.numTemporaryPlots,
+            biomassStudentsT = stratum.biomassPlotCounts.studentsT,
+            biomassVariance = stratum.biomassPlotCounts.variance,
             boundary = stratum.boundary,
             boundaryModifiedBy = userId,
             boundaryModifiedTime = now,
@@ -2149,21 +2170,26 @@ class PlantingSiteStore(
     return DSL.multiset(
             DSL.select(
                     STRATA.AREA_HA,
+                    STRATA.BIOMASS_ERROR_MARGIN,
+                    STRATA.BIOMASS_NUM_PERMANENT_PLOTS,
+                    STRATA.BIOMASS_NUM_TEMPORARY_PLOTS,
+                    STRATA.BIOMASS_STUDENTS_T,
+                    STRATA.BIOMASS_VARIANCE,
                     boundaryField,
                     STRATA.BOUNDARY_MODIFIED_TIME,
-                    STRATA.PLANT_ERROR_MARGIN,
                     STRATA.ID,
                     STRATA.INITIAL_PLANTING_DENSITY,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
                     STRATA.NAME,
+                    STRATA.PLANT_ERROR_MARGIN,
                     STRATA.PLANT_NUM_PERMANENT_PLOTS,
                     STRATA.PLANT_NUM_TEMPORARY_PLOTS,
+                    STRATA.PLANT_STUDENTS_T,
+                    STRATA.PLANT_VARIANCE,
                     STRATA.STABLE_ID,
                     substrataField,
-                    STRATA.PLANT_STUDENTS_T,
                     STRATA.TARGET_PLANT_DENSITY,
-                    STRATA.PLANT_VARIANCE,
                 )
                 .from(STRATA)
                 .apply {
@@ -2178,6 +2204,14 @@ class PlantingSiteStore(
           result.map { record: Record ->
             ExistingStratumModel(
                 areaHa = record[STRATA.AREA_HA]!!,
+                biomassPlotCounts =
+                    StratumPlotCounts(
+                        errorMargin = record[STRATA.BIOMASS_ERROR_MARGIN]!!,
+                        numPermanentPlots = record[STRATA.BIOMASS_NUM_PERMANENT_PLOTS]!!,
+                        numTemporaryPlots = record[STRATA.BIOMASS_NUM_TEMPORARY_PLOTS]!!,
+                        studentsT = record[STRATA.BIOMASS_STUDENTS_T]!!,
+                        variance = record[STRATA.BIOMASS_VARIANCE]!!,
+                    ),
                 boundary = record[boundaryField]!! as MultiPolygon,
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
                 id = record[STRATA.ID]!!,

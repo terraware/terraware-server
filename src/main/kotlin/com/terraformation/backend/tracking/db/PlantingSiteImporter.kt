@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import org.geotools.filter.function.StaticGeometry.boundary
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 
@@ -309,6 +310,11 @@ class PlantingSiteImporter(
 
               if (errorMargin != null && variance != null) {
                 StratumModel.create(
+                    biomassErrorMargin = errorMargin,
+                    biomassNumPermanentPlots = numPermanentPlots,
+                    biomassNumTemporaryPlots = numTemporaryPlots,
+                    biomassStudentsT = studentsT,
+                    biomassVariance = variance,
                     boundary = stratumBoundary,
                     exclusion = exclusion,
                     initialPlantingDensity = initialPlantingDensity,

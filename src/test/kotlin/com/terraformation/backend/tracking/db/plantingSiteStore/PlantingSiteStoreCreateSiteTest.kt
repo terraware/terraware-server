@@ -144,6 +144,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               strata =
                   listOf(
                       StratumModel.create(
+                          biomassErrorMargin = BigDecimal(21),
+                          biomassNumPermanentPlots = 22,
+                          biomassNumTemporaryPlots = 23,
+                          biomassStudentsT = BigDecimal(24),
+                          biomassVariance = BigDecimal(25),
                           boundary = stratum1Boundary,
                           initialPlantingDensity = BigDecimal(6),
                           name = "Stratum 1",
@@ -237,6 +242,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertSetEquals(
           setOf(
               commonStrataRow.copy(
+                  biomassErrorMargin = BigDecimal(21),
+                  biomassNumPermanentPlots = 22,
+                  biomassNumTemporaryPlots = 23,
+                  biomassStudentsT = BigDecimal(24),
+                  biomassVariance = BigDecimal(25),
                   id = actualStrata["Stratum 1"]?.id,
                   initialPlantingDensity = BigDecimal(6),
                   name = "Stratum 1",
@@ -249,6 +259,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   targetPlantDensity = BigDecimal(8),
               ),
               commonStrataRow.copy(
+                  biomassErrorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
+                  biomassNumPermanentPlots = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+                  biomassNumTemporaryPlots = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+                  biomassStudentsT = StratumModel.DEFAULT_STUDENTS_T,
+                  biomassVariance = StratumModel.DEFAULT_VARIANCE,
                   id = actualStrata["Stratum 2"]?.id,
                   initialPlantingDensity = StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
                   name = "Stratum 2",

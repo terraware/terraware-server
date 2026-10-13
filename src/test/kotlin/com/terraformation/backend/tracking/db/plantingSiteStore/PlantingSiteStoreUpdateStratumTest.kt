@@ -50,6 +50,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val stratumId = insertStratum(initialRow)
 
       val newName = "renamed"
+      val newBiomassErrorMargin = BigDecimal(5)
+      val newBiomassStudentsT = BigDecimal(6)
+      val newBiomassVariance = BigDecimal(7)
+      val newBiomassNumPermanentPlots = 8
+      val newBiomassNumTemporaryPlots = 9
       val newPlantErrorMargin = BigDecimal(10)
       val newPlantStudentsT = BigDecimal(11)
       val newPlantVariance = BigDecimal(12)
@@ -60,6 +65,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
       val expected =
           initialRow.copy(
+              biomassErrorMargin = newBiomassErrorMargin,
+              biomassNumPermanentPlots = newBiomassNumPermanentPlots,
+              biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,
+              biomassStudentsT = newBiomassStudentsT,
+              biomassVariance = newBiomassVariance,
               id = stratumId,
               initialPlantingDensity = newInitialPlantingDensity,
               modifiedBy = user.userId,
@@ -76,6 +86,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       store.updateStratum(stratumId) {
         it.copy(
             // Editable
+            biomassErrorMargin = newBiomassErrorMargin,
+            biomassNumPermanentPlots = newBiomassNumPermanentPlots,
+            biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,
+            biomassStudentsT = newBiomassStudentsT,
+            biomassVariance = newBiomassVariance,
             initialPlantingDensity = newInitialPlantingDensity,
             name = newName,
             plantErrorMargin = newPlantErrorMargin,
