@@ -39,7 +39,7 @@ When possible, keep each PR in a stack under 350 lines of changes, but only if y
 
 If the repo is using jj, you can use jj commands to manage the stack of revisions, including splitting, combining, and reordering revisions.
 
-Don't push or submit the pull requests yourself; that'll be done manually.
+Only push or submit PRs if the user specifically requests it or if you are running as an automated job specifically intended to create pull requests; otherwise the user will create the PRs manually.
 
 ## Tool Use
 
