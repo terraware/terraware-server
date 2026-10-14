@@ -587,6 +587,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
 
+  @Test
   fun `maps ViabilityTest events to payloads`() {
     val accessionId = AccessionId(10)
     val facilityId = FacilityId(11)
