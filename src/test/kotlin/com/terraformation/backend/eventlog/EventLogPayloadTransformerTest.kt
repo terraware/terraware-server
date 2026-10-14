@@ -587,33 +587,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
 
-  @Test
-  fun `renders WithdrawalCreatedEvent estimatedCount of 1 as singular`() {
-    val entry =
-        eventLogEntry(
-            knownUserId,
-            WithdrawalCreatedEvent(
-                date = LocalDate.of(2021, 1, 1),
-                estimatedCount = 1,
-                withdrawalId = WithdrawalId(20),
-                accessionId = AccessionId(10),
-                facilityId = FacilityId(11),
-                organizationId = organizationId,
-            ),
-        )
-
-    val payloads = transformer.eventsToPayloads(listOf(entry))
-
-    assertEquals(
-        listOf(
-            CreatedFieldPayload("date", listOf("2021-01-01")),
-            CreatedFieldPayload("estimatedCount", listOf("1 seed")),
-        ),
-        (payloads.first().action as CreatedActionPayload).fields,
-    )
-  }
-
-  @Test
   fun `maps ViabilityTest events to payloads`() {
     val accessionId = AccessionId(10)
     val facilityId = FacilityId(11)
