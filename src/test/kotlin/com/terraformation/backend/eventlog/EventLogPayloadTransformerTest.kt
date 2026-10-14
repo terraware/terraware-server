@@ -474,6 +474,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 notes = "initial notes",
                 staffResponsible = "Some Person",
                 destination = "Lab",
+                estimatedCount = 13,
                 viabilityTestId = ViabilityTestId(30),
                 withdrawnByUserId = knownUserId,
                 withdrawalId = withdrawalId,
@@ -533,6 +534,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         listOf(
                             CreatedFieldPayload("date", listOf("2021-01-01")),
                             CreatedFieldPayload("destination", listOf("Lab")),
+                            CreatedFieldPayload("estimatedCount", listOf("13 seeds")),
                             CreatedFieldPayload("notes", listOf("initial notes")),
                             CreatedFieldPayload("purpose", listOf("Viability Testing")),
                             CreatedFieldPayload("staffResponsible", listOf("Some Person")),

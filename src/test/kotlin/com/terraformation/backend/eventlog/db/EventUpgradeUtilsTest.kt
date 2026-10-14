@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
@@ -29,8 +30,13 @@ import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventV1
 import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventValues
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
+import com.terraformation.backend.seedbank.grams
+import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.seedbank.seeds
+import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -363,6 +369,101 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             accessionId = accessionId,
             facilityId = facilityId,
             organizationId = inserted.organizationId,
+        )
+  }
+
+  @Nested
+  inner class UpgradeWithdrawalCreatedEventV2 {
+    private val withdrawalDate = LocalDate.of(2021, 1, 1)
+
+    private lateinit var accessionId: AccessionId
+    private lateinit var facilityId: FacilityId
+
+    @BeforeEach
+    fun setUpAccession() {
+      insertOrganization()
+      facilityId = insertFacility()
+      accessionId = insertAccession()
+    }
+
+    @Test
+    fun `populates estimatedCount from the current row for weight-based withdrawals`() {
+      val withdrawalId =
+          insertSeedbankWithdrawal(
+              batchId = null,
+              estimatedCount = 42,
+              withdrawnQuantity = BigDecimal(10),
+              withdrawnUnitsId = SeedQuantityUnits.Grams,
+          )
+
+      testUpgrade(
+          createdEventV2(withdrawalId, grams(10)),
+          createdEventV3(withdrawalId, grams(10), estimatedCount = 42),
+      )
+    }
+
+    @Test
+    fun `does not populate estimatedCount for count-based withdrawals`() {
+      val withdrawalId =
+          insertSeedbankWithdrawal(
+              batchId = null,
+              estimatedCount = 42,
+              withdrawnQuantity = BigDecimal(10),
+              withdrawnUnitsId = SeedQuantityUnits.Seeds,
+          )
+
+      testUpgrade(
+          createdEventV2(withdrawalId, seeds(10)),
+          createdEventV3(withdrawalId, seeds(10), estimatedCount = null),
+      )
+    }
+
+    @Test
+    fun `does not populate estimatedCount if the withdrawal was deleted`() {
+      val withdrawalId =
+          insertSeedbankWithdrawal(
+              batchId = null,
+              estimatedCount = 42,
+              withdrawnQuantity = BigDecimal(10),
+              withdrawnUnitsId = SeedQuantityUnits.Grams,
+          )
+
+      withdrawalsDao.deleteById(withdrawalId)
+
+      testUpgrade(
+          createdEventV2(withdrawalId, grams(10)),
+          createdEventV3(withdrawalId, grams(10), estimatedCount = null),
+      )
+    }
+
+    private fun createdEventV2(
+        withdrawalId: WithdrawalId,
+        withdrawnQuantity: SeedQuantityModel? = null,
+    ) =
+        WithdrawalCreatedEventV2(
+            accessionId = accessionId,
+            date = withdrawalDate,
+            facilityId = facilityId,
+            organizationId = inserted.organizationId,
+            purpose = WithdrawalPurpose.Other,
+            withdrawalId = withdrawalId,
+            withdrawnQuantity = withdrawnQuantity,
+        )
+
+    private fun createdEventV3(
+        withdrawalId: WithdrawalId,
+        withdrawnQuantity: SeedQuantityModel? = null,
+        estimatedCount: Long? = null,
+    ) =
+        WithdrawalCreatedEventV3(
+            accessionId = accessionId,
+            date = withdrawalDate,
+            estimatedCount = estimatedCount,
+            facilityId = facilityId,
+            organizationId = inserted.organizationId,
+            purpose = WithdrawalPurpose.Other,
+            withdrawalId = withdrawalId,
+            withdrawnQuantity = withdrawnQuantity,
         )
   }
 

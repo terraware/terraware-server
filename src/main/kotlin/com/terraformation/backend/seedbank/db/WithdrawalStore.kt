@@ -8,6 +8,7 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -255,6 +256,15 @@ class WithdrawalStore(
         if (newId != null) {
           eventPublisher.publishEvent(
               WithdrawalCreatedEvent(
+                  estimatedCount =
+                      if (
+                          withdrawal.withdrawn != null &&
+                              withdrawal.withdrawn.units != SeedQuantityUnits.Seeds
+                      ) {
+                        withdrawal.estimatedCount
+                      } else {
+                        null
+                      },
                   purpose = withdrawal.purpose,
                   date = withdrawal.date,
                   withdrawnQuantity = withdrawal.withdrawn,
