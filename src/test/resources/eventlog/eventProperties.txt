@@ -242,6 +242,11 @@ com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2/date: LocalDa
 com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2/facilityId: FacilityId
 com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2/organizationId: OrganizationId
 com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2/withdrawalId: WithdrawalId
+com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3/accessionId: AccessionId
+com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3/date: LocalDate
+com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3/facilityId: FacilityId
+com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3/organizationId: OrganizationId
+com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3/withdrawalId: WithdrawalId
 com.terraformation.backend.seedbank.event.WithdrawalDeletedEventV1/accessionId: AccessionId
 com.terraformation.backend.seedbank.event.WithdrawalDeletedEventV1/facilityId: FacilityId
 com.terraformation.backend.seedbank.event.WithdrawalDeletedEventV1/organizationId: OrganizationId

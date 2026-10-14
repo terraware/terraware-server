@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
@@ -18,6 +19,7 @@ import com.terraformation.backend.eventlog.db.EventUpgradeUtils
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import java.math.BigDecimal
 import java.time.LocalDate
 
 sealed interface WithdrawalPersistentEvent : PersistentEvent {
@@ -45,12 +47,34 @@ data class WithdrawalCreatedEventV1(
   ): WithdrawalCreatedEventV2 = eventUpgradeUtils.upgrade(this)
 }
 
-/** Published when a withdrawal is added to an accession. */
 data class WithdrawalCreatedEventV2(
     override val accessionId: AccessionId,
     val batchId: BatchId? = null,
     val date: LocalDate,
     val destination: String? = null,
+    override val facilityId: FacilityId,
+    val notes: String? = null,
+    override val organizationId: OrganizationId,
+    val purpose: WithdrawalPurpose? = null,
+    val staffResponsible: String? = null,
+    val viabilityTestId: ViabilityTestId? = null,
+    override val withdrawalId: WithdrawalId,
+    val withdrawnByUserId: UserId? = null,
+    val withdrawnQuantity: SeedQuantityModel? = null,
+) : UpgradableEvent, WithdrawalPersistentEvent {
+  override fun toNextVersion(
+      eventLogId: EventLogId,
+      eventUpgradeUtils: EventUpgradeUtils,
+  ): WithdrawalCreatedEventV3 = eventUpgradeUtils.upgrade(this)
+}
+
+/** Published when a withdrawal is added to an accession. */
+data class WithdrawalCreatedEventV3(
+    override val accessionId: AccessionId,
+    val batchId: BatchId? = null,
+    val date: LocalDate,
+    val destination: String? = null,
+    val estimatedCount: Long? = null,
     override val facilityId: FacilityId,
     val notes: String? = null,
     override val organizationId: OrganizationId,
@@ -66,6 +90,12 @@ data class WithdrawalCreatedEventV2(
           createInitialField("batchId", batchId?.toString()),
           createInitialField("date", date.toString()),
           createInitialField("destination", destination),
+          createInitialField(
+              "estimatedCount",
+              estimatedCount?.let {
+                messages.seedQuantity(SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds))
+              },
+          ),
           createInitialField("notes", notes),
           createInitialField("purpose", purpose?.getDisplayName(currentLocale())),
           createInitialField("staffResponsible", staffResponsible),
@@ -75,7 +105,7 @@ data class WithdrawalCreatedEventV2(
       )
 }
 
-typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV2
+typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV3
 
 /** Published when the user edits an existing withdrawal. */
 data class WithdrawalUpdatedEventV1(

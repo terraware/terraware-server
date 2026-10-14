@@ -474,6 +474,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 notes = "initial notes",
                 staffResponsible = "Some Person",
                 destination = "Lab",
+                estimatedCount = 13,
                 viabilityTestId = ViabilityTestId(30),
                 withdrawnByUserId = knownUserId,
                 withdrawalId = withdrawalId,
@@ -533,6 +534,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         listOf(
                             CreatedFieldPayload("date", listOf("2021-01-01")),
                             CreatedFieldPayload("destination", listOf("Lab")),
+                            CreatedFieldPayload("estimatedCount", listOf("13 seeds")),
                             CreatedFieldPayload("notes", listOf("initial notes")),
                             CreatedFieldPayload("purpose", listOf("Viability Testing")),
                             CreatedFieldPayload("staffResponsible", listOf("Some Person")),
@@ -582,6 +584,32 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expected,
         transformer.eventsToPayloads(listOf(createEntry, updateEntry, deleteEntry)),
+    )
+  }
+
+  @Test
+  fun `renders WithdrawalCreatedEvent estimatedCount of 1 as singular`() {
+    val entry =
+        eventLogEntry(
+            knownUserId,
+            WithdrawalCreatedEvent(
+                date = LocalDate.of(2021, 1, 1),
+                estimatedCount = 1,
+                withdrawalId = WithdrawalId(20),
+                accessionId = AccessionId(10),
+                facilityId = FacilityId(11),
+                organizationId = organizationId,
+            ),
+        )
+
+    val payloads = transformer.eventsToPayloads(listOf(entry))
+
+    assertEquals(
+        listOf(
+            CreatedFieldPayload("date", listOf("2021-01-01")),
+            CreatedFieldPayload("estimatedCount", listOf("1 seed")),
+        ),
+        (payloads.first().action as CreatedActionPayload).fields,
     )
   }
 

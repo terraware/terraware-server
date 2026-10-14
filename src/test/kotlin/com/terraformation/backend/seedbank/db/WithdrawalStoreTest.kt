@@ -712,6 +712,56 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `WithdrawalCreatedEvent includes estimated count for weight-based withdrawals`() {
+    val newWithdrawal =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 3, 4),
+            estimatedCount = 13,
+            purpose = WithdrawalPurpose.Other,
+            withdrawn = grams(3),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    eventPublisher.assertEventPublished { event ->
+      event is WithdrawalCreatedEvent && event.estimatedCount == 13L
+    }
+  }
+
+  @Test
+  fun `WithdrawalCreatedEvent has null estimated count if no estimate was computed`() {
+    val newWithdrawal =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 3, 4),
+            purpose = WithdrawalPurpose.Other,
+            withdrawn = grams(3),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    eventPublisher.assertEventPublished { event ->
+      event is WithdrawalCreatedEvent && event.estimatedCount == null
+    }
+  }
+
+  @Test
+  fun `WithdrawalCreatedEvent has null estimated count for count-based withdrawals`() {
+    val newWithdrawal =
+        WithdrawalModel(
+            date = LocalDate.of(2021, 3, 4),
+            estimatedCount = 3,
+            purpose = WithdrawalPurpose.Other,
+            withdrawn = seeds(3),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    eventPublisher.assertEventPublished { event ->
+      event is WithdrawalCreatedEvent && event.estimatedCount == null
+    }
+  }
+
+  @Test
   fun `creating a nursery transfer publishes WithdrawalCreatedEvent with a batch ID`() {
     insertSpecies()
     insertFacility(type = FacilityType.Nursery)

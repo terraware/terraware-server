@@ -9,6 +9,7 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
@@ -16,6 +17,7 @@ import com.terraformation.backend.eventlog.UpgradableEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import org.jooq.DSLContext
 
@@ -100,6 +102,40 @@ class EventUpgradeUtils(
                 { it.changedFrom.withdrawnByUserId },
                 { it.changedTo.withdrawnByUserId },
             ),
+        withdrawnQuantity = original.withdrawnQuantity,
+    )
+  }
+
+  fun upgrade(original: WithdrawalCreatedEventV2): WithdrawalCreatedEventV3 {
+    val estimatedCount =
+        if (
+            original.withdrawnQuantity != null &&
+                original.withdrawnQuantity.units != SeedQuantityUnits.Seeds
+        ) {
+          dslContext
+              .select(WITHDRAWALS.ESTIMATED_COUNT)
+              .from(WITHDRAWALS)
+              .where(WITHDRAWALS.ID.eq(original.withdrawalId))
+              .fetchOne()
+              ?.get(WITHDRAWALS.ESTIMATED_COUNT)
+        } else {
+          null
+        }
+
+    return WithdrawalCreatedEventV3(
+        accessionId = original.accessionId,
+        batchId = original.batchId,
+        date = original.date,
+        destination = original.destination,
+        estimatedCount = estimatedCount,
+        facilityId = original.facilityId,
+        notes = original.notes,
+        organizationId = original.organizationId,
+        purpose = original.purpose,
+        staffResponsible = original.staffResponsible,
+        viabilityTestId = original.viabilityTestId,
+        withdrawalId = original.withdrawalId,
+        withdrawnByUserId = original.withdrawnByUserId,
         withdrawnQuantity = original.withdrawnQuantity,
     )
   }

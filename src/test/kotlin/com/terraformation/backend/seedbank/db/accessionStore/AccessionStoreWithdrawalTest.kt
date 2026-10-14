@@ -3,6 +3,8 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
+import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.kilograms
 import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
@@ -89,5 +91,26 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
     assertEquals(5_000_000_000L, accession.estimatedSeedCount, "Estimated seed count")
     assertEquals(5_000_000_000L, accession.totalWithdrawnCount, "Total withdrawn count")
     assertEquals(kilograms(500), accession.totalWithdrawnWeight, "Total withdrawn weight")
+  }
+
+  @Test
+  fun `publishes estimated count in WithdrawalCreatedEvent for weight-based withdrawals`() {
+    create()
+        .andUpdate {
+          it.copy(remaining = grams(100), subsetCount = 10, subsetWeightQuantity = grams(1))
+        }
+        .andUpdate {
+          it.addWithdrawal(
+              WithdrawalModel(
+                  date = LocalDate.EPOCH,
+                  purpose = WithdrawalPurpose.Other,
+                  withdrawn = grams(13),
+              )
+          )
+        }
+
+    publisher.assertEventPublished { event ->
+      event is WithdrawalCreatedEvent && event.estimatedCount == 130L
+    }
   }
 }
