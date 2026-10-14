@@ -1,5 +1,6 @@
 package com.terraformation.backend.search.field
 
+import com.terraformation.backend.db.unaccent
 import com.terraformation.backend.search.FieldNode
 import org.jooq.Condition
 import org.jooq.Field
@@ -39,20 +40,24 @@ abstract class SingleColumnSearchField<T : Any> : SearchField {
         other.table == table
   }
 
-  protected fun phraseMatchCondition(
-      values: List<String>,
-      field: Field<T?> = databaseField,
-  ): Condition =
-      DSL.or(
-          values.flatMap {
-            listOf(
-                field.likeIgnoreCase(it), // Exact match with phrase
-                field.likeIgnoreCase("% $it %"), // phrase in the middle
-                field.likeIgnoreCase("$it %"), // phrase as a prefix
-                field.likeIgnoreCase("% $it"), // phrase as a suffix
-            )
-          }
-      )
+  protected fun phraseMatchCondition(values: List<String>, rawField: Field<String?>): Condition {
+    val field = DSL.lower(rawField).unaccent()
+    val prefix = DSL.value("% ")
+    val suffix = DSL.value(" %")
+
+    return DSL.or(
+        values
+            .map { DSL.lower(it).unaccent() }
+            .flatMap { value ->
+              listOf(
+                  field.likeIgnoreCase(value), // Exact match with phrase
+                  field.likeIgnoreCase(DSL.concat(prefix, value, suffix)), // phrase in the middle
+                  field.likeIgnoreCase(DSL.concat(value, suffix)), // phrase as a prefix
+                  field.likeIgnoreCase(DSL.concat(prefix, value)), // phrase as a suffix
+              )
+            }
+    )
+  }
 
   /**
    * Returns a Condition for a range query on a field with a data type that is compatible with the

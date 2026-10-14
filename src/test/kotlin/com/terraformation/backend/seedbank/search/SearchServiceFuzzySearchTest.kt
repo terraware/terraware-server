@@ -10,14 +10,14 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
   fun `fuzzy search on text fields is case- and accent-insensitive`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Some Mátching Notes")
+        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Some ʻMátching Notes")
     )
     accessionsDao.update(
         accessionsDao.fetchOneById(accessionId1)!!.copy(processingNotes = "Not It")
     )
 
     val fields = listOf(accessionNumberField)
-    val searchNode = FieldNode(processingNotesField, listOf("mãtç"), SearchFilterType.Fuzzy)
+    val searchNode = FieldNode(processingNotesField, listOf("'mãtç"), SearchFilterType.Fuzzy)
 
     val result = searchAccessions(facilityId, fields, searchNode)
 

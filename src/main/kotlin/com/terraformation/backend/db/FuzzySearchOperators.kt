@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.util.removeDiacritics
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.impl.DSL
@@ -10,11 +11,11 @@ import org.jooq.impl.DSL
  */
 fun Field<String?>.likeFuzzy(value: String): Condition {
   // Trigram searches don't work for single-character search strings, so fall back to LIKE.
-  return if (value.length > 1) {
-    DSL.condition("{0} %> {1}", this, DSL.`val`(value))
+  return if (value.removeDiacritics().length > 1) {
+    DSL.condition("{0} %> {1}", this, DSL.`val`(value).unaccent())
   } else {
     val escapedValue = escapeLikePattern(value.lowercase())
-    DSL.lower(this).like("%$escapedValue%")
+    DSL.lower(this).unaccent().like(DSL.lower("%$escapedValue%").unaccent())
   }
 }
 
@@ -23,7 +24,7 @@ fun Field<String?>.likeFuzzy(value: String): Condition {
  * string. This uses the PostgreSQL `pg\_trgm` extension.
  */
 fun Field<String?>.similarity(value: String): Field<Double> {
-  return DSL.field("similarity({0},{1})", Double::class.java, this, DSL.`val`(value))
+  return DSL.field("similarity({0},{1})", Double::class.java, this, DSL.`val`(value).unaccent())
 }
 
 /** Escapes special characters in a string for use in a SQL "LIKE" clause. */
