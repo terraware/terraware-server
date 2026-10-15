@@ -2346,6 +2346,46 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `does not choose a temporary plot in the same observation as a long-term permanent replacement`() {
+      insertStratum(plantNumPermanentPlots = 1, width = 2, height = 4)
+      insertSubstratum(width = 2, height = 4)
+      insertObservationRequestedSubstratum()
+      val plotId1 = insertPermanentPlot(1, isPermanent = true)
+      val plotId2 = insertPermanentPlot(2)
+      insertObservationPlot(monitoringPlotId = plotId2, isPermanent = false)
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId,
+              plotId1,
+              "why not",
+              ReplacementDuration.LongTerm,
+          )
+
+      assertSetEquals(setOf(plotId1), result.removedMonitoringPlotIds, "Removed plot IDs")
+      assertEquals(1, result.addedMonitoringPlotIds.size, "Number of plot IDs added")
+
+      val replacementId = result.addedMonitoringPlotIds.first()
+      assertNotEquals(plotId2, replacementId, "Should not reuse the in-observation temporary plot")
+
+      val replacementPlotRow = monitoringPlotsDao.fetchOneById(replacementId)!!
+      assertEquals(1, replacementPlotRow.permanentIndex, "Permanent index of replacement plot")
+
+      val plot2Row = monitoringPlotsDao.fetchOneById(plotId2)!!
+      assertEquals(2, plot2Row.permanentIndex, "Temporary plot's permanent index should not change")
+
+      val observationPlots = observationPlotsDao.findAll().associateBy { it.monitoringPlotId }
+      assertFalse(
+          observationPlots[plotId2]!!.isPermanent!!,
+          "Plot $plotId2 should still be non-permanent in the observation",
+      )
+      assertTrue(
+          observationPlots[replacementId]!!.isPermanent!!,
+          "Replacement plot should be permanent in the observation",
+      )
+    }
+
+    @Test
     fun `removes permanent index if replacement plot is in an unrequested substratum`() {
       insertStratum(plantNumPermanentPlots = 1, width = 1, height = 2)
       insertSubstratum(width = 1, height = 1)
