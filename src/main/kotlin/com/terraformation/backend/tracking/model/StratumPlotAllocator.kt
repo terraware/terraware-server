@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.nearlyCoveredBy
 import kotlin.math.roundToInt
@@ -20,6 +21,7 @@ import org.locationtech.jts.geom.Polygon
  */
 class StratumPlotAllocator(
     private val stratum: ExistingStratumModel,
+    private val observationType: ObservationType,
     private val gridOrigin: Point,
     private val exclusion: MultiPolygon?,
     /**
@@ -39,15 +41,14 @@ class StratumPlotAllocator(
    * @throws StratumFullException The stratum has no room for any monitoring plots at all.
    */
   fun allocate(requestedSubstratumIds: Set<SubstratumId>): Allocation {
-    val numConfigured =
-        stratum.plantPlotCounts.numPermanentPlots + stratum.plantPlotCounts.numTemporaryPlots
+    val plotCounts = stratum.plotCounts(observationType)
+    val numConfigured = plotCounts.numPermanentPlots + plotCounts.numTemporaryPlots
 
     val existingPermanent =
         stratum.substrata
             .flatMap { it.monitoringPlots }
             .filter { plot ->
-              plot.permanentIndex != null &&
-                  plot.permanentIndex <= stratum.plantPlotCounts.numPermanentPlots
+              plot.permanentIndex != null && plot.permanentIndex <= plotCounts.numPermanentPlots
             }
             .sortedBy { it.permanentIndex }
 
@@ -71,9 +72,14 @@ class StratumPlotAllocator(
 
     if (numAllocated >= numConfigured) {
       return Allocation(
-          permanentPlotIds = stratum.choosePermanentPlots(requestedSubstratumIds),
+          permanentPlotIds = stratum.choosePermanentPlots(requestedSubstratumIds, observationType),
           temporaryPlotBoundaries =
-              stratum.chooseTemporaryPlots(requestedSubstratumIds, gridOrigin, exclusion),
+              stratum.chooseTemporaryPlots(
+                  requestedSubstratumIds,
+                  gridOrigin,
+                  observationType,
+                  exclusion,
+              ),
           numConfigured = numConfigured,
           numAllocated = numAllocated,
       )
@@ -101,7 +107,7 @@ class StratumPlotAllocator(
             .take(numPermanent)
             .map { it.id }
             .toSet()
-            .intersect(stratum.choosePermanentPlots(requestedSubstratumIds))
+            .intersect(stratum.choosePermanentPlots(requestedSubstratumIds, observationType))
 
     return Allocation(
         permanentPlotIds = permanentPlotIds,
@@ -109,6 +115,7 @@ class StratumPlotAllocator(
             stratum.chooseTemporaryPlots(
                 requestedSubstratumIds,
                 gridOrigin,
+                observationType,
                 exclusion,
                 count = numAllocated - numPermanent,
                 permanentPlotIds = permanentPlotIds,

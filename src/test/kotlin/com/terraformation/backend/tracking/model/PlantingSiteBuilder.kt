@@ -145,6 +145,8 @@ private constructor(
       name: String = "S$currentStratumId",
       plantNumPermanent: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
       plantNumTemporary: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      biomassNumPermanent: Int = plantNumPermanent,
+      biomassNumTemporary: Int = plantNumTemporary,
       stableId: StableId = StableId(name),
       func: StratumBuilder.() -> Unit = {},
   ): ExistingStratumModel {
@@ -159,6 +161,8 @@ private constructor(
             name = name,
             plantNumPermanentPlots = plantNumPermanent,
             plantNumTemporaryPlots = plantNumTemporary,
+            biomassNumPermanentPlots = biomassNumPermanent,
+            biomassNumTemporaryPlots = biomassNumTemporary,
             stableId = stableId,
         )
     builder.func()
@@ -207,6 +211,8 @@ private constructor(
       private val name: String,
       private val plantNumPermanentPlots: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
       private val plantNumTemporaryPlots: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      private val biomassNumPermanentPlots: Int = plantNumPermanentPlots,
+      private val biomassNumTemporaryPlots: Int = plantNumTemporaryPlots,
       private val stableId: StableId = StableId(name),
   ) {
     var boundary: MultiPolygon = rectangle(width, height, x, y)
@@ -222,6 +228,14 @@ private constructor(
     fun build(): ExistingStratumModel {
       return ExistingStratumModel(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
+          biomassPlotCounts =
+              StratumPlotCounts(
+                  errorMargin = plantErrorMargin,
+                  numPermanentPlots = biomassNumPermanentPlots,
+                  numTemporaryPlots = biomassNumTemporaryPlots,
+                  studentsT = plantStudentsT,
+                  variance = plantVariance,
+              ),
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
           id = StratumId(currentStratumId),

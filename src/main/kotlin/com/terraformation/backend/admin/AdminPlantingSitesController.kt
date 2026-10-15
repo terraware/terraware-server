@@ -229,7 +229,15 @@ class AdminPlantingSitesController(
           "type" to "FeatureCollection",
           "features" to
               site.strata.flatMap { stratum ->
-                val numPermanent = stratum.plantPlotCounts.numPermanentPlots
+                val numPermanent = stratum.maxPermanentPlots
+                val stratumPermanentPlotIds =
+                    stratum.substrata
+                        .flatMap { it.monitoringPlots }
+                        .filter {
+                          it.permanentIndex != null && it.permanentIndex <= numPermanent
+                        }
+                        .map { it.id }
+                        .toSet()
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
                     stratum
@@ -238,7 +246,10 @@ class AdminPlantingSitesController(
                                 .flatMap { stratum -> stratum.substrata.map { it.id } }
                                 .toSet(),
                             gridOrigin = site.gridOrigin!!,
+                            observationType = ObservationType.Monitoring,
                             exclusion = site.exclusion,
+                            count = stratum.maxTemporaryPlots,
+                            permanentPlotIds = stratumPermanentPlotIds,
                         )
                         .map { boundary -> boundary to stratum.findMonitoringPlot(boundary)?.id }
                 val temporaryPlotIds = temporaryPlotsAndIds.mapNotNull { (_, id) -> id }.toSet()
@@ -266,18 +277,10 @@ class AdminPlantingSitesController(
 
                 val existingPlots =
                     stratum.substrata.flatMap { substratum ->
-                      val permanentPlotIds =
-                          substratum.monitoringPlots
-                              .filter {
-                                it.permanentIndex != null && it.permanentIndex <= numPermanent
-                              }
-                              .map { it.id }
-                              .toSet()
-
                       substratum.monitoringPlots.map { plot ->
                         val plotTypeProperty =
                             when (plot.id) {
-                              in permanentPlotIds -> mapOf("type" to "permanent")
+                              in stratumPermanentPlotIds -> mapOf("type" to "permanent")
                               in temporaryPlotIds -> mapOf("type" to "temporary")
                               else -> emptyMap()
                             }

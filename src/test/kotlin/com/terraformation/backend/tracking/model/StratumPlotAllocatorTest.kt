@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.util.toMultiPolygon
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -47,6 +48,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val allocation =
         StratumPlotAllocator(
                 stratum,
+                ObservationType.Monitoring,
                 siteOrigin,
                 exclusion = null,
                 observedPermanentPlotIds = emptySet(),
@@ -72,6 +74,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val allocation =
         StratumPlotAllocator(
                 stratum,
+                ObservationType.Monitoring,
                 siteOrigin,
                 exclusion = null,
                 observedPermanentPlotIds = emptySet(),
@@ -117,8 +120,10 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     // substratum. Plot 12 has the highest permanent index, making it a candidate for demotion.
     val stratum =
         stratumModel(
-            plantNumPermanentPlots = 6,
-            plantNumTemporaryPlots = 2,
+            biomassNumPermanentPlots = 6,
+            biomassNumTemporaryPlots = 2,
+            plantNumPermanentPlots = 20,
+            plantNumTemporaryPlots = 5,
             boundary = boundary,
             substrata =
                 listOf(
@@ -142,6 +147,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val allocation =
         StratumPlotAllocator(
                 stratum,
+                ObservationType.BiomassMeasurements,
                 siteOrigin,
                 exclusion = null,
                 observedPermanentPlotIds = permanentPlotIds.take(numObserved).toSet(),
@@ -174,6 +180,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val allocation =
         StratumPlotAllocator(
                 stratum,
+                ObservationType.Monitoring,
                 siteOrigin,
                 exclusion = null,
                 observedPermanentPlotIds = setOf(MonitoringPlotId(13)),
@@ -194,6 +201,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val allocation =
         StratumPlotAllocator(
                 stratum,
+                ObservationType.Monitoring,
                 siteOrigin,
                 exclusion = null,
                 observedPermanentPlotIds = monitoringPlotIds(10, 11, 12, 13),
@@ -231,6 +239,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val allocation =
         StratumPlotAllocator(
                 stratum,
+                ObservationType.Monitoring,
                 siteOrigin,
                 exclusion = null,
                 observedPermanentPlotIds = emptySet(),
@@ -261,6 +270,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     assertThrows<StratumFullException> {
       StratumPlotAllocator(
               stratum,
+              ObservationType.Monitoring,
               siteOrigin,
               exclusion = null,
               observedPermanentPlotIds = emptySet(),
@@ -301,6 +311,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     val allocation =
         StratumPlotAllocator(
                 stratum,
+                ObservationType.Monitoring,
                 siteOrigin,
                 exclusion = null,
                 observedPermanentPlotIds = emptySet(),

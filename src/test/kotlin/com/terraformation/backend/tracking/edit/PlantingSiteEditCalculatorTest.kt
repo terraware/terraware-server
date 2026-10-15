@@ -926,6 +926,58 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
+  fun `increases number of permanent plots to the larger of the two plot counts`() {
+    val existing = existingSite {
+      stratum(plantNumPermanent = 3, biomassNumPermanent = 3) {
+        substratum {
+          permanent()
+          permanent()
+          permanent()
+        }
+      }
+    }
+    val desired = newSite { stratum(plantNumPermanent = 2, biomassNumPermanent = 4) }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal.ZERO,
+            desiredModel = desired,
+            existingModel = existing,
+            stratumEdits =
+                listOf(
+                    StratumEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal.ZERO,
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
+                        monitoringPlotEdits =
+                            listOf(MonitoringPlotEdit.Create(existing.boundary!!, 4)),
+                        substratumEdits =
+                            listOf(
+                                SubstratumEdit.Update(
+                                    addedRegion = rectangle(0),
+                                    areaHaDifference = BigDecimal.ZERO,
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
+                                    monitoringPlotEdits =
+                                        listOf(
+                                            MonitoringPlotEdit.Accept(MonitoringPlotId(1), 1),
+                                            MonitoringPlotEdit.Accept(MonitoringPlotId(2), 2),
+                                            MonitoringPlotEdit.Accept(MonitoringPlotId(3), 3),
+                                        ),
+                                    removedRegion = rectangle(0),
+                                )
+                            ),
+                        removedRegion = rectangle(0),
+                    )
+                ),
+        ),
+        existing,
+        desired,
+    )
+  }
+
+  @Test
   fun `reduces number of permanent plots even if geometry stayed the same`() {
     val existing = existingSite {
       stratum(plantNumPermanent = 3) {

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -194,7 +195,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val substratum = plantingSite.strata.single().substrata.single()
 
     // Fill the substratum with unavailable plots.
-    plantingSiteStore.ensurePermanentPlotsExist(plantingSite.id)
+    plantingSiteStore.ensurePermanentPlotsExist(plantingSite.id, ObservationType.Monitoring)
     monitoringPlotsDao.findAll().forEach { plantingSiteStore.makePlotUnavailable(it.id!!) }
 
     val observationId =
