@@ -78,6 +78,7 @@
 <text text-anchor="start" x="463.5" y="-516.2" font-family="Helvetica,sans-Serif" font-size="11.00">variable_type_id</text>
 <polygon fill="none" stroke="black" points="560.5,-508 560.5,-530 660.5,-530 660.5,-508 560.5,-508"/>
 <text text-anchor="start" x="563.5" y="-516.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<polygon fill="#ffffff" stroke="transparent" points="443.5,-486 443.5,-508 560.5,-508 560.5,-486 443.5,-486"/>
 <polygon fill="none" stroke="black" points="443.5,-486 443.5,-508 560.5,-508 560.5,-486 443.5,-486"/>
 <text text-anchor="start" x="463.5" y="-494.2" font-family="Helvetica,sans-Serif" font-size="11.00">list_position</text>
 <polygon fill="none" stroke="black" points="560.5,-486 560.5,-508 660.5,-508 660.5,-486 560.5,-486"/>

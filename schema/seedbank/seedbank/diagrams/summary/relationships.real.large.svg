@@ -45,9 +45,9 @@
 </g>
 </g>
 <!-- accessions -->
-<g id="node6" class="node">
+<g id="node5" class="node">
 <title>accessions</title>
-<g id="a_node6"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
+<g id="a_node5"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="273,-1086.23 273,-2138.23 504,-2138.23 504,-1086.23 273,-1086.23"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="273.5,-2116.23 273.5,-2138.23 504.5,-2138.23 504.5,-2116.23 273.5,-2116.23"/>
 <polygon fill="none" stroke="black" points="273.5,-2116.23 273.5,-2138.23 504.5,-2138.23 504.5,-2116.23 273.5,-2116.23"/>
@@ -399,9 +399,9 @@
 <ellipse fill="none" stroke="black" cx="584.8" cy="-2733.22" rx="3.2" ry="3.2"/>
 </g>
 <!-- collection_sources -->
-<g id="node5" class="node">
+<g id="node6" class="node">
 <title>collection_sources</title>
-<g id="a_node5"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
+<g id="a_node6"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="36.5,-1038.23 36.5,-1122.23 189.5,-1122.23 189.5,-1038.23 36.5,-1038.23"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="37,-1100.23 37,-1122.23 190,-1122.23 190,-1100.23 37,-1100.23"/>
 <polygon fill="none" stroke="black" points="37,-1100.23 37,-1122.23 190,-1122.23 190,-1100.23 37,-1100.23"/>

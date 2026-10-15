@@ -281,13 +281,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_values_variable_id_variable_type_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_values_variable_id_variable_type_id_fkey</td>
+                                                <td title="variable_values.variable_type_id references variable_types.id via variable_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_values_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_values.variable_type_id references variable_types.id via variable_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_values_variable_type_id_fkey</td>
+                                                <td title="variable_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_values_variable_id_variable_type_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
+                                                <td class="constraint detail">variable_values_variable_id_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -295,7 +295,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="list_position">list_position</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="list_position">list_position</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -472,10 +472,10 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>variable_values_project_id_idx</td>
+                                    <td title='Indexed'>variable_values_project_id_variable_id_list_position_id_idx</td>
                                     <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>project_id</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>project_id + variable_id + list_position + id</td>
                                 </tr>
                                 <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> variable_values_variable_id_id_key</td>

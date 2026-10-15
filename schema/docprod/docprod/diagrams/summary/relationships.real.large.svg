@@ -348,6 +348,7 @@
 <polygon fill="none" stroke="black" points="586.5,-2103.21 586.5,-2125.21 722.5,-2125.21 722.5,-2103.21 586.5,-2103.21"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="591.5" y="-2120.21"/>
 <text text-anchor="start" x="616.5" y="-2111.41" font-family="Helvetica,sans-Serif" font-size="11.00">variable_type_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="586.5,-2081.21 586.5,-2103.21 722.5,-2103.21 722.5,-2081.21 586.5,-2081.21"/>
 <polygon fill="none" stroke="black" points="586.5,-2081.21 586.5,-2103.21 722.5,-2103.21 722.5,-2081.21 586.5,-2081.21"/>
 <text text-anchor="start" x="616.5" y="-2089.41" font-family="Helvetica,sans-Serif" font-size="11.00">list_position</text>
 <polygon fill="none" stroke="black" points="586.5,-2059.21 586.5,-2081.21 722.5,-2081.21 722.5,-2059.21 586.5,-2059.21"/>

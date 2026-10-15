@@ -357,6 +357,23 @@
                                     </td>
                                     <td><p>Plant density (plants per hectare) based only on the plots observed in this observation, without carrying forward last-observed data for substrata that were not observed.</p></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="needs_recalculation">needs_recalculation</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>false</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>If true, this row and the species totals for the same observation and scope are stale and will be rebuilt by the observation results recalculation job. Existing values are the last computed ones.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -392,6 +409,12 @@
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>observation_id + stratum_history_id</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>observation_stratum_results_observation_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>observation_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>observation_stratum_results_stratum_id_idx</td>

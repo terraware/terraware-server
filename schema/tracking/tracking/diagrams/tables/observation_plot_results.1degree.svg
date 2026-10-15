@@ -110,7 +110,7 @@
 <g id="node3" class="node">
 <title>observation_plot_results</title>
 <g id="a_node3"><a xlink:href="../../tables/observation_plot_results.html" xlink:title="observation_plot_results" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="698,-203 698,-445 928,-445 928,-203 698,-203"/>
+<polygon fill="#ffffff" stroke="transparent" points="698,-181 698,-445 928,-445 928,-181 698,-181"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="700,-421 700,-443 926,-443 926,-421 700,-421"/>
 <polygon fill="none" stroke="black" points="700,-421 700,-443 926,-443 926,-421 700,-421"/>
 <text text-anchor="start" x="705" y="-430.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_plot_results</text>
@@ -155,16 +155,20 @@
 <text text-anchor="start" x="720" y="-231.2" font-family="Helvetica,sans-Serif" font-size="11.00">plant_density</text>
 <polygon fill="none" stroke="black" points="880,-223 880,-245 926,-245 926,-223 880,-223"/>
 <text text-anchor="start" x="883" y="-231.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="transparent" points="700,-205 700,-223 794,-223 794,-205 700,-205"/>
-<polygon fill="none" stroke="black" points="700,-205 700,-223 794,-223 794,-205 700,-205"/>
-<text text-anchor="start" x="703" y="-211.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="transparent" points="794,-205 794,-223 880,-223 880,-205 794,-205"/>
-<polygon fill="none" stroke="black" points="794,-205 794,-223 880,-223 880,-205 794,-205"/>
-<text text-anchor="start" x="870" y="-211.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="880,-205 880,-223 926,-223 926,-205 880,-205"/>
-<polygon fill="none" stroke="black" points="880,-205 880,-223 926,-223 926,-205 880,-205"/>
-<text text-anchor="start" x="907" y="-211.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="699,-204 699,-444 927,-444 927,-204 699,-204"/>
+<polygon fill="none" stroke="black" points="700,-201 700,-223 880,-223 880,-201 700,-201"/>
+<text text-anchor="start" x="720" y="-209.2" font-family="Helvetica,sans-Serif" font-size="11.00">needs_recalculation</text>
+<polygon fill="none" stroke="black" points="880,-201 880,-223 926,-223 926,-201 880,-201"/>
+<text text-anchor="start" x="883" y="-209.2" font-family="Helvetica,sans-Serif" font-size="11.00">bool[1]</text>
+<polygon fill="#ffffff" stroke="transparent" points="700,-183 700,-201 794,-201 794,-183 700,-183"/>
+<polygon fill="none" stroke="black" points="700,-183 700,-201 794,-201 794,-183 700,-183"/>
+<text text-anchor="start" x="703" y="-189.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="transparent" points="794,-183 794,-201 880,-201 880,-183 794,-183"/>
+<polygon fill="none" stroke="black" points="794,-183 794,-201 880,-201 880,-183 794,-183"/>
+<text text-anchor="start" x="870" y="-189.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="880,-183 880,-201 926,-201 926,-183 880,-183"/>
+<polygon fill="none" stroke="black" points="880,-183 880,-201 926,-201 926,-183 880,-183"/>
+<text text-anchor="start" x="907" y="-189.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="699,-182 699,-444 927,-444 927,-182 699,-182"/>
 </a>
 </g>
 </g>

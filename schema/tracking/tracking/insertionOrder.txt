@@ -35,7 +35,6 @@ planting_site_species_targets
 planting_season_allocated_species
 planting_site_notifications
 planting_site_populations
-planting_site_survival_rate_calculations
 plot_t0_densities
 simplified_planting_site_histories
 simplified_planting_sites

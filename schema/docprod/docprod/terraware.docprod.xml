@@ -623,8 +623,11 @@
          <index name="variable_values_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="variable_values_project_id_idx" unique="false">
+         <index name="variable_values_project_id_variable_id_list_position_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
+            <column ascending="true" name="variable_id"/>
+            <column ascending="true" name="list_position"/>
+            <column ascending="true" name="id"/>
          </index>
          <index name="variable_values_variable_id_id_key" unique="true">
             <column ascending="true" name="variable_id"/>

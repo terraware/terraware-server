@@ -36,7 +36,6 @@ simplified_stratum_histories
 simplified_strata
 simplified_planting_sites
 simplified_planting_site_histories
-planting_site_survival_rate_calculations
 planting_site_species_targets
 observation_biomass_quadrat_details
 observation_biomass_species

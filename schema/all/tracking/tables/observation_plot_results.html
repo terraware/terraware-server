@@ -135,13 +135,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_plot_results.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_plot_results_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_plot_results_observation_id_monitoring_plot_id_fkey</td>
+                                                <td title="observation_plot_results.observation_id references observations.id via observation_plot_results_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observation_plot_results_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="observation_plot_results.observation_id references observations.id via observation_plot_results_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observation_plot_results_observation_id_fkey</td>
+                                                <td title="observation_plot_results.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_plot_results_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_plot_results_observation_id_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -162,13 +162,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_plot_results.monitoring_plot_id references monitoring_plots.id via observation_plot_results_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observation_plot_results_monitoring_plot_id_fkey</td>
+                                                <td title="observation_plot_results.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_plot_results_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">observation_plot_results_observation_id_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="observation_plot_results.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_plot_results_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_id</span></td>
-                                                <td class="constraint detail">observation_plot_results_observation_id_monitoring_plot_id_fkey</td>
+                                                <td title="observation_plot_results.monitoring_plot_id references monitoring_plots.id via observation_plot_results_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observation_plot_results_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -299,6 +299,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="needs_recalculation">needs_recalculation</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>false</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>If true, this row and the species totals for the same observation and scope are stale and will be rebuilt by the observation results recalculation job. Existing values are the last computed ones.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -340,6 +357,12 @@
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>monitoring_plot_history_id</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>observation_plot_results_observation_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>observation_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>observation_plot_results_observation_id_monitoring_plot_his_idx</td>
