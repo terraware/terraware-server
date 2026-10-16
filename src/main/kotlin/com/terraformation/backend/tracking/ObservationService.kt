@@ -137,7 +137,10 @@ class ObservationService(
           throw ObservationHasNoSubstrataException(observationId)
         }
 
-        plantingSiteStore.ensurePermanentPlotsExist(observation.plantingSiteId)
+        plantingSiteStore.ensurePermanentPlotsExist(
+            observation.plantingSiteId,
+            observation.observationType,
+        )
 
         val plantingSite =
             plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
@@ -158,6 +161,7 @@ class ObservationService(
                 val allocation =
                     StratumPlotAllocator(
                             stratum,
+                            observation.observationType,
                             gridOrigin,
                             plantingSite.exclusion,
                             observedPermanentPlotIds,

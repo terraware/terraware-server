@@ -2,11 +2,10 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.rectangle
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.util.Turtle
 import kotlin.random.Random
 import org.assertj.core.api.Assertions.assertThat
-import org.jooq.impl.DSL.square
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -22,7 +21,8 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `only chooses plots that lie in requested substrata`() {
       val model =
           stratumModel(
-              plantNumPermanentPlots = 4,
+              biomassNumPermanentPlots = 4,
+              plantNumPermanentPlots = 8,
               substrata =
                   listOf(
                       substratumModel(
@@ -38,7 +38,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
       assertSetEquals(
           setOf(MonitoringPlotId(3), MonitoringPlotId(4)),
-          model.choosePermanentPlots(substrataIds(2)),
+          model.choosePermanentPlots(substrataIds(2), ObservationType.BiomassMeasurements),
       )
     }
   }
@@ -65,7 +65,7 @@ class StratumModelTest : BaseStratumModelTest() {
       val expected = listOf(MonitoringPlotId(14))
 
       val actual =
-          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin, ObservationType.Monitoring).map {
             model.findMonitoringPlot(it)?.id
           }
       assertEquals(expected, actual, "Should not have chosen permanent plot")
@@ -84,7 +84,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
       val indexOfSelectedPlot =
           model
-              .chooseTemporaryPlots(substrataIds(1), siteOrigin)
+              .chooseTemporaryPlots(substrataIds(1), siteOrigin, ObservationType.Monitoring)
               .mapNotNull { model.findMonitoringPlot(it) }
               .single()
               .permanentIndex
@@ -107,7 +107,14 @@ class StratumModelTest : BaseStratumModelTest() {
 
       assertEquals(
           3,
-          model.chooseTemporaryPlots(substrataIds(1), siteOrigin, count = 3).size,
+          model
+              .chooseTemporaryPlots(
+                  substrataIds(1),
+                  siteOrigin,
+                  ObservationType.Monitoring,
+                  count = 3,
+              )
+              .size,
           "Number of plots chosen",
       )
     }
@@ -116,15 +123,22 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `treats explicit permanent plot IDs as the permanent set`() {
       val model =
           stratumModel(
-              plantNumTemporaryPlots = 1,
-              plantNumPermanentPlots = 1,
+              biomassNumPermanentPlots = 1,
+              biomassNumTemporaryPlots = 1,
+              plantNumPermanentPlots = 8,
+              plantNumTemporaryPlots = 5,
               substrata =
                   listOf(substratumModel(plots = monitoringPlotModels(permanentIds = listOf(10)))),
           )
 
       val chosen =
           model
-              .chooseTemporaryPlots(substrataIds(1), siteOrigin, permanentPlotIds = emptySet())
+              .chooseTemporaryPlots(
+                  substrataIds(1),
+                  siteOrigin,
+                  ObservationType.BiomassMeasurements,
+                  permanentPlotIds = emptySet(),
+              )
               .mapNotNull { model.findMonitoringPlot(it)?.id }
 
       assertEquals(
@@ -154,7 +168,7 @@ class StratumModelTest : BaseStratumModelTest() {
       val unexpected = listOf(MonitoringPlotId(11))
 
       val actual =
-          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin, ObservationType.Monitoring).map {
             model.findMonitoringPlot(it)?.id
           }
 
@@ -218,7 +232,7 @@ class StratumModelTest : BaseStratumModelTest() {
       val expected = monitoringPlotIds(10)
 
       val chosenIds =
-          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin, ObservationType.Monitoring).map {
             model.findMonitoringPlot(it)?.id
           }
 
@@ -264,7 +278,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
       val chosenIds =
           model
-              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
+              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin, ObservationType.Monitoring)
               .map { model.findMonitoringPlot(it)?.id }
               .toSet()
 
@@ -329,7 +343,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
       val chosenIds =
           model
-              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
+              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin, ObservationType.Monitoring)
               .map { model.findMonitoringPlot(it)?.id }
               .toSet()
 
@@ -390,7 +404,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
       val chosenIds =
           model
-              .chooseTemporaryPlots(substrataIds(1, 2), siteOrigin)
+              .chooseTemporaryPlots(substrataIds(1, 2), siteOrigin, ObservationType.Monitoring)
               .map { model.findMonitoringPlot(it)?.id }
               .toSet()
 
@@ -434,7 +448,7 @@ class StratumModelTest : BaseStratumModelTest() {
 
       val chosenIds =
           model
-              .chooseTemporaryPlots(substrataIds(2, 3), siteOrigin)
+              .chooseTemporaryPlots(substrataIds(2, 3), siteOrigin, ObservationType.Monitoring)
               .map { model.findMonitoringPlot(it)?.id }
               .toSet()
 
@@ -451,7 +465,9 @@ class StratumModelTest : BaseStratumModelTest() {
     fun `throws exception if no substrata`() {
       val model = stratumModel(plantNumTemporaryPlots = 1, substrata = emptyList())
 
-      assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), siteOrigin) }
+      assertThrows<IllegalArgumentException> {
+        model.chooseTemporaryPlots(emptySet(), siteOrigin, ObservationType.Monitoring)
+      }
     }
 
     @Test
@@ -465,7 +481,9 @@ class StratumModelTest : BaseStratumModelTest() {
 
       assertEquals(
           emptyList<Polygon>(),
-          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).toList(),
+          model
+              .chooseTemporaryPlots(substrataIds(1), siteOrigin, ObservationType.Monitoring)
+              .toList(),
           "Should return no plots when the only position is taken by a permanent plot",
       )
     }
@@ -507,9 +525,11 @@ class StratumModelTest : BaseStratumModelTest() {
           )
 
       val chosenIds =
-          model.chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin).map {
-            model.findMonitoringPlot(it)?.id
-          }
+          model
+              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin, ObservationType.Monitoring)
+              .map {
+                model.findMonitoringPlot(it)?.id
+              }
       val chosenIdSet = chosenIds.toSet()
 
       val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIdSet).size }
@@ -550,9 +570,11 @@ class StratumModelTest : BaseStratumModelTest() {
           )
 
       val chosenIds =
-          model.chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin).map {
-            model.findMonitoringPlot(it)?.id
-          }
+          model
+              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin, ObservationType.Monitoring)
+              .map {
+                model.findMonitoringPlot(it)?.id
+              }
       val numChosenPerSubstratum =
           model.substrata.map { substratum ->
             substratum.monitoringPlots.count { it.id in chosenIds }
@@ -585,7 +607,9 @@ class StratumModelTest : BaseStratumModelTest() {
 
       assertEquals(
           4,
-          model.chooseTemporaryPlots(substrataIds(1, 2), siteOrigin).size,
+          model
+              .chooseTemporaryPlots(substrataIds(1, 2), siteOrigin, ObservationType.Monitoring)
+              .size,
           "Should return as many plots as will fit",
       )
     }

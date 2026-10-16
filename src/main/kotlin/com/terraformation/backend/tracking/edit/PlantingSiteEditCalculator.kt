@@ -192,7 +192,7 @@ class PlantingSiteEditCalculator(
 
     val desiredPermanentPlotEdits =
         (zipProportionally(
-            desiredStratum.plantPlotCounts.numPermanentPlots,
+            desiredStratum.maxPermanentPlots,
             fractionOfDesiredAreaOverlappingWithExisting,
             nextPlotForArea(existingPlotsInOverlappingArea, overlappingBoundary),
             nextPlotForArea(existingPlotsInNewArea, nonOverlappingBoundary),

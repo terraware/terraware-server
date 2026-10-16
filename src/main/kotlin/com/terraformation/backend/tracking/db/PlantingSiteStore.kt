@@ -1678,7 +1678,10 @@ class PlantingSiteStore(
    *
    * @return The IDs of any newly-created monitoring plots.
    */
-  fun ensurePermanentPlotsExist(plantingSiteId: PlantingSiteId): List<MonitoringPlotId> {
+  fun ensurePermanentPlotsExist(
+      plantingSiteId: PlantingSiteId,
+      observationType: ObservationType,
+  ): List<MonitoringPlotId> {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
     return entityLocker.withLockedPlantingSite(plantingSiteId) {
@@ -1686,7 +1689,7 @@ class PlantingSiteStore(
 
       plantingSite.strata.flatMap { stratum ->
         val missingPermanentIndexes: List<Int> =
-            (1..stratum.plantPlotCounts.numPermanentPlots).filterNot {
+            (1..stratum.plotCounts(observationType).numPermanentPlots).filterNot {
               stratum.permanentIndexExists(it)
             }
 

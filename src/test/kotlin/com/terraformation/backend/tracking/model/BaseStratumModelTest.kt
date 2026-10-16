@@ -150,11 +150,21 @@ abstract class BaseStratumModelTest {
   protected fun stratumModel(
       plantNumTemporaryPlots: Int = 1,
       plantNumPermanentPlots: Int = 1,
+      biomassNumTemporaryPlots: Int = plantNumTemporaryPlots,
+      biomassNumPermanentPlots: Int = plantNumPermanentPlots,
       substrata: List<ExistingSubstratumModel>,
       boundary: MultiPolygon = stratumBoundary(substrata),
   ) =
       ExistingStratumModel(
           areaHa = BigDecimal.ONE,
+          biomassPlotCounts =
+              StratumPlotCounts(
+                  errorMargin = BigDecimal.ONE,
+                  numPermanentPlots = biomassNumPermanentPlots,
+                  numTemporaryPlots = biomassNumTemporaryPlots,
+                  studentsT = BigDecimal.ONE,
+                  variance = BigDecimal.ONE,
+              ),
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
           id = StratumId(1),

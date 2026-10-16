@@ -618,6 +618,43 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `creates permanent and temporary plots for the selected monitoring type`() {
+      val boundary = rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
+
+      insertStratum(
+          boundary = boundary,
+          plantNumPermanentPlots = 1,
+          plantNumTemporaryPlots = 1,
+          biomassNumPermanentPlots = 2,
+          biomassNumTemporaryPlots = 2,
+      )
+      insertSubstratum(boundary = boundary)
+
+      val observationId =
+          insertObservation(
+              observationType = ObservationType.BiomassMeasurements,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum()
+
+      service.startObservation(observationId)
+
+      val observationPlots = observationPlotsDao.findAll()
+
+      assertEquals(
+          2,
+          monitoringPlotsDao.findAll().count { it.permanentIndex != null },
+          "Number of permanent monitoring plots created",
+      )
+      assertEquals(2, observationPlots.count { it.isPermanent!! }, "Permanent plots in observation")
+      assertEquals(
+          2,
+          observationPlots.count { !it.isPermanent!! },
+          "Temporary plots in observation",
+      )
+    }
+
+    @Test
     fun `starts observation with fewer plots if planting site is too small for all of them`() {
       val boundary = rectangle(MONITORING_PLOT_SIZE)
 

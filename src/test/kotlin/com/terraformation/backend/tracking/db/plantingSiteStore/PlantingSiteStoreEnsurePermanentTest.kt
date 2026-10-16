@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.NumericIdentifierType
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
@@ -26,7 +27,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val substratumId = insertSubstratum(boundary = siteBoundary, insertHistory = false)
       val substratumHistoryId = insertSubstratumHistory()
 
-      store.ensurePermanentPlotsExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId, ObservationType.Monitoring)
 
       val plots = monitoringPlotsDao.findAll()
 
@@ -66,7 +67,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       insertSubstratum(boundary = siteBoundary)
 
       // Stratum is configured for 4 permanent plots, but there's only room for 2.
-      store.ensurePermanentPlotsExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId, ObservationType.Monitoring)
 
       val plots = monitoringPlotsDao.findAll()
 
@@ -98,7 +99,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
           insertHistory = false,
       )
 
-      store.ensurePermanentPlotsExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId, ObservationType.Monitoring)
 
       val plots = monitoringPlotsDao.findAll()
 
@@ -142,7 +143,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       insertSubstratum(boundary = siteBoundary)
       val existingPlotId = insertMonitoringPlot(boundary = existingPlotBoundary)
 
-      store.ensurePermanentPlotsExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId, ObservationType.Monitoring)
 
       val plots = monitoringPlotsDao.findAll()
       val existingPlot = plots.first { it.id == existingPlotId }
@@ -158,14 +159,18 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertStratum(boundary = siteBoundary, plantNumPermanentPlots = 2)
+      insertStratum(
+          boundary = siteBoundary,
+          biomassNumPermanentPlots = 2,
+          plantNumPermanentPlots = 6,
+      )
       insertSubstratum(boundary = siteBoundary)
       insertMonitoringPlot(boundary = plotBoundary, permanentIndex = 1)
       insertMonitoringPlot(boundary = plotBoundary, permanentIndex = 2)
 
       val before = monitoringPlotsDao.findAll().toSet()
 
-      store.ensurePermanentPlotsExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId, ObservationType.BiomassMeasurements)
 
       val after = monitoringPlotsDao.findAll().toSet()
 
@@ -190,7 +195,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       insertSubstratum(boundary = siteBoundary)
       insertMonitoringPlot(boundary = existingPlotBoundary, plotNumber = 1, permanentIndex = 1)
 
-      store.ensurePermanentPlotsExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId, ObservationType.Monitoring)
 
       val plots = monitoringPlotsDao.findAll()
       assertSetEquals(

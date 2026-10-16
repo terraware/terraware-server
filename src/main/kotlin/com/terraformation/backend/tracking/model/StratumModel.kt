@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_ERROR_MARGIN
@@ -74,14 +75,32 @@ data class StratumModel<
     val stableId: StableId,
     val targetPlantDensity: BigDecimal? = null,
 ) {
+  /** The larger of the plant and biomass permanent plot counts. */
+  val maxPermanentPlots: Int
+    get() = max(plantPlotCounts.numPermanentPlots, biomassPlotCounts.numPermanentPlots)
+
+  /** The larger of the plant and biomass temporary plot counts. */
+  val maxTemporaryPlots: Int
+    get() = max(plantPlotCounts.numTemporaryPlots, biomassPlotCounts.numTemporaryPlots)
+
+  /** Returns the plot count settings for the specified observation type. */
+  fun plotCounts(type: ObservationType): StratumPlotCounts =
+      when (type) {
+        ObservationType.Monitoring -> plantPlotCounts
+        ObservationType.BiomassMeasurements -> biomassPlotCounts
+      }
+
   /**
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
-   * by [StratumPlotCounts.numPermanentPlots].
+   * by [StratumPlotCounts.numPermanentPlots] for the specified observation type.
    *
    * Only plots in requested substrata are returned, meaning there may be fewer plots than
    * configured, or none at all.
    */
-  fun choosePermanentPlots(requestedSubstratumIds: Set<SubstratumId>): Set<MonitoringPlotId> {
+  fun choosePermanentPlots(
+      requestedSubstratumIds: Set<SubstratumId>,
+      observationType: ObservationType,
+  ): Set<MonitoringPlotId> {
     if (substrata.isEmpty()) {
       throw IllegalArgumentException("No substrata found for stratum $id (wrong fetch depth?)")
     }
@@ -89,7 +108,8 @@ data class StratumModel<
     val requestedSubstrata = substrata.filter { it.id != null && it.id in requestedSubstratumIds }
     val plotsInRequestedSubstrata = requestedSubstrata.flatMap { substratum ->
       substratum.monitoringPlots.filter { plot ->
-        plot.permanentIndex != null && plot.permanentIndex <= plantPlotCounts.numPermanentPlots
+        plot.permanentIndex != null &&
+            plot.permanentIndex <= plotCounts(observationType).numPermanentPlots
       }
     }
 
@@ -110,7 +130,7 @@ data class StratumModel<
    *   other requested substrata, one plot at a time so the plots stay as evenly spread as the
    *   available space allows. Quotas belonging to unrequested substrata are dropped rather than
    *   passed on.
-   * - If plots can't be exactly evenly spread across substrata (that is,
+   * - If plots can't be exactly evenly spread across substrata (that is, the selected
    *   [StratumPlotCounts.numTemporaryPlots] is not a multiple of the number of substrata), the
    *   substrata for the remaining plots are determined using the following criteria in order (with
    *   the later criteria used as a tiebreaker if more than one substratum matches the earlier
@@ -127,7 +147,7 @@ data class StratumModel<
    *   with a small number of requested substrata, we would end up piling the entire stratum's worth
    *   of temporary plots into a handful of substrata.
    *
-   * @param count Number of temporary plots to allocate. Defaults to
+   * @param count Number of temporary plots to allocate. Defaults to the selected
    *   [StratumPlotCounts.numTemporaryPlots].
    * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent instead of
    *   using the stratum's configured permanent plot count.
@@ -141,8 +161,9 @@ data class StratumModel<
   fun chooseTemporaryPlots(
       requestedSubstratumIds: Set<SubstratumId>,
       gridOrigin: Point,
+      observationType: ObservationType,
       exclusion: MultiPolygon? = null,
-      count: Int = plantPlotCounts.numTemporaryPlots,
+      count: Int = plotCounts(observationType).numTemporaryPlots,
       permanentPlotIds: Set<MonitoringPlotId>? = null,
   ): Collection<Polygon> {
     if (substrata.isEmpty()) {
@@ -256,9 +277,9 @@ data class StratumModel<
    *   some or all plots with permanent indexes are treated as permanent, depending on
    *   [includeAllIndexes].
    * @param includeAllIndexes If true, treat every plot with a permanent index as permanent
-   *   regardless of [StratumPlotCounts.numPermanentPlots]. If false, only treat plots with
-   *   permanent indexes less than or equal to [StratumPlotCounts.numPermanentPlots] as permanent.
-   *   Ignored when [permanentPlotIds] is set.
+   *   regardless of [StratumPlotCounts.numPermanentPlots]. If false, only treat plots that are
+   *   permanent for either observation type, that is, plots with permanent indexes less than or
+   *   equal to [maxPermanentPlots], as permanent. Ignored when [permanentPlotIds] is set.
    */
   private fun isPermanent(
       plot: MonitoringPlotModel,
@@ -267,8 +288,7 @@ data class StratumModel<
   ): Boolean {
     return when {
       permanentPlotIds != null -> plot.id in permanentPlotIds
-      plot.permanentIndex != null ->
-          includeAllIndexes || plot.permanentIndex <= plantPlotCounts.numPermanentPlots
+      plot.permanentIndex != null -> includeAllIndexes || plot.permanentIndex <= maxPermanentPlots
       else -> false
     }
   }
@@ -306,7 +326,8 @@ data class StratumModel<
    *   used in previous observations but won't be used in the next one).
    * @param exclusion Areas to exclude from the stratum, or null if the whole stratum is available.
    * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent instead of
-   *   using [StratumPlotCounts.numPermanentPlots].
+   *   the plots that are permanent for either observation type (permanent indexes up to
+   *   [maxPermanentPlots]).
    * @return List of unused squares. If there is not enough room for the requested number of
    *   squares, this may be shorter than [count] elements; if there's no room for even a single
    *   square, the list will be empty.
@@ -325,7 +346,11 @@ data class StratumModel<
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
     var exclusionWithAllocatedSquares =
-        getMonitoringPlotExclusions(excludeAllPermanentPlots, excludePlotIds, permanentPlotIds)
+        getMonitoringPlotExclusions(
+            excludeAllPermanentPlots,
+            excludePlotIds,
+            permanentPlotIds,
+        )
     if (exclusion != null) {
       exclusionWithAllocatedSquares =
           exclusionWithAllocatedSquares?.union(exclusion)?.toMultiPolygon() ?: exclusion
