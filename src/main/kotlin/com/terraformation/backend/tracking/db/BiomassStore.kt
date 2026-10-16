@@ -8,6 +8,7 @@ import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.BiomassForestType
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -43,6 +44,7 @@ import com.terraformation.backend.tracking.model.EditableBiomassQuadratSpeciesMo
 import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
+import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import com.terraformation.backend.tracking.model.RecordedTreeModel
 import jakarta.inject.Named
 import org.jooq.Condition
@@ -346,6 +348,95 @@ class BiomassStore(
             )
         )
       }
+    }
+  }
+
+  fun createRecordedTree(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      model: NewRecordedTreeModel,
+  ) {
+    requirePermissions { updateObservationQuantities(observationId) }
+    validateRecordedTreeCreate(model)
+
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(monitoringPlotId)
+            ?: throw PlotNotFoundException(monitoringPlotId)
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw PlotNotFoundException(monitoringPlotId)
+
+    entityLocker.withLockedObservation(observationId) { _ ->
+      val isObservationPlot =
+          dslContext.fetchExists(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
+          )
+      if (!isObservationPlot) {
+        throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+      }
+
+      val biomassSpeciesId =
+          getOrCreateBiomassSpecies(
+              observationId,
+              monitoringPlotId,
+              model.speciesId,
+              model.speciesName,
+          )
+      val treeNumber =
+          (dslContext
+              .select(DSL.max(RECORDED_TREES.TREE_NUMBER))
+              .from(RECORDED_TREES)
+              .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+              .fetchOne()
+              ?.value1() ?: 0) + 1
+
+      val record =
+          RecordedTreesRecord(
+                  biomassSpeciesId = biomassSpeciesId,
+                  boleHeightM = model.boleHeightM,
+                  description = model.description,
+                  diameterAtBreastHeightCm = model.diameterAtBreastHeightCm,
+                  gpsCoordinates = null,
+                  heightM = model.heightM,
+                  isDead = model.isDead,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+                  pointOfMeasurementM = model.pointOfMeasurementM,
+                  shrubDiameterCm = model.shrubDiameterCm,
+                  treeCrownDiameterCm = model.treeCrownDiameterCm,
+                  treeGrowthFormId = model.treeGrowthForm,
+                  treeNumber = treeNumber,
+                  trunkNumber = 1,
+              )
+              .attach(dslContext)
+      record.insert()
+
+      eventPublisher.publishEvent(
+          RecordedTreeCreatedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              boleHeightM = record.boleHeightM,
+              description = record.description,
+              diameterAtBreastHeightCm = record.diameterAtBreastHeightCm,
+              gpsCoordinates = null,
+              heightM = record.heightM,
+              isDead = model.isDead,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId = plantingSiteId,
+              pointOfMeasurementM = record.pointOfMeasurementM,
+              recordedTreeId = record.id!!,
+              shrubDiameterCm = record.shrubDiameterCm,
+              speciesId = model.speciesId,
+              speciesName = model.speciesName,
+              treeCrownDiameterCm = record.treeCrownDiameterCm,
+              treeGrowthForm = model.treeGrowthForm,
+              treeNumber = treeNumber,
+              trunkNumber = 1,
+          )
+      )
     }
   }
 
@@ -854,6 +945,97 @@ class BiomassStore(
           ?: throw IllegalStateException(
               "Biomass species must have a species ID or scientific name"
           )
+
+  private fun getOrCreateBiomassSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+  ): BiomassSpeciesId {
+    val existing =
+        with(OBSERVATION_BIOMASS_SPECIES) {
+          val speciesCondition =
+              speciesId?.let { SPECIES_ID.eq(it) } ?: SCIENTIFIC_NAME.eq(scientificName)
+          dslContext
+              .selectFrom(OBSERVATION_BIOMASS_SPECIES)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .and(speciesCondition)
+              .fetchOne()
+        }
+    if (existing != null) {
+      return existing.id!!
+    }
+
+    val record =
+        ObservationBiomassSpeciesRecord(
+                commonName = null,
+                isInvasive = false,
+                isThreatened = false,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                scientificName = scientificName,
+                speciesId = speciesId,
+            )
+            .attach(dslContext)
+    record.insert()
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    eventPublisher.publishEvent(
+        BiomassSpeciesCreatedEvent(
+            biomassSpeciesId = record.id!!,
+            commonName = null,
+            isInvasive = false,
+            isThreatened = false,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            scientificName = scientificName,
+            speciesId = speciesId,
+            speciesName = getBiomassSpeciesName(speciesId, scientificName),
+        )
+    )
+
+    return record.id!!
+  }
+
+  private fun validateRecordedTreeCreate(model: NewRecordedTreeModel) {
+    require((model.speciesId == null) xor (model.speciesName == null)) {
+      "One of species ID or scientific name must be specified"
+    }
+    require(model.treeGrowthForm != TreeGrowthForm.Trunk) {
+      "Trunk growth form is not allowed for a new recorded tree"
+    }
+
+    when (model.treeGrowthForm) {
+      TreeGrowthForm.Tree ->
+          require(
+              model.diameterAtBreastHeightCm != null &&
+                  model.pointOfMeasurementM != null &&
+                  model.shrubDiameterCm == null
+          ) {
+            "Tree measurements require diameter at breast height and point of measurement, and may not include shrub diameter"
+          }
+      TreeGrowthForm.Shrub ->
+          require(
+              model.boleHeightM == null &&
+                  model.diameterAtBreastHeightCm == null &&
+                  model.heightM == null &&
+                  model.pointOfMeasurementM == null &&
+                  model.shrubDiameterCm != null &&
+                  model.treeCrownDiameterCm == null
+          ) {
+            "Shrub measurements require shrub diameter and may not include tree measurements"
+          }
+      TreeGrowthForm.Trunk -> error("Trunk growth form is not allowed for a new recorded tree")
+    }
+  }
 
   private fun validateRecordedTreeUpdate(
       existing: ExistingRecordedTreeModel,
