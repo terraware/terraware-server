@@ -166,7 +166,10 @@ abstract class GeoJsonOpenApiSchema {
       externalDocs =
           ExternalDocumentation(url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.8")
   )
-  internal abstract class GeometryCollection(val geometries: List<Geometry>) : Geometry {
+  internal abstract class GeometryCollection(
+      @get:ArraySchema(schema = Schema(ref = "#/components/schemas/Geometry"))
+      val geometries: List<Geometry>
+  ) : Geometry {
     @get:Schema(allowableValues = ["GeometryCollection"], type = "string")
     override val type: GeoJsonGeometryType
       get() = GeoJsonGeometryType.GeometryCollection
