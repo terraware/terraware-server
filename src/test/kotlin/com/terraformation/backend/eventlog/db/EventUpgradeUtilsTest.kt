@@ -727,6 +727,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
 
     private fun deleteBiomassSpeciesRow(biomassSpeciesId: BiomassSpeciesId) {
       dslContext
+      dslContext
           .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
           .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
           .execute()

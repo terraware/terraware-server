@@ -202,6 +202,36 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
             )
           }
     }
+
+    @Test
+    fun `uses event names and species IDs for quadrat biomass subjects`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+          .execute()
+      val context = EventLogPayloadContext(dslContext, emptyList(), messages)
+
+      val quadratSpeciesPayload =
+          BiomassQuadratSpeciesSubjectPayload.forEvent(
+              BiomassQuadratSpeciesUpdatedEventV2(
+                  changedFrom = BiomassQuadratSpeciesUpdatedEventV2.Values(1),
+                  changedTo = BiomassQuadratSpeciesUpdatedEventV2.Values(2),
+                  biomassSpeciesId = biomassSpeciesId,
+                  monitoringPlotId = inserted.monitoringPlotId,
+                  observationId = inserted.observationId,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  position = ObservationPlotPosition.SouthwestCorner,
+                  speciesId = null,
+                  speciesName = "Other name from event",
+              ),
+              context,
+          )
+      assertEquals(null, quadratSpeciesPayload.speciesId)
+      assertEquals("Other name from event", quadratSpeciesPayload.scientificName)
+      assertTrue(quadratSpeciesPayload.fullText.contains("Other name from event"))
+    }
   }
 
   private var nextEventLogId: Long = 1
