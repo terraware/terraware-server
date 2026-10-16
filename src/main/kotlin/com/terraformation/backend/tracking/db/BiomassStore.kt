@@ -465,7 +465,12 @@ class BiomassStore(
           .execute()
     }
 
-    // ON DELETE CASCADE will remove the data for the "Other" species from all the biomass tables.
+    // Remove remaining quadrat rows for the "Other" species.
+    dslContext
+        .deleteFrom(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+        .where(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+        .execute()
+
     dslContext
         .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
         .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherBiomassSpeciesId))
