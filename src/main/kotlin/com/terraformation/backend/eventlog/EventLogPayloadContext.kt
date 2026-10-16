@@ -23,7 +23,7 @@ import org.jooq.impl.DSL
  */
 class EventLogPayloadContext(
     private val dslContext: DSLContext,
-    private val entries: List<EventLogEntry<PersistentEvent>>,
+    val entries: List<EventLogEntry<PersistentEvent>>,
     private val messages: Messages,
 ) {
   private val eventsByClass = entries.map { it.event }.groupBy { it::class }

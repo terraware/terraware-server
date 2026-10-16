@@ -58,6 +58,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesNamedPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
@@ -258,13 +259,22 @@ data class BiomassQuadratSpeciesSubjectPayload(
             )
           } ?: context.getBiomassSpecies(event.biomassSpeciesId)
       val localizedPosition = event.position.getDisplayName(currentUser().locale)
-      val deleteEvent =
-          context.firstOrNull<BiomassQuadratSpeciesDeletedEvent> {
-            it.biomassSpeciesId == event.biomassSpeciesId && it.position == event.position
-          }
+      val latestEvent =
+          context.entries
+              .lastOrNull { entry ->
+                val matchingEvent =
+                    entry.event as? BiomassQuadratSpeciesPersistentEvent ?: return@lastOrNull false
+                (matchingEvent is BiomassQuadratSpeciesCreatedEvent ||
+                    matchingEvent is BiomassQuadratSpeciesDeletedEvent) &&
+                    matchingEvent.biomassSpeciesId == event.biomassSpeciesId &&
+                    matchingEvent.monitoringPlotId == event.monitoringPlotId &&
+                    matchingEvent.observationId == event.observationId &&
+                    matchingEvent.position == event.position
+              }
+              ?.event
 
       return BiomassQuadratSpeciesSubjectPayload(
-          deleted = if (deleteEvent != null) true else null,
+          deleted = if (latestEvent is BiomassQuadratSpeciesDeletedEvent) true else null,
           fullText =
               context.subjectFullText<BiomassQuadratSpeciesSubjectPayload>(
                   localizedPosition,

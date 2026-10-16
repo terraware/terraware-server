@@ -165,7 +165,7 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `uses quadrat species create and delete events for deleted subjects`() {
+    fun `uses quadrat species event order to determine deletion state`() {
       val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
       val createdEvent =
           BiomassQuadratSpeciesCreatedEvent(
@@ -204,6 +204,28 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           true,
           BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, context).deleted,
+      )
+
+      val deleteOnlyContext =
+          EventLogPayloadContext(dslContext, listOf(eventLogEntry(deletedEvent)), messages)
+      assertEquals(
+          true,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, deleteOnlyContext).deleted,
+      )
+
+      val recreatedContext =
+          EventLogPayloadContext(
+              dslContext,
+              listOf(eventLogEntry(deletedEvent), eventLogEntry(createdEvent)),
+              messages,
+          )
+      assertEquals(
+          null,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, recreatedContext).deleted,
+      )
+      assertEquals(
+          null,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(createdEvent, recreatedContext).deleted,
       )
     }
   }
