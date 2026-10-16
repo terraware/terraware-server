@@ -64,6 +64,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
 
   override fun customise(openApi: OpenAPI) {
     useRefForGeometry(openApi)
+    GeoJsonOpenApiSchema.fixGeometryCollectionSchema(openApi)
     fixFieldSchemas(openApi)
     addSecurityScheme(openApi)
     addDiscriminatorsForSealedInterfaces(openApi)

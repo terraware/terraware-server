@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.media.ArraySchema as OpenApiArraySchema
+import io.swagger.v3.oas.models.media.ComposedSchema
 import org.springdoc.core.utils.SpringDocUtils
 
 /**
@@ -204,6 +207,38 @@ abstract class GeoJsonOpenApiSchema {
   )
 
   companion object {
+    /**
+     * The schema generator sometimes renders the element type as a generic object depending on
+     * class scanning order, so this makes it deterministic.
+     */
+    fun fixGeometryCollectionSchema(openApi: OpenAPI) {
+      val geometryCollectionSchema =
+          openApi.components?.schemas?.get(GeoJsonGeometryType.GeometryCollection.name) ?: return
+      val geometriesProperty =
+          geometryCollectionSchema.properties?.get("geometries")
+              ?: geometryCollectionSchema.allOf?.firstNotNullOfOrNull {
+                it.properties?.get("geometries")
+              }
+              ?: return
+      val geometriesArray = geometriesProperty as? OpenApiArraySchema ?: return
+      val geometryRefs =
+          GeoJsonGeometryType.entries.map { it.name }.sorted().map { "#/components/schemas/$it" }
+      val existingItems = geometriesArray.items
+
+      if (
+          existingItems is ComposedSchema && existingItems.oneOf?.map { it.`$ref` } == geometryRefs
+      ) {
+        return
+      }
+
+      geometriesArray.items =
+          ComposedSchema().apply {
+            oneOf = geometryRefs.map { ref ->
+              ComposedSchema().apply { `$ref` = ref }
+            }
+          }
+    }
+
     fun configureJtsSchemas(config: SpringDocUtils) {
       config.replaceWithClass(org.locationtech.jts.geom.Geometry::class.java, Geometry::class.java)
       config.replaceWithClass(
