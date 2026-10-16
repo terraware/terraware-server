@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -22,6 +23,14 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.UpgradableEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1
@@ -36,6 +45,8 @@ import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
 import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -572,6 +583,135 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             facilityId = facilityId,
             organizationId = inserted.organizationId,
         )
+  }
+
+  @Nested
+  inner class BiomassSpeciesEventUpgrades {
+    private lateinit var monitoringPlotId: MonitoringPlotId
+    private lateinit var observationId: ObservationId
+
+    @BeforeEach
+    fun setUpBiomassObservation() {
+      insertOrganization()
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      monitoringPlotId = insertMonitoringPlot()
+      observationId = insertObservation(observationType = ObservationType.BiomassMeasurements)
+      insertObservationPlot()
+      insertObservationBiomassDetails()
+      insertObservationBiomassQuadratDetails(
+          observationId = observationId,
+          monitoringPlotId = monitoringPlotId,
+          position = ObservationPlotPosition.SouthwestCorner,
+      )
+    }
+
+    @Test
+    fun `upgrades created events from their own fields including after row deletion`() {
+      val catalogSpeciesId = insertSpecies(scientificName = "Catalog species")
+      val catalogSpeciesIdAfterDeletion =
+          insertSpecies(scientificName = "Catalog species after deletion")
+      val otherName = "Other species"
+      val otherNameAfterDeletion = "Other species after deletion"
+
+      assertCreatedUpgrade(
+          createdEvent(insertBiomassSpeciesRow(catalogSpeciesId, null), catalogSpeciesId, null),
+          "Catalog species",
+      )
+      assertCreatedUpgrade(
+          createdEvent(insertBiomassSpeciesRow(null, otherName), null, otherName),
+          otherName,
+      )
+      assertCreatedUpgradeAfterDeletingRow(
+          catalogSpeciesIdAfterDeletion,
+          null,
+          "Catalog species after deletion",
+      )
+      assertCreatedUpgradeAfterDeletingRow(null, otherNameAfterDeletion, otherNameAfterDeletion)
+    }
+
+    private fun assertCreatedUpgrade(
+        event: BiomassSpeciesCreatedEventV1,
+        expectedSpeciesName: String,
+    ) {
+      val upgraded = event.toNextVersion(insertEvent(event), eventUpgradeUtils)
+      assertEquals(expectedSpeciesName, upgraded.speciesName)
+    }
+
+    private fun assertCreatedUpgradeAfterDeletingRow(
+        speciesId: SpeciesId?,
+        scientificName: String?,
+        expectedSpeciesName: String,
+    ) {
+      val biomassSpeciesId = insertBiomassSpeciesRow(speciesId, scientificName)
+      insertEvent(createdEvent(biomassSpeciesId, speciesId, scientificName))
+      deleteBiomassSpeciesWithChildren(biomassSpeciesId)
+
+      val upgraded =
+          eventLogStore.fetchLastById<BiomassSpeciesCreatedEvent>(biomassSpeciesId)!!.event
+      assertEquals(expectedSpeciesName, upgraded.speciesName)
+    }
+
+    private fun insertBiomassSpeciesRow(
+        speciesId: SpeciesId?,
+        scientificName: String?,
+    ): BiomassSpeciesId =
+        insertObservationBiomassSpecies(
+            observationId = observationId,
+            monitoringPlotId = monitoringPlotId,
+            speciesId = speciesId,
+            scientificName = scientificName,
+        )
+
+    private fun createdEvent(
+        biomassSpeciesId: BiomassSpeciesId,
+        speciesId: SpeciesId?,
+        scientificName: String?,
+    ) =
+        BiomassSpeciesCreatedEventV1(
+            biomassSpeciesId = biomassSpeciesId,
+            commonName = null,
+            isInvasive = false,
+            isThreatened = false,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+            scientificName = scientificName,
+            speciesId = speciesId,
+        )
+
+    private fun deleteBiomassSpeciesWithChildren(biomassSpeciesId: BiomassSpeciesId) {
+      insertRecordedTree(
+          observationId = observationId,
+          monitoringPlotId = monitoringPlotId,
+          biomassSpeciesId = biomassSpeciesId,
+          diameterAtBreastHeightCm = BigDecimal.ONE,
+          pointOfMeasurementM = BigDecimal("1.3"),
+          heightM = BigDecimal.TEN,
+      )
+      insertObservationBiomassQuadratSpecies(
+          observationId = observationId,
+          monitoringPlotId = monitoringPlotId,
+          position = ObservationPlotPosition.SouthwestCorner,
+          biomassSpeciesId = biomassSpeciesId,
+          abundanceCount = 1,
+      )
+
+      dslContext
+          .deleteFrom(RECORDED_TREES)
+          .where(RECORDED_TREES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+          .where(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+          .execute()
+    }
   }
 
   private fun insertEvent(event: PersistentEvent): EventLogId {

@@ -9,6 +9,8 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
@@ -19,6 +21,8 @@ import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
 import org.jooq.DSLContext
 
 /**
@@ -56,6 +60,32 @@ class EventUpgradeUtils(
             ?.name
         ?: throw ProjectNotFoundException(projectId)
   }
+
+  fun upgrade(original: BiomassSpeciesCreatedEventV1): BiomassSpeciesCreatedEventV2 {
+    val speciesName =
+        original.speciesId?.let(::getSpeciesScientificName)
+            ?: original.scientificName
+            ?: throw IllegalStateException(
+                "Biomass species ${original.biomassSpeciesId} has no scientific name"
+            )
+
+    return BiomassSpeciesCreatedEventV2(
+        biomassSpeciesId = original.biomassSpeciesId,
+        commonName = original.commonName,
+        isInvasive = original.isInvasive,
+        isThreatened = original.isThreatened,
+        monitoringPlotId = original.monitoringPlotId,
+        observationId = original.observationId,
+        organizationId = original.organizationId,
+        plantingSiteId = original.plantingSiteId,
+        scientificName = original.scientificName,
+        speciesId = original.speciesId,
+        speciesName = speciesName,
+    )
+  }
+
+  private fun getSpeciesScientificName(speciesId: SpeciesId): String =
+      dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(speciesId)) ?: "$speciesId"
 
   fun upgrade(original: WithdrawalCreatedEventV1): WithdrawalCreatedEventV2 {
     val currentRow =

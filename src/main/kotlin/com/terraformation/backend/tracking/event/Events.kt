@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.event
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -28,6 +29,8 @@ import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
+import com.terraformation.backend.eventlog.UpgradableEvent
+import com.terraformation.backend.eventlog.db.EventUpgradeUtils
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.ratelimit.RateLimitedEvent
@@ -687,6 +690,11 @@ sealed interface BiomassSpeciesPersistentEvent : PersistentEvent {
   val plantingSiteId: PlantingSiteId
 }
 
+sealed interface BiomassSpeciesNamedPersistentEvent : BiomassSpeciesPersistentEvent {
+  val speciesId: SpeciesId?
+  val speciesName: String
+}
+
 data class BiomassSpeciesCreatedEventV1(
     override val biomassSpeciesId: BiomassSpeciesId,
     val commonName: String?,
@@ -698,9 +706,28 @@ data class BiomassSpeciesCreatedEventV1(
     override val plantingSiteId: PlantingSiteId,
     val scientificName: String?,
     val speciesId: SpeciesId?,
-) : BiomassSpeciesPersistentEvent, EntityCreatedPersistentEvent
+) : BiomassSpeciesPersistentEvent, EntityCreatedPersistentEvent, UpgradableEvent {
+  override fun toNextVersion(
+      eventLogId: EventLogId,
+      eventUpgradeUtils: EventUpgradeUtils,
+  ): BiomassSpeciesCreatedEventV2 = eventUpgradeUtils.upgrade(this)
+}
 
-typealias BiomassSpeciesCreatedEvent = BiomassSpeciesCreatedEventV1
+data class BiomassSpeciesCreatedEventV2(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    val commonName: String?,
+    val isInvasive: Boolean,
+    val isThreatened: Boolean,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    val scientificName: String?,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassSpeciesNamedPersistentEvent, EntityCreatedPersistentEvent
+
+typealias BiomassSpeciesCreatedEvent = BiomassSpeciesCreatedEventV2
 
 data class BiomassSpeciesUpdatedEventV1(
     val changedFrom: Values,
