@@ -41,6 +41,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
@@ -691,7 +692,20 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             plantingSiteId = inserted.plantingSiteId,
         )
 
+    private fun quadratSpeciesUpdatedEvent(biomassSpeciesId: BiomassSpeciesId) =
+        BiomassQuadratSpeciesUpdatedEventV1(
+            changedFrom = BiomassQuadratSpeciesUpdatedEventV1.Values(1),
+            changedTo = BiomassQuadratSpeciesUpdatedEventV1.Values(2),
+            biomassSpeciesId = biomassSpeciesId,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+            position = ObservationPlotPosition.SouthwestCorner,
+        )
+
     private fun deleteBiomassSpeciesRow(biomassSpeciesId: BiomassSpeciesId) {
+      dslContext
       dslContext
           .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
           .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
