@@ -12,10 +12,13 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.locationtech.jts.geom.Envelope
 
 class StratumPlotAllocatorTest : BaseStratumModelTest() {
-  private fun fullStratum(numPlots: Int = 4, numPermanentPlots: Int = 6): ExistingStratumModel =
+  private fun fullStratum(
+      numPlots: Int = 4,
+      plantNumPermanentPlots: Int = 6,
+  ): ExistingStratumModel =
       stratumModel(
-          numPermanentPlots = numPermanentPlots,
-          numTemporaryPlots = 2,
+          plantNumPermanentPlots = plantNumPermanentPlots,
+          plantNumTemporaryPlots = 2,
           substrata =
               listOf(
                   substratumModel(
@@ -29,8 +32,8 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
   fun `uses StratumModel allocator when there is room for all the plots`() {
     val stratum =
         stratumModel(
-            numPermanentPlots = 1,
-            numTemporaryPlots = 1,
+            plantNumPermanentPlots = 1,
+            plantNumTemporaryPlots = 1,
             substrata =
                 listOf(
                     substratumModel(
@@ -114,8 +117,8 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
     // substratum. Plot 12 has the highest permanent index, making it a candidate for demotion.
     val stratum =
         stratumModel(
-            numPermanentPlots = 6,
-            numTemporaryPlots = 2,
+            plantNumPermanentPlots = 6,
+            plantNumTemporaryPlots = 2,
             boundary = boundary,
             substrata =
                 listOf(
@@ -205,8 +208,8 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
   fun `does not allocate permanent plots with indexes greater than numPermanentPlots`() {
     val stratum =
         stratumModel(
-            numPermanentPlots = 1,
-            numTemporaryPlots = 7,
+            plantNumPermanentPlots = 1,
+            plantNumTemporaryPlots = 7,
             substrata =
                 listOf(
                     substratumModel(
@@ -243,8 +246,8 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
   fun `throws exception if the stratum has no room for any plots at all`() {
     val stratum =
         stratumModel(
-            numPermanentPlots = 1,
-            numTemporaryPlots = 0,
+            plantNumPermanentPlots = 1,
+            plantNumTemporaryPlots = 0,
             substrata =
                 listOf(
                     substratumModel(
@@ -270,8 +273,8 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
   fun `only returns plots in requested substrata`() {
     val stratum =
         stratumModel(
-            numPermanentPlots = 6,
-            numTemporaryPlots = 2,
+            plantNumPermanentPlots = 6,
+            plantNumTemporaryPlots = 2,
             substrata =
                 listOf(
                     substratumModel(

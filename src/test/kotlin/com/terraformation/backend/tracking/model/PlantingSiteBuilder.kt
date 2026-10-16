@@ -143,8 +143,8 @@ private constructor(
       width: Int = this.width - (x - this.x),
       height: Int = this.height - (y - this.y),
       name: String = "S$currentStratumId",
-      numPermanent: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
-      numTemporary: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      plantNumPermanent: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+      plantNumTemporary: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: StableId = StableId(name),
       func: StratumBuilder.() -> Unit = {},
   ): ExistingStratumModel {
@@ -157,8 +157,8 @@ private constructor(
             width = width,
             height = height,
             name = name,
-            numPermanentPlots = numPermanent,
-            numTemporaryPlots = numTemporary,
+            plantNumPermanentPlots = plantNumPermanent,
+            plantNumTemporaryPlots = plantNumTemporary,
             stableId = stableId,
         )
     builder.func()
@@ -205,15 +205,15 @@ private constructor(
       private val width: Int,
       private val height: Int,
       private val name: String,
-      private val numPermanentPlots: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
-      private val numTemporaryPlots: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      private val plantNumPermanentPlots: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+      private val plantNumTemporaryPlots: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       private val stableId: StableId = StableId(name),
   ) {
     var boundary: MultiPolygon = rectangle(width, height, x, y)
-    var errorMargin: BigDecimal = StratumModel.DEFAULT_ERROR_MARGIN
+    var plantErrorMargin: BigDecimal = StratumModel.DEFAULT_ERROR_MARGIN
     var initialPlantingDensity: BigDecimal = StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY
-    var studentsT: BigDecimal = StratumModel.DEFAULT_STUDENTS_T
-    var variance: BigDecimal = StratumModel.DEFAULT_VARIANCE
+    var plantStudentsT: BigDecimal = StratumModel.DEFAULT_STUDENTS_T
+    var plantVariance: BigDecimal = StratumModel.DEFAULT_VARIANCE
 
     private var nextPermanentIndex = 1
     private var nextSubstratumX = x
@@ -229,11 +229,11 @@ private constructor(
           name = name,
           plantPlotCounts =
               StratumPlotCounts(
-                  errorMargin = errorMargin,
-                  numPermanentPlots = numPermanentPlots,
-                  numTemporaryPlots = numTemporaryPlots,
-                  studentsT = studentsT,
-                  variance = variance,
+                  errorMargin = plantErrorMargin,
+                  numPermanentPlots = plantNumPermanentPlots,
+                  numTemporaryPlots = plantNumTemporaryPlots,
+                  studentsT = plantStudentsT,
+                  variance = plantVariance,
               ),
           substrata = substrata.ifEmpty { listOf(substratum()) },
           stableId = stableId,

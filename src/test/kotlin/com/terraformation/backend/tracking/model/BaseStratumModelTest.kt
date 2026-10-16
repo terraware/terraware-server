@@ -148,8 +148,8 @@ abstract class BaseStratumModelTest {
   }
 
   protected fun stratumModel(
-      numTemporaryPlots: Int = 1,
-      numPermanentPlots: Int = 1,
+      plantNumTemporaryPlots: Int = 1,
+      plantNumPermanentPlots: Int = 1,
       substrata: List<ExistingSubstratumModel>,
       boundary: MultiPolygon = stratumBoundary(substrata),
   ) =
@@ -163,8 +163,8 @@ abstract class BaseStratumModelTest {
           plantPlotCounts =
               StratumPlotCounts(
                   errorMargin = BigDecimal.ONE,
-                  numPermanentPlots = numPermanentPlots,
-                  numTemporaryPlots = numTemporaryPlots,
+                  numPermanentPlots = plantNumPermanentPlots,
+                  numTemporaryPlots = plantNumTemporaryPlots,
                   studentsT = BigDecimal.ONE,
                   variance = BigDecimal.ONE,
               ),

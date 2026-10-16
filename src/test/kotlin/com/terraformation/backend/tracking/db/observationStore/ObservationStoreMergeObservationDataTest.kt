@@ -36,7 +36,7 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
 
   @BeforeEach
   fun setUpSite() {
-    helper.insertPlantedSite(numPermanentPlots = 2)
+    helper.insertPlantedSite(plantNumPermanentPlots = 2)
     speciesId = inserted.speciesId
   }
 

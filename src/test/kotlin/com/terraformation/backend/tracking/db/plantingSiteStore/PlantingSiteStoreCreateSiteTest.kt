@@ -145,11 +145,13 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   listOf(
                       StratumModel.create(
                           boundary = stratum1Boundary,
-                          errorMargin = BigDecimal(1),
                           initialPlantingDensity = BigDecimal(6),
                           name = "Stratum 1",
-                          numPermanentPlots = 3,
-                          numTemporaryPlots = 4,
+                          plantErrorMargin = BigDecimal(1),
+                          plantNumPermanentPlots = 3,
+                          plantNumTemporaryPlots = 4,
+                          plantStudentsT = BigDecimal(5),
+                          plantVariance = BigDecimal(7),
                           substrata =
                               listOf(
                                   SubstratumModel.create(
@@ -163,9 +165,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                                       name = "Substratum 2",
                                   ),
                               ),
-                          studentsT = BigDecimal(5),
                           targetPlantDensity = BigDecimal(8),
-                          variance = BigDecimal(7),
                       ),
                       StratumModel.create(
                           boundary = stratum2Boundary,

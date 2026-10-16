@@ -545,22 +545,22 @@ data class StratumModel<
         name: String,
         substrata: List<NewSubstratumModel>,
         exclusion: MultiPolygon? = null,
-        errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
         initialPlantingDensity: BigDecimal = DEFAULT_INITIAL_PLANTING_DENSITY,
-        numPermanentPlots: Int? = null,
-        numTemporaryPlots: Int? = null,
+        plantErrorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+        plantNumPermanentPlots: Int? = null,
+        plantNumTemporaryPlots: Int? = null,
+        plantStudentsT: BigDecimal = DEFAULT_STUDENTS_T,
+        plantVariance: BigDecimal = DEFAULT_VARIANCE,
         stableId: StableId = StableId(name),
-        studentsT: BigDecimal = DEFAULT_STUDENTS_T,
         targetPlantDensity: BigDecimal? = null,
-        variance: BigDecimal = DEFAULT_VARIANCE,
     ): NewStratumModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
-      val defaultTotalPlots =
-          (studentsT * studentsT * variance / errorMargin / errorMargin)
+      val defaultPlantTotalPlots =
+          (plantStudentsT * plantStudentsT * plantVariance / plantErrorMargin / plantErrorMargin)
               .setScale(0, RoundingMode.UP)
               .toInt()
-      val defaultPermanentPlots = max((defaultTotalPlots * 0.75).roundToInt(), 1)
-      val defaultTemporaryPlots = max(defaultTotalPlots - defaultPermanentPlots, 1)
+      val defaultPlantPermanentPlots = max((defaultPlantTotalPlots * 0.75).roundToInt(), 1)
+      val defaultPlantTemporaryPlots = max(defaultPlantTotalPlots - defaultPlantPermanentPlots, 1)
 
       return NewStratumModel(
           areaHa = areaHa,
@@ -571,11 +571,11 @@ data class StratumModel<
           name = name,
           plantPlotCounts =
               StratumPlotCounts(
-                  errorMargin = errorMargin,
-                  numPermanentPlots = numPermanentPlots ?: defaultPermanentPlots,
-                  numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
-                  studentsT = studentsT,
-                  variance = variance,
+                  errorMargin = plantErrorMargin,
+                  numPermanentPlots = plantNumPermanentPlots ?: defaultPlantPermanentPlots,
+                  numTemporaryPlots = plantNumTemporaryPlots ?: defaultPlantTemporaryPlots,
+                  studentsT = plantStudentsT,
+                  variance = plantVariance,
               ),
           substrata = substrata,
           stableId = stableId,

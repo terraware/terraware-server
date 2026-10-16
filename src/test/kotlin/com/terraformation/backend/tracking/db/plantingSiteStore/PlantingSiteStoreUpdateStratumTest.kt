@@ -50,11 +50,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val stratumId = insertStratum(initialRow)
 
       val newName = "renamed"
-      val newErrorMargin = BigDecimal(10)
-      val newStudentsT = BigDecimal(11)
-      val newVariance = BigDecimal(12)
-      val newPermanent = 13
-      val newTemporary = 14
+      val newPlantErrorMargin = BigDecimal(10)
+      val newPlantStudentsT = BigDecimal(11)
+      val newPlantVariance = BigDecimal(12)
+      val newPlantNumPermanentPlots = 13
+      val newPlantNumTemporaryPlots = 14
       val newInitialPlantingDensity = BigDecimal(13)
       val newTargetPlantDensity = BigDecimal(15)
 
@@ -65,11 +65,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
               name = newName,
-              plantErrorMargin = newErrorMargin,
-              plantNumPermanentPlots = newPermanent,
-              plantNumTemporaryPlots = newTemporary,
-              plantStudentsT = newStudentsT,
-              plantVariance = newVariance,
+              plantErrorMargin = newPlantErrorMargin,
+              plantNumPermanentPlots = newPlantNumPermanentPlots,
+              plantNumTemporaryPlots = newPlantNumTemporaryPlots,
+              plantStudentsT = newPlantStudentsT,
+              plantVariance = newPlantVariance,
               targetPlantDensity = newTargetPlantDensity,
           )
 
@@ -78,11 +78,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
             // Editable
             initialPlantingDensity = newInitialPlantingDensity,
             name = newName,
-            plantErrorMargin = newErrorMargin,
-            plantNumPermanentPlots = newPermanent,
-            plantNumTemporaryPlots = newTemporary,
-            plantStudentsT = newStudentsT,
-            plantVariance = newVariance,
+            plantErrorMargin = newPlantErrorMargin,
+            plantNumPermanentPlots = newPlantNumPermanentPlots,
+            plantNumTemporaryPlots = newPlantNumTemporaryPlots,
+            plantStudentsT = newPlantStudentsT,
+            plantVariance = newPlantVariance,
             targetPlantDensity = newTargetPlantDensity,
             // Not editable
             boundaryModifiedBy = user.userId,
