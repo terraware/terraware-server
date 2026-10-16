@@ -908,6 +908,7 @@ class PlantingSiteStore(
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
                   .set(NUM_PERMANENT_PLOTS, edit.desiredModel.plantPlotCounts.numPermanentPlots)
+                  .set(NUM_TEMPORARY_PLOTS, edit.desiredModel.plantPlotCounts.numTemporaryPlots)
                   .set(STUDENTS_T, edit.desiredModel.plantPlotCounts.studentsT)
                   .set(VARIANCE, edit.desiredModel.plantPlotCounts.variance)
                   .where(ID.eq(edit.existingModel.id))

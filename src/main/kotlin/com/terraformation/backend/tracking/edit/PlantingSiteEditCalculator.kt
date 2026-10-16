@@ -104,15 +104,10 @@ class PlantingSiteEditCalculator(
               if (
                   substratumEdits.isEmpty() &&
                       createMonitoringPlotEdits.isEmpty() &&
-                      existingStratum.plantPlotCounts.errorMargin ==
-                          desiredStratum.plantPlotCounts.errorMargin &&
                       existingStratum.name == desiredStratum.name &&
-                      existingStratum.plantPlotCounts.studentsT ==
-                          desiredStratum.plantPlotCounts.studentsT &&
+                      existingStratum.plantPlotCounts == desiredStratum.plantPlotCounts &&
                       existingStratum.initialPlantingDensity ==
                           desiredStratum.initialPlantingDensity &&
-                      existingStratum.plantPlotCounts.variance ==
-                          desiredStratum.plantPlotCounts.variance &&
                       existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)
               ) {
                 null

@@ -300,6 +300,28 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
+    fun `updates plot count settings`() {
+      runScenario(
+          initial =
+              newSite {
+                stratum(numPermanent = 10, numTemporary = 5) {
+                  errorMargin = BigDecimal(11)
+                  studentsT = BigDecimal(12)
+                  variance = BigDecimal(13)
+                }
+              },
+          desired =
+              newSite {
+                stratum(numPermanent = 20, numTemporary = 9) {
+                  errorMargin = BigDecimal(14)
+                  studentsT = BigDecimal(15)
+                  variance = BigDecimal(16)
+                }
+              },
+      )
+    }
+
+    @Test
     fun `optionally marks expanded substrata as not complete`() {
       runScenario(
           initial =
