@@ -659,6 +659,33 @@ sealed interface BiomassQuadratSpeciesNamedPersistentEvent : BiomassQuadratSpeci
   val speciesName: String
 }
 
+data class BiomassQuadratSpeciesCreatedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+    val abundance: Int,
+) : BiomassQuadratSpeciesNamedPersistentEvent, EntityCreatedPersistentEvent
+
+typealias BiomassQuadratSpeciesCreatedEvent = BiomassQuadratSpeciesCreatedEventV1
+
+data class BiomassQuadratSpeciesDeletedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassQuadratSpeciesNamedPersistentEvent, EntityDeletedPersistentEvent
+
+typealias BiomassQuadratSpeciesDeletedEvent = BiomassQuadratSpeciesDeletedEventV1
+
 data class BiomassQuadratSpeciesUpdatedEventV1(
     val changedFrom: Values,
     val changedTo: Values,
@@ -778,6 +805,20 @@ data class BiomassSpeciesCreatedEventV2(
 ) : BiomassSpeciesNamedPersistentEvent, EntityCreatedPersistentEvent
 
 typealias BiomassSpeciesCreatedEvent = BiomassSpeciesCreatedEventV2
+
+data class BiomassSpeciesDeletedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    val commonName: String?,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    val scientificName: String?,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassSpeciesNamedPersistentEvent, EntityDeletedPersistentEvent
+
+typealias BiomassSpeciesDeletedEvent = BiomassSpeciesDeletedEventV1
 
 data class BiomassSpeciesUpdatedEventV1(
     val changedFrom: Values,
@@ -1042,6 +1083,22 @@ data class RecordedTreeCreatedEventV1(
 
 typealias RecordedTreeCreatedEvent = RecordedTreeCreatedEventV1
 
+data class RecordedTreeDeletedEventV1(
+    val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val recordedTreeId: RecordedTreeId,
+    val speciesId: SpeciesId?,
+    val speciesName: String,
+    val treeGrowthForm: TreeGrowthForm,
+    val treeNumber: Int,
+    val trunkNumber: Int,
+) : EntityDeletedPersistentEvent, RecordedTreePersistentEvent
+
+typealias RecordedTreeDeletedEvent = RecordedTreeDeletedEventV1
+
 data class RecordedTreeUpdatedEventV1(
     val changedFrom: Values,
     val changedTo: Values,
@@ -1053,11 +1110,14 @@ data class RecordedTreeUpdatedEventV1(
 ) : FieldsUpdatedPersistentEvent, RecordedTreePersistentEvent {
   data class Values(
       val boleHeightM: BigDecimal? = null,
+      val biomassSpeciesId: BiomassSpeciesId? = null,
       val description: String? = null,
       val diameterAtBreastHeightCm: BigDecimal? = null,
       val heightM: BigDecimal? = null,
       val isDead: Boolean? = null,
       val pointOfMeasurementM: BigDecimal? = null,
+      val speciesId: SpeciesId? = null,
+      val speciesName: String? = null,
       val shrubDiameterCm: Int? = null,
       val treeCrownDiameterCm: Int? = null,
   )
@@ -1095,6 +1155,7 @@ data class RecordedTreeUpdatedEventV1(
               messages.numericValueOrNull(changedFrom.shrubDiameterCm),
               messages.numericValueOrNull(changedTo.shrubDiameterCm),
           ),
+          createUpdatedField("species", changedFrom.speciesName, changedTo.speciesName),
           createUpdatedField(
               "treeCrownDiameterCm",
               messages.numericValueOrNull(changedFrom.treeCrownDiameterCm),
