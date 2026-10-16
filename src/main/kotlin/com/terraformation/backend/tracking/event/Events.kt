@@ -1114,11 +1114,14 @@ data class RecordedTreeUpdatedEventV1(
 ) : FieldsUpdatedPersistentEvent, RecordedTreePersistentEvent {
   data class Values(
       val boleHeightM: BigDecimal? = null,
+      val biomassSpeciesId: BiomassSpeciesId? = null,
       val description: String? = null,
       val diameterAtBreastHeightCm: BigDecimal? = null,
       val heightM: BigDecimal? = null,
       val isDead: Boolean? = null,
       val pointOfMeasurementM: BigDecimal? = null,
+      val speciesId: SpeciesId? = null,
+      val speciesName: String? = null,
       val shrubDiameterCm: Int? = null,
       val treeCrownDiameterCm: Int? = null,
   )
@@ -1156,6 +1159,7 @@ data class RecordedTreeUpdatedEventV1(
               messages.numericValueOrNull(changedFrom.shrubDiameterCm),
               messages.numericValueOrNull(changedTo.shrubDiameterCm),
           ),
+          createUpdatedField("species", changedFrom.speciesName, changedTo.speciesName),
           createUpdatedField(
               "treeCrownDiameterCm",
               messages.numericValueOrNull(changedFrom.treeCrownDiameterCm),

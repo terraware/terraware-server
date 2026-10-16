@@ -128,10 +128,19 @@ class PersistentEventTest {
     val stringKeyPrefix = "eventSubject.${subjectName!!.name}.field"
 
     val expected =
-        valuesClasses
-            .flatMap { valuesClass ->
+        (valuesClasses.flatMap { valuesClass ->
               valuesClass.memberProperties.map { "$stringKeyPrefix.${it.name}" }
-            }
+            } +
+                if (
+                    subjectName == EventSubjectName.RecordedTree &&
+                        valuesClasses.any { valuesClass ->
+                          valuesClass.memberProperties.any { it.name == "speciesName" }
+                        }
+                ) {
+                  listOf("$stringKeyPrefix.species")
+                } else {
+                  emptyList()
+                })
             .sorted()
             .distinct()
             .joinToString("\n") { "$it=" }

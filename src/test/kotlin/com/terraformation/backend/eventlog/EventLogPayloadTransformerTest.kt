@@ -70,6 +70,9 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -253,6 +256,51 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         payload.action,
     )
     assertEquals(true, payload.subject is BiomassQuadratSpeciesSubjectPayload)
+  }
+
+  @Test
+  fun `lists recorded tree species name changes as a species field update`() {
+    val biomassSpeciesId = BiomassSpeciesId(10)
+    val recordedTreeId = RecordedTreeId(12)
+    val createdEvent =
+        RecordedTreeCreatedEvent(
+            biomassSpeciesId = biomassSpeciesId,
+            isDead = false,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            recordedTreeId = recordedTreeId,
+            treeGrowthForm = TreeGrowthForm.Tree,
+            treeNumber = 1,
+            trunkNumber = 1,
+        )
+    val updatedEvent =
+        RecordedTreeUpdatedEvent(
+            changedFrom = RecordedTreeUpdatedEventValues(speciesName = "Old name"),
+            changedTo = RecordedTreeUpdatedEventValues(speciesName = "New name"),
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            recordedTreeId = recordedTreeId,
+        )
+    val payloads =
+        transformer.eventsToPayloads(
+            listOf(
+                eventLogEntry(knownUserId, createdEvent),
+                eventLogEntry(knownUserId, updatedEvent),
+            )
+        )
+
+    assertEquals(
+        FieldUpdatedActionPayload(
+            fieldName = "species",
+            changedFrom = listOf("Old name"),
+            changedTo = listOf("New name"),
+        ),
+        payloads[1].action,
+    )
   }
 
   @Test
