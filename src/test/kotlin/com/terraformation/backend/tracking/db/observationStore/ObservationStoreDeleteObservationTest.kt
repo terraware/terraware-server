@@ -1,8 +1,5 @@
 package com.terraformation.backend.tracking.db.observationStore
 
-import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationType
@@ -32,7 +29,36 @@ class ObservationStoreDeleteObservationTest : BaseObservationStoreTest() {
         statusId = ObservationPlotStatus.Completed,
         completedBy = user.userId,
     )
-    insertBiomassRows(observationId, plotId, speciesId)
+    insertObservationBiomassDetails(
+        observationId = observationId,
+        monitoringPlotId = plotId,
+    )
+    val biomassSpeciesId =
+        insertObservationBiomassSpecies(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            speciesId = speciesId,
+        )
+    insertRecordedTree(
+        observationId = observationId,
+        monitoringPlotId = plotId,
+        biomassSpeciesId = biomassSpeciesId,
+        diameterAtBreastHeightCm = BigDecimal.ONE,
+        pointOfMeasurementM = BigDecimal("1.3"),
+        heightM = BigDecimal.TEN,
+    )
+    insertObservationBiomassQuadratDetails(
+        observationId = observationId,
+        monitoringPlotId = plotId,
+        position = ObservationPlotPosition.SouthwestCorner,
+    )
+    insertObservationBiomassQuadratSpecies(
+        observationId = observationId,
+        monitoringPlotId = plotId,
+        position = ObservationPlotPosition.SouthwestCorner,
+        biomassSpeciesId = biomassSpeciesId,
+        abundanceCount = 1,
+    )
 
     store.deleteObservation(observationId)
 
@@ -94,42 +120,5 @@ class ObservationStoreDeleteObservationTest : BaseObservationStoreTest() {
     store.deleteObservation(observationId1)
 
     assertTableEquals(expectedDensities)
-  }
-
-  private fun insertBiomassRows(
-      observationId: ObservationId,
-      monitoringPlotId: MonitoringPlotId,
-      speciesId: SpeciesId,
-  ) {
-    insertObservationBiomassDetails(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-    )
-    val biomassSpeciesId =
-        insertObservationBiomassSpecies(
-            observationId = observationId,
-            monitoringPlotId = monitoringPlotId,
-            speciesId = speciesId,
-        )
-    insertRecordedTree(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-        biomassSpeciesId = biomassSpeciesId,
-        diameterAtBreastHeightCm = BigDecimal.ONE,
-        pointOfMeasurementM = BigDecimal("1.3"),
-        heightM = BigDecimal.TEN,
-    )
-    insertObservationBiomassQuadratDetails(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-        position = ObservationPlotPosition.SouthwestCorner,
-    )
-    insertObservationBiomassQuadratSpecies(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-        position = ObservationPlotPosition.SouthwestCorner,
-        biomassSpeciesId = biomassSpeciesId,
-        abundanceCount = 1,
-    )
   }
 }
