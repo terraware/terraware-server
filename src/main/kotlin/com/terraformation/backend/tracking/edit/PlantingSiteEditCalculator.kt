@@ -104,12 +104,15 @@ class PlantingSiteEditCalculator(
               if (
                   substratumEdits.isEmpty() &&
                       createMonitoringPlotEdits.isEmpty() &&
-                      existingStratum.errorMargin == desiredStratum.errorMargin &&
+                      existingStratum.plantPlotCounts.errorMargin ==
+                          desiredStratum.plantPlotCounts.errorMargin &&
                       existingStratum.name == desiredStratum.name &&
-                      existingStratum.studentsT == desiredStratum.studentsT &&
+                      existingStratum.plantPlotCounts.studentsT ==
+                          desiredStratum.plantPlotCounts.studentsT &&
                       existingStratum.initialPlantingDensity ==
                           desiredStratum.initialPlantingDensity &&
-                      existingStratum.variance == desiredStratum.variance &&
+                      existingStratum.plantPlotCounts.variance ==
+                          desiredStratum.plantPlotCounts.variance &&
                       existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)
               ) {
                 null
@@ -193,7 +196,7 @@ class PlantingSiteEditCalculator(
 
     val desiredPermanentPlotEdits =
         (zipProportionally(
-            desiredStratum.numPermanentPlots,
+            desiredStratum.plantPlotCounts.numPermanentPlots,
             fractionOfDesiredAreaOverlappingWithExisting,
             nextPlotForArea(existingPlotsInOverlappingArea, overlappingBoundary),
             nextPlotForArea(existingPlotsInNewArea, nonOverlappingBoundary),

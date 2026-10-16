@@ -224,16 +224,19 @@ private constructor(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
-          errorMargin = errorMargin,
           id = StratumId(currentStratumId),
           initialPlantingDensity = initialPlantingDensity,
           name = name,
-          numPermanentPlots = numPermanentPlots,
-          numTemporaryPlots = numTemporaryPlots,
+          plantPlotCounts =
+              StratumPlotCounts(
+                  errorMargin = errorMargin,
+                  numPermanentPlots = numPermanentPlots,
+                  numTemporaryPlots = numTemporaryPlots,
+                  studentsT = studentsT,
+                  variance = variance,
+              ),
           substrata = substrata.ifEmpty { listOf(substratum()) },
           stableId = stableId,
-          studentsT = studentsT,
-          variance = variance,
       )
     }
 

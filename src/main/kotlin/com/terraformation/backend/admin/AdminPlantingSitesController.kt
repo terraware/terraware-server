@@ -229,7 +229,7 @@ class AdminPlantingSitesController(
           "type" to "FeatureCollection",
           "features" to
               site.strata.flatMap { stratum ->
-                val numPermanent = stratum.numPermanentPlots
+                val numPermanent = stratum.plantPlotCounts.numPermanentPlots
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
                     stratum

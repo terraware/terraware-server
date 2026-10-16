@@ -451,8 +451,8 @@ data class PlantingZonePayload(
       latestObservationCompletedTime = model.latestObservationCompletedTime,
       latestObservationId = model.latestObservationId,
       model.name,
-      model.numPermanentPlots,
-      model.numTemporaryPlots,
+      model.plantPlotCounts.numPermanentPlots,
+      model.plantPlotCounts.numTemporaryPlots,
       model.substrata.map { PlantingSubzonePayload(it) },
       model.initialPlantingDensity,
   )
@@ -493,8 +493,8 @@ data class StratumResponsePayload(
       latestObservationCompletedTime = model.latestObservationCompletedTime,
       latestObservationId = model.latestObservationId,
       name = model.name,
-      numPermanentPlots = model.numPermanentPlots,
-      numTemporaryPlots = model.numTemporaryPlots,
+      numPermanentPlots = model.plantPlotCounts.numPermanentPlots,
+      numTemporaryPlots = model.plantPlotCounts.numTemporaryPlots,
       substrata = model.substrata.map { SubstratumResponsePayload(it) },
       targetPlantDensity = model.targetPlantDensity,
   )

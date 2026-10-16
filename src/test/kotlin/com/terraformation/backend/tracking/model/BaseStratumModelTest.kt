@@ -157,15 +157,18 @@ abstract class BaseStratumModelTest {
           areaHa = BigDecimal.ONE,
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
-          errorMargin = BigDecimal.ONE,
           id = StratumId(1),
           initialPlantingDensity = BigDecimal.ONE,
           name = "name",
-          numPermanentPlots = numPermanentPlots,
-          numTemporaryPlots = numTemporaryPlots,
+          plantPlotCounts =
+              StratumPlotCounts(
+                  errorMargin = BigDecimal.ONE,
+                  numPermanentPlots = numPermanentPlots,
+                  numTemporaryPlots = numTemporaryPlots,
+                  studentsT = BigDecimal.ONE,
+                  variance = BigDecimal.ONE,
+              ),
           substrata = substrata,
           stableId = StableId("name"),
-          studentsT = BigDecimal.ONE,
-          variance = BigDecimal.ONE,
       )
 }
