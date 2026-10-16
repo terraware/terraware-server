@@ -34,17 +34,17 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
               boundary = multiPolygon(1),
               createdBy = createdBy,
               createdTime = createdTime,
-              errorMargin = BigDecimal.TWO,
               initialPlantingDensity = BigDecimal.ONE,
               plantingSiteId = plantingSiteId,
               modifiedBy = createdBy,
               modifiedTime = createdTime,
               name = "initial",
-              numPermanentPlots = 1,
-              numTemporaryPlots = 2,
+              plantErrorMargin = BigDecimal.TWO,
+              plantNumPermanentPlots = 1,
+              plantNumTemporaryPlots = 2,
+              plantStudentsT = BigDecimal.ONE,
+              plantVariance = BigDecimal.ZERO,
               stableId = StableId("initial"),
-              studentsT = BigDecimal.ONE,
-              variance = BigDecimal.ZERO,
           )
 
       val stratumId = insertStratum(initialRow)
@@ -60,30 +60,30 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
       val expected =
           initialRow.copy(
-              errorMargin = newErrorMargin,
               id = stratumId,
               initialPlantingDensity = newInitialPlantingDensity,
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
               name = newName,
-              numPermanentPlots = newPermanent,
-              numTemporaryPlots = newTemporary,
-              studentsT = newStudentsT,
+              plantErrorMargin = newErrorMargin,
+              plantNumPermanentPlots = newPermanent,
+              plantNumTemporaryPlots = newTemporary,
+              plantStudentsT = newStudentsT,
+              plantVariance = newVariance,
               targetPlantDensity = newTargetPlantDensity,
-              variance = newVariance,
           )
 
       store.updateStratum(stratumId) {
         it.copy(
             // Editable
-            errorMargin = newErrorMargin,
             initialPlantingDensity = newInitialPlantingDensity,
             name = newName,
-            numPermanentPlots = newPermanent,
-            numTemporaryPlots = newTemporary,
-            studentsT = newStudentsT,
+            plantErrorMargin = newErrorMargin,
+            plantNumPermanentPlots = newPermanent,
+            plantNumTemporaryPlots = newTemporary,
+            plantStudentsT = newStudentsT,
+            plantVariance = newVariance,
             targetPlantDensity = newTargetPlantDensity,
-            variance = newVariance,
             // Not editable
             boundaryModifiedBy = user.userId,
             boundaryModifiedTime = Instant.ofEpochSecond(5000),

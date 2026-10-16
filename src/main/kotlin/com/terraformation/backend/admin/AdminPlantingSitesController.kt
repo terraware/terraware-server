@@ -520,14 +520,14 @@ class AdminPlantingSitesController(
     try {
       plantingSiteStore.updateStratum(stratumId) { row ->
         row.copy(
-            errorMargin = errorMargin,
             initialPlantingDensity = initialPlantingDensity,
             name = name,
-            numPermanentPlots = numPermanent,
-            numTemporaryPlots = numTemporary,
-            studentsT = studentsT,
+            plantErrorMargin = errorMargin,
+            plantNumPermanentPlots = numPermanent,
+            plantNumTemporaryPlots = numTemporary,
+            plantStudentsT = studentsT,
+            plantVariance = variance,
             targetPlantDensity = targetPlantDensity,
-            variance = variance,
         )
       }
 

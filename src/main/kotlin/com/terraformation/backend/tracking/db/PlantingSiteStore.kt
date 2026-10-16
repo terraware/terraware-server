@@ -902,15 +902,21 @@ class PlantingSiteStore(
                           .set(BOUNDARY_MODIFIED_TIME, now)
                     }
                   }
-                  .set(ERROR_MARGIN, edit.desiredModel.plantPlotCounts.errorMargin)
                   .set(INITIAL_PLANTING_DENSITY, edit.desiredModel.initialPlantingDensity)
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
-                  .set(NUM_PERMANENT_PLOTS, edit.desiredModel.plantPlotCounts.numPermanentPlots)
-                  .set(NUM_TEMPORARY_PLOTS, edit.desiredModel.plantPlotCounts.numTemporaryPlots)
-                  .set(STUDENTS_T, edit.desiredModel.plantPlotCounts.studentsT)
-                  .set(VARIANCE, edit.desiredModel.plantPlotCounts.variance)
+                  .set(PLANT_ERROR_MARGIN, edit.desiredModel.plantPlotCounts.errorMargin)
+                  .set(
+                      PLANT_NUM_PERMANENT_PLOTS,
+                      edit.desiredModel.plantPlotCounts.numPermanentPlots,
+                  )
+                  .set(
+                      PLANT_NUM_TEMPORARY_PLOTS,
+                      edit.desiredModel.plantPlotCounts.numTemporaryPlots,
+                  )
+                  .set(PLANT_STUDENTS_T, edit.desiredModel.plantPlotCounts.studentsT)
+                  .set(PLANT_VARIANCE, edit.desiredModel.plantPlotCounts.variance)
                   .where(ID.eq(edit.existingModel.id))
                   .execute()
           if (rowsUpdated != 1) {
@@ -1162,16 +1168,16 @@ class PlantingSiteStore(
       with(STRATA) {
         dslContext
             .update(STRATA)
-            .set(ERROR_MARGIN, edited.errorMargin)
             .set(INITIAL_PLANTING_DENSITY, edited.initialPlantingDensity)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, edited.name)
-            .set(NUM_PERMANENT_PLOTS, edited.numPermanentPlots)
-            .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
-            .set(STUDENTS_T, edited.studentsT)
+            .set(PLANT_ERROR_MARGIN, edited.plantErrorMargin)
+            .set(PLANT_NUM_PERMANENT_PLOTS, edited.plantNumPermanentPlots)
+            .set(PLANT_NUM_TEMPORARY_PLOTS, edited.plantNumTemporaryPlots)
+            .set(PLANT_STUDENTS_T, edited.plantStudentsT)
+            .set(PLANT_VARIANCE, edited.plantVariance)
             .set(TARGET_PLANT_DENSITY, edited.targetPlantDensity)
-            .set(VARIANCE, edited.variance)
             .where(ID.eq(stratumId))
             .execute()
       }
@@ -1303,18 +1309,18 @@ class PlantingSiteStore(
             boundaryModifiedTime = now,
             createdBy = userId,
             createdTime = now,
-            errorMargin = stratum.plantPlotCounts.errorMargin,
             initialPlantingDensity = stratum.initialPlantingDensity,
             modifiedBy = userId,
             modifiedTime = now,
             name = stratum.name,
-            numPermanentPlots = stratum.plantPlotCounts.numPermanentPlots,
-            numTemporaryPlots = stratum.plantPlotCounts.numTemporaryPlots,
+            plantErrorMargin = stratum.plantPlotCounts.errorMargin,
+            plantNumPermanentPlots = stratum.plantPlotCounts.numPermanentPlots,
+            plantNumTemporaryPlots = stratum.plantPlotCounts.numTemporaryPlots,
+            plantStudentsT = stratum.plantPlotCounts.studentsT,
+            plantVariance = stratum.plantPlotCounts.variance,
             plantingSiteId = plantingSiteId,
             stableId = stratum.stableId,
-            studentsT = stratum.plantPlotCounts.studentsT,
             targetPlantDensity = stratum.targetPlantDensity,
-            variance = stratum.plantPlotCounts.variance,
         )
 
     strataDao.insert(strataRow)
@@ -2145,19 +2151,19 @@ class PlantingSiteStore(
                     STRATA.AREA_HA,
                     boundaryField,
                     STRATA.BOUNDARY_MODIFIED_TIME,
-                    STRATA.ERROR_MARGIN,
+                    STRATA.PLANT_ERROR_MARGIN,
                     STRATA.ID,
                     STRATA.INITIAL_PLANTING_DENSITY,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
                     STRATA.NAME,
-                    STRATA.NUM_PERMANENT_PLOTS,
-                    STRATA.NUM_TEMPORARY_PLOTS,
+                    STRATA.PLANT_NUM_PERMANENT_PLOTS,
+                    STRATA.PLANT_NUM_TEMPORARY_PLOTS,
                     STRATA.STABLE_ID,
                     substrataField,
-                    STRATA.STUDENTS_T,
+                    STRATA.PLANT_STUDENTS_T,
                     STRATA.TARGET_PLANT_DENSITY,
-                    STRATA.VARIANCE,
+                    STRATA.PLANT_VARIANCE,
                 )
                 .from(STRATA)
                 .apply {
@@ -2181,11 +2187,11 @@ class PlantingSiteStore(
                 name = record[STRATA.NAME]!!,
                 plantPlotCounts =
                     StratumPlotCounts(
-                        errorMargin = record[STRATA.ERROR_MARGIN]!!,
-                        numPermanentPlots = record[STRATA.NUM_PERMANENT_PLOTS]!!,
-                        numTemporaryPlots = record[STRATA.NUM_TEMPORARY_PLOTS]!!,
-                        studentsT = record[STRATA.STUDENTS_T]!!,
-                        variance = record[STRATA.VARIANCE]!!,
+                        errorMargin = record[STRATA.PLANT_ERROR_MARGIN]!!,
+                        numPermanentPlots = record[STRATA.PLANT_NUM_PERMANENT_PLOTS]!!,
+                        numTemporaryPlots = record[STRATA.PLANT_NUM_TEMPORARY_PLOTS]!!,
+                        studentsT = record[STRATA.PLANT_STUDENTS_T]!!,
+                        variance = record[STRATA.PLANT_VARIANCE]!!,
                     ),
                 stableId = record[STRATA.STABLE_ID]!!,
                 substrata = substrataField?.let { record[it] } ?: emptyList(),
