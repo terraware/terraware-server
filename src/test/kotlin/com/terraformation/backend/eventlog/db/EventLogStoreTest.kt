@@ -9,11 +9,17 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.EventLogRecord
 import com.terraformation.backend.db.default_schema.tables.references.EVENT_LOG
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.CircularEventUpgradePathDetectedException
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.SkipPersistentEventTest
 import com.terraformation.backend.eventlog.UpgradableEvent
 import com.terraformation.backend.eventlog.model.EventLogEntry
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesPersistentEvent
 import java.time.Instant
 import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -96,6 +102,39 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.fetchByIds(
               listOf(OrganizationId(1)),
               listOf(TestOrganizationEvent::class, TestProjectEvent::class),
+          ),
+      )
+    }
+
+    @Test
+    fun `fetches biomass species events by their persistent event interface`() {
+      val event =
+          BiomassSpeciesCreatedEvent(
+              biomassSpeciesId = BiomassSpeciesId(1),
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = MonitoringPlotId(2),
+              observationId = ObservationId(3),
+              organizationId = OrganizationId(4),
+              plantingSiteId = PlantingSiteId(5),
+              scientificName = null,
+              speciesId = null,
+              speciesName = "Species",
+          )
+      val eventLogId = store.insertEvent(event)
+
+      assertEquals(
+          listOf(EventLogEntry(user.userId, Instant.EPOCH, event, eventLogId)),
+          store.fetchByIds(
+              listOf(
+                  event.biomassSpeciesId,
+                  event.monitoringPlotId,
+                  event.observationId,
+                  event.organizationId,
+                  event.plantingSiteId,
+              ),
+              listOf(BiomassSpeciesPersistentEvent::class),
           ),
       )
     }

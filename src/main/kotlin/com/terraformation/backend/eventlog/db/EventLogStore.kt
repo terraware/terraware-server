@@ -199,15 +199,16 @@ class EventLogStore(
 
   private fun <T : PersistentEvent> getConcreteClasses(
       requestedClasses: Collection<KClass<out T>>
-  ): List<KClass<out T>> {
-    val requestedConcreteClasses = requestedClasses.flatMap { requestedClass ->
-      if (requestedClass.isSealed) {
-        requestedClass.sealedSubclasses.filterNot { it.isSubclassOf(UpgradableEvent::class) }
-      } else {
-        listOf(requestedClass)
-      }
+  ): List<KClass<out T>> = requestedClasses.flatMap { requestedClass ->
+    if (requestedClass.isSealed) {
+      getConcreteClasses(
+          requestedClass.sealedSubclasses.filterNot {
+            it.isSubclassOf(UpgradableEvent::class)
+          }
+      )
+    } else {
+      listOf(requestedClass)
     }
-    return requestedConcreteClasses
   }
 
   private fun <T : PersistentEvent> fetchByCondition(
