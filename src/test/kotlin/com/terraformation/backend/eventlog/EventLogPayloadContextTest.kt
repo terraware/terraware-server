@@ -4,16 +4,26 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
+import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -125,6 +135,61 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals("Other name from event", quadratSpeciesPayload.scientificName)
       assertTrue(quadratSpeciesPayload.fullText.contains("Other name from event"))
     }
+
+    @Test
+    fun `uses deleted biomass species event after biomass species row is deleted`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+          .execute()
+      val event =
+          BiomassSpeciesDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              commonName = "Common name",
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = "Scientific name from event",
+              speciesId = inserted.speciesId,
+              speciesName = "Display name from event",
+          )
+      val context = EventLogPayloadContext(dslContext, listOf(eventLogEntry(event)), messages)
+
+      val payload = BiomassSpeciesSubjectPayload.forEvent(event, context)
+
+      assertEquals(true, payload.deleted)
+      assertEquals(inserted.speciesId, payload.speciesId)
+      assertEquals("Scientific name from event", payload.scientificName)
+      assertTrue(payload.fullText.contains("Display name from event"))
+    }
+  }
+
+  @Test
+  fun `builds deleted recorded tree subject without a creation event`() {
+    val event =
+        RecordedTreeDeletedEvent(
+            biomassSpeciesId = BiomassSpeciesId(1),
+            monitoringPlotId = MonitoringPlotId(2),
+            observationId = ObservationId(3),
+            organizationId = OrganizationId(4),
+            plantingSiteId = PlantingSiteId(5),
+            recordedTreeId = RecordedTreeId(6),
+            speciesId = null,
+            speciesName = "Other species",
+            treeGrowthForm = TreeGrowthForm.Trunk,
+            treeNumber = 7,
+            trunkNumber = 8,
+        )
+    val context = EventLogPayloadContext(dslContext, listOf(eventLogEntry(event)), messages)
+
+    val payload = RecordedTreeSubjectPayload.forEvent(event, context)
+
+    assertEquals(true, payload.deleted)
+    assertEquals(TreeGrowthForm.Trunk, payload.treeGrowthForm)
+    assertEquals(7, payload.treeNumber)
+    assertEquals(8, payload.trunkNumber)
   }
 
   private var nextEventLogId: Long = 1

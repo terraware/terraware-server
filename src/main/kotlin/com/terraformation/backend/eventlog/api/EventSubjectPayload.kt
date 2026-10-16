@@ -61,6 +61,7 @@ import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesNamedPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
+import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesNamedPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.MonitoringSpeciesPersistentEvent
@@ -71,6 +72,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesPersi
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -275,6 +277,7 @@ data class BiomassQuadratSpeciesSubjectPayload(
 
 @JsonTypeName("BiomassSpecies")
 data class BiomassSpeciesSubjectPayload(
+    override val deleted: Boolean?,
     override val fullText: String,
     val monitoringPlotId: MonitoringPlotId,
     val observationId: ObservationId,
@@ -293,13 +296,21 @@ data class BiomassSpeciesSubjectPayload(
             EventLogPayloadContext.BiomassSpecies(
                 displayName = namedEvent.speciesName,
                 scientificName =
-                    (event as? BiomassSpeciesCreatedEventV2)?.scientificName
-                        ?: if (namedEvent.speciesId == null) namedEvent.speciesName else null,
+                    when (event) {
+                      is BiomassSpeciesCreatedEventV2 -> event.scientificName
+                      is BiomassSpeciesDeletedEvent -> event.scientificName
+                      else -> null
+                    } ?: if (namedEvent.speciesId == null) namedEvent.speciesName else null,
                 speciesId = namedEvent.speciesId,
             )
           } ?: context.getBiomassSpecies(event.biomassSpeciesId)
+      val deleteEvent =
+          context.firstOrNull<BiomassSpeciesDeletedEvent> {
+            it.biomassSpeciesId == event.biomassSpeciesId
+          }
 
       return BiomassSpeciesSubjectPayload(
+          deleted = if (deleteEvent != null) true else null,
           fullText =
               context.subjectFullText<BiomassSpeciesSubjectPayload>(biomassSpecies.displayName),
           monitoringPlotId = event.monitoringPlotId,
@@ -886,6 +897,7 @@ data class ProjectSubjectPayload(
 
 @JsonTypeName("RecordedTree")
 data class RecordedTreeSubjectPayload(
+    override val deleted: Boolean?,
     override val fullText: String,
     val monitoringPlotId: MonitoringPlotId,
     val observationId: ObservationId,
@@ -901,29 +913,46 @@ data class RecordedTreeSubjectPayload(
         event: RecordedTreePersistentEvent,
         context: EventLogPayloadContext,
     ): RecordedTreeSubjectPayload {
-      val createEvent =
-          context.first<RecordedTreeCreatedEvent> { it.recordedTreeId == event.recordedTreeId }
+      val treeGrowthForm: TreeGrowthForm
+      val treeNumber: Int
+      val trunkNumber: Int
+      if (event is RecordedTreeDeletedEvent) {
+        treeGrowthForm = event.treeGrowthForm
+        treeNumber = event.treeNumber
+        trunkNumber = event.trunkNumber
+      } else {
+        val createEvent =
+            context.first<RecordedTreeCreatedEvent> { it.recordedTreeId == event.recordedTreeId }
+        treeGrowthForm = createEvent.treeGrowthForm
+        treeNumber = createEvent.treeNumber
+        trunkNumber = createEvent.trunkNumber
+      }
+      val deleteEvent =
+          context.firstOrNull<RecordedTreeDeletedEvent> {
+            it.recordedTreeId == event.recordedTreeId
+          }
       val growthFormName: String
       val treeIdentifier: String
 
-      if (createEvent.treeGrowthForm == TreeGrowthForm.Trunk) {
+      if (treeGrowthForm == TreeGrowthForm.Trunk) {
         growthFormName = TreeGrowthForm.Tree.getDisplayName(currentUser().locale)
-        treeIdentifier = "${createEvent.treeNumber}_${createEvent.trunkNumber}"
+        treeIdentifier = "${treeNumber}_${trunkNumber}"
       } else {
-        growthFormName = createEvent.treeGrowthForm.getDisplayName(currentUser().locale)
-        treeIdentifier = "${createEvent.treeNumber}"
+        growthFormName = treeGrowthForm.getDisplayName(currentUser().locale)
+        treeIdentifier = "${treeNumber}"
       }
 
       return RecordedTreeSubjectPayload(
+          deleted = if (deleteEvent != null) true else null,
           fullText =
               context.subjectFullText<RecordedTreeSubjectPayload>(growthFormName, treeIdentifier),
           monitoringPlotId = event.monitoringPlotId,
           observationId = event.observationId,
           plantingSiteId = event.plantingSiteId,
           recordedTreeId = event.recordedTreeId,
-          treeGrowthForm = createEvent.treeGrowthForm,
-          treeNumber = createEvent.treeNumber,
-          trunkNumber = createEvent.trunkNumber,
+          treeGrowthForm = treeGrowthForm,
+          treeNumber = treeNumber,
+          trunkNumber = trunkNumber,
           shortText = context.subjectShortText<RecordedTreeSubjectPayload>(growthFormName),
       )
     }
