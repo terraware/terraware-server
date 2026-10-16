@@ -3486,6 +3486,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         ) {}
       }
     }
+
+    @Test
+    fun `allows non-quantity updates for contributors`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      service.updateCompletedPlot(
+          observationId,
+          monitoringPlotId,
+          includesQuantityUpdates = false,
+      ) {}
+    }
   }
 
   /**
