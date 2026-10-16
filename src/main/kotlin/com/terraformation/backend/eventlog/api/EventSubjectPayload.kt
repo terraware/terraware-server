@@ -58,6 +58,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesNamedPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
@@ -233,6 +234,7 @@ data class BiomassQuadratSubjectPayload(
 
 @JsonTypeName("BiomassQuadratSpecies")
 data class BiomassQuadratSpeciesSubjectPayload(
+    override val deleted: Boolean?,
     override val fullText: String,
     val monitoringPlotId: MonitoringPlotId,
     val observationId: ObservationId,
@@ -256,8 +258,13 @@ data class BiomassQuadratSpeciesSubjectPayload(
             )
           } ?: context.getBiomassSpecies(event.biomassSpeciesId)
       val localizedPosition = event.position.getDisplayName(currentUser().locale)
+      val deleteEvent =
+          context.firstOrNull<BiomassQuadratSpeciesDeletedEvent> {
+            it.biomassSpeciesId == event.biomassSpeciesId && it.position == event.position
+          }
 
       return BiomassQuadratSpeciesSubjectPayload(
+          deleted = if (deleteEvent != null) true else null,
           fullText =
               context.subjectFullText<BiomassQuadratSpeciesSubjectPayload>(
                   localizedPosition,

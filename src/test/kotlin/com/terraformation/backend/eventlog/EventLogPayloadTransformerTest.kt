@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
+import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
@@ -62,6 +63,8 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
@@ -217,6 +220,51 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(DeletedActionPayload(), payload.action)
     assertEquals(true, payload.subject.deleted)
     assertEquals(true, payload.subject is BiomassSpeciesSubjectPayload)
+  }
+
+  @Test
+  fun `maps quadrat species events to payloads`() {
+    val biomassSpeciesId = BiomassSpeciesId(10)
+    val speciesId = SpeciesId(11)
+    val payloads =
+        transformer.eventsToPayloads(
+            listOf(
+                eventLogEntry(
+                    knownUserId,
+                    BiomassQuadratSpeciesCreatedEvent(
+                        abundance = 4,
+                        biomassSpeciesId = biomassSpeciesId,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        position = ObservationPlotPosition.SouthwestCorner,
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+                eventLogEntry(
+                    knownUserId,
+                    BiomassQuadratSpeciesDeletedEvent(
+                        biomassSpeciesId = biomassSpeciesId,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        position = ObservationPlotPosition.SouthwestCorner,
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+            )
+        )
+
+    assertEquals(
+        listOf(CreatedActionPayload(), DeletedActionPayload()),
+        payloads.map { it.action },
+    )
+    assertEquals(listOf(true, true), payloads.map { it.subject.deleted })
+    assertEquals(true, payloads.all { it.subject is BiomassQuadratSpeciesSubjectPayload })
   }
 
   @Test

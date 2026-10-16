@@ -659,6 +659,33 @@ sealed interface BiomassQuadratSpeciesNamedPersistentEvent : BiomassQuadratSpeci
   val speciesName: String
 }
 
+data class BiomassQuadratSpeciesCreatedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+    val abundance: Int,
+) : BiomassQuadratSpeciesNamedPersistentEvent, EntityCreatedPersistentEvent
+
+typealias BiomassQuadratSpeciesCreatedEvent = BiomassQuadratSpeciesCreatedEventV1
+
+data class BiomassQuadratSpeciesDeletedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassQuadratSpeciesNamedPersistentEvent, EntityDeletedPersistentEvent
+
+typealias BiomassQuadratSpeciesDeletedEvent = BiomassQuadratSpeciesDeletedEventV1
+
 data class BiomassQuadratSpeciesUpdatedEventV1(
     val changedFrom: Values,
     val changedTo: Values,

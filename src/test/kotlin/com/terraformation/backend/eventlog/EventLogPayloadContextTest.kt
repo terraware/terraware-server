@@ -15,6 +15,8 @@ import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.polygon
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
@@ -160,6 +162,49 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(TreeGrowthForm.Trunk, treePayload.treeGrowthForm)
       assertEquals(7, treePayload.treeNumber)
       assertEquals(8, treePayload.trunkNumber)
+    }
+
+    @Test
+    fun `uses quadrat species create and delete events for deleted subjects`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      val createdEvent =
+          BiomassQuadratSpeciesCreatedEvent(
+              abundance = 4,
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              position = ObservationPlotPosition.SouthwestCorner,
+              speciesId = inserted.speciesId,
+              speciesName = "Species name from event",
+          )
+      val deletedEvent =
+          BiomassQuadratSpeciesDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              position = ObservationPlotPosition.SouthwestCorner,
+              speciesId = inserted.speciesId,
+              speciesName = "Species name from event",
+          )
+      val context =
+          EventLogPayloadContext(
+              dslContext,
+              listOf(eventLogEntry(createdEvent), eventLogEntry(deletedEvent)),
+              messages,
+          )
+
+      assertEquals(
+          true,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(createdEvent, context).deleted,
+      )
+      assertEquals(
+          true,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, context).deleted,
+      )
     }
   }
 
