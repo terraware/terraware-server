@@ -129,7 +129,7 @@ dependencies {
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.21")
   implementation("net.sf.geographiclib:GeographicLib-Java:2.1")
-  implementation("org.apache.tika:tika-core:3.3.2")
+  implementation("org.apache.tika:tika-core:3.3.3")
   implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
   implementation("org.commonmark:commonmark:0.30.1")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
@@ -141,7 +141,7 @@ dependencies {
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.8.2")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:9.0.1")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
@@ -153,7 +153,7 @@ dependencies {
   implementation("software.amazon.awssdk:rds")
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
-  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:4.4.0")
+  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:4.5.0")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
