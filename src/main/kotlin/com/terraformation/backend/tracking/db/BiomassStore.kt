@@ -6,6 +6,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -31,8 +32,10 @@ import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
@@ -204,6 +207,7 @@ class BiomassStore(
                 plantingSiteId = plantingSiteId,
                 scientificName = speciesModel.scientificName,
                 speciesId = speciesModel.speciesId,
+                speciesName = getBiomassSpeciesName(record.speciesId, record.scientificName),
             )
         )
       }
@@ -592,13 +596,27 @@ class BiomassStore(
 
         eventPublisher.publishEvent(
             BiomassSpeciesUpdatedEvent(
-                changedFrom = changedFrom,
-                changedTo = changedTo,
+                changedFrom =
+                    BiomassSpeciesUpdatedEventV2.Values(
+                        isInvasive = changedFrom.isInvasive,
+                        isThreatened = changedFrom.isThreatened,
+                    ),
+                changedTo =
+                    BiomassSpeciesUpdatedEventV2.Values(
+                        isInvasive = changedTo.isInvasive,
+                        isThreatened = changedTo.isThreatened,
+                    ),
                 biomassSpeciesId = biomassSpeciesId,
                 monitoringPlotId = monitoringPlotId,
                 observationId = observationId,
                 organizationId = organizationId,
                 plantingSiteId = plantingSiteId,
+                speciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+                speciesName =
+                    getBiomassSpeciesName(
+                        biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+                        biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
+                    ),
             )
         )
       }
@@ -744,13 +762,25 @@ class BiomassStore(
         eventPublisher.publishEvent(
             BiomassQuadratSpeciesUpdatedEvent(
                 biomassSpeciesId = biomassSpeciesId,
-                changedFrom = changedFrom,
-                changedTo = changedTo,
+                changedFrom =
+                    BiomassQuadratSpeciesUpdatedEventV2.Values(
+                        abundance = changedFrom.abundance,
+                    ),
+                changedTo =
+                    BiomassQuadratSpeciesUpdatedEventV2.Values(
+                        abundance = changedTo.abundance,
+                    ),
                 monitoringPlotId = monitoringPlotId,
                 observationId = observationId,
                 organizationId = organizationId,
                 plantingSiteId = observation.plantingSiteId,
                 position = position,
+                speciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+                speciesName =
+                    getBiomassSpeciesName(
+                        biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+                        biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
+                    ),
             )
         )
       }
@@ -832,6 +862,13 @@ class BiomassStore(
           .fetchOne() ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
     }
   }
+
+  private fun getBiomassSpeciesName(speciesId: SpeciesId?, scientificName: String?): String =
+      speciesId?.let { dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(it)) }
+          ?: scientificName
+          ?: throw IllegalStateException(
+              "Biomass species must have a species ID or scientific name"
+          )
 
   private fun validateRecordedTreeUpdate(
       existing: ExistingRecordedTreeModel,

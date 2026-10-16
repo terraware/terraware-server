@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db.biomassStore
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -340,6 +341,10 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                   plantingSiteId = plantingSiteId,
                   scientificName = record.scientificName,
                   speciesId = record.speciesId,
+                  speciesName =
+                      record.speciesId?.let {
+                        dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(it))
+                      } ?: record.scientificName ?: error("Expected a biomass species name"),
               )
             }
             .toSet()
