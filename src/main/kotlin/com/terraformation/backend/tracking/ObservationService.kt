@@ -628,7 +628,8 @@ class ObservationService(
             // replacePermanentIndex must be called before removing the plot from the observation
             // so that it still appears as "previously used" in the DB query that selects an
             // unused permanent index.
-            val replacementResult = plantingSiteStore.replacePermanentIndex(monitoringPlotId)
+            val replacementResult =
+                plantingSiteStore.replacePermanentIndex(monitoringPlotId, observationId)
 
             observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
 

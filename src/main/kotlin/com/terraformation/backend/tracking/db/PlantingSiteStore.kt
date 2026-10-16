@@ -19,6 +19,7 @@ import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.MonitoringPlotIdConverter
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
@@ -1583,11 +1584,17 @@ class PlantingSiteStore(
    * If the monitoring plot has no permanent index, or there are no available places to put a new
    * permanent plot, does nothing.
    *
+   * Plots that are already in the observation, whether permanent or temporary, are never chosen as
+   * replacements.
+   *
    * @return A result whose "added plots" property has the ID of the replacement monitoring plot and
    *   whose "removed plots" property has the ID of the requested plot, if the replacement
    *   succeeded.
    */
-  fun replacePermanentIndex(monitoringPlotId: MonitoringPlotId): ReplacementResult {
+  fun replacePermanentIndex(
+      monitoringPlotId: MonitoringPlotId,
+      observationId: ObservationId,
+  ): ReplacementResult {
     val plantingSiteId =
         parentStore.getPlantingSiteId(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
@@ -1613,12 +1620,26 @@ class PlantingSiteStore(
         return@withLockedPlantingSite ReplacementResult(emptySet(), emptySet())
       }
 
-      val unusedPermanentIndex = fetchUnusedPermanentIndex(stratum.id)
+      val observationPlotIds =
+          dslContext
+              .select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+              .fetch(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+              .filterNotNull()
+              .toSet()
+
+      val unusedPermanentIndex = fetchUnusedPermanentIndex(stratum.id, observationId)
       val replacementPlotId =
           fetchPermanentPlotId(stratum.id, unusedPermanentIndex)
               ?: run {
                 log.debug("Creating new permanent plot to use as replacement")
-                createPermanentPlots(plantingSite, stratum, listOf(unusedPermanentIndex))
+                createPermanentPlots(
+                        plantingSite,
+                        stratum,
+                        listOf(unusedPermanentIndex),
+                        excludePlotIds = observationPlotIds,
+                    )
                     .firstOrNull()
               }
 
@@ -1793,6 +1814,7 @@ class PlantingSiteStore(
       stratum: ExistingStratumModel,
       permanentIndexes: List<Int>,
       searchBoundary: MultiPolygon = stratum.boundary,
+      excludePlotIds: Set<MonitoringPlotId> = emptySet(),
   ): List<MonitoringPlotId> {
     val userId = currentUser().userId
     val now = clock.instant()
@@ -1807,6 +1829,7 @@ class PlantingSiteStore(
             .findUnusedSquares(
                 count = permanentIndexes.size,
                 excludeAllPermanentPlots = true,
+                excludePlotIds = excludePlotIds,
                 exclusion = plantingSite.exclusion,
                 gridOrigin = plantingSite.gridOrigin,
                 searchBoundary = searchBoundary,
@@ -2306,17 +2329,21 @@ class PlantingSiteStore(
   }
 
   /**
-   * Returns the index of a permanent plot that hasn't been used in any observations yet. If all
-   * existing permanent indexes have already been used, returns a number 1 greater than the current
-   * maximum permanent index; the caller will have to create the plot.
+   * Returns the index of a permanent plot that hasn't been used in any observations yet and isn't
+   * in the supplied observation. If all existing permanent indexes have already been used, returns
+   * a number 1 greater than the current maximum permanent index; the caller will have to create the
+   * plot.
    */
-  private fun fetchUnusedPermanentIndex(stratumId: StratumId): Int {
+  private fun fetchUnusedPermanentIndex(stratumId: StratumId, observationId: ObservationId): Int {
     val previouslyUsedField =
         DSL.exists(
                 DSL.selectOne()
                     .from(OBSERVATION_PLOTS)
                     .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                    .and(OBSERVATION_PLOTS.IS_PERMANENT)
+                    .and(
+                        OBSERVATION_PLOTS.IS_PERMANENT.eq(true)
+                            .or(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+                    )
             )
             .asNonNullable()
 
