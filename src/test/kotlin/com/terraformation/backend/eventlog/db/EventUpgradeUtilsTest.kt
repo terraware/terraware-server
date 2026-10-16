@@ -49,6 +49,7 @@ import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEve
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2
 import java.math.BigDecimal
@@ -673,6 +674,33 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
           otherNameWithoutCreation,
           includeCreatedEvent = false,
       )
+    }
+
+    @Test
+    fun `uses created V2 species name when upgrading biomass species updates`() {
+      val catalogSpeciesId = insertSpecies(scientificName = "Current catalog name")
+      val biomassSpeciesId = insertBiomassSpeciesRow(catalogSpeciesId, null)
+      insertEvent(
+          BiomassSpeciesCreatedEventV2(
+              biomassSpeciesId = biomassSpeciesId,
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = null,
+              speciesId = catalogSpeciesId,
+              speciesName = "Name captured when species was created",
+          )
+      )
+      val event = speciesUpdatedEvent(biomassSpeciesId)
+
+      val upgraded = event.toNextVersion(insertEvent(event), eventUpgradeUtils)
+
+      assertEquals("Name captured when species was created", upgraded.speciesName)
+      assertEquals(catalogSpeciesId, upgraded.speciesId)
     }
 
     @Test

@@ -32,10 +32,8 @@ import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEvent
-import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
-import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
@@ -596,16 +594,8 @@ class BiomassStore(
 
         eventPublisher.publishEvent(
             BiomassSpeciesUpdatedEvent(
-                changedFrom =
-                    BiomassSpeciesUpdatedEventV2.Values(
-                        isInvasive = changedFrom.isInvasive,
-                        isThreatened = changedFrom.isThreatened,
-                    ),
-                changedTo =
-                    BiomassSpeciesUpdatedEventV2.Values(
-                        isInvasive = changedTo.isInvasive,
-                        isThreatened = changedTo.isThreatened,
-                    ),
+                changedFrom = changedFrom,
+                changedTo = changedTo,
                 biomassSpeciesId = biomassSpeciesId,
                 monitoringPlotId = monitoringPlotId,
                 observationId = observationId,
@@ -762,14 +752,8 @@ class BiomassStore(
         eventPublisher.publishEvent(
             BiomassQuadratSpeciesUpdatedEvent(
                 biomassSpeciesId = biomassSpeciesId,
-                changedFrom =
-                    BiomassQuadratSpeciesUpdatedEventV2.Values(
-                        abundance = changedFrom.abundance,
-                    ),
-                changedTo =
-                    BiomassQuadratSpeciesUpdatedEventV2.Values(
-                        abundance = changedTo.abundance,
-                    ),
+                changedFrom = changedFrom,
+                changedTo = changedTo,
                 monitoringPlotId = monitoringPlotId,
                 observationId = observationId,
                 organizationId = organizationId,

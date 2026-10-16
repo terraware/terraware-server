@@ -97,13 +97,10 @@ class EventUpgradeUtils(
             ?.event
 
     if (createdEvent != null) {
-      val speciesName =
-          createdEvent.speciesId?.let(::getSpeciesScientificName)
-              ?: createdEvent.scientificName
-              ?: throw IllegalStateException(
-                  "Biomass species ${createdEvent.biomassSpeciesId} has no scientific name"
-              )
-      return BiomassSpeciesValues(speciesId = createdEvent.speciesId, speciesName = speciesName)
+      return BiomassSpeciesValues(
+          speciesId = createdEvent.speciesId,
+          speciesName = createdEvent.speciesName,
+      )
     }
 
     val currentRow =
