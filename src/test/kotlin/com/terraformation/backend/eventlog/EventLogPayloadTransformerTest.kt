@@ -260,6 +260,51 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
+  fun `maps quadrat species events to payloads`() {
+    val biomassSpeciesId = BiomassSpeciesId(10)
+    val speciesId = SpeciesId(11)
+    val payloads =
+        transformer.eventsToPayloads(
+            listOf(
+                eventLogEntry(
+                    knownUserId,
+                    BiomassQuadratSpeciesCreatedEvent(
+                        abundance = 4,
+                        biomassSpeciesId = biomassSpeciesId,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        position = ObservationPlotPosition.SouthwestCorner,
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+                eventLogEntry(
+                    knownUserId,
+                    BiomassQuadratSpeciesDeletedEvent(
+                        biomassSpeciesId = biomassSpeciesId,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        position = ObservationPlotPosition.SouthwestCorner,
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+            )
+        )
+
+    assertEquals(
+        listOf(CreatedActionPayload(), DeletedActionPayload()),
+        payloads.map { it.action },
+    )
+    assertEquals(listOf(true, true), payloads.map { it.subject.deleted })
+    assertEquals(true, payloads.all { it.subject is BiomassQuadratSpeciesSubjectPayload })
+  }
+
+  @Test
   fun `localizes field names and special usernames`() {
     val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
     val editEntry =

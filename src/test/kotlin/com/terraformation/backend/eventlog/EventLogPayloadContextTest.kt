@@ -265,6 +265,49 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals("Scientific name from event", payload.scientificName)
       assertTrue(payload.fullText.contains("Display name from event"))
     }
+
+    @Test
+    fun `uses quadrat species create and delete events for deleted subjects`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      val createdEvent =
+          BiomassQuadratSpeciesCreatedEvent(
+              abundance = 4,
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              position = ObservationPlotPosition.SouthwestCorner,
+              speciesId = inserted.speciesId,
+              speciesName = "Species name from event",
+          )
+      val deletedEvent =
+          BiomassQuadratSpeciesDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              position = ObservationPlotPosition.SouthwestCorner,
+              speciesId = inserted.speciesId,
+              speciesName = "Species name from event",
+          )
+      val context =
+          EventLogPayloadContext(
+              dslContext,
+              listOf(eventLogEntry(createdEvent), eventLogEntry(deletedEvent)),
+              messages,
+          )
+
+      assertEquals(
+          true,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(createdEvent, context).deleted,
+      )
+      assertEquals(
+          true,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, context).deleted,
+      )
+    }
   }
 
   @Test
