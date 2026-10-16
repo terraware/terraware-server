@@ -208,8 +208,9 @@ abstract class GeoJsonOpenApiSchema {
 
   companion object {
     /**
-     * The schema generator sometimes renders the element type as a generic object depending on
-     * class scanning order, so this makes it deterministic.
+     * Depending on class scanning order, the schema generator sometimes renders the element type of
+     * GeometryCollection's `geometries` array as a generic object instead of a list of geometry
+     * types. Replace it with an explicit list so the schema is deterministic.
      */
     fun fixGeometryCollectionSchema(openApi: OpenAPI) {
       val geometryCollectionSchema =
