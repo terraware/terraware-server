@@ -45,6 +45,8 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1
 import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -629,6 +631,65 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       assertCreatedUpgradeAfterDeletingRow(null, otherNameAfterDeletion, otherNameAfterDeletion)
     }
 
+    @Test
+    fun `upgrades biomass species updates using creation event or live row`() {
+      val catalogSpeciesId = insertSpecies(scientificName = "Catalog species")
+      val catalogSpeciesIdAfterDeletion =
+          insertSpecies(scientificName = "Catalog species after deletion")
+      val catalogSpeciesIdWithoutCreation =
+          insertSpecies(scientificName = "Catalog species without creation event")
+      val otherName = "Other species"
+      val otherNameWithoutCreation = "Other species without creation event"
+
+      assertSpeciesUpdateUpgrade(catalogSpeciesId, null, "Catalog species")
+      assertSpeciesUpdateUpgrade(null, otherName, otherName)
+      assertSpeciesUpdateUpgrade(
+          catalogSpeciesIdAfterDeletion,
+          null,
+          "Catalog species after deletion",
+          deleteBiomassSpeciesRow = true,
+      )
+      assertSpeciesUpdateUpgrade(
+          catalogSpeciesIdWithoutCreation,
+          null,
+          "Catalog species without creation event",
+          includeCreatedEvent = false,
+      )
+      assertSpeciesUpdateUpgrade(
+          null,
+          otherNameWithoutCreation,
+          otherNameWithoutCreation,
+          includeCreatedEvent = false,
+      )
+    }
+
+    @Test
+    fun `uses created V2 species name when upgrading biomass species updates`() {
+      val catalogSpeciesId = insertSpecies(scientificName = "Current catalog name")
+      val biomassSpeciesId = insertBiomassSpeciesRow(catalogSpeciesId, null)
+      insertEvent(
+          BiomassSpeciesCreatedEventV2(
+              biomassSpeciesId = biomassSpeciesId,
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = null,
+              speciesId = catalogSpeciesId,
+              speciesName = "Name captured when species was created",
+          )
+      )
+      val event = speciesUpdatedEvent(biomassSpeciesId)
+
+      val upgraded = event.toNextVersion(insertEvent(event), eventUpgradeUtils)
+
+      assertEquals("Name captured when species was created", upgraded.speciesName)
+      assertEquals(catalogSpeciesId, upgraded.speciesId)
+    }
+
     private fun assertCreatedUpgrade(
         event: BiomassSpeciesCreatedEventV1,
         expectedSpeciesName: String,
@@ -649,6 +710,30 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       val upgraded =
           eventLogStore.fetchLastById<BiomassSpeciesCreatedEvent>(biomassSpeciesId)!!.event
       assertEquals(expectedSpeciesName, upgraded.speciesName)
+    }
+
+    private fun assertSpeciesUpdateUpgrade(
+        speciesId: SpeciesId?,
+        scientificName: String?,
+        expectedSpeciesName: String,
+        deleteBiomassSpeciesRow: Boolean = false,
+        includeCreatedEvent: Boolean = true,
+    ) {
+      val biomassSpeciesId = insertBiomassSpeciesRow(speciesId, scientificName)
+      if (includeCreatedEvent) {
+        insertEvent(createdEvent(biomassSpeciesId, speciesId, scientificName))
+      }
+
+      val event = speciesUpdatedEvent(biomassSpeciesId)
+      val eventLogId = insertEvent(event)
+      if (deleteBiomassSpeciesRow) {
+        deleteBiomassSpeciesRow(biomassSpeciesId)
+      }
+
+      val upgraded = event.toNextVersion(eventLogId, eventUpgradeUtils)
+
+      assertEquals(expectedSpeciesName, upgraded.speciesName)
+      assertEquals(speciesId, upgraded.speciesId)
     }
 
     private fun insertBiomassSpeciesRow(
@@ -680,7 +765,19 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             speciesId = speciesId,
         )
 
+    private fun speciesUpdatedEvent(biomassSpeciesId: BiomassSpeciesId) =
+        BiomassSpeciesUpdatedEventV1(
+            changedFrom = BiomassSpeciesUpdatedEventV1.Values(false, false),
+            changedTo = BiomassSpeciesUpdatedEventV1.Values(true, true),
+            biomassSpeciesId = biomassSpeciesId,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+        )
+
     private fun deleteBiomassSpeciesRow(biomassSpeciesId: BiomassSpeciesId) {
+      dslContext
       dslContext
           .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
           .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
