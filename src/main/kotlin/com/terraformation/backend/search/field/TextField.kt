@@ -7,7 +7,6 @@ import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
-import com.terraformation.backend.util.removeDiacritics
 import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Field
@@ -30,25 +29,33 @@ class TextField(
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy, SearchFilterType.PhraseMatch)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
-    val normalizedValues =
-        fieldNode.values.map { it?.lowercase(currentLocale())?.removeDiacritics() }
-    val nonNullValues = normalizedValues.filterNotNull()
+    val nonNullValues = fieldNode.values.filterNotNull()
 
     return when (fieldNode.type) {
       SearchFilterType.Partial ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { DSL.lower(collatedDatabaseField).contains(it) })
+                  .plus(
+                      nonNullValues.map {
+                        DSL.lower(collatedDatabaseField)
+                            .unaccent()
+                            .contains(DSL.lower(it).unaccent())
+                      }
+                  )
           )
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { DSL.lower(collatedDatabaseField).unaccent().eq(it) })
+                  .plus(
+                      nonNullValues.map {
+                        DSL.lower(collatedDatabaseField).unaccent().eq(DSL.lower(it).unaccent())
+                      }
+                  )
           )
       SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           DSL.or(
-              normalizedValues.map { value ->
+              fieldNode.values.map { value ->
                 if (value != null) {
                   collatedDatabaseField.unaccent().likeFuzzy(value)
                 } else {

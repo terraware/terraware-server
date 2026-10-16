@@ -54,7 +54,7 @@ class UpperCaseTextField(
       SearchFilterType.PhraseMatch -> {
         DSL.or(
             listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                .plus(phraseMatchCondition(nonNullValues))
+                .plus(phraseMatchCondition(nonNullValues, databaseField))
         )
       }
       SearchFilterType.Range ->
