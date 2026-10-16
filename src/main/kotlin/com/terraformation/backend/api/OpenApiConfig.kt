@@ -64,7 +64,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
 
   override fun customise(openApi: OpenAPI) {
     useRefForGeometry(openApi)
-    GeoJsonOpenApiSchema.fixGeometryCollectionSchema(openApi)
+    fixGeometryCollectionSchema(openApi)
     fixFieldSchemas(openApi)
     addSecurityScheme(openApi)
     addDiscriminatorsForSealedInterfaces(openApi)
@@ -313,6 +313,38 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
         }
       }
     }
+  }
+
+  /**
+   * The schema generator sometimes renders the element type of GeometryCollection's `geometries`
+   * array as a generic object instead of a list of geometry types, depending on which subtype
+   * schemas have already been resolved. Replace it with an explicit list so the schema is
+   * deterministic.
+   */
+  private fun fixGeometryCollectionSchema(openApi: OpenAPI) {
+    val geometryCollectionSchema =
+        openApi.components
+            ?.schemas
+            ?.get(GeoJsonOpenApiSchema.GeoJsonGeometryType.GeometryCollection.name) ?: return
+    val geometriesProperty =
+        geometryCollectionSchema.properties?.get("geometries")
+            ?: geometryCollectionSchema.allOf?.firstNotNullOfOrNull {
+              it.properties?.get("geometries")
+            }
+            ?: return
+    val geometriesArray = geometriesProperty as? ArraySchema ?: return
+    val geometryRefs =
+        GeoJsonOpenApiSchema.GeoJsonGeometryType.entries
+            .map { it.name }
+            .sorted()
+            .map { "#/components/schemas/$it" }
+
+    geometriesArray.items =
+        ComposedSchema().apply {
+          oneOf = geometryRefs.map { ref ->
+            ComposedSchema().apply { `$ref` = ref }
+          }
+        }
   }
 
   /** Adds a list of valid values to the "prefix" field of SearchRequestPayload. */
