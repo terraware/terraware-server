@@ -652,6 +652,7 @@ COMMENT ON TABLE tracking.stratum_species_targets IS 'Which species are intended
 COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum''s planting site.';
 
 COMMENT ON TABLE tracking.strata IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.';
+COMMENT ON COLUMN tracking.strata.biomass_num_permanent_plots IS 'Number of permanent plots to assign to the next biomass monitoring observation. This is typically derived from a statistical formula.';
 COMMENT ON COLUMN tracking.strata.boundary IS 'Boundary of the stratum. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a stratum has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.strata.boundary_modified_by IS 'Which user most recently edited the stratum''s boundary.';
 COMMENT ON COLUMN tracking.strata.boundary_modified_time IS 'When the stratum''s boundary was most recently modified.';

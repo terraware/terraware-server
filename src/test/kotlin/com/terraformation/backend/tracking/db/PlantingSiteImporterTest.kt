@@ -169,8 +169,10 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
       val strataRow = strataDao.findAll().first()
-      assertEquals(15, strataRow.plantNumPermanentPlots, "Permanent plots")
-      assertEquals(4, strataRow.plantNumTemporaryPlots, "Temporary plots")
+      assertEquals(15, strataRow.biomassNumPermanentPlots, "Biomass permanent plots")
+      assertEquals(4, strataRow.biomassNumTemporaryPlots, "Biomass temporary plots")
+      assertEquals(15, strataRow.plantNumPermanentPlots, "Plant permanent plots")
+      assertEquals(4, strataRow.plantNumTemporaryPlots, "Plant temporary plots")
     }
   }
 

@@ -2934,6 +2934,11 @@ abstract class DatabaseBackedTest {
           row.plantNumTemporaryPlots ?: StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       plantStudentsT: BigDecimal = row.plantStudentsT ?: StratumModel.DEFAULT_STUDENTS_T,
       plantVariance: BigDecimal = row.plantVariance ?: StratumModel.DEFAULT_VARIANCE,
+      biomassErrorMargin: BigDecimal = row.biomassErrorMargin ?: plantErrorMargin,
+      biomassNumPermanentPlots: Int = row.biomassNumPermanentPlots ?: plantNumPermanentPlots,
+      biomassNumTemporaryPlots: Int = row.biomassNumTemporaryPlots ?: plantNumTemporaryPlots,
+      biomassStudentsT: BigDecimal = row.biomassStudentsT ?: plantStudentsT,
+      biomassVariance: BigDecimal = row.biomassVariance ?: plantVariance,
       stableId: Any = row.name ?: name,
       targetPlantDensity: BigDecimal? = row.targetPlantDensity,
       insertHistory: Boolean = true,
@@ -2943,6 +2948,11 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             areaHa = areaHa,
+            biomassErrorMargin = biomassErrorMargin,
+            biomassNumPermanentPlots = biomassNumPermanentPlots,
+            biomassNumTemporaryPlots = biomassNumTemporaryPlots,
+            biomassStudentsT = biomassStudentsT,
+            biomassVariance = biomassVariance,
             boundary = boundary,
             boundaryModifiedBy = boundaryModifiedBy,
             boundaryModifiedTime = boundaryModifiedTime,

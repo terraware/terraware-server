@@ -105,6 +105,7 @@ class PlantingSiteEditCalculator(
                   substratumEdits.isEmpty() &&
                       createMonitoringPlotEdits.isEmpty() &&
                       existingStratum.name == desiredStratum.name &&
+                      existingStratum.biomassPlotCounts == desiredStratum.biomassPlotCounts &&
                       existingStratum.plantPlotCounts == desiredStratum.plantPlotCounts &&
                       existingStratum.initialPlantingDensity ==
                           desiredStratum.initialPlantingDensity &&

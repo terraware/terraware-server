@@ -57,6 +57,7 @@ sealed interface StratumEdit {
           areaHaDifference.equalsIgnoreScale(BigDecimal.ZERO) &&
           addedRegion.isEmpty &&
           removedRegion.isEmpty &&
+          existingModel.biomassPlotCounts == desiredModel.biomassPlotCounts &&
           existingModel.boundary.equalsOrBothNull(desiredModel.boundary) &&
           existingModel.areaHa.equalsIgnoreScale(desiredModel.areaHa) &&
           existingModel.name == desiredModel.name &&
