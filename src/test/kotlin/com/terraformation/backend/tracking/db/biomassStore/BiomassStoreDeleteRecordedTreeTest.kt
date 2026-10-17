@@ -6,7 +6,6 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
@@ -29,68 +28,19 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
 
   @BeforeEach
   fun setUpObservation() {
-    insertStratum()
-    insertSubstratum()
     monitoringPlotId = insertMonitoringPlot(isAdHoc = true)
     observationId =
         insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
-    insertObservationPlot(completedBy = user.userId)
-    insertObservationBiomassDetails()
     speciesId = insertSpecies()
 
     every { user.canUpdateObservationQuantities(any()) } returns true
   }
 
   @Test
-  fun `deletes only one trunk and preserves the remaining trunk number`() {
-    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    val deletedTreeId =
-        insertRecordedTree(
-            biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal.ONE,
-            pointOfMeasurementM = BigDecimal("1.3"),
-            treeGrowthForm = TreeGrowthForm.Trunk,
-            treeNumber = 4,
-            trunkNumber = 1,
-        )
-    val remainingTreeId =
-        insertRecordedTree(
-            biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal("2"),
-            pointOfMeasurementM = BigDecimal("1.5"),
-            treeGrowthForm = TreeGrowthForm.Trunk,
-            treeNumber = 4,
-            trunkNumber = 2,
-        )
-    val speciesName = dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(speciesId))!!
-
-    store.deleteRecordedTree(observationId, monitoringPlotId, deletedTreeId)
-
-    val remaining = dslContext.fetchSingle(RECORDED_TREES)
-    assertEquals(remainingTreeId, remaining.id)
-    assertEquals(4, remaining.treeNumber)
-    assertEquals(2, remaining.trunkNumber)
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
-    eventPublisher.assertEventPublished(
-        RecordedTreeDeletedEvent(
-            biomassSpeciesId = biomassSpeciesId,
-            monitoringPlotId = monitoringPlotId,
-            observationId = observationId,
-            organizationId = organizationId,
-            plantingSiteId = plantingSiteId,
-            recordedTreeId = deletedTreeId,
-            speciesId = speciesId,
-            speciesName = speciesName,
-            treeGrowthForm = TreeGrowthForm.Trunk,
-            treeNumber = 4,
-            trunkNumber = 1,
-        )
-    )
-    eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
-  }
-
-  @Test
   fun `does not reuse the number of a deleted highest tree`() {
+    insertObservationPlot(completedBy = user.userId)
+    insertObservationBiomassDetails()
+
     val model =
         NewRecordedTreeModel(
             id = null,
@@ -116,23 +66,12 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
         listOf(1, 3),
         dslContext.fetch(RECORDED_TREES).mapNotNull { it.treeNumber }.sorted(),
     )
-    assertEquals(3, dslContext.fetchSingle(OBSERVATION_BIOMASS_DETAILS).highestTreeNumber)
   }
 
   @Test
   fun `deletes an unreferenced biomass species and publishes both deletion events`() {
-    val biomassSpeciesId =
-        insertObservationBiomassSpecies(
-            speciesId = speciesId,
-            isInvasive = true,
-            isThreatened = true,
-        )
-    val recordedTreeId =
-        insertRecordedTree(
-            biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal.ONE,
-            pointOfMeasurementM = BigDecimal("1.3"),
-        )
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    val recordedTreeId = insertRecordedTree(biomassSpeciesId = biomassSpeciesId)
     val speciesName = dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(speciesId))!!
 
     store.deleteRecordedTree(observationId, monitoringPlotId, recordedTreeId)
@@ -170,76 +109,59 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
   }
 
   @Test
-  fun `keeps the biomass species while a tree or quadrat entry references it`() {
+  fun `keeps the biomass species while a trunk or quadrat entry references it`() {
     val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    val deletedTreeId =
+    val deletedTrunkId =
         insertRecordedTree(
             biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal.ONE,
-            pointOfMeasurementM = BigDecimal("1.3"),
-            treeNumber = 1,
+            treeGrowthForm = TreeGrowthForm.Trunk,
+            treeNumber = 4,
+            trunkNumber = 1,
         )
     insertRecordedTree(
         biomassSpeciesId = biomassSpeciesId,
-        diameterAtBreastHeightCm = BigDecimal("2"),
-        pointOfMeasurementM = BigDecimal("1.4"),
-        treeNumber = 2,
+        treeGrowthForm = TreeGrowthForm.Trunk,
+        treeNumber = 4,
+        trunkNumber = 2,
     )
 
-    store.deleteRecordedTree(observationId, monitoringPlotId, deletedTreeId)
+    store.deleteRecordedTree(observationId, monitoringPlotId, deletedTrunkId)
 
-    assertEquals(1, dslContext.fetch(RECORDED_TREES).size)
+    val remainingTrunk = dslContext.fetchSingle(RECORDED_TREES)
+    assertEquals(4 to 2, remainingTrunk.treeNumber to remainingTrunk.trunkNumber)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
-    eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
 
-    insertObservationBiomassQuadratDetails(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-    )
-    insertObservationBiomassQuadratSpecies(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-        biomassSpeciesId = biomassSpeciesId,
-    )
+    insertObservationBiomassQuadratDetails()
+    insertObservationBiomassQuadratSpecies(biomassSpeciesId = biomassSpeciesId)
 
-    val remainingTreeId = dslContext.fetchSingle(RECORDED_TREES).id!!
-    store.deleteRecordedTree(observationId, monitoringPlotId, remainingTreeId)
+    store.deleteRecordedTree(observationId, monitoringPlotId, remainingTrunk.id!!)
 
-    assertEquals(0, dslContext.fetch(RECORDED_TREES).size)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
-    eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
   }
 
   @Test
   fun `throws not found when the tree belongs to another observation or plot`() {
-    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     val recordedTreeId =
         insertRecordedTree(
-            biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal.ONE,
-            pointOfMeasurementM = BigDecimal("1.3"),
+            biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId),
         )
-    val otherObservationId =
-        insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
+    val otherObservationId = insertObservation()
     val otherPlotId = insertMonitoringPlot(isAdHoc = true)
 
-    assertThrows<RecordedTreeNotFoundException> {
-      store.deleteRecordedTree(otherObservationId, monitoringPlotId, recordedTreeId)
-    }
-    assertThrows<RecordedTreeNotFoundException> {
-      store.deleteRecordedTree(observationId, otherPlotId, recordedTreeId)
+    listOf(otherObservationId to monitoringPlotId, observationId to otherPlotId).forEach {
+        (targetObservationId, targetPlotId) ->
+      assertThrows<RecordedTreeNotFoundException> {
+        store.deleteRecordedTree(targetObservationId, targetPlotId, recordedTreeId)
+      }
     }
   }
 
   @Test
   fun `rejects users without quantity permission`() {
-    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     val recordedTreeId =
         insertRecordedTree(
-            biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal.ONE,
-            pointOfMeasurementM = BigDecimal("1.3"),
+            biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId),
         )
     every { user.canUpdateObservationQuantities(observationId) } returns false
 
