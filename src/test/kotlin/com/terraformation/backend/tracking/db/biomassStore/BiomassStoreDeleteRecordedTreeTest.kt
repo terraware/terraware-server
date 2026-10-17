@@ -91,12 +91,26 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
 
   @Test
   fun `does not reuse the number of a deleted highest tree`() {
-    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
-    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+    val model =
+        NewRecordedTreeModel(
+            id = null,
+            diameterAtBreastHeightCm = BigDecimal.ONE,
+            gpsCoordinates = null,
+            heightM = BigDecimal.TEN,
+            isDead = false,
+            pointOfMeasurementM = BigDecimal("1.3"),
+            speciesId = speciesId,
+            treeGrowthForm = TreeGrowthForm.Tree,
+            treeNumber = 1,
+            trunkNumber = 1,
+        )
+
+    store.createRecordedTree(observationId, monitoringPlotId, model)
+    store.createRecordedTree(observationId, monitoringPlotId, model)
 
     val highestTreeId = dslContext.fetch(RECORDED_TREES).maxBy { it.treeNumber!! }.id!!
     store.deleteRecordedTree(observationId, monitoringPlotId, highestTreeId)
-    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+    store.createRecordedTree(observationId, monitoringPlotId, model)
 
     assertEquals(
         listOf(1, 3),
@@ -240,18 +254,4 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
       store.deleteRecordedTree(observationId, monitoringPlotId, recordedTreeId)
     }
   }
-
-  private fun newTreeModel() =
-      NewRecordedTreeModel(
-          id = null,
-          diameterAtBreastHeightCm = BigDecimal.ONE,
-          gpsCoordinates = null,
-          heightM = BigDecimal.TEN,
-          isDead = false,
-          pointOfMeasurementM = BigDecimal("1.3"),
-          speciesId = speciesId,
-          treeGrowthForm = TreeGrowthForm.Tree,
-          treeNumber = 1,
-          trunkNumber = 1,
-      )
 }
