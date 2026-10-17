@@ -21,7 +21,7 @@ class BiomassStoreUpdateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
     insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
     insertObservationPlot(completedBy = user.userId)
     insertObservationBiomassDetails()
-    insertSpecies()
+    insertSpecies(scientificName = "Species name")
     insertObservationBiomassSpecies(speciesId = inserted.speciesId)
     insertObservationBiomassQuadratDetails(position = ObservationPlotPosition.SouthwestCorner)
     insertObservationBiomassQuadratSpecies(
@@ -58,6 +58,8 @@ class BiomassStoreUpdateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
             organizationId = inserted.organizationId,
             plantingSiteId = inserted.plantingSiteId,
             position = ObservationPlotPosition.SouthwestCorner,
+            speciesId = inserted.speciesId,
+            speciesName = "Species name",
         )
     )
   }

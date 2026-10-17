@@ -58,6 +58,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesNamedPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesNamedPersistentEvent
@@ -244,7 +245,14 @@ data class BiomassQuadratSpeciesSubjectPayload(
         event: BiomassQuadratSpeciesPersistentEvent,
         context: EventLogPayloadContext,
     ): BiomassQuadratSpeciesSubjectPayload {
-      val biomassSpecies = context.getBiomassSpecies(event.biomassSpeciesId)
+      val biomassSpecies =
+          (event as? BiomassQuadratSpeciesNamedPersistentEvent)?.let { namedEvent ->
+            EventLogPayloadContext.BiomassSpecies(
+                displayName = namedEvent.speciesName,
+                scientificName = if (namedEvent.speciesId == null) namedEvent.speciesName else null,
+                speciesId = namedEvent.speciesId,
+            )
+          } ?: context.getBiomassSpecies(event.biomassSpeciesId)
       val localizedPosition = event.position.getDisplayName(currentUser().locale)
 
       return BiomassQuadratSpeciesSubjectPayload(
