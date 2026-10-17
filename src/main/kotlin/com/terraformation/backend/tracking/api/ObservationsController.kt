@@ -362,6 +362,7 @@ class ObservationsController(
           it is CreateRecordedTreeOperationPayload ||
               it is CreateQuadratSpeciesOperationPayload ||
               it is CreateBiomassSpeciesOperationPayload ||
+              it is DeleteBiomassSpeciesOperationPayload ||
               it is DeleteQuadratSpeciesOperationPayload ||
               it is DeleteRecordedTreeOperationPayload ||
               (it is RecordedTreeUpdateOperationPayload &&
@@ -381,6 +382,13 @@ class ObservationsController(
                   element.commonName,
                   element.isInvasive,
                   element.isThreatened,
+              )
+          is DeleteBiomassSpeciesOperationPayload ->
+              biomassStore.deleteBiomassSpecies(
+                  observationId,
+                  plotId,
+                  element.speciesId,
+                  element.scientificName,
               )
           is BiomassSpeciesUpdateOperationPayload ->
               biomassStore.updateBiomassSpecies(
