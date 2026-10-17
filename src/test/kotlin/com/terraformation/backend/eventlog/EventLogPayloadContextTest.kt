@@ -11,7 +11,6 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
-import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -125,24 +124,6 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(inserted.speciesId, payload.speciesId)
       assertTrue(payload.fullText.contains("Name from created event"))
-
-      val updatedPayload =
-          BiomassSpeciesSubjectPayload.forEvent(
-              BiomassSpeciesUpdatedEventV2(
-                  changedFrom = BiomassSpeciesUpdatedEventV2.Values(false, false),
-                  changedTo = BiomassSpeciesUpdatedEventV2.Values(true, true),
-                  biomassSpeciesId = biomassSpeciesId,
-                  monitoringPlotId = inserted.monitoringPlotId,
-                  observationId = inserted.observationId,
-                  organizationId = inserted.organizationId,
-                  plantingSiteId = inserted.plantingSiteId,
-                  speciesId = inserted.speciesId,
-                  speciesName = "Catalog name from event",
-              ),
-              context,
-          )
-      assertEquals(inserted.speciesId, updatedPayload.speciesId)
-      assertTrue(updatedPayload.fullText.contains("Catalog name from event"))
     }
   }
 

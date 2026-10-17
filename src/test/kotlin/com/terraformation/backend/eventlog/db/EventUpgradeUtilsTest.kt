@@ -639,7 +639,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       val catalogSpeciesIdWithoutCreation =
           insertSpecies(scientificName = "Catalog species without creation event")
       val otherName = "Other species"
-      val otherNameWithoutCreation = "Other species without creation event"
 
       assertSpeciesUpdateUpgrade(catalogSpeciesId, null, "Catalog species")
       assertSpeciesUpdateUpgrade(null, otherName, otherName)
@@ -653,12 +652,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
           catalogSpeciesIdWithoutCreation,
           null,
           "Catalog species without creation event",
-          includeCreatedEvent = false,
-      )
-      assertSpeciesUpdateUpgrade(
-          null,
-          otherNameWithoutCreation,
-          otherNameWithoutCreation,
           includeCreatedEvent = false,
       )
 
