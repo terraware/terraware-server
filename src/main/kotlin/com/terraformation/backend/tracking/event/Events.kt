@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
+import com.terraformation.backend.eventlog.FieldsCreatedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.UpgradableEvent
@@ -669,7 +670,10 @@ data class BiomassQuadratSpeciesCreatedEventV1(
     override val speciesId: SpeciesId?,
     override val speciesName: String,
     val abundance: Int,
-) : BiomassQuadratSpeciesNamedPersistentEvent, EntityCreatedPersistentEvent
+) : BiomassQuadratSpeciesNamedPersistentEvent, FieldsCreatedPersistentEvent {
+  override fun listInitialFields(messages: Messages) =
+      listOfNotNull(createInitialField("abundance", abundance.toString()))
+}
 
 typealias BiomassQuadratSpeciesCreatedEvent = BiomassQuadratSpeciesCreatedEventV1
 

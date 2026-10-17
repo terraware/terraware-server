@@ -260,7 +260,10 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     assertEquals(
-        listOf(CreatedActionPayload(), DeletedActionPayload()),
+        listOf(
+            CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
+            DeletedActionPayload(),
+        ),
         payloads.map { it.action },
     )
     assertEquals(listOf(true, true), payloads.map { it.subject.deleted })
