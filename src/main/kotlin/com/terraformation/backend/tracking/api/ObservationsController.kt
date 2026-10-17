@@ -360,6 +360,7 @@ class ObservationsController(
     val includesQuantityUpdates =
         payload.updates.any {
           it is CreateRecordedTreeOperationPayload ||
+              it is CreateQuadratSpeciesOperationPayload ||
               it is DeleteRecordedTreeOperationPayload ||
               (it is RecordedTreeUpdateOperationPayload &&
                   (it.speciesId != null || it.scientificName != null)) ||
@@ -381,6 +382,15 @@ class ObservationsController(
               biomassStore.updateBiomassDetails(observationId, plotId, element::applyTo)
           is CreateRecordedTreeOperationPayload ->
               biomassStore.createRecordedTree(observationId, plotId, element.toModel())
+          is CreateQuadratSpeciesOperationPayload ->
+              biomassStore.createBiomassQuadratSpecies(
+                  observationId,
+                  plotId,
+                  element.position,
+                  element.speciesId,
+                  element.scientificName,
+                  element.abundance,
+              )
           is DeleteRecordedTreeOperationPayload ->
               biomassStore.deleteRecordedTree(observationId, plotId, element.recordedTreeId)
           is MonitoringSpeciesUpdateOperationPayload ->
