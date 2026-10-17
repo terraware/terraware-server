@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db.biomassStore
 
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
@@ -19,159 +20,111 @@ import org.springframework.security.access.AccessDeniedException
 class BiomassStoreCreateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
   @BeforeEach
   fun setUpObservation() {
-    insertStratum()
-    insertSubstratum()
     insertMonitoringPlot(isAdHoc = true)
     insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
-    insertObservationPlot(completedBy = user.userId)
+    insertObservationPlot()
     insertObservationBiomassDetails()
-    insertSpecies(scientificName = "Existing species")
-    insertObservationBiomassSpecies(speciesId = inserted.speciesId)
     every { user.canUpdateObservationQuantities(any()) } returns true
   }
 
   @Test
-  fun `adds an existing biomass species and creates missing quadrat details`() {
-    store.createBiomassQuadratSpecies(
-        inserted.observationId,
-        inserted.monitoringPlotId,
-        ObservationPlotPosition.SouthwestCorner,
-        inserted.speciesId,
-        null,
-        25,
-    )
+  fun `creates catalog and Other species with exact events`() {
+    val catalogSpeciesId = insertSpecies(scientificName = "Catalog species")
 
-    assertEquals(25, dslContext.fetchSingle(OBSERVATION_BIOMASS_QUADRAT_SPECIES).abundanceCount)
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_DETAILS).size)
+    createQuadratSpecies(catalogSpeciesId, abundance = 0)
+    val catalogBiomassSpeciesId =
+        dslContext.fetchValue(
+            OBSERVATION_BIOMASS_SPECIES.ID,
+            OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(catalogSpeciesId),
+        )!!
     eventPublisher.assertExactEventsPublished(
         listOf(
+            BiomassSpeciesCreatedEvent(
+                biomassSpeciesId = catalogBiomassSpeciesId,
+                commonName = null,
+                isInvasive = false,
+                isThreatened = false,
+                monitoringPlotId = inserted.monitoringPlotId,
+                observationId = inserted.observationId,
+                organizationId = inserted.organizationId,
+                plantingSiteId = inserted.plantingSiteId,
+                scientificName = null,
+                speciesId = catalogSpeciesId,
+                speciesName = "Catalog species",
+            ),
             BiomassQuadratCreatedEvent(
                 description = null,
                 monitoringPlotId = inserted.monitoringPlotId,
                 observationId = inserted.observationId,
                 organizationId = inserted.organizationId,
                 plantingSiteId = inserted.plantingSiteId,
-                position = ObservationPlotPosition.SouthwestCorner,
+                position = ObservationPlotPosition.NortheastCorner,
             ),
             BiomassQuadratSpeciesCreatedEvent(
-                abundance = 25,
-                biomassSpeciesId = inserted.biomassSpeciesId,
+                abundance = 0,
+                biomassSpeciesId = catalogBiomassSpeciesId,
                 monitoringPlotId = inserted.monitoringPlotId,
                 observationId = inserted.observationId,
                 organizationId = inserted.organizationId,
                 plantingSiteId = inserted.plantingSiteId,
-                position = ObservationPlotPosition.SouthwestCorner,
-                speciesId = inserted.speciesId,
-                speciesName = "Existing species",
+                position = ObservationPlotPosition.NortheastCorner,
+                speciesId = catalogSpeciesId,
+                speciesName = "Catalog species",
             ),
         )
     )
-  }
 
-  @Test
-  fun `creates catalog and Other species with creation events`() {
-    val catalogSpeciesId = insertSpecies()
     val otherSpeciesName = "Other species"
-
-    store.createBiomassQuadratSpecies(
-        inserted.observationId,
-        inserted.monitoringPlotId,
-        ObservationPlotPosition.NortheastCorner,
-        catalogSpeciesId,
-        null,
-        0,
-    )
-    store.createBiomassQuadratSpecies(
-        inserted.observationId,
-        inserted.monitoringPlotId,
-        ObservationPlotPosition.NorthwestCorner,
-        null,
-        otherSpeciesName,
-        12,
+    createQuadratSpecies(
+        speciesId = null,
+        position = ObservationPlotPosition.NorthwestCorner,
+        scientificName = otherSpeciesName,
+        abundance = 12,
     )
 
-    val catalogBiomassSpeciesId =
-        dslContext.fetchValue(
-            OBSERVATION_BIOMASS_SPECIES.ID,
-            OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(catalogSpeciesId),
-        )!!
-    val otherBiomassSpeciesId =
-        dslContext.fetchValue(
-            OBSERVATION_BIOMASS_SPECIES.ID,
-            OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME.eq(otherSpeciesName),
-        )!!
-
-    assertEquals(
-        setOf(catalogBiomassSpeciesId, otherBiomassSpeciesId),
-        dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).map { it.biomassSpeciesId }.toSet(),
-    )
-    eventPublisher.assertEventPublished {
-      it is BiomassSpeciesCreatedEvent && it.speciesId == catalogSpeciesId
-    }
+    val biomassSpecies = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    assertEquals(catalogSpeciesId, biomassSpecies.single { it.speciesId != null }.speciesId)
+    assertEquals(otherSpeciesName, biomassSpecies.single { it.speciesId == null }.scientificName)
+    assertEquals(2, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
     eventPublisher.assertEventPublished {
       it is BiomassSpeciesCreatedEvent && it.scientificName == otherSpeciesName
     }
   }
 
   @Test
-  fun `rejects invalid species, identity, and abundance`() {
-    val position = ObservationPlotPosition.SouthwestCorner
-    assertThrows<IllegalArgumentException> {
-      store.createBiomassQuadratSpecies(
-          inserted.observationId,
-          inserted.monitoringPlotId,
-          position,
-          null,
-          null,
-          1,
-      )
-    }
-    assertThrows<IllegalArgumentException> {
-      store.createBiomassQuadratSpecies(
-          inserted.observationId,
-          inserted.monitoringPlotId,
-          position,
-          inserted.speciesId,
-          null,
-          -1,
-      )
-    }
+  fun `rejects invalid identity, abundance, foreign species, and permission`() {
+    assertThrows<IllegalArgumentException> { createQuadratSpecies(null) }
 
     val foreignOrganizationId = insertOrganization()
     val foreignSpeciesId = insertSpecies(organizationId = foreignOrganizationId)
+    assertThrows<IllegalArgumentException> {
+      createQuadratSpecies(foreignSpeciesId, abundance = -1)
+    }
     assertThrows<SpeciesNotFoundException> {
+      createQuadratSpecies(foreignSpeciesId, abundance = 3)
+    }
+
+    every { user.canUpdateObservationQuantities(inserted.observationId) } returns false
+    assertThrows<AccessDeniedException> { createQuadratSpecies(foreignSpeciesId) }
+
+    assertTableEmpty(OBSERVATION_BIOMASS_SPECIES)
+    assertTableEmpty(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+    assertTableEmpty(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+    eventPublisher.assertNoEventsPublished()
+  }
+
+  private fun createQuadratSpecies(
+      speciesId: SpeciesId?,
+      position: ObservationPlotPosition = ObservationPlotPosition.NortheastCorner,
+      scientificName: String? = null,
+      abundance: Int = 1,
+  ) =
       store.createBiomassQuadratSpecies(
           inserted.observationId,
           inserted.monitoringPlotId,
           position,
-          foreignSpeciesId,
-          null,
-          3,
+          speciesId,
+          scientificName,
+          abundance,
       )
-    }
-
-    assertEquals(
-        setOf(inserted.biomassSpeciesId),
-        dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).map { it.id }.toSet(),
-    )
-    assertEquals(0, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_DETAILS).size)
-    assertEquals(0, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
-    eventPublisher.assertNoEventsPublished()
-  }
-
-  @Test
-  fun `rejects users without quantity permission`() {
-    every { user.canUpdateObservationQuantities(inserted.observationId) } returns false
-
-    assertThrows<AccessDeniedException> {
-      store.createBiomassQuadratSpecies(
-          inserted.observationId,
-          inserted.monitoringPlotId,
-          ObservationPlotPosition.SouthwestCorner,
-          inserted.speciesId,
-          null,
-          1,
-      )
-    }
-  }
 }
