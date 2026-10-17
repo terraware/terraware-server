@@ -995,6 +995,7 @@ class BiomassStore(
               .from(RECORDED_TREES)
               .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
               .and(RECORDED_TREES.TREE_NUMBER.eq(recordedTree.treeNumber))
+              .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
               .orderBy(RECORDED_TREES.TRUNK_NUMBER)
               .fetch(RECORDED_TREES.ID.asNonNullable())
 
@@ -1003,6 +1004,7 @@ class BiomassStore(
           .set(RECORDED_TREES.BIOMASS_SPECIES_ID, newBiomassSpeciesId)
           .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
           .and(RECORDED_TREES.TREE_NUMBER.eq(recordedTree.treeNumber))
+          .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
           .execute()
 
       val organizationId =

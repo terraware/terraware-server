@@ -132,6 +132,57 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
   }
 
   @Test
+  fun `does not change a tree with the same number in another plot`() {
+    val oldBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    val treeId = insertTree(oldBiomassSpeciesId)
+    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = otherMonitoringPlotId,
+        completedBy = user.userId,
+    )
+    insertObservationBiomassDetails(
+        observationId = observationId,
+        monitoringPlotId = otherMonitoringPlotId,
+    )
+    val otherBiomassSpeciesId =
+        insertObservationBiomassSpecies(
+            observationId = observationId,
+            monitoringPlotId = otherMonitoringPlotId,
+            speciesId = speciesId,
+        )
+    val otherTreeId =
+        insertRecordedTree(
+            biomassSpeciesId = otherBiomassSpeciesId,
+            observationId = observationId,
+            monitoringPlotId = otherMonitoringPlotId,
+            diameterAtBreastHeightCm = BigDecimal.ONE,
+            pointOfMeasurementM = BigDecimal("1.3"),
+            treeNumber = 1,
+            trunkNumber = 1,
+        )
+    val newSpeciesId = insertSpecies()
+
+    store.changeRecordedTreeSpecies(
+        observationId,
+        monitoringPlotId,
+        treeId,
+        newSpeciesId,
+        null,
+    )
+
+    val records = dslContext.fetch(RECORDED_TREES).associateBy { it.id }
+    val newBiomassSpeciesId =
+        dslContext
+            .selectFrom(OBSERVATION_BIOMASS_SPECIES)
+            .where(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(newSpeciesId))
+            .fetchSingle()
+            .id
+    assertEquals(newBiomassSpeciesId, records[treeId]!!.biomassSpeciesId)
+    assertEquals(otherBiomassSpeciesId, records[otherTreeId]!!.biomassSpeciesId)
+  }
+
+  @Test
   fun `creates an Other species once and reuses it for another tree`() {
     val oldBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     val firstTreeId = insertTree(oldBiomassSpeciesId)
