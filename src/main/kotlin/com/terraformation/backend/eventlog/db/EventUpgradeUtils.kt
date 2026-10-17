@@ -15,12 +15,15 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.eventlog.UpgradableEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
 import org.jooq.DSLContext
@@ -83,6 +86,46 @@ class EventUpgradeUtils(
         speciesName = speciesName,
     )
   }
+
+  fun getBiomassSpeciesValues(
+      biomassSpeciesId: BiomassSpeciesId,
+      beforeEventLogId: EventLogId,
+  ): BiomassSpeciesValues {
+    val createdEvent =
+        eventLogStore
+            .fetchLastById<BiomassSpeciesCreatedEvent>(biomassSpeciesId, beforeEventLogId)
+            ?.event
+
+    if (createdEvent != null) {
+      return BiomassSpeciesValues(
+          speciesId = createdEvent.speciesId,
+          speciesName = createdEvent.speciesName,
+      )
+    }
+
+    val currentRow =
+        dslContext
+            .select(
+                OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
+                OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
+            )
+            .from(OBSERVATION_BIOMASS_SPECIES)
+            .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+            .fetchOne()
+            ?: throw IllegalStateException("Biomass species $biomassSpeciesId not found")
+
+    val speciesId = currentRow.get(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID)
+    val speciesName =
+        speciesId?.let(::getSpeciesScientificName)
+            ?: currentRow.get(OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME)
+            ?: throw IllegalStateException(
+                "Biomass species $biomassSpeciesId has no scientific name"
+            )
+
+    return BiomassSpeciesValues(speciesId = speciesId, speciesName = speciesName)
+  }
+
+  data class BiomassSpeciesValues(val speciesId: SpeciesId?, val speciesName: String)
 
   private fun getSpeciesScientificName(speciesId: SpeciesId): String =
       dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(speciesId)) ?: "$speciesId"

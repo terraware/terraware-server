@@ -43,6 +43,8 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1
 import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -616,15 +618,48 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = catalogSpeciesId)
       val event = createdEvent(biomassSpeciesId, catalogSpeciesId, null)
       insertEvent(event)
-      dslContext
-          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
-          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
-          .execute()
+      deleteBiomassSpeciesRow(biomassSpeciesId)
       dslContext.deleteFrom(SPECIES).where(SPECIES.ID.eq(catalogSpeciesId)).execute()
 
       val upgraded =
           eventLogStore.fetchLastById<BiomassSpeciesCreatedEvent>(biomassSpeciesId)!!.event
       assertEquals("$catalogSpeciesId", upgraded.speciesName)
+    }
+
+    @Test
+    fun `upgrades biomass species updates from creation event or live row`() {
+      val snapshotSpeciesId = insertSpecies(scientificName = "Current catalog name")
+      val snapshotBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = snapshotSpeciesId)
+      insertEvent(
+          BiomassSpeciesCreatedEventV2(
+              biomassSpeciesId = snapshotBiomassSpeciesId,
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = null,
+              speciesId = snapshotSpeciesId,
+              speciesName = "Name captured when species was created",
+          )
+      )
+      deleteBiomassSpeciesRow(snapshotBiomassSpeciesId)
+      dslContext.deleteFrom(SPECIES).where(SPECIES.ID.eq(snapshotSpeciesId)).execute()
+
+      val snapshotUpdate = speciesUpdatedEvent(snapshotBiomassSpeciesId)
+      val snapshotUpgrade =
+          snapshotUpdate.toNextVersion(insertEvent(snapshotUpdate), eventUpgradeUtils)
+      assertEquals("Name captured when species was created", snapshotUpgrade.speciesName)
+      assertEquals(snapshotSpeciesId, snapshotUpgrade.speciesId)
+
+      val liveSpeciesId = insertSpecies(scientificName = "Catalog species")
+      val liveBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = liveSpeciesId)
+      val liveUpdate = speciesUpdatedEvent(liveBiomassSpeciesId)
+      val liveUpgrade = liveUpdate.toNextVersion(insertEvent(liveUpdate), eventUpgradeUtils)
+      assertEquals("Catalog species", liveUpgrade.speciesName)
+      assertEquals(liveSpeciesId, liveUpgrade.speciesId)
     }
 
     private fun createdEvent(
@@ -644,6 +679,24 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             scientificName = scientificName,
             speciesId = speciesId,
         )
+
+    private fun speciesUpdatedEvent(biomassSpeciesId: BiomassSpeciesId) =
+        BiomassSpeciesUpdatedEventV1(
+            changedFrom = BiomassSpeciesUpdatedEventV1.Values(false, false),
+            changedTo = BiomassSpeciesUpdatedEventV1.Values(true, true),
+            biomassSpeciesId = biomassSpeciesId,
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+        )
+
+    private fun deleteBiomassSpeciesRow(biomassSpeciesId: BiomassSpeciesId) {
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+          .execute()
+    }
   }
 
   private fun insertEvent(event: PersistentEvent): EventLogId {
