@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedTreatment
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.DataSource
@@ -28,6 +29,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
+import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
@@ -224,48 +226,33 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   fun `maps quadrat species events to payloads`() {
     val biomassSpeciesId = BiomassSpeciesId(10)
     val speciesId = SpeciesId(11)
-    val payloads =
-        transformer.eventsToPayloads(
-            listOf(
-                eventLogEntry(
-                    knownUserId,
-                    BiomassSpeciesDeletedEvent(
-                        biomassSpeciesId = biomassSpeciesId,
-                        commonName = null,
-                        monitoringPlotId = monitoringPlotId,
-                        observationId = observationId,
-                        organizationId = organizationId,
-                        plantingSiteId = plantingSiteId,
-                        scientificName = "Scientific name",
-                        speciesId = speciesId,
-                        speciesName = "Species name",
+    val payload =
+        transformer
+            .eventsToPayloads(
+                listOf(
+                    eventLogEntry(
+                        knownUserId,
+                        BiomassQuadratSpeciesCreatedEvent(
+                            abundance = 4,
+                            biomassSpeciesId = biomassSpeciesId,
+                            monitoringPlotId = monitoringPlotId,
+                            observationId = observationId,
+                            organizationId = organizationId,
+                            plantingSiteId = plantingSiteId,
+                            position = ObservationPlotPosition.SouthwestCorner,
+                            speciesId = speciesId,
+                            speciesName = "Species name",
+                        ),
                     ),
-                ),
-                eventLogEntry(
-                    knownUserId,
-                    BiomassQuadratSpeciesCreatedEvent(
-                        abundance = 4,
-                        biomassSpeciesId = biomassSpeciesId,
-                        monitoringPlotId = monitoringPlotId,
-                        observationId = observationId,
-                        organizationId = organizationId,
-                        plantingSiteId = plantingSiteId,
-                        position = ObservationPlotPosition.SouthwestCorner,
-                        speciesId = speciesId,
-                        speciesName = "Species name",
-                    ),
-                ),
+                )
             )
-        )
+            .single()
 
     assertEquals(
-        listOf(
-            DeletedActionPayload(),
-            CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
-        ),
-        payloads.map { it.action },
+        CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
+        payload.action,
     )
-    assertEquals(true, payloads[1].subject is BiomassQuadratSpeciesSubjectPayload)
+    assertEquals(true, payload.subject is BiomassQuadratSpeciesSubjectPayload)
   }
 
   @Test

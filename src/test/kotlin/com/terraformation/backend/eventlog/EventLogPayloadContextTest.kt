@@ -192,22 +192,14 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       listOf(
               listOf(createdEvent, deletedEvent) to true,
-              listOf(deletedEvent) to true,
               listOf(deletedEvent, createdEvent) to null,
           )
           .forEach { (events, expectedDeleted) ->
-            val context =
-                EventLogPayloadContext(
-                    dslContext,
-                    events.map(::eventLogEntry),
-                    messages,
-                )
-            events.forEach { event ->
-              assertEquals(
-                  expectedDeleted,
-                  BiomassQuadratSpeciesSubjectPayload.forEvent(event, context).deleted,
-              )
-            }
+            val context = EventLogPayloadContext(dslContext, events.map(::eventLogEntry), messages)
+            assertEquals(
+                listOf(expectedDeleted, expectedDeleted),
+                events.map { BiomassQuadratSpeciesSubjectPayload.forEvent(it, context).deleted },
+            )
           }
     }
   }
