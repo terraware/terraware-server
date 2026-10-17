@@ -137,7 +137,7 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `uses deleted biomass species event after biomass species row is deleted`() {
+    fun `renders deleted biomass species and tree subjects from events`() {
       val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
       dslContext
           .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
@@ -155,7 +155,26 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
               speciesId = inserted.speciesId,
               speciesName = "Display name from event",
           )
-      val context = EventLogPayloadContext(dslContext, listOf(eventLogEntry(event)), messages)
+      val treeEvent =
+          RecordedTreeDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              recordedTreeId = RecordedTreeId(6),
+              speciesId = null,
+              speciesName = "Other species",
+              treeGrowthForm = TreeGrowthForm.Trunk,
+              treeNumber = 7,
+              trunkNumber = 8,
+          )
+      val context =
+          EventLogPayloadContext(
+              dslContext,
+              listOf(eventLogEntry(event), eventLogEntry(treeEvent)),
+              messages,
+          )
 
       val payload = BiomassSpeciesSubjectPayload.forEvent(event, context)
 
@@ -163,33 +182,14 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(inserted.speciesId, payload.speciesId)
       assertEquals("Scientific name from event", payload.scientificName)
       assertTrue(payload.fullText.contains("Display name from event"))
+
+      val treePayload = RecordedTreeSubjectPayload.forEvent(treeEvent, context)
+
+      assertEquals(true, treePayload.deleted)
+      assertEquals(TreeGrowthForm.Trunk, treePayload.treeGrowthForm)
+      assertEquals(7, treePayload.treeNumber)
+      assertEquals(8, treePayload.trunkNumber)
     }
-  }
-
-  @Test
-  fun `builds deleted recorded tree subject without a creation event`() {
-    val event =
-        RecordedTreeDeletedEvent(
-            biomassSpeciesId = BiomassSpeciesId(1),
-            monitoringPlotId = MonitoringPlotId(2),
-            observationId = ObservationId(3),
-            organizationId = OrganizationId(4),
-            plantingSiteId = PlantingSiteId(5),
-            recordedTreeId = RecordedTreeId(6),
-            speciesId = null,
-            speciesName = "Other species",
-            treeGrowthForm = TreeGrowthForm.Trunk,
-            treeNumber = 7,
-            trunkNumber = 8,
-        )
-    val context = EventLogPayloadContext(dslContext, listOf(eventLogEntry(event)), messages)
-
-    val payload = RecordedTreeSubjectPayload.forEvent(event, context)
-
-    assertEquals(true, payload.deleted)
-    assertEquals(TreeGrowthForm.Trunk, payload.treeGrowthForm)
-    assertEquals(7, payload.treeNumber)
-    assertEquals(8, payload.trunkNumber)
   }
 
   private var nextEventLogId: Long = 1
