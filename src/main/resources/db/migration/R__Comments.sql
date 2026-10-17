@@ -532,6 +532,7 @@ COMMENT ON COLUMN tracking.observations.start_date IS 'First day of the observat
 COMMENT ON COLUMN tracking.observations.upcoming_notification_sent_time IS 'When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.';
 
 COMMENT ON TABLE tracking.observation_biomass_details IS 'Recorded data for a biomass observation.';
+COMMENT ON COLUMN tracking.observation_biomass_details.highest_tree_number IS 'Highest tree number ever assigned in this observation plot, including trees that have since been deleted. New trees are numbered above this so numbers are never reused.';
 COMMENT ON COLUMN tracking.observation_biomass_details.ph IS 'Acidity of water in pH. Only allowed if forest type is "Mangrove". Null value indicates no water in monitoring plot.';
 COMMENT ON COLUMN tracking.observation_biomass_details.salinity_ppt IS 'Salinity of water in parts per thousand (ppt). Only allowed if forest type is "Mangrove". Null value indicates no water in monitoring plot.';
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_id IS 'High/low tide during observation. Only allowed if forest type is "Mangrove". Null value indicates no water in monitoring plot.';
@@ -689,8 +690,8 @@ COMMENT ON COLUMN tracking.recorded_plants.species_id IS 'If certainty is "Known
 COMMENT ON COLUMN tracking.recorded_plants.species_name IS 'If certainty is "Other," the user-supplied name of the plant''s species. Null for other certainty values.';
 
 COMMENT ON TABLE tracking.recorded_trees IS 'Recorded trees or shrubs of a biomass observation.';
-COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental number per observation starting at 1 for accounting trees at a biomass observation.';
-COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental number starting at 1 for accounting trunks at a biomass observation. Defaults to 1 for Trees/Shrubs.';
+COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental number per observation plot starting at 1 for accounting trees at a biomass observation.';
+COMMENT ON COLUMN tracking.recorded_trees.trunk_number IS 'A unique incremental number starting at 1 for accounting trunks at a biomass observation. Defaults to 1 for Trees/Shrubs.';
 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 

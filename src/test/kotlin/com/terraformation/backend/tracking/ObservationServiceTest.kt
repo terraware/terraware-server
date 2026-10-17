@@ -3121,6 +3121,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               smallTreesCountHigh = 0,
               soilAssessment = "Basic soil assessment",
               soilTypeId = SoilType.ClayLoam,
+              highestTreeNumber = 0,
           ),
           "Biomass details table",
       )

@@ -4,7 +4,11 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -202,6 +206,134 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
             )
           }
     }
+
+    @Test
+    fun `uses event names and species IDs for quadrat biomass subjects`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+          .execute()
+      val context = EventLogPayloadContext(dslContext, emptyList(), messages)
+
+      val quadratSpeciesPayload =
+          BiomassQuadratSpeciesSubjectPayload.forEvent(
+              BiomassQuadratSpeciesUpdatedEventV2(
+                  changedFrom = BiomassQuadratSpeciesUpdatedEventV2.Values(1),
+                  changedTo = BiomassQuadratSpeciesUpdatedEventV2.Values(2),
+                  biomassSpeciesId = biomassSpeciesId,
+                  monitoringPlotId = inserted.monitoringPlotId,
+                  observationId = inserted.observationId,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  position = ObservationPlotPosition.SouthwestCorner,
+                  speciesId = null,
+                  speciesName = "Other name from event",
+              ),
+              context,
+          )
+      assertEquals(null, quadratSpeciesPayload.speciesId)
+      assertEquals("Other name from event", quadratSpeciesPayload.scientificName)
+      assertTrue(quadratSpeciesPayload.fullText.contains("Other name from event"))
+    }
+
+    @Test
+    fun `uses deleted biomass species event after biomass species row is deleted`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+          .execute()
+      val event =
+          BiomassSpeciesDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              commonName = "Common name",
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = "Scientific name from event",
+              speciesId = inserted.speciesId,
+              speciesName = "Display name from event",
+          )
+      val context = EventLogPayloadContext(dslContext, listOf(eventLogEntry(event)), messages)
+
+      val payload = BiomassSpeciesSubjectPayload.forEvent(event, context)
+
+      assertEquals(true, payload.deleted)
+      assertEquals(inserted.speciesId, payload.speciesId)
+      assertEquals("Scientific name from event", payload.scientificName)
+      assertTrue(payload.fullText.contains("Display name from event"))
+    }
+
+    @Test
+    fun `uses quadrat species create and delete events for deleted subjects`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      val createdEvent =
+          BiomassQuadratSpeciesCreatedEvent(
+              abundance = 4,
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              position = ObservationPlotPosition.SouthwestCorner,
+              speciesId = inserted.speciesId,
+              speciesName = "Species name from event",
+          )
+      val deletedEvent =
+          BiomassQuadratSpeciesDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              position = ObservationPlotPosition.SouthwestCorner,
+              speciesId = inserted.speciesId,
+              speciesName = "Species name from event",
+          )
+      val context =
+          EventLogPayloadContext(
+              dslContext,
+              listOf(eventLogEntry(createdEvent), eventLogEntry(deletedEvent)),
+              messages,
+          )
+
+      assertEquals(
+          true,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(createdEvent, context).deleted,
+      )
+      assertEquals(
+          true,
+          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, context).deleted,
+      )
+    }
+  }
+
+  @Test
+  fun `builds deleted recorded tree subject without a creation event`() {
+    val event =
+        RecordedTreeDeletedEvent(
+            biomassSpeciesId = BiomassSpeciesId(1),
+            monitoringPlotId = MonitoringPlotId(2),
+            observationId = ObservationId(3),
+            organizationId = OrganizationId(4),
+            plantingSiteId = PlantingSiteId(5),
+            recordedTreeId = RecordedTreeId(6),
+            speciesId = null,
+            speciesName = "Other species",
+            treeGrowthForm = TreeGrowthForm.Trunk,
+            treeNumber = 7,
+            trunkNumber = 8,
+        )
+    val context = EventLogPayloadContext(dslContext, listOf(eventLogEntry(event)), messages)
+
+    val payload = RecordedTreeSubjectPayload.forEvent(event, context)
+
+    assertEquals(true, payload.deleted)
+    assertEquals(TreeGrowthForm.Trunk, payload.treeGrowthForm)
+    assertEquals(7, payload.treeNumber)
+    assertEquals(8, payload.trunkNumber)
   }
 
   private var nextEventLogId: Long = 1
