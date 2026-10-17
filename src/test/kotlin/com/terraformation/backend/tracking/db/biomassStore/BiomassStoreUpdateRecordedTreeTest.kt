@@ -119,27 +119,21 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
         RecordedTreeUpdatedEvent(
             changedFrom =
                 RecordedTreeUpdatedEventValues(
-                    biomassSpeciesId = null,
                     description = "Original description",
                     diameterAtBreastHeightCm = BigDecimal(1),
                     heightM = BigDecimal(2),
                     isDead = false,
                     pointOfMeasurementM = BigDecimal(3),
-                    speciesId = null,
-                    speciesName = null,
                     treeCrownDiameterCm = 10,
                 ),
             changedTo =
                 RecordedTreeUpdatedEventValues(
-                    biomassSpeciesId = null,
                     boleHeightM = BigDecimal(18),
                     description = "New description",
                     diameterAtBreastHeightCm = BigDecimal(4),
                     heightM = BigDecimal(5),
                     isDead = true,
                     pointOfMeasurementM = BigDecimal(6),
-                    speciesId = null,
-                    speciesName = null,
                     treeCrownDiameterCm = 11,
                 ),
             monitoringPlotId = inserted.monitoringPlotId,
