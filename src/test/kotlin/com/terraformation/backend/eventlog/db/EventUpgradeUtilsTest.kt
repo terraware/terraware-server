@@ -43,10 +43,12 @@ import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV1
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2
 import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -726,7 +728,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     private fun deleteBiomassSpeciesRow(biomassSpeciesId: BiomassSpeciesId) {
-      dslContext
       dslContext
           .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
           .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
