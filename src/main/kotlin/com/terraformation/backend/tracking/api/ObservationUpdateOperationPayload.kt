@@ -218,3 +218,10 @@ data class CreateRecordedTreeOperationPayload(
           trunkNumber = 1,
       )
 }
+
+@JsonTypeName("DeleteRecordedTree")
+@Schema(description = "Deletes one recorded-tree record, which represents one trunk.")
+data class DeleteRecordedTreeOperationPayload(
+    @Schema(description = "ID of the recorded-tree record to delete.")
+    val recordedTreeId: RecordedTreeId
+) : ObservationUpdateOperationPayload
