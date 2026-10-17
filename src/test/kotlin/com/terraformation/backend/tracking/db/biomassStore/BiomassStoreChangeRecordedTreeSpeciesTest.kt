@@ -141,8 +141,15 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
     val otherBiomassSpecies = dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES)
     assertEquals("Other tree", otherBiomassSpecies.scientificName)
 
-    insertObservationBiomassQuadratDetails()
-    insertObservationBiomassQuadratSpecies(biomassSpeciesId = otherBiomassSpecies.id)
+    insertObservationBiomassQuadratDetails(
+        observationId = observationId,
+        monitoringPlotId = monitoringPlotId,
+    )
+    insertObservationBiomassQuadratSpecies(
+        observationId = observationId,
+        monitoringPlotId = monitoringPlotId,
+        biomassSpeciesId = otherBiomassSpecies.id,
+    )
     changeSpecies(newTreeId, newSpeciesId)
     changeSpecies(secondTrunkId, newSpeciesId)
     assertEquals(2, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
