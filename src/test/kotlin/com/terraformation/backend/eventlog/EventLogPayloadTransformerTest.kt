@@ -231,6 +231,20 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 eventLogEntry(
                     knownUserId,
+                    BiomassSpeciesDeletedEvent(
+                        biomassSpeciesId = biomassSpeciesId,
+                        commonName = null,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        scientificName = "Scientific name",
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+                eventLogEntry(
+                    knownUserId,
                     BiomassQuadratSpeciesCreatedEvent(
                         abundance = 4,
                         biomassSpeciesId = biomassSpeciesId,
@@ -261,13 +275,16 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
 
     assertEquals(
         listOf(
+            DeletedActionPayload(),
             CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
             DeletedActionPayload(),
         ),
         payloads.map { it.action },
     )
-    assertEquals(listOf(true, true), payloads.map { it.subject.deleted })
-    assertEquals(true, payloads.all { it.subject is BiomassQuadratSpeciesSubjectPayload })
+    assertEquals(listOf(true, true, true), payloads.map { it.subject.deleted })
+    assertEquals(true, payloads[0].subject is BiomassSpeciesSubjectPayload)
+    assertEquals(true, payloads[1].subject is BiomassQuadratSpeciesSubjectPayload)
+    assertEquals(true, payloads[2].subject is BiomassQuadratSpeciesSubjectPayload)
   }
 
   @Test
