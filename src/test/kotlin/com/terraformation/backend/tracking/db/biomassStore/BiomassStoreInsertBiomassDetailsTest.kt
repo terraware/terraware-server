@@ -226,6 +226,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             tideId = MangroveTide.High,
             tideTime = Instant.ofEpochSecond(123),
             waterDepthCm = 2,
+            highestTreeNumber = 3,
         ),
         "Biomass details table",
     )
@@ -558,6 +559,37 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                 trunkNumber = 2,
             ),
         )
+    )
+  }
+
+  @Test
+  fun `sets highest tree number to zero when there are no trees`() {
+    val model =
+        NewBiomassDetailsModel(
+            description = "Basic biomass details",
+            forestType = BiomassForestType.Terrestrial,
+            herbaceousCoverPercent = 0,
+            observationId = null,
+            smallTreeCountRange = 0 to 0,
+            soilAssessment = "Basic soil assessment",
+            plotId = null,
+        )
+
+    store.insertBiomassDetails(observationId, plotId, model)
+
+    assertTableEquals(
+        ObservationBiomassDetailsRecord(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            description = "Basic biomass details",
+            forestTypeId = BiomassForestType.Terrestrial,
+            smallTreesCountHigh = 0,
+            smallTreesCountLow = 0,
+            herbaceousCoverPercent = 0,
+            soilAssessment = "Basic soil assessment",
+            highestTreeNumber = 0,
+        ),
+        "Biomass details table",
     )
   }
 
