@@ -730,6 +730,57 @@ class BiomassStore(
     }
   }
 
+  fun createBiomassSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+      commonName: String?,
+      isInvasive: Boolean,
+      isThreatened: Boolean,
+  ) {
+    requirePermissions { updateObservationQuantities(observationId) }
+    require((speciesId == null) xor (scientificName == null)) {
+      "One of species ID or scientific name must be specified"
+    }
+
+    entityLocker.withLockedObservation(observationId) { _ ->
+      val isObservationPlot =
+          dslContext.fetchExists(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
+          )
+      if (!isObservationPlot) {
+        throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+      }
+
+      val speciesCondition =
+          speciesId?.let { OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(it) }
+              ?: OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME.eq(scientificName)
+      val alreadyExists =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_SPECIES,
+              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(speciesCondition),
+          )
+      if (alreadyExists) {
+        throw IllegalArgumentException("Biomass species already exists in observation plot")
+      }
+
+      insertBiomassSpecies(
+          observationId,
+          monitoringPlotId,
+          speciesId,
+          scientificName,
+          commonName,
+          isInvasive,
+          isThreatened,
+      )
+    }
+  }
+
   fun updateBiomassQuadratDetails(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
@@ -1301,11 +1352,31 @@ class BiomassStore(
       return existing.id!!
     }
 
+    return insertBiomassSpecies(
+        observationId,
+        monitoringPlotId,
+        speciesId,
+        scientificName,
+        commonName = null,
+        isInvasive = false,
+        isThreatened = false,
+    )
+  }
+
+  private fun insertBiomassSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+      commonName: String?,
+      isInvasive: Boolean,
+      isThreatened: Boolean,
+  ): BiomassSpeciesId {
     val record =
         ObservationBiomassSpeciesRecord(
-                commonName = null,
-                isInvasive = false,
-                isThreatened = false,
+                commonName = commonName,
+                isInvasive = isInvasive,
+                isThreatened = isThreatened,
                 monitoringPlotId = monitoringPlotId,
                 observationId = observationId,
                 scientificName = scientificName,
@@ -1323,9 +1394,9 @@ class BiomassStore(
     eventPublisher.publishEvent(
         BiomassSpeciesCreatedEvent(
             biomassSpeciesId = record.id!!,
-            commonName = null,
-            isInvasive = false,
-            isThreatened = false,
+            commonName = commonName,
+            isInvasive = isInvasive,
+            isThreatened = isThreatened,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             organizationId = organizationId,
