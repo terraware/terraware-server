@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.biomassStore
 
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
@@ -180,6 +181,30 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
             .id
     assertEquals(newBiomassSpeciesId, records[treeId]!!.biomassSpeciesId)
     assertEquals(otherBiomassSpeciesId, records[otherTreeId]!!.biomassSpeciesId)
+  }
+
+  @Test
+  fun `does not change tree species from another organization`() {
+    val oldBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    val treeId = insertTree(oldBiomassSpeciesId)
+    val foreignOrganizationId = insertOrganization()
+    val foreignSpeciesId = insertSpecies(organizationId = foreignOrganizationId)
+    val treesBefore = dslContext.fetch(RECORDED_TREES)
+    val biomassSpeciesBefore = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+
+    assertThrows<SpeciesNotFoundException> {
+      store.changeRecordedTreeSpecies(
+          observationId,
+          monitoringPlotId,
+          treeId,
+          foreignSpeciesId,
+          null,
+      )
+    }
+
+    assertEquals(treesBefore, dslContext.fetch(RECORDED_TREES))
+    assertEquals(biomassSpeciesBefore, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
+    eventPublisher.assertNoEventsPublished()
   }
 
   @Test
