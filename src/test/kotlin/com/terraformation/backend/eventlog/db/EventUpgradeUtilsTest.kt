@@ -28,9 +28,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
-import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.UpgradableEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestCreatedEventV1
@@ -646,7 +644,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
     ) {
       val biomassSpeciesId = insertBiomassSpeciesRow(speciesId, scientificName)
       insertEvent(createdEvent(biomassSpeciesId, speciesId, scientificName))
-      deleteBiomassSpeciesWithChildren(biomassSpeciesId)
+      deleteBiomassSpeciesRow(biomassSpeciesId)
 
       val upgraded =
           eventLogStore.fetchLastById<BiomassSpeciesCreatedEvent>(biomassSpeciesId)!!.event
@@ -682,31 +680,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             speciesId = speciesId,
         )
 
-    private fun deleteBiomassSpeciesWithChildren(biomassSpeciesId: BiomassSpeciesId) {
-      insertRecordedTree(
-          observationId = observationId,
-          monitoringPlotId = monitoringPlotId,
-          biomassSpeciesId = biomassSpeciesId,
-          diameterAtBreastHeightCm = BigDecimal.ONE,
-          pointOfMeasurementM = BigDecimal("1.3"),
-          heightM = BigDecimal.TEN,
-      )
-      insertObservationBiomassQuadratSpecies(
-          observationId = observationId,
-          monitoringPlotId = monitoringPlotId,
-          position = ObservationPlotPosition.SouthwestCorner,
-          biomassSpeciesId = biomassSpeciesId,
-          abundanceCount = 1,
-      )
-
-      dslContext
-          .deleteFrom(RECORDED_TREES)
-          .where(RECORDED_TREES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
-          .execute()
-      dslContext
-          .deleteFrom(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
-          .where(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
-          .execute()
+    private fun deleteBiomassSpeciesRow(biomassSpeciesId: BiomassSpeciesId) {
       dslContext
           .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
           .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))

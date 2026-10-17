@@ -111,26 +111,24 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `uses created event name when biomass species row is deleted`() {
       val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      val createdEvent =
+          BiomassSpeciesCreatedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = null,
+              speciesId = inserted.speciesId,
+              speciesName = "Name from created event",
+          )
       val context =
           EventLogPayloadContext(
               dslContext,
-              listOf(
-                  eventLogEntry(
-                      BiomassSpeciesCreatedEvent(
-                          biomassSpeciesId = biomassSpeciesId,
-                          commonName = null,
-                          isInvasive = false,
-                          isThreatened = false,
-                          monitoringPlotId = inserted.monitoringPlotId,
-                          observationId = inserted.observationId,
-                          organizationId = inserted.organizationId,
-                          plantingSiteId = inserted.plantingSiteId,
-                          scientificName = null,
-                          speciesId = inserted.speciesId,
-                          speciesName = "Name from created event",
-                      )
-                  )
-              ),
+              listOf(eventLogEntry(createdEvent)),
               messages,
           )
       dslContext
@@ -146,30 +144,9 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           context.getBiomassSpecies(biomassSpeciesId),
       )
-    }
-
-    @Test
-    fun `uses created event species snapshot for biomass subject`() {
-      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
-      val context = EventLogPayloadContext(dslContext, emptyList(), messages)
 
       val payload =
-          BiomassSpeciesSubjectPayload.forEvent(
-              BiomassSpeciesCreatedEvent(
-                  biomassSpeciesId = biomassSpeciesId,
-                  commonName = null,
-                  isInvasive = false,
-                  isThreatened = false,
-                  monitoringPlotId = inserted.monitoringPlotId,
-                  observationId = inserted.observationId,
-                  organizationId = inserted.organizationId,
-                  plantingSiteId = inserted.plantingSiteId,
-                  scientificName = null,
-                  speciesId = inserted.speciesId,
-                  speciesName = "Name from created event",
-              ),
-              context,
-          )
+          BiomassSpeciesSubjectPayload.forEvent(createdEvent, context)
 
       assertEquals(inserted.speciesId, payload.speciesId)
       assertTrue(payload.fullText.contains("Name from created event"))
