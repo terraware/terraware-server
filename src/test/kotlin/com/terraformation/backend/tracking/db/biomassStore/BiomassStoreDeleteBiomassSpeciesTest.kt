@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.db.BiomassSpeciesNotFoundException
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import io.mockk.every
@@ -65,39 +66,19 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
   }
 
   @Test
-  fun `rejects deletion when a tree references the species`() {
-    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+  fun `rejects deletion while a tree or quadrat entry references the species`() {
+    val treeBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
     insertRecordedTree(
-        biomassSpeciesId = biomassSpeciesId,
+        biomassSpeciesId = treeBiomassSpeciesId,
         diameterAtBreastHeightCm = BigDecimal.ONE,
         pointOfMeasurementM = BigDecimal("1.3"),
     )
-
-    val exception =
-        assertThrows<IllegalArgumentException> {
-          store.deleteBiomassSpecies(
-              inserted.observationId,
-              inserted.monitoringPlotId,
-              inserted.speciesId,
-              null,
-          )
-        }
-
-    assertEquals(
-        "Biomass species is still referenced by trees or quadrat entries",
-        exception.message,
-    )
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
-    eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
-  }
-
-  @Test
-  fun `rejects deletion when a quadrat entry references the species`() {
-    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+    val quadratSpeciesId = insertSpecies()
+    val quadratBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = quadratSpeciesId)
     insertObservationBiomassQuadratDetails()
-    insertObservationBiomassQuadratSpecies(biomassSpeciesId = biomassSpeciesId)
+    insertObservationBiomassQuadratSpecies(biomassSpeciesId = quadratBiomassSpeciesId)
 
-    val exception =
+    val treeReferenceException =
         assertThrows<IllegalArgumentException> {
           store.deleteBiomassSpecies(
               inserted.observationId,
@@ -106,12 +87,23 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
               null,
           )
         }
+    val quadratReferenceException =
+        assertThrows<IllegalArgumentException> {
+          store.deleteBiomassSpecies(
+              inserted.observationId,
+              inserted.monitoringPlotId,
+              quadratSpeciesId,
+              null,
+          )
+        }
 
     assertEquals(
         "Biomass species is still referenced by trees or quadrat entries",
-        exception.message,
+        treeReferenceException.message,
     )
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
+    assertEquals(treeReferenceException.message, quadratReferenceException.message)
+    assertEquals(2, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
+    assertEquals(1, dslContext.fetch(RECORDED_TREES).size)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
     eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
   }
