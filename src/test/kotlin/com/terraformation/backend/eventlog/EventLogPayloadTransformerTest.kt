@@ -300,8 +300,11 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         listOf(CreatedActionPayload(), DeletedActionPayload()),
         payloads.map { it.action },
     )
-    assertEquals(listOf(true, true), payloads.map { it.subject.deleted })
-    assertEquals(true, payloads.all { it.subject is BiomassQuadratSpeciesSubjectPayload })
+    assertEquals(listOf(true, true, true, true), payloads.map { it.subject.deleted })
+    assertEquals(true, payloads[0].subject is BiomassSpeciesSubjectPayload)
+    assertEquals(true, payloads[1].subject is RecordedTreeSubjectPayload)
+    assertEquals(true, payloads[2].subject is BiomassQuadratSpeciesSubjectPayload)
+    assertEquals(true, payloads[3].subject is BiomassQuadratSpeciesSubjectPayload)
   }
 
   @Test
