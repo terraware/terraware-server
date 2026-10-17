@@ -27,7 +27,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
-import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
@@ -278,19 +277,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                     knownUserId,
                     BiomassQuadratSpeciesCreatedEvent(
                         abundance = 4,
-                        biomassSpeciesId = biomassSpeciesId,
-                        monitoringPlotId = monitoringPlotId,
-                        observationId = observationId,
-                        organizationId = organizationId,
-                        plantingSiteId = plantingSiteId,
-                        position = ObservationPlotPosition.SouthwestCorner,
-                        speciesId = speciesId,
-                        speciesName = "Species name",
-                    ),
-                ),
-                eventLogEntry(
-                    knownUserId,
-                    BiomassQuadratSpeciesDeletedEvent(
                         biomassSpeciesId = biomassSpeciesId,
                         monitoringPlotId = monitoringPlotId,
                         observationId = observationId,
