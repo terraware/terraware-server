@@ -361,6 +361,7 @@ class ObservationsController(
         payload.updates.any {
           it is CreateRecordedTreeOperationPayload ||
               it is CreateQuadratSpeciesOperationPayload ||
+              it is DeleteQuadratSpeciesOperationPayload ||
               it is DeleteRecordedTreeOperationPayload ||
               (it is RecordedTreeUpdateOperationPayload &&
                   (it.speciesId != null || it.scientificName != null)) ||
@@ -390,6 +391,14 @@ class ObservationsController(
                   element.speciesId,
                   element.scientificName,
                   element.abundance,
+              )
+          is DeleteQuadratSpeciesOperationPayload ->
+              biomassStore.deleteBiomassQuadratSpecies(
+                  observationId,
+                  plotId,
+                  element.position,
+                  element.speciesId,
+                  element.scientificName,
               )
           is DeleteRecordedTreeOperationPayload ->
               biomassStore.deleteRecordedTree(observationId, plotId, element.recordedTreeId)
