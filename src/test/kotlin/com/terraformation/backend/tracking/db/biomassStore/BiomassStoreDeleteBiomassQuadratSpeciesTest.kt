@@ -102,19 +102,24 @@ class BiomassStoreDeleteBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
   fun `cleans up only biomass species that are no longer referenced`() {
     val referencePosition = ObservationPlotPosition.SouthwestCorner
     val orphanPosition = ObservationPlotPosition.SoutheastCorner
+    val referencedSpeciesId = inserted.speciesId
+    val referencedBiomassSpeciesId = inserted.biomassSpeciesId
     val orphanSpeciesId = insertSpecies()
     val orphanBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = orphanSpeciesId)
     val orphanSpeciesName =
         dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(orphanSpeciesId))!!
     insertObservationBiomassQuadratDetails(position = referencePosition)
     insertObservationBiomassQuadratDetails(position = orphanPosition)
-    insertObservationBiomassQuadratSpecies(position = referencePosition)
+    insertObservationBiomassQuadratSpecies(
+        position = referencePosition,
+        biomassSpeciesId = referencedBiomassSpeciesId,
+    )
     insertObservationBiomassQuadratSpecies(
         position = orphanPosition,
         biomassSpeciesId = orphanBiomassSpeciesId,
     )
     insertRecordedTree(
-        biomassSpeciesId = inserted.biomassSpeciesId,
+        biomassSpeciesId = referencedBiomassSpeciesId,
         diameterAtBreastHeightCm = BigDecimal.ONE,
         pointOfMeasurementM = BigDecimal("1.3"),
     )
@@ -123,7 +128,7 @@ class BiomassStoreDeleteBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
         inserted.observationId,
         inserted.monitoringPlotId,
         referencePosition,
-        inserted.speciesId,
+        referencedSpeciesId,
         null,
     )
 
@@ -141,7 +146,10 @@ class BiomassStoreDeleteBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
     )
 
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
-    assertEquals(inserted.biomassSpeciesId, dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES).id)
+    assertEquals(
+        referencedBiomassSpeciesId,
+        dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES).id,
+    )
     assertEquals(0, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
     assertEquals(2, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_DETAILS).size)
     eventPublisher.assertEventPublished(
