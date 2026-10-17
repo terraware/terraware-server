@@ -155,6 +155,16 @@ data class RecordedTreeUpdateOperationPayload(
     val isDead: Boolean?,
     @Schema(description = "ID of tree to update.") //
     val recordedTreeId: RecordedTreeId,
+    @Schema(
+        description =
+            "Optional. If set, changes the species of every trunk of this tree. At most one of speciesId and scientificName may be specified."
+    )
+    val speciesId: SpeciesId? = null,
+    @Schema(
+        description =
+            "Optional. If set, changes the species of every trunk of this tree. At most one of speciesId and scientificName may be specified."
+    )
+    val scientificName: String? = null,
     @Schema(description = "Only valid for Tree and Trunk growth forms.") //
     val pointOfMeasurement: BigDecimal?,
     @Schema(description = "Only valid for Shrub growth form.") //
@@ -162,6 +172,12 @@ data class RecordedTreeUpdateOperationPayload(
     @Schema(description = "Only valid for Tree and Trunk growth forms.") //
     val treeCrownDiameter: Int?,
 ) : ObservationUpdateOperationPayload {
+  init {
+    require(speciesId == null || scientificName == null) {
+      "At most one of species ID and scientific name may be specified"
+    }
+  }
+
   fun applyTo(model: ExistingRecordedTreeModel): ExistingRecordedTreeModel {
     return model.copy(
         boleHeightM = boleHeight.patchNullable(model.boleHeightM),

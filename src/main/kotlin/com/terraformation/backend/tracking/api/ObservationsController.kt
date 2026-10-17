@@ -361,6 +361,8 @@ class ObservationsController(
         payload.updates.any {
           it is CreateRecordedTreeOperationPayload ||
               it is DeleteRecordedTreeOperationPayload ||
+              (it is RecordedTreeUpdateOperationPayload &&
+                  (it.speciesId != null || it.scientificName != null)) ||
               it is MonitoringSpeciesUpdateOperationPayload
         }
 
@@ -408,12 +410,22 @@ class ObservationsController(
                   element.position,
                   element::applyTo,
               )
-          is RecordedTreeUpdateOperationPayload ->
-              biomassStore.updateRecordedTree(
+          is RecordedTreeUpdateOperationPayload -> {
+            biomassStore.updateRecordedTree(
+                observationId,
+                element.recordedTreeId,
+                element::applyTo,
+            )
+            if (element.speciesId != null || element.scientificName != null) {
+              biomassStore.changeRecordedTreeSpecies(
                   observationId,
+                  plotId,
                   element.recordedTreeId,
-                  element::applyTo,
+                  element.speciesId,
+                  element.scientificName,
               )
+            }
+          }
         }
       }
     }
