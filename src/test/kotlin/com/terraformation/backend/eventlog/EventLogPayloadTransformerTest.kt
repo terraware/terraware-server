@@ -28,7 +28,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
-import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
@@ -64,7 +63,6 @@ import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
-import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
@@ -257,19 +255,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         speciesName = "Species name",
                     ),
                 ),
-                eventLogEntry(
-                    knownUserId,
-                    BiomassQuadratSpeciesDeletedEvent(
-                        biomassSpeciesId = biomassSpeciesId,
-                        monitoringPlotId = monitoringPlotId,
-                        observationId = observationId,
-                        organizationId = organizationId,
-                        plantingSiteId = plantingSiteId,
-                        position = ObservationPlotPosition.SouthwestCorner,
-                        speciesId = speciesId,
-                        speciesName = "Species name",
-                    ),
-                ),
             )
         )
 
@@ -277,14 +262,10 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         listOf(
             DeletedActionPayload(),
             CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
-            DeletedActionPayload(),
         ),
         payloads.map { it.action },
     )
-    assertEquals(listOf(true, true, true), payloads.map { it.subject.deleted })
-    assertEquals(true, payloads[0].subject is BiomassSpeciesSubjectPayload)
     assertEquals(true, payloads[1].subject is BiomassQuadratSpeciesSubjectPayload)
-    assertEquals(true, payloads[2].subject is BiomassQuadratSpeciesSubjectPayload)
   }
 
   @Test

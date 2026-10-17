@@ -190,43 +190,25 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
               speciesId = inserted.speciesId,
               speciesName = "Species name from event",
           )
-      val context =
-          EventLogPayloadContext(
-              dslContext,
-              listOf(eventLogEntry(createdEvent), eventLogEntry(deletedEvent)),
-              messages,
+      listOf(
+              listOf(createdEvent, deletedEvent) to true,
+              listOf(deletedEvent) to true,
+              listOf(deletedEvent, createdEvent) to null,
           )
-
-      assertEquals(
-          true,
-          BiomassQuadratSpeciesSubjectPayload.forEvent(createdEvent, context).deleted,
-      )
-      assertEquals(
-          true,
-          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, context).deleted,
-      )
-
-      val deleteOnlyContext =
-          EventLogPayloadContext(dslContext, listOf(eventLogEntry(deletedEvent)), messages)
-      assertEquals(
-          true,
-          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, deleteOnlyContext).deleted,
-      )
-
-      val recreatedContext =
-          EventLogPayloadContext(
-              dslContext,
-              listOf(eventLogEntry(deletedEvent), eventLogEntry(createdEvent)),
-              messages,
-          )
-      assertEquals(
-          null,
-          BiomassQuadratSpeciesSubjectPayload.forEvent(deletedEvent, recreatedContext).deleted,
-      )
-      assertEquals(
-          null,
-          BiomassQuadratSpeciesSubjectPayload.forEvent(createdEvent, recreatedContext).deleted,
-      )
+          .forEach { (events, expectedDeleted) ->
+            val context =
+                EventLogPayloadContext(
+                    dslContext,
+                    events.map(::eventLogEntry),
+                    messages,
+                )
+            events.forEach { event ->
+              assertEquals(
+                  expectedDeleted,
+                  BiomassQuadratSpeciesSubjectPayload.forEvent(event, context).deleted,
+              )
+            }
+          }
     }
   }
 
