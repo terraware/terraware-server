@@ -39,7 +39,7 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `looks up catalog and Other names and prefers creation event values`() {
+    fun `looks up catalog and Other species names`() {
       val catalogId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
       val otherId = insertObservationBiomassSpecies(scientificName = "Other species")
       val context = EventLogPayloadContext(dslContext, emptyList(), messages)
@@ -61,26 +61,8 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
           )
           .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherId))
           .execute()
-      assertEquals("Species name", context.getBiomassSpecies(catalogId).speciesName)
-      assertEquals("Other species", context.getBiomassSpecies(otherId).speciesName)
-
-      val createdEvent =
-          BiomassSpeciesCreatedEvent(
-              otherId,
-              null,
-              false,
-              false,
-              inserted.monitoringPlotId,
-              inserted.observationId,
-              inserted.organizationId,
-              inserted.plantingSiteId,
-              "Event name",
-              null,
-              "Event name",
-          )
-      val eventContext =
-          EventLogPayloadContext(dslContext, listOf(eventLogEntry(createdEvent)), messages)
-      assertEquals("Event name", eventContext.getBiomassSpecies(otherId).speciesName)
+      assertEquals("Species name", context.getBiomassSpecies(catalogId).displayName)
+      assertEquals("Other species", context.getBiomassSpecies(otherId).displayName)
     }
 
     @Test
@@ -112,12 +94,8 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
           .execute()
 
       assertEquals(
-          EventLogPayloadContext.BiomassSpecies(
-              "Name from created event",
-              null,
-              inserted.speciesId,
-          ),
-          context.getBiomassSpecies(biomassSpeciesId),
+          "Name from created event",
+          context.getBiomassSpecies(biomassSpeciesId).displayName,
       )
 
       val payload = BiomassSpeciesSubjectPayload.forEvent(createdEvent, context)

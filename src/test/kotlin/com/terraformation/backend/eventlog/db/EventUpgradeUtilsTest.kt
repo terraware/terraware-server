@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -24,9 +25,6 @@ import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
-import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.eventlog.PersistentEvent
@@ -587,49 +585,35 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class BiomassSpeciesEventUpgrades {
-    private lateinit var monitoringPlotId: MonitoringPlotId
-    private lateinit var observationId: ObservationId
-
     @BeforeEach
     fun setUpBiomassObservation() {
       insertOrganization()
       insertPlantingSite()
       insertStratum()
       insertSubstratum()
-      monitoringPlotId = insertMonitoringPlot()
-      observationId = insertObservation(observationType = ObservationType.BiomassMeasurements)
+      insertMonitoringPlot()
+      insertObservation(observationType = ObservationType.BiomassMeasurements)
       insertObservationPlot()
       insertObservationBiomassDetails()
-      insertObservationBiomassQuadratDetails(
-          observationId = observationId,
-          monitoringPlotId = monitoringPlotId,
-          position = ObservationPlotPosition.SouthwestCorner,
-      )
     }
 
     @Test
     fun `upgrades created events from their own fields including after row deletion`() {
       val catalogSpeciesId = insertSpecies(scientificName = "Catalog species")
-      val catalogSpeciesIdAfterDeletion =
-          insertSpecies(scientificName = "Catalog species after deletion")
       val otherName = "Other species"
-      val otherNameAfterDeletion = "Other species after deletion"
 
-      assertCreatedUpgrade(
-          createdEvent(insertBiomassSpeciesRow(catalogSpeciesId, null), catalogSpeciesId, null),
-          "Catalog species",
-      )
-      assertCreatedUpgrade(
-          createdEvent(insertBiomassSpeciesRow(null, otherName), null, otherName),
-          otherName,
-      )
-      assertCreatedUpgradeAfterDeletingRow(
-          catalogSpeciesIdAfterDeletion,
-          null,
-          "Catalog species after deletion",
-      )
-      assertCreatedUpgradeAfterDeletingRow(null, otherNameAfterDeletion, otherNameAfterDeletion)
-    }
+      listOf(
+              createdEvent(
+                  BiomassSpeciesId(1000),
+                  catalogSpeciesId,
+                  null,
+              ) to "Catalog species",
+              createdEvent(BiomassSpeciesId(1001), null, otherName) to otherName,
+          )
+          .forEach { (event, expectedName) ->
+            val upgraded = event.toNextVersion(insertEvent(event), eventUpgradeUtils)
+            assertEquals(expectedName, upgraded.speciesName)
+          }
 
     @Test
     fun `upgrades biomass species updates using creation event or live row`() {
@@ -699,7 +683,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val upgraded =
           eventLogStore.fetchLastById<BiomassSpeciesCreatedEvent>(biomassSpeciesId)!!.event
-      assertEquals(expectedSpeciesName, upgraded.speciesName)
+      assertEquals("$catalogSpeciesId", upgraded.speciesName)
     }
 
     private fun assertSpeciesUpdateUpgrade(
@@ -747,8 +731,8 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             commonName = null,
             isInvasive = false,
             isThreatened = false,
-            monitoringPlotId = monitoringPlotId,
-            observationId = observationId,
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
             organizationId = inserted.organizationId,
             plantingSiteId = inserted.plantingSiteId,
             scientificName = scientificName,

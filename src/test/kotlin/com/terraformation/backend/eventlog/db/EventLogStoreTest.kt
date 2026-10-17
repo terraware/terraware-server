@@ -84,6 +84,22 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `can specify multiple classes`() {
+      val biomassSpeciesEvent =
+          BiomassSpeciesCreatedEvent(
+              biomassSpeciesId = BiomassSpeciesId(1),
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = MonitoringPlotId(2),
+              observationId = ObservationId(3),
+              organizationId = OrganizationId(1),
+              plantingSiteId = PlantingSiteId(5),
+              scientificName = null,
+              speciesId = null,
+              speciesName = "Species",
+          )
+      val biomassSpeciesEventId = store.insertEvent(biomassSpeciesEvent)
+
       assertEquals(
           listOf(
               EventLogEntry(
@@ -98,43 +114,20 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   org1Project1CreatedEvent,
                   org1Project1CreatedEventId,
               ),
+              EventLogEntry(
+                  user.userId,
+                  Instant.EPOCH,
+                  biomassSpeciesEvent,
+                  biomassSpeciesEventId,
+              ),
           ),
           store.fetchByIds(
               listOf(OrganizationId(1)),
-              listOf(TestOrganizationEvent::class, TestProjectEvent::class),
-          ),
-      )
-    }
-
-    @Test
-    fun `fetches biomass species events by their persistent event interface`() {
-      val event =
-          BiomassSpeciesCreatedEvent(
-              biomassSpeciesId = BiomassSpeciesId(1),
-              commonName = null,
-              isInvasive = false,
-              isThreatened = false,
-              monitoringPlotId = MonitoringPlotId(2),
-              observationId = ObservationId(3),
-              organizationId = OrganizationId(4),
-              plantingSiteId = PlantingSiteId(5),
-              scientificName = null,
-              speciesId = null,
-              speciesName = "Species",
-          )
-      val eventLogId = store.insertEvent(event)
-
-      assertEquals(
-          listOf(EventLogEntry(user.userId, Instant.EPOCH, event, eventLogId)),
-          store.fetchByIds(
               listOf(
-                  event.biomassSpeciesId,
-                  event.monitoringPlotId,
-                  event.observationId,
-                  event.organizationId,
-                  event.plantingSiteId,
+                  TestOrganizationEvent::class,
+                  TestProjectEvent::class,
+                  BiomassSpeciesPersistentEvent::class,
               ),
-              listOf(BiomassSpeciesPersistentEvent::class),
           ),
       )
     }
