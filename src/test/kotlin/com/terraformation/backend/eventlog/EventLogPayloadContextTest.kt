@@ -17,7 +17,6 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
-import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -132,24 +131,8 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `renders deleted biomass species and tree subjects from events`() {
+    fun `renders deleted tree subjects from events`() {
       val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
-      dslContext
-          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
-          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
-          .execute()
-      val event =
-          BiomassSpeciesDeletedEvent(
-              biomassSpeciesId = biomassSpeciesId,
-              commonName = "Common name",
-              monitoringPlotId = inserted.monitoringPlotId,
-              observationId = inserted.observationId,
-              organizationId = inserted.organizationId,
-              plantingSiteId = inserted.plantingSiteId,
-              scientificName = "Scientific name from event",
-              speciesId = inserted.speciesId,
-              speciesName = "Display name from event",
-          )
       val treeEvent =
           RecordedTreeDeletedEvent(
               biomassSpeciesId = biomassSpeciesId,
@@ -167,16 +150,9 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       val context =
           EventLogPayloadContext(
               dslContext,
-              listOf(eventLogEntry(event), eventLogEntry(treeEvent)),
+              listOf(eventLogEntry(treeEvent)),
               messages,
           )
-
-      val payload = BiomassSpeciesSubjectPayload.forEvent(event, context)
-
-      assertEquals(true, payload.deleted)
-      assertEquals(inserted.speciesId, payload.speciesId)
-      assertEquals("Scientific name from event", payload.scientificName)
-      assertTrue(payload.fullText.contains("Display name from event"))
 
       val treePayload = RecordedTreeSubjectPayload.forEvent(treeEvent, context)
 

@@ -18,6 +18,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
@@ -198,14 +199,14 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                     eventLogEntry(
                         knownUserId,
                         BiomassSpeciesDeletedEvent(
-                            biomassSpeciesId = biomassSpeciesId,
+                            biomassSpeciesId = BiomassSpeciesId(1),
                             commonName = null,
                             monitoringPlotId = monitoringPlotId,
                             observationId = observationId,
                             organizationId = organizationId,
                             plantingSiteId = plantingSiteId,
                             scientificName = "Scientific name",
-                            speciesId = speciesId,
+                            speciesId = null,
                             speciesName = "Species name",
                         ),
                     ),
