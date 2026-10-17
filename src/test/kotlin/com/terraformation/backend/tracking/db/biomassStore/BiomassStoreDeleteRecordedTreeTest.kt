@@ -170,7 +170,7 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
   }
 
   @Test
-  fun `keeps the biomass species while another tree references it`() {
+  fun `keeps the biomass species while a tree or quadrat entry references it`() {
     val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     val deletedTreeId =
         insertRecordedTree(
@@ -188,19 +188,10 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
 
     store.deleteRecordedTree(observationId, monitoringPlotId, deletedTreeId)
 
+    assertEquals(1, dslContext.fetch(RECORDED_TREES).size)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
     eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
-  }
 
-  @Test
-  fun `keeps the biomass species while a quadrat entry references it`() {
-    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    val recordedTreeId =
-        insertRecordedTree(
-            biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal.ONE,
-            pointOfMeasurementM = BigDecimal("1.3"),
-        )
     insertObservationBiomassQuadratDetails(
         observationId = observationId,
         monitoringPlotId = monitoringPlotId,
@@ -211,8 +202,10 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
         biomassSpeciesId = biomassSpeciesId,
     )
 
-    store.deleteRecordedTree(observationId, monitoringPlotId, recordedTreeId)
+    val remainingTreeId = dslContext.fetchSingle(RECORDED_TREES).id!!
+    store.deleteRecordedTree(observationId, monitoringPlotId, remainingTreeId)
 
+    assertEquals(0, dslContext.fetch(RECORDED_TREES).size)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
     eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
