@@ -60,6 +60,21 @@ data class CreateQuadratSpeciesOperationPayload(
     val scientificName: String?,
 ) : ObservationUpdateOperationPayload
 
+@JsonTypeName("DeleteQuadratSpecies")
+data class DeleteQuadratSpeciesOperationPayload(
+    val position: ObservationPlotPosition,
+    @Schema(
+        description =
+            "ID of species to delete. Exactly one of this or scientificName must be specified."
+    )
+    val speciesId: SpeciesId?,
+    @Schema(
+        description =
+            "Name of species to delete. Exactly one of this or speciesId must be specified."
+    )
+    val scientificName: String?,
+) : ObservationUpdateOperationPayload
+
 @JsonTypeName("Quadrat")
 data class QuadratUpdateOperationPayload(
     val description: Optional<String>?,
