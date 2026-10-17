@@ -99,40 +99,20 @@ class BiomassStoreDeleteBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
   }
 
   @Test
-  fun `deletes an orphaned biomass species and publishes its deletion event`() {
-    insertObservationBiomassQuadratDetails(position = ObservationPlotPosition.SouthwestCorner)
-    insertObservationBiomassQuadratSpecies(position = ObservationPlotPosition.SouthwestCorner)
-
-    store.deleteBiomassQuadratSpecies(
-        inserted.observationId,
-        inserted.monitoringPlotId,
-        ObservationPlotPosition.SouthwestCorner,
-        inserted.speciesId,
-        null,
+  fun `cleans up only biomass species that are no longer referenced`() {
+    val referencePosition = ObservationPlotPosition.SouthwestCorner
+    val orphanPosition = ObservationPlotPosition.SoutheastCorner
+    val orphanSpeciesId = insertSpecies()
+    val orphanBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = orphanSpeciesId)
+    val orphanSpeciesName =
+        dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(orphanSpeciesId))!!
+    insertObservationBiomassQuadratDetails(position = referencePosition)
+    insertObservationBiomassQuadratDetails(position = orphanPosition)
+    insertObservationBiomassQuadratSpecies(position = referencePosition)
+    insertObservationBiomassQuadratSpecies(
+        position = orphanPosition,
+        biomassSpeciesId = orphanBiomassSpeciesId,
     )
-
-    assertEquals(0, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_DETAILS).size)
-    assertEquals(0, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
-    eventPublisher.assertEventPublished(
-        BiomassSpeciesDeletedEvent(
-            biomassSpeciesId = inserted.biomassSpeciesId,
-            commonName = null,
-            monitoringPlotId = inserted.monitoringPlotId,
-            observationId = inserted.observationId,
-            organizationId = inserted.organizationId,
-            plantingSiteId = inserted.plantingSiteId,
-            scientificName = null,
-            speciesId = inserted.speciesId,
-            speciesName = "Existing species",
-        )
-    )
-  }
-
-  @Test
-  fun `keeps a species referenced by a recorded tree`() {
-    insertObservationBiomassQuadratDetails(position = ObservationPlotPosition.SouthwestCorner)
-    insertObservationBiomassQuadratSpecies(position = ObservationPlotPosition.SouthwestCorner)
     insertRecordedTree(
         biomassSpeciesId = inserted.biomassSpeciesId,
         diameterAtBreastHeightCm = BigDecimal.ONE,
@@ -142,14 +122,41 @@ class BiomassStoreDeleteBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
     store.deleteBiomassQuadratSpecies(
         inserted.observationId,
         inserted.monitoringPlotId,
-        ObservationPlotPosition.SouthwestCorner,
+        referencePosition,
         inserted.speciesId,
         null,
     )
 
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
+    assertEquals(2, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
     assertEquals(1, dslContext.fetch(RECORDED_TREES).size)
+    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
     eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
+
+    store.deleteBiomassQuadratSpecies(
+        inserted.observationId,
+        inserted.monitoringPlotId,
+        orphanPosition,
+        orphanSpeciesId,
+        null,
+    )
+
+    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
+    assertEquals(inserted.biomassSpeciesId, dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES).id)
+    assertEquals(0, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES).size)
+    assertEquals(2, dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_DETAILS).size)
+    eventPublisher.assertEventPublished(
+        BiomassSpeciesDeletedEvent(
+            biomassSpeciesId = orphanBiomassSpeciesId,
+            commonName = null,
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+            scientificName = null,
+            speciesId = orphanSpeciesId,
+            speciesName = orphanSpeciesName,
+        )
+    )
   }
 
   @Test
