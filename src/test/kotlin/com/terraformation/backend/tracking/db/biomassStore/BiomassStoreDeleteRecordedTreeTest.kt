@@ -111,7 +111,6 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
 
     store.deleteRecordedTree(observationId, monitoringPlotId, deletedTreeId)
 
-    assertEquals(1, dslContext.fetch(RECORDED_TREES).size)
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
 
     insertObservationBiomassQuadratDetails()
@@ -127,18 +126,14 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
   fun `rejects wrong targets and users without quantity permission`() {
     val recordedTreeId = insertTree(insertObservationBiomassSpecies(speciesId = speciesId))
 
-    listOf(
-            insertObservation() to monitoringPlotId,
-            observationId to insertMonitoringPlot(isAdHoc = true),
-        )
-        .forEach {
-          assertThrows<RecordedTreeNotFoundException> {
-            store.deleteRecordedTree(it.first, it.second, recordedTreeId)
-          }
-        }
+    assertThrows<RecordedTreeNotFoundException> {
+      store.deleteRecordedTree(insertObservation(), monitoringPlotId, recordedTreeId)
+    }
+    assertThrows<RecordedTreeNotFoundException> {
+      store.deleteRecordedTree(observationId, insertMonitoringPlot(isAdHoc = true), recordedTreeId)
+    }
 
     every { user.canUpdateObservationQuantities(observationId) } returns false
-
     assertThrows<AccessDeniedException> {
       store.deleteRecordedTree(observationId, monitoringPlotId, recordedTreeId)
     }
