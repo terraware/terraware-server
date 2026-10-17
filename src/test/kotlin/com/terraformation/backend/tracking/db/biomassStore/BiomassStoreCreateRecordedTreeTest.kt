@@ -6,8 +6,10 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
@@ -39,7 +41,7 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
   }
 
   @Test
-  fun `assigns the next observation-wide tree number after a gap`() {
+  fun `assigns the next tree number based on existing trees in the plot`() {
     val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     insertRecordedTree(
         biomassSpeciesId = biomassSpeciesId,
@@ -73,6 +75,107 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
         listOf(1, 3, 4),
         dslContext.fetch(RECORDED_TREES).mapNotNull { it.treeNumber }.sorted(),
     )
+  }
+
+  @Test
+  fun `uses the stored highest tree number`() {
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    listOf(1, 2).forEach { treeNumber ->
+      insertRecordedTree(
+          biomassSpeciesId = biomassSpeciesId,
+          diameterAtBreastHeightCm = BigDecimal.ONE,
+          pointOfMeasurementM = BigDecimal.ONE,
+          treeNumber = treeNumber,
+      )
+    }
+    dslContext
+        .update(OBSERVATION_BIOMASS_DETAILS)
+        .set(OBSERVATION_BIOMASS_DETAILS.HIGHEST_TREE_NUMBER, 5)
+        .where(
+            OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
+                .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+        )
+        .execute()
+
+    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+
+    assertEquals(
+        6,
+        dslContext
+            .select(RECORDED_TREES.TREE_NUMBER)
+            .from(RECORDED_TREES)
+            .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+            .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .fetch()
+            .maxOf { it.value1() ?: 0 },
+    )
+    assertEquals(6, dslContext.fetchSingle(OBSERVATION_BIOMASS_DETAILS).highestTreeNumber)
+  }
+
+  @Test
+  fun `tree numbers in another plot do not affect numbering`() {
+    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = otherMonitoringPlotId,
+        completedBy = user.userId,
+    )
+    insertObservationBiomassDetails(
+        observationId = observationId,
+        monitoringPlotId = otherMonitoringPlotId,
+    )
+    val otherBiomassSpeciesId =
+        insertObservationBiomassSpecies(
+            observationId = observationId,
+            monitoringPlotId = otherMonitoringPlotId,
+            speciesId = speciesId,
+        )
+    insertRecordedTree(
+        biomassSpeciesId = otherBiomassSpeciesId,
+        observationId = observationId,
+        monitoringPlotId = otherMonitoringPlotId,
+        diameterAtBreastHeightCm = BigDecimal.ONE,
+        pointOfMeasurementM = BigDecimal.ONE,
+        treeNumber = 10,
+    )
+
+    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+
+    assertEquals(
+        1,
+        dslContext
+            .select(RECORDED_TREES.TREE_NUMBER)
+            .from(RECORDED_TREES)
+            .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+            .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .fetchSingle()
+            .value1(),
+    )
+    assertEquals(
+        10,
+        dslContext
+            .select(RECORDED_TREES.TREE_NUMBER)
+            .from(RECORDED_TREES)
+            .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+            .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(otherMonitoringPlotId))
+            .fetchSingle()
+            .value1(),
+    )
+  }
+
+  @Test
+  fun `throws if the observation plot has no biomass details`() {
+    dslContext
+        .deleteFrom(OBSERVATION_BIOMASS_DETAILS)
+        .where(
+            OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
+                .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+        )
+        .execute()
+
+    assertThrows<ObservationPlotNotFoundException> {
+      store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+    }
   }
 
   @Test

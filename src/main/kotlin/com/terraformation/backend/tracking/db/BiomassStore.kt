@@ -377,6 +377,26 @@ class BiomassStore(
         throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
       }
 
+      val biomassDetailsCondition =
+          OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
+              .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+      val highestTreeNumber =
+          dslContext
+              .select(OBSERVATION_BIOMASS_DETAILS.HIGHEST_TREE_NUMBER)
+              .from(OBSERVATION_BIOMASS_DETAILS)
+              .where(biomassDetailsCondition)
+              .fetchOne()
+              ?.value1() ?: throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+      val highestExistingTreeNumber =
+          dslContext
+              .select(DSL.max(RECORDED_TREES.TREE_NUMBER))
+              .from(RECORDED_TREES)
+              .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+              .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .fetchOne()
+              ?.value1() ?: 0
+      val treeNumber = maxOf(highestTreeNumber, highestExistingTreeNumber) + 1
+
       val biomassSpeciesId =
           getOrCreateBiomassSpecies(
               observationId,
@@ -384,13 +404,12 @@ class BiomassStore(
               model.speciesId,
               model.speciesName,
           )
-      val treeNumber =
-          (dslContext
-              .select(DSL.max(RECORDED_TREES.TREE_NUMBER))
-              .from(RECORDED_TREES)
-              .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
-              .fetchOne()
-              ?.value1() ?: 0) + 1
+
+      dslContext
+          .update(OBSERVATION_BIOMASS_DETAILS)
+          .set(OBSERVATION_BIOMASS_DETAILS.HIGHEST_TREE_NUMBER, treeNumber)
+          .where(biomassDetailsCondition)
+          .execute()
 
       val record =
           RecordedTreesRecord(
