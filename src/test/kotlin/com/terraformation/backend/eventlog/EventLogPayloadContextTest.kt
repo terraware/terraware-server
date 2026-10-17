@@ -125,18 +125,8 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(inserted.speciesId, payload.speciesId)
       assertTrue(payload.fullText.contains("Name from created event"))
-    }
 
-    @Test
-    fun `uses event names and species IDs for biomass subjects`() {
-      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
-      dslContext
-          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
-          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
-          .execute()
-      val context = EventLogPayloadContext(dslContext, emptyList(), messages)
-
-      val biomassSpeciesPayload =
+      val updatedPayload =
           BiomassSpeciesSubjectPayload.forEvent(
               BiomassSpeciesUpdatedEventV2(
                   changedFrom = BiomassSpeciesUpdatedEventV2.Values(false, false),
@@ -151,8 +141,8 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               context,
           )
-      assertEquals(inserted.speciesId, biomassSpeciesPayload.speciesId)
-      assertTrue(biomassSpeciesPayload.fullText.contains("Catalog name from event"))
+      assertEquals(inserted.speciesId, updatedPayload.speciesId)
+      assertTrue(updatedPayload.fullText.contains("Catalog name from event"))
     }
   }
 
