@@ -755,6 +755,14 @@ class BiomassStore(
         throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
       }
 
+      if (
+          speciesId != null &&
+              parentStore.getOrganizationId(speciesId) !=
+                  parentStore.getOrganizationId(observationId)
+      ) {
+        throw SpeciesNotFoundException(speciesId)
+      }
+
       val speciesCondition =
           speciesId?.let { OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(it) }
               ?: OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME.eq(scientificName)

@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.biomassStore
 
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.ObservationType
@@ -92,6 +93,28 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
             speciesName = "Other species",
         )
     )
+  }
+
+  @Test
+  fun `rejects catalog species from another organization`() {
+    val foreignOrganizationId = insertOrganization()
+    val foreignSpeciesId = insertSpecies(organizationId = foreignOrganizationId)
+    val biomassSpeciesBefore = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+
+    assertThrows<SpeciesNotFoundException> {
+      store.createBiomassSpecies(
+          inserted.observationId,
+          inserted.monitoringPlotId,
+          foreignSpeciesId,
+          null,
+          null,
+          false,
+          false,
+      )
+    }
+
+    assertEquals(biomassSpeciesBefore, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
+    eventPublisher.assertNoEventsPublished()
   }
 
   @Test
