@@ -133,7 +133,7 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
   }
 
   @Test
-  fun `does not change a tree with the same number in another plot`() {
+  fun `scopes species changes to the organization, observation, and plot`() {
     val oldBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     val treeId = insertTree(oldBiomassSpeciesId)
     val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
@@ -164,6 +164,45 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
         )
     val newSpeciesId = insertSpecies()
 
+    val treesBeforePlotCheck = dslContext.fetch(RECORDED_TREES)
+    val speciesBeforePlotCheck = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    assertThrows<RecordedTreeNotFoundException> {
+      store.changeRecordedTreeSpecies(
+          observationId,
+          monitoringPlotId,
+          otherTreeId,
+          newSpeciesId,
+          null,
+      )
+    }
+    assertEquals(treesBeforePlotCheck, dslContext.fetch(RECORDED_TREES))
+    assertEquals(speciesBeforePlotCheck, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
+
+    val foreignOrganizationId = insertOrganization()
+    val foreignSpeciesId = insertSpecies(organizationId = foreignOrganizationId)
+    val treesBeforeOrganizationCheck = dslContext.fetch(RECORDED_TREES)
+    val speciesBeforeOrganizationCheck = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    assertThrows<SpeciesNotFoundException> {
+      store.changeRecordedTreeSpecies(
+          observationId,
+          monitoringPlotId,
+          treeId,
+          foreignSpeciesId,
+          null,
+      )
+    }
+    assertEquals(treesBeforeOrganizationCheck, dslContext.fetch(RECORDED_TREES))
+    assertEquals(speciesBeforeOrganizationCheck, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
+
+    val treesBeforeObservationCheck = dslContext.fetch(RECORDED_TREES)
+    val otherObservationId =
+        insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
+    assertThrows<RecordedTreeNotFoundException> {
+      store.changeRecordedTreeSpecies(otherObservationId, monitoringPlotId, treeId, newSpeciesId, null)
+    }
+    assertEquals(treesBeforeObservationCheck, dslContext.fetch(RECORDED_TREES))
+    eventPublisher.assertNoEventsPublished()
+
     store.changeRecordedTreeSpecies(
         observationId,
         monitoringPlotId,
@@ -181,30 +220,6 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
             .id
     assertEquals(newBiomassSpeciesId, records[treeId]!!.biomassSpeciesId)
     assertEquals(otherBiomassSpeciesId, records[otherTreeId]!!.biomassSpeciesId)
-  }
-
-  @Test
-  fun `does not change tree species from another organization`() {
-    val oldBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    val treeId = insertTree(oldBiomassSpeciesId)
-    val foreignOrganizationId = insertOrganization()
-    val foreignSpeciesId = insertSpecies(organizationId = foreignOrganizationId)
-    val treesBefore = dslContext.fetch(RECORDED_TREES)
-    val biomassSpeciesBefore = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
-
-    assertThrows<SpeciesNotFoundException> {
-      store.changeRecordedTreeSpecies(
-          observationId,
-          monitoringPlotId,
-          treeId,
-          foreignSpeciesId,
-          null,
-      )
-    }
-
-    assertEquals(treesBefore, dslContext.fetch(RECORDED_TREES))
-    assertEquals(biomassSpeciesBefore, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
-    eventPublisher.assertNoEventsPublished()
   }
 
   @Test
@@ -295,24 +310,6 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
 
     assertThrows<AccessDeniedException> {
       store.changeRecordedTreeSpecies(observationId, monitoringPlotId, treeId, speciesId, null)
-    }
-  }
-
-  @Test
-  fun `does not find trees from another observation`() {
-    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    val treeId = insertTree(biomassSpeciesId)
-    val otherObservationId =
-        insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
-
-    assertThrows<RecordedTreeNotFoundException> {
-      store.changeRecordedTreeSpecies(
-          otherObservationId,
-          monitoringPlotId,
-          treeId,
-          speciesId,
-          null,
-      )
     }
   }
 
