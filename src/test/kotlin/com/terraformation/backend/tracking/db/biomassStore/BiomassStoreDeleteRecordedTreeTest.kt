@@ -94,8 +94,7 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
     store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
     store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
 
-    val highestTreeId =
-        dslContext.fetch(RECORDED_TREES).maxBy { it.treeNumber!! }.id!!
+    val highestTreeId = dslContext.fetch(RECORDED_TREES).maxBy { it.treeNumber!! }.id!!
     store.deleteRecordedTree(observationId, monitoringPlotId, highestTreeId)
     store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
 
