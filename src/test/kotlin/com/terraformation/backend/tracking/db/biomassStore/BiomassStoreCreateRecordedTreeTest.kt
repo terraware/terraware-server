@@ -43,7 +43,13 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
   fun `numbers trees using the stored counter and only trees in the plot`() {
     val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     listOf(1, 3).forEach {
-      insertRecordedTree(biomassSpeciesId = biomassSpeciesId, treeNumber = it)
+      insertRecordedTree(
+          biomassSpeciesId = biomassSpeciesId,
+          diameterAtBreastHeightCm = BigDecimal.ONE,
+          heightM = BigDecimal.ONE,
+          pointOfMeasurementM = BigDecimal.ONE,
+          treeNumber = it,
+      )
     }
 
     val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
@@ -56,7 +62,10 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
         )
     insertRecordedTree(
         biomassSpeciesId = otherBiomassSpeciesId,
+        diameterAtBreastHeightCm = BigDecimal.ONE,
+        heightM = BigDecimal.ONE,
         monitoringPlotId = otherMonitoringPlotId,
+        pointOfMeasurementM = BigDecimal.ONE,
         treeNumber = 10,
     )
 
