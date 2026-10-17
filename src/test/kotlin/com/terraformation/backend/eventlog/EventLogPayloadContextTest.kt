@@ -4,13 +4,8 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
-import com.terraformation.backend.db.tracking.BiomassSpeciesId
-import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
