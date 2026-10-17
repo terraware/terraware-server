@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
@@ -23,6 +24,7 @@ import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEve
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals

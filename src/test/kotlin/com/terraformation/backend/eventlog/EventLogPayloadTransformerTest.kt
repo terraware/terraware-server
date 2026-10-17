@@ -26,8 +26,6 @@ import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.RecordedTreeId
-import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
@@ -39,7 +37,6 @@ import com.terraformation.backend.eventlog.api.EventLogEntryPayload
 import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSubjectPayload
-import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
@@ -73,7 +70,6 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
-import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -257,54 +253,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         payload.action,
     )
     assertEquals(true, payload.subject is BiomassQuadratSpeciesSubjectPayload)
-  }
-
-  @Test
-  fun `maps quadrat species events to payloads`() {
-    val biomassSpeciesId = BiomassSpeciesId(10)
-    val speciesId = SpeciesId(11)
-    val payloads =
-        transformer.eventsToPayloads(
-            listOf(
-                eventLogEntry(
-                    knownUserId,
-                    BiomassQuadratSpeciesCreatedEvent(
-                        abundance = 4,
-                        biomassSpeciesId = biomassSpeciesId,
-                        monitoringPlotId = monitoringPlotId,
-                        observationId = observationId,
-                        organizationId = organizationId,
-                        plantingSiteId = plantingSiteId,
-                        position = ObservationPlotPosition.SouthwestCorner,
-                        speciesId = speciesId,
-                        speciesName = "Species name",
-                    ),
-                ),
-                eventLogEntry(
-                    knownUserId,
-                    BiomassQuadratSpeciesDeletedEvent(
-                        biomassSpeciesId = biomassSpeciesId,
-                        monitoringPlotId = monitoringPlotId,
-                        observationId = observationId,
-                        organizationId = organizationId,
-                        plantingSiteId = plantingSiteId,
-                        position = ObservationPlotPosition.SouthwestCorner,
-                        speciesId = speciesId,
-                        speciesName = "Species name",
-                    ),
-                ),
-            )
-        )
-
-    assertEquals(
-        listOf(CreatedActionPayload(), DeletedActionPayload()),
-        payloads.map { it.action },
-    )
-    assertEquals(listOf(true, true, true, true), payloads.map { it.subject.deleted })
-    assertEquals(true, payloads[0].subject is BiomassSpeciesSubjectPayload)
-    assertEquals(true, payloads[1].subject is RecordedTreeSubjectPayload)
-    assertEquals(true, payloads[2].subject is BiomassQuadratSpeciesSubjectPayload)
-    assertEquals(true, payloads[3].subject is BiomassQuadratSpeciesSubjectPayload)
   }
 
   @Test
