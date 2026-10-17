@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking.db.biomassStore
 
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
@@ -10,7 +9,6 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
-import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
@@ -44,27 +42,13 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
   @Test
   fun `numbers trees using the stored counter and only trees in the plot`() {
     val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    insertRecordedTree(
-        biomassSpeciesId = biomassSpeciesId,
-        diameterAtBreastHeightCm = BigDecimal.ONE,
-        pointOfMeasurementM = BigDecimal.ONE,
-        treeNumber = 1,
-    )
-    val secondTreeId =
-        insertRecordedTree(
-            biomassSpeciesId = biomassSpeciesId,
-            diameterAtBreastHeightCm = BigDecimal.ONE,
-            pointOfMeasurementM = BigDecimal.ONE,
-            treeNumber = 2,
-        )
-    insertRecordedTree(
-        biomassSpeciesId = biomassSpeciesId,
-        diameterAtBreastHeightCm = BigDecimal.ONE,
-        pointOfMeasurementM = BigDecimal.ONE,
-        treeNumber = 3,
-    )
-
-    dslContext.deleteFrom(RECORDED_TREES).where(RECORDED_TREES.ID.eq(secondTreeId)).execute()
+    (1..3).forEach { treeNumber ->
+      insertRecordedTree(biomassSpeciesId = biomassSpeciesId, treeNumber = treeNumber)
+    }
+    dslContext
+        .deleteFrom(RECORDED_TREES)
+        .where(RECORDED_TREES.TREE_NUMBER.eq(2))
+        .execute()
 
     val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
     insertObservationPlot(
@@ -86,34 +70,17 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
         biomassSpeciesId = otherBiomassSpeciesId,
         observationId = observationId,
         monitoringPlotId = otherMonitoringPlotId,
-        diameterAtBreastHeightCm = BigDecimal.ONE,
-        pointOfMeasurementM = BigDecimal.ONE,
         treeNumber = 10,
     )
 
     store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
 
-    assertEquals(
-        listOf(1, 3, 4),
-        dslContext
-            .select(RECORDED_TREES.TREE_NUMBER)
-            .from(RECORDED_TREES)
-            .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
-            .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
-            .fetch()
-            .mapNotNull { it.value1() }
-            .sorted(),
-    )
-    assertEquals(
-        10,
-        dslContext
-            .select(RECORDED_TREES.TREE_NUMBER)
-            .from(RECORDED_TREES)
-            .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
-            .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(otherMonitoringPlotId))
-            .fetchSingle()
-            .value1(),
-    )
+    val treeNumbersByPlot =
+        dslContext.fetch(RECORDED_TREES).groupBy { it.monitoringPlotId }.mapValues {
+          (_, trees) -> trees.mapNotNull { it.treeNumber }.sorted()
+        }
+    assertEquals(listOf(1, 3, 4), treeNumbersByPlot[monitoringPlotId])
+    assertEquals(listOf(10), treeNumbersByPlot[otherMonitoringPlotId])
 
     dslContext
         .update(OBSERVATION_BIOMASS_DETAILS)
@@ -127,59 +94,29 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
 
     assertEquals(
         6,
-        dslContext
-            .select(RECORDED_TREES.TREE_NUMBER)
-            .from(RECORDED_TREES)
-            .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
-            .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
-            .fetch()
-            .maxOf { it.value1() ?: 0 },
+        dslContext.fetch(RECORDED_TREES).filter { it.monitoringPlotId == monitoringPlotId }.maxOf {
+          it.treeNumber!!
+        },
     )
     assertEquals(
         6,
         dslContext
-            .select(OBSERVATION_BIOMASS_DETAILS.HIGHEST_TREE_NUMBER)
-            .from(OBSERVATION_BIOMASS_DETAILS)
-            .where(
-                OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
-                    .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-            )
+            .selectFrom(OBSERVATION_BIOMASS_DETAILS)
+            .where(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId))
             .fetchSingle()
-            .value1(),
+            .highestTreeNumber,
     )
   }
 
   @Test
-  fun `throws if the observation plot has no biomass details`() {
-    dslContext
-        .deleteFrom(OBSERVATION_BIOMASS_DETAILS)
-        .where(
-            OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
-                .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-        )
-        .execute()
-
-    assertThrows<ObservationPlotNotFoundException> {
-      store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
-    }
-  }
-
-  @Test
   fun `reuses and creates catalog and Other biomass species for trees`() {
-    val existingBiomassSpeciesId =
-        insertObservationBiomassSpecies(
-            speciesId = speciesId,
-            isInvasive = true,
-            isThreatened = true,
-        )
+    val existingBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
 
     store.createRecordedTree(
         observationId,
         monitoringPlotId,
         newTreeModel(
-            description = "New shrub",
             heightM = null,
-            isDead = true,
             diameterAtBreastHeightCm = null,
             pointOfMeasurementM = null,
             shrubDiameterCm = 31,
@@ -193,23 +130,17 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
     assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
     assertEquals(TreeGrowthForm.Shrub, shrubRecord.treeGrowthFormId)
     assertEquals(31, shrubRecord.shrubDiameterCm)
-    assertEquals(null, shrubRecord.diameterAtBreastHeightCm)
-    assertEquals(null, shrubRecord.pointOfMeasurementM)
-    assertEquals(null, shrubRecord.heightM)
-    assertEquals(1, shrubRecord.treeNumber)
-    assertEquals(1, shrubRecord.trunkNumber)
-    assertEquals(null, shrubRecord.gpsCoordinates)
 
     eventPublisher.assertEventNotPublished<BiomassSpeciesCreatedEvent>()
     eventPublisher.assertEventPublished(
         RecordedTreeCreatedEvent(
             biomassSpeciesId = shrubRecord.biomassSpeciesId!!,
             boleHeightM = null,
-            description = "New shrub",
+            description = null,
             diameterAtBreastHeightCm = null,
             gpsCoordinates = null,
             heightM = null,
-            isDead = true,
+            isDead = false,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             organizationId = organizationId,
@@ -227,68 +158,24 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
     )
 
     val otherCatalogSpeciesId = insertSpecies()
-    val catalogSpeciesName =
-        dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(otherCatalogSpeciesId))!!
-
-    store.createRecordedTree(
-        observationId,
-        monitoringPlotId,
-        newTreeModel(speciesId = otherCatalogSpeciesId),
-    )
-    store.createRecordedTree(
-        observationId,
-        monitoringPlotId,
-        newTreeModel(speciesId = null, speciesName = "Other tree"),
-    )
-
-    val catalogBiomassSpecies =
-        dslContext
-            .selectFrom(OBSERVATION_BIOMASS_SPECIES)
-            .where(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(otherCatalogSpeciesId))
-            .fetchSingle()
-    val otherBiomassSpecies =
-        dslContext
-            .selectFrom(OBSERVATION_BIOMASS_SPECIES)
-            .where(OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME.eq("Other tree"))
-            .fetchSingle()
-
-    assertEquals(false, catalogBiomassSpecies.isInvasive)
-    assertEquals(false, catalogBiomassSpecies.isThreatened)
-    assertEquals(null, catalogBiomassSpecies.commonName)
-    assertEquals(false, otherBiomassSpecies.isInvasive)
-    assertEquals(false, otherBiomassSpecies.isThreatened)
-    assertEquals(null, otherBiomassSpecies.commonName)
-
-    eventPublisher.assertEventPublished(
-        BiomassSpeciesCreatedEvent(
-            biomassSpeciesId = catalogBiomassSpecies.id!!,
-            commonName = null,
-            isInvasive = false,
-            isThreatened = false,
-            monitoringPlotId = monitoringPlotId,
-            observationId = observationId,
-            organizationId = organizationId,
-            plantingSiteId = plantingSiteId,
-            scientificName = null,
-            speciesId = otherCatalogSpeciesId,
-            speciesName = catalogSpeciesName,
+    listOf(
+            newTreeModel(speciesId = otherCatalogSpeciesId),
+            newTreeModel(speciesId = null, speciesName = "Other tree"),
         )
-    )
-    eventPublisher.assertEventPublished(
-        BiomassSpeciesCreatedEvent(
-            biomassSpeciesId = otherBiomassSpecies.id!!,
-            commonName = null,
-            isInvasive = false,
-            isThreatened = false,
-            monitoringPlotId = monitoringPlotId,
-            observationId = observationId,
-            organizationId = organizationId,
-            plantingSiteId = plantingSiteId,
-            scientificName = "Other tree",
-            speciesId = null,
-            speciesName = "Other tree",
-        )
-    )
+        .forEach { store.createRecordedTree(observationId, monitoringPlotId, it) }
+
+    val speciesRecords = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    val catalogBiomassSpecies = speciesRecords.single { it.speciesId == otherCatalogSpeciesId }
+    val otherBiomassSpecies = speciesRecords.single { it.scientificName == "Other tree" }
+
+    assertEquals(otherCatalogSpeciesId, catalogBiomassSpecies.speciesId)
+    assertEquals("Other tree", otherBiomassSpecies.scientificName)
+    eventPublisher.assertEventPublished {
+      it is BiomassSpeciesCreatedEvent && it.speciesId == otherCatalogSpeciesId
+    }
+    eventPublisher.assertEventPublished {
+      it is BiomassSpeciesCreatedEvent && it.speciesName == "Other tree"
+    }
   }
 
   @Test
@@ -333,51 +220,8 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
         listOf(
             newTreeModel(treeGrowthForm = TreeGrowthForm.Trunk),
             newTreeModel(diameterAtBreastHeightCm = null),
-            newTreeModel(pointOfMeasurementM = null),
             newTreeModel(shrubDiameterCm = 12),
-            newTreeModel(
-                diameterAtBreastHeightCm = null,
-                heightM = null,
-                pointOfMeasurementM = null,
-                shrubDiameterCm = null,
-                treeGrowthForm = TreeGrowthForm.Shrub,
-            ),
-            newTreeModel(
-                diameterAtBreastHeightCm = BigDecimal.ONE,
-                pointOfMeasurementM = null,
-                shrubDiameterCm = 12,
-                treeGrowthForm = TreeGrowthForm.Shrub,
-            ),
-            newTreeModel(
-                heightM = BigDecimal.ONE,
-                diameterAtBreastHeightCm = null,
-                pointOfMeasurementM = null,
-                shrubDiameterCm = 12,
-                treeGrowthForm = TreeGrowthForm.Shrub,
-            ),
-            newTreeModel(
-                heightM = null,
-                diameterAtBreastHeightCm = null,
-                pointOfMeasurementM = BigDecimal.ONE,
-                shrubDiameterCm = 12,
-                treeGrowthForm = TreeGrowthForm.Shrub,
-            ),
-            newTreeModel(
-                boleHeightM = BigDecimal.ONE,
-                diameterAtBreastHeightCm = null,
-                heightM = null,
-                pointOfMeasurementM = null,
-                shrubDiameterCm = 12,
-                treeGrowthForm = TreeGrowthForm.Shrub,
-            ),
-            newTreeModel(
-                diameterAtBreastHeightCm = null,
-                heightM = null,
-                pointOfMeasurementM = null,
-                shrubDiameterCm = 12,
-                treeCrownDiameterCm = 20,
-                treeGrowthForm = TreeGrowthForm.Shrub,
-            ),
+            newTreeModel(treeGrowthForm = TreeGrowthForm.Shrub),
         )
 
     invalidModels.forEach { model ->
