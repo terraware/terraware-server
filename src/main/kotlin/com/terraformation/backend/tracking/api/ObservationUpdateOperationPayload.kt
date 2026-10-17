@@ -104,6 +104,23 @@ data class BiomassSpeciesUpdateOperationPayload(
   }
 }
 
+@JsonTypeName("CreateBiomassSpecies")
+data class CreateBiomassSpeciesOperationPayload(
+    @Schema(
+        description =
+            "ID of species to add. Exactly one of this or scientificName must be specified."
+    )
+    val speciesId: SpeciesId?,
+    @Schema(
+        description =
+            "Scientific name of species to add. Exactly one of this or speciesId must be specified."
+    )
+    val scientificName: String?,
+    @Schema(description = "Common name of the species.") val commonName: String?,
+    @Schema(description = "Whether the species is invasive.") val isInvasive: Boolean,
+    @Schema(description = "Whether the species is threatened.") val isThreatened: Boolean,
+) : ObservationUpdateOperationPayload
+
 @JsonTypeName("Biomass")
 data class BiomassUpdateOperationPayload(
     val description: Optional<String>?,
