@@ -58,6 +58,8 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesNamedPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
@@ -233,6 +235,7 @@ data class BiomassQuadratSubjectPayload(
 
 @JsonTypeName("BiomassQuadratSpecies")
 data class BiomassQuadratSpeciesSubjectPayload(
+    override val deleted: Boolean?,
     override val fullText: String,
     val monitoringPlotId: MonitoringPlotId,
     val observationId: ObservationId,
@@ -256,8 +259,22 @@ data class BiomassQuadratSpeciesSubjectPayload(
             )
           } ?: context.getBiomassSpecies(event.biomassSpeciesId)
       val localizedPosition = event.position.getDisplayName(currentUser().locale)
+      val latestEvent =
+          context.entries
+              .lastOrNull { entry ->
+                val matchingEvent =
+                    entry.event as? BiomassQuadratSpeciesPersistentEvent ?: return@lastOrNull false
+                (matchingEvent is BiomassQuadratSpeciesCreatedEvent ||
+                    matchingEvent is BiomassQuadratSpeciesDeletedEvent) &&
+                    matchingEvent.biomassSpeciesId == event.biomassSpeciesId &&
+                    matchingEvent.monitoringPlotId == event.monitoringPlotId &&
+                    matchingEvent.observationId == event.observationId &&
+                    matchingEvent.position == event.position
+              }
+              ?.event
 
       return BiomassQuadratSpeciesSubjectPayload(
+          deleted = if (latestEvent is BiomassQuadratSpeciesDeletedEvent) true else null,
           fullText =
               context.subjectFullText<BiomassQuadratSpeciesSubjectPayload>(
                   localizedPosition,
