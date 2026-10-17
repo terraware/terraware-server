@@ -262,6 +262,20 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 eventLogEntry(
                     knownUserId,
+                    BiomassSpeciesDeletedEvent(
+                        biomassSpeciesId = biomassSpeciesId,
+                        commonName = null,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        scientificName = "Scientific name",
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+                eventLogEntry(
+                    knownUserId,
                     BiomassQuadratSpeciesCreatedEvent(
                         abundance = 4,
                         biomassSpeciesId = biomassSpeciesId,
