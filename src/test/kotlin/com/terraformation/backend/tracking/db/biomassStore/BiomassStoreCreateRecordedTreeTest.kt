@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.biomassStore
 
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -176,6 +177,29 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
     assertThrows<ObservationPlotNotFoundException> {
       store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
     }
+  }
+
+  @Test
+  fun `throws if species belongs to another organization`() {
+    val foreignOrganizationId = insertOrganization()
+    val foreignSpeciesId = insertSpecies(organizationId = foreignOrganizationId)
+
+    assertThrows<SpeciesNotFoundException> {
+      store.createRecordedTree(
+          observationId,
+          monitoringPlotId,
+          newTreeModel(speciesId = foreignSpeciesId),
+      )
+    }
+
+    assertTableEmpty(
+        RECORDED_TREES,
+        where = RECORDED_TREES.OBSERVATION_ID.eq(observationId),
+    )
+    assertTableEmpty(
+        OBSERVATION_BIOMASS_SPECIES,
+        where = OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(observationId),
+    )
   }
 
   @Test

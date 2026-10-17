@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -971,6 +972,13 @@ class BiomassStore(
       speciesId: SpeciesId?,
       scientificName: String?,
   ): BiomassSpeciesId {
+    if (
+        speciesId != null &&
+            parentStore.getOrganizationId(speciesId) != parentStore.getOrganizationId(observationId)
+    ) {
+      throw SpeciesNotFoundException(speciesId)
+    }
+
     val existing =
         with(OBSERVATION_BIOMASS_SPECIES) {
           val speciesCondition =
