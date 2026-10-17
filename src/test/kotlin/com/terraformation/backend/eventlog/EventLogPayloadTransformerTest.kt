@@ -26,6 +26,8 @@ import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
@@ -226,80 +228,69 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `maps quadrat species events to payloads`() {
+  fun `maps quadrat species and tree species changes to payloads`() {
     val biomassSpeciesId = BiomassSpeciesId(10)
     val speciesId = SpeciesId(11)
-    val payload =
-        transformer
-            .eventsToPayloads(
-                listOf(
-                    eventLogEntry(
-                        knownUserId,
-                        BiomassQuadratSpeciesCreatedEvent(
-                            abundance = 4,
-                            biomassSpeciesId = biomassSpeciesId,
-                            monitoringPlotId = monitoringPlotId,
-                            observationId = observationId,
-                            organizationId = organizationId,
-                            plantingSiteId = plantingSiteId,
-                            position = ObservationPlotPosition.SouthwestCorner,
-                            speciesId = speciesId,
-                            speciesName = "Species name",
-                        ),
-                    ),
-                )
-            )
-            .single()
-
-    assertEquals(
-        CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
-        payload.action,
-    )
-    assertEquals(true, payload.subject is BiomassQuadratSpeciesSubjectPayload)
-  }
-
-  @Test
-  fun `lists recorded tree species name changes as a species field update`() {
-    val biomassSpeciesId = BiomassSpeciesId(10)
     val recordedTreeId = RecordedTreeId(12)
-    val createdEvent =
-        RecordedTreeCreatedEvent(
-            biomassSpeciesId = biomassSpeciesId,
-            isDead = false,
-            monitoringPlotId = monitoringPlotId,
-            observationId = observationId,
-            organizationId = organizationId,
-            plantingSiteId = plantingSiteId,
-            recordedTreeId = recordedTreeId,
-            treeGrowthForm = TreeGrowthForm.Tree,
-            treeNumber = 1,
-            trunkNumber = 1,
-        )
-    val updatedEvent =
-        RecordedTreeUpdatedEvent(
-            changedFrom = RecordedTreeUpdatedEventValues(speciesName = "Old name"),
-            changedTo = RecordedTreeUpdatedEventValues(speciesName = "New name"),
-            monitoringPlotId = monitoringPlotId,
-            observationId = observationId,
-            organizationId = organizationId,
-            plantingSiteId = plantingSiteId,
-            recordedTreeId = recordedTreeId,
-        )
     val payloads =
         transformer.eventsToPayloads(
             listOf(
-                eventLogEntry(knownUserId, createdEvent),
-                eventLogEntry(knownUserId, updatedEvent),
+                eventLogEntry(
+                    knownUserId,
+                    BiomassQuadratSpeciesCreatedEvent(
+                        abundance = 4,
+                        biomassSpeciesId = biomassSpeciesId,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        position = ObservationPlotPosition.SouthwestCorner,
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+                eventLogEntry(
+                    knownUserId,
+                    RecordedTreeCreatedEvent(
+                        biomassSpeciesId = biomassSpeciesId,
+                        isDead = false,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        recordedTreeId = recordedTreeId,
+                        treeGrowthForm = TreeGrowthForm.Tree,
+                        treeNumber = 1,
+                        trunkNumber = 1,
+                    ),
+                ),
+                eventLogEntry(
+                    knownUserId,
+                    RecordedTreeUpdatedEvent(
+                        changedFrom = RecordedTreeUpdatedEventValues(speciesName = "Old name"),
+                        changedTo = RecordedTreeUpdatedEventValues(speciesName = "New name"),
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        recordedTreeId = recordedTreeId,
+                    ),
+                ),
             )
         )
 
+    assertEquals(
+        CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
+        payloads[0].action,
+    )
+    assertEquals(true, payloads[0].subject is BiomassQuadratSpeciesSubjectPayload)
     assertEquals(
         FieldUpdatedActionPayload(
             fieldName = "species",
             changedFrom = listOf("Old name"),
             changedTo = listOf("New name"),
         ),
-        payloads[1].action,
+        payloads.last().action,
     )
   }
 
