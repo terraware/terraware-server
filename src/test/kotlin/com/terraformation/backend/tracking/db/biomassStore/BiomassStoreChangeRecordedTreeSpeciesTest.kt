@@ -48,38 +48,14 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
     val newTreeId = insertTree(oldBiomassSpeciesId, treeGrowthForm = TreeGrowthForm.Trunk)
     val secondTrunkId =
         insertTree(oldBiomassSpeciesId, trunkNumber = 2, treeGrowthForm = TreeGrowthForm.Trunk)
-    val foreignSpeciesId = insertSpecies(organizationId = insertOrganization())
-    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
-    val otherObservationId =
-        insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
-    val treesBefore = dslContext.fetch(RECORDED_TREES)
-    val speciesBefore = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
-
-    assertThrows<RecordedTreeNotFoundException> {
-      changeSpecies(newTreeId, newSpeciesId, plot = otherMonitoringPlotId)
-    }
-    assertThrows<SpeciesNotFoundException> {
-      changeSpecies(newTreeId, foreignSpeciesId)
-    }
-    assertThrows<RecordedTreeNotFoundException> {
-      changeSpecies(newTreeId, newSpeciesId, observation = otherObservationId)
-    }
-    assertEquals(treesBefore, dslContext.fetch(RECORDED_TREES))
-    assertEquals(speciesBefore, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
-    eventPublisher.assertNoEventsPublished()
 
     changeSpecies(newTreeId, newSpeciesId)
 
-    val newBiomassSpecies =
-        dslContext
-            .selectFrom(OBSERVATION_BIOMASS_SPECIES)
-            .where(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(newSpeciesId))
-            .fetchSingle()
+    val newBiomassSpecies = dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES)
     assertEquals(
         mapOf(newTreeId to newBiomassSpecies.id, secondTrunkId to newBiomassSpecies.id),
         dslContext.fetch(RECORDED_TREES).associate { it.id to it.biomassSpeciesId },
     )
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
 
     val oldSpeciesValues =
         RecordedTreeUpdatedEventValues(
@@ -141,18 +117,32 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
     val otherBiomassSpecies = dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES)
     assertEquals("Other tree", otherBiomassSpecies.scientificName)
 
-    insertObservationBiomassQuadratDetails(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-    )
-    insertObservationBiomassQuadratSpecies(
-        observationId = observationId,
-        monitoringPlotId = monitoringPlotId,
-        biomassSpeciesId = otherBiomassSpecies.id,
-    )
+    insertObservationBiomassQuadratDetails()
+    insertObservationBiomassQuadratSpecies(biomassSpeciesId = otherBiomassSpecies.id)
     changeSpecies(newTreeId, newSpeciesId)
     changeSpecies(secondTrunkId, newSpeciesId)
     assertEquals(2, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
+
+    eventPublisher.clear()
+    val foreignSpeciesId = insertSpecies(organizationId = insertOrganization())
+    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
+    val otherObservationId =
+        insertObservation(observationType = ObservationType.BiomassMeasurements)
+    val treesBefore = dslContext.fetch(RECORDED_TREES)
+    val speciesBefore = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+
+    assertThrows<RecordedTreeNotFoundException> {
+      changeSpecies(newTreeId, newSpeciesId, plot = otherMonitoringPlotId)
+    }
+    assertThrows<SpeciesNotFoundException> {
+      changeSpecies(newTreeId, foreignSpeciesId)
+    }
+    assertThrows<RecordedTreeNotFoundException> {
+      changeSpecies(newTreeId, newSpeciesId, observation = otherObservationId)
+    }
+    assertEquals(treesBefore, dslContext.fetch(RECORDED_TREES))
+    assertEquals(speciesBefore, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
+    eventPublisher.assertNoEventsPublished()
   }
 
   @Test
