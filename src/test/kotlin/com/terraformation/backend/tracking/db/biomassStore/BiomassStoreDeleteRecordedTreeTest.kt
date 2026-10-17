@@ -6,12 +6,14 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.db.RecordedTreeNotFoundException
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
+import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import io.mockk.every
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -85,6 +87,23 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
         )
     )
     eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
+  }
+
+  @Test
+  fun `does not reuse the number of a deleted highest tree`() {
+    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+
+    val highestTreeId =
+        dslContext.fetch(RECORDED_TREES).maxBy { it.treeNumber!! }.id!!
+    store.deleteRecordedTree(observationId, monitoringPlotId, highestTreeId)
+    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+
+    assertEquals(
+        listOf(1, 3),
+        dslContext.fetch(RECORDED_TREES).mapNotNull { it.treeNumber }.sorted(),
+    )
+    assertEquals(3, dslContext.fetchSingle(OBSERVATION_BIOMASS_DETAILS).highestTreeNumber)
   }
 
   @Test
@@ -222,4 +241,18 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
       store.deleteRecordedTree(observationId, monitoringPlotId, recordedTreeId)
     }
   }
+
+  private fun newTreeModel() =
+      NewRecordedTreeModel(
+          id = null,
+          diameterAtBreastHeightCm = BigDecimal.ONE,
+          gpsCoordinates = null,
+          heightM = BigDecimal.TEN,
+          isDead = false,
+          pointOfMeasurementM = BigDecimal("1.3"),
+          speciesId = speciesId,
+          treeGrowthForm = TreeGrowthForm.Tree,
+          treeNumber = 1,
+          trunkNumber = 1,
+      )
 }
