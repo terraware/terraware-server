@@ -96,11 +96,11 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
   }
 
   @Test
-  fun `rejects catalog species from another organization`() {
+  fun `rejects foreign, duplicate, and invalid species identities`() {
+    val speciesId: SpeciesId = insertSpecies()
     val foreignOrganizationId = insertOrganization()
     val foreignSpeciesId = insertSpecies(organizationId = foreignOrganizationId)
-    val biomassSpeciesBefore = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
-
+    val biomassSpeciesBeforeForeign = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
     assertThrows<SpeciesNotFoundException> {
       store.createBiomassSpecies(
           inserted.observationId,
@@ -112,14 +112,9 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
           false,
       )
     }
-
-    assertEquals(biomassSpeciesBefore, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
+    assertEquals(biomassSpeciesBeforeForeign, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
     eventPublisher.assertNoEventsPublished()
-  }
 
-  @Test
-  fun `rejects duplicate species and invalid identity`() {
-    val speciesId: SpeciesId = insertSpecies()
     store.createBiomassSpecies(
         inserted.observationId,
         inserted.monitoringPlotId,
@@ -129,6 +124,7 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
         false,
         false,
     )
+    val biomassSpeciesBeforeInvalid = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
 
     assertThrows<IllegalArgumentException> {
       store.createBiomassSpecies(
@@ -163,7 +159,7 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
           false,
       )
     }
-    assertEquals(1, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES).size)
+    assertEquals(biomassSpeciesBeforeInvalid, dslContext.fetch(OBSERVATION_BIOMASS_SPECIES))
   }
 
   @Test
