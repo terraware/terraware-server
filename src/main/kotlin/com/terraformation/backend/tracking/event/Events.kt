@@ -779,6 +779,20 @@ data class BiomassSpeciesCreatedEventV2(
 
 typealias BiomassSpeciesCreatedEvent = BiomassSpeciesCreatedEventV2
 
+data class BiomassSpeciesDeletedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    val commonName: String?,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    val scientificName: String?,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassSpeciesNamedPersistentEvent, EntityDeletedPersistentEvent
+
+typealias BiomassSpeciesDeletedEvent = BiomassSpeciesDeletedEventV1
+
 data class BiomassSpeciesUpdatedEventV1(
     val changedFrom: Values,
     val changedTo: Values,
@@ -1041,6 +1055,22 @@ data class RecordedTreeCreatedEventV1(
 ) : EntityCreatedPersistentEvent, RecordedTreePersistentEvent
 
 typealias RecordedTreeCreatedEvent = RecordedTreeCreatedEventV1
+
+data class RecordedTreeDeletedEventV1(
+    val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val recordedTreeId: RecordedTreeId,
+    val speciesId: SpeciesId?,
+    val speciesName: String,
+    val treeGrowthForm: TreeGrowthForm,
+    val treeNumber: Int,
+    val trunkNumber: Int,
+) : EntityDeletedPersistentEvent, RecordedTreePersistentEvent
+
+typealias RecordedTreeDeletedEvent = RecordedTreeDeletedEventV1
 
 data class RecordedTreeUpdatedEventV1(
     val changedFrom: Values,

@@ -6,14 +6,18 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
+import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -124,6 +128,38 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(null, quadratSpeciesPayload.speciesId)
       assertEquals("Other name from event", quadratSpeciesPayload.scientificName)
       assertTrue(quadratSpeciesPayload.fullText.contains("Other name from event"))
+    }
+
+    @Test
+    fun `renders deleted tree subjects from events`() {
+      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      val treeEvent =
+          RecordedTreeDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              recordedTreeId = RecordedTreeId(6),
+              speciesId = null,
+              speciesName = "Other species",
+              treeGrowthForm = TreeGrowthForm.Trunk,
+              treeNumber = 7,
+              trunkNumber = 8,
+          )
+      val context =
+          EventLogPayloadContext(
+              dslContext,
+              listOf(eventLogEntry(treeEvent)),
+              messages,
+          )
+
+      val treePayload = RecordedTreeSubjectPayload.forEvent(treeEvent, context)
+
+      assertEquals(true, treePayload.deleted)
+      assertEquals(TreeGrowthForm.Trunk, treePayload.treeGrowthForm)
+      assertEquals(7, treePayload.treeNumber)
+      assertEquals(8, treePayload.trunkNumber)
     }
   }
 
