@@ -39,73 +39,48 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `looks up species name from species ID`() {
-      val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
-
+    fun `looks up catalog and Other names and prefers creation event values`() {
+      val catalogId = insertObservationBiomassSpecies(speciesId = inserted.speciesId)
+      val otherId = insertObservationBiomassSpecies(scientificName = "Other species")
       val context = EventLogPayloadContext(dslContext, emptyList(), messages)
 
-      val expected = EventLogPayloadContext.BiomassSpecies("Species name", null, inserted.speciesId)
-
-      assertEquals(expected, context.getBiomassSpecies(biomassSpeciesId), "Lookup from database")
-
-      dslContext.update(SPECIES).set(SPECIES.SCIENTIFIC_NAME, "New name").execute()
-
-      assertEquals(expected, context.getBiomassSpecies(biomassSpeciesId), "Lookup from cache")
-    }
-
-    @Test
-    fun `looks up scientific name of Other species`() {
-      val biomassSpeciesId = insertObservationBiomassSpecies(scientificName = "Other species")
-
-      val context = EventLogPayloadContext(dslContext, emptyList(), messages)
-
-      val expected = EventLogPayloadContext.BiomassSpecies("Other species", "Other species", null)
-
-      assertEquals(expected, context.getBiomassSpecies(biomassSpeciesId), "Lookup from database")
-
+      assertEquals(
+          EventLogPayloadContext.BiomassSpecies("Species name", null, inserted.speciesId),
+          context.getBiomassSpecies(catalogId),
+      )
+      assertEquals(
+          EventLogPayloadContext.BiomassSpecies("Other species", "Other species", null),
+          context.getBiomassSpecies(otherId),
+      )
+      dslContext.update(SPECIES).set(SPECIES.SCIENTIFIC_NAME, "Changed").execute()
       dslContext
           .update(OBSERVATION_BIOMASS_SPECIES)
-          .set(OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME, "New name")
+          .set(
+              OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
+              "Changed",
+          )
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherId))
           .execute()
+      assertEquals("Species name", context.getBiomassSpecies(catalogId).speciesName)
+      assertEquals("Other species", context.getBiomassSpecies(otherId).speciesName)
 
-      assertEquals(expected, context.getBiomassSpecies(biomassSpeciesId), "Lookup from cache")
-    }
-
-    @Test
-    fun `uses name from creation event if available`() {
-      val biomassSpeciesId = insertObservationBiomassSpecies(scientificName = "Other species")
-
-      val context =
-          EventLogPayloadContext(
-              dslContext,
-              listOf(
-                  eventLogEntry(
-                      BiomassSpeciesCreatedEvent(
-                          biomassSpeciesId,
-                          null,
-                          false,
-                          false,
-                          inserted.monitoringPlotId,
-                          inserted.observationId,
-                          inserted.organizationId,
-                          inserted.plantingSiteId,
-                          "Name from created event",
-                          null,
-                          "Name from created event",
-                      )
-                  )
-              ),
-              messages,
-          )
-
-      val expected =
-          EventLogPayloadContext.BiomassSpecies(
-              "Name from created event",
-              "Name from created event",
+      val createdEvent =
+          BiomassSpeciesCreatedEvent(
+              otherId,
               null,
+              false,
+              false,
+              inserted.monitoringPlotId,
+              inserted.observationId,
+              inserted.organizationId,
+              inserted.plantingSiteId,
+              "Event name",
+              null,
+              "Event name",
           )
-
-      assertEquals(expected, context.getBiomassSpecies(biomassSpeciesId))
+      val eventContext =
+          EventLogPayloadContext(dslContext, listOf(eventLogEntry(createdEvent)), messages)
+      assertEquals("Event name", eventContext.getBiomassSpecies(otherId).speciesName)
     }
 
     @Test
@@ -145,8 +120,7 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
           context.getBiomassSpecies(biomassSpeciesId),
       )
 
-      val payload =
-          BiomassSpeciesSubjectPayload.forEvent(createdEvent, context)
+      val payload = BiomassSpeciesSubjectPayload.forEvent(createdEvent, context)
 
       assertEquals(inserted.speciesId, payload.speciesId)
       assertTrue(payload.fullText.contains("Name from created event"))
