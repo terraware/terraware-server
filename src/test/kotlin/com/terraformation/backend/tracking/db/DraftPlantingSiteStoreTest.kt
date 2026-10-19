@@ -6,7 +6,11 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
+import com.terraformation.backend.db.tracking.DraftStratumId
+import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.rectangle
@@ -20,10 +24,12 @@ import java.time.Instant
 import java.time.ZoneId
 import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.MultiPolygon
 import org.springframework.security.access.AccessDeniedException
 
 class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
@@ -49,6 +55,52 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateDraftPlantingSite(any()) } returns true
   }
+
+  private fun substratumModel(
+      name: String,
+      id: DraftSubstratumId? = null,
+      boundary: MultiPolygon = rectangle(50),
+  ) = DraftSubstratumModel(id = id, name = name, boundary = boundary)
+
+  private fun stratumModel(
+      name: String,
+      id: DraftStratumId? = null,
+      boundary: MultiPolygon = rectangle(100),
+      initialPlantingDensity: BigDecimal = BigDecimal(1500),
+      substrata: List<DraftSubstratumModel> = emptyList(),
+  ) =
+      DraftStratumModel(
+          id = id,
+          name = name,
+          boundary = boundary,
+          initialPlantingDensity = initialPlantingDensity,
+          substrata = substrata,
+      )
+
+  private fun siteModel(
+      siteType: DraftPlantingSiteType = DraftPlantingSiteType.Detailed,
+      strata: List<DraftStratumModel> = emptyList(),
+      name: String = "Name",
+      projectId: ProjectId? = null,
+      organizationId: OrganizationId = this.organizationId,
+  ) =
+      DraftPlantingSiteModel(
+          id = null,
+          organizationId = organizationId,
+          projectId = projectId,
+          name = name,
+          description = "Description",
+          timeZone = timeZone,
+          map =
+              DraftPlantingSiteMap(
+                  siteType = siteType,
+                  siteEditStep = "step",
+                  boundarySource = "source",
+                  boundary = rectangle(1000),
+                  exclusion = rectangle(10),
+                  strata = strata,
+              ),
+      )
 
   @Nested
   inner class FetchOneById {
@@ -315,6 +367,221 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<DraftPlantingSiteNotFoundException> {
         store.fetchModelById(inserted.draftPlantingSiteId)
+      }
+    }
+  }
+
+  @Nested
+  inner class CreateModel {
+    @Test
+    fun `stores map columns and strata, computes counts`() {
+      insertProject()
+      clock.instant = Instant.ofEpochSecond(1234)
+
+      val model =
+          siteModel(
+              projectId = inserted.projectId,
+              strata =
+                  listOf(
+                      stratumModel(
+                          "S1",
+                          substrata = listOf(substratumModel("S1-A"), substratumModel("S1-B")),
+                      ),
+                      stratumModel(
+                          "S2",
+                          initialPlantingDensity = BigDecimal(2500),
+                          substrata = listOf(substratumModel("S2-A")),
+                      ),
+                  ),
+          )
+
+      val created = store.createModel(model)
+
+      val row = draftPlantingSitesDao.fetchOneById(created.id!!)!!
+      assertEquals(DraftPlantingSiteType.Detailed, row.siteTypeId, "Site type")
+      assertEquals("step", row.siteEditStep, "Site edit step")
+      assertEquals("source", row.boundarySource, "Boundary source")
+      assertEquals("Description", row.description, "Description")
+      assertEquals("Name", row.name, "Name")
+      assertEquals(timeZone, row.timeZone, "Time zone")
+      assertEquals(inserted.projectId, row.projectId, "Project ID")
+      assertEquals(organizationId, row.organizationId, "Organization ID")
+      assertEquals(user.userId, row.createdBy, "Created by")
+      assertEquals(user.userId, row.modifiedBy, "Modified by")
+      assertEquals(clock.instant, row.createdTime, "Created time")
+      assertEquals(clock.instant, row.modifiedTime, "Modified time")
+      assertEquals(model.map.boundary, row.boundary, "Boundary")
+      assertEquals(model.map.exclusion, row.exclusion, "Exclusion")
+
+      val strata = draftStrataDao.findAll().sortedBy { it.id }
+      val substrata = draftSubstrataDao.findAll()
+      assertEquals(2, strata.size, "Number of stored strata")
+      assertEquals(3, substrata.size, "Number of stored substrata")
+      assertEquals(listOf("S1", "S2"), strata.map { it.name }, "Stratum names")
+      assertEquals(
+          BigDecimal(2500).compareTo(strata[1].initialPlantingDensity),
+          0,
+          "Initial planting density",
+      )
+      assertSetEquals(
+          setOf("S1-A", "S1-B", "S2-A"),
+          substrata.map { it.name }.toSet(),
+          "Substratum names",
+      )
+
+      assertEquals(
+          model.copy(
+              id = created.id,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              map =
+                  model.map.copy(
+                      strata =
+                          created.map.strata.mapIndexed { index, stratum ->
+                            model.map.strata[index].copy(
+                                id = stratum.id,
+                                substrata =
+                                    stratum.substrata.mapIndexed { subIndex, substratum ->
+                                      model.map.strata[index]
+                                          .substrata[subIndex]
+                                          .copy(id = substratum.id)
+                                    },
+                            )
+                          }
+                  ),
+          ),
+          created,
+          "Returned model",
+      )
+      assertEquals(
+          created,
+          store.fetchModelById(created.id),
+          "Returned model should match stored model",
+      )
+    }
+
+    @Test
+    fun `ignores id and audit fields in model`() {
+      val otherUserId = insertUser()
+      clock.instant = Instant.ofEpochSecond(500)
+
+      val created =
+          store.createModel(
+              siteModel()
+                  .copy(
+                      id = DraftPlantingSiteId(9999),
+                      createdBy = otherUserId,
+                      createdTime = Instant.EPOCH,
+                      modifiedBy = otherUserId,
+                      modifiedTime = Instant.EPOCH,
+                  )
+          )
+
+      assertNotEquals(DraftPlantingSiteId(9999), created.id, "ID")
+      assertEquals(user.userId, created.createdBy, "Created by")
+      assertEquals(clock.instant, created.createdTime, "Created time")
+      assertEquals(user.userId, created.modifiedBy, "Modified by")
+      assertEquals(clock.instant, created.modifiedTime, "Modified time")
+    }
+
+    @Test
+    fun `creates simple site with no strata`() {
+      val created = store.createModel(siteModel(siteType = DraftPlantingSiteType.Simple))
+
+      val row = draftPlantingSitesDao.fetchOneById(created.id!!)!!
+      assertEquals(DraftPlantingSiteType.Simple, row.siteTypeId, "Site type")
+      assertEquals(0, draftStrataDao.count(), "Number of strata")
+    }
+
+    @Test
+    fun `rejects strata on simple site`() {
+      assertThrows<IllegalArgumentException> {
+        store.createModel(
+            siteModel(
+                siteType = DraftPlantingSiteType.Simple,
+                strata = listOf(stratumModel("S1")),
+            )
+        )
+      }
+
+      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "Stored drafts")
+      assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "Stored strata")
+    }
+
+    @Test
+    fun `rejects duplicate stratum names`() {
+      assertThrows<IllegalArgumentException> {
+        store.createModel(siteModel(strata = listOf(stratumModel("Dup"), stratumModel("Dup"))))
+      }
+
+      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "Stored drafts")
+      assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "Stored strata")
+    }
+
+    @Test
+    fun `rejects client-supplied stratum and substratum ids`() {
+      val draftId = insertDraftPlantingSite()
+      val stratumId = insertDraftStratum(name = "Existing")
+      val substratumId = insertDraftSubstratum(name = "Existing")
+
+      assertThrows<DraftStratumNotFoundException> {
+        store.createModel(siteModel(strata = listOf(stratumModel("S1", id = stratumId))))
+      }
+      assertThrows<DraftSubstratumNotFoundException> {
+        store.createModel(
+            siteModel(
+                strata =
+                    listOf(
+                        stratumModel("S1", substrata = listOf(substratumModel("A", substratumId)))
+                    )
+            )
+        )
+      }
+
+      assertEquals(listOf(draftId), draftPlantingSitesDao.findAll().map { it.id }, "Stored drafts")
+      assertEquals(listOf(stratumId), draftStrataDao.findAll().map { it.id }, "Stored strata")
+      assertEquals(
+          listOf(substratumId),
+          draftSubstrataDao.findAll().map { it.id },
+          "Stored substrata",
+      )
+    }
+
+    @Test
+    fun `rejects duplicate substratum names in a stratum`() {
+      assertThrows<IllegalArgumentException> {
+        store.createModel(
+            siteModel(
+                strata =
+                    listOf(
+                        stratumModel(
+                            "S1",
+                            substrata = listOf(substratumModel("Dup"), substratumModel("Dup")),
+                        )
+                    )
+            )
+        )
+      }
+
+      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "Stored drafts")
+    }
+
+    @Test
+    fun `throws exception if no permission to create drafts`() {
+      every { user.canCreateDraftPlantingSite(any()) } returns false
+
+      assertThrows<AccessDeniedException> { store.createModel(siteModel()) }
+    }
+
+    @Test
+    fun `throws exception if project is in wrong organization`() {
+      insertOrganization()
+      insertProject()
+
+      assertThrows<ProjectInDifferentOrganizationException> {
+        store.createModel(siteModel(projectId = inserted.projectId))
       }
     }
   }

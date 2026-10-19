@@ -7,6 +7,8 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.DraftStratumId
+import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
@@ -63,6 +65,12 @@ class DeliveryNotFoundException(val deliveryId: DeliveryId) :
 
 class DraftPlantingSiteNotFoundException(val draftSiteId: DraftPlantingSiteId) :
     EntityNotFoundException("Draft planting site $draftSiteId not found")
+
+class DraftStratumNotFoundException(val draftStratumId: DraftStratumId) :
+    IllegalArgumentException("Draft stratum $draftStratumId not found")
+
+class DraftSubstratumNotFoundException(val draftSubstratumId: DraftSubstratumId) :
+    IllegalArgumentException("Draft substratum $draftSubstratumId not found")
 
 class InvalidObservationStartDateException(val startDate: LocalDate) :
     IllegalArgumentException("Observation start date $startDate should be within a year from today")
