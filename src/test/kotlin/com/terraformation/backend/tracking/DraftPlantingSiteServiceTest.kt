@@ -4,8 +4,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.gis.GeometryFileParser
@@ -18,7 +23,16 @@ import com.terraformation.backend.gis.TooManyVerticesException
 import com.terraformation.backend.gis.UnknownCoordinateSystemException
 import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.rectangle
+import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
+import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
+import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
+import com.terraformation.backend.tracking.model.DraftStratumModel
+import com.terraformation.backend.tracking.model.DraftSubstratumModel
+import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureType
 import com.terraformation.backend.util.toMultiPolygon
+import io.mockk.every
 import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.util.zip.ZipEntry
@@ -30,6 +44,8 @@ import kotlin.math.sin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -37,16 +53,20 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.io.WKTReader
 import org.locationtech.jts.io.geojson.GeoJsonWriter
 
-class DraftPlantingSiteServiceTest : RunsAsUser {
+class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
-  private val service = DraftPlantingSiteService(parser)
+  private val store: DraftPlantingSiteStore by lazy {
+    DraftPlantingSiteStore(clock, dslContext, ParentStore(dslContext))
+  }
+  private val service: DraftPlantingSiteService by lazy { DraftPlantingSiteService(store, parser) }
   private val geometryFactory = GeometryFactory()
   private val wktReader = WKTReader()
 
@@ -318,6 +338,136 @@ class DraftPlantingSiteServiceTest : RunsAsUser {
         )
 
     assertThrows<TooManyVerticesException> { parseShapes(withHole) }
+  }
+
+  @Nested
+  inner class TypedSaves {
+    private val siteBoundary = rectangle(1000, 500)
+    private val boundaryA = rectangle(400, 500, 0, 0)
+    private val boundaryB = rectangle(400, 500, 500, 0)
+
+    private lateinit var organizationId: OrganizationId
+
+    @BeforeEach
+    fun setUp() {
+      organizationId = insertOrganization()
+
+      every { user.canCreateDraftPlantingSite(any()) } returns true
+      every { user.canReadDraftPlantingSite(any()) } returns true
+      every { user.canUpdateDraftPlantingSite(any()) } returns true
+    }
+
+    private fun stratum(name: String, boundary: MultiPolygon) =
+        DraftStratumModel(
+            id = null,
+            name = name,
+            boundary = boundary,
+            initialPlantingDensity = BigDecimal(1500),
+            substrata = listOf(DraftSubstratumModel(id = null, name = "$name-1", boundary)),
+        )
+
+    private fun siteModel(strata: List<DraftStratumModel>, name: String = "Original") =
+        DraftPlantingSiteModel(
+            id = null,
+            organizationId = organizationId,
+            projectId = null,
+            name = name,
+            description = "Description",
+            timeZone = null,
+            map =
+                DraftPlantingSiteMap(
+                    siteType = DraftPlantingSiteType.Detailed,
+                    siteEditStep = "step",
+                    boundarySource = "draw",
+                    boundary = siteBoundary,
+                    exclusion = null,
+                    strata = strata,
+                ),
+        )
+
+    private fun createDraftWithTwoStrata(): DraftPlantingSiteId =
+        store.create(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB)))).id!!
+
+    @Test
+    fun `createTyped rejects overlapping strata and stores nothing`() {
+      val exception =
+          assertThrows<PlantingSiteMapInvalidException> {
+            service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
+          }
+
+      assertTrue(
+          exception.problems.any {
+            it.type == PlantingSiteValidationFailureType.StratumBoundaryOverlaps
+          },
+          "Should report overlapping strata: ${exception.problems}",
+      )
+      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "No drafts are stored")
+      assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "No strata are stored")
+    }
+
+    @Test
+    fun `createTyped stores valid draft`() {
+      val created =
+          service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB))))
+
+      val stored = store.fetchOneById(created.id!!)
+
+      assertEquals("Original", stored.name, "Name")
+      assertEquals(listOf("A", "B"), stored.map.strata.map { it.name }, "Strata names")
+      assertEquals(2, stored.numSubstrata, "Number of substrata")
+    }
+
+    @Test
+    fun `updateTyped rejects invalid map and writes nothing`() {
+      val id = createDraftWithTwoStrata()
+      val before = store.fetchOneById(id)
+
+      clock.instant = clock.instant().plusSeconds(60)
+
+      // Stratum A extends outside the site boundary, and stratum B is deleted.
+      val wide = rectangle(1200, 500, 0, 0)
+      val exception =
+          assertThrows<PlantingSiteMapInvalidException> {
+            service.updateTyped(id) { existing ->
+              existing.copy(
+                  name = "Renamed",
+                  map =
+                      existing.map.copy(
+                          strata = listOf(existing.map.strata[0].copy(boundary = wide))
+                      ),
+              )
+            }
+          }
+
+      assertTrue(
+          exception.problems.any { it.type == PlantingSiteValidationFailureType.StratumNotInSite },
+          "Should report stratum outside site: ${exception.problems}",
+      )
+
+      val after = store.fetchOneById(id)
+
+      assertEquals(before.name, after.name, "Name")
+      assertEquals(before.map.strata, after.map.strata, "Strata")
+      assertEquals(before.modifiedTime, after.modifiedTime, "Modified time")
+    }
+
+    @Test
+    fun `updateTyped stores valid update`() {
+      val id = createDraftWithTwoStrata()
+
+      service.updateTyped(id) { existing ->
+        existing.copy(
+            name = "Renamed",
+            map = existing.map.copy(strata = listOf(existing.map.strata[0])),
+        )
+      }
+
+      val stored = store.fetchOneById(id)
+
+      assertEquals("Renamed", stored.name, "Name")
+      assertEquals(listOf("A"), stored.map.strata.map { it.name }, "Strata names")
+      assertEquals(1, stored.numSubstrata, "Number of substrata")
+    }
   }
 
   private fun parseShapes(wkt: String) = parseShapes(wktReader.read(wkt))
