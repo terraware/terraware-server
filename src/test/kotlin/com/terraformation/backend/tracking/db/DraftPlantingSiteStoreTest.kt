@@ -224,4 +224,62 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       }
     }
   }
+
+  @Nested
+  inner class FetchModelById {
+    @Test
+    fun `returns model`() {
+      insertDraftPlantingSite(name = "Fetch test")
+
+      val model = store.fetchModelById(inserted.draftPlantingSiteId)
+
+      assertEquals("Fetch test", model.name, "Name")
+      assertEquals(inserted.draftPlantingSiteId, model.id, "ID")
+      assertEquals(organizationId, model.organizationId, "Organization ID")
+    }
+
+    @Test
+    fun `returns strata and substrata in id order`() {
+      insertDraftPlantingSite()
+      val stratumId1 = insertDraftStratum(name = "Zebra")
+      val substratumId1 = insertDraftSubstratum(name = "Zulu")
+      val substratumId2 = insertDraftSubstratum(name = "Alpha")
+      val stratumId2 = insertDraftStratum(name = "Alpha")
+      val substratumId3 = insertDraftSubstratum(name = "Beta")
+
+      val model = store.fetchModelById(inserted.draftPlantingSiteId)
+
+      assertEquals(
+          listOf(stratumId1, stratumId2),
+          model.map.strata.map { it.id },
+          "Stratum IDs",
+      )
+      assertEquals(
+          listOf(substratumId1, substratumId2),
+          model.map.strata[0].substrata.map { it.id },
+          "Substratum IDs of first stratum",
+      )
+      assertEquals(
+          listOf(substratumId3),
+          model.map.strata[1].substrata.map { it.id },
+          "Substratum IDs of second stratum",
+      )
+      assertEquals(
+          listOf("Zulu", "Alpha"),
+          model.map.strata[0].substrata.map { it.name },
+          "Substratum names",
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to read draft`() {
+      every { user.canReadDraftPlantingSite(any()) } returns false
+
+      insertDraftPlantingSite()
+
+      assertThrows<DraftPlantingSiteNotFoundException> {
+        store.fetchModelById(inserted.draftPlantingSiteId)
+      }
+    }
+  }
 }
