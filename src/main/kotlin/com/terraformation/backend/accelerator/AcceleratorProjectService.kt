@@ -2,7 +2,6 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.model.AcceleratorProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.AcceleratorProjectNotFoundException
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -16,11 +15,16 @@ import org.jooq.impl.DSL
 class AcceleratorProjectService(
     private val dslContext: DSLContext,
 ) {
-  fun fetchOneById(projectId: ProjectId): AcceleratorProjectModel {
-    requirePermissions { readProjectAcceleratorDetails(projectId) }
+  fun fetchByIds(projectIds: Collection<ProjectId>): Map<ProjectId, AcceleratorProjectModel> {
+    requirePermissions {
+      projectIds.forEach { readProjectAcceleratorDetails(it) }
+    }
 
-    return fetch(PROJECTS.ID.eq(projectId)).singleOrNull()
-        ?: throw AcceleratorProjectNotFoundException(projectId)
+    return if (projectIds.isEmpty()) {
+      emptyMap()
+    } else {
+      fetch(PROJECTS.ID.`in`(projectIds)).associateBy { it.projectId }
+    }
   }
 
   fun listAcceleratorProjects(): List<AcceleratorProjectModel> {
