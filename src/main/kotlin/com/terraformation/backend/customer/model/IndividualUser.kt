@@ -231,8 +231,7 @@ data class IndividualUser(
   override fun canDeleteBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
-      userId == parentStore.getUserId(draftPlantingSiteId) &&
-          isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
+      isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canDeleteFunder(userId: UserId) = isAcceleratorAdmin()
 
@@ -386,7 +385,7 @@ data class IndividualUser(
 
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       canReadAcceleratorProject(parentStore.getProjectId(draftPlantingSiteId)) ||
-          isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
+          isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canReadFacility(facilityId: FacilityId) =
       isMember(facilityId) || isGlobalReader(parentStore.getOrganizationId(facilityId))
@@ -642,8 +641,7 @@ data class IndividualUser(
   override fun canUpdateDocument(documentId: DocumentId) = isTFExpertOrHigher()
 
   override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
-      userId == parentStore.getUserId(draftPlantingSiteId) &&
-          isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
+      isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canUpdateFacility(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 

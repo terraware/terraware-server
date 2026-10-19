@@ -1180,11 +1180,6 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *draftPlantingSiteIds.forOrg1(),
-        readDraftPlantingSite = true,
-    )
-
-    permissions.expect(
         *deliveryIds.forOrg1(),
         readDelivery = true,
         updateDelivery = true,
@@ -3104,15 +3099,15 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `admin user can read but not write draft planting sites of other users in same org`() {
+  fun `admin user can read and write draft planting sites of other users in same org`() {
     val otherUserDraftSiteId =
         insertDraftPlantingSite(createdBy = sameOrgUserId, organizationId = getDatabaseId(org1Id))
 
     givenRole(org1Id, Role.Admin)
 
     assertTrue(user.canReadDraftPlantingSite(otherUserDraftSiteId), "Can read draft site")
-    assertFalse(user.canDeleteDraftPlantingSite(otherUserDraftSiteId), "Can delete draft site")
-    assertFalse(user.canUpdateDraftPlantingSite(otherUserDraftSiteId), "Can update draft site")
+    assertTrue(user.canDeleteDraftPlantingSite(otherUserDraftSiteId), "Can delete draft site")
+    assertTrue(user.canUpdateDraftPlantingSite(otherUserDraftSiteId), "Can update draft site")
   }
 
   @Suppress("UNCHECKED_CAST")

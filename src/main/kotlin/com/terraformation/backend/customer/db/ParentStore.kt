@@ -407,9 +407,6 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getProjectId(viabilityTestId: ViabilityTestId): ProjectId? =
       fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.accessions.PROJECT_ID)
 
-  fun getUserId(draftPlantingSiteId: DraftPlantingSiteId): UserId? =
-      fetchFieldById(draftPlantingSiteId, DRAFT_PLANTING_SITES.ID, DRAFT_PLANTING_SITES.CREATED_BY)
-
   fun getUserId(fileBatchId: FileBatchId): UserId? =
       fetchFieldById(fileBatchId, FILE_BATCHES.ID, FILE_BATCHES.CREATED_BY)
 

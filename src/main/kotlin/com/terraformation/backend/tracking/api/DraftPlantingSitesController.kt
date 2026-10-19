@@ -139,12 +139,7 @@ class DraftPlantingSitesController(
 
 // response payload
 data class DraftPlantingSitePayload(
-    @Schema(
-        description =
-            "ID of the user who created this draft. Only that user is allowed to modify or " +
-                "delete the draft."
-    )
-    val createdBy: UserId,
+    @Schema(description = "ID of the user who created this draft.") val createdBy: UserId,
     val createdTime: Instant,
     @Schema(
         description =
