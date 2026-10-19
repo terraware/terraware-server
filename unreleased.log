@@ -1,3 +1,4 @@
+9abd5d73 Update dependencies (#5184)
 243bb0d9 Disable Renovate bot (#5166)
 0b07370c Declare GeometryCollection element type explicitly in OpenAPI schema (#5167)
 e18be1da SW-9094 Generate plots for correct observation type (#5161)
