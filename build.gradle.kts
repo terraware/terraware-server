@@ -23,7 +23,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "9.0.8"
+  id("dev.monosoul.jooq-docker") version "9.0.9"
   id("com.diffplug.spotless") version "8.10.4"
   id("org.springframework.boot") version "3.5.16"
   id("io.spring.dependency-management") version "1.1.7"
@@ -112,7 +112,7 @@ dependencies {
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
   implementation("com.google.api-client:google-api-client:2.9.1")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.54.0")
-  implementation("com.google.apis:google-api-services-drive:v3-rev20260916-2.0.0")
+  implementation("com.google.apis:google-api-services-drive:v3-rev20261011-2.0.0")
   implementation("com.opencsv:opencsv:5.12.0")
   implementation("com.pgvector:pgvector:0.1.6")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.16.0")
