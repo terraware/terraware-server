@@ -51,6 +51,8 @@ import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.DraftStratumId
+import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -87,6 +89,8 @@ class InsertedDatabaseIds {
   val documentIds = mutableListOf<DocumentId>()
   val documentTemplateIds = mutableListOf<DocumentTemplateId>()
   val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
+  val draftStratumIds = mutableListOf<DraftStratumId>()
+  val draftSubstratumIds = mutableListOf<DraftSubstratumId>()
   val eventIds = mutableListOf<EventId>()
   val facilityIds = mutableListOf<FacilityId>()
   val fileBatchIds = mutableListOf<FileBatchId>()
@@ -198,6 +202,12 @@ class InsertedDatabaseIds {
 
   val draftPlantingSiteId
     get() = draftPlantingSiteIds.last()
+
+  val draftStratumId
+    get() = draftStratumIds.last()
+
+  val draftSubstratumId
+    get() = draftSubstratumIds.last()
 
   val eventId
     get() = eventIds.last()

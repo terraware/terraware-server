@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -173,6 +174,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               numStrata = 1,
               organizationId = organizationId,
               projectId = inserted.projectId,
+              siteTypeId = DraftPlantingSiteType.Detailed,
               timeZone = timeZone,
           )
 
