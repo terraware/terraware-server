@@ -55,7 +55,12 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
   override fun conditionForVisibility(table: Table<*>): Condition {
     return table
         .column(DRAFT_PLANTING_SITES.ORGANIZATION_ID)
-        .`in`(currentUser().organizationRoles.filter { it.value != Role.Contributor }.keys)
+        .`in`(
+            currentUser()
+                .organizationRoles
+                .filter { it.value in setOf(Role.Admin, Role.Owner, Role.TerraformationContact) }
+                .keys
+        )
   }
 
   override val defaultOrderFields: List<OrderField<*>>

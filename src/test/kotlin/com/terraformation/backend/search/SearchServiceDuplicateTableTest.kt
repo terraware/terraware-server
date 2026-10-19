@@ -29,7 +29,7 @@ internal class SearchServiceDuplicateTableTest : DatabaseTest(), RunsAsUser {
     searchService = SearchService(dslContext)
 
     every { user.canReadOrganization(any()) } returns true
-    every { user.organizationRoles } returns mapOf(insertOrganization() to Role.Manager)
+    every { user.organizationRoles } returns mapOf(insertOrganization() to Role.Admin)
 
     val creator = insertUser(firstName = "Ada")
     insertOrganizationUser(creator)
