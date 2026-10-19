@@ -59,7 +59,9 @@ class EventsController(
         models.map { model ->
           val projects =
               if (currentUser().canReadModuleEventParticipants()) {
-                model.projects.mapNotNull { projectsById[it] }.map { ModuleEventProject(it) }
+                model.projects.mapNotNull { projectId ->
+                  projectsById[projectId]?.let { ModuleEventProject(it) }
+                }
               } else {
                 null
               }
@@ -81,7 +83,9 @@ class EventsController(
     val projects =
         if (currentUser().canReadModuleEventParticipants()) {
           val projectsById = acceleratorProjectService.fetchByIds(model.projects)
-          model.projects.mapNotNull { projectsById[it] }.map { ModuleEventProject(it) }
+          model.projects.mapNotNull { projectId ->
+            projectsById[projectId]?.let { ModuleEventProject(it) }
+          }
         } else {
           null
         }
