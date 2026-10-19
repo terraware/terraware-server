@@ -2,8 +2,11 @@ package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ArbitraryJsonObject
+import com.terraformation.backend.api.ErrorDetails
+import com.terraformation.backend.api.ErrorResponsePayload
 import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
@@ -13,24 +16,36 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteType
+import com.terraformation.backend.db.tracking.DraftStratumId
+import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.gis.GeometryFileErrorCode
 import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.DraftPlantingSiteService
 import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.BoundaryFileModel
 import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
 import com.terraformation.backend.tracking.model.DraftPlantingSiteMapConverter
 import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
+import com.terraformation.backend.tracking.model.DraftStratumModel
+import com.terraformation.backend.tracking.model.DraftSubstratumModel
+import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -68,30 +83,71 @@ class DraftPlantingSitesController(
     )
   }
 
+  @ApiResponse200
+  @ApiResponse409(
+      description =
+          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong."
+  )
   @Operation(summary = "Saves a draft of an in-progress planting site.")
   @PostMapping
   fun createDraftPlantingSite(
       @RequestBody payload: CreateDraftPlantingSiteRequestPayload
   ): CreateDraftPlantingSiteResponsePayload {
+    payload.requireOnePath()
+
+    val dataMap = payload.data?.let { draftPlantingSiteMapConverter.parse(it) }
+    val map =
+        dataMap
+            ?: payload.toTypedMap()
+            ?: throw IllegalArgumentException("Site type is required when data is not supplied")
+
+    val newModel = payload.toModel(map)
+
     val model =
-        draftPlantingSiteStore.create(
-            payload.toModel(draftPlantingSiteMapConverter.parse(payload.data))
-        )
+        if (dataMap != null) {
+          draftPlantingSiteStore.create(newModel)
+        } else {
+          draftPlantingSiteService.create(newModel)
+        }
 
     return CreateDraftPlantingSiteResponsePayload(model.id!!)
   }
 
+  @ApiResponse200
+  @ApiResponse409(
+      description =
+          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong."
+  )
   @Operation(summary = "Updates an existing draft of an in-progress planting site.")
   @PutMapping("/{id}")
   fun updateDraftPlantingSite(
       @PathVariable id: DraftPlantingSiteId,
       @RequestBody payload: UpdateDraftPlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
-    val map = draftPlantingSiteMapConverter.parse(payload.data)
+    payload.requireOnePath()
 
-    draftPlantingSiteStore.update(id) { payload.applyTo(it, map) }
+    val dataMap = payload.data?.let { draftPlantingSiteMapConverter.parse(it) }
+
+    if (dataMap != null) {
+      draftPlantingSiteStore.update(id) { payload.applyTo(it, dataMap) }
+    } else {
+      draftPlantingSiteService.updateTyped(id) { payload.applyTo(it, payload.toTypedMap(it)) }
+    }
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @ExceptionHandler(PlantingSiteMapInvalidException::class)
+  fun handlePlantingSiteMapInvalidException(
+      ex: PlantingSiteMapInvalidException
+  ): ResponseEntity<DraftPlantingSiteMapInvalidResponsePayload> {
+    val payload =
+        DraftPlantingSiteMapInvalidResponsePayload(
+            error = ErrorDetails(ex.message ?: "Planting site map is invalid"),
+            problems = ex.problems.map { PlantingSiteValidationProblemPayload(it) },
+        )
+
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(payload)
   }
 
   @Operation(
@@ -141,17 +197,20 @@ class DraftPlantingSitesController(
 
 // response payload
 data class DraftPlantingSitePayload(
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val boundary: Geometry?,
+    val boundarySource: String?,
     @Schema(description = "ID of the user who created this draft.") //
     val createdBy: UserId,
     val createdTime: Instant,
     @Schema(
         description =
-            "In-progress state of the draft, including its map. The server stores the site type, " +
-                "edit step, boundary source, boundary, exclusion, and strata and substrata; other " +
-                "properties are not retained."
+            "In-progress state of the draft, including its map, in the legacy JSON format. " +
+                "Deprecated: use the typed fields instead.",
+        deprecated = true,
     )
     val data: ArbitraryJsonObject,
     val description: String?,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val exclusion: Geometry?,
     val id: DraftPlantingSiteId,
     val modifiedTime: Instant,
     val name: String,
@@ -162,16 +221,22 @@ data class DraftPlantingSitePayload(
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
+    val siteEditStep: String?,
+    val siteType: DraftPlantingSiteType,
+    val strata: List<DraftStratumPayload>,
     val timeZone: ZoneId?,
 ) {
   constructor(
       model: DraftPlantingSiteModel,
       data: ArbitraryJsonObject,
   ) : this(
+      boundary = model.map.boundary,
+      boundarySource = model.map.boundarySource,
       createdBy = model.createdBy!!,
       createdTime = model.createdTime!!,
       data = data,
       description = model.description,
+      exclusion = model.map.exclusion,
       id = model.id!!,
       modifiedTime = model.modifiedTime!!,
       name = model.name,
@@ -179,9 +244,77 @@ data class DraftPlantingSitePayload(
       numSubstrata = model.numSubstrata,
       organizationId = model.organizationId,
       projectId = model.projectId,
+      siteEditStep = model.map.siteEditStep,
+      siteType = model.map.siteType,
+      strata = model.map.strata.map { DraftStratumPayload(it) },
       timeZone = model.timeZone,
   )
 }
+
+data class DraftSubstratumPayload(
+    val id: DraftSubstratumId?,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val boundary: Geometry,
+    val name: String,
+) {
+  constructor(model: DraftSubstratumModel) : this(model.id, model.boundary, model.name)
+
+  fun toModel(): DraftSubstratumModel {
+    return DraftSubstratumModel(
+        boundary = boundary.requirePolygonal("Substratum boundaries").toMultiPolygon(),
+        id = id,
+        name = name,
+    )
+  }
+}
+
+data class DraftStratumPayload(
+    val id: DraftStratumId?,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val boundary: Geometry,
+    val initialPlantingDensity: BigDecimal,
+    val name: String,
+    val substrata: List<DraftSubstratumPayload>,
+) {
+  constructor(
+      model: DraftStratumModel
+  ) : this(
+      id = model.id,
+      boundary = model.boundary,
+      initialPlantingDensity = model.initialPlantingDensity,
+      name = model.name,
+      substrata = model.substrata.map { DraftSubstratumPayload(it) },
+  )
+
+  fun toModel(): DraftStratumModel {
+    return DraftStratumModel(
+        boundary = boundary.requirePolygonal("Stratum boundaries").toMultiPolygon(),
+        id = id,
+        initialPlantingDensity = initialPlantingDensity,
+        name = name,
+        substrata = substrata.map { it.toModel() },
+    )
+  }
+}
+
+data class DraftPlantingSiteMapInvalidResponsePayload(
+    override val error: ErrorDetails,
+    val problems: List<PlantingSiteValidationProblemPayload>,
+) : ErrorResponsePayload
+
+private fun Geometry.requirePolygonal(description: String): Geometry {
+  if (this !is MultiPolygon && this !is Polygon) {
+    throw IllegalArgumentException("$description must be Polygon or MultiPolygon")
+  }
+  return this
+}
+
+private fun Geometry.toValidatedMultiPolygon(description: String): MultiPolygon {
+  return requirePolygonal(description).toMultiPolygon()
+}
+
+private const val DATA_DESCRIPTION =
+    "In-progress state of the draft, including its map, in the legacy JSON format. " +
+        "Deprecated: use the typed fields instead. If this is supplied, the typed map fields " +
+        "must be omitted and the map is saved without validation."
 
 data class GetDraftPlantingSiteResponsePayload(val site: DraftPlantingSitePayload) :
     SuccessResponsePayload
@@ -189,12 +322,19 @@ data class GetDraftPlantingSiteResponsePayload(val site: DraftPlantingSitePayloa
 data class CreateDraftPlantingSiteRequestPayload(
     @Schema(
         description =
-            "In-progress state of the draft, including its map. The server stores the site type, " +
-                "edit step, boundary source, boundary, exclusion, and strata and substrata; other " +
-                "properties are not retained."
+            "Boundary of the site. Polygons are stored as MultiPolygons. Not allowed if data is supplied.",
+        oneOf = [MultiPolygon::class, Polygon::class],
     )
-    val data: ArbitraryJsonObject,
+    val boundary: Geometry? = null,
+    @Schema(description = "Not allowed if data is supplied.") val boundarySource: String? = null,
+    @Schema(deprecated = true, description = DATA_DESCRIPTION)
+    val data: ArbitraryJsonObject? = null,
     val description: String?,
+    @Schema(
+        description = "Exclusion area. Not allowed if data is supplied.",
+        oneOf = [MultiPolygon::class, Polygon::class],
+    )
+    val exclusion: Geometry? = null,
     val name: String,
     @Schema(deprecated = true, description = "Ignored; the server computes this.")
     val numStrata: Int?,
@@ -203,8 +343,31 @@ data class CreateDraftPlantingSiteRequestPayload(
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
+    @Schema(description = "Not allowed if data is supplied.") val siteEditStep: String? = null,
+    @Schema(description = "Required if data is not supplied.")
+    val siteType: DraftPlantingSiteType? = null,
+    @Schema(
+        description =
+            "Strata and substrata. Not allowed if data is supplied. Must be empty or omitted for " +
+                "Simple sites."
+    )
+    val strata: List<DraftStratumPayload>? = null,
     val timeZone: ZoneId?,
 ) {
+  fun requireOnePath() {
+    if (
+        data != null &&
+            (boundary != null ||
+                boundarySource != null ||
+                exclusion != null ||
+                siteEditStep != null ||
+                siteType != null ||
+                strata != null)
+    ) {
+      throw IllegalArgumentException("Send either data or typed fields, not both")
+    }
+  }
+
   fun toModel(map: DraftPlantingSiteMap): DraftPlantingSiteModel {
     return DraftPlantingSiteModel(
         description = description,
@@ -215,6 +378,19 @@ data class CreateDraftPlantingSiteRequestPayload(
         projectId = projectId,
         timeZone = timeZone,
     )
+  }
+
+  fun toTypedMap(): DraftPlantingSiteMap? {
+    return siteType?.let { type ->
+      DraftPlantingSiteMap(
+          siteType = type,
+          siteEditStep = siteEditStep,
+          boundarySource = boundarySource,
+          boundary = boundary?.toValidatedMultiPolygon("Planting site boundary"),
+          exclusion = exclusion?.toValidatedMultiPolygon("Exclusion area"),
+          strata = strata?.map { it.toModel() } ?: emptyList(),
+      )
+    }
   }
 }
 
@@ -267,12 +443,21 @@ data class BoundaryFileProblemPayload(val code: GeometryFileErrorCode)
 data class UpdateDraftPlantingSiteRequestPayload(
     @Schema(
         description =
-            "In-progress state of the draft, including its map. The server stores the site type, " +
-                "edit step, boundary source, boundary, exclusion, and strata and substrata; other " +
-                "properties are not retained."
+            "Boundary of the site. Polygons are stored as MultiPolygons. Not allowed if data is " +
+                "supplied. If data is not supplied, the typed map fields replace the stored map " +
+                "entirely, so omitted fields are cleared.",
+        oneOf = [MultiPolygon::class, Polygon::class],
     )
-    val data: ArbitraryJsonObject,
+    val boundary: Geometry? = null,
+    @Schema(description = "Not allowed if data is supplied.") val boundarySource: String? = null,
+    @Schema(deprecated = true, description = DATA_DESCRIPTION)
+    val data: ArbitraryJsonObject? = null,
     val description: String?,
+    @Schema(
+        description = "Exclusion area. Not allowed if data is supplied.",
+        oneOf = [MultiPolygon::class, Polygon::class],
+    )
+    val exclusion: Geometry? = null,
     val name: String,
     @Schema(deprecated = true, description = "Ignored; the server computes this.")
     val numStrata: Int?,
@@ -280,8 +465,46 @@ data class UpdateDraftPlantingSiteRequestPayload(
     val numSubstrata: Int?,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
+    @Schema(description = "Not allowed if data is supplied.") val siteEditStep: String? = null,
+    @Schema(
+        description =
+            "Not allowed if data is supplied. If omitted, the stored site type is kept. The site " +
+                "type of an existing draft cannot be changed."
+    )
+    val siteType: DraftPlantingSiteType? = null,
+    @Schema(
+        description =
+            "Strata and substrata. Not allowed if data is supplied. Existing strata and " +
+                "substrata are matched by ID; those that are omitted are deleted."
+    )
+    val strata: List<DraftStratumPayload>? = null,
     val timeZone: ZoneId?,
 ) {
+  fun requireOnePath() {
+    if (
+        data != null &&
+            (boundary != null ||
+                boundarySource != null ||
+                exclusion != null ||
+                siteEditStep != null ||
+                siteType != null ||
+                strata != null)
+    ) {
+      throw IllegalArgumentException("Send either data or typed fields, not both")
+    }
+  }
+
+  fun toTypedMap(existing: DraftPlantingSiteModel): DraftPlantingSiteMap {
+    return DraftPlantingSiteMap(
+        siteType = siteType ?: existing.map.siteType,
+        siteEditStep = siteEditStep,
+        boundarySource = boundarySource,
+        boundary = boundary?.toValidatedMultiPolygon("Planting site boundary"),
+        exclusion = exclusion?.toValidatedMultiPolygon("Exclusion area"),
+        strata = strata?.map { it.toModel() } ?: emptyList(),
+    )
+  }
+
   fun applyTo(model: DraftPlantingSiteModel, map: DraftPlantingSiteMap): DraftPlantingSiteModel {
     return model.copy(
         description = description,
