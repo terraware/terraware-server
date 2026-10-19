@@ -5,7 +5,6 @@ import com.terraformation.backend.SpringShutdownListener
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
-import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -3295,14 +3294,11 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: clock.instant(),
       boundary: Geometry? = row.boundary,
       boundarySource: String? = row.boundarySource,
-      data: ArbitraryJsonObject = row.data ?: JSONB.valueOf("{}"),
       description: String? = row.description,
       exclusion: Geometry? = row.exclusion,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "Draft site ${nextDraftPlantingSiteNumber++}",
-      numSubstrata: Int? = row.numSubstrata,
-      numStrata: Int? = row.numStrata,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: ProjectId? = row.projectId,
       siteEditStep: String? = row.siteEditStep,
@@ -3315,14 +3311,11 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             boundary = boundary,
             boundarySource = boundarySource,
-            data = data,
             description = description,
             exclusion = exclusion,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
-            numSubstrata = numSubstrata,
-            numStrata = numStrata,
             organizationId = organizationId,
             projectId = projectId,
             siteEditStep = siteEditStep,

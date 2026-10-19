@@ -27,7 +27,6 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
-import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
@@ -44,7 +43,6 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     DraftPlantingSiteStore(clock, dslContext, ParentStore(dslContext))
   }
 
-  private val sampleData = JSONB.valueOf("{\"foo\":\"bar\"}")
   private val timeZone = ZoneId.of("Pacific/Honolulu")
 
   private lateinit var organizationId: OrganizationId
@@ -141,187 +139,6 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchOneById {
     @Test
-    fun `returns record`() {
-      insertDraftPlantingSite(name = "Fetch test")
-
-      val record = store.fetchOneById(inserted.draftPlantingSiteId)
-
-      assertEquals("Fetch test", record.name, "Name")
-    }
-
-    @Test
-    fun `throws exception if no permission to read draft`() {
-      every { user.canReadDraftPlantingSite(any()) } returns false
-
-      insertDraftPlantingSite()
-
-      assertThrows<DraftPlantingSiteNotFoundException> {
-        store.fetchOneById(inserted.draftPlantingSiteId)
-      }
-    }
-  }
-
-  @Nested
-  inner class Create {
-    @Test
-    fun `creates draft`() {
-      insertProject()
-
-      val expected =
-          DraftPlantingSitesRecord(
-              createdBy = user.userId,
-              createdTime = clock.instant,
-              data = sampleData,
-              description = "Description",
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-              name = "Name",
-              numSubstrata = 2,
-              numStrata = 1,
-              organizationId = organizationId,
-              projectId = inserted.projectId,
-              timeZone = timeZone,
-          )
-
-      val actual =
-          store.create(
-              data = sampleData,
-              name = "Name",
-              organizationId = organizationId,
-              description = "Description",
-              numSubstrata = 2,
-              numStrata = 1,
-              projectId = inserted.projectId,
-              timeZone = timeZone,
-          )
-
-      assertEquals(expected, actual.copy())
-    }
-
-    @Test
-    fun `throws exception if no permission to create drafts`() {
-      every { user.canCreateDraftPlantingSite(any()) } returns false
-
-      assertThrows<AccessDeniedException> {
-        store.create(JSONB.valueOf("{}"), "Name", organizationId)
-      }
-    }
-
-    @Test
-    fun `throws exception if project is in wrong organization`() {
-      insertOrganization()
-      insertProject()
-
-      assertThrows<ProjectInDifferentOrganizationException> {
-        store.create(JSONB.valueOf("{}"), "Name", organizationId, projectId = inserted.projectId)
-      }
-    }
-  }
-
-  @Nested
-  inner class Delete {
-    @Test
-    fun `deletes correct draft`() {
-      val otherDraftId1 = insertDraftPlantingSite()
-      val draftIdToDelete = insertDraftPlantingSite()
-      val otherDraftId2 = insertDraftPlantingSite()
-
-      store.delete(draftIdToDelete)
-
-      assertSetEquals(
-          setOf(otherDraftId1, otherDraftId2),
-          draftPlantingSitesDao.findAll().map { it.id }.toSet(),
-          "Remaining IDs after deletion",
-      )
-    }
-
-    @Test
-    fun `throws exception if no permission to delete drafts`() {
-      every { user.canDeleteDraftPlantingSite(any()) } returns false
-
-      insertDraftPlantingSite()
-
-      assertThrows<AccessDeniedException> { store.delete(inserted.draftPlantingSiteId) }
-    }
-  }
-
-  @Nested
-  inner class Update {
-    @Test
-    fun `updates draft`() {
-      insertProject()
-      insertDraftPlantingSite()
-
-      clock.instant = Instant.EPOCH.plusSeconds(30)
-
-      val expected =
-          DraftPlantingSitesRecord(
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              data = sampleData,
-              description = "Description",
-              id = inserted.draftPlantingSiteId,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-              name = "New name",
-              numSubstrata = 2,
-              numStrata = 1,
-              organizationId = organizationId,
-              projectId = inserted.projectId,
-              siteTypeId = DraftPlantingSiteType.Detailed,
-              timeZone = timeZone,
-          )
-
-      store.update(inserted.draftPlantingSiteId) {
-        it.data = sampleData
-        it.description = "Description"
-        it.name = "New name"
-        it.numSubstrata = 2
-        it.numStrata = 1
-        it.projectId = inserted.projectId
-        it.timeZone = timeZone
-      }
-
-      val actual = store.fetchOneById(inserted.draftPlantingSiteId)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `throws exception if no permission to update drafts`() {
-      every { user.canUpdateDraftPlantingSite(any()) } returns false
-
-      insertDraftPlantingSite()
-
-      assertThrows<AccessDeniedException> { store.update(inserted.draftPlantingSiteId) {} }
-    }
-
-    @Test
-    fun `throws exception if callback attempts to change read-only field`() {
-      insertDraftPlantingSite()
-      val otherOrgId = insertOrganization()
-
-      assertThrows<AccessDeniedException> {
-        store.update(inserted.draftPlantingSiteId) { it.organizationId = otherOrgId }
-      }
-    }
-
-    @Test
-    fun `throws exception if project is in wrong organization`() {
-      insertDraftPlantingSite()
-
-      val otherOrgId = insertOrganization()
-      insertProject(organizationId = otherOrgId)
-
-      assertThrows<ProjectInDifferentOrganizationException> {
-        store.update(inserted.draftPlantingSiteId) { it.projectId = inserted.projectId }
-      }
-    }
-  }
-
-  @Nested
-  inner class FetchModelById {
-    @Test
     fun `returns model`() {
       val projectId = insertProject()
       insertDraftPlantingSite(
@@ -358,7 +175,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               timeZone = timeZone,
           )
 
-      assertEquals(expected, store.fetchModelById(inserted.draftPlantingSiteId))
+      assertEquals(expected, store.fetchOneById(inserted.draftPlantingSiteId))
     }
 
     @Test
@@ -392,7 +209,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      assertEquals(expected, store.fetchModelById(inserted.draftPlantingSiteId).map.strata)
+      assertEquals(expected, store.fetchOneById(inserted.draftPlantingSiteId).map.strata)
     }
 
     @Test
@@ -402,13 +219,13 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       insertDraftPlantingSite()
 
       assertThrows<DraftPlantingSiteNotFoundException> {
-        store.fetchModelById(inserted.draftPlantingSiteId)
+        store.fetchOneById(inserted.draftPlantingSiteId)
       }
     }
   }
 
   @Nested
-  inner class CreateModel {
+  inner class Create {
     @Test
     fun `stores map columns and strata, computes counts`() {
       insertProject()
@@ -608,54 +425,6 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `rejects client-supplied stratum and substratum ids`() {
-      insertDraftPlantingSite()
-      val stratumId = insertDraftStratum(name = "Existing")
-      val substratumId = insertDraftSubstratum(name = "Existing")
-
-      val expectedDrafts = dslContext.fetch(DRAFT_PLANTING_SITES)
-      val expectedStrata = dslContext.fetch(DRAFT_STRATA)
-      val expectedSubstrata = dslContext.fetch(DRAFT_SUBSTRATA)
-
-      assertThrows<DraftStratumNotFoundException> {
-        store.create(siteModel(strata = listOf(stratumModel("S1", id = stratumId))))
-      }
-      assertThrows<DraftSubstratumNotFoundException> {
-        store.create(
-            siteModel(
-                strata =
-                    listOf(
-                        stratumModel("S1", substrata = listOf(substratumModel("A", substratumId)))
-                    )
-            )
-        )
-      }
-
-      assertTableEquals(expectedDrafts)
-      assertTableEquals(expectedStrata)
-      assertTableEquals(expectedSubstrata)
-    }
-
-    @Test
-    fun `rejects duplicate substratum names in a stratum`() {
-      assertThrows<IllegalArgumentException> {
-        store.create(
-            siteModel(
-                strata =
-                    listOf(
-                        stratumModel(
-                            "S1",
-                            substrata = listOf(substratumModel("Dup"), substratumModel("Dup")),
-                        )
-                    )
-            )
-        )
-      }
-
-      assertTableEmpty(DRAFT_PLANTING_SITES)
-    }
-
-    @Test
     fun `throws exception if no permission to create drafts`() {
       every { user.canCreateDraftPlantingSite(any()) } returns false
 
@@ -674,11 +443,64 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class UpdateModel {
+  inner class Delete {
+    @Test
+    fun `deletes correct draft`() {
+      val otherDraftId1 = insertDraftPlantingSite()
+      val draftIdToDelete = insertDraftPlantingSite()
+      val otherDraftId2 = insertDraftPlantingSite()
+
+      store.delete(draftIdToDelete)
+
+      assertSetEquals(
+          setOf(otherDraftId1, otherDraftId2),
+          draftPlantingSitesDao.findAll().map { it.id }.toSet(),
+          "Remaining IDs after deletion",
+      )
+    }
+
+    @Test
+    fun `cascades to strata and substrata`() {
+      val otherDraftId = insertDraftPlantingSite()
+      val otherStratumId = insertDraftStratum()
+      val otherSubstratumId = insertDraftSubstratum()
+      val draftIdToDelete = insertDraftWithStrata()
+
+      store.delete(draftIdToDelete)
+
+      assertEquals(
+          listOf(otherDraftId),
+          draftPlantingSitesDao.findAll().map { it.id },
+          "Remaining drafts",
+      )
+      assertEquals(
+          listOf(otherStratumId),
+          draftStrataDao.findAll().map { it.id },
+          "Remaining strata",
+      )
+      assertEquals(
+          listOf(otherSubstratumId),
+          draftSubstrataDao.findAll().map { it.id },
+          "Remaining substrata",
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to delete drafts`() {
+      every { user.canDeleteDraftPlantingSite(any()) } returns false
+
+      insertDraftPlantingSite()
+
+      assertThrows<AccessDeniedException> { store.delete(inserted.draftPlantingSiteId) }
+    }
+  }
+
+  @Nested
+  inner class Update {
     @Test
     fun `update still throws not found for missing draft`() {
       assertThrows<DraftPlantingSiteNotFoundException> {
-        store.updateFromModel(DraftPlantingSiteId(12345)) { it }
+        store.update(DraftPlantingSiteId(12345)) { it }
       }
     }
 
@@ -703,7 +525,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
             timeZone = newTimeZone
           }
 
-      store.updateFromModel(draftId) { model ->
+      store.update(draftId) { model ->
         model.copy(
             description = "New description",
             name = "New name",
@@ -725,18 +547,16 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `with null ids replaces all strata`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val newStrata =
           listOf(
               stratumModel("S1", substrata = listOf(substratumModel("S1-A"))),
               stratumModel("S3"),
           )
 
-      store.updateFromModel(draftId) { model ->
-        model.copy(map = model.map.copy(strata = newStrata))
-      }
+      store.update(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
 
-      val after = store.fetchModelById(draftId)
+      val after = store.fetchOneById(draftId)
       assertEquals(
           before.copy(map = before.map.copy(strata = newStrata)),
           after.withoutStratumIds(),
@@ -752,7 +572,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `with ids updates rows in place and deletes omitted ones`() {
       val draftId = insertDraftWithStrata()
-      val existing = store.fetchModelById(draftId)
+      val existing = store.fetchOneById(draftId)
       val keptStratum = existing.map.strata[0]
       val keptSubstratum = keptStratum.substrata[0]
       val omittedStratumId = existing.map.strata[1].id!!
@@ -773,9 +593,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               )
           )
 
-      store.updateFromModel(draftId) { model ->
-        model.copy(map = model.map.copy(strata = newStrata))
-      }
+      store.update(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
 
       val newSubstratumId =
           dslContext.fetchSingle(DRAFT_SUBSTRATA, DRAFT_SUBSTRATA.NAME.eq("New substratum")).id!!
@@ -796,7 +614,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   )
           )
 
-      assertEquals(expected, store.fetchModelById(draftId))
+      assertEquals(expected, store.fetchOneById(draftId))
       assertTableEmpty(DRAFT_STRATA, where = DRAFT_STRATA.ID.eq(omittedStratumId))
       assertTableEmpty(DRAFT_SUBSTRATA, where = DRAFT_SUBSTRATA.ID.eq(omittedSubstratumId))
       assertTableEmpty(
@@ -808,13 +626,13 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws if stratum id belongs to another draft`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       insertDraftPlantingSite()
       val otherStratumId = insertDraftStratum(name = "Other")
-      val otherBefore = store.fetchModelById(inserted.draftPlantingSiteId)
+      val otherBefore = store.fetchOneById(inserted.draftPlantingSiteId)
 
       assertThrows<DraftStratumNotFoundException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(
               name = "Changed",
               map =
@@ -825,10 +643,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Target draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Target draft should be unchanged")
       assertEquals(
           otherBefore,
-          store.fetchModelById(inserted.draftPlantingSiteId),
+          store.fetchOneById(inserted.draftPlantingSiteId),
           "Other draft should be unchanged",
       )
     }
@@ -836,12 +654,12 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws if substratum id belongs to another stratum`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val stratum1 = before.map.strata[0]
       val stratum2 = before.map.strata[1]
 
       assertThrows<DraftSubstratumNotFoundException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(
               map =
                   model.map.copy(
@@ -855,16 +673,16 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
     fun `rejects duplicate stratum names`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
 
       assertThrows<IllegalArgumentException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(
               map =
                   model.map.copy(
@@ -874,16 +692,16 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
     fun `rejects duplicate substratum names in a stratum`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
 
       assertThrows<IllegalArgumentException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(
               map =
                   model.map.copy(
@@ -900,37 +718,35 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
     fun `allows same substratum name in different strata`() {
       val draftId = insertDraftPlantingSite()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val newStrata =
           listOf(
               stratumModel("S1", substrata = listOf(substratumModel("Same"))),
               stratumModel("S2", substrata = listOf(substratumModel("Same"))),
           )
 
-      store.updateFromModel(draftId) { model ->
-        model.copy(map = model.map.copy(strata = newStrata))
-      }
+      store.update(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
 
       assertEquals(
           before.copy(map = before.map.copy(strata = newStrata)),
-          store.fetchModelById(draftId).withoutStratumIds(),
+          store.fetchOneById(draftId).withoutStratumIds(),
       )
     }
 
     @Test
     fun `rejects existing substratum id under a new stratum`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val existingSubstratum = before.map.strata[0].substrata[0]
 
       assertThrows<DraftSubstratumNotFoundException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(
               map =
                   model.map.copy(
@@ -943,17 +759,17 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
     fun `rejects repeated stratum id`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val stratum = before.map.strata[0]
 
       assertThrows<IllegalArgumentException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(
               map =
                   model.map.copy(
@@ -963,18 +779,18 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
     fun `rejects repeated substratum id`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val stratum = before.map.strata[0]
       val substratum = stratum.substrata[0]
 
       assertThrows<IllegalArgumentException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(
               map =
                   model.map.copy(
@@ -991,32 +807,30 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
     fun `allows swapping two strata names`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val stratum1 = before.map.strata[0]
       val stratum2 = before.map.strata[1]
 
       val newStrata = listOf(stratum1.copy(name = "S2"), stratum2.copy(name = "S1"))
 
-      store.updateFromModel(draftId) { model ->
-        model.copy(map = model.map.copy(strata = newStrata))
-      }
+      store.update(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
 
       assertEquals(
           before.copy(map = before.map.copy(strata = newStrata)),
-          store.fetchModelById(draftId),
+          store.fetchOneById(draftId),
       )
     }
 
     @Test
     fun `allows swapping two substrata names`() {
       val draftId = insertDraftWithStrata()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val stratum = before.map.strata[0]
       val sub1 = stratum.substrata[0]
       val sub2 = stratum.substrata[1]
@@ -1029,28 +843,26 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               before.map.strata[1],
           )
 
-      store.updateFromModel(draftId) { model ->
-        model.copy(map = model.map.copy(strata = newStrata))
-      }
+      store.update(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
 
       assertEquals(
           before.copy(map = before.map.copy(strata = newStrata)),
-          store.fetchModelById(draftId),
+          store.fetchOneById(draftId),
       )
     }
 
     @Test
     fun `rejects changing site type`() {
       val draftId = insertDraftPlantingSite(siteType = DraftPlantingSiteType.Simple)
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
 
       assertThrows<IllegalArgumentException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(map = model.map.copy(siteType = DraftPlantingSiteType.Detailed))
         }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
@@ -1058,7 +870,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val draftId = insertDraftPlantingSite(siteType = DraftPlantingSiteType.Simple)
 
       assertThrows<IllegalArgumentException> {
-        store.updateFromModel(draftId) { model ->
+        store.update(draftId) { model ->
           model.copy(map = model.map.copy(strata = listOf(stratumModel("S1"))))
         }
       }
@@ -1072,22 +884,20 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       insertDraftPlantingSite()
 
-      assertThrows<AccessDeniedException> {
-        store.updateFromModel(inserted.draftPlantingSiteId) { it }
-      }
+      assertThrows<AccessDeniedException> { store.update(inserted.draftPlantingSiteId) { it } }
     }
 
     @Test
     fun `throws exception if callback attempts to change read-only field`() {
       val draftId = insertDraftPlantingSite()
-      val before = store.fetchModelById(draftId)
+      val before = store.fetchOneById(draftId)
       val otherOrgId = insertOrganization()
 
       assertThrows<AccessDeniedException> {
-        store.updateFromModel(draftId) { it.copy(organizationId = otherOrgId) }
+        store.update(draftId) { it.copy(organizationId = otherOrgId) }
       }
 
-      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
+      assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
     }
 
     @Test
@@ -1098,9 +908,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       insertProject(organizationId = otherOrgId)
 
       assertThrows<ProjectInDifferentOrganizationException> {
-        store.updateFromModel(inserted.draftPlantingSiteId) {
-          it.copy(projectId = inserted.projectId)
-        }
+        store.update(inserted.draftPlantingSiteId) { it.copy(projectId = inserted.projectId) }
       }
     }
   }

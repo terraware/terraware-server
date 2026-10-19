@@ -13,7 +13,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
-import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.gis.GeometryFileErrorCode
 import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileFormat
@@ -21,6 +20,9 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.DraftPlantingSiteService
 import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
 import com.terraformation.backend.tracking.model.BoundaryFileModel
+import com.terraformation.backend.tracking.model.DraftPlantingSiteData
+import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
+import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -44,6 +46,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @TrackingEndpoint
 class DraftPlantingSitesController(
+    private val draftPlantingSiteData: DraftPlantingSiteData,
     private val draftPlantingSiteService: DraftPlantingSiteService,
     private val draftPlantingSiteStore: DraftPlantingSiteStore,
 ) {
@@ -58,7 +61,11 @@ class DraftPlantingSitesController(
   fun getDraftPlantingSite(
       @PathVariable id: DraftPlantingSiteId
   ): GetDraftPlantingSiteResponsePayload {
-    return GetDraftPlantingSiteResponsePayload(draftPlantingSiteStore.fetchOneById(id))
+    val model = draftPlantingSiteStore.fetchOneById(id)
+
+    return GetDraftPlantingSiteResponsePayload(
+        DraftPlantingSitePayload(model, draftPlantingSiteData.generate(model.map))
+    )
   }
 
   @Operation(summary = "Saves a draft of an in-progress planting site.")
@@ -66,19 +73,10 @@ class DraftPlantingSitesController(
   fun createDraftPlantingSite(
       @RequestBody payload: CreateDraftPlantingSiteRequestPayload
   ): CreateDraftPlantingSiteResponsePayload {
-    val record =
-        draftPlantingSiteStore.create(
-            data = payload.data,
-            description = payload.description,
-            name = payload.name,
-            numStrata = payload.numStrata,
-            numSubstrata = payload.numSubstrata,
-            organizationId = payload.organizationId,
-            projectId = payload.projectId,
-            timeZone = payload.timeZone,
-        )
+    val model =
+        draftPlantingSiteStore.create(payload.toModel(draftPlantingSiteData.parse(payload.data)))
 
-    return CreateDraftPlantingSiteResponsePayload(record.id!!)
+    return CreateDraftPlantingSiteResponsePayload(model.id!!)
   }
 
   @Operation(summary = "Updates an existing draft of an in-progress planting site.")
@@ -87,7 +85,9 @@ class DraftPlantingSitesController(
       @PathVariable id: DraftPlantingSiteId,
       @RequestBody payload: UpdateDraftPlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
-    draftPlantingSiteStore.update(id, payload::applyTo)
+    val map = draftPlantingSiteData.parse(payload.data)
+
+    draftPlantingSiteStore.update(id) { payload.applyTo(it, map) }
 
     return SimpleSuccessResponsePayload()
   }
@@ -144,77 +144,75 @@ data class DraftPlantingSitePayload(
     val createdTime: Instant,
     @Schema(
         description =
-            "In-progress state of the draft. This includes map data and other information needed " +
-                "by the client. It is treated as opaque data by the server."
+            "In-progress state of the draft, including its map. The server stores the site type, " +
+                "edit step, boundary source, boundary, exclusion, and strata and substrata; other " +
+                "properties are not retained."
     )
     val data: ArbitraryJsonObject,
     val description: String?,
     val id: DraftPlantingSiteId,
     val modifiedTime: Instant,
     val name: String,
-    @Schema(
-        description =
-            "If the user has started defining strata, the number of strata defined so far."
-    )
-    val numStrata: Int?,
-    @Schema(
-        description =
-            "If the user has started defining substrata, the number of substrata defined so far."
-    )
-    val numSubstrata: Int?,
+    @Schema(description = "Number of strata in the draft.") val numStrata: Int?,
+    @Schema(description = "Number of substrata in the draft.") val numSubstrata: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
     val timeZone: ZoneId?,
 ) {
   constructor(
-      record: DraftPlantingSitesRecord
+      model: DraftPlantingSiteModel,
+      data: ArbitraryJsonObject,
   ) : this(
-      createdBy = record.createdBy!!,
-      createdTime = record.createdTime!!,
-      data = record.data!!,
-      description = record.description,
-      id = record.id!!,
-      modifiedTime = record.modifiedTime!!,
-      name = record.name!!,
-      numStrata = record.numSubstrata,
-      numSubstrata = record.numSubstrata,
-      organizationId = record.organizationId!!,
-      projectId = record.projectId,
-      timeZone = record.timeZone,
+      createdBy = model.createdBy!!,
+      createdTime = model.createdTime!!,
+      data = data,
+      description = model.description,
+      id = model.id!!,
+      modifiedTime = model.modifiedTime!!,
+      name = model.name,
+      numStrata = model.numStrata,
+      numSubstrata = model.numSubstrata,
+      organizationId = model.organizationId,
+      projectId = model.projectId,
+      timeZone = model.timeZone,
   )
 }
 
 data class GetDraftPlantingSiteResponsePayload(val site: DraftPlantingSitePayload) :
-    SuccessResponsePayload {
-  constructor(record: DraftPlantingSitesRecord) : this(DraftPlantingSitePayload(record))
-}
+    SuccessResponsePayload
 
 data class CreateDraftPlantingSiteRequestPayload(
     @Schema(
         description =
-            "In-progress state of the draft. This includes map data and other information needed " +
-                "by the client. It is treated as opaque data by the server."
+            "In-progress state of the draft, including its map. The server stores the site type, " +
+                "edit step, boundary source, boundary, exclusion, and strata and substrata; other " +
+                "properties are not retained."
     )
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
-    @Schema(
-        description =
-            "If the user has started defining strata, the number of strata defined so far."
-    )
+    @Schema(deprecated = true, description = "Ignored; the server computes this.")
     val numStrata: Int?,
-    @Schema(
-        description =
-            "If the user has started defining substrata, the number of substrata defined " +
-                "so far."
-    )
+    @Schema(deprecated = true, description = "Ignored; the server computes this.")
     val numSubstrata: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
     val timeZone: ZoneId?,
-)
+) {
+  fun toModel(map: DraftPlantingSiteMap): DraftPlantingSiteModel {
+    return DraftPlantingSiteModel(
+        description = description,
+        id = null,
+        map = map,
+        name = name,
+        organizationId = organizationId,
+        projectId = projectId,
+        timeZone = timeZone,
+    )
+  }
+}
 
 data class CreateDraftPlantingSiteResponsePayload(val id: DraftPlantingSiteId) :
     SuccessResponsePayload
@@ -265,34 +263,28 @@ data class BoundaryFileProblemPayload(val code: GeometryFileErrorCode)
 data class UpdateDraftPlantingSiteRequestPayload(
     @Schema(
         description =
-            "In-progress state of the draft. This includes map data and other information needed " +
-                "by the client. It is treated as opaque data by the server."
+            "In-progress state of the draft, including its map. The server stores the site type, " +
+                "edit step, boundary source, boundary, exclusion, and strata and substrata; other " +
+                "properties are not retained."
     )
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
-    @Schema(
-        description =
-            "If the user has started defining strata, the number of strata defined so far."
-    )
+    @Schema(deprecated = true, description = "Ignored; the server computes this.")
     val numStrata: Int?,
-    @Schema(
-        description =
-            "If the user has started defining substrata, the number of substrata defined " +
-                "so far."
-    )
+    @Schema(deprecated = true, description = "Ignored; the server computes this.")
     val numSubstrata: Int?,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
     val timeZone: ZoneId?,
 ) {
-  fun applyTo(record: DraftPlantingSitesRecord) {
-    record.data = data
-    record.description = description
-    record.name = name
-    record.numSubstrata = numSubstrata
-    record.numStrata = numStrata
-    record.projectId = projectId
-    record.timeZone = timeZone
+  fun applyTo(model: DraftPlantingSiteModel, map: DraftPlantingSiteMap): DraftPlantingSiteModel {
+    return model.copy(
+        description = description,
+        map = map,
+        name = name,
+        projectId = projectId,
+        timeZone = timeZone,
+    )
   }
 }
