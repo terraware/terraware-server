@@ -3,13 +3,11 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.accelerator.model.AcceleratorProjectModel
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.AcceleratorProjectNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.default_schema.GlobalRole
-import com.terraformation.backend.db.default_schema.Role
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,23 +46,26 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `fetches one by Id, or throws not found exception`() {
+  fun `fetchByIds only returns accelerator projects`() {
+    val acceleratorProjectId = inserted.projectId
+    val nonAcceleratorProjectId = insertProject()
+
     assertEquals(
-        AcceleratorProjectModel(
-            phase = AcceleratorPhase.Phase1FeasibilityStudy,
-            projectId = inserted.projectId,
-            projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
-            voteDecisions =
-                mapOf(
-                    AcceleratorPhase.Phase0DueDiligence to VoteOption.Yes,
-                    AcceleratorPhase.Phase1FeasibilityStudy to VoteOption.No,
+        mapOf(
+            acceleratorProjectId to
+                AcceleratorProjectModel(
+                    phase = AcceleratorPhase.Phase1FeasibilityStudy,
+                    projectId = acceleratorProjectId,
+                    projectName = "Project 1",
+                    voteDecisions =
+                        mapOf(
+                            AcceleratorPhase.Phase0DueDiligence to VoteOption.Yes,
+                            AcceleratorPhase.Phase1FeasibilityStudy to VoteOption.No,
+                        ),
                 ),
         ),
-        service.fetchOneById(inserted.projectId),
+        service.fetchByIds(listOf(acceleratorProjectId, nonAcceleratorProjectId)),
     )
-
-    val otherProjectId = insertProject()
-    assertThrows<AcceleratorProjectNotFoundException> { service.fetchOneById(otherProjectId) }
   }
 
   @Test
@@ -87,14 +88,10 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `throws exception if no permission to read one or list accelerator projects`() {
+  fun `throws exception if no permission to read accelerator projects`() {
     deleteUserGlobalRole(role = GlobalRole.ReadOnly)
     assertThrows<AccessDeniedException> { service.listAcceleratorProjects() }
 
-    insertOrganizationUser(role = Role.Manager)
-    assertThrows<AccessDeniedException> { service.fetchOneById(inserted.projectId) }
-
-    deleteOrganizationUser()
-    assertThrows<ProjectNotFoundException> { service.fetchOneById(inserted.projectId) }
+    assertThrows<ProjectNotFoundException> { service.fetchByIds(listOf(inserted.projectId)) }
   }
 }

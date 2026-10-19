@@ -49,13 +49,17 @@ class EventsController(
       @RequestParam moduleId: ModuleId?,
   ): ListEventsResponsePayload {
     val models = eventStore.fetchById(projectId = projectId, moduleId = moduleId)
+    val projectsById =
+        if (currentUser().canReadModuleEventParticipants()) {
+          acceleratorProjectService.fetchByIds(models.flatMap { model -> model.projects })
+        } else {
+          emptyMap()
+        }
     return ListEventsResponsePayload(
         models.map { model ->
           val projects =
               if (currentUser().canReadModuleEventParticipants()) {
-                model.projects.map {
-                  ModuleEventProject(acceleratorProjectService.fetchOneById(it))
-                }
+                model.projects.mapNotNull { projectsById[it] }.map { ModuleEventProject(it) }
               } else {
                 null
               }
@@ -76,7 +80,8 @@ class EventsController(
 
     val projects =
         if (currentUser().canReadModuleEventParticipants()) {
-          model.projects.map { ModuleEventProject(acceleratorProjectService.fetchOneById(it)) }
+          val projectsById = acceleratorProjectService.fetchByIds(model.projects)
+          model.projects.mapNotNull { projectsById[it] }.map { ModuleEventProject(it) }
         } else {
           null
         }
