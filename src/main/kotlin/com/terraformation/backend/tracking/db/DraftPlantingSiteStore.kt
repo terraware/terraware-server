@@ -227,6 +227,60 @@ class DraftPlantingSiteStore(
     record.store()
   }
 
+  /**
+   * Updates a draft planting site. Strata and substrata with IDs are updated in place, those
+   * without IDs are inserted, and existing ones that are absent from the updated model are deleted.
+   */
+  fun updateModel(
+      id: DraftPlantingSiteId,
+      updateFunc: (DraftPlantingSiteModel) -> DraftPlantingSiteModel,
+  ) {
+    requirePermissions { updateDraftPlantingSite(id) }
+
+    dslContext.transaction { _ ->
+      // Serialize concurrent updates so the stratum and substratum syncs don't interleave.
+      dslContext
+          .select(DSL.one())
+          .from(DRAFT_PLANTING_SITES)
+          .where(DRAFT_PLANTING_SITES.ID.eq(id))
+          .forUpdate()
+          .execute()
+
+      val existing = fetchModelById(id)
+      val updated = updateFunc(existing)
+
+      if (updated.organizationId != existing.organizationId) {
+        throw AccessDeniedException("No permission to change organization")
+      }
+      if (updated.map.siteType != existing.map.siteType) {
+        throw IllegalArgumentException("Site type cannot be changed")
+      }
+
+      requireProjectInOrganization(updated.projectId, existing.organizationId)
+      requireValidSiteType(updated.map)
+      requireValidStrata(existing.map.strata, updated.map.strata)
+
+      with(DRAFT_PLANTING_SITES) {
+        dslContext
+            .update(DRAFT_PLANTING_SITES)
+            .set(BOUNDARY, updated.map.boundary)
+            .set(BOUNDARY_SOURCE, updated.map.boundarySource)
+            .set(DESCRIPTION, updated.description)
+            .set(EXCLUSION, updated.map.exclusion)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(NAME, updated.name)
+            .set(PROJECT_ID, updated.projectId)
+            .set(SITE_EDIT_STEP, updated.map.siteEditStep)
+            .set(TIME_ZONE, updated.timeZone)
+            .where(ID.eq(id))
+            .execute()
+      }
+
+      updateStrata(id, existing.map.strata, updated.map.strata)
+    }
+  }
+
   private fun requireProjectInOrganization(projectId: ProjectId?, organizationId: OrganizationId) {
     if (projectId != null) {
       requirePermissions { readProject(projectId) }
