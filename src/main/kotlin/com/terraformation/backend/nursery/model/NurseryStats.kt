@@ -11,8 +11,12 @@ import kotlin.math.roundToInt
 data class NurseryStats(
     /** If null, stats are organization-wide. */
     val facilityId: FacilityId?,
+    /** Number of batches with any plants remaining in inventory, including germinating ones. */
+    val batchesWithInventory: Int,
     val germinationRate: Int?,
     val lossRate: Int?,
+    /** Number of species with any plants remaining in inventory, including germinating ones. */
+    val speciesWithInventory: Int,
     val totalActiveGrowth: Long,
     val totalGerminating: Long,
     val totalHardeningOff: Long,

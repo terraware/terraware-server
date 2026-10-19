@@ -34,6 +34,7 @@ class NurserySummaryController(
 
 data class OrganizationNurserySummaryPayload(
     val activeGrowthQuantity: Long,
+    val batchesWithInventory: Int,
     val germinatingQuantity: Long,
     val germinationRate: Int?,
     val hardeningOffQuantity: Long,
@@ -44,6 +45,7 @@ data class OrganizationNurserySummaryPayload(
     )
     val lossRate: Int?,
     val readyQuantity: Long,
+    val speciesWithInventory: Int,
     @Schema(description = "Total number of plants that have been withdrawn due to death.")
     val totalDead: Long,
     @Schema(description = "Total number of germinated plants currently in inventory.")
@@ -55,11 +57,13 @@ data class OrganizationNurserySummaryPayload(
       stats: NurseryStats
   ) : this(
       activeGrowthQuantity = stats.totalActiveGrowth,
+      batchesWithInventory = stats.batchesWithInventory,
       germinatingQuantity = stats.totalGerminating,
       germinationRate = stats.germinationRate,
       hardeningOffQuantity = stats.totalHardeningOff,
       lossRate = stats.lossRate,
       readyQuantity = stats.totalReady,
+      speciesWithInventory = stats.speciesWithInventory,
       totalDead = stats.totalWithdrawnByPurpose[WithdrawalPurpose.Dead] ?: 0L,
       totalQuantity = stats.totalInventory,
       totalWithdrawn = stats.totalWithdrawn,

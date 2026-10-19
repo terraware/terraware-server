@@ -42,6 +42,13 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             totalLossCandidates = 600,
         )
 
+    // Batch with only germinating seeds counts as having inventory.
+    insertBatch(facilityId = facilityId, speciesId = speciesId2, germinatingQuantity = 8)
+
+    // Batch with no remaining inventory should not count toward batch or species totals.
+    val emptySpeciesId = insertSpecies(scientificName = "Species with no inventory")
+    insertBatch(facilityId = facilityId, speciesId = emptySpeciesId)
+
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         batchId = batchId1,
@@ -160,9 +167,11 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     assertJsonEquals(
         NurseryStats(
             facilityId = facilityId,
+            batchesWithInventory = 3,
             germinationRate = 50,
             lossRate = 80,
-            totalGerminating = 1 + 4,
+            speciesWithInventory = 2,
+            totalGerminating = 1 + 4 + 8,
             totalActiveGrowth = 2 + 5,
             totalHardeningOff = 4 + 7,
             totalReady = 3 + 6,
@@ -182,9 +191,11 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     assertJsonEquals(
         NurseryStats(
             facilityId = null,
+            batchesWithInventory = 4,
             germinationRate = 80,
             lossRate = 85,
-            totalGerminating = 1 + 4 + 7,
+            speciesWithInventory = 2,
+            totalGerminating = 1 + 4 + 8 + 7,
             totalActiveGrowth = 2 + 5 + 8,
             totalHardeningOff = 4 + 7 + 10,
             totalReady = 3 + 6 + 9,
