@@ -157,9 +157,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                     NewRecordedTreeModel(
                         id = null,
                         isDead = false,
-                        diameterAtBreastHeightCm = BigDecimal.TWO, // this value is ignored
                         gpsCoordinates = point(1),
-                        pointOfMeasurementM = BigDecimal.valueOf(1.3), // ignored
                         shrubDiameterCm = 25,
                         speciesId = treeSpeciesId1,
                         treeGrowthForm = TreeGrowthForm.Shrub,
@@ -174,7 +172,6 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                         gpsCoordinates = null,
                         pointOfMeasurementM = BigDecimal.valueOf(1.3),
                         heightM = BigDecimal.TEN,
-                        shrubDiameterCm = 1, // ignored
                         speciesName = "Other tree species",
                         treeCrownDiameterCm = 16,
                         treeGrowthForm = TreeGrowthForm.Tree,

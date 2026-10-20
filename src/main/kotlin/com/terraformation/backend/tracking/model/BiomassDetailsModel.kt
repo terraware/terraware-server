@@ -75,46 +75,83 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
 
   fun validate() {
     if (speciesId == null && speciesName == null) {
-      throw IllegalStateException("Tree $treeNumber: speciesId or speciesName missing")
+      throw IllegalArgumentException("Tree $treeNumber: speciesId or speciesName missing")
     }
     if (boleHeightM?.signum() == -1) {
-      throw IllegalStateException("Tree $treeNumber: boleHeight may not be negative")
+      throw IllegalArgumentException("Tree $treeNumber: boleHeight may not be negative")
+    }
+    if (diameterAtBreastHeightCm?.signum() == -1) {
+      throw IllegalArgumentException("Tree $treeNumber: diameterAtBreastHeight may not be negative")
+    }
+    if (heightM?.signum() == -1) {
+      throw IllegalArgumentException("Tree $treeNumber: height may not be negative")
+    }
+    if (pointOfMeasurementM?.signum() == -1) {
+      throw IllegalArgumentException("Tree $treeNumber: pointOfMeasurement may not be negative")
+    }
+    if (shrubDiameterCm != null && shrubDiameterCm < 0) {
+      throw IllegalArgumentException("Tree $treeNumber: shrubDiameter may not be negative")
+    }
+    if (treeCrownDiameterCm != null && treeCrownDiameterCm < 0) {
+      throw IllegalArgumentException("Tree $treeNumber: treeCrownDiameter may not be negative")
     }
     when (treeGrowthForm) {
       TreeGrowthForm.Shrub -> {
         if (boleHeightM != null) {
-          throw IllegalStateException("Tree $treeNumber: boleHeight not allowed for Shrub")
+          throw IllegalArgumentException("Tree $treeNumber: boleHeight not allowed for Shrub")
+        }
+        if (diameterAtBreastHeightCm != null) {
+          throw IllegalArgumentException(
+              "Tree $treeNumber: diameterAtBreastHeight not allowed for Shrub"
+          )
+        }
+        if (heightM != null) {
+          throw IllegalArgumentException("Tree $treeNumber: height not allowed for Shrub")
+        }
+        if (pointOfMeasurementM != null) {
+          throw IllegalArgumentException(
+              "Tree $treeNumber: pointOfMeasurement not allowed for Shrub"
+          )
         }
         if (shrubDiameterCm == null) {
-          throw IllegalStateException("Tree $treeNumber: shrubDiameter missing for Shrub")
+          throw IllegalArgumentException("Tree $treeNumber: shrubDiameter missing for Shrub")
         }
         if (treeCrownDiameterCm != null) {
-          throw IllegalStateException("Tree $treeNumber: treeCrownDiameter not allowed for Shrub")
+          throw IllegalArgumentException(
+              "Tree $treeNumber: treeCrownDiameter not allowed for Shrub"
+          )
         }
         if (trunkNumber != 1) {
-          throw IllegalStateException("Tree $treeNumber: Trunk number must be 1 for Shrub")
+          throw IllegalArgumentException("Tree $treeNumber: Trunk number must be 1 for Shrub")
         }
       }
       TreeGrowthForm.Tree -> {
         if (diameterAtBreastHeightCm == null) {
-          throw IllegalStateException("Tree $treeNumber: diameterAtBreastHeight missing for Tree")
+          throw IllegalArgumentException(
+              "Tree $treeNumber: diameterAtBreastHeight missing for Tree"
+          )
         }
         if (pointOfMeasurementM == null) {
-          throw IllegalStateException("Tree $treeNumber: pointOfMeasurement missing for Tree")
+          throw IllegalArgumentException("Tree $treeNumber: pointOfMeasurement missing for Tree")
         }
         if (heightM == null) {
-          throw IllegalStateException("Tree $treeNumber: height missing for Tree")
+          throw IllegalArgumentException("Tree $treeNumber: height missing for Tree")
+        }
+        if (shrubDiameterCm != null) {
+          throw IllegalArgumentException("Tree $treeNumber: shrubDiameter not allowed for Tree")
         }
         if (trunkNumber != 1) {
-          throw IllegalStateException("Tree $treeNumber: Trunk number must be 1 for Tree")
+          throw IllegalArgumentException("Tree $treeNumber: Trunk number must be 1 for Tree")
         }
       }
       TreeGrowthForm.Trunk -> {
         if (diameterAtBreastHeightCm == null) {
-          throw IllegalStateException("Tree $treeNumber: diameterAtBreastHeight missing for Trunk")
+          throw IllegalArgumentException(
+              "Tree $treeNumber: diameterAtBreastHeight missing for Trunk"
+          )
         }
         if (pointOfMeasurementM == null) {
-          throw IllegalStateException("Tree $treeNumber: pointOfMeasurement missing for Trunk")
+          throw IllegalArgumentException("Tree $treeNumber: pointOfMeasurement missing for Trunk")
         }
       }
     }

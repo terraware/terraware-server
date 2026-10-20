@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.SoilType
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratSpeciesModel
@@ -17,6 +18,7 @@ import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
 import com.terraformation.backend.tracking.model.EditableMonitoringSpeciesModel
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
+import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -172,4 +174,57 @@ data class RecordedTreeUpdateOperationPayload(
         treeCrownDiameterCm = treeCrownDiameter ?: model.treeCrownDiameterCm,
     )
   }
+}
+
+@JsonTypeName("CreateRecordedTree")
+@Schema(
+    description =
+        "Creates a recorded tree. The server assigns the recorded-tree ID and tree number."
+)
+data class CreateRecordedTreeOperationPayload(
+    @Schema(description = "Exactly one of speciesId and scientificName must be specified.")
+    val speciesId: SpeciesId?,
+    @Schema(description = "Exactly one of speciesId and scientificName must be specified.")
+    val scientificName: String?,
+    @Schema(
+        description = "Only Tree and Shrub growth forms are allowed.",
+        allowableValues = ["Tree", "Shrub"],
+        implementation = String::class,
+    )
+    val treeGrowthForm: TreeGrowthForm,
+    @Schema(description = "Whether the recorded tree is dead.") //
+    val isDead: Boolean,
+    @Schema(description = "Required for Tree growth forms; not allowed for Shrubs.")
+    val diameterAtBreastHeightCm: BigDecimal?,
+    @Schema(description = "Required for Tree growth forms; not allowed for Shrubs.")
+    val pointOfMeasurementM: BigDecimal?,
+    @Schema(description = "Required for Tree growth forms; not allowed for Shrubs.") //
+    val heightM: BigDecimal?,
+    @Schema(description = "Required for Shrubs; not allowed for Trees.") //
+    val shrubDiameterCm: Int?,
+    @Schema(description = "Only valid for Tree growth forms.") //
+    val treeCrownDiameterCm: Int?,
+    @Schema(description = "Not allowed for Shrubs.") //
+    val boleHeightM: BigDecimal?,
+    @Schema(description = "Additional notes about the recorded tree.") //
+    val description: String?,
+) : ObservationUpdateOperationPayload {
+  fun toModel(): NewRecordedTreeModel =
+      NewRecordedTreeModel(
+          id = null,
+          boleHeightM = boleHeightM,
+          description = description,
+          diameterAtBreastHeightCm = diameterAtBreastHeightCm,
+          gpsCoordinates = null,
+          heightM = heightM,
+          isDead = isDead,
+          pointOfMeasurementM = pointOfMeasurementM,
+          shrubDiameterCm = shrubDiameterCm,
+          speciesId = speciesId,
+          speciesName = scientificName,
+          treeCrownDiameterCm = treeCrownDiameterCm,
+          treeGrowthForm = treeGrowthForm,
+          treeNumber = 1,
+          trunkNumber = 1,
+      )
 }
