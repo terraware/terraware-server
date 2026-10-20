@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.gis.InvalidGeometryException
@@ -32,11 +33,14 @@ class DraftPlantingSiteService(
   }
 
   /**
-   * Validates a draft's map and, if it is valid, stores the draft.
+   * Validates a draft's map and, if it is valid, stores the draft. Permission is checked first so
+   * callers without access get a permission error instead of the results of validation.
    *
    * @throws PlantingSiteMapInvalidException The map failed validation. Nothing is stored.
    */
   fun createTyped(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
+    requirePermissions { createDraftPlantingSite(model.organizationId) }
+
     model.requireValidMap()
 
     return draftPlantingSiteStore.create(model)

@@ -57,6 +57,7 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.io.WKTReader
 import org.locationtech.jts.io.geojson.GeoJsonWriter
+import org.springframework.security.access.AccessDeniedException
 
 class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -403,6 +404,16 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       )
       assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "No drafts are stored")
       assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "No strata are stored")
+    }
+
+    @Test
+    fun `createTyped checks permission before validating map`() {
+      every { user.canCreateDraftPlantingSite(any()) } returns false
+      every { user.canReadOrganization(any()) } returns true
+
+      assertThrows<AccessDeniedException> {
+        service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
+      }
     }
 
     @Test
