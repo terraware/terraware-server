@@ -25,11 +25,11 @@ class EmailNotificationSettingsController(
   @ApiResponse200
   @GetMapping
   @Operation(
-      summary = "Gets the current user's email notification category settings.",
+      summary = "Gets the current user's email notification settings.",
       description =
           "Only includes the categories that apply to the current user. Users only receive " +
               "email notifications in a category if they have opted into it and have also " +
-              "enabled email notifications in their user profile.",
+              "enabled email notifications.",
   )
   fun getEmailNotificationSettings(): GetEmailNotificationSettingsResponsePayload {
     val model = emailNotificationSettingsStore.fetchForCurrentUser()
@@ -38,13 +38,14 @@ class EmailNotificationSettingsController(
   }
 
   @ApiResponse200
-  @Operation(summary = "Opts the current user into or out of email notification categories.")
+  @Operation(summary = "Updates the current user's email notification settings.")
   @PutMapping
   fun updateEmailNotificationSettings(
       @RequestBody payload: UpdateEmailNotificationSettingsRequestPayload
   ): SimpleSuccessResponsePayload {
     emailNotificationSettingsStore.updateForCurrentUser(
-        payload.categories.associate { it.category to it.optedIn }
+        payload.categories.associate { it.category to it.optedIn },
+        payload.emailNotificationsEnabled,
     )
 
     return SimpleSuccessResponsePayload()
@@ -58,13 +59,21 @@ data class EmailNotificationCategorySettingPayload(
 
 data class GetEmailNotificationSettingsResponsePayload(
     val categories: List<EmailNotificationCategorySettingPayload>,
+    @Schema(
+        description =
+            "If false, the user doesn't receive email notifications regardless of which " +
+                "categories they've opted into."
+    )
+    val emailNotificationsEnabled: Boolean,
 ) : SuccessResponsePayload {
   constructor(
       model: EmailNotificationSettingsModel
   ) : this(
-      model.categories.map { (category, optedIn) ->
-        EmailNotificationCategorySettingPayload(category, optedIn)
-      }
+      categories =
+          model.categories.map { (category, optedIn) ->
+            EmailNotificationCategorySettingPayload(category, optedIn)
+          },
+      emailNotificationsEnabled = model.emailNotificationsEnabled,
   )
 }
 
@@ -77,5 +86,11 @@ data class UpdateEmailNotificationSettingsRequestPayload(
                         "left as-is."
             )
     )
-    val categories: List<EmailNotificationCategorySettingPayload>,
+    val categories: List<EmailNotificationCategorySettingPayload> = emptyList(),
+    @Schema(
+        description =
+            "If present, turns email notifications on or off regardless of category opt-ins. " +
+                "If absent, leaves the current setting as-is."
+    )
+    val emailNotificationsEnabled: Boolean? = null,
 )
