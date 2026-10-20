@@ -26,6 +26,8 @@ import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
@@ -70,6 +72,9 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -873,6 +878,52 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     val subject = payload.subject as BiomassQuadratSpeciesSubjectPayload
     assertEquals(speciesId, subject.speciesId, "Species ID")
+  }
+
+  @Test
+  fun `lists recorded tree species changes as species name updates`() {
+    val biomassSpeciesId = BiomassSpeciesId(10)
+    val recordedTreeId = RecordedTreeId(12)
+    val createdEvent =
+        RecordedTreeCreatedEvent(
+            biomassSpeciesId = biomassSpeciesId,
+            isDead = false,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            recordedTreeId = recordedTreeId,
+            treeGrowthForm = TreeGrowthForm.Tree,
+            treeNumber = 1,
+            trunkNumber = 1,
+        )
+    val updatedEvent =
+        RecordedTreeUpdatedEvent(
+            changedFrom = RecordedTreeUpdatedEventValues(speciesName = "Old name"),
+            changedTo = RecordedTreeUpdatedEventValues(speciesName = "New name"),
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            recordedTreeId = recordedTreeId,
+        )
+    val payloads =
+        transformer.eventsToPayloads(
+            listOf(
+                eventLogEntry(knownUserId, createdEvent),
+                eventLogEntry(knownUserId, updatedEvent),
+            )
+        )
+
+    assertEquals(
+        FieldUpdatedActionPayload(
+            fieldName = "species name",
+            changedFrom = listOf("Old name"),
+            changedTo = listOf("New name"),
+        ),
+        payloads.last().action,
+        "Action",
+    )
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =
