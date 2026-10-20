@@ -184,6 +184,53 @@ class DraftPlantingSiteDataTest {
   }
 
   @Test
+  fun `rejects strata that are not arrays`() {
+    listOf("\"corrupt\"", "1", "{\"name\": \"A\"}").forEach { strata ->
+      assertThrows<IllegalArgumentException>("strata $strata") {
+        parse("""{"siteType": "detailed", "strata": $strata}""")
+      }
+    }
+  }
+
+  @Test
+  fun `rejects substrata that are not arrays`() {
+    listOf("\"corrupt\"", "1", "{\"name\": \"1\"}").forEach { substrata ->
+      assertThrows<IllegalArgumentException>("substrata $substrata") {
+        parse(
+            """
+            {"siteType": "detailed", "strata": [
+              {"name": "A", "boundary": ${geoJson(stratumBoundary)}, "substrata": $substrata}
+            ]}
+            """
+        )
+      }
+    }
+  }
+
+  @Test
+  fun `treats null strata and substrata as empty`() {
+    assertEquals(
+        emptyList<DraftStratumModel>(),
+        parse("""{"siteType": "detailed", "strata": null}""").strata,
+        "Strata",
+    )
+    assertEquals(
+        emptyList<DraftSubstratumModel>(),
+        parse(
+                """
+                {"siteType": "detailed", "strata": [
+                  {"name": "A", "boundary": ${geoJson(stratumBoundary)}, "substrata": null}
+                ]}
+                """
+            )
+            .strata
+            .single()
+            .substrata,
+        "Substrata",
+    )
+  }
+
+  @Test
   fun `parses current key names`() {
     assertEquals(expectedMap, parse(blob()))
   }

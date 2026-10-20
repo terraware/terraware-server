@@ -46,7 +46,7 @@ class DraftPlantingSiteData(private val objectMapper: ObjectMapper) {
         if (siteType == DraftPlantingSiteType.Simple) {
           emptyList()
         } else {
-          (root.get("strata") ?: root.get("plantingZones"))?.map { parseStratum(it) } ?: emptyList()
+          parseList(root.get("strata") ?: root.get("plantingZones"), "Strata") { parseStratum(it) }
         }
 
     return DraftPlantingSiteMap(
@@ -108,7 +108,7 @@ class DraftPlantingSiteData(private val objectMapper: ObjectMapper) {
             parseGeometry(node.get("boundary"))
                 ?: throw IllegalArgumentException("Stratum is missing boundary"),
         initialPlantingDensity = parseDensity(density),
-        substrata = substrata?.map { parseSubstratum(it) } ?: emptyList(),
+        substrata = parseList(substrata, "Substrata") { parseSubstratum(it) },
     )
   }
 
@@ -120,6 +120,15 @@ class DraftPlantingSiteData(private val objectMapper: ObjectMapper) {
             parseGeometry(node.get("boundary"))
                 ?: throw IllegalArgumentException("Substratum is missing boundary"),
     )
+  }
+
+  /** Treats a missing or null list as empty, but rejects values that aren't arrays. */
+  private fun <T> parseList(node: JsonNode?, kind: String, parseElement: (JsonNode) -> T): List<T> {
+    return when {
+      node == null || node.isNull -> emptyList()
+      node.isArray -> node.map(parseElement)
+      else -> throw IllegalArgumentException("$kind must be an array")
+    }
   }
 
   private fun parseName(node: JsonNode, kind: String): String {
