@@ -25,6 +25,9 @@ import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.eventlog.PersistentEvent
@@ -43,6 +46,8 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1
 import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -583,16 +588,24 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class BiomassSpeciesEventUpgrades {
+    private lateinit var monitoringPlotId: MonitoringPlotId
+    private lateinit var observationId: ObservationId
+
     @BeforeEach
     fun setUpBiomassObservation() {
       insertOrganization()
       insertPlantingSite()
       insertStratum()
       insertSubstratum()
-      insertMonitoringPlot()
-      insertObservation(observationType = ObservationType.BiomassMeasurements)
+      monitoringPlotId = insertMonitoringPlot()
+      observationId = insertObservation(observationType = ObservationType.BiomassMeasurements)
       insertObservationPlot()
       insertObservationBiomassDetails()
+      insertObservationBiomassQuadratDetails(
+          observationId = observationId,
+          monitoringPlotId = monitoringPlotId,
+          position = ObservationPlotPosition.SouthwestCorner,
+      )
     }
 
     @Test
@@ -627,6 +640,84 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals("$knownSpeciesId", upgraded.speciesName, "Name after row and species deletion")
     }
 
+    @Test
+    fun `upgrades biomass species updates from creation event or live row`() {
+      val snapshotSpeciesId = insertSpecies(scientificName = "Current known name")
+      val snapshotBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = snapshotSpeciesId)
+      insertEvent(
+          BiomassSpeciesCreatedEventV2(
+              biomassSpeciesId = snapshotBiomassSpeciesId,
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = null,
+              speciesId = snapshotSpeciesId,
+              speciesName = "Name captured when species was created",
+          )
+      )
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(snapshotBiomassSpeciesId))
+          .execute()
+      dslContext.deleteFrom(SPECIES).where(SPECIES.ID.eq(snapshotSpeciesId)).execute()
+
+      val snapshotUpdate = speciesUpdatedEvent(snapshotBiomassSpeciesId)
+      val snapshotUpgrade =
+          snapshotUpdate.toNextVersion(insertEvent(snapshotUpdate), eventUpgradeUtils)
+      assertEquals(
+          "Name captured when species was created",
+          snapshotUpgrade.speciesName,
+          "Species name from creation event after row deletion",
+      )
+      assertEquals(
+          snapshotSpeciesId,
+          snapshotUpgrade.speciesId,
+          "Species ID from creation event after row deletion",
+      )
+
+      val liveSpeciesId = insertSpecies(scientificName = "Known species")
+      val liveBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = liveSpeciesId)
+      val liveUpdate = speciesUpdatedEvent(liveBiomassSpeciesId)
+      val liveUpgrade = liveUpdate.toNextVersion(insertEvent(liveUpdate), eventUpgradeUtils)
+      assertEquals(
+          "Known species",
+          liveUpgrade.speciesName,
+          "Species name from live row without creation event",
+      )
+      assertEquals(
+          liveSpeciesId,
+          liveUpgrade.speciesId,
+          "Species ID from live row without creation event",
+      )
+
+      val mergedSpeciesId = insertSpecies(scientificName = "Merged species")
+      val mergedBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = mergedSpeciesId)
+      insertEvent(
+          BiomassSpeciesCreatedEventV2(
+              biomassSpeciesId = mergedBiomassSpeciesId,
+              commonName = null,
+              isInvasive = false,
+              isThreatened = false,
+              monitoringPlotId = inserted.monitoringPlotId,
+              observationId = inserted.observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              scientificName = "Other species",
+              speciesId = null,
+              speciesName = "Other species",
+          )
+      )
+
+      val mergedUpdate = speciesUpdatedEvent(mergedBiomassSpeciesId)
+      val mergedUpgrade = mergedUpdate.toNextVersion(insertEvent(mergedUpdate), eventUpgradeUtils)
+      assertEquals("Merged species", mergedUpgrade.speciesName, "Species name from merged row")
+      assertEquals(mergedSpeciesId, mergedUpgrade.speciesId, "Species ID from merged row")
+    }
+
     private fun createdEvent(
         biomassSpeciesId: BiomassSpeciesId,
         speciesId: SpeciesId?,
@@ -643,6 +734,17 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             plantingSiteId = inserted.plantingSiteId,
             scientificName = scientificName,
             speciesId = speciesId,
+        )
+
+    private fun speciesUpdatedEvent(biomassSpeciesId: BiomassSpeciesId) =
+        BiomassSpeciesUpdatedEventV1(
+            changedFrom = BiomassSpeciesUpdatedEventV1.Values(false, false),
+            changedTo = BiomassSpeciesUpdatedEventV1.Values(true, true),
+            biomassSpeciesId = biomassSpeciesId,
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
         )
   }
 

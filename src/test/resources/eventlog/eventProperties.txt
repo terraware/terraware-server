@@ -304,6 +304,12 @@ com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1/monitorin
 com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1/observationId: ObservationId
 com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2/biomassSpeciesId: BiomassSpeciesId
+com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2/observationId: ObservationId
+com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventV2/speciesName: String
 com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventV1/certainty: RecordedSpeciesCertainty
 com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventV1/monitoringPlotId: MonitoringPlotId
 com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventV1/observationId: ObservationId

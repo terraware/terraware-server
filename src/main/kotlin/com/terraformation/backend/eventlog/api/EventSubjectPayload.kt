@@ -279,26 +279,20 @@ data class BiomassSpeciesSubjectPayload(
         event: BiomassSpeciesPersistentEvent,
         context: EventLogPayloadContext,
     ): BiomassSpeciesSubjectPayload {
-      val biomassSpecies =
-          (event as? BiomassSpeciesCreatedEvent)?.let { createdEvent ->
-            EventLogPayloadContext.BiomassSpecies(
-                displayName = createdEvent.speciesName,
-                scientificName =
-                    createdEvent.scientificName
-                        ?: if (createdEvent.speciesId == null) createdEvent.speciesName else null,
-                speciesId = createdEvent.speciesId,
-            )
-          } ?: context.getBiomassSpecies(event.biomassSpeciesId)
+      val createdEvent = event as? BiomassSpeciesCreatedEvent
+      val speciesId = event.speciesId
+      val speciesName = event.speciesName
+      val scientificName =
+          createdEvent?.scientificName ?: if (speciesId == null) speciesName else null
 
       return BiomassSpeciesSubjectPayload(
-          fullText =
-              context.subjectFullText<BiomassSpeciesSubjectPayload>(biomassSpecies.displayName),
+          fullText = context.subjectFullText<BiomassSpeciesSubjectPayload>(speciesName),
           monitoringPlotId = event.monitoringPlotId,
           observationId = event.observationId,
           plantingSiteId = event.plantingSiteId,
           shortText = context.subjectShortText<BiomassSpeciesSubjectPayload>(),
-          speciesId = biomassSpecies.speciesId,
-          scientificName = biomassSpecies.scientificName,
+          speciesId = speciesId,
+          scientificName = scientificName,
       )
     }
   }
