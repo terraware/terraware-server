@@ -138,6 +138,7 @@ import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.EcosystemType
+import com.terraformation.backend.db.default_schema.EmailNotificationCategory
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -225,6 +226,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserDisclaimersDao
+import com.terraformation.backend.db.default_schema.tables.daos.UserEmailNotificationCategoriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserGlobalRolesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.BirdnetResultsRow
@@ -246,6 +248,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SplatsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimersRow
+import com.terraformation.backend.db.default_schema.tables.pojos.UserEmailNotificationCategoriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.records.BotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.CountryBotanicalCountriesRecord
@@ -905,6 +908,7 @@ abstract class DatabaseBackedTest {
   protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
   protected val userDisclaimersDao: UserDisclaimersDao by lazyDao()
+  protected val userEmailNotificationCategoriesDao: UserEmailNotificationCategoriesDao by lazyDao()
   protected val userInternalInterestsDao: UserInternalInterestsDao by lazyDao()
   protected val userGlobalRolesDao: UserGlobalRolesDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
@@ -1854,6 +1858,18 @@ abstract class DatabaseBackedTest {
             userId = userId,
             disclaimerId = disclaimerId,
             acceptedOn = acceptedOn,
+        )
+    )
+  }
+
+  fun insertUserEmailNotificationCategory(
+      category: EmailNotificationCategory,
+      userId: UserId = inserted.userId,
+  ) {
+    userEmailNotificationCategoriesDao.insert(
+        UserEmailNotificationCategoriesRow(
+            emailNotificationCategoryId = category,
+            userId = userId,
         )
     )
   }
