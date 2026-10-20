@@ -67,10 +67,10 @@ class UsersController(
               locale = payload.locale?.let { Locale.forLanguageTag(it) },
               timeZone = payload.timeZone,
           )
-      userStore.updateUser(model)
       if (enablingEmailNotifications) {
         emailNotificationSettingsStore.optIntoAllCategoriesIfNoneForCurrentUser()
       }
+      userStore.updateUser(model)
       return SimpleSuccessResponsePayload()
     } else if (user is FunderUser) {
       val model =
@@ -83,10 +83,10 @@ class UsersController(
               locale = payload.locale?.let { Locale.forLanguageTag(it) },
               timeZone = payload.timeZone,
           )
-      userStore.updateUser(model)
       if (enablingEmailNotifications) {
         emailNotificationSettingsStore.optIntoAllCategoriesIfNoneForCurrentUser()
       }
+      userStore.updateUser(model)
       return SimpleSuccessResponsePayload()
     } else {
       throw ForbiddenException("Can only update information about ordinary users")
