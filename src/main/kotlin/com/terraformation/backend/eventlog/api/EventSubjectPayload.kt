@@ -59,6 +59,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.MonitoringSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
@@ -278,7 +279,16 @@ data class BiomassSpeciesSubjectPayload(
         event: BiomassSpeciesPersistentEvent,
         context: EventLogPayloadContext,
     ): BiomassSpeciesSubjectPayload {
-      val biomassSpecies = context.getBiomassSpecies(event.biomassSpeciesId)
+      val biomassSpecies =
+          (event as? BiomassSpeciesCreatedEvent)?.let { createdEvent ->
+            EventLogPayloadContext.BiomassSpecies(
+                displayName = createdEvent.speciesName,
+                scientificName =
+                    createdEvent.scientificName
+                        ?: if (createdEvent.speciesId == null) createdEvent.speciesName else null,
+                speciesId = createdEvent.speciesId,
+            )
+          } ?: context.getBiomassSpecies(event.biomassSpeciesId)
 
       return BiomassSpeciesSubjectPayload(
           fullText =

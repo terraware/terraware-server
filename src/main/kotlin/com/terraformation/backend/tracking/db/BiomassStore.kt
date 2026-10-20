@@ -6,6 +6,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -204,6 +205,7 @@ class BiomassStore(
                 plantingSiteId = plantingSiteId,
                 scientificName = speciesModel.scientificName,
                 speciesId = speciesModel.speciesId,
+                speciesName = getBiomassSpeciesName(record.speciesId, record.scientificName),
             )
         )
       }
@@ -832,6 +834,13 @@ class BiomassStore(
           .fetchOne() ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
     }
   }
+
+  private fun getBiomassSpeciesName(speciesId: SpeciesId?, scientificName: String?): String =
+      speciesId?.let { dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(it)) }
+          ?: scientificName
+          ?: throw IllegalStateException(
+              "Biomass species must have a species ID or scientific name"
+          )
 
   private fun validateRecordedTreeUpdate(
       existing: ExistingRecordedTreeModel,
