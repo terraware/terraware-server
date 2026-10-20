@@ -17,9 +17,9 @@ import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 
-class DraftPlantingSiteDataTest {
+class DraftPlantingSiteMapCodecTest {
   private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(GeometryModule())
-  private val codec = DraftPlantingSiteData(objectMapper)
+  private val codec = DraftPlantingSiteMapCodec(objectMapper)
 
   /** Rounds coordinates the same way the JSON serializer does so expected values compare equal. */
   private fun rounded(geometry: Geometry): MultiPolygon =
@@ -391,7 +391,7 @@ class DraftPlantingSiteDataTest {
               "plantingCompleted": true,
               "substrata": [
                 {
-                  "id": 88,
+                  "id": "client-88",
                   "name": "1",
                   "fullName": "A-1",
                   "plantingCompleted": true,
