@@ -759,6 +759,12 @@ class BiomassStore(
                 organizationId = organizationId,
                 plantingSiteId = observation.plantingSiteId,
                 position = position,
+                speciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+                speciesName =
+                    getBiomassSpeciesName(
+                        biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+                        biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
+                    ),
             )
         )
       }

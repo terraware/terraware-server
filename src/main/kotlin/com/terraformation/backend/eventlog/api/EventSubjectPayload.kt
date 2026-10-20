@@ -243,22 +243,23 @@ data class BiomassQuadratSpeciesSubjectPayload(
         event: BiomassQuadratSpeciesPersistentEvent,
         context: EventLogPayloadContext,
     ): BiomassQuadratSpeciesSubjectPayload {
-      val biomassSpecies = context.getBiomassSpecies(event.biomassSpeciesId)
+      val speciesId = event.speciesId
+      val speciesName = event.speciesName
       val localizedPosition = event.position.getDisplayName(currentUser().locale)
 
       return BiomassQuadratSpeciesSubjectPayload(
           fullText =
               context.subjectFullText<BiomassQuadratSpeciesSubjectPayload>(
                   localizedPosition,
-                  biomassSpecies.displayName,
+                  speciesName,
               ),
           monitoringPlotId = event.monitoringPlotId,
           observationId = event.observationId,
           plantingSiteId = event.plantingSiteId,
           position = event.position,
           shortText = context.subjectShortText<BiomassQuadratSpeciesSubjectPayload>(),
-          scientificName = biomassSpecies.scientificName,
-          speciesId = biomassSpecies.speciesId,
+          scientificName = if (speciesId == null) speciesName else null,
+          speciesId = speciesId,
       )
     }
   }

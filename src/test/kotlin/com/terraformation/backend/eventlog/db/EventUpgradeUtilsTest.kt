@@ -44,6 +44,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.seeds
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
@@ -718,6 +719,44 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(mergedSpeciesId, mergedUpgrade.speciesId, "Species ID from merged row")
     }
 
+    @Test
+    fun `upgrades quadrat species updates from creation event or live row`() {
+      val otherName = "Other species"
+      val biomassSpeciesId = insertObservationBiomassSpecies(scientificName = otherName)
+      insertEvent(createdEvent(biomassSpeciesId, null, otherName))
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+          .execute()
+
+      val event = quadratSpeciesUpdatedEvent(biomassSpeciesId)
+      val upgraded = event.toNextVersion(insertEvent(event), eventUpgradeUtils)
+      assertEquals(
+          otherName,
+          upgraded.speciesName,
+          "Species name from creation event after row deletion",
+      )
+      assertNull(
+          upgraded.speciesId,
+          "Species ID from creation event after row deletion",
+      )
+
+      val liveSpeciesId = insertSpecies(scientificName = "Known species")
+      val liveBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = liveSpeciesId)
+      val liveEvent = quadratSpeciesUpdatedEvent(liveBiomassSpeciesId)
+      val liveUpgrade = liveEvent.toNextVersion(insertEvent(liveEvent), eventUpgradeUtils)
+      assertEquals(
+          "Known species",
+          liveUpgrade.speciesName,
+          "Species name from live row without creation event",
+      )
+      assertEquals(
+          liveSpeciesId,
+          liveUpgrade.speciesId,
+          "Species ID from live row without creation event",
+      )
+    }
+
     private fun createdEvent(
         biomassSpeciesId: BiomassSpeciesId,
         speciesId: SpeciesId?,
@@ -745,6 +784,18 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = inserted.observationId,
             organizationId = inserted.organizationId,
             plantingSiteId = inserted.plantingSiteId,
+        )
+
+    private fun quadratSpeciesUpdatedEvent(biomassSpeciesId: BiomassSpeciesId) =
+        BiomassQuadratSpeciesUpdatedEventV1(
+            changedFrom = BiomassQuadratSpeciesUpdatedEventV1.Values(1),
+            changedTo = BiomassQuadratSpeciesUpdatedEventV1.Values(2),
+            biomassSpeciesId = biomassSpeciesId,
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+            position = ObservationPlotPosition.SouthwestCorner,
         )
   }
 

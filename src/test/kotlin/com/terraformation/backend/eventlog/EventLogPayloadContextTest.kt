@@ -5,14 +5,18 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
+import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.polygon
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventV2
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -93,12 +97,42 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           "Name from created event",
           context.getBiomassSpecies(biomassSpeciesId).displayName,
+          "Biomass species display name",
       )
 
       val payload = BiomassSpeciesSubjectPayload.forEvent(createdEvent, context)
 
-      assertEquals(inserted.speciesId, payload.speciesId)
-      assertTrue(payload.fullText.contains("Name from created event"))
+      assertEquals(inserted.speciesId, payload.speciesId, "Biomass species ID")
+      assertTrue(
+          payload.fullText.contains("Name from created event"),
+          "Biomass species full text",
+      )
+      val quadratSpeciesPayload =
+          BiomassQuadratSpeciesSubjectPayload.forEvent(
+              BiomassQuadratSpeciesUpdatedEventV2(
+                  changedFrom = BiomassQuadratSpeciesUpdatedEventV2.Values(1),
+                  changedTo = BiomassQuadratSpeciesUpdatedEventV2.Values(2),
+                  biomassSpeciesId = biomassSpeciesId,
+                  monitoringPlotId = inserted.monitoringPlotId,
+                  observationId = inserted.observationId,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  position = ObservationPlotPosition.SouthwestCorner,
+                  speciesId = null,
+                  speciesName = "Other name from event",
+              ),
+              context,
+          )
+      assertNull(quadratSpeciesPayload.speciesId, "Quadrat species ID")
+      assertEquals(
+          "Other name from event",
+          quadratSpeciesPayload.scientificName,
+          "Quadrat species name",
+      )
+      assertTrue(
+          quadratSpeciesPayload.fullText.contains("Other name from event"),
+          "Quadrat species full text",
+      )
     }
   }
 
