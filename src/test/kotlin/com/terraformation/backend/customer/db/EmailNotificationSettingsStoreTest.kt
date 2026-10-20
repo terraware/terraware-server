@@ -144,7 +144,7 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class OptIntoAllCategoriesIfNoneForCurrentUser {
     @Test
-    fun `opts into all categories if user has no opt-ins`() {
+    fun `opts into all non-accelerator categories if non-accelerator user has no opt-ins`() {
       val otherUserId = insertUser()
       insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
 
@@ -152,11 +152,46 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              UserEmailNotificationCategoriesRecord(otherUserId, EmailNotificationCategory.SeedBank)
-          ) +
-              EmailNotificationCategory.entries.map {
-                UserEmailNotificationCategoriesRecord(user.userId, it)
-              }
+              UserEmailNotificationCategoriesRecord(
+                  otherUserId,
+                  EmailNotificationCategory.SeedBank,
+              ),
+              UserEmailNotificationCategoriesRecord(
+                  user.userId,
+                  EmailNotificationCategory.SeedBank,
+              ),
+              UserEmailNotificationCategoriesRecord(user.userId, EmailNotificationCategory.Nursery),
+              UserEmailNotificationCategoriesRecord(
+                  user.userId,
+                  EmailNotificationCategory.PlantingAndObservations,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `opts into all categories if accelerator user has no opt-ins`() {
+      insertOrganization()
+      insertOrganizationUser()
+      insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
+
+      store.optIntoAllCategoriesIfNoneForCurrentUser()
+
+      assertTableEquals(
+          EmailNotificationCategory.entries.map {
+            UserEmailNotificationCategoriesRecord(user.userId, it)
+          }
+      )
+    }
+
+    @Test
+    fun `opts funders into accelerator category if they have no opt-ins`() {
+      switchToUser(insertUser(type = UserType.Funder))
+
+      store.optIntoAllCategoriesIfNoneForCurrentUser()
+
+      assertTableEquals(
+          UserEmailNotificationCategoriesRecord(user.userId, EmailNotificationCategory.Accelerator)
       )
     }
 
