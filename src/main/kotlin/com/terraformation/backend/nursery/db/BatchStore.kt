@@ -1280,6 +1280,14 @@ class BatchStore(
             .filterNot { it == WithdrawalPurpose.Undo }
             .associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
 
+    val hasInventory =
+        DSL.or(
+            BATCHES.GERMINATING_QUANTITY.gt(0),
+            BATCHES.ACTIVE_GROWTH_QUANTITY.gt(0),
+            BATCHES.HARDENING_OFF_QUANTITY.gt(0),
+            BATCHES.READY_QUANTITY.gt(0),
+        )
+
     val inventoryTotals =
         dslContext
             .select(
@@ -1289,6 +1297,8 @@ class BatchStore(
                 DSL.sum(BATCHES.READY_QUANTITY),
                 aggregateGerminationRateField,
                 aggregateLossRateField,
+                DSL.count().filterWhere(hasInventory),
+                DSL.countDistinct(BATCHES.SPECIES_ID).filterWhere(hasInventory),
             )
             .from(BATCHES)
             .where(conditions)
@@ -1298,6 +1308,8 @@ class BatchStore(
         facilityId = facilityId,
         germinationRate = inventoryTotals?.value5()?.roundToInt(),
         lossRate = inventoryTotals?.value6()?.roundToInt(),
+        batchesWithInventory = inventoryTotals?.value7() ?: 0,
+        speciesWithInventory = inventoryTotals?.value8() ?: 0,
         totalGerminating = inventoryTotals?.value1()?.toLong() ?: 0L,
         totalActiveGrowth = inventoryTotals?.value2()?.toLong() ?: 0L,
         totalHardeningOff = inventoryTotals?.value3()?.toLong() ?: 0L,
