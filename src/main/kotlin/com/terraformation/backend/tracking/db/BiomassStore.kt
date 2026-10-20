@@ -40,6 +40,7 @@ import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
@@ -940,6 +941,92 @@ class BiomassStore(
           )
         }
       }
+    }
+  }
+
+  fun changeRecordedTreeSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      recordedTreeId: RecordedTreeId,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+  ) {
+    requirePermissions { updateObservationQuantities(observationId) }
+    require((speciesId == null) xor (scientificName == null)) {
+      "One of species ID or scientific name must be specified"
+    }
+
+    entityLocker.withLockedObservation(observationId) { observation ->
+      val recordedTree =
+          dslContext
+              .selectFrom(RECORDED_TREES)
+              .where(RECORDED_TREES.ID.eq(recordedTreeId))
+              .and(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+              .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .fetchOne() ?: throw RecordedTreeNotFoundException(recordedTreeId)
+      val oldBiomassSpeciesId =
+          recordedTree.biomassSpeciesId
+              ?: throw IllegalStateException("Recorded tree $recordedTreeId has no species")
+      val organizationId =
+          parentStore.getOrganizationId(observationId)
+              ?: throw ObservationNotFoundException(observationId)
+      val newBiomassSpeciesId =
+          getOrCreateBiomassSpecies(observationId, monitoringPlotId, speciesId, scientificName)
+      if (newBiomassSpeciesId == oldBiomassSpeciesId) {
+        return@withLockedObservation
+      }
+
+      val oldSpecies =
+          dslContext
+              .selectFrom(OBSERVATION_BIOMASS_SPECIES)
+              .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(oldBiomassSpeciesId))
+              .fetchOne()
+              ?: throw IllegalStateException("Biomass species $oldBiomassSpeciesId not found")
+      val changedFrom =
+          RecordedTreeUpdatedEventValues(
+              biomassSpeciesId = oldBiomassSpeciesId,
+              speciesId = oldSpecies.speciesId,
+              speciesName = getBiomassSpeciesName(oldSpecies.speciesId, oldSpecies.scientificName),
+          )
+      val changedTo =
+          RecordedTreeUpdatedEventValues(
+              biomassSpeciesId = newBiomassSpeciesId,
+              speciesId = speciesId,
+              speciesName = getBiomassSpeciesName(speciesId, scientificName),
+          )
+      val recordedTreeIds =
+          dslContext
+              .select(RECORDED_TREES.ID)
+              .from(RECORDED_TREES)
+              .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+              .and(RECORDED_TREES.TREE_NUMBER.eq(recordedTree.treeNumber))
+              .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .orderBy(RECORDED_TREES.TRUNK_NUMBER)
+              .fetch(RECORDED_TREES.ID.asNonNullable())
+
+      dslContext
+          .update(RECORDED_TREES)
+          .set(RECORDED_TREES.BIOMASS_SPECIES_ID, newBiomassSpeciesId)
+          .where(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+          .and(RECORDED_TREES.TREE_NUMBER.eq(recordedTree.treeNumber))
+          .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .execute()
+
+      recordedTreeIds.forEach { id ->
+        eventPublisher.publishEvent(
+            RecordedTreeUpdatedEvent(
+                changedFrom = changedFrom,
+                changedTo = changedTo,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = observation.plantingSiteId,
+                recordedTreeId = id,
+            )
+        )
+      }
+
+      deleteBiomassSpeciesIfUnreferenced(oldBiomassSpeciesId)
     }
   }
 
