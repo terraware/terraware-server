@@ -38,15 +38,13 @@ class EventLogPayloadContext(
    */
   fun getBiomassSpecies(biomassSpeciesId: BiomassSpeciesId): BiomassSpecies {
     return biomassSpeciesNames.getOrPut(biomassSpeciesId) {
-      // If this is an "Other" species with no species ID, and we have its creation event at hand,
-      // we can avoid having to hit the database.
       val createEvent =
           firstOrNull<BiomassSpeciesCreatedEvent> { it.biomassSpeciesId == biomassSpeciesId }
-      if (createEvent != null && createEvent.scientificName != null) {
+      if (createEvent != null) {
         BiomassSpecies(
+            createEvent.speciesName,
             createEvent.scientificName,
-            createEvent.scientificName,
-            null,
+            createEvent.speciesId,
         )
       } else {
         dslContext
