@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse200
-import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ErrorDetails
@@ -34,7 +33,9 @@ import com.terraformation.backend.tracking.model.DraftStratumModel
 import com.terraformation.backend.tracking.model.DraftSubstratumModel
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
@@ -84,9 +85,18 @@ class DraftPlantingSitesController(
   }
 
   @ApiResponse200
-  @ApiResponse409(
+  @ApiResponse(
+      responseCode = "409",
       description =
-          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong."
+          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong.",
+      content =
+          [
+              Content(
+                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                  schema =
+                      Schema(implementation = DraftPlantingSiteMapInvalidResponsePayload::class),
+              )
+          ],
   )
   @Operation(summary = "Saves a draft of an in-progress planting site.")
   @PostMapping
@@ -114,9 +124,18 @@ class DraftPlantingSitesController(
   }
 
   @ApiResponse200
-  @ApiResponse409(
+  @ApiResponse(
+      responseCode = "409",
       description =
-          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong."
+          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong.",
+      content =
+          [
+              Content(
+                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                  schema =
+                      Schema(implementation = DraftPlantingSiteMapInvalidResponsePayload::class),
+              )
+          ],
   )
   @Operation(summary = "Updates an existing draft of an in-progress planting site.")
   @PutMapping("/{id}")
