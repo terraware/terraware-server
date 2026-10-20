@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedTreatment
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.DataSource
@@ -27,6 +28,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
+import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
@@ -62,6 +64,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
@@ -835,6 +838,41 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val subject = payload.subject as BiomassSpeciesSubjectPayload
     assertNull(subject.speciesId)
     assertEquals("Scientific name", subject.scientificName)
+  }
+
+  @Test
+  fun `maps quadrat species events to payloads`() {
+    val biomassSpeciesId = BiomassSpeciesId(10)
+    val speciesId = SpeciesId(11)
+    val payload =
+        transformer
+            .eventsToPayloads(
+                listOf(
+                    eventLogEntry(
+                        knownUserId,
+                        BiomassQuadratSpeciesCreatedEvent(
+                            abundance = 4,
+                            biomassSpeciesId = biomassSpeciesId,
+                            monitoringPlotId = monitoringPlotId,
+                            observationId = observationId,
+                            organizationId = organizationId,
+                            plantingSiteId = plantingSiteId,
+                            position = ObservationPlotPosition.SouthwestCorner,
+                            speciesId = speciesId,
+                            speciesName = "Species name",
+                        ),
+                    ),
+                )
+            )
+            .single()
+
+    assertEquals(
+        CreatedActionPayload(listOf(CreatedFieldPayload("abundance", listOf("4")))),
+        payload.action,
+        "Action",
+    )
+    val subject = payload.subject as BiomassQuadratSpeciesSubjectPayload
+    assertEquals(speciesId, subject.speciesId, "Species ID")
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =
