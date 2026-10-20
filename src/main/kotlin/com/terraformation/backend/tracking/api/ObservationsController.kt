@@ -359,7 +359,9 @@ class ObservationsController(
   ): SimpleSuccessResponsePayload {
     val includesQuantityUpdates =
         payload.updates.any {
-          it is CreateRecordedTreeOperationPayload || it is MonitoringSpeciesUpdateOperationPayload
+          it is CreateRecordedTreeOperationPayload ||
+              it is DeleteRecordedTreeOperationPayload ||
+              it is MonitoringSpeciesUpdateOperationPayload
         }
 
     observationService.updateCompletedPlot(observationId, plotId, includesQuantityUpdates) {
@@ -377,6 +379,8 @@ class ObservationsController(
               biomassStore.updateBiomassDetails(observationId, plotId, element::applyTo)
           is CreateRecordedTreeOperationPayload ->
               biomassStore.createRecordedTree(observationId, plotId, element.toModel())
+          is DeleteRecordedTreeOperationPayload ->
+              biomassStore.deleteRecordedTree(observationId, plotId, element.recordedTreeId)
           is MonitoringSpeciesUpdateOperationPayload ->
               observationStore.updateMonitoringSpecies(
                   observationId,

@@ -35,8 +35,10 @@ import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
@@ -941,6 +943,59 @@ class BiomassStore(
     }
   }
 
+  fun deleteRecordedTree(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      recordedTreeId: RecordedTreeId,
+  ) {
+    requirePermissions { updateObservationQuantities(observationId) }
+
+    entityLocker.withLockedObservation(observationId) { _ ->
+      val recordedTree =
+          dslContext
+              .selectFrom(RECORDED_TREES)
+              .where(RECORDED_TREES.ID.eq(recordedTreeId))
+              .and(RECORDED_TREES.OBSERVATION_ID.eq(observationId))
+              .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .fetchOne() ?: throw RecordedTreeNotFoundException(recordedTreeId)
+      val biomassSpecies =
+          dslContext
+              .selectFrom(OBSERVATION_BIOMASS_SPECIES)
+              .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(recordedTree.biomassSpeciesId))
+              .fetchOne()
+              ?: throw IllegalStateException(
+                  "Biomass species ${recordedTree.biomassSpeciesId} not found"
+              )
+      val organizationId =
+          parentStore.getOrganizationId(observationId)
+              ?: throw ObservationNotFoundException(observationId)
+      val plantingSiteId =
+          parentStore.getPlantingSiteId(observationId)
+              ?: throw ObservationNotFoundException(observationId)
+
+      dslContext.deleteFrom(RECORDED_TREES).where(RECORDED_TREES.ID.eq(recordedTreeId)).execute()
+
+      eventPublisher.publishEvent(
+          RecordedTreeDeletedEvent(
+              biomassSpeciesId = recordedTree.biomassSpeciesId!!,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId = plantingSiteId,
+              recordedTreeId = recordedTreeId,
+              speciesId = biomassSpecies.speciesId,
+              speciesName =
+                  getBiomassSpeciesName(biomassSpecies.speciesId, biomassSpecies.scientificName),
+              treeGrowthForm = recordedTree.treeGrowthFormId!!,
+              treeNumber = recordedTree.treeNumber!!,
+              trunkNumber = recordedTree.trunkNumber!!,
+          )
+      )
+
+      deleteBiomassSpeciesIfUnreferenced(recordedTree.biomassSpeciesId!!)
+    }
+  }
+
   private fun fetchBiomassSpecies(
       speciesId: SpeciesId?,
       scientificName: String?,
@@ -1029,6 +1084,55 @@ class BiomassStore(
     )
 
     return record.id!!
+  }
+
+  private fun deleteBiomassSpeciesIfUnreferenced(biomassSpeciesId: BiomassSpeciesId) {
+    val hasRecordedTrees =
+        dslContext.fetchExists(
+            RECORDED_TREES,
+            RECORDED_TREES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+        )
+    val hasQuadratSpecies =
+        dslContext.fetchExists(
+            OBSERVATION_BIOMASS_QUADRAT_SPECIES,
+            OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+        )
+    if (hasRecordedTrees || hasQuadratSpecies) {
+      return
+    }
+
+    val record =
+        dslContext
+            .selectFrom(OBSERVATION_BIOMASS_SPECIES)
+            .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+            .fetchOne() ?: return
+    val observationId = record.observationId!!
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    dslContext
+        .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+        .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+        .execute()
+
+    eventPublisher.publishEvent(
+        BiomassSpeciesDeletedEvent(
+            biomassSpeciesId = biomassSpeciesId,
+            commonName = record.commonName,
+            isImplicit = true,
+            monitoringPlotId = record.monitoringPlotId!!,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            scientificName = record.scientificName,
+            speciesId = record.speciesId,
+            speciesName = getBiomassSpeciesName(record.speciesId, record.scientificName),
+        )
+    )
   }
 
   private fun validateRecordedTreeUpdate(
