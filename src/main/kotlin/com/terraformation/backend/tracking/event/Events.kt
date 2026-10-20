@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
+import com.terraformation.backend.eventlog.FieldsCreatedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.UpgradableEvent
@@ -655,6 +656,36 @@ sealed interface BiomassQuadratSpeciesPersistentEvent : PersistentEvent {
   val speciesId: SpeciesId?
   val speciesName: String
 }
+
+data class BiomassQuadratSpeciesCreatedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+    val abundance: Int,
+) : BiomassQuadratSpeciesPersistentEvent, FieldsCreatedPersistentEvent {
+  override fun listInitialFields(messages: Messages) =
+      listOfNotNull(createInitialField("abundance", abundance.toString()))
+}
+
+typealias BiomassQuadratSpeciesCreatedEvent = BiomassQuadratSpeciesCreatedEventV1
+
+data class BiomassQuadratSpeciesDeletedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassQuadratSpeciesPersistentEvent, EntityDeletedPersistentEvent
+
+typealias BiomassQuadratSpeciesDeletedEvent = BiomassQuadratSpeciesDeletedEventV1
 
 data class BiomassQuadratSpeciesUpdatedEventV1(
     val changedFrom: Values,

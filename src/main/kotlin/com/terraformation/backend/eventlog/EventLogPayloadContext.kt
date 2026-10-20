@@ -169,6 +169,21 @@ class EventLogPayloadContext(
     return lastEventBefore(event, T::class, predicate)
   }
 
+  /**
+   * Returns the last event of a given class [kClass] that matches [predicate], or null if no events
+   * match.
+   */
+  @Suppress("UNCHECKED_CAST")
+  fun <T : PersistentEvent> lastEvent(kClass: KClass<T>, predicate: (T) -> Boolean): T? =
+      entries.lastOrNull { kClass.isInstance(it.event) && predicate(it.event as T) }?.event as T?
+
+  /**
+   * Returns the last event of a given class [T] that matches [predicate], or null if no events
+   * match.
+   */
+  inline fun <reified T : PersistentEvent> lastEvent(noinline predicate: (T) -> Boolean): T? =
+      lastEvent(T::class, predicate)
+
   data class BiomassSpecies(
       val displayName: String,
       val scientificName: String?,
