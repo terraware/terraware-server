@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.ActivityType
+import com.terraformation.backend.db.default_schema.EmailNotificationCategory
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -75,6 +76,13 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
    */
   abstract val templateDir: String
 
+  /**
+   * Category of email notifications that users can opt out of to stop receiving this email. Null if
+   * the email is only subject to the user's overall email notification setting.
+   */
+  open val emailNotificationCategory: EmailNotificationCategory?
+    get() = null
+
   /** Renders a localizable string that contains embedded links. */
   fun link(key: String, vararg urls: String): TemplateModel {
     val htmlWithLeftBrackets =
@@ -116,6 +124,9 @@ class FacilityAlertRequested(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "facility/alert"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.SeedBank
 }
 
 class FacilityIdle(
@@ -125,6 +136,9 @@ class FacilityIdle(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "facility/idle"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.SeedBank
 }
 
 class UserAddedToOrganization(
@@ -159,6 +173,9 @@ class AccessionDryingEnd(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "accession/dryingEnd"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.SeedBank
 }
 
 class NurserySeedlingBatchReady(
@@ -169,6 +186,9 @@ class NurserySeedlingBatchReady(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "nursery/seedlingBatchReady"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.Nursery
 }
 
 class SeedFundReportCreated(
@@ -186,6 +206,9 @@ class SeedFundReportCreated(
 
   override val templateDir: String
     get() = "seedFundReport/created"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.SeedBank
 }
 
 class ObservationStarted(
@@ -194,6 +217,9 @@ class ObservationStarted(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/started"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class ObservationPlotsUnderallocated(
@@ -204,6 +230,9 @@ class ObservationPlotsUnderallocated(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/underallocated"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class ObservationUpcoming(
@@ -216,6 +245,9 @@ class ObservationUpcoming(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/upcoming"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 
   val startDateString: String
     get() = dateString(startDate)
@@ -272,6 +304,9 @@ class ScheduleObservation(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/schedule"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class ScheduleObservationReminder(
@@ -283,6 +318,9 @@ class ScheduleObservationReminder(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/scheduleReminder"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class ObservationNotScheduled(
@@ -301,6 +339,9 @@ class ObservationNotStarted(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/notStarted"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class ObservationPlotReplaced(
@@ -354,6 +395,9 @@ class PlantingSeasonStarted(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "plantingSeason/started"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class PlantingSeasonNotScheduled(
@@ -364,6 +408,9 @@ class PlantingSeasonNotScheduled(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "plantingSeason/notScheduled"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class PlantingSeasonNotScheduledSupport(
@@ -421,6 +468,9 @@ class DeliverableStatusUpdated(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "deliverable/statusUpdated"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.Accelerator
 }
 
 class SupportRequestSubmitted(
@@ -491,6 +541,9 @@ class AcceleratorReportUpcoming(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "acceleratorReport/upcoming"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.Accelerator
 }
 
 class AcceleratorReportSubmitted(
@@ -511,6 +564,9 @@ class AcceleratorReportPublished(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "acceleratorReport/published"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.Accelerator
 }
 
 class ActivityCreated(
@@ -579,6 +635,9 @@ class SplatGenerationCompleted(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "splat/generationCompleted"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 }
 
 class SplatGenerationFailed(
@@ -588,6 +647,9 @@ class SplatGenerationFailed(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "splat/generationFailed"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 
   val uploadDateString: String
     get() = uploadDate.toString()
@@ -601,6 +663,9 @@ class SplatMarkedNeedsAttention(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "splat/markedNeedsAttention"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
 
   val uploadDateString: String
     get() = uploadDate.toString()
