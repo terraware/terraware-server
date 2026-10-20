@@ -67,10 +67,12 @@ WITH src AS (SELECT DISTINCT ON (draft_id, name) draft_id, name, stratum, ord
                     name,
                     ST_Multi(ST_GeomFromGeoJSON(stratum ->> 'boundary')),
                     CASE
-                        WHEN trim(coalesce(stratum ->> 'initialPlantingDensity', stratum ->> 'targetPlantingDensity'))
-                            ~ '^[-+]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][-+]?[0-9]+)?$'
-                            THEN trim(coalesce(stratum ->> 'initialPlantingDensity',
-                                               stratum ->> 'targetPlantingDensity'))::NUMERIC
+                        -- The digit check excludes NaN and Infinity, which BigDecimal can't represent.
+                        WHEN pg_input_is_valid(
+                                coalesce(stratum ->> 'initialPlantingDensity', stratum ->> 'targetPlantingDensity'),
+                                'numeric')
+                            AND coalesce(stratum ->> 'initialPlantingDensity', stratum ->> 'targetPlantingDensity') ~ '[0-9]'
+                            THEN coalesce(stratum ->> 'initialPlantingDensity', stratum ->> 'targetPlantingDensity')::NUMERIC
                         ELSE 1500
                         END
              FROM src
