@@ -226,6 +226,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             tideId = MangroveTide.High,
             tideTime = Instant.ofEpochSecond(123),
             waterDepthCm = 2,
+            nextTreeNumber = 4,
         ),
         "Biomass details table",
     )
