@@ -19,7 +19,7 @@ class BiomassStoreUpdateBiomassSpeciesTest : BaseBiomassStoreTest() {
     insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
     insertObservationPlot(completedBy = user.userId)
     insertObservationBiomassDetails()
-    insertSpecies()
+    insertSpecies(scientificName = "Species name")
     insertObservationBiomassSpecies(speciesId = inserted.speciesId)
   }
 
@@ -56,6 +56,8 @@ class BiomassStoreUpdateBiomassSpeciesTest : BaseBiomassStoreTest() {
             inserted.observationId,
             inserted.organizationId,
             inserted.plantingSiteId,
+            speciesId = inserted.speciesId,
+            speciesName = "Species name",
         )
     )
   }

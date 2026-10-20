@@ -688,6 +688,8 @@ sealed interface BiomassSpeciesPersistentEvent : PersistentEvent {
   val observationId: ObservationId
   val organizationId: OrganizationId
   val plantingSiteId: PlantingSiteId
+  val speciesId: SpeciesId?
+  val speciesName: String
 }
 
 data class BiomassSpeciesCreatedEventV1(
@@ -718,8 +720,8 @@ data class BiomassSpeciesCreatedEventV2(
     override val organizationId: OrganizationId,
     override val plantingSiteId: PlantingSiteId,
     val scientificName: String?,
-    val speciesId: SpeciesId?,
-    val speciesName: String,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
 ) : BiomassSpeciesPersistentEvent, EntityCreatedPersistentEvent
 
 typealias BiomassSpeciesCreatedEvent = BiomassSpeciesCreatedEventV2
@@ -727,11 +729,55 @@ typealias BiomassSpeciesCreatedEvent = BiomassSpeciesCreatedEventV2
 data class BiomassSpeciesUpdatedEventV1(
     val changedFrom: Values,
     val changedTo: Values,
+    val biomassSpeciesId: BiomassSpeciesId,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val organizationId: OrganizationId,
+    val plantingSiteId: PlantingSiteId,
+) : UpgradableEvent {
+  data class Values(
+      val isInvasive: Boolean?,
+      val isThreatened: Boolean?,
+  )
+
+  override fun toNextVersion(
+      eventLogId: EventLogId,
+      eventUpgradeUtils: EventUpgradeUtils,
+  ): BiomassSpeciesUpdatedEventV2 {
+    val biomassSpeciesIdentity =
+        eventUpgradeUtils.getBiomassSpeciesIdentity(biomassSpeciesId, eventLogId)
+    return BiomassSpeciesUpdatedEventV2(
+        changedFrom =
+            BiomassSpeciesUpdatedEventV2.Values(
+                isInvasive = changedFrom.isInvasive,
+                isThreatened = changedFrom.isThreatened,
+            ),
+        changedTo =
+            BiomassSpeciesUpdatedEventV2.Values(
+                isInvasive = changedTo.isInvasive,
+                isThreatened = changedTo.isThreatened,
+            ),
+        biomassSpeciesId = biomassSpeciesId,
+        monitoringPlotId = monitoringPlotId,
+        observationId = observationId,
+        organizationId = organizationId,
+        plantingSiteId = plantingSiteId,
+        speciesId = biomassSpeciesIdentity.speciesId,
+        speciesName = biomassSpeciesIdentity.speciesName,
+    )
+  }
+}
+
+data class BiomassSpeciesUpdatedEventV2(
+    val changedFrom: Values,
+    val changedTo: Values,
     override val biomassSpeciesId: BiomassSpeciesId,
     override val monitoringPlotId: MonitoringPlotId,
     override val observationId: ObservationId,
     override val organizationId: OrganizationId,
     override val plantingSiteId: PlantingSiteId,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
 ) : BiomassSpeciesPersistentEvent, FieldsUpdatedPersistentEvent {
   data class Values(
       val isInvasive: Boolean?,
@@ -753,9 +799,9 @@ data class BiomassSpeciesUpdatedEventV1(
       )
 }
 
-typealias BiomassSpeciesUpdatedEvent = BiomassSpeciesUpdatedEventV1
+typealias BiomassSpeciesUpdatedEvent = BiomassSpeciesUpdatedEventV2
 
-typealias BiomassSpeciesUpdatedEventValues = BiomassSpeciesUpdatedEventV1.Values
+typealias BiomassSpeciesUpdatedEventValues = BiomassSpeciesUpdatedEventV2.Values
 
 sealed interface MonitoringSpeciesPersistentEvent : PersistentEvent {
   val certainty: RecordedSpeciesCertainty
