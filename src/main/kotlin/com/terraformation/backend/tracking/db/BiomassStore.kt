@@ -802,6 +802,41 @@ class BiomassStore(
     }
   }
 
+  fun deleteBiomassSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+  ) {
+    requirePermissions { updateObservationQuantities(observationId) }
+    require((speciesId == null) xor (scientificName == null)) {
+      "One of species ID or scientific name must be specified"
+    }
+
+    entityLocker.withLockedObservation(observationId) { _ ->
+      val biomassSpecies =
+          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
+      val biomassSpeciesId = biomassSpecies.id!!
+      val hasRecordedTrees =
+          dslContext.fetchExists(
+              RECORDED_TREES,
+              RECORDED_TREES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+          )
+      val hasQuadratSpecies =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES,
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+          )
+      if (hasRecordedTrees || hasQuadratSpecies) {
+        throw IllegalArgumentException(
+            "Biomass species is still referenced by trees or quadrat entries"
+        )
+      }
+
+      deleteBiomassSpeciesRow(biomassSpecies, isImplicit = false)
+    }
+  }
+
   fun updateBiomassQuadratDetails(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
@@ -1460,6 +1495,14 @@ class BiomassStore(
             .selectFrom(OBSERVATION_BIOMASS_SPECIES)
             .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
             .fetchOne() ?: return
+    deleteBiomassSpeciesRow(record, isImplicit = true)
+  }
+
+  private fun deleteBiomassSpeciesRow(
+      record: ObservationBiomassSpeciesRecord,
+      isImplicit: Boolean,
+  ) {
+    val biomassSpeciesId = record.id!!
     val observationId = record.observationId!!
     val organizationId =
         parentStore.getOrganizationId(observationId)
@@ -1477,7 +1520,7 @@ class BiomassStore(
         BiomassSpeciesDeletedEvent(
             biomassSpeciesId = biomassSpeciesId,
             commonName = record.commonName,
-            isImplicit = true,
+            isImplicit = isImplicit,
             monitoringPlotId = record.monitoringPlotId!!,
             observationId = observationId,
             organizationId = organizationId,

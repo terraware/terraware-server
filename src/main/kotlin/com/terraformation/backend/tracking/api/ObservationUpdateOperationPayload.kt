@@ -124,6 +124,20 @@ data class CreateBiomassSpeciesOperationPayload(
     val isThreatened: Boolean,
 ) : ObservationUpdateOperationPayload
 
+@JsonTypeName("DeleteBiomassSpecies")
+data class DeleteBiomassSpeciesOperationPayload(
+    @Schema(
+        description =
+            "ID of species to delete. Exactly one of this or scientificName must be specified."
+    )
+    val speciesId: SpeciesId?,
+    @Schema(
+        description =
+            "Name of species to delete. Exactly one of this or speciesId must be specified."
+    )
+    val scientificName: String?,
+) : ObservationUpdateOperationPayload
+
 @JsonTypeName("Biomass")
 data class BiomassUpdateOperationPayload(
     val description: Optional<String>?,
