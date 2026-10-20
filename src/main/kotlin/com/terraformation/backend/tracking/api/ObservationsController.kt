@@ -361,6 +361,7 @@ class ObservationsController(
         payload.updates.any {
           it is CreateRecordedTreeOperationPayload ||
               it is CreateQuadratSpeciesOperationPayload ||
+              it is CreateBiomassSpeciesOperationPayload ||
               it is DeleteQuadratSpeciesOperationPayload ||
               it is DeleteRecordedTreeOperationPayload ||
               (it is RecordedTreeUpdateOperationPayload &&
@@ -371,6 +372,16 @@ class ObservationsController(
     observationService.updateCompletedPlot(observationId, plotId, includesQuantityUpdates) {
       payload.updates.forEach { element ->
         when (element) {
+          is CreateBiomassSpeciesOperationPayload ->
+              biomassStore.createBiomassSpecies(
+                  observationId,
+                  plotId,
+                  element.speciesId,
+                  element.scientificName,
+                  element.commonName,
+                  element.isInvasive,
+                  element.isThreatened,
+              )
           is BiomassSpeciesUpdateOperationPayload ->
               biomassStore.updateBiomassSpecies(
                   observationId,
