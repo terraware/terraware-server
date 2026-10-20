@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.EmailNotificationSettingsModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -138,23 +137,6 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   EmailNotificationCategory.PlantingAndObservations,
               ),
           )
-      )
-    }
-  }
-
-  @Nested
-  inner class UserDeletion {
-    @Test
-    fun `deletes opt-ins of deleted user`() {
-      val otherUserId = insertUser()
-      insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
-      insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, user.userId)
-      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, user.userId)
-
-      store.on(UserDeletionStartedEvent(user.userId))
-
-      assertTableEquals(
-          UserEmailNotificationCategoriesRecord(otherUserId, EmailNotificationCategory.SeedBank)
       )
     }
   }

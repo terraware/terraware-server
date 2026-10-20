@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.EmailNotificationSettingsModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
@@ -15,16 +14,10 @@ import com.terraformation.backend.db.default_schema.tables.references.USER_EMAIL
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.springframework.context.event.EventListener
 
 /** Manages which categories of email notifications users have opted into. */
 @Named
 class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
-  /**
-   * Returns the current user's opt-in status for each email notification category that applies to
-   * them. The accelerator category only applies to funders and to members of organizations with
-   * accelerator or application projects.
-   */
   fun fetchForCurrentUser(): EmailNotificationSettingsModel {
     val user = currentUser()
     val optedInCategories = fetchOptedInCategories(user.userId)
@@ -34,10 +27,6 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
     )
   }
 
-  /**
-   * Opts the current user into or out of email notification categories. Categories that aren't
-   * included in [categories] are left as-is.
-   */
   fun updateForCurrentUser(categories: Map<EmailNotificationCategory, Boolean>) {
     val userId = currentUser().userId
     val categoriesToOptIn = categories.filterValues { it }.keys
@@ -62,14 +51,6 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
         }
       }
     }
-  }
-
-  @EventListener
-  fun on(event: UserDeletionStartedEvent) {
-    dslContext
-        .deleteFrom(USER_EMAIL_NOTIFICATION_CATEGORIES)
-        .where(USER_EMAIL_NOTIFICATION_CATEGORIES.USER_ID.eq(event.userId))
-        .execute()
   }
 
   private fun fetchOptedInCategories(userId: UserId): Set<EmailNotificationCategory> {
