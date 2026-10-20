@@ -44,29 +44,57 @@ CREATE TABLE tracking.draft_substrata
     UNIQUE (draft_stratum_id, name)
 );
 
--- Detailed drafts only; simple drafts' placeholder strata are discarded.
-WITH src AS (SELECT d.id AS draft_id, e.value AS stratum, e.ord
-             FROM tracking.draft_planting_sites d,
-                  jsonb_array_elements(coalesce(d.data -> 'strata', d.data -> 'plantingZones', '[]'))
-                      WITH ORDINALITY e(value, ord)
-             WHERE d.data ->> 'siteType' = 'detailed'),
+-- Detailed drafts only; simple drafts' placeholder strata are discarded. The legacy data was never
+-- validated, so skip strata and substrata that are missing names or boundaries, keep only the first
+-- of any duplicate names, and use the default density (as the API does) when it is missing or not
+-- a number.
+WITH src AS (SELECT DISTINCT ON (draft_id, name) draft_id, name, stratum, ord
+             FROM (SELECT d.id AS draft_id, e.value ->> 'name' AS name, e.value AS stratum, e.ord
+                   FROM tracking.draft_planting_sites d,
+                        jsonb_array_elements(
+                                CASE
+                                    WHEN jsonb_typeof(coalesce(d.data -> 'strata', d.data -> 'plantingZones')) = 'array'
+                                        THEN coalesce(d.data -> 'strata', d.data -> 'plantingZones')
+                                    ELSE '[]'
+                                    END) WITH ORDINALITY e(value, ord)
+                   WHERE d.data ->> 'siteType' = 'detailed') strata
+             WHERE name IS NOT NULL
+               AND stratum ->> 'boundary' IS NOT NULL
+             ORDER BY draft_id, name, ord),
      ins AS (
          INSERT INTO tracking.draft_strata (draft_planting_site_id, name, boundary, initial_planting_density)
              SELECT draft_id,
-                    stratum ->> 'name',
+                    name,
                     ST_Multi(ST_GeomFromGeoJSON(stratum ->> 'boundary')),
-                    coalesce(stratum ->> 'initialPlantingDensity', stratum ->> 'targetPlantingDensity')::NUMERIC
+                    CASE
+                        WHEN trim(coalesce(stratum ->> 'initialPlantingDensity', stratum ->> 'targetPlantingDensity'))
+                            ~ '^[-+]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][-+]?[0-9]+)?$'
+                            THEN trim(coalesce(stratum ->> 'initialPlantingDensity',
+                                               stratum ->> 'targetPlantingDensity'))::NUMERIC
+                        ELSE 1500
+                        END
              FROM src
              ORDER BY draft_id, ord
              RETURNING id, draft_planting_site_id, name)
 INSERT
 INTO tracking.draft_substrata (draft_stratum_id, name, boundary)
-SELECT ins.id, s.value ->> 'name', ST_Multi(ST_GeomFromGeoJSON(s.value ->> 'boundary'))
-FROM ins
-         JOIN src ON src.draft_id = ins.draft_planting_site_id AND src.stratum ->> 'name' = ins.name
-         CROSS JOIN jsonb_array_elements(
-        coalesce(src.stratum -> 'substrata', src.stratum -> 'plantingSubzones', '[]'))
-    WITH ORDINALITY s(value, ord)
-ORDER BY ins.id, s.ord;
+SELECT stratum_id, name, ST_Multi(ST_GeomFromGeoJSON(boundary))
+FROM (SELECT DISTINCT ON (ins.id, s.value ->> 'name') ins.id             AS stratum_id,
+                                                      s.value ->> 'name' AS name,
+                                                      s.value ->> 'boundary' AS boundary,
+                                                      s.ord
+      FROM ins
+               -- Stratum names are unique per draft after the DISTINCT ON above.
+               JOIN src ON src.draft_id = ins.draft_planting_site_id AND src.name = ins.name
+               CROSS JOIN jsonb_array_elements(
+              CASE
+                  WHEN jsonb_typeof(coalesce(src.stratum -> 'substrata', src.stratum -> 'plantingSubzones')) = 'array'
+                      THEN coalesce(src.stratum -> 'substrata', src.stratum -> 'plantingSubzones')
+                  ELSE '[]'
+                  END) WITH ORDINALITY s(value, ord)
+      WHERE s.value ->> 'name' IS NOT NULL
+        AND s.value ->> 'boundary' IS NOT NULL
+      ORDER BY ins.id, s.value ->> 'name', s.ord) substrata
+ORDER BY stratum_id, ord;
 
 ALTER TABLE tracking.draft_planting_sites ALTER COLUMN data DROP NOT NULL;
