@@ -2,9 +2,9 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
-import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -22,6 +22,11 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
           accessions.asSingleValueSublist("accession", WITHDRAWALS.ACCESSION_ID, ACCESSIONS.ID),
           batches.asSingleValueSublist("batch", WITHDRAWALS.BATCH_ID, BATCHES.ID),
           users.asSingleValueSublist("withdrawnBy", WITHDRAWALS.WITHDRAWN_BY, USERS.ID),
+          viabilityTests.asSingleValueSublist(
+              "viabilityTest",
+              WITHDRAWALS.VIABILITY_TEST_ID,
+              VIABILITY_TESTS.ID,
+          ),
       )
     }
   }
@@ -36,7 +41,6 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
           idWrapperField("id", WITHDRAWALS.ID) { WithdrawalId(it) },
           textField("notes", WITHDRAWALS.NOTES),
           enumField("purpose", WITHDRAWALS.PURPOSE_ID),
-          idWrapperField("viabilityTestId", WITHDRAWALS.VIABILITY_TEST_ID) { ViabilityTestId(it) },
           *weightFields(
               "",
               WITHDRAWALS.WITHDRAWN_QUANTITY,
