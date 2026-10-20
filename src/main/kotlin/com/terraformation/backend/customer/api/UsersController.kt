@@ -8,6 +8,7 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.EmailNotificationSettingsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
@@ -37,7 +38,11 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RequestMapping("/api/v1/users")
 @RestController
-class UsersController(private val clock: InstantSource, private val userStore: UserStore) {
+class UsersController(
+    private val clock: InstantSource,
+    private val emailNotificationSettingsStore: EmailNotificationSettingsStore,
+    private val userStore: UserStore,
+) {
   @GetMapping("/me")
   @Operation(summary = "Gets information about the current user.")
   fun getMyself(): GetUserResponsePayload {
@@ -49,6 +54,8 @@ class UsersController(private val clock: InstantSource, private val userStore: U
   @Operation(summary = "Updates information about the current user.")
   fun updateMyself(@RequestBody payload: UpdateUserRequestPayload): SimpleSuccessResponsePayload {
     val user = currentUser()
+    val enablingEmailNotifications =
+        payload.emailNotificationsEnabled == true && !user.emailNotificationsEnabled
     if (user is IndividualUser) {
       val model =
           user.copy(
@@ -61,6 +68,9 @@ class UsersController(private val clock: InstantSource, private val userStore: U
               timeZone = payload.timeZone,
           )
       userStore.updateUser(model)
+      if (enablingEmailNotifications) {
+        emailNotificationSettingsStore.optIntoAllCategoriesIfNoneForCurrentUser()
+      }
       return SimpleSuccessResponsePayload()
     } else if (user is FunderUser) {
       val model =
@@ -74,6 +84,9 @@ class UsersController(private val clock: InstantSource, private val userStore: U
               timeZone = payload.timeZone,
           )
       userStore.updateUser(model)
+      if (enablingEmailNotifications) {
+        emailNotificationSettingsStore.optIntoAllCategoriesIfNoneForCurrentUser()
+      }
       return SimpleSuccessResponsePayload()
     } else {
       throw ForbiddenException("Can only update information about ordinary users")

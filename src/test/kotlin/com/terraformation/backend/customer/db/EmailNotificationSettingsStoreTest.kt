@@ -140,4 +140,35 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
   }
+
+  @Nested
+  inner class OptIntoAllCategoriesIfNoneForCurrentUser {
+    @Test
+    fun `opts into all categories if user has no opt-ins`() {
+      val otherUserId = insertUser()
+      insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
+
+      store.optIntoAllCategoriesIfNoneForCurrentUser()
+
+      assertTableEquals(
+          listOf(
+              UserEmailNotificationCategoriesRecord(otherUserId, EmailNotificationCategory.SeedBank)
+          ) +
+              EmailNotificationCategory.entries.map {
+                UserEmailNotificationCategoriesRecord(user.userId, it)
+              }
+      )
+    }
+
+    @Test
+    fun `does not modify existing opt-ins`() {
+      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery)
+
+      store.optIntoAllCategoriesIfNoneForCurrentUser()
+
+      assertTableEquals(
+          UserEmailNotificationCategoriesRecord(user.userId, EmailNotificationCategory.Nursery)
+      )
+    }
+  }
 }
