@@ -85,8 +85,19 @@ class DraftPlantingSiteService(
     )
   }
 
+  /**
+   * @throws PlantingSiteMapInvalidException The map failed validation.
+   * @throws IllegalArgumentException The map's geometries couldn't be compared with one another.
+   */
   private fun DraftPlantingSiteModel.requireValidMap() {
-    validate()?.let { throw PlantingSiteMapInvalidException(it) }
+    val problems =
+        try {
+          validate()
+        } catch (e: TopologyException) {
+          throw IllegalArgumentException("Planting site map has invalid geometry", e)
+        }
+
+    problems?.let { throw PlantingSiteMapInvalidException(it) }
   }
 
   /**

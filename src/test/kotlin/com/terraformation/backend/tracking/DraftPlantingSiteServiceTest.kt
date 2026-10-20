@@ -33,6 +33,7 @@ import com.terraformation.backend.tracking.model.DraftSubstratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureType
 import com.terraformation.backend.util.toMultiPolygon
 import io.mockk.every
+import io.mockk.spyk
 import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.util.zip.ZipEntry
@@ -55,6 +56,7 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.TopologyException
 import org.locationtech.jts.io.WKTReader
 import org.locationtech.jts.io.geojson.GeoJsonWriter
 import org.springframework.security.access.AccessDeniedException
@@ -414,6 +416,15 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
       }
+    }
+
+    @Test
+    fun `createTyped reports topology failures as invalid arguments`() {
+      val model = spyk(siteModel(listOf(stratum("A", boundaryA))))
+      every { model.validate() } throws TopologyException("Test failure")
+
+      assertThrows<IllegalArgumentException> { service.createTyped(model) }
+      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "No drafts are stored")
     }
 
     @Test
