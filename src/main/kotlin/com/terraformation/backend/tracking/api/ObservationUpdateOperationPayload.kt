@@ -44,6 +44,22 @@ data class QuadratSpeciesUpdateOperationPayload(
   }
 }
 
+@JsonTypeName("CreateQuadratSpecies")
+data class CreateQuadratSpeciesOperationPayload(
+    @Schema(description = "Abundance count, from 0 through 25.", minimum = "0", maximum = "25")
+    val abundance: Int,
+    val position: ObservationPlotPosition,
+    @Schema(
+        description =
+            "ID of species to add. Exactly one of this or scientificName must be specified."
+    )
+    val speciesId: SpeciesId?,
+    @Schema(
+        description = "Name of species to add. Exactly one of this or speciesId must be specified."
+    )
+    val scientificName: String?,
+) : ObservationUpdateOperationPayload
+
 @JsonTypeName("Quadrat")
 data class QuadratUpdateOperationPayload(
     val description: Optional<String>?,

@@ -33,6 +33,7 @@ import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
@@ -885,6 +886,115 @@ class BiomassStore(
             )
         )
       }
+    }
+  }
+
+  fun createBiomassQuadratSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      position: ObservationPlotPosition,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+      abundance: Int,
+  ) {
+    requirePermissions { updateObservationQuantities(observationId) }
+
+    if (
+        speciesId == null && scientificName == null || speciesId != null && scientificName != null
+    ) {
+      throw IllegalArgumentException("One of species ID or scientific name must be specified")
+    }
+    require(abundance in 0..25) { "Abundance must be between 0 and 25" }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    entityLocker.withLockedObservation(observationId) { observation ->
+      val isObservationPlot =
+          dslContext.fetchExists(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
+          )
+      if (!isObservationPlot) {
+        throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+      }
+
+      val hasBiomassDetails =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_DETAILS,
+              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
+          )
+      if (!hasBiomassDetails) {
+        throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+      }
+
+      val biomassSpeciesId =
+          getOrCreateBiomassSpecies(observationId, monitoringPlotId, speciesId, scientificName)
+      val hasQuadratDetails =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_QUADRAT_DETAILS,
+              OBSERVATION_BIOMASS_QUADRAT_DETAILS.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_BIOMASS_QUADRAT_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(OBSERVATION_BIOMASS_QUADRAT_DETAILS.POSITION_ID.eq(position)),
+          )
+      if (!hasQuadratDetails) {
+        dslContext
+            .insertInto(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+            .set(OBSERVATION_BIOMASS_QUADRAT_DETAILS.DESCRIPTION, null as String?)
+            .set(OBSERVATION_BIOMASS_QUADRAT_DETAILS.MONITORING_PLOT_ID, monitoringPlotId)
+            .set(OBSERVATION_BIOMASS_QUADRAT_DETAILS.OBSERVATION_ID, observationId)
+            .set(OBSERVATION_BIOMASS_QUADRAT_DETAILS.POSITION_ID, position)
+            .execute()
+
+        eventPublisher.publishEvent(
+            BiomassQuadratCreatedEvent(
+                description = null,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = observation.plantingSiteId,
+                position = position,
+            )
+        )
+      }
+
+      val alreadyExists =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES,
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.POSITION_ID.eq(position))
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId)),
+          )
+      if (alreadyExists) {
+        throw IllegalArgumentException("Biomass species is already present in quadrat")
+      }
+
+      dslContext
+          .insertInto(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+          .set(OBSERVATION_BIOMASS_QUADRAT_SPECIES.ABUNDANCE_COUNT, abundance)
+          .set(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID, biomassSpeciesId)
+          .set(OBSERVATION_BIOMASS_QUADRAT_SPECIES.MONITORING_PLOT_ID, monitoringPlotId)
+          .set(OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID, observationId)
+          .set(OBSERVATION_BIOMASS_QUADRAT_SPECIES.POSITION_ID, position)
+          .execute()
+
+      eventPublisher.publishEvent(
+          BiomassQuadratSpeciesCreatedEvent(
+              abundance = abundance,
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId = observation.plantingSiteId,
+              position = position,
+              speciesId = speciesId,
+              speciesName = getBiomassSpeciesName(speciesId, scientificName),
+          )
+      )
     }
   }
 
