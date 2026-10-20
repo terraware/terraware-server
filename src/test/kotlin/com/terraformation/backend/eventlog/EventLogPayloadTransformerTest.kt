@@ -18,6 +18,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
@@ -26,6 +27,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
+import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
@@ -60,6 +62,7 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -68,6 +71,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -800,6 +804,37 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         expected,
         transformer.eventsToPayloads(listOf(addEntry, deleteEntry, replacedEntry)),
     )
+  }
+
+  @Test
+  fun `maps biomass deletion events to payloads`() {
+    val payload =
+        transformer
+            .eventsToPayloads(
+                listOf(
+                    eventLogEntry(
+                        knownUserId,
+                        BiomassSpeciesDeletedEvent(
+                            biomassSpeciesId = BiomassSpeciesId(1),
+                            commonName = null,
+                            monitoringPlotId = monitoringPlotId,
+                            observationId = observationId,
+                            organizationId = organizationId,
+                            plantingSiteId = plantingSiteId,
+                            scientificName = "Scientific name",
+                            speciesId = null,
+                            speciesName = "Species name",
+                        ),
+                    ),
+                )
+            )
+            .single()
+
+    assertEquals(DeletedActionPayload(), payload.action)
+    assertEquals(true, payload.subject.deleted)
+    val subject = payload.subject as BiomassSpeciesSubjectPayload
+    assertNull(subject.speciesId)
+    assertEquals("Scientific name", subject.scientificName)
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =
