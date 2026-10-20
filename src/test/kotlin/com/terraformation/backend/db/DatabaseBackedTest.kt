@@ -3,6 +3,7 @@ package com.terraformation.backend.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.SpringShutdownListener
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestDiagnostics
 import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.ArbitraryJsonObject
@@ -606,13 +607,20 @@ import com.terraformation.backend.util.removeDiacritics
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
 import java.net.URI
+import java.nio.file.Path
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
@@ -628,6 +636,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -6532,10 +6541,7 @@ abstract class DatabaseBackedTest {
   class DockerPostgresDataSourceInitializer :
       ApplicationContextInitializer<ConfigurableApplicationContext> {
     override fun initialize(applicationContext: ConfigurableApplicationContext) {
-      if (!started) {
-        postgresContainer.start()
-        started = true
-      }
+      startPostgresContainer()
 
       // Run tests using the AWS JDBC wrapper since we'll be using the wrapper in production.
       // The wrapper requires an extra element in the JDBC URL.
@@ -6583,12 +6589,92 @@ abstract class DatabaseBackedTest {
         DockerImageName.parse("$POSTGRES_DOCKER_REPOSITORY:$POSTGRES_DOCKER_TAG")
             .asCompatibleSubstituteFor("postgres")
 
-    val postgresContainer: PostgreSQLContainer<*> =
+    /**
+     * How long to wait for the database container to start. Startup normally takes a few seconds;
+     * this is long enough to accommodate a slow Docker host while still failing well before a CI
+     * job would time out.
+     */
+    private val postgresStartupTimeout: Duration =
+        System.getProperty("terraware.test.postgresStartupTimeout")?.let { Duration.parse(it) }
+            ?: Duration.ofMinutes(2)
+    private const val POSTGRES_START_ATTEMPTS = 2
+
+    private val log = LoggerFactory.getLogger(DatabaseBackedTest::class.java)
+
+    @Volatile
+    lateinit var postgresContainer: PostgreSQLContainer<*>
+      private set
+
+    private fun newPostgresContainer(): PostgreSQLContainer<*> =
         PostgreSQLContainer(imageName)
             .withDatabaseName("terraware")
             .withExposedPorts(PostgreSQLContainer.POSTGRESQL_PORT)
             .withNetwork(Network.newNetwork())
             .withNetworkAliases("postgres")
-    var started: Boolean = false
+
+    /**
+     * Starts the database container if it isn't already running. Tests run in parallel, so this may
+     * be called concurrently by multiple threads.
+     *
+     * Testcontainers can occasionally get stuck while starting a container. If startup doesn't
+     * finish within [postgresStartupTimeout], writes a diagnostic report, abandons the container,
+     * and tries again with a new one.
+     */
+    @Synchronized
+    fun startPostgresContainer() {
+      if (::postgresContainer.isInitialized) {
+        return
+      }
+
+      val reportPaths = mutableListOf<Path>()
+
+      for (attempt in 1..POSTGRES_START_ATTEMPTS) {
+        val container = newPostgresContainer()
+        val startResult = CompletableFuture<Unit>()
+        thread(isDaemon = true, name = "postgres-container-start-$attempt") {
+          try {
+            container.start()
+            startResult.complete(Unit)
+          } catch (e: Throwable) {
+            startResult.completeExceptionally(e)
+          }
+        }
+
+        try {
+          startResult.get(postgresStartupTimeout.toMillis(), TimeUnit.MILLISECONDS)
+          postgresContainer = container
+          return
+        } catch (e: ExecutionException) {
+          throw e.cause ?: e
+        } catch (_: TimeoutException) {
+          val path =
+              TestDiagnostics.writeReport(
+                  "postgres-startup",
+                  "Database container startup attempt $attempt of $POSTGRES_START_ATTEMPTS " +
+                      "did not finish within $postgresStartupTimeout\n" +
+                      "Container ID: ${container.containerId}\n\n" +
+                      TestDiagnostics.dockerDiagnostics(container.containerId) +
+                      "\n" +
+                      TestDiagnostics.threadDump(),
+              )
+          reportPaths.add(path)
+          log.error("Database container startup timed out; diagnostics written to $path")
+
+          thread(isDaemon = true, name = "postgres-container-stop-$attempt") {
+            try {
+              container.stop()
+              container.network?.close()
+            } catch (e: Exception) {
+              log.warn("Unable to stop abandoned database container", e)
+            }
+          }
+        }
+      }
+
+      throw IllegalStateException(
+          "Database container did not start after $POSTGRES_START_ATTEMPTS attempts; " +
+              "diagnostics are in ${reportPaths.joinToString()}"
+      )
+    }
   }
 }
