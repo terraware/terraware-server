@@ -206,4 +206,24 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
   }
+
+  @Nested
+  inner class IsOptedIn {
+    @Test
+    fun `returns true only for categories the user opted into`() {
+      val otherUserId = insertUser()
+      insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
+      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, user.userId)
+
+      assertEquals(
+          mapOf(
+              EmailNotificationCategory.SeedBank to false,
+              EmailNotificationCategory.Nursery to true,
+              EmailNotificationCategory.PlantingAndObservations to false,
+              EmailNotificationCategory.Accelerator to false,
+          ),
+          EmailNotificationCategory.entries.associateWith { store.isOptedIn(user.userId, it) },
+      )
+    }
+  }
 }

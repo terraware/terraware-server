@@ -22,6 +22,7 @@ import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.EmailNotificationSettingsStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -63,6 +64,7 @@ import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.EmailNotificationCategory
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -108,6 +110,7 @@ import com.terraformation.backend.email.EmailSender
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.email.getRecipientsString
+import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
@@ -200,6 +203,7 @@ internal class NotificationServiceEmailTest {
   private val config: TerrawareServerConfig = mockk()
   private val deliverableStore: DeliverableStore = mockk()
   private val documentStore: DocumentStore = mockk()
+  private val emailNotificationSettingsStore: EmailNotificationSettingsStore = mockk()
   private val facilityStore: FacilityStore = mockk()
   private val fundingEntityStore: FundingEntityStore = mockk()
   private val observationStore: ObservationStore = mockk()
@@ -243,7 +247,16 @@ internal class NotificationServiceEmailTest {
       }
 
   private val emailService =
-      spyk(EmailService(config, freeMarkerConfig, parentStore, sender, userStore))
+      spyk(
+          EmailService(
+              config,
+              emailNotificationSettingsStore,
+              freeMarkerConfig,
+              parentStore,
+              sender,
+              userStore,
+          )
+      )
 
   private val service =
       NotificationService(
@@ -587,6 +600,7 @@ internal class NotificationServiceEmailTest {
         nonAcceleratorOrganization
     every { parentStore.getFacilityId(accessionId) } returns facility.id
     every { parentStore.getFacilityName(accessionId) } returns facility.name
+    every { emailNotificationSettingsStore.isOptedIn(any(), any()) } returns true
     every { parentStore.getFundingEntityIds(project.id) } returns listOf(fundingEntity.id)
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
     every { parentStore.getOrganizationId(applicationId) } returns organization.id
@@ -2015,6 +2029,77 @@ internal class NotificationServiceEmailTest {
     assertSubjectContains("accession".toGibberish(), gibberishMessage)
     assertBodyContains("accession", "English", message = englishMessage)
     assertBodyContains("accession".toGibberish(), "Gibberish", message = gibberishMessage)
+  }
+
+  @Test
+  fun `categorized emails are not sent to users who did not opt into the category`() {
+    val optedOutUserId = UserId(1001)
+    val optedInUser = userForEmail("optedIn@test.com", UserId(1000))
+    val optedOutUser = userForEmail("optedOut@test.com", optedOutUserId)
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(optedInUser, optedOutUser)
+    every {
+      emailNotificationSettingsStore.isOptedIn(
+          optedOutUserId,
+          EmailNotificationCategory.SeedBank,
+      )
+    } returns false
+
+    service.on(FacilityIdleEvent(facility.id))
+
+    assertRecipientsEqual(setOf(optedInUser.email))
+  }
+
+  @Test
+  fun `batched categorized emails are not sent to users who did not opt into the category`() {
+    val optedOutUserId = UserId(1001)
+    val optedInUser = userForEmail("optedIn@test.com", UserId(1000))
+    val optedOutUser = userForEmail("optedOut@test.com", optedOutUserId)
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(optedInUser, optedOutUser)
+    every {
+      emailNotificationSettingsStore.isOptedIn(
+          optedOutUserId,
+          EmailNotificationCategory.SeedBank,
+      )
+    } returns false
+
+    service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
+    service.on(NotificationJobSucceededEvent())
+
+    assertRecipientsEqual(setOf(optedInUser.email))
+  }
+
+  @Test
+  fun `categorized emails are sent regardless of category opt-ins if opt-in is not required`() {
+    every { emailNotificationSettingsStore.isOptedIn(any(), any()) } returns false
+
+    emailService.sendUserNotification(
+        user,
+        FacilityIdle(config, facility, "https://facility"),
+        requireOptIn = false,
+    )
+
+    assertRecipientsEqual(setOf(user.email))
+  }
+
+  @Test
+  fun `uncategorized emails are sent regardless of category opt-ins`() {
+    every { emailNotificationSettingsStore.isOptedIn(any(), any()) } returns false
+
+    emailService.sendUserNotification(user, ObservationNotScheduled(config, "org", "site"))
+
+    assertRecipientsEqual(setOf(user.email))
+  }
+
+  @Test
+  fun `categorized emails are not sent to users who disabled email notifications`() {
+    val disabledUser = userForEmail("disabled@test.com", UserId(1000))
+    every { disabledUser.emailNotificationsEnabled } returns false
+
+    emailService.sendUserNotification(disabledUser, FacilityIdle(config, facility, "https://x"))
+
+    assertNoMessageSent()
   }
 
   @Test

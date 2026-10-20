@@ -1,6 +1,7 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.EmailNotificationSettingsStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -35,6 +36,7 @@ import org.springframework.mail.javamail.MimeMessageHelper
 @Named
 class EmailService(
     private val config: TerrawareServerConfig,
+    private val emailNotificationSettingsStore: EmailNotificationSettingsStore,
     private val freeMarkerConfig: Configuration,
     private val parentStore: ParentStore,
     private val sender: EmailSender,
@@ -128,17 +130,15 @@ class EmailService(
    *
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification even if the user has not opted into email
-   *   notifications. The default is to obey the user's notification preference, which is the
-   *   correct thing to do in the majority of cases.
+   *   notifications or into the email's notification category. The default is to obey the user's
+   *   notification preferences, which is the correct thing to do in the majority of cases.
    */
   fun sendUserNotification(
       user: TerrawareUser,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true,
   ) {
-    if (requireOptIn && !user.emailNotificationsEnabled) {
-      log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
-    } else {
+    if (!requireOptIn || isOptedIn(user, model)) {
       sendLocaleEmails(model, listOf(user.email), user.locale)
     }
   }
@@ -148,8 +148,8 @@ class EmailService(
    *
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification even if the user has not opted into email
-   *   notifications. The default is to obey the user's notification preference, which is the
-   *   correct thing to do in the majority of cases.
+   *   notifications or into the email's notification category. The default is to obey the user's
+   *   notification preferences, which is the correct thing to do in the majority of cases.
    */
   fun sendAllUsersNotification(
       model: EmailTemplateModel,
@@ -158,7 +158,9 @@ class EmailService(
     val allUsers = userStore.fetchUsers(requireOptIn)
     allUsers.forEach { user ->
       try {
-        sendLocaleEmails(model, listOf(user.email), user.locale)
+        if (!requireOptIn || isOptedIn(user, model)) {
+          sendLocaleEmails(model, listOf(user.email), user.locale)
+        }
       } catch (e: Exception) {
         log.error("Failed to send email to user ${user.userId}: ${e.message}")
       }
@@ -188,6 +190,29 @@ class EmailService(
   ) {
     val finalLocale = initialLocale ?: Locale.ENGLISH
     finalLocale.use { send(model, recipients) }
+  }
+
+  /**
+   * Returns true if a user has enabled email notifications and, if the email has a notification
+   * category, has opted into that category.
+   */
+  private fun isOptedIn(user: TerrawareUser, model: EmailTemplateModel): Boolean {
+    val category = model.emailNotificationCategory
+
+    return if (!user.emailNotificationsEnabled) {
+      log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
+      false
+    } else if (
+        category != null && !emailNotificationSettingsStore.isOptedIn(user.userId, category)
+    ) {
+      log.info(
+          "Skipping email notification for user ${user.userId} because they didn't opt into " +
+              "category $category"
+      )
+      false
+    } else {
+      true
+    }
   }
 
   /** Renders a Freemarker template if it exists. Returns null if the template doesn't exist. */
