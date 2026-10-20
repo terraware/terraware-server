@@ -20,8 +20,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.DraftPlantingSiteService
 import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
 import com.terraformation.backend.tracking.model.BoundaryFileModel
-import com.terraformation.backend.tracking.model.DraftPlantingSiteData
 import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
+import com.terraformation.backend.tracking.model.DraftPlantingSiteMapConverter
 import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -46,7 +46,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @TrackingEndpoint
 class DraftPlantingSitesController(
-    private val draftPlantingSiteData: DraftPlantingSiteData,
+    private val draftPlantingSiteMapConverter: DraftPlantingSiteMapConverter,
     private val draftPlantingSiteService: DraftPlantingSiteService,
     private val draftPlantingSiteStore: DraftPlantingSiteStore,
 ) {
@@ -64,7 +64,7 @@ class DraftPlantingSitesController(
     val model = draftPlantingSiteStore.fetchOneById(id)
 
     return GetDraftPlantingSiteResponsePayload(
-        DraftPlantingSitePayload(model, draftPlantingSiteData.generate(model.map))
+        DraftPlantingSitePayload(model, draftPlantingSiteMapConverter.generate(model.map))
     )
   }
 
@@ -74,7 +74,9 @@ class DraftPlantingSitesController(
       @RequestBody payload: CreateDraftPlantingSiteRequestPayload
   ): CreateDraftPlantingSiteResponsePayload {
     val model =
-        draftPlantingSiteStore.create(payload.toModel(draftPlantingSiteData.parse(payload.data)))
+        draftPlantingSiteStore.create(
+            payload.toModel(draftPlantingSiteMapConverter.parse(payload.data))
+        )
 
     return CreateDraftPlantingSiteResponsePayload(model.id!!)
   }
@@ -85,7 +87,7 @@ class DraftPlantingSitesController(
       @PathVariable id: DraftPlantingSiteId,
       @RequestBody payload: UpdateDraftPlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
-    val map = draftPlantingSiteData.parse(payload.data)
+    val map = draftPlantingSiteMapConverter.parse(payload.data)
 
     draftPlantingSiteStore.update(id) { payload.applyTo(it, map) }
 
