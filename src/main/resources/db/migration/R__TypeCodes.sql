@@ -219,9 +219,9 @@ VALUES (1, 'Injection'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO email_notification_categories (id, name)
-VALUES (1, 'Seed Bank'),
+VALUES (1, 'SeedBank'),
        (2, 'Nursery'),
-       (3, 'Planting and Observations'),
+       (3, 'PlantingAndObservations'),
        (4, 'Accelerator')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
