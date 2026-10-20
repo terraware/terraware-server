@@ -152,6 +152,7 @@ class BiomassStore(
                   tideId = if (model.forestType == BiomassForestType.Mangrove) model.tide else null,
                   tideTime =
                       if (model.forestType == BiomassForestType.Mangrove) model.tideTime else null,
+                  nextTreeNumber = (model.trees.maxOfOrNull { it.treeNumber } ?: 0) + 1,
               )
               .attach(dslContext)
 
