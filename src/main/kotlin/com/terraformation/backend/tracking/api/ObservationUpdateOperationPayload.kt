@@ -275,35 +275,42 @@ data class CreateRecordedTreeOperationPayload(
     val treeGrowthForm: TreeGrowthForm,
     @Schema(description = "Whether the recorded tree is dead.") //
     val isDead: Boolean,
-    @Schema(description = "Required for Tree growth forms; not allowed for Shrubs.")
-    val diameterAtBreastHeightCm: BigDecimal?,
-    @Schema(description = "Required for Tree growth forms; not allowed for Shrubs.")
-    val pointOfMeasurementM: BigDecimal?,
-    @Schema(description = "Required for Tree growth forms; not allowed for Shrubs.") //
-    val heightM: BigDecimal?,
-    @Schema(description = "Required for Shrubs; not allowed for Trees.") //
-    val shrubDiameterCm: Int?,
-    @Schema(description = "Only valid for Tree growth forms.") //
-    val treeCrownDiameterCm: Int?,
-    @Schema(description = "Not allowed for Shrubs.") //
-    val boleHeightM: BigDecimal?,
+    @Schema(
+        description =
+            "Measured in centimeters. Required for Tree growth forms; not allowed for Shrubs."
+    )
+    val diameterAtBreastHeight: BigDecimal?,
+    @Schema(
+        description = "Measured in meters. Required for Tree growth forms; not allowed for Shrubs."
+    )
+    val pointOfMeasurement: BigDecimal?,
+    @Schema(
+        description = "Measured in meters. Required for Tree growth forms; not allowed for Shrubs."
+    )
+    val height: BigDecimal?,
+    @Schema(description = "Measured in centimeters. Required for Shrubs; not allowed for Trees.")
+    val shrubDiameter: Int?,
+    @Schema(description = "Measured in centimeters. Only valid for Tree growth forms.") //
+    val treeCrownDiameter: Int?,
+    @Schema(description = "Measured in meters. Not allowed for Shrubs.") //
+    val boleHeight: BigDecimal?,
     @Schema(description = "Additional notes about the recorded tree.") //
     val description: String?,
 ) : ObservationUpdateOperationPayload {
   fun toModel(): NewRecordedTreeModel =
       NewRecordedTreeModel(
           id = null,
-          boleHeightM = boleHeightM,
+          boleHeightM = boleHeight,
           description = description,
-          diameterAtBreastHeightCm = diameterAtBreastHeightCm,
+          diameterAtBreastHeightCm = diameterAtBreastHeight,
           gpsCoordinates = null,
-          heightM = heightM,
+          heightM = height,
           isDead = isDead,
-          pointOfMeasurementM = pointOfMeasurementM,
-          shrubDiameterCm = shrubDiameterCm,
+          pointOfMeasurementM = pointOfMeasurement,
+          shrubDiameterCm = shrubDiameter,
           speciesId = speciesId,
           speciesName = scientificName,
-          treeCrownDiameterCm = treeCrownDiameterCm,
+          treeCrownDiameterCm = treeCrownDiameter,
           treeGrowthForm = treeGrowthForm,
           treeNumber = 1,
           trunkNumber = 1,
