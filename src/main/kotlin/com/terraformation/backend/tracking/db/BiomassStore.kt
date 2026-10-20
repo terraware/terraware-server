@@ -34,6 +34,7 @@ import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
@@ -995,6 +996,70 @@ class BiomassStore(
               speciesName = getBiomassSpeciesName(speciesId, scientificName),
           )
       )
+    }
+  }
+
+  fun deleteBiomassQuadratSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      position: ObservationPlotPosition,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+  ) {
+    requirePermissions { updateObservationQuantities(observationId) }
+
+    if (
+        speciesId == null && scientificName == null || speciesId != null && scientificName != null
+    ) {
+      throw IllegalArgumentException("One of species ID or scientific name must be specified")
+    }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    entityLocker.withLockedObservation(observationId) { observation ->
+      val biomassSpecies =
+          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
+      val biomassSpeciesId = biomassSpecies[OBSERVATION_BIOMASS_SPECIES.ID]!!
+      val exists =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES,
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.POSITION_ID.eq(position))
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId)),
+          )
+      if (!exists) {
+        throw BiomassSpeciesNotFoundException(speciesId, scientificName)
+      }
+
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+          .where(OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID.eq(observationId))
+          .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.POSITION_ID.eq(position))
+          .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
+          .execute()
+
+      eventPublisher.publishEvent(
+          BiomassQuadratSpeciesDeletedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId = observation.plantingSiteId,
+              position = position,
+              speciesId = biomassSpecies[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+              speciesName =
+                  getBiomassSpeciesName(
+                      biomassSpecies[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
+                      biomassSpecies[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
+                  ),
+          )
+      )
+
+      deleteBiomassSpeciesIfUnreferenced(biomassSpeciesId)
     }
   }
 
