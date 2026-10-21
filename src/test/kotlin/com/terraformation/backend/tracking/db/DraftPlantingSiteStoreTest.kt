@@ -107,6 +107,26 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               ),
       )
 
+  /** Clears stratum and substratum IDs so drafts can be compared when new IDs aren't known. */
+  private fun DraftPlantingSiteModel.withoutStratumIds() =
+      copy(
+          map =
+              map.copy(
+                  strata =
+                      map.strata.map { stratum ->
+                        stratum.copy(
+                            id = null,
+                            substrata = stratum.substrata.map { it.copy(id = null) },
+                        )
+                      }
+              )
+      )
+
+  private fun DraftPlantingSiteModel.allStratumIds(): Set<Any> =
+      map.strata
+          .flatMap { stratum -> listOfNotNull(stratum.id) + stratum.substrata.mapNotNull { it.id } }
+          .toSet()
+
   /** Inserts a draft with two strata, the first of which has two substrata. */
   private fun insertDraftWithStrata(): DraftPlantingSiteId {
     val draftId = insertDraftPlantingSite()
@@ -664,21 +684,34 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates scalar fields and audit columns`() {
-      insertProject()
-      val draftId = insertDraftPlantingSite()
+      val projectId = insertProject()
+      val draftId = insertDraftPlantingSite(exclusion = rectangle(10))
+      val newTimeZone = timeZone
 
       clock.instant = Instant.EPOCH.plusSeconds(30)
-      val newBoundary = rectangle(2000)
 
-      store.updateModel(draftId) {
-        it.copy(
+      val expected =
+          dslContext.fetchSingle(DRAFT_PLANTING_SITES).apply {
+            boundary = rectangle(2000)
+            boundarySource = "new source"
+            description = "New description"
+            exclusion = null
+            modifiedTime = clock.instant
+            name = "New name"
+            this.projectId = projectId
+            siteEditStep = "new step"
+            timeZone = newTimeZone
+          }
+
+      store.updateModel(draftId) { model ->
+        model.copy(
             description = "New description",
             name = "New name",
-            projectId = inserted.projectId,
-            timeZone = timeZone,
+            projectId = projectId,
+            timeZone = newTimeZone,
             map =
-                it.map.copy(
-                    boundary = newBoundary,
+                model.map.copy(
+                    boundary = rectangle(2000),
                     boundarySource = "new source",
                     exclusion = null,
                     siteEditStep = "new step",
@@ -686,54 +719,31 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
 
-      val row = draftPlantingSitesDao.fetchOneById(draftId)!!
-      assertEquals("New description", row.description, "Description")
-      assertEquals("New name", row.name, "Name")
-      assertEquals(inserted.projectId, row.projectId, "Project ID")
-      assertEquals(timeZone, row.timeZone, "Time zone")
-      assertEquals(newBoundary, row.boundary, "Boundary")
-      assertEquals("new source", row.boundarySource, "Boundary source")
-      assertEquals(null, row.exclusion, "Exclusion")
-      assertEquals("new step", row.siteEditStep, "Site edit step")
-      assertEquals(Instant.EPOCH, row.createdTime, "Created time")
-      assertEquals(user.userId, row.createdBy, "Created by")
-      assertEquals(clock.instant, row.modifiedTime, "Modified time")
-      assertEquals(user.userId, row.modifiedBy, "Modified by")
-      assertEquals(DraftPlantingSiteType.Detailed, row.siteTypeId, "Site type")
+      assertTableEquals(expected)
     }
 
     @Test
     fun `with null ids replaces all strata`() {
       val draftId = insertDraftWithStrata()
-      val oldStratumIds = draftStrataDao.findAll().map { it.id!! }.toSet()
-      val oldSubstratumIds = draftSubstrataDao.findAll().map { it.id!! }.toSet()
+      val before = store.fetchModelById(draftId)
+      val newStrata =
+          listOf(
+              stratumModel("S1", substrata = listOf(substratumModel("S1-A"))),
+              stratumModel("S3"),
+          )
 
-      store.updateModel(draftId) {
-        it.copy(
-            map =
-                it.map.copy(
-                    strata =
-                        listOf(
-                            stratumModel("S1", substrata = listOf(substratumModel("S1-A"))),
-                            stratumModel("S3"),
-                        )
-                )
-        )
-      }
+      store.updateModel(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
 
-      val strata = draftStrataDao.findAll()
-      val substrata = draftSubstrataDao.findAll()
-      assertEquals(setOf("S1", "S3"), strata.map { it.name }.toSet(), "Stratum names")
-      assertEquals(listOf("S1-A"), substrata.map { it.name }, "Substratum names")
+      val after = store.fetchModelById(draftId)
       assertEquals(
-          emptySet<DraftStratumId>(),
-          strata.map { it.id!! }.toSet().intersect(oldStratumIds),
-          "Old stratum IDs still present",
+          before.copy(map = before.map.copy(strata = newStrata)),
+          after.withoutStratumIds(),
+          "Draft with stratum IDs removed",
       )
       assertEquals(
-          emptySet<DraftSubstratumId>(),
-          substrata.map { it.id!! }.toSet().intersect(oldSubstratumIds),
-          "Old substratum IDs still present",
+          emptySet<Any>(),
+          after.allStratumIds().intersect(before.allStratumIds()),
+          "Old stratum and substratum IDs still present",
       )
     }
 
@@ -747,60 +757,47 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val omittedSubstratumId = keptStratum.substrata[1].id!!
       val newBoundary = rectangle(300)
 
-      store.updateModel(draftId) {
-        it.copy(
-            map =
-                it.map.copy(
-                    strata =
-                        listOf(
-                            keptStratum.copy(
-                                name = "S1 renamed",
-                                boundary = newBoundary,
-                                initialPlantingDensity = BigDecimal(900),
-                                substrata =
-                                    listOf(
-                                        keptSubstratum.copy(
-                                            name = "A renamed",
-                                            boundary = newBoundary,
-                                        ),
-                                        substratumModel("New substratum"),
-                                    ),
-                            ),
-                        )
-                )
-        )
-      }
+      val newStrata =
+          listOf(
+              keptStratum.copy(
+                  name = "S1 renamed",
+                  boundary = newBoundary,
+                  initialPlantingDensity = BigDecimal(900),
+                  substrata =
+                      listOf(
+                          keptSubstratum.copy(name = "A renamed", boundary = newBoundary),
+                          substratumModel("New substratum"),
+                      ),
+              )
+          )
 
-      val after = store.fetchModelById(draftId)
-      assertEquals(1, after.map.strata.size, "Number of strata")
-      val stratum = after.map.strata[0]
-      assertEquals(keptStratum.id, stratum.id, "Kept stratum ID")
-      assertEquals("S1 renamed", stratum.name, "Stratum name")
-      assertEquals(newBoundary, stratum.boundary, "Stratum boundary")
-      assertEquals(
-          0,
-          BigDecimal(900).compareTo(stratum.initialPlantingDensity),
-          "Stratum initial planting density",
-      )
-      assertEquals(2, stratum.substrata.size, "Number of substrata")
-      assertEquals(keptSubstratum.id, stratum.substrata[0].id, "Kept substratum ID")
-      assertEquals("A renamed", stratum.substrata[0].name, "Kept substratum name")
-      assertEquals(newBoundary, stratum.substrata[0].boundary, "Kept substratum boundary")
-      assertEquals("New substratum", stratum.substrata[1].name, "New substratum name")
-      assertEquals(
-          emptyList<Any>(),
-          draftStrataDao.fetchById(omittedStratumId),
-          "Omitted stratum should be deleted",
-      )
-      assertEquals(
-          emptyList<Any>(),
-          draftSubstrataDao.fetchById(omittedSubstratumId),
-          "Omitted substratum should be deleted",
-      )
-      assertEquals(
-          emptyList<Any>(),
-          draftSubstrataDao.findAll().filter { it.draftStratumId == existing.map.strata[1].id },
-          "Substrata of omitted stratum should cascade",
+      store.updateModel(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
+
+      val newSubstratumId =
+          dslContext.fetchSingle(DRAFT_SUBSTRATA, DRAFT_SUBSTRATA.NAME.eq("New substratum")).id!!
+      val expected =
+          existing.copy(
+              map =
+                  existing.map.copy(
+                      strata =
+                          listOf(
+                              newStrata[0].copy(
+                                  substrata =
+                                      listOf(
+                                          newStrata[0].substrata[0],
+                                          newStrata[0].substrata[1].copy(id = newSubstratumId),
+                                      )
+                              )
+                          )
+                  )
+          )
+
+      assertEquals(expected, store.fetchModelById(draftId))
+      assertTableEmpty(DRAFT_STRATA, where = DRAFT_STRATA.ID.eq(omittedStratumId))
+      assertTableEmpty(DRAFT_SUBSTRATA, where = DRAFT_SUBSTRATA.ID.eq(omittedSubstratumId))
+      assertTableEmpty(
+          DRAFT_SUBSTRATA,
+          where = DRAFT_SUBSTRATA.DRAFT_STRATUM_ID.eq(omittedStratumId),
       )
     }
 
@@ -813,11 +810,11 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val otherBefore = store.fetchModelById(inserted.draftPlantingSiteId)
 
       assertThrows<DraftStratumNotFoundException> {
-        store.updateModel(draftId) {
-          it.copy(
+        store.updateModel(draftId) { model ->
+          model.copy(
               name = "Changed",
               map =
-                  it.map.copy(
+                  model.map.copy(
                       strata = listOf(stratumModel("Stolen", id = otherStratumId)),
                   ),
           )
@@ -840,10 +837,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val stratum2 = before.map.strata[1]
 
       assertThrows<DraftSubstratumNotFoundException> {
-        store.updateModel(draftId) {
-          it.copy(
+        store.updateModel(draftId) { model ->
+          model.copy(
               map =
-                  it.map.copy(
+                  model.map.copy(
                       strata =
                           listOf(
                               stratum1,
@@ -863,10 +860,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val before = store.fetchModelById(draftId)
 
       assertThrows<IllegalArgumentException> {
-        store.updateModel(draftId) {
-          it.copy(
+        store.updateModel(draftId) { model ->
+          model.copy(
               map =
-                  it.map.copy(
+                  model.map.copy(
                       strata = listOf(stratumModel("Dup"), stratumModel("Dup")),
                   )
           )
@@ -882,10 +879,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val before = store.fetchModelById(draftId)
 
       assertThrows<IllegalArgumentException> {
-        store.updateModel(draftId) {
-          it.copy(
+        store.updateModel(draftId) { model ->
+          model.copy(
               map =
-                  it.map.copy(
+                  model.map.copy(
                       strata =
                           listOf(
                               stratumModel(
@@ -905,25 +902,18 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `allows same substratum name in different strata`() {
       val draftId = insertDraftPlantingSite()
+      val before = store.fetchModelById(draftId)
+      val newStrata =
+          listOf(
+              stratumModel("S1", substrata = listOf(substratumModel("Same"))),
+              stratumModel("S2", substrata = listOf(substratumModel("Same"))),
+          )
 
-      store.updateModel(draftId) {
-        it.copy(
-            map =
-                it.map.copy(
-                    strata =
-                        listOf(
-                            stratumModel("S1", substrata = listOf(substratumModel("Same"))),
-                            stratumModel("S2", substrata = listOf(substratumModel("Same"))),
-                        ),
-                )
-        )
-      }
+      store.updateModel(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
 
-      val after = store.fetchModelById(draftId)
       assertEquals(
-          listOf(listOf("Same"), listOf("Same")),
-          after.map.strata.map { stratum -> stratum.substrata.map { it.name } },
-          "Substratum names per stratum",
+          before.copy(map = before.map.copy(strata = newStrata)),
+          store.fetchModelById(draftId).withoutStratumIds(),
       )
     }
 
@@ -934,10 +924,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val existingSubstratum = before.map.strata[0].substrata[0]
 
       assertThrows<DraftSubstratumNotFoundException> {
-        store.updateModel(draftId) {
-          it.copy(
+        store.updateModel(draftId) { model ->
+          model.copy(
               map =
-                  it.map.copy(
+                  model.map.copy(
                       strata =
                           listOf(
                               stratumModel("New", id = null, substrata = listOf(existingSubstratum))
@@ -957,10 +947,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val stratum = before.map.strata[0]
 
       assertThrows<IllegalArgumentException> {
-        store.updateModel(draftId) {
-          it.copy(
+        store.updateModel(draftId) { model ->
+          model.copy(
               map =
-                  it.map.copy(
+                  model.map.copy(
                       strata = listOf(stratum, stratum.copy(name = "Duplicate")),
                   )
           )
@@ -978,10 +968,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val substratum = stratum.substrata[0]
 
       assertThrows<IllegalArgumentException> {
-        store.updateModel(draftId) {
-          it.copy(
+        store.updateModel(draftId) { model ->
+          model.copy(
               map =
-                  it.map.copy(
+                  model.map.copy(
                       strata =
                           listOf(
                               stratum.copy(
@@ -1005,18 +995,13 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val stratum1 = before.map.strata[0]
       val stratum2 = before.map.strata[1]
 
-      store.updateModel(draftId) {
-        it.copy(
-            map =
-                it.map.copy(strata = listOf(stratum1.copy(name = "S2"), stratum2.copy(name = "S1")))
-        )
-      }
+      val newStrata = listOf(stratum1.copy(name = "S2"), stratum2.copy(name = "S1"))
 
-      val after = store.fetchModelById(draftId)
+      store.updateModel(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
+
       assertEquals(
-          listOf(stratum1.id to "S2", stratum2.id to "S1"),
-          after.map.strata.map { it.id to it.name },
-          "Stratum IDs and names",
+          before.copy(map = before.map.copy(strata = newStrata)),
+          store.fetchModelById(draftId),
       )
     }
 
@@ -1028,45 +1013,34 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val sub1 = stratum.substrata[0]
       val sub2 = stratum.substrata[1]
 
-      store.updateModel(draftId) {
-        it.copy(
-            map =
-                it.map.copy(
-                    strata =
-                        listOf(
-                            stratum.copy(
-                                substrata =
-                                    listOf(sub1.copy(name = sub2.name), sub2.copy(name = sub1.name))
-                            ),
-                            before.map.strata[1],
-                        )
-                )
-        )
-      }
+      val newStrata =
+          listOf(
+              stratum.copy(
+                  substrata = listOf(sub1.copy(name = sub2.name), sub2.copy(name = sub1.name))
+              ),
+              before.map.strata[1],
+          )
 
-      val after = store.fetchModelById(draftId)
+      store.updateModel(draftId) { model -> model.copy(map = model.map.copy(strata = newStrata)) }
+
       assertEquals(
-          listOf(sub1.id to sub2.name, sub2.id to sub1.name),
-          after.map.strata[0].substrata.map { it.id to it.name },
-          "Substratum IDs and names",
+          before.copy(map = before.map.copy(strata = newStrata)),
+          store.fetchModelById(draftId),
       )
     }
 
     @Test
     fun `rejects changing site type`() {
       val draftId = insertDraftPlantingSite(siteType = DraftPlantingSiteType.Simple)
+      val before = store.fetchModelById(draftId)
 
       assertThrows<IllegalArgumentException> {
-        store.updateModel(draftId) {
-          it.copy(map = it.map.copy(siteType = DraftPlantingSiteType.Detailed))
+        store.updateModel(draftId) { model ->
+          model.copy(map = model.map.copy(siteType = DraftPlantingSiteType.Detailed))
         }
       }
 
-      assertEquals(
-          DraftPlantingSiteType.Simple,
-          draftPlantingSitesDao.fetchOneById(draftId)!!.siteTypeId,
-          "Site type",
-      )
+      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
     }
 
     @Test
@@ -1074,12 +1048,12 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val draftId = insertDraftPlantingSite(siteType = DraftPlantingSiteType.Simple)
 
       assertThrows<IllegalArgumentException> {
-        store.updateModel(draftId) {
-          it.copy(map = it.map.copy(strata = listOf(stratumModel("S1"))))
+        store.updateModel(draftId) { model ->
+          model.copy(map = model.map.copy(strata = listOf(stratumModel("S1"))))
         }
       }
 
-      assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "Stored strata")
+      assertTableEmpty(DRAFT_STRATA)
     }
 
     @Test
@@ -1093,18 +1067,15 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if callback attempts to change read-only field`() {
-      insertDraftPlantingSite()
+      val draftId = insertDraftPlantingSite()
+      val before = store.fetchModelById(draftId)
       val otherOrgId = insertOrganization()
 
       assertThrows<AccessDeniedException> {
-        store.updateModel(inserted.draftPlantingSiteId) { it.copy(organizationId = otherOrgId) }
+        store.updateModel(draftId) { it.copy(organizationId = otherOrgId) }
       }
 
-      assertEquals(
-          organizationId,
-          draftPlantingSitesDao.fetchOneById(inserted.draftPlantingSiteId)!!.organizationId,
-          "Organization ID",
-      )
+      assertEquals(before, store.fetchModelById(draftId), "Draft should be unchanged")
     }
 
     @Test
