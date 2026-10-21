@@ -5,7 +5,6 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.rectangle
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
@@ -24,11 +23,9 @@ class DraftPlantingSiteModelTest {
         draftSite(strata = listOf(draftStratum("A", 300), draftStratum("B", 300, x = 200)))
             .validate()
 
-    assertNotNull(problems, "Validation returned no problems")
     assertEquals(
-        true,
-        problems!!.contains(PlantingSiteValidationFailure.stratumBoundaryOverlaps(setOf("B"), "A")),
-        "Expected problems to contain overlap failure but got $problems",
+        listOf(PlantingSiteValidationFailure.stratumBoundaryOverlaps(setOf("B"), "A")),
+        problems,
     )
   }
 
@@ -57,8 +54,7 @@ class DraftPlantingSiteModelTest {
                 )
         )
 
-    assertEquals(2, model.numStrata, "numStrata")
-    assertEquals(3, model.numSubstrata, "numSubstrata")
+    assertEquals(2 to 3, model.numStrata to model.numSubstrata, "numStrata to numSubstrata")
   }
 
   private fun draftSubstratum(name: String, width: Int, x: Int = 0) =
