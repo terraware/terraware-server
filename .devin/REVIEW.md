@@ -4,8 +4,12 @@
 
 Check whether the PR you're reviewing is part of a stack. If so, examine the
 later PRs in the stack to see if they already address any findings or
-questions you would otherwise have pointed out; don't comment about anything
-that's already addressed later in the stack.
+questions you would otherwise have pointed out. Only comment about findings
+that are already addressed later in the stack if they would cause data
+corruption or similarly severe bugs, and in your comment, make note of the
+fact that the problem is fixed in the later PR.
+
+We will use that to help decide when it's safe to partially merge a stack.
 
 ## Wait for Codex
 
