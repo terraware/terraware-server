@@ -71,7 +71,11 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
       val insertedFileId = service.upload(organizationId, multipartFile, "Test caption")
 
       assertTableEquals(
-          OrganizationMediaFilesRecord(insertedFileId, organizationId, "Test caption")
+          OrganizationMediaFilesRecord(
+              caption = "Test caption",
+              fileId = insertedFileId,
+              organizationId = organizationId,
+          )
       )
     }
 
@@ -113,7 +117,11 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
       val insertedFileId = service.upload(organizationId, multipartFile, "Test caption")
 
       assertTableEquals(
-          OrganizationMediaFilesRecord(insertedFileId, organizationId, "Test caption")
+          OrganizationMediaFilesRecord(
+              caption = "Test caption",
+              fileId = insertedFileId,
+              organizationId = organizationId,
+          )
       )
       eventPublisher.assertEventNotPublished<OrganizationVideoUploadedEvent>()
     }
@@ -121,11 +129,11 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `stores file batch ID on the file row and includes batch ID on the event`() {
       val fileBatchId = insertFileBatch()
-      val multipartFile = MockMultipartFile("file", "video/mp4", "video/mp4", ByteArray(1024))
+      val multipartFile = MockMultipartFile("file", "video.mp4", "video/mp4", ByteArray(1024))
 
       val fileId = service.upload(organizationId, multipartFile, "caption", fileBatchId)
 
-      assertEquals(fileBatchId, filesDao.fetchOneById(fileId)!!.fileBatchId)
+      assertEquals(fileBatchId, filesDao.fetchOneById(fileId)!!.fileBatchId, "File batch ID")
       eventPublisher.assertEventPublished(
           OrganizationVideoUploadedEvent(fileId, organizationId, fileBatchId)
       )
@@ -143,7 +151,11 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
               contentType = "application/json+imu",
           )
 
-      assertEquals("application/json+imu", filesDao.fetchOneById(fileId)!!.contentType)
+      assertEquals(
+          "application/json+imu",
+          filesDao.fetchOneById(fileId)!!.contentType,
+          "Content type",
+      )
     }
 
     @Test
@@ -160,7 +172,7 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not publish OrganizationVideoUploadedEvent when content type is overridden to non-video`() {
-      // any content type that starts with "video/" publishes this event.
+      // The overridden content type takes precedence over the uploaded file's content type.
       val multipartFile = MockMultipartFile("file", "clip.bin", "video/mp4", ByteArray(1))
 
       service.upload(organizationId, multipartFile, "caption", contentType = "not-video/mp4")
@@ -276,28 +288,39 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     fun `updates caption`() {
       val fileId =
           insertOrganizationMediaFile(
+              caption = "Original caption",
               fileId = insertFile(),
               organizationId = organizationId,
-              caption = "Original caption",
           )
 
       service.update(organizationId, fileId, caption = "Updated caption", gpsCoordinates = null)
 
-      assertTableEquals(OrganizationMediaFilesRecord(fileId, organizationId, "Updated caption"))
+      assertTableEquals(
+          OrganizationMediaFilesRecord(
+              caption = "Updated caption",
+              fileId = fileId,
+              organizationId = organizationId,
+          )
+      )
     }
 
     @Test
     fun `clears caption`() {
       val fileId =
           insertOrganizationMediaFile(
+              caption = "Original caption",
               fileId = insertFile(),
               organizationId = organizationId,
-              caption = "Original caption",
           )
 
       service.update(organizationId, fileId, caption = null, gpsCoordinates = null)
 
-      assertTableEquals(OrganizationMediaFilesRecord(fileId, organizationId, null))
+      assertTableEquals(
+          OrganizationMediaFilesRecord(
+              fileId = fileId,
+              organizationId = organizationId,
+          )
+      )
     }
 
     @Test
@@ -331,11 +354,7 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws FileNotFoundException when file does not belong to the organization`() {
       val otherOrgId = insertOrganization()
-      val fileId =
-          insertOrganizationMediaFile(
-              fileId = insertFile(),
-              organizationId = otherOrgId,
-          )
+      val fileId = insertOrganizationMediaFile(fileId = insertFile(), organizationId = otherOrgId)
 
       assertThrows<FileNotFoundException> {
         service.update(organizationId, fileId, caption = "test", gpsCoordinates = null)
