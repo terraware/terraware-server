@@ -124,19 +124,6 @@ class DraftPlantingSitesController(
   }
 
   @ApiResponse200
-  @ApiResponse(
-      responseCode = "409",
-      description =
-          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong.",
-      content =
-          [
-              Content(
-                  mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  schema =
-                      Schema(implementation = DraftPlantingSiteMapInvalidResponsePayload::class),
-              )
-          ],
-  )
   @Operation(summary = "Updates an existing draft of an in-progress planting site.")
   @PutMapping("/{id}")
   fun updateDraftPlantingSite(
@@ -147,10 +134,8 @@ class DraftPlantingSitesController(
 
     val dataMap = payload.data?.let { draftPlantingSiteMapConverter.parse(it) }
 
-    if (dataMap != null) {
-      draftPlantingSiteStore.update(id) { payload.applyTo(it, dataMap) }
-    } else {
-      draftPlantingSiteService.updateTyped(id) { payload.applyTo(it, payload.toTypedMap(it)) }
+    draftPlantingSiteStore.update(id) { existing ->
+      payload.applyTo(existing, dataMap ?: payload.toTypedMap(existing))
     }
 
     return SimpleSuccessResponsePayload()
