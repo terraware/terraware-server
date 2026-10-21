@@ -395,7 +395,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                   ),
           )
 
-      val created = store.createModel(model)
+      val created = store.create(model)
 
       val row = draftPlantingSitesDao.fetchOneById(created.id!!)!!
       assertEquals(DraftPlantingSiteType.Detailed, row.siteTypeId, "Site type")
@@ -468,7 +468,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.ofEpochSecond(500)
 
       val created =
-          store.createModel(
+          store.create(
               siteModel()
                   .copy(
                       id = DraftPlantingSiteId(9999),
@@ -488,7 +488,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates simple site with no strata`() {
-      val created = store.createModel(siteModel(siteType = DraftPlantingSiteType.Simple))
+      val created = store.create(siteModel(siteType = DraftPlantingSiteType.Simple))
 
       val row = draftPlantingSitesDao.fetchOneById(created.id!!)!!
       assertEquals(DraftPlantingSiteType.Simple, row.siteTypeId, "Site type")
@@ -498,7 +498,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects strata on simple site`() {
       assertThrows<IllegalArgumentException> {
-        store.createModel(
+        store.create(
             siteModel(
                 siteType = DraftPlantingSiteType.Simple,
                 strata = listOf(stratumModel("S1")),
@@ -513,7 +513,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects duplicate stratum names`() {
       assertThrows<IllegalArgumentException> {
-        store.createModel(siteModel(strata = listOf(stratumModel("Dup"), stratumModel("Dup"))))
+        store.create(siteModel(strata = listOf(stratumModel("Dup"), stratumModel("Dup"))))
       }
 
       assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "Stored drafts")
@@ -527,10 +527,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val substratumId = insertDraftSubstratum(name = "Existing")
 
       assertThrows<DraftStratumNotFoundException> {
-        store.createModel(siteModel(strata = listOf(stratumModel("S1", id = stratumId))))
+        store.create(siteModel(strata = listOf(stratumModel("S1", id = stratumId))))
       }
       assertThrows<DraftSubstratumNotFoundException> {
-        store.createModel(
+        store.create(
             siteModel(
                 strata =
                     listOf(
@@ -552,7 +552,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects duplicate substratum names in a stratum`() {
       assertThrows<IllegalArgumentException> {
-        store.createModel(
+        store.create(
             siteModel(
                 strata =
                     listOf(
@@ -572,7 +572,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to create drafts`() {
       every { user.canCreateDraftPlantingSite(any()) } returns false
 
-      assertThrows<AccessDeniedException> { store.createModel(siteModel()) }
+      assertThrows<AccessDeniedException> { store.create(siteModel()) }
     }
 
     @Test
@@ -581,7 +581,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       insertProject()
 
       assertThrows<ProjectInDifferentOrganizationException> {
-        store.createModel(siteModel(projectId = inserted.projectId))
+        store.create(siteModel(projectId = inserted.projectId))
       }
     }
   }

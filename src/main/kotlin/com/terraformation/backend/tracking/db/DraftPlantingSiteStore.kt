@@ -146,7 +146,7 @@ class DraftPlantingSiteStore(
    *
    * @return The draft as stored, including the IDs of its strata and substrata.
    */
-  fun createModel(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
+  fun create(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
     requirePermissions { createDraftPlantingSite(model.organizationId) }
 
     requireProjectInOrganization(model.projectId, model.organizationId)
