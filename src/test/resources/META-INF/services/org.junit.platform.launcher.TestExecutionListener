@@ -1,1 +1,2 @@
+com.terraformation.backend.TestHangWatchdog
 com.terraformation.backend.SpringShutdownListener

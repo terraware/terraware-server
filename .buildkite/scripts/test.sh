@@ -9,7 +9,13 @@ echo "--- :junit: Run tests"
 # the test results.
 export LOGGING_LEVEL_COM_TERRAFORMATION_BACKEND_SEARCH=INFO
 
-./gradlew test
+if ! ./gradlew test; then
+  if compgen -G "build/hang-diagnostics/*" > /dev/null; then
+    echo "+++ :warning: Test hang diagnostics"
+    cat build/hang-diagnostics/*
+  fi
+  exit 1
+fi
 
 # We don't run the tests that depend on external services here. We want failures in that test suite
 # to show up as soft failures in the build status, which requires that we run them in a separate
