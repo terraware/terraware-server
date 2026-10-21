@@ -455,6 +455,23 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `does not populate estimatedWeight if the withdrawn quantity has changed`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                estimatedWeightQuantity = BigDecimal(100),
+                estimatedWeightUnitsId = SeedQuantityUnits.Grams,
+                withdrawnQuantity = BigDecimal(50),
+                withdrawnUnitsId = SeedQuantityUnits.Seeds,
+            )
+
+        testUpgrade(
+            createdEventV3(withdrawalId, seeds(10)),
+            createdEventV4(withdrawalId, seeds(10), estimatedWeight = null),
+        )
+      }
+
+      @Test
       fun `does not populate estimatedWeight if the withdrawal was deleted`() {
         val withdrawalId =
             insertSeedbankWithdrawal(

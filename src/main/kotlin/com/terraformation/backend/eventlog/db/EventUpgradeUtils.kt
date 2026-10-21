@@ -227,10 +227,21 @@ class EventUpgradeUtils(
     val estimatedWeight =
         if (original.withdrawnQuantity?.units == SeedQuantityUnits.Seeds) {
           dslContext
-              .select(WITHDRAWALS.ESTIMATED_WEIGHT_QUANTITY, WITHDRAWALS.ESTIMATED_WEIGHT_UNITS_ID)
+              .select(
+                  WITHDRAWALS.ESTIMATED_WEIGHT_QUANTITY,
+                  WITHDRAWALS.ESTIMATED_WEIGHT_UNITS_ID,
+                  WITHDRAWALS.WITHDRAWN_QUANTITY,
+                  WITHDRAWALS.WITHDRAWN_UNITS_ID,
+              )
               .from(WITHDRAWALS)
               .where(WITHDRAWALS.ID.eq(original.withdrawalId))
               .fetchOne()
+              ?.takeIf { record ->
+                SeedQuantityModel.of(
+                    record[WITHDRAWALS.WITHDRAWN_QUANTITY],
+                    record[WITHDRAWALS.WITHDRAWN_UNITS_ID],
+                ) == original.withdrawnQuantity
+              }
               ?.let { record ->
                 SeedQuantityModel.of(
                     record[WITHDRAWALS.ESTIMATED_WEIGHT_QUANTITY],
