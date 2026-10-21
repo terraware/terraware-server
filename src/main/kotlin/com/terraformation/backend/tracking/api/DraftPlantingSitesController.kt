@@ -155,8 +155,10 @@ data class DraftPlantingSitePayload(
     val id: DraftPlantingSiteId,
     val modifiedTime: Instant,
     val name: String,
-    @Schema(description = "Number of strata in the draft.") val numStrata: Int?,
-    @Schema(description = "Number of substrata in the draft.") val numSubstrata: Int?,
+    @Schema(description = "Number of strata in the draft.") //
+    val numStrata: Int?,
+    @Schema(description = "Number of substrata in the draft.") //
+    val numSubstrata: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
