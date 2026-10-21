@@ -63,13 +63,14 @@ reporting.
     Don't use `assertExactEventsPublished`; tests shouldn't break if the code under test later
     calls something that publishes an additional event.
 11. Name test methods with a backtick sentence describing the scenario.
-12. When checking return values, prefer `assertEquals` on the whole object rather than on individual
-    fields, unless there are a lot of fields and 3 or fewer of them are relevant to the scenario.
+12. When checking the values of object fields, prefer `assertEquals` on the whole object rather
+    than on individual fields, unless there are a lot of fields and 3 or fewer of them are
+    relevant to the scenario.
 13. Each `@Test` covers one scenario. The scenario's last call to the code under test is the one
     being tested; earlier calls are setup. They're fine when the behavior depends on prior state.
     Don't combine independent scenarios in one test, even if they share setup. It is fine to make
     several kinds of assertions about the scenario's outcome, such as the return value, persisted
-    state, and published events (see the previous rule for how to assert on return values).
+    state, and published events (see the previous rule for how to assert on object values).
 14. When asserting on an individual field, include a message naming it unless it's a non-primitive
     type that's only asserted on once: `assertEquals("Test Foo", model.name, "Name")`.
 15. Use Kotlin-native assertions where available (`assertInstanceOf<Foo>(obj)`, not
