@@ -242,7 +242,8 @@ data class CreateDocumentRequestPayload(
 }
 
 data class CreateSavedDocumentVersionRequestPayload(
-    @Schema(defaultValue = "false") val isSubmitted: Boolean?,
+    @Schema(defaultValue = "false") //
+    val isSubmitted: Boolean?,
     val name: String,
 ) {
   fun toModel(documentId: DocumentId) =

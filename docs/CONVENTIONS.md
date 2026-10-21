@@ -220,4 +220,13 @@ Use data classes to represent API request and response payloads whenever possibl
 
 We use annotations to produce an OpenAPI (Swagger) schema for client-side code generation and to document the API. Make sure to include `@Schema` annotations to describe your payloads and their fields, especially any constraints that aren't obvious from the data types, e.g., if a payload has two fields only one of which is allowed to be non-null, that should be documented. But don't write docs that just restate what's already in the field's name.
 
+Put `@Schema` annotations on their own line, separate from the `val` they apply to. ktfmt will join a short annotation and its property onto a single line; when that happens, add an empty `//` comment after the annotation to force the `val` onto the next line:
+
+```kotlin
+data class ExamplePayload(
+    @Schema(description = "Date and time the seeds were collected.") //
+    val collectedTime: Instant?,
+)
+```
+
 Generally, these payload classes should live in the same file as the controller classes that implement the API endpoints. If a particular payload class is used by 3 or more controllers, though, it should be moved to a separate file (which may contain multiple such payload classes if they are related to each other).
