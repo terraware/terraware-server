@@ -12,6 +12,11 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.DraftStratumId
 import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
+import com.terraformation.backend.db.tracking.tables.records.DraftStrataRecord
+import com.terraformation.backend.db.tracking.tables.records.DraftSubstrataRecord
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_SUBSTRATA
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
@@ -396,42 +401,68 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       val created = store.create(model)
+      val draftId = created.id!!
+      val stratumIds = draftStrataDao.findAll().associate { it.name!! to it.id!! }
+      val substratumIds = draftSubstrataDao.findAll().associate { it.name!! to it.id!! }
 
-      val row = draftPlantingSitesDao.fetchOneById(created.id!!)!!
-      assertEquals(DraftPlantingSiteType.Detailed, row.siteTypeId, "Site type")
-      assertEquals("step", row.siteEditStep, "Site edit step")
-      assertEquals("source", row.boundarySource, "Boundary source")
-      assertEquals("Description", row.description, "Description")
-      assertEquals("Name", row.name, "Name")
-      assertEquals(timeZone, row.timeZone, "Time zone")
-      assertEquals(inserted.projectId, row.projectId, "Project ID")
-      assertEquals(organizationId, row.organizationId, "Organization ID")
-      assertEquals(user.userId, row.createdBy, "Created by")
-      assertEquals(user.userId, row.modifiedBy, "Modified by")
-      assertEquals(clock.instant, row.createdTime, "Created time")
-      assertEquals(clock.instant, row.modifiedTime, "Modified time")
-      assertEquals(model.map.boundary, row.boundary, "Boundary")
-      assertEquals(model.map.exclusion, row.exclusion, "Exclusion")
-
-      val strata = draftStrataDao.findAll().sortedBy { it.id }
-      val substrata = draftSubstrataDao.findAll()
-      assertEquals(2, strata.size, "Number of stored strata")
-      assertEquals(3, substrata.size, "Number of stored substrata")
-      assertEquals(listOf("S1", "S2"), strata.map { it.name }, "Stratum names")
-      assertEquals(
-          BigDecimal(2500).compareTo(strata[1].initialPlantingDensity),
-          0,
-          "Initial planting density",
+      assertTableEquals(
+          DraftPlantingSitesRecord(
+              boundary = rectangle(1000),
+              boundarySource = "source",
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              description = "Description",
+              exclusion = rectangle(10),
+              id = draftId,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              name = "Name",
+              organizationId = organizationId,
+              projectId = inserted.projectId,
+              siteEditStep = "step",
+              siteTypeId = DraftPlantingSiteType.Detailed,
+              timeZone = timeZone,
+          )
       )
-      assertSetEquals(
-          setOf("S1-A", "S1-B", "S2-A"),
-          substrata.map { it.name }.toSet(),
-          "Substratum names",
+      assertTableEquals(
+          listOf(
+              DraftStrataRecord(
+                  boundary = rectangle(100),
+                  draftPlantingSiteId = draftId,
+                  initialPlantingDensity = BigDecimal(1500),
+                  name = "S1",
+              ),
+              DraftStrataRecord(
+                  boundary = rectangle(100),
+                  draftPlantingSiteId = draftId,
+                  initialPlantingDensity = BigDecimal(2500),
+                  name = "S2",
+              ),
+          )
+      )
+      assertTableEquals(
+          listOf(
+              DraftSubstrataRecord(
+                  boundary = rectangle(50),
+                  draftStratumId = stratumIds["S1"],
+                  name = "S1-A",
+              ),
+              DraftSubstrataRecord(
+                  boundary = rectangle(50),
+                  draftStratumId = stratumIds["S1"],
+                  name = "S1-B",
+              ),
+              DraftSubstrataRecord(
+                  boundary = rectangle(50),
+                  draftStratumId = stratumIds["S2"],
+                  name = "S2-A",
+              ),
+          )
       )
 
       assertEquals(
           model.copy(
-              id = created.id,
+              id = draftId,
               createdBy = user.userId,
               createdTime = clock.instant,
               modifiedBy = user.userId,
@@ -439,26 +470,28 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               map =
                   model.map.copy(
                       strata =
-                          created.map.strata.mapIndexed { index, stratum ->
-                            model.map.strata[index].copy(
-                                id = stratum.id,
-                                substrata =
-                                    stratum.substrata.mapIndexed { subIndex, substratum ->
-                                      model.map.strata[index]
-                                          .substrata[subIndex]
-                                          .copy(id = substratum.id)
-                                    },
-                            )
-                          }
+                          listOf(
+                              stratumModel(
+                                  "S1",
+                                  id = stratumIds["S1"],
+                                  substrata =
+                                      listOf(
+                                          substratumModel("S1-A", substratumIds["S1-A"]),
+                                          substratumModel("S1-B", substratumIds["S1-B"]),
+                                      ),
+                              ),
+                              stratumModel(
+                                  "S2",
+                                  id = stratumIds["S2"],
+                                  initialPlantingDensity = BigDecimal(2500),
+                                  substrata =
+                                      listOf(substratumModel("S2-A", substratumIds["S2-A"])),
+                              ),
+                          )
                   ),
           ),
           created,
           "Returned model",
-      )
-      assertEquals(
-          created,
-          store.fetchModelById(created.id),
-          "Returned model should match stored model",
       )
     }
 
@@ -480,19 +513,42 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       assertNotEquals(DraftPlantingSiteId(9999), created.id, "ID")
-      assertEquals(user.userId, created.createdBy, "Created by")
-      assertEquals(clock.instant, created.createdTime, "Created time")
-      assertEquals(user.userId, created.modifiedBy, "Modified by")
-      assertEquals(clock.instant, created.modifiedTime, "Modified time")
+      assertEquals(
+          siteModel()
+              .copy(
+                  id = created.id,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+          created,
+      )
     }
 
     @Test
     fun `creates simple site with no strata`() {
       val created = store.create(siteModel(siteType = DraftPlantingSiteType.Simple))
 
-      val row = draftPlantingSitesDao.fetchOneById(created.id!!)!!
-      assertEquals(DraftPlantingSiteType.Simple, row.siteTypeId, "Site type")
-      assertEquals(0, draftStrataDao.count(), "Number of strata")
+      assertTableEquals(
+          DraftPlantingSitesRecord(
+              boundary = rectangle(1000),
+              boundarySource = "source",
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              description = "Description",
+              exclusion = rectangle(10),
+              id = created.id,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              name = "Name",
+              organizationId = organizationId,
+              siteEditStep = "step",
+              siteTypeId = DraftPlantingSiteType.Simple,
+              timeZone = timeZone,
+          )
+      )
+      assertTableEmpty(DRAFT_STRATA)
     }
 
     @Test
@@ -506,8 +562,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
 
-      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "Stored drafts")
-      assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "Stored strata")
+      assertTableEmpty(DRAFT_PLANTING_SITES)
+      assertTableEmpty(DRAFT_STRATA)
     }
 
     @Test
@@ -516,15 +572,19 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         store.create(siteModel(strata = listOf(stratumModel("Dup"), stratumModel("Dup"))))
       }
 
-      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "Stored drafts")
-      assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "Stored strata")
+      assertTableEmpty(DRAFT_PLANTING_SITES)
+      assertTableEmpty(DRAFT_STRATA)
     }
 
     @Test
     fun `rejects client-supplied stratum and substratum ids`() {
-      val draftId = insertDraftPlantingSite()
+      insertDraftPlantingSite()
       val stratumId = insertDraftStratum(name = "Existing")
       val substratumId = insertDraftSubstratum(name = "Existing")
+
+      val expectedDrafts = dslContext.fetch(DRAFT_PLANTING_SITES)
+      val expectedStrata = dslContext.fetch(DRAFT_STRATA)
+      val expectedSubstrata = dslContext.fetch(DRAFT_SUBSTRATA)
 
       assertThrows<DraftStratumNotFoundException> {
         store.create(siteModel(strata = listOf(stratumModel("S1", id = stratumId))))
@@ -540,13 +600,9 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
 
-      assertEquals(listOf(draftId), draftPlantingSitesDao.findAll().map { it.id }, "Stored drafts")
-      assertEquals(listOf(stratumId), draftStrataDao.findAll().map { it.id }, "Stored strata")
-      assertEquals(
-          listOf(substratumId),
-          draftSubstrataDao.findAll().map { it.id },
-          "Stored substrata",
-      )
+      assertTableEquals(expectedDrafts)
+      assertTableEquals(expectedStrata)
+      assertTableEquals(expectedSubstrata)
     }
 
     @Test
@@ -565,7 +621,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
 
-      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "Stored drafts")
+      assertTableEmpty(DRAFT_PLANTING_SITES)
     }
 
     @Test
