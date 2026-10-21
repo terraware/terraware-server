@@ -194,8 +194,12 @@ data class BatchWithdrawalPayload(
     @JsonAlias("notReadyQuantityWithdrawn")
     val activeGrowthQuantityWithdrawn: Int,
     val batchId: BatchId,
-    @Schema(defaultValue = "0") @Min(0) val germinatingQuantityWithdrawn: Int? = null,
-    @Schema(defaultValue = "0") @Min(0) val hardeningOffQuantityWithdrawn: Int? = null,
+    @Schema(defaultValue = "0") //
+    @Min(0)
+    val germinatingQuantityWithdrawn: Int? = null,
+    @Schema(defaultValue = "0") //
+    @Min(0)
+    val hardeningOffQuantityWithdrawn: Int? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantityWithdrawn: Int,
 ) {
   constructor(

@@ -204,7 +204,8 @@ data class NewShrubPayload(
     val isDead: Boolean,
     override val speciesId: SpeciesId?,
     override val speciesName: String?,
-    @Schema(description = "Measured in centimeters.") val shrubDiameter: Int,
+    @Schema(description = "Measured in centimeters.") //
+    val shrubDiameter: Int,
 ) : NewTreePayload {
   override fun toTreeModels(treeNumber: Int): List<NewRecordedTreeModel> {
     return listOf(

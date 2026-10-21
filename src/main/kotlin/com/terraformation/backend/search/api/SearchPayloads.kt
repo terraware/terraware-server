@@ -168,7 +168,8 @@ data class FieldNodePayload(
     )
     @NotEmpty
     val values: List<String?>,
-    @Schema(defaultValue = "Exact") val type: SearchFilterType = SearchFilterType.Exact,
+    @Schema(defaultValue = "Exact") //
+    val type: SearchFilterType = SearchFilterType.Exact,
 ) : SearchNodePayload {
   override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
     return FieldNode(prefix.resolve(field), values, type)
