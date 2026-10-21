@@ -10,29 +10,50 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_EMAIL_NOTIFICATION_CATEGORIES
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
-/** Manages which categories of email notifications users have opted into. */
+/** Manages users' email notification settings. */
 @Named
 class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
   fun fetchForCurrentUser(): EmailNotificationSettingsModel {
     val user = currentUser()
     val optedInCategories = fetchOptedInCategories(user.userId)
 
+    val emailNotificationsEnabled =
+        dslContext
+            .select(USERS.EMAIL_NOTIFICATIONS_ENABLED.asNonNullable())
+            .from(USERS)
+            .where(USERS.ID.eq(user.userId))
+            .fetchSingle()
+            .value1()
+
     return EmailNotificationSettingsModel(
-        fetchApplicableCategories(user).associateWith { it in optedInCategories }
+        categories = fetchApplicableCategories(user).associateWith { it in optedInCategories },
+        emailNotificationsEnabled = emailNotificationsEnabled,
     )
   }
 
-  fun updateForCurrentUser(categories: Map<EmailNotificationCategory, Boolean>) {
+  fun updateForCurrentUser(
+      categories: Map<EmailNotificationCategory, Boolean>,
+      emailNotificationsEnabled: Boolean? = null,
+  ) {
     val userId = currentUser().userId
     val categoriesToOptIn = categories.filterValues { it }.keys
     val categoriesToOptOut = categories.filterValues { !it }.keys
 
     dslContext.transaction { _ ->
+      if (emailNotificationsEnabled != null) {
+        dslContext
+            .update(USERS)
+            .set(USERS.EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
+            .where(USERS.ID.eq(userId))
+            .execute()
+      }
+
       with(USER_EMAIL_NOTIFICATION_CATEGORIES) {
         if (categoriesToOptOut.isNotEmpty()) {
           dslContext

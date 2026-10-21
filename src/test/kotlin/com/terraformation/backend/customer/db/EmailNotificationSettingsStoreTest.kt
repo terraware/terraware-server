@@ -9,6 +9,8 @@ import com.terraformation.backend.db.default_schema.EmailNotificationCategory
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.records.UserEmailNotificationCategoriesRecord
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -31,11 +33,13 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           EmailNotificationSettingsModel(
-              mapOf(
-                  EmailNotificationCategory.SeedBank to false,
-                  EmailNotificationCategory.Nursery to true,
-                  EmailNotificationCategory.PlantingAndObservations to false,
-              )
+              categories =
+                  mapOf(
+                      EmailNotificationCategory.SeedBank to false,
+                      EmailNotificationCategory.Nursery to true,
+                      EmailNotificationCategory.PlantingAndObservations to false,
+                  ),
+              emailNotificationsEnabled = false,
           ),
           store.fetchForCurrentUser(),
       )
@@ -50,12 +54,14 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           EmailNotificationSettingsModel(
-              mapOf(
-                  EmailNotificationCategory.SeedBank to false,
-                  EmailNotificationCategory.Nursery to false,
-                  EmailNotificationCategory.PlantingAndObservations to false,
-                  EmailNotificationCategory.Accelerator to true,
-              )
+              categories =
+                  mapOf(
+                      EmailNotificationCategory.SeedBank to false,
+                      EmailNotificationCategory.Nursery to false,
+                      EmailNotificationCategory.PlantingAndObservations to false,
+                      EmailNotificationCategory.Accelerator to true,
+                  ),
+              emailNotificationsEnabled = false,
           ),
           store.fetchForCurrentUser(),
       )
@@ -101,9 +107,19 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank)
 
       assertEquals(
-          EmailNotificationSettingsModel(mapOf(EmailNotificationCategory.Accelerator to true)),
+          EmailNotificationSettingsModel(
+              categories = mapOf(EmailNotificationCategory.Accelerator to true),
+              emailNotificationsEnabled = false,
+          ),
           store.fetchForCurrentUser(),
       )
+    }
+
+    @Test
+    fun `returns email notifications master switch`() {
+      switchToUser(insertUser(emailNotificationsEnabled = true))
+
+      assertTrue(store.fetchForCurrentUser().emailNotificationsEnabled)
     }
   }
 
@@ -138,6 +154,26 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
       )
+    }
+
+    @Test
+    fun `updates email notifications master switch`() {
+      store.updateForCurrentUser(emptyMap(), emailNotificationsEnabled = true)
+
+      assertTrue(store.fetchForCurrentUser().emailNotificationsEnabled, "After enabling")
+
+      store.updateForCurrentUser(emptyMap(), emailNotificationsEnabled = false)
+
+      assertFalse(store.fetchForCurrentUser().emailNotificationsEnabled, "After disabling")
+    }
+
+    @Test
+    fun `leaves email notifications master switch as-is if not specified`() {
+      switchToUser(insertUser(emailNotificationsEnabled = true))
+
+      store.updateForCurrentUser(mapOf(EmailNotificationCategory.SeedBank to true))
+
+      assertTrue(store.fetchForCurrentUser().emailNotificationsEnabled)
     }
   }
 
