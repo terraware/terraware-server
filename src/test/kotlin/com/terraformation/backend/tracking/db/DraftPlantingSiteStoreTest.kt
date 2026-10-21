@@ -9,7 +9,13 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.rectangle
+import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
+import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
+import com.terraformation.backend.tracking.model.DraftStratumModel
+import com.terraformation.backend.tracking.model.DraftSubstratumModel
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
 import org.jooq.JSONB
@@ -229,13 +235,42 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchModelById {
     @Test
     fun `returns model`() {
-      insertDraftPlantingSite(name = "Fetch test")
+      val projectId = insertProject()
+      insertDraftPlantingSite(
+          boundary = rectangle(500),
+          boundarySource = "shapefile",
+          description = "Description",
+          exclusion = rectangle(10),
+          name = "Fetch test",
+          projectId = projectId,
+          siteEditStep = "zone_boundaries",
+          timeZone = timeZone,
+      )
 
-      val model = store.fetchModelById(inserted.draftPlantingSiteId)
+      val expected =
+          DraftPlantingSiteModel(
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              description = "Description",
+              id = inserted.draftPlantingSiteId,
+              map =
+                  DraftPlantingSiteMap(
+                      boundary = rectangle(500),
+                      boundarySource = "shapefile",
+                      exclusion = rectangle(10),
+                      siteEditStep = "zone_boundaries",
+                      siteType = DraftPlantingSiteType.Detailed,
+                      strata = emptyList(),
+                  ),
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              name = "Fetch test",
+              organizationId = organizationId,
+              projectId = projectId,
+              timeZone = timeZone,
+          )
 
-      assertEquals("Fetch test", model.name, "Name")
-      assertEquals(inserted.draftPlantingSiteId, model.id, "ID")
-      assertEquals(organizationId, model.organizationId, "Organization ID")
+      assertEquals(expected, store.fetchModelById(inserted.draftPlantingSiteId))
     }
 
     @Test
@@ -247,28 +282,29 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val stratumId2 = insertDraftStratum(name = "Alpha")
       val substratumId3 = insertDraftSubstratum(name = "Beta")
 
-      val model = store.fetchModelById(inserted.draftPlantingSiteId)
+      val expected =
+          listOf(
+              DraftStratumModel(
+                  id = stratumId1,
+                  name = "Zebra",
+                  boundary = rectangle(100),
+                  initialPlantingDensity = BigDecimal(1500),
+                  substrata =
+                      listOf(
+                          DraftSubstratumModel(substratumId1, "Zulu", rectangle(100)),
+                          DraftSubstratumModel(substratumId2, "Alpha", rectangle(100)),
+                      ),
+              ),
+              DraftStratumModel(
+                  id = stratumId2,
+                  name = "Alpha",
+                  boundary = rectangle(100),
+                  initialPlantingDensity = BigDecimal(1500),
+                  substrata = listOf(DraftSubstratumModel(substratumId3, "Beta", rectangle(100))),
+              ),
+          )
 
-      assertEquals(
-          listOf(stratumId1, stratumId2),
-          model.map.strata.map { it.id },
-          "Stratum IDs",
-      )
-      assertEquals(
-          listOf(substratumId1, substratumId2),
-          model.map.strata[0].substrata.map { it.id },
-          "Substratum IDs of first stratum",
-      )
-      assertEquals(
-          listOf(substratumId3),
-          model.map.strata[1].substrata.map { it.id },
-          "Substratum IDs of second stratum",
-      )
-      assertEquals(
-          listOf("Zulu", "Alpha"),
-          model.map.strata[0].substrata.map { it.name },
-          "Substratum names",
-      )
+      assertEquals(expected, store.fetchModelById(inserted.draftPlantingSiteId).map.strata)
     }
 
     @Test
