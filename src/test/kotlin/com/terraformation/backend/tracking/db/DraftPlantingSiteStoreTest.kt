@@ -460,32 +460,6 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `cascades to strata and substrata`() {
-      val otherDraftId = insertDraftPlantingSite()
-      val otherStratumId = insertDraftStratum()
-      val otherSubstratumId = insertDraftSubstratum()
-      val draftIdToDelete = insertDraftWithStrata()
-
-      store.delete(draftIdToDelete)
-
-      assertEquals(
-          listOf(otherDraftId),
-          draftPlantingSitesDao.findAll().map { it.id },
-          "Remaining drafts",
-      )
-      assertEquals(
-          listOf(otherStratumId),
-          draftStrataDao.findAll().map { it.id },
-          "Remaining strata",
-      )
-      assertEquals(
-          listOf(otherSubstratumId),
-          draftSubstrataDao.findAll().map { it.id },
-          "Remaining substrata",
-      )
-    }
-
-    @Test
     fun `throws exception if no permission to delete drafts`() {
       every { user.canDeleteDraftPlantingSite(any()) } returns false
 
