@@ -1,3 +1,4 @@
+87e93411 Add watchdogs and diagnostics for hung test runs (#5211)
 5d1aef7d Add convention for @Schema to be on its own line (#5217)
 c312d125 Add REVIEW.md to guide Devin Review (#5216)
 4c6b4379 Rework test-engineer agent instructions (#5215)
