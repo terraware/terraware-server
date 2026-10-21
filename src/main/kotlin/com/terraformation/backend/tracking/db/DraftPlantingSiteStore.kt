@@ -228,7 +228,7 @@ class DraftPlantingSiteStore(
    * Updates a draft planting site. Strata and substrata with IDs are updated in place, those
    * without IDs are inserted, and existing ones that are absent from the updated model are deleted.
    */
-  fun updateModel(
+  fun updateFromModel(
       id: DraftPlantingSiteId,
       updateFunc: (DraftPlantingSiteModel) -> DraftPlantingSiteModel,
   ) {
