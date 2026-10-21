@@ -181,7 +181,7 @@ class DraftPlantingSiteStore(
                 .fetchOne(ID)!!
           }
 
-      syncStrata(id, emptyList(), model.map.strata)
+      updateStrata(id, emptyList(), model.map.strata)
 
       fetchModelById(id)
     }
@@ -295,7 +295,7 @@ class DraftPlantingSiteStore(
    * Strata and substrata whose names are changing are first given temporary names so that renames
    * that swap or shift names don't violate the uniqueness constraints regardless of update order.
    */
-  private fun syncStrata(
+  private fun updateStrata(
       draftPlantingSiteId: DraftPlantingSiteId,
       existingStrata: List<DraftStratumModel>,
       desiredStrata: List<DraftStratumModel>,
@@ -308,7 +308,7 @@ class DraftPlantingSiteStore(
     }
 
     val renamedStrata = desiredStrata.filter {
-      it.id != null && existingStrataById[it.id]?.name != it.name
+      it.id != null && existingStrataById.getValue(it.id).name != it.name
     }
     if (renamedStrata.isNotEmpty()) {
       dslContext
@@ -330,9 +330,9 @@ class DraftPlantingSiteStore(
               .execute()
         }
 
-        syncSubstrata(
+        updateSubstrata(
             stratum.id,
-            existingStrataById[stratum.id]?.substrata ?: emptyList(),
+            existingStrataById.getValue(stratum.id).substrata,
             stratum.substrata,
         )
       } else {
@@ -348,13 +348,13 @@ class DraftPlantingSiteStore(
                   .fetchOne(ID)!!
             }
 
-        syncSubstrata(stratumId, emptyList(), stratum.substrata)
+        updateSubstrata(stratumId, emptyList(), stratum.substrata)
       }
     }
   }
 
   /** Makes a stratum's substrata match a desired list whose IDs have already been checked. */
-  private fun syncSubstrata(
+  private fun updateSubstrata(
       draftStratumId: DraftStratumId,
       existingSubstrata: List<DraftSubstratumModel>,
       desiredSubstrata: List<DraftSubstratumModel>,
@@ -370,7 +370,7 @@ class DraftPlantingSiteStore(
     }
 
     val renamedSubstrata = desiredSubstrata.filter {
-      it.id != null && existingSubstrataById[it.id]?.name != it.name
+      it.id != null && existingSubstrataById.getValue(it.id).name != it.name
     }
     if (renamedSubstrata.isNotEmpty()) {
       dslContext
