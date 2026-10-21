@@ -62,15 +62,20 @@ reporting.
 10. Assert that expected events were published using `TestEventPublisher.assertEventPublished`.
     Don't use `assertExactEventsPublished`; tests shouldn't break if the code under test later
     calls something that publishes an additional event.
-11. One call to the code under test, plus whatever setup it needs, per `@Test`, named with a
-    backtick sentence describing the scenario. It is fine to assert multiple things about the call.
+11. Name test methods with a backtick sentence describing the scenario.
 12. When checking return values, prefer `assertEquals` on the whole object rather than on individual
     fields, unless there are a lot of fields and 3 or fewer of them are relevant to the scenario.
-13. When asserting on an individual field, include a message naming it unless it's a non-primitive
+13. Each `@Test` covers one scenario. The scenario's last call to the code under test is the one
+    being tested; earlier calls are setup. They're fine when the behavior depends on prior state.
+    Don't combine independent scenarios in one test, even if they share setup. It is fine to make
+    several kinds of assertions about the scenario's outcome, such as the return value, persisted
+    state, and published events (see the previous rule for how to assert on return values).
+14. When asserting on an individual field, include a message naming it unless it's a non-primitive
     type that's only asserted on once: `assertEquals("Test Foo", model.name, "Name")`.
-14. Use Kotlin-native assertions where available (`assertInstanceOf<Foo>(obj)`, not
+15. Use Kotlin-native assertions where available (`assertInstanceOf<Foo>(obj)`, not
     `assertInstanceOf(Foo::class.java, obj)`). When JUnit has no suitable assertion, use AssertJ
     (`assertThat(list).contains(item)`) rather than `assertTrue` on a computed boolean.
+
 
 You can't ask the user questions directly. Instead of doing any of the following, stop and report
 back, explaining what you want to do and why:
