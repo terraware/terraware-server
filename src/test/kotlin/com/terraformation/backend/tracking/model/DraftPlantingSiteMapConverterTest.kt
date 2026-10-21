@@ -17,9 +17,9 @@ import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 
-class DraftPlantingSiteMapCodecTest {
+class DraftPlantingSiteMapConverterTest {
   private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(GeometryModule())
-  private val codec = DraftPlantingSiteMapCodec(objectMapper)
+  private val converter = DraftPlantingSiteMapConverter(objectMapper)
 
   /** Rounds coordinates the same way the JSON serializer does so expected values compare equal. */
   private fun rounded(geometry: Geometry): MultiPolygon =
@@ -60,7 +60,7 @@ class DraftPlantingSiteMapCodecTest {
       """
           .trimIndent()
 
-  private fun parse(json: String) = codec.parse(JSONB.jsonb(json))
+  private fun parse(json: String) = converter.parse(JSONB.jsonb(json))
 
   private val expectedMap =
       DraftPlantingSiteMap(
@@ -472,7 +472,7 @@ class DraftPlantingSiteMapCodecTest {
             """
         )
 
-    assertEquals(expected, objectMapper.readTree(codec.generate(map).data()))
+    assertEquals(expected, objectMapper.readTree(converter.generate(map).data()))
   }
 
   @Test
@@ -487,7 +487,7 @@ class DraftPlantingSiteMapCodecTest {
             strata = emptyList(),
         )
 
-    val json = objectMapper.readTree(codec.generate(map).data())
+    val json = objectMapper.readTree(converter.generate(map).data())
 
     assertEquals(
         emptySet<String>(),
@@ -508,7 +508,7 @@ class DraftPlantingSiteMapCodecTest {
             strata = emptyList(),
         )
 
-    val json = objectMapper.readTree(codec.generate(map).data())
+    val json = objectMapper.readTree(converter.generate(map).data())
 
     assertEquals(objectMapper.readTree("[]"), json.get("strata"), "Strata")
     assertEquals("simple", json.get("siteType").asText(), "Site type")
@@ -536,6 +536,6 @@ class DraftPlantingSiteMapCodecTest {
                 )
         )
 
-    assertEquals(expectedMap, codec.parse(codec.generate(withIds)))
+    assertEquals(expectedMap, converter.parse(converter.generate(withIds)))
   }
 }

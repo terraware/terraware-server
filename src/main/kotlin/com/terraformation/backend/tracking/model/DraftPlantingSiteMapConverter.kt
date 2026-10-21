@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.MultiPolygon
  * Geometries are not checked for topological validity since drafts may be works in progress.
  */
 @Named
-class DraftPlantingSiteMapCodec(private val objectMapper: ObjectMapper) {
+class DraftPlantingSiteMapConverter(private val objectMapper: ObjectMapper) {
   private val reader: ObjectReader =
       objectMapper
           .readerFor(DraftPlantingSiteJson::class.java)
