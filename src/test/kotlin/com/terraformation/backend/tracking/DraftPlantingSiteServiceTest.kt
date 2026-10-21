@@ -410,10 +410,10 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         store.create(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB)))).id!!
 
     @Test
-    fun `createTyped rejects overlapping strata and stores nothing`() {
+    fun `create rejects overlapping strata and stores nothing`() {
       val exception =
           assertThrows<PlantingSiteMapInvalidException> {
-            service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
+            service.create(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
           }
 
       assertThat(exception.problems).anyMatch {
@@ -424,29 +424,29 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `createTyped checks permission before validating map`() {
+    fun `create checks permission before validating map`() {
       every { user.canCreateDraftPlantingSite(any()) } returns false
       every { user.canReadOrganization(any()) } returns true
 
       assertThrows<AccessDeniedException> {
-        service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
+        service.create(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
       }
     }
 
     @Test
-    fun `createTyped reports topology failures as invalid arguments`() {
+    fun `create reports topology failures as invalid arguments`() {
       val model = spyk(siteModel(listOf(stratum("A", boundaryA))))
       every { model.validate() } throws TopologyException("Test failure")
 
-      assertThrows<IllegalArgumentException> { service.createTyped(model) }
+      assertThrows<IllegalArgumentException> { service.create(model) }
       assertTableEmpty(DRAFT_PLANTING_SITES)
     }
 
     @Test
-    fun `createTyped stores valid draft`() {
+    fun `create stores valid draft`() {
       val model = siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB)))
 
-      val created = service.createTyped(model)
+      val created = service.create(model)
 
       val expected =
           model.copy(

@@ -38,7 +38,7 @@ class DraftPlantingSiteService(
    *
    * @throws PlantingSiteMapInvalidException The map failed validation. Nothing is stored.
    */
-  fun createTyped(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
+  fun create(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
     requirePermissions { createDraftPlantingSite(model.organizationId) }
 
     model.requireValidMap()
@@ -97,7 +97,9 @@ class DraftPlantingSiteService(
           throw IllegalArgumentException("Planting site map has invalid geometry", e)
         }
 
-    problems?.let { throw PlantingSiteMapInvalidException(it) }
+    if (problems != null) {
+      throw PlantingSiteMapInvalidException(problems)
+    }
   }
 
   /**
