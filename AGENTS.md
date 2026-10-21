@@ -47,6 +47,10 @@ If the Jetbrains MCP service is available, don't use it to run Gradle or other s
 
 If the Context7 MCP service is available, use it to look up documentation for any libraries you aren't sure how to use correctly.
 
+## Tests
+
+When writing or modifying tests, delegate the work to the test-engineer agent if you're able to use Claude-style subagents. Otherwise, read `.claude/agents/test-engineer.md` and follow its rules yourself.
+
 ## Skill Use
 
 If you are able to use Claude-style skills, do so when appropriate instead of figuring tasks out from scratch.

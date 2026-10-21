@@ -18,7 +18,8 @@ tools:
   - Edit
   - Glob
   - Grep
-  - Codegraph
+  - mcp__codegraph__*
+  - mcp__jetbrains__*
 ---
 
 # Senior Software Engineer — terraware-server
