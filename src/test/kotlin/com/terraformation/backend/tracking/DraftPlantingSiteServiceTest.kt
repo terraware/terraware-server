@@ -11,6 +11,8 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
 import com.terraformation.backend.gis.GeometryFileException
 import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.gis.GeometryFileParser
@@ -42,6 +44,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -388,6 +391,21 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
                 ),
         )
 
+    /** Clears stratum and substratum IDs so drafts can be compared when new IDs aren't known. */
+    private fun DraftPlantingSiteModel.withoutStratumIds() =
+        copy(
+            map =
+                map.copy(
+                    strata =
+                        map.strata.map { stratum ->
+                          stratum.copy(
+                              id = null,
+                              substrata = stratum.substrata.map { it.copy(id = null) },
+                          )
+                        }
+                )
+        )
+
     private fun createDraftWithTwoStrata(): DraftPlantingSiteId =
         store.create(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB)))).id!!
 
@@ -398,14 +416,11 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
             service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryA))))
           }
 
-      assertTrue(
-          exception.problems.any {
-            it.type == PlantingSiteValidationFailureType.StratumBoundaryOverlaps
-          },
-          "Should report overlapping strata: ${exception.problems}",
-      )
-      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "No drafts are stored")
-      assertEquals(emptyList<Any>(), draftStrataDao.findAll(), "No strata are stored")
+      assertThat(exception.problems).anyMatch {
+        it.type == PlantingSiteValidationFailureType.StratumBoundaryOverlaps
+      }
+      assertTableEmpty(DRAFT_PLANTING_SITES)
+      assertTableEmpty(DRAFT_STRATA)
     }
 
     @Test
@@ -424,19 +439,25 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       every { model.validate() } throws TopologyException("Test failure")
 
       assertThrows<IllegalArgumentException> { service.createTyped(model) }
-      assertEquals(emptyList<Any>(), draftPlantingSitesDao.findAll(), "No drafts are stored")
+      assertTableEmpty(DRAFT_PLANTING_SITES)
     }
 
     @Test
     fun `createTyped stores valid draft`() {
-      val created =
-          service.createTyped(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB))))
+      val model = siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB)))
 
-      val stored = store.fetchOneById(created.id!!)
+      val created = service.createTyped(model)
 
-      assertEquals("Original", stored.name, "Name")
-      assertEquals(listOf("A", "B"), stored.map.strata.map { it.name }, "Strata names")
-      assertEquals(2, stored.numSubstrata, "Number of substrata")
+      val expected =
+          model.copy(
+              id = created.id,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+
+      assertEquals(expected, store.fetchOneById(created.id!!).withoutStratumIds())
     }
 
     @Test
@@ -461,21 +482,18 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
             }
           }
 
-      assertTrue(
-          exception.problems.any { it.type == PlantingSiteValidationFailureType.StratumNotInSite },
-          "Should report stratum outside site: ${exception.problems}",
-      )
-
-      val after = store.fetchOneById(id)
-
-      assertEquals(before.name, after.name, "Name")
-      assertEquals(before.map.strata, after.map.strata, "Strata")
-      assertEquals(before.modifiedTime, after.modifiedTime, "Modified time")
+      assertThat(exception.problems).anyMatch {
+        it.type == PlantingSiteValidationFailureType.StratumNotInSite
+      }
+      assertEquals(before, store.fetchOneById(id))
     }
 
     @Test
     fun `updateTyped stores valid update`() {
       val id = createDraftWithTwoStrata()
+      val before = store.fetchOneById(id)
+
+      clock.instant = clock.instant().plusSeconds(60)
 
       service.updateTyped(id) { existing ->
         existing.copy(
@@ -484,11 +502,14 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         )
       }
 
-      val stored = store.fetchOneById(id)
+      val expected =
+          before.copy(
+              name = "Renamed",
+              map = before.map.copy(strata = listOf(before.map.strata[0])),
+              modifiedTime = clock.instant,
+          )
 
-      assertEquals("Renamed", stored.name, "Name")
-      assertEquals(listOf("A"), stored.map.strata.map { it.name }, "Strata names")
-      assertEquals(1, stored.numSubstrata, "Number of substrata")
+      assertEquals(expected, store.fetchOneById(id))
     }
   }
 
