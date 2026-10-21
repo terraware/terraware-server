@@ -94,23 +94,39 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
   }
 
   @Test
-  fun `publishes estimated count in WithdrawalCreatedEvent for weight-based withdrawals`() {
+  fun `publishes estimated quantities in WithdrawalCreatedEvent`() {
     create()
         .andUpdate {
           it.copy(remaining = grams(100), subsetCount = 10, subsetWeightQuantity = grams(1))
         }
         .andUpdate {
           it.addWithdrawal(
-              WithdrawalModel(
-                  date = LocalDate.EPOCH,
-                  purpose = WithdrawalPurpose.Other,
-                  withdrawn = grams(13),
+                  WithdrawalModel(
+                      date = LocalDate.EPOCH,
+                      purpose = WithdrawalPurpose.Other,
+                      withdrawn = grams(13),
+                  )
               )
-          )
+              .addWithdrawal(
+                  WithdrawalModel(
+                      date = LocalDate.EPOCH,
+                      purpose = WithdrawalPurpose.Nursery,
+                      withdrawn = seeds(20),
+                  )
+              )
         }
 
     publisher.assertEventPublished { event ->
-      event is WithdrawalCreatedEvent && event.estimatedCount == 130L
+      event is WithdrawalCreatedEvent &&
+          event.purpose == WithdrawalPurpose.Other &&
+          event.estimatedCount == 130L &&
+          event.estimatedWeight == null
+    }
+    publisher.assertEventPublished { event ->
+      event is WithdrawalCreatedEvent &&
+          event.purpose == WithdrawalPurpose.Nursery &&
+          event.estimatedCount == null &&
+          event.estimatedWeight == grams<SeedQuantityModel>(2)
     }
   }
 }

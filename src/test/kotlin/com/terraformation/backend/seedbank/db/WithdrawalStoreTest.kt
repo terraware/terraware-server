@@ -683,6 +683,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.of(2021, 3, 4),
             destination = "dest 1",
+            estimatedWeight = grams(6),
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
             staffResponsible = "staff 1",
@@ -698,6 +699,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             purpose = WithdrawalPurpose.Other,
             date = LocalDate.of(2021, 3, 4),
             withdrawnQuantity = seeds(3),
+            estimatedWeight = grams(6),
             batchId = null,
             notes = "notes 1",
             staffResponsible = "staff 1",
@@ -712,11 +714,12 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `WithdrawalCreatedEvent includes estimated count for weight-based withdrawals`() {
+  fun `WithdrawalCreatedEvent includes estimated count but not estimated weight for weight-based withdrawals`() {
     val newWithdrawal =
         WithdrawalModel(
             date = LocalDate.of(2021, 3, 4),
             estimatedCount = 13,
+            estimatedWeight = grams(3),
             purpose = WithdrawalPurpose.Other,
             withdrawn = grams(3),
         )
@@ -724,7 +727,9 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
 
     eventPublisher.assertEventPublished { event ->
-      event is WithdrawalCreatedEvent && event.estimatedCount == 13L
+      event is WithdrawalCreatedEvent &&
+          event.estimatedCount == 13L &&
+          event.estimatedWeight == null
     }
   }
 

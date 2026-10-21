@@ -39,6 +39,7 @@ import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEventValues
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV4
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.grams
@@ -207,140 +208,271 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class GetWithdrawalValuesMissingFromV1 {
+  inner class WithdrawalCreatedEventUpgrades {
     private val withdrawalDate = LocalDate.of(2021, 1, 1)
 
     private lateinit var accessionId: AccessionId
     private lateinit var facilityId: FacilityId
-    private lateinit var otherUserId: UserId
 
     @BeforeEach
     fun setUpAccession() {
-      otherUserId = insertUser()
       insertOrganization()
       facilityId = insertFacility()
       accessionId = insertAccession()
     }
 
-    @Test
-    fun `uses the current withdrawal row when no later edit touched the fields`() {
-      val viabilityTestId = insertViabilityTest()
-      val withdrawalId =
-          insertSeedbankWithdrawal(
-              batchId = null,
-              destination = "Lab",
-              purpose = WithdrawalPurpose.ViabilityTesting,
-              viabilityTestId = viabilityTestId,
-              withdrawnBy = otherUserId,
-          )
+    @Nested
+    inner class GetWithdrawalValuesMissingFromV1 {
+      private lateinit var otherUserId: UserId
 
-      testUpgrade(
-          createdEventV1(withdrawalId),
-          createdEventV2(
-              withdrawalId,
-              destination = "Lab",
-              viabilityTestId = viabilityTestId,
-              withdrawnByUserId = otherUserId,
-          ),
-      )
+      @BeforeEach
+      fun setUpOtherUser() {
+        otherUserId = insertUser()
+      }
+
+      @Test
+      fun `uses the current withdrawal row when no later edit touched the fields`() {
+        val viabilityTestId = insertViabilityTest()
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                destination = "Lab",
+                purpose = WithdrawalPurpose.ViabilityTesting,
+                viabilityTestId = viabilityTestId,
+                withdrawnBy = otherUserId,
+            )
+
+        testUpgrade(
+            createdEventV1(withdrawalId),
+            createdEventV2(
+                withdrawalId,
+                destination = "Lab",
+                viabilityTestId = viabilityTestId,
+                withdrawnByUserId = otherUserId,
+            ),
+        )
+      }
+
+      @Test
+      fun `uses the value from before the earliest edit that changed the field`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                destination = "Greenhouse",
+                withdrawnBy = otherUserId,
+            )
+        insertEvent(createdEventV1(withdrawalId))
+
+        insertEvent(
+            updatedEvent(
+                withdrawalId,
+                changedFrom = WithdrawalUpdatedEventValues(destination = "Lab"),
+                changedTo = WithdrawalUpdatedEventValues(destination = "Nursery"),
+            )
+        )
+        insertEvent(
+            updatedEvent(
+                withdrawalId,
+                changedFrom = WithdrawalUpdatedEventValues(destination = "Nursery"),
+                changedTo = WithdrawalUpdatedEventValues(destination = "Greenhouse"),
+            )
+        )
+
+        assertEquals(
+            "Lab",
+            upgrade(withdrawalId).destination,
+            "Should use the changedFrom of the first edit, not the current row",
+        )
+      }
+
+      @Test
+      fun `ignores later edits that left the field alone`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                destination = "Greenhouse",
+                withdrawnBy = user.userId,
+            )
+        insertEvent(createdEventV1(withdrawalId))
+
+        // Only touches withdrawnByUserId, so it says nothing about the destination.
+        insertEvent(
+            updatedEvent(
+                withdrawalId,
+                changedFrom = WithdrawalUpdatedEventValues(withdrawnByUserId = user.userId),
+                changedTo = WithdrawalUpdatedEventValues(withdrawnByUserId = otherUserId),
+            )
+        )
+        insertEvent(
+            updatedEvent(
+                withdrawalId,
+                changedFrom = WithdrawalUpdatedEventValues(destination = "Lab"),
+                changedTo = WithdrawalUpdatedEventValues(destination = "Greenhouse"),
+            )
+        )
+
+        val upgraded = upgrade(withdrawalId)
+
+        assertEquals("Lab", upgraded.destination, "destination")
+        assertEquals(user.userId, upgraded.withdrawnByUserId, "withdrawnByUserId")
+      }
+
+      @Test
+      fun `treats a field that an edit populated as null at creation time`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(batchId = null, destination = "Lab", withdrawnBy = user.userId)
+        insertEvent(createdEventV1(withdrawalId))
+
+        insertEvent(
+            updatedEvent(
+                withdrawalId,
+                changedFrom = WithdrawalUpdatedEventValues(destination = null),
+                changedTo = WithdrawalUpdatedEventValues(destination = "Lab"),
+            )
+        )
+
+        assertNull(
+            upgrade(withdrawalId).destination,
+            "Destination was empty at creation time even though the row has one now",
+        )
+      }
+
+      @Test
+      fun `upgrades a deleted withdrawal`() {
+        val withdrawalId = insertSeedbankWithdrawal(batchId = null, destination = "Lab")
+        insertEvent(createdEventV1(withdrawalId))
+
+        withdrawalsDao.deleteById(withdrawalId)
+
+        assertEquals(createdEventV2(withdrawalId), upgrade(withdrawalId))
+      }
+
+      private fun upgrade(withdrawalId: WithdrawalId) =
+          eventUpgradeUtils.upgrade(createdEventV1(withdrawalId))
+
+      private fun updatedEvent(
+          withdrawalId: WithdrawalId,
+          changedFrom: WithdrawalUpdatedEventValues,
+          changedTo: WithdrawalUpdatedEventValues,
+      ) =
+          WithdrawalUpdatedEventV1(
+              changedFrom = changedFrom,
+              changedTo = changedTo,
+              withdrawalId = withdrawalId,
+              accessionId = accessionId,
+              facilityId = facilityId,
+              organizationId = inserted.organizationId,
+          )
     }
 
-    @Test
-    fun `uses the value from before the earliest edit that changed the field`() {
-      val withdrawalId =
-          insertSeedbankWithdrawal(
-              batchId = null,
-              destination = "Greenhouse",
-              withdrawnBy = otherUserId,
-          )
-      insertEvent(createdEventV1(withdrawalId))
+    @Nested
+    inner class UpgradeWithdrawalCreatedEventV2 {
+      @Test
+      fun `populates estimatedCount from the current row for weight-based withdrawals`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                estimatedCount = 42,
+                withdrawnQuantity = BigDecimal(10),
+                withdrawnUnitsId = SeedQuantityUnits.Grams,
+            )
 
-      insertEvent(
-          updatedEvent(
-              withdrawalId,
-              changedFrom = WithdrawalUpdatedEventValues(destination = "Lab"),
-              changedTo = WithdrawalUpdatedEventValues(destination = "Nursery"),
-          )
-      )
-      insertEvent(
-          updatedEvent(
-              withdrawalId,
-              changedFrom = WithdrawalUpdatedEventValues(destination = "Nursery"),
-              changedTo = WithdrawalUpdatedEventValues(destination = "Greenhouse"),
-          )
-      )
+        testUpgrade(
+            createdEventV2(withdrawalId, grams(10)),
+            createdEventV3(withdrawalId, grams(10), estimatedCount = 42),
+        )
+      }
 
-      assertEquals(
-          "Lab",
-          upgrade(withdrawalId).destination,
-          "Should use the changedFrom of the first edit, not the current row",
-      )
+      @Test
+      fun `does not populate estimatedCount for count-based withdrawals`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                estimatedCount = 42,
+                withdrawnQuantity = BigDecimal(10),
+                withdrawnUnitsId = SeedQuantityUnits.Seeds,
+            )
+
+        testUpgrade(
+            createdEventV2(withdrawalId, seeds(10)),
+            createdEventV3(withdrawalId, seeds(10), estimatedCount = null),
+        )
+      }
+
+      @Test
+      fun `does not populate estimatedCount if the withdrawal was deleted`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                estimatedCount = 42,
+                withdrawnQuantity = BigDecimal(10),
+                withdrawnUnitsId = SeedQuantityUnits.Grams,
+            )
+
+        withdrawalsDao.deleteById(withdrawalId)
+
+        testUpgrade(
+            createdEventV2(withdrawalId, grams(10)),
+            createdEventV3(withdrawalId, grams(10), estimatedCount = null),
+        )
+      }
     }
 
-    @Test
-    fun `ignores later edits that left the field alone`() {
-      val withdrawalId =
-          insertSeedbankWithdrawal(
-              batchId = null,
-              destination = "Greenhouse",
-              withdrawnBy = user.userId,
-          )
-      insertEvent(createdEventV1(withdrawalId))
+    @Nested
+    inner class UpgradeWithdrawalCreatedEventV3 {
+      @Test
+      fun `populates estimatedWeight from the current row for count-based withdrawals`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                estimatedWeightQuantity = BigDecimal(20),
+                estimatedWeightUnitsId = SeedQuantityUnits.Grams,
+                withdrawnQuantity = BigDecimal(10),
+                withdrawnUnitsId = SeedQuantityUnits.Seeds,
+            )
 
-      // Only touches withdrawnByUserId, so it says nothing about the destination.
-      insertEvent(
-          updatedEvent(
-              withdrawalId,
-              changedFrom = WithdrawalUpdatedEventValues(withdrawnByUserId = user.userId),
-              changedTo = WithdrawalUpdatedEventValues(withdrawnByUserId = otherUserId),
-          )
-      )
-      insertEvent(
-          updatedEvent(
-              withdrawalId,
-              changedFrom = WithdrawalUpdatedEventValues(destination = "Lab"),
-              changedTo = WithdrawalUpdatedEventValues(destination = "Greenhouse"),
-          )
-      )
+        testUpgrade(
+            createdEventV3(withdrawalId, seeds(10)),
+            createdEventV4(withdrawalId, seeds(10), estimatedWeight = grams(20)),
+        )
+      }
 
-      val upgraded = upgrade(withdrawalId)
+      @Test
+      fun `does not populate estimatedWeight for weight-based withdrawals`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                estimatedWeightQuantity = BigDecimal(10),
+                estimatedWeightUnitsId = SeedQuantityUnits.Grams,
+                withdrawnQuantity = BigDecimal(10),
+                withdrawnUnitsId = SeedQuantityUnits.Grams,
+            )
 
-      assertEquals("Lab", upgraded.destination, "destination")
-      assertEquals(user.userId, upgraded.withdrawnByUserId, "withdrawnByUserId")
+        testUpgrade(
+            createdEventV3(withdrawalId, grams(10), estimatedCount = 5),
+            createdEventV4(withdrawalId, grams(10), estimatedCount = 5, estimatedWeight = null),
+        )
+      }
+
+      @Test
+      fun `does not populate estimatedWeight if the withdrawal was deleted`() {
+        val withdrawalId =
+            insertSeedbankWithdrawal(
+                batchId = null,
+                estimatedWeightQuantity = BigDecimal(20),
+                estimatedWeightUnitsId = SeedQuantityUnits.Grams,
+                withdrawnQuantity = BigDecimal(10),
+                withdrawnUnitsId = SeedQuantityUnits.Seeds,
+            )
+
+        withdrawalsDao.deleteById(withdrawalId)
+
+        testUpgrade(
+            createdEventV3(withdrawalId, seeds(10)),
+            createdEventV4(withdrawalId, seeds(10), estimatedWeight = null),
+        )
+      }
     }
-
-    @Test
-    fun `treats a field that an edit populated as null at creation time`() {
-      val withdrawalId =
-          insertSeedbankWithdrawal(batchId = null, destination = "Lab", withdrawnBy = user.userId)
-      insertEvent(createdEventV1(withdrawalId))
-
-      insertEvent(
-          updatedEvent(
-              withdrawalId,
-              changedFrom = WithdrawalUpdatedEventValues(destination = null),
-              changedTo = WithdrawalUpdatedEventValues(destination = "Lab"),
-          )
-      )
-
-      assertNull(
-          upgrade(withdrawalId).destination,
-          "Destination was empty at creation time even though the row has one now",
-      )
-    }
-
-    @Test
-    fun `upgrades a deleted withdrawal`() {
-      val withdrawalId = insertSeedbankWithdrawal(batchId = null, destination = "Lab")
-      insertEvent(createdEventV1(withdrawalId))
-
-      withdrawalsDao.deleteById(withdrawalId)
-
-      assertEquals(createdEventV2(withdrawalId), upgrade(withdrawalId))
-    }
-
-    private fun upgrade(withdrawalId: WithdrawalId) =
-        eventUpgradeUtils.upgrade(createdEventV1(withdrawalId))
 
     private fun createdEventV1(withdrawalId: WithdrawalId) =
         WithdrawalCreatedEventV1(
@@ -354,6 +486,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
 
     private fun createdEventV2(
         withdrawalId: WithdrawalId,
+        withdrawnQuantity: SeedQuantityModel? = null,
         destination: String? = null,
         viabilityTestId: ViabilityTestId? = null,
         withdrawnByUserId: UserId? = null,
@@ -366,100 +499,8 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             organizationId = inserted.organizationId,
             purpose = WithdrawalPurpose.Other,
             viabilityTestId = viabilityTestId,
+            withdrawalId = withdrawalId,
             withdrawnByUserId = withdrawnByUserId,
-            withdrawalId = withdrawalId,
-        )
-
-    private fun updatedEvent(
-        withdrawalId: WithdrawalId,
-        changedFrom: WithdrawalUpdatedEventValues,
-        changedTo: WithdrawalUpdatedEventValues,
-    ) =
-        WithdrawalUpdatedEventV1(
-            changedFrom = changedFrom,
-            changedTo = changedTo,
-            withdrawalId = withdrawalId,
-            accessionId = accessionId,
-            facilityId = facilityId,
-            organizationId = inserted.organizationId,
-        )
-  }
-
-  @Nested
-  inner class UpgradeWithdrawalCreatedEventV2 {
-    private val withdrawalDate = LocalDate.of(2021, 1, 1)
-
-    private lateinit var accessionId: AccessionId
-    private lateinit var facilityId: FacilityId
-
-    @BeforeEach
-    fun setUpAccession() {
-      insertOrganization()
-      facilityId = insertFacility()
-      accessionId = insertAccession()
-    }
-
-    @Test
-    fun `populates estimatedCount from the current row for weight-based withdrawals`() {
-      val withdrawalId =
-          insertSeedbankWithdrawal(
-              batchId = null,
-              estimatedCount = 42,
-              withdrawnQuantity = BigDecimal(10),
-              withdrawnUnitsId = SeedQuantityUnits.Grams,
-          )
-
-      testUpgrade(
-          createdEventV2(withdrawalId, grams(10)),
-          createdEventV3(withdrawalId, grams(10), estimatedCount = 42),
-      )
-    }
-
-    @Test
-    fun `does not populate estimatedCount for count-based withdrawals`() {
-      val withdrawalId =
-          insertSeedbankWithdrawal(
-              batchId = null,
-              estimatedCount = 42,
-              withdrawnQuantity = BigDecimal(10),
-              withdrawnUnitsId = SeedQuantityUnits.Seeds,
-          )
-
-      testUpgrade(
-          createdEventV2(withdrawalId, seeds(10)),
-          createdEventV3(withdrawalId, seeds(10), estimatedCount = null),
-      )
-    }
-
-    @Test
-    fun `does not populate estimatedCount if the withdrawal was deleted`() {
-      val withdrawalId =
-          insertSeedbankWithdrawal(
-              batchId = null,
-              estimatedCount = 42,
-              withdrawnQuantity = BigDecimal(10),
-              withdrawnUnitsId = SeedQuantityUnits.Grams,
-          )
-
-      withdrawalsDao.deleteById(withdrawalId)
-
-      testUpgrade(
-          createdEventV2(withdrawalId, grams(10)),
-          createdEventV3(withdrawalId, grams(10), estimatedCount = null),
-      )
-    }
-
-    private fun createdEventV2(
-        withdrawalId: WithdrawalId,
-        withdrawnQuantity: SeedQuantityModel? = null,
-    ) =
-        WithdrawalCreatedEventV2(
-            accessionId = accessionId,
-            date = withdrawalDate,
-            facilityId = facilityId,
-            organizationId = inserted.organizationId,
-            purpose = WithdrawalPurpose.Other,
-            withdrawalId = withdrawalId,
             withdrawnQuantity = withdrawnQuantity,
         )
 
@@ -472,6 +513,24 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
             accessionId = accessionId,
             date = withdrawalDate,
             estimatedCount = estimatedCount,
+            facilityId = facilityId,
+            organizationId = inserted.organizationId,
+            purpose = WithdrawalPurpose.Other,
+            withdrawalId = withdrawalId,
+            withdrawnQuantity = withdrawnQuantity,
+        )
+
+    private fun createdEventV4(
+        withdrawalId: WithdrawalId,
+        withdrawnQuantity: SeedQuantityModel? = null,
+        estimatedCount: Long? = null,
+        estimatedWeight: SeedQuantityModel? = null,
+    ) =
+        WithdrawalCreatedEventV4(
+            accessionId = accessionId,
+            date = withdrawalDate,
+            estimatedCount = estimatedCount,
+            estimatedWeight = estimatedWeight,
             facilityId = facilityId,
             organizationId = inserted.organizationId,
             purpose = WithdrawalPurpose.Other,

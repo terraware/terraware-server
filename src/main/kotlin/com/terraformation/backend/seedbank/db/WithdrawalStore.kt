@@ -265,6 +265,12 @@ class WithdrawalStore(
                       } else {
                         null
                       },
+                  estimatedWeight =
+                      if (withdrawal.withdrawn?.units == SeedQuantityUnits.Seeds) {
+                        withdrawal.estimatedWeight
+                      } else {
+                        null
+                      },
                   purpose = withdrawal.purpose,
                   date = withdrawal.date,
                   withdrawnQuantity = withdrawal.withdrawn,
