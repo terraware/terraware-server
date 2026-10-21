@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.terraformation.backend.db.GeometryDeserializer
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.DraftStratumId
@@ -108,11 +109,44 @@ class DraftPlantingSiteMapConverterTest {
     return """{"siteType": "detailed", "strata": [{${fields.joinToString()}}]}"""
   }
 
+  /** The map that [stratumJson] parses to. */
+  private fun stratumMap(
+      boundary: MultiPolygon = stratumBoundary,
+      density: BigDecimal = BigDecimal(1500),
+      substrata: List<DraftSubstratumModel> =
+          listOf(DraftSubstratumModel(id = null, name = "1", boundary = substratumBoundary)),
+  ) =
+      DraftPlantingSiteMap(
+          siteType = DraftPlantingSiteType.Detailed,
+          siteEditStep = null,
+          boundarySource = null,
+          boundary = null,
+          exclusion = null,
+          strata =
+              listOf(
+                  DraftStratumModel(
+                      id = null,
+                      name = "A",
+                      boundary = boundary,
+                      initialPlantingDensity = density,
+                      substrata = substrata,
+                  )
+              ),
+      )
+
   @Test
   fun `accepts self-intersecting polygon without validating`() {
-    val parsed = parse(stratumJson(boundary = bowtie))
+    val expected =
+        stratumMap(
+            boundary =
+                objectMapper
+                    .readerFor(Geometry::class.java)
+                    .withAttribute(GeometryDeserializer.SKIP_VALIDATION, true)
+                    .readValue<Geometry>(bowtie)
+                    .toMultiPolygon()
+        )
 
-    assertEquals(5, parsed.strata.single().boundary.numPoints, "Stratum boundary point count")
+    assertEquals(expected, parse(stratumJson(boundary = bowtie)))
   }
 
   @Test
@@ -156,9 +190,7 @@ class DraftPlantingSiteMapConverterTest {
 
   @Test
   fun `parses numeric-string density`() {
-    val parsed = parse(stratumJson(density = "\"1500\""))
-
-    assertEquals(BigDecimal(1500), parsed.strata.single().initialPlantingDensity)
+    assertEquals(stratumMap(), parse(stratumJson(density = "\"1500\"")))
   }
 
   @Test
@@ -210,23 +242,23 @@ class DraftPlantingSiteMapConverterTest {
   @Test
   fun `treats null strata and substrata as empty`() {
     assertEquals(
-        emptyList<DraftStratumModel>(),
-        parse("""{"siteType": "detailed", "strata": null}""").strata,
-        "Strata",
+        stratumMap().copy(strata = emptyList()),
+        parse("""{"siteType": "detailed", "strata": null}"""),
+        "Null strata",
     )
     assertEquals(
-        emptyList<DraftSubstratumModel>(),
+        stratumMap(
+            density = StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
+            substrata = emptyList(),
+        ),
         parse(
-                """
-                {"siteType": "detailed", "strata": [
-                  {"name": "A", "boundary": ${geoJson(stratumBoundary)}, "substrata": null}
-                ]}
-                """
-            )
-            .strata
-            .single()
-            .substrata,
-        "Substrata",
+            """
+            {"siteType": "detailed", "strata": [
+              {"name": "A", "boundary": ${geoJson(stratumBoundary)}, "substrata": null}
+            ]}
+            """
+        ),
+        "Null substrata",
     )
   }
 
@@ -277,14 +309,43 @@ class DraftPlantingSiteMapConverterTest {
         """
             .trimIndent()
 
-    val strata = parse(json).strata
+    val expected =
+        stratumMap()
+            .copy(
+                strata =
+                    listOf(
+                        DraftStratumModel(
+                            id = null,
+                            name = "A",
+                            boundary = stratumBoundary,
+                            initialPlantingDensity = BigDecimal(1200),
+                            substrata =
+                                listOf(
+                                    DraftSubstratumModel(
+                                        id = null,
+                                        name = "1",
+                                        boundary = substratumBoundary,
+                                    )
+                                ),
+                        ),
+                        DraftStratumModel(
+                            id = null,
+                            name = "B",
+                            boundary = stratumBoundary,
+                            initialPlantingDensity = BigDecimal(900),
+                            substrata =
+                                listOf(
+                                    DraftSubstratumModel(
+                                        id = null,
+                                        name = "2",
+                                        boundary = substratumBoundary,
+                                    )
+                                ),
+                        ),
+                    )
+            )
 
-    assertEquals(
-        listOf(BigDecimal(1200), BigDecimal(900)),
-        strata.map { it.initialPlantingDensity },
-        "Densities",
-    )
-    assertEquals(listOf("1", "2"), strata.map { it.substrata.single().name }, "Substratum names")
+    assertEquals(expected, parse(json))
   }
 
   @Test
@@ -305,8 +366,11 @@ class DraftPlantingSiteMapConverterTest {
             .trimIndent()
 
     assertEquals(
-        StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
-        parse(json).strata.single().initialPlantingDensity,
+        stratumMap(
+            density = StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
+            substrata = emptyList(),
+        ),
+        parse(json),
     )
   }
 
@@ -338,10 +402,17 @@ class DraftPlantingSiteMapConverterTest {
         """
             .trimIndent()
 
-    val map = parse(json)
+    val expected =
+        DraftPlantingSiteMap(
+            siteType = DraftPlantingSiteType.Simple,
+            siteEditStep = null,
+            boundarySource = null,
+            boundary = siteBoundary,
+            exclusion = null,
+            strata = emptyList(),
+        )
 
-    assertEquals(DraftPlantingSiteType.Simple, map.siteType, "Site type")
-    assertEquals(emptyList<DraftStratumModel>(), map.strata, "Strata")
+    assertEquals(expected, parse(json))
   }
 
   @Test
@@ -363,16 +434,11 @@ class DraftPlantingSiteMapConverterTest {
         """
             .trimIndent()
 
-    val map = parse(json)
+    val expected =
+        stratumMap(boundary = rounded(rectangle(250)), substrata = emptyList())
+            .copy(boundary = rounded(rectangle(500)))
 
-    assertEquals(MultiPolygon::class.java, map.boundary?.javaClass, "Site boundary type")
-    assertEquals(rounded(rectangle(500)), map.boundary, "Site boundary")
-    assertEquals(
-        MultiPolygon::class.java,
-        map.strata.single().boundary.javaClass,
-        "Stratum boundary type",
-    )
-    assertEquals(rounded(rectangle(250)), map.strata.single().boundary, "Stratum boundary")
+    assertEquals(expected, parse(json))
   }
 
   @Test
@@ -404,19 +470,15 @@ class DraftPlantingSiteMapConverterTest {
         """
             .trimIndent()
 
-    val stratum = parse(json).strata.single()
-
-    assertEquals(null, stratum.id, "Stratum ID")
-    assertEquals(null, stratum.substrata.single().id, "Substratum ID")
-    assertEquals("1", stratum.substrata.single().name, "Substratum name")
+    assertEquals(stratumMap(), parse(json))
   }
 
   @Test
   fun `missing boundary and exclusion are null`() {
-    val map = parse("""{"siteType": "detailed"}""")
-
-    assertEquals(null, map.boundary, "Boundary")
-    assertEquals(null, map.exclusion, "Exclusion")
+    assertEquals(
+        stratumMap().copy(strata = emptyList()),
+        parse("""{"siteType": "detailed"}"""),
+    )
   }
 
   @Test
@@ -487,13 +549,10 @@ class DraftPlantingSiteMapConverterTest {
             strata = emptyList(),
         )
 
-    val json = objectMapper.readTree(converter.generate(map).data())
+    val expected =
+        objectMapper.readTree("""{"siteType": "detailed", "plantingSeasons": [], "strata": []}""")
 
-    assertEquals(
-        emptySet<String>(),
-        setOf("boundarySource", "boundary", "exclusion").filter { json.has(it) }.toSet(),
-        "Omitted keys that were present",
-    )
+    assertEquals(expected, objectMapper.readTree(converter.generate(map).data()))
   }
 
   @Test
@@ -508,10 +567,19 @@ class DraftPlantingSiteMapConverterTest {
             strata = emptyList(),
         )
 
-    val json = objectMapper.readTree(converter.generate(map).data())
+    val expected =
+        objectMapper.readTree(
+            """
+            {
+              "boundary": ${geoJson(siteBoundary)},
+              "siteType": "simple",
+              "plantingSeasons": [],
+              "strata": []
+            }
+            """
+        )
 
-    assertEquals(objectMapper.readTree("[]"), json.get("strata"), "Strata")
-    assertEquals("simple", json.get("siteType").asText(), "Site type")
+    assertEquals(expected, objectMapper.readTree(converter.generate(map).data()))
   }
 
   @Test
