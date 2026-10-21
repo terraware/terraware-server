@@ -103,12 +103,12 @@ class DraftPlantingSitesController(
   fun createDraftPlantingSite(
       @RequestBody payload: CreateDraftPlantingSiteRequestPayload
   ): CreateDraftPlantingSiteResponsePayload {
-    payload.requireOnePath()
+    payload.rejectDataWithTypedFields()
 
     val dataMap = payload.data?.let { draftPlantingSiteMapConverter.parse(it) }
     val map =
         dataMap
-            ?: payload.toTypedMap()
+            ?: payload.toMapModel()
             ?: throw IllegalArgumentException("Site type is required when data is not supplied")
 
     val newModel = payload.toModel(map)
@@ -130,12 +130,12 @@ class DraftPlantingSitesController(
       @PathVariable id: DraftPlantingSiteId,
       @RequestBody payload: UpdateDraftPlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
-    payload.requireOnePath()
+    payload.rejectDataWithTypedFields()
 
     val dataMap = payload.data?.let { draftPlantingSiteMapConverter.parse(it) }
 
     draftPlantingSiteStore.update(id) { existing ->
-      payload.applyTo(existing, dataMap ?: payload.toTypedMap(existing))
+      payload.applyTo(existing, dataMap ?: payload.toMapModel(existing))
     }
 
     return SimpleSuccessResponsePayload()
@@ -201,7 +201,8 @@ class DraftPlantingSitesController(
 
 // response payload
 data class DraftPlantingSitePayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val boundary: Geometry?,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry?,
     val boundarySource: String?,
     @Schema(description = "ID of the user who created this draft.") //
     val createdBy: UserId,
@@ -214,7 +215,8 @@ data class DraftPlantingSitePayload(
     )
     val data: ArbitraryJsonObject,
     val description: String?,
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val exclusion: Geometry?,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val exclusion: Geometry?,
     val id: DraftPlantingSiteId,
     val modifiedTime: Instant,
     val name: String,
@@ -358,7 +360,7 @@ data class CreateDraftPlantingSiteRequestPayload(
     val strata: List<DraftStratumPayload>? = null,
     val timeZone: ZoneId?,
 ) {
-  fun requireOnePath() {
+  fun rejectDataWithTypedFields() {
     if (
         data != null &&
             (boundary != null ||
@@ -384,7 +386,7 @@ data class CreateDraftPlantingSiteRequestPayload(
     )
   }
 
-  fun toTypedMap(): DraftPlantingSiteMap? {
+  fun toMapModel(): DraftPlantingSiteMap? {
     return siteType?.let { type ->
       DraftPlantingSiteMap(
           siteType = type,
@@ -484,7 +486,7 @@ data class UpdateDraftPlantingSiteRequestPayload(
     val strata: List<DraftStratumPayload>? = null,
     val timeZone: ZoneId?,
 ) {
-  fun requireOnePath() {
+  fun rejectDataWithTypedFields() {
     if (
         data != null &&
             (boundary != null ||
@@ -498,7 +500,7 @@ data class UpdateDraftPlantingSiteRequestPayload(
     }
   }
 
-  fun toTypedMap(existing: DraftPlantingSiteModel): DraftPlantingSiteMap {
+  fun toMapModel(existing: DraftPlantingSiteModel): DraftPlantingSiteMap {
     return DraftPlantingSiteMap(
         siteType = siteType ?: existing.map.siteType,
         siteEditStep = siteEditStep,
