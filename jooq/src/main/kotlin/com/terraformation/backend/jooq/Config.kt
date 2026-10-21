@@ -183,6 +183,7 @@ val ENUM_TABLES =
                     isLocalizable = false,
                 ),
                 EnumTable("ecosystem_types"),
+                EnumTable("email_notification_categories"),
                 EnumTable(
                     "external_dataset_types",
                     listOf(

@@ -218,6 +218,13 @@ VALUES (1, 'Injection'),
        (2, 'Reference')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO email_notification_categories (id, name)
+VALUES (1, 'SeedBank'),
+       (2, 'Nursery'),
+       (3, 'PlantingAndObservations'),
+       (4, 'Accelerator')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO ecosystem_types (id, name)
 VALUES (1, 'Boreal forests/Taiga'),
        (2, 'Deserts and xeric shrublands'),

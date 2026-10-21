@@ -86,6 +86,8 @@ COMMENT ON TABLE disclaimers IS 'Disclaimers content and effective dates.';
 
 COMMENT ON TABLE ecosystem_types IS '(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation''s "Terrestrial Ecoregions of the World" report.';
 
+COMMENT ON TABLE email_notification_categories IS '(Enum) Categories of email notifications that users can individually opt into or out of.';
+
 COMMENT ON TABLE event_log IS 'Holds historical information about what operations were performed at what times. Events are JSON-serialized objects that may contain identifiers such as organization IDs; identifiers are not treated as foreign keys, so events may contain references to objects that were subsequently deleted.';
 COMMENT ON COLUMN event_log.event_class IS 'Fully-qualified class name of the event whose payload is stored in the payload column. May be a newer version of the event class than was originally written at the time of the operation.';
 COMMENT ON COLUMN event_log.original_event_class IS 'If the event has been migrated to a newer version, the fully-qualified class name of the event as it was originally stored.';

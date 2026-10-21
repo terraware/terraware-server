@@ -296,6 +296,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "device_templates" to setOf(ALL, DEVICE),
                   "disclaimers" to setOf(ALL, CUSTOMER),
                   "ecosystem_types" to setOf(ALL, SPECIES),
+                  "email_notification_categories" to setOf(ALL, CUSTOMER),
                   "event_log" to setOf(ALL),
                   "external_dataset_imports" to setOf(ALL, SPECIES),
                   "external_dataset_types" to setOf(ALL, SPECIES),
