@@ -832,6 +832,10 @@ val EMBEDDABLES =
             .withTables("tracking.stratum_species_targets")
             .withColumns("stratum_id", "species_id"),
         EmbeddableDefinitionType()
+            .withName("user_email_notification_category_id")
+            .withTables("user_email_notification_categories")
+            .withColumns("user_id", "email_notification_category_id"),
+        EmbeddableDefinitionType()
             .withName("variable_manifest_entry_id")
             .withTables("variable_manifest_entries")
             .withColumns("variable_id", "variable_manifest_id"),

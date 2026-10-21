@@ -314,6 +314,8 @@ COMMENT ON COLUMN upload_types.expire_files IS 'Old rows are automatically delet
 
 COMMENT ON TABLE uploads IS 'Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.';
 
+COMMENT ON TABLE user_email_notification_categories IS 'Which categories of email notifications each user has opted into. Users only receive categorized email notifications if they have opted into the category and have also enabled email notifications in `users.email_notifications_enabled`.';
+
 COMMENT ON TABLE user_global_roles IS 'Which users have which global roles.';
 
 COMMENT ON TABLE user_preferences IS 'Client-defined preferences that should persist across browser sessions.';
