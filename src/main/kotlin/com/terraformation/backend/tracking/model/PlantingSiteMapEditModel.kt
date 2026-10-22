@@ -1,0 +1,134 @@
+package com.terraformation.backend.tracking.model
+
+import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.gis.mergeToMultiPolygon
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.locationtech.jts.geom.MultiPolygon
+
+data class SubstratumMapEditModel(
+    /** The existing substratum this represents, or null to create a new substratum. */
+    val id: SubstratumId?,
+    val name: String,
+    val boundary: MultiPolygon,
+)
+
+/**
+ * A model representing a stratum's edits to be applied.
+ *
+ * This excludes boundaries, because a stratum's boundary is determined using the union of its
+ * substrata's boundaries.
+ */
+data class StratumMapEditModel(
+    /** The existing stratum this represents, or null to create a new stratum. */
+    val id: StratumId?,
+    val name: String,
+    val substrata: List<SubstratumMapEditModel>,
+)
+
+/**
+ * The full desired map of an existing planting site, as edited by a user.
+ *
+ * Edits refer to existing strata and substrata by ID. Statistical settings that determine
+ * monitoring plot counts are carried over from the existing strata or set to defaults for new ones.
+ */
+data class PlantingSiteMapEditModel(
+    /**
+     * The site boundary. Only used for sites without strata. The boundary of a site with strata is
+     * the union of its strata's boundaries.
+     */
+    val boundary: MultiPolygon?,
+    val exclusion: MultiPolygon?,
+    val strata: List<StratumMapEditModel>,
+) {
+  /**
+   * Returns the planting site that would result from applying this edit to [existing].
+   *
+   * Existing strata and substrata keep their stable IDs and settings. New strata and substrata get
+   * stable IDs based on their names.
+   *
+   * Use [PlantingSiteModel.validate] to check the geometry of the resulting site model.
+   *
+   * @throws IllegalArgumentException The edit would remove the map from the site.
+   */
+  fun toDesiredModel(existing: ExistingPlantingSiteModel): NewPlantingSiteModel {
+    val existingStrataById = existing.strata.associateBy { it.id }
+    val existingSubstrataById = existing.strata.flatMap { it.substrata }.associateBy { it.id }
+
+    val desiredStrata =
+        runBlocking(Dispatchers.Default) {
+          strata.map { stratum ->
+            val existingStratum = stratum.id?.let { existingStrataById[it] }
+            val substrata =
+                stratum.substrata.map { substratum ->
+                  val existingSubstratum = substratum.id?.let { existingSubstrataById[it] }
+                  val fullName = "${stratum.name}-${substratum.name}"
+
+                  SubstratumModel.create(
+                      boundary = substratum.boundary,
+                      exclusion = exclusion,
+                      fullName = fullName,
+                      name = substratum.name,
+                      plantingCompletedTime = existingSubstratum?.plantingCompletedTime,
+                      stableId = existingSubstratum?.stableId ?: StableId(fullName),
+                  )
+                }
+
+            val boundary = mergeToMultiPolygon(substrata.map { it.boundary })
+
+            if (existingStratum == null) {
+              StratumModel.create(
+                  boundary = boundary,
+                  exclusion = exclusion,
+                  name = stratum.name,
+                  stableId = StableId(stratum.name),
+                  substrata = substrata,
+              )
+            } else {
+              StratumModel.create(
+                  biomassErrorMargin = existingStratum.biomassPlotCounts.errorMargin,
+                  biomassNumPermanentPlots = existingStratum.biomassPlotCounts.numPermanentPlots,
+                  biomassNumTemporaryPlots = existingStratum.biomassPlotCounts.numTemporaryPlots,
+                  biomassStudentsT = existingStratum.biomassPlotCounts.studentsT,
+                  biomassVariance = existingStratum.biomassPlotCounts.variance,
+                  boundary = boundary,
+                  exclusion = exclusion,
+                  initialPlantingDensity = existingStratum.initialPlantingDensity,
+                  name = stratum.name,
+                  plantErrorMargin = existingStratum.plantPlotCounts.errorMargin,
+                  plantNumPermanentPlots = existingStratum.plantPlotCounts.numPermanentPlots,
+                  plantNumTemporaryPlots = existingStratum.plantPlotCounts.numTemporaryPlots,
+                  plantStudentsT = existingStratum.plantPlotCounts.studentsT,
+                  plantVariance = existingStratum.plantPlotCounts.variance,
+                  stableId = existingStratum.stableId,
+                  substrata = substrata,
+                  targetPlantDensity = existingStratum.targetPlantDensity,
+              )
+            }
+          }
+        }
+
+    val siteBoundary =
+        if (desiredStrata.isNotEmpty()) {
+          runBlocking(Dispatchers.Default) {
+            mergeToMultiPolygon(desiredStrata.map { it.boundary })
+          }
+        } else {
+          boundary ?: throw IllegalArgumentException("Cannot remove map from planting site")
+        }
+
+    return PlantingSiteModel.create(
+        boundary = siteBoundary,
+        description = existing.description,
+        exclusion = exclusion,
+        gridOrigin = existing.gridOrigin,
+        name = existing.name,
+        organizationId = existing.organizationId,
+        projectId = existing.projectId,
+        strata = desiredStrata,
+        timeZone = existing.timeZone,
+    )
+  }
+}
