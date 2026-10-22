@@ -40,6 +40,7 @@ import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
+import com.terraformation.backend.eventlog.api.PlotT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0ObservationSubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
@@ -74,6 +75,9 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityCreatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
@@ -1074,6 +1078,114 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     assertEquals(expected, transformer.eventsToPayloads(listOf(entry)))
+  }
+
+  @Test
+  fun `maps PlotT0Density events to payloads`() {
+    val scientificName = "Quercus alba"
+    val speciesId = insertSpecies(scientificName = scientificName)
+    val createdEvent =
+        PlotT0DensityCreatedEvent(
+            density = BigDecimal("12.5"),
+            monitoringPlotId = monitoringPlotId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+            speciesId = speciesId,
+        )
+    val updatedEvent =
+        PlotT0DensityUpdatedEvent(
+            changedFrom = PlotT0DensityUpdatedEventValues(density = BigDecimal("12.5")),
+            changedTo = PlotT0DensityUpdatedEventValues(),
+            monitoringPlotId = monitoringPlotId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+            speciesId = speciesId,
+        )
+
+    val createdEntry = eventLogEntry(knownUserId, createdEvent)
+    val updatedEntry = eventLogEntry(knownUserId, updatedEvent)
+    val payloads = transformer.eventsToPayloads(listOf(createdEntry, updatedEntry))
+    val subject =
+        PlotT0DensitySubjectPayload(
+            fullText = "Plot 7 T0 density for $scientificName",
+            monitoringPlotId = monitoringPlotId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+            scientificName = scientificName,
+            shortText = "T0 density",
+            speciesId = speciesId,
+        )
+    val expected =
+        listOf(
+            EventLogEntryPayload(
+                action =
+                    CreatedActionPayload(listOf(CreatedFieldPayload("density", listOf("12.5")))),
+                subject = subject,
+                timestamp = createdEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "density",
+                        changedFrom = listOf("12.5"),
+                        changedTo = null,
+                    ),
+                subject = subject,
+                timestamp = updatedEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+        )
+
+    assertEquals(expected, payloads)
+
+    val frenchEntry = eventLogEntry(knownUserId, createdEvent)
+    val frenchPayloads = Locales.FRENCH.use { transformer.eventsToPayloads(listOf(frenchEntry)) }
+    val frenchSubject =
+        PlotT0DensitySubjectPayload(
+            fullText = "Densité T0 de la parcelle 7 pour $scientificName",
+            monitoringPlotId = monitoringPlotId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+            scientificName = scientificName,
+            shortText = "Densité T0",
+            speciesId = speciesId,
+        )
+    assertEquals(
+        EventLogEntryPayload(
+            action = CreatedActionPayload(listOf(CreatedFieldPayload("density", listOf("12,5")))),
+            subject = frenchSubject,
+            timestamp = frenchEntry.createdTime,
+            userId = knownUserId,
+            userName = "Known User",
+        ),
+        frenchPayloads.single(),
+    )
+
+    val highPrecisionEvent =
+        PlotT0DensityCreatedEvent(
+            density = BigDecimal("1.0001"),
+            monitoringPlotId = monitoringPlotId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+            speciesId = speciesId,
+        )
+    val highPrecisionEntry = eventLogEntry(knownUserId, highPrecisionEvent)
+    assertEquals(
+        EventLogEntryPayload(
+            action = CreatedActionPayload(listOf(CreatedFieldPayload("density", listOf("1.0001")))),
+            subject = subject,
+            timestamp = highPrecisionEntry.createdTime,
+            userId = knownUserId,
+            userName = "Known User",
+        ),
+        transformer.eventsToPayloads(listOf(highPrecisionEntry)).single(),
+    )
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =

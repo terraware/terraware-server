@@ -72,6 +72,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesPersi
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.PlantingSitePersistentEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityPersistentEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
@@ -905,6 +906,39 @@ data class PlotT0ObservationSubjectPayload(
   }
 }
 
+@JsonTypeName("PlotT0Density")
+data class PlotT0DensitySubjectPayload(
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val plantingSiteId: PlantingSiteId,
+    val plotNumber: Long,
+    val scientificName: String,
+    override val shortText: String,
+    val speciesId: SpeciesId,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlotT0DensityPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlotT0DensitySubjectPayload {
+      val scientificName = context.getSpeciesScientificName(event.speciesId)
+      return PlotT0DensitySubjectPayload(
+          fullText =
+              context.subjectFullText<PlotT0DensitySubjectPayload>(
+                  event.plotNumber,
+                  scientificName,
+              ),
+          monitoringPlotId = event.monitoringPlotId,
+          plantingSiteId = event.plantingSiteId,
+          plotNumber = event.plotNumber,
+          scientificName = scientificName,
+          shortText = context.subjectShortText<PlotT0DensitySubjectPayload>(),
+          speciesId = event.speciesId,
+      )
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -1086,6 +1120,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingSeasonSpeciesTarget(PlantingSeasonSpeciesTargetPersistentEvent::class),
   PlantingSeasonWithdrawal(PlantingSeasonWithdrawalCreatedEvent::class),
   PlantingSite(PlantingSitePersistentEvent::class),
+  PlotT0Density(PlotT0DensityPersistentEvent::class),
   PlotT0Observation(PlotT0ObservationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),

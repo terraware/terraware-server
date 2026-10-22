@@ -32,6 +32,10 @@ import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityCreatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityPersistentEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
@@ -945,6 +949,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               plotNumber = 2,
           )
       )
+      eventPublisher.assertEventNotPublished<PlotT0DensityPersistentEvent>()
 
       eventPublisher.clear()
       store.assignT0PlotObservation(monitoringPlotId, observationId)
@@ -1231,29 +1236,152 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class AssignT0PlotSpeciesDensities {
     @Test
-    fun `publishes observation updated event when switching from observation to manual densities`() {
-      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
-      store.assignT0PlotObservation(monitoringPlotId, observationId)
-      eventPublisher.clear()
+    fun `publishes density events for created, changed, and removed species`() {
+      val initialDensity1 = BigDecimal("10.0")
+      val initialDensity2 = BigDecimal("20")
+      val initialDensity3 = BigDecimal("30")
+      val changedDensity1 = BigDecimal("12.5")
+      val createdDensity4 = BigDecimal("25")
+      val speciesId3 = insertSpecies()
+      val speciesId4 = insertSpecies()
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = initialDensity1)
+      insertPlotT0Density(speciesId = speciesId2, plotDensity = initialDensity2)
+      insertPlotT0Density(speciesId = speciesId3, plotDensity = initialDensity3)
 
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
-      )
-
-      eventPublisher.assertEventPublished(
-          PlotT0ObservationUpdatedEvent(
-              changedFrom =
-                  PlotT0ObservationUpdatedEventValues(
-                      observationId = observationId,
-                      observationStartDate = observationStartDate,
-                  ),
-              changedTo = PlotT0ObservationUpdatedEventValues(),
+      fun createdEvent(speciesId: SpeciesId, density: BigDecimal) =
+          PlotT0DensityCreatedEvent(
+              density = density,
               monitoringPlotId = monitoringPlotId,
-              observationId = null,
               organizationId = inserted.organizationId,
               plantingSiteId = plantingSiteId,
               plotNumber = 2,
+              speciesId = speciesId,
+          )
+
+      fun updatedEvent(
+          speciesId: SpeciesId,
+          previousDensity: BigDecimal,
+          newDensity: BigDecimal?,
+      ) =
+          PlotT0DensityUpdatedEvent(
+              changedFrom = PlotT0DensityUpdatedEventValues(density = previousDensity),
+              changedTo =
+                  newDensity?.let { PlotT0DensityUpdatedEventValues(density = it) }
+                      ?: PlotT0DensityUpdatedEventValues(),
+              monitoringPlotId = monitoringPlotId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = plantingSiteId,
+              plotNumber = 2,
+              speciesId = speciesId,
+          )
+
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(
+              SpeciesDensityModel(speciesId1, changedDensity1),
+              SpeciesDensityModel(speciesId2, BigDecimal("20.00")),
+              SpeciesDensityModel(speciesId4, createdDensity4),
+          ),
+      )
+
+      val unchangedDensity =
+          dslContext
+              .select(PLOT_T0_DENSITIES.PLOT_DENSITY)
+              .from(PLOT_T0_DENSITIES)
+              .where(
+                  PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(monitoringPlotId)
+                      .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesId2))
+              )
+              .fetchOne(PLOT_T0_DENSITIES.PLOT_DENSITY)!!
+
+      assertTableEquals(
+          listOf(
+              plotDensityRecord(monitoringPlotId, speciesId1, changedDensity1),
+              plotDensityRecord(monitoringPlotId, speciesId2, unchangedDensity),
+              plotDensityRecord(monitoringPlotId, speciesId4, createdDensity4),
+          ),
+          "Should store changed, unchanged, and newly assigned densities",
+      )
+      eventPublisher.assertExactEventsPublished(
+          setOf(
+              T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId),
+              updatedEvent(speciesId1, initialDensity1, changedDensity1),
+              updatedEvent(speciesId3, initialDensity3, null),
+              createdEvent(speciesId4, createdDensity4),
+          )
+      )
+
+      eventPublisher.clear()
+      store.assignT0PlotSpeciesDensities(monitoringPlotId, emptyList())
+
+      assertTableEmpty(PLOT_T0_DENSITIES)
+      eventPublisher.assertExactEventsPublished(
+          setOf(
+              T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId),
+              updatedEvent(speciesId1, changedDensity1, null),
+              updatedEvent(speciesId2, unchangedDensity, null),
+              updatedEvent(speciesId4, createdDensity4, null),
+          )
+      )
+    }
+
+    @Test
+    fun `publishes observation and density events when switching to manual densities`() {
+      val newSpeciesId = insertSpecies()
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 2)
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      eventPublisher.clear()
+
+      val density1 = BigDecimal("12.5")
+      val density2 = BigDecimal("25")
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(
+              SpeciesDensityModel(speciesId1, density1),
+              SpeciesDensityModel(newSpeciesId, density2),
+          ),
+      )
+
+      assertTableEquals(
+          listOf(
+              plotDensityRecord(monitoringPlotId, speciesId1, density1),
+              plotDensityRecord(monitoringPlotId, newSpeciesId, density2),
+          ),
+          "Should store only the submitted manual densities",
+      )
+      eventPublisher.assertExactEventsPublished(
+          listOf(
+              T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId),
+              PlotT0ObservationUpdatedEvent(
+                  changedFrom =
+                      PlotT0ObservationUpdatedEventValues(
+                          observationId = observationId,
+                          observationStartDate = observationStartDate,
+                      ),
+                  changedTo = PlotT0ObservationUpdatedEventValues(),
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = null,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = plantingSiteId,
+                  plotNumber = 2,
+              ),
+              PlotT0DensityCreatedEvent(
+                  density = density1,
+                  monitoringPlotId = monitoringPlotId,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = plantingSiteId,
+                  plotNumber = 2,
+                  speciesId = speciesId1,
+              ),
+              PlotT0DensityCreatedEvent(
+                  density = density2,
+                  monitoringPlotId = monitoringPlotId,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = plantingSiteId,
+                  plotNumber = 2,
+                  speciesId = newSpeciesId,
+              ),
           )
       )
     }
@@ -1509,6 +1637,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(-1))),
         )
       }
+
+      eventPublisher.assertNoEventsPublished()
     }
   }
 
