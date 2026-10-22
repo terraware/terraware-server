@@ -8,4 +8,5 @@ package com.terraformation.backend.db
 enum class LockType(val key: Long) {
   GBIF_IMPORT(10000),
   OBSERVATION_RESULTS_RECALCULATION(10001),
+  OBSERVATION_RESULTS_FORCED_RECALCULATION(10002),
 }

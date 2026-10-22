@@ -26,8 +26,10 @@ import org.springframework.transaction.support.TransactionTemplate
  * and readers see the site's new results all at once when it commits.
  *
  * An edit that lands while a site is being recalculated flags results rows the recalculation also
- * updates. Postgres then aborts the recalculation with a serialization failure, the flags stay set,
- * and the next run picks the site up again, so no invalidation is lost.
+ * updates. Postgres then aborts the recalculation with a serialization failure, or the
+ * recalculation gives up if it would have to wait for the edit's row locks. Either way the flags
+ * stay set and a later run picks the site up again, so no invalidation is lost and user edits never
+ * wait behind a recalculation's lock requests.
  */
 @Named
 class ObservationResultsRecalculator(
@@ -89,7 +91,8 @@ class ObservationResultsRecalculator(
       }
       SiteRecalculationResult.Conflict -> {
         log.info(
-            "Results of planting site $plantingSiteId changed during recalculation; will retry"
+            "Results of planting site $plantingSiteId changed or were requested elsewhere " +
+                "during recalculation; will retry"
         )
         false
       }
@@ -111,7 +114,44 @@ class ObservationResultsRecalculator(
   ): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    val deadline = System.nanoTime() + (maxWait ?: DEFAULT_MAX_WAIT).toNanos()
+    return recalculateUntilDone(plantingSiteId, maxWait ?: DEFAULT_MAX_WAIT, cancelRunning = false)
+  }
+
+  /**
+   * Recalculates all the flagged results of one planting site right away, canceling any
+   * recalculation of the site that's already running unless it is also a forced one, in which case
+   * this waits for it to finish. Retries if edits land while the recalculation is in progress.
+   * Returns once none of the site's results are flagged, or gives up after repeated failures or
+   * [maxWait].
+   *
+   * @return true if none of the site's results are flagged for recalculation anymore.
+   */
+  fun forceSiteRecalculation(
+      plantingSiteId: PlantingSiteId,
+      maxWait: Duration = DEFAULT_MAX_WAIT,
+  ): Boolean = recalculateUntilDone(plantingSiteId, maxWait, cancelRunning = true)
+
+  /**
+   * Recalculates the flagged results of every planting site right away, canceling any
+   * recalculations that are already running.
+   *
+   * @return The planting sites whose results could not be recalculated. Their results remain
+   *   flagged.
+   */
+  fun forceAllSitesRecalculation(): List<PlantingSiteId> {
+    return systemUser.run {
+      observationResultsInvalidator.fetchPlantingSiteIdsNeedingRecalculation().filterNot {
+        forceSiteRecalculation(it)
+      }
+    }
+  }
+
+  private fun recalculateUntilDone(
+      plantingSiteId: PlantingSiteId,
+      maxWait: Duration,
+      cancelRunning: Boolean,
+  ): Boolean {
+    val deadline = System.nanoTime() + maxWait.toNanos()
     var failures = 0
     var loggedWaiting = false
 
@@ -121,14 +161,30 @@ class ObservationResultsRecalculator(
         return false
       }
 
-      when (tryRecalculateSite(plantingSiteId)) {
+      when (tryRecalculateSite(plantingSiteId, forced = cancelRunning)) {
         SiteRecalculationResult.Recalculated -> {}
         SiteRecalculationResult.AlreadyRunning -> {
           if (!loggedWaiting) {
-            log.info("Waiting for the running recalculation of planting site $plantingSiteId")
+            if (cancelRunning) {
+              log.info("Canceling the running recalculation of planting site $plantingSiteId")
+            } else {
+              log.info("Waiting for the running recalculation of planting site $plantingSiteId")
+            }
             loggedWaiting = true
           }
-          Thread.sleep(LOCK_POLL_INTERVAL.toMillis())
+
+          if (cancelRunning) {
+            // Canceling another forced recalculation would let two of them keep canceling each
+            // other.
+            lockService.cancelExclusiveTransactionalHolders(
+                LockType.OBSERVATION_RESULTS_RECALCULATION,
+                plantingSiteId.value,
+                unlessHolding = LockType.OBSERVATION_RESULTS_FORCED_RECALCULATION,
+            )
+            Thread.sleep(CANCEL_POLL_INTERVAL.toMillis())
+          } else {
+            Thread.sleep(LOCK_POLL_INTERVAL.toMillis())
+          }
         }
         // The data changed while the recalculation was running. Give the change a moment to finish
         // and try again with a fresh snapshot.
@@ -155,7 +211,10 @@ class ObservationResultsRecalculator(
    * Makes one attempt to recalculate a site's flagged results. Logs when the recalculation starts
    * and when it fails; callers log the other outcomes.
    */
-  private fun tryRecalculateSite(plantingSiteId: PlantingSiteId): SiteRecalculationResult {
+  private fun tryRecalculateSite(
+      plantingSiteId: PlantingSiteId,
+      forced: Boolean = false,
+  ): SiteRecalculationResult {
     return try {
       systemUser.run {
         siteTransaction.propagationBehavior = siteTransactionPropagation
@@ -166,9 +225,26 @@ class ObservationResultsRecalculator(
                   plantingSiteId.value,
               )
           ) {
+            if (forced) {
+              lockService.tryExclusiveTransactional(
+                  LockType.OBSERVATION_RESULTS_FORCED_RECALCULATION,
+                  plantingSiteId.value,
+              )
+            }
+
             log.info("Recalculating flagged results of planting site $plantingSiteId")
+
+            // Never wait for user edits. If an edit holds a row this recalculation needs, its
+            // results would be stale anyway, so give up and let a later run redo it.
+            lockService.setTransactionLockTimeout(LOCK_TIMEOUT)
+
             observationRecalculationStore.recalculateFlaggedResults(plantingSiteId)
             observationResultsInvalidator.clearRecalculationFlags(plantingSiteId)
+
+            // The timeout lasts until the end of the transaction, which is an enclosing one if
+            // siteTransactionPropagation joins it.
+            lockService.resetTransactionLockTimeout()
+
             SiteRecalculationResult.Recalculated
           } else {
             SiteRecalculationResult.AlreadyRunning
@@ -176,7 +252,7 @@ class ObservationResultsRecalculator(
         } ?: SiteRecalculationResult.Failed
       }
     } catch (e: Exception) {
-      if (e.isSerializationFailure()) {
+      if (e.isConflict()) {
         SiteRecalculationResult.Conflict
       } else {
         log.error("Failed to recalculate results of planting site $plantingSiteId", e)
@@ -185,10 +261,15 @@ class ObservationResultsRecalculator(
     }
   }
 
-  private fun Throwable.isSerializationFailure(): Boolean {
+  /**
+   * Returns true if an exception means the recalculation ran into concurrent activity: another
+   * transaction changed data the recalculation read, holds a lock the recalculation needed, or
+   * canceled the recalculation so it could run one of its own.
+   */
+  private fun Throwable.isConflict(): Boolean {
     return generateSequence(this) { it.cause }
         .filterIsInstance<SQLException>()
-        .any { it.sqlState == SERIALIZATION_FAILURE || it.sqlState == DEADLOCK_DETECTED }
+        .any { it.sqlState in CONFLICT_SQL_STATES }
   }
 
   private enum class SiteRecalculationResult {
@@ -199,12 +280,18 @@ class ObservationResultsRecalculator(
   }
 
   companion object {
+    private val CANCEL_POLL_INTERVAL: Duration = Duration.ofMillis(200)
     private val CONFLICT_RETRY_INTERVAL: Duration = Duration.ofMillis(200)
     private val DEFAULT_MAX_WAIT: Duration = Duration.ofMinutes(10)
     private val LOCK_POLL_INTERVAL: Duration = Duration.ofSeconds(5)
+    private val LOCK_TIMEOUT: Duration = Duration.ofMillis(100)
     private const val MAX_FAILURES = 3
     private const val RECALCULATE_JOB_NAME = "ObservationResultsRecalculator.recalculate"
-    private const val SERIALIZATION_FAILURE = "40001"
-    private const val DEADLOCK_DETECTED = "40P01"
+
+    /**
+     * SQL states for serialization failure, deadlock, lock wait timeout, and statement canceled by
+     * another session.
+     */
+    private val CONFLICT_SQL_STATES = setOf("40001", "40P01", "55P03", "57014")
   }
 }
