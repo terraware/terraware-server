@@ -40,7 +40,7 @@ class DraftPlantingSiteService(
   fun create(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
     requirePermissions { createDraftPlantingSite(model.organizationId) }
 
-    model.requireValidMap()
+    model.toPlantingSiteModel().requireValid()
 
     return draftPlantingSiteStore.create(model)
   }
@@ -67,23 +67,6 @@ class DraftPlantingSiteService(
         geometry = boundary,
         numPolygons = boundary.numGeometries,
     )
-  }
-
-  /**
-   * @throws PlantingSiteMapInvalidException The map failed validation.
-   * @throws IllegalArgumentException The map's geometries couldn't be compared with one another.
-   */
-  private fun DraftPlantingSiteModel.requireValidMap() {
-    val problems =
-        try {
-          validate()
-        } catch (e: TopologyException) {
-          throw IllegalArgumentException("Planting site map has invalid geometry", e)
-        }
-
-    if (problems != null) {
-      throw PlantingSiteMapInvalidException(problems)
-    }
   }
 
   /**

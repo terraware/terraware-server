@@ -121,7 +121,10 @@ data class DraftPlantingSiteModel(
     get() = map.strata.sumOf { it.substrata.size }
 
   /** Returns a list of validation problems with the draft's map, or null if it is valid. */
-  fun validate(): List<PlantingSiteValidationFailure>? {
+  fun validate(): List<PlantingSiteValidationFailure>? = toPlantingSiteModel().validate()
+
+  /** Returns a planting site model with the draft's map. */
+  fun toPlantingSiteModel(): NewPlantingSiteModel {
     val strata =
         map.strata.map { stratum ->
           StratumModel.create(
@@ -142,15 +145,14 @@ data class DraftPlantingSiteModel(
         }
 
     return PlantingSiteModel.create(
-            boundary = map.boundary,
-            description = description,
-            exclusion = map.exclusion,
-            name = name,
-            organizationId = organizationId,
-            projectId = projectId,
-            strata = strata,
-            timeZone = timeZone,
-        )
-        .validate()
+        boundary = map.boundary,
+        description = description,
+        exclusion = map.exclusion,
+        name = name,
+        organizationId = organizationId,
+        projectId = projectId,
+        strata = strata,
+        timeZone = timeZone,
+    )
   }
 }
