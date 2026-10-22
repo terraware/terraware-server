@@ -8,9 +8,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
-import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.DraftStratumId
-import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
@@ -152,8 +150,7 @@ class DraftPlantingSiteStore(
     requirePermissions { createDraftPlantingSite(model.organizationId) }
 
     requireProjectInOrganization(model.projectId, model.organizationId)
-    requireValidSiteType(model.map)
-    requireValidStrata(emptyList(), model.map.strata)
+    model.map.requireValid(null)
 
     val now = clock.instant()
     val userId = currentUser().userId
@@ -227,6 +224,56 @@ class DraftPlantingSiteStore(
     record.store()
   }
 
+  /**
+   * Updates a draft planting site. Strata and substrata with IDs are updated in place, those
+   * without IDs are inserted, and existing ones that are absent from the updated model are deleted.
+   */
+  fun updateFromModel(
+      id: DraftPlantingSiteId,
+      updateFunc: (DraftPlantingSiteModel) -> DraftPlantingSiteModel,
+  ) {
+    requirePermissions { updateDraftPlantingSite(id) }
+
+    dslContext.transaction { _ ->
+      // Serialize concurrent updates so the stratum and substratum syncs don't interleave.
+      dslContext
+          .select(DSL.one())
+          .from(DRAFT_PLANTING_SITES)
+          .where(DRAFT_PLANTING_SITES.ID.eq(id))
+          .forUpdate()
+          .execute()
+
+      val existing = fetchModelById(id)
+      val updated = updateFunc(existing)
+
+      if (updated.organizationId != existing.organizationId) {
+        throw AccessDeniedException("No permission to change organization")
+      }
+
+      requireProjectInOrganization(updated.projectId, existing.organizationId)
+      updated.map.requireValid(existing.map)
+
+      with(DRAFT_PLANTING_SITES) {
+        dslContext
+            .update(DRAFT_PLANTING_SITES)
+            .set(BOUNDARY, updated.map.boundary)
+            .set(BOUNDARY_SOURCE, updated.map.boundarySource)
+            .set(DESCRIPTION, updated.description)
+            .set(EXCLUSION, updated.map.exclusion)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(NAME, updated.name)
+            .set(PROJECT_ID, updated.projectId)
+            .set(SITE_EDIT_STEP, updated.map.siteEditStep)
+            .set(TIME_ZONE, updated.timeZone)
+            .where(ID.eq(id))
+            .execute()
+      }
+
+      updateStrata(id, existing.map.strata, updated.map.strata)
+    }
+  }
+
   private fun requireProjectInOrganization(projectId: ProjectId?, organizationId: OrganizationId) {
     if (projectId != null) {
       requirePermissions { readProject(projectId) }
@@ -236,61 +283,9 @@ class DraftPlantingSiteStore(
     }
   }
 
-  private fun requireValidSiteType(map: DraftPlantingSiteMap) {
-    if (map.siteType == DraftPlantingSiteType.Simple && map.strata.isNotEmpty()) {
-      throw IllegalArgumentException("Simple planting sites cannot have strata")
-    }
-  }
-
-  /**
-   * Checks that every stratum and substratum ID in a desired list refers to an existing stratum or
-   * substratum in the right place, and that no ID appears more than once. Also checks that stratum
-   * names are unique within the draft and substratum names are unique within each stratum, which
-   * the database requires.
-   */
-  private fun requireValidStrata(
-      existingStrata: List<DraftStratumModel>,
-      desiredStrata: List<DraftStratumModel>,
-  ) {
-    val existingStrataById = existingStrata.associateBy { it.id }
-    val seenStratumIds = mutableSetOf<DraftStratumId>()
-    val seenSubstratumIds = mutableSetOf<DraftSubstratumId>()
-    val seenStratumNames = mutableSetOf<String>()
-
-    desiredStrata.forEach { stratum ->
-      val existingStratum =
-          stratum.id?.let { existingStrataById[it] ?: throw DraftStratumNotFoundException(it) }
-      if (stratum.id != null && !seenStratumIds.add(stratum.id)) {
-        throw IllegalArgumentException("Stratum ID ${stratum.id} appears more than once")
-      }
-      if (!seenStratumNames.add(stratum.name)) {
-        throw IllegalArgumentException("Stratum name ${stratum.name} appears more than once")
-      }
-
-      val existingSubstratumIds = existingStratum?.substrata?.map { it.id }?.toSet() ?: emptySet()
-      val seenSubstratumNames = mutableSetOf<String>()
-
-      stratum.substrata.forEach { substratum ->
-        if (!seenSubstratumNames.add(substratum.name)) {
-          throw IllegalArgumentException(
-              "Substratum name ${substratum.name} appears more than once in stratum ${stratum.name}"
-          )
-        }
-        if (substratum.id != null) {
-          if (substratum.id !in existingSubstratumIds) {
-            throw DraftSubstratumNotFoundException(substratum.id)
-          }
-          if (!seenSubstratumIds.add(substratum.id)) {
-            throw IllegalArgumentException("Substratum ID ${substratum.id} appears more than once")
-          }
-        }
-      }
-    }
-  }
-
   /**
    * Makes a draft's strata and substrata match a desired list whose IDs have already been checked
-   * by [requireValidStrata].
+   * by [DraftPlantingSiteMap.requireValid].
    *
    * Strata and substrata whose names are changing are first given temporary names so that renames
    * that swap or shift names don't violate the uniqueness constraints regardless of update order.
