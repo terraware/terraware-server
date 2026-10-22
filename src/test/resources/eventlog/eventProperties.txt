@@ -423,6 +423,17 @@ com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/monito
 com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/plotNumber: Long
+com.terraformation.backend.tracking.event.StratumT0DensityCreatedEventV1/density: BigDecimal
+com.terraformation.backend.tracking.event.StratumT0DensityCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.StratumT0DensityCreatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.StratumT0DensityCreatedEventV1/speciesId: SpeciesId
+com.terraformation.backend.tracking.event.StratumT0DensityCreatedEventV1/stratumId: StratumId
+com.terraformation.backend.tracking.event.StratumT0DensityCreatedEventV1/stratumName: String
+com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventV1/speciesId: SpeciesId
+com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventV1/stratumId: StratumId
+com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventV1/stratumName: String
 com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/plantingSiteName: String

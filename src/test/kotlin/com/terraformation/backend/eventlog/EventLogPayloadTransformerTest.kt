@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
@@ -42,6 +43,7 @@ import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSub
 import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0ObservationSubjectPayload
+import com.terraformation.backend.eventlog.api.StratumT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
@@ -83,6 +85,9 @@ import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventVa
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
+import com.terraformation.backend.tracking.event.StratumT0DensityCreatedEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
 import java.math.BigDecimal
@@ -1188,6 +1193,72 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         ),
         transformer.eventsToPayloads(listOf(highPrecisionEntry)).single(),
     )
+  }
+
+  @Test
+  fun `maps StratumT0Density events to payloads`() {
+    val scientificName = "Quercus alba"
+    val speciesId = insertSpecies(scientificName = scientificName)
+    val stratumName = "Stratum 2"
+    val stratumId = StratumId(7)
+    val createdEvent =
+        StratumT0DensityCreatedEvent(
+            density = BigDecimal("12.500"),
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
+            stratumId = stratumId,
+            stratumName = stratumName,
+        )
+    val updatedEvent =
+        StratumT0DensityUpdatedEvent(
+            changedFrom = StratumT0DensityUpdatedEventValues(density = BigDecimal("12.500")),
+            changedTo = StratumT0DensityUpdatedEventValues(),
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
+            stratumId = stratumId,
+            stratumName = stratumName,
+        )
+
+    val createdEntry = eventLogEntry(knownUserId, createdEvent)
+    val updatedEntry = eventLogEntry(knownUserId, updatedEvent)
+    val payloads = transformer.eventsToPayloads(listOf(createdEntry, updatedEntry))
+    val subject =
+        StratumT0DensitySubjectPayload(
+            fullText = "Stratum $stratumName temporary plot T0 density for $scientificName",
+            plantingSiteId = plantingSiteId,
+            scientificName = scientificName,
+            shortText = "T0 density",
+            speciesId = speciesId,
+            stratumId = stratumId,
+            stratumName = stratumName,
+        )
+    val expected =
+        listOf(
+            EventLogEntryPayload(
+                action =
+                    CreatedActionPayload(listOf(CreatedFieldPayload("density", listOf("12.5")))),
+                subject = subject,
+                timestamp = createdEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "density",
+                        changedFrom = listOf("12.5"),
+                        changedTo = null,
+                    ),
+                subject = subject,
+                timestamp = updatedEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+        )
+
+    assertEquals(expected, payloads)
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =

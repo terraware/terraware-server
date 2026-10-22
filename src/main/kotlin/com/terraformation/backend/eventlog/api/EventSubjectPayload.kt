@@ -24,6 +24,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -77,6 +78,7 @@ import com.terraformation.backend.tracking.event.PlotT0ObservationPersistentEven
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityPersistentEvent
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import kotlin.reflect.KClass
@@ -939,6 +941,39 @@ data class PlotT0DensitySubjectPayload(
   }
 }
 
+@JsonTypeName("StratumT0Density")
+data class StratumT0DensitySubjectPayload(
+    override val fullText: String,
+    val plantingSiteId: PlantingSiteId,
+    val scientificName: String,
+    override val shortText: String,
+    val speciesId: SpeciesId,
+    val stratumId: StratumId,
+    val stratumName: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: StratumT0DensityPersistentEvent,
+        context: EventLogPayloadContext,
+    ): StratumT0DensitySubjectPayload {
+      val scientificName = context.getSpeciesScientificName(event.speciesId)
+      return StratumT0DensitySubjectPayload(
+          fullText =
+              context.subjectFullText<StratumT0DensitySubjectPayload>(
+                  event.stratumName,
+                  scientificName,
+              ),
+          plantingSiteId = event.plantingSiteId,
+          scientificName = scientificName,
+          shortText = context.subjectShortText<StratumT0DensitySubjectPayload>(),
+          speciesId = event.speciesId,
+          stratumId = event.stratumId,
+          stratumName = event.stratumName,
+      )
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -1124,6 +1159,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlotT0Observation(PlotT0ObservationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
+  StratumT0Density(StratumT0DensityPersistentEvent::class),
   ViabilityTest(ViabilityTestPersistentEvent::class),
   Withdrawal(WithdrawalPersistentEvent::class),
 }

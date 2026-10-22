@@ -25,6 +25,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
@@ -38,6 +39,10 @@ import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
+import com.terraformation.backend.tracking.event.StratumT0DensityCreatedEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityPersistentEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.MonitoringPlotT0StatusModel
@@ -1645,6 +1650,99 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class AssignT0TempStratumSpeciesDensities {
     @Test
+    fun `publishes stratum density events for created, changed, and removed species`() {
+      val initialDensity1 = BigDecimal("10.0")
+      val initialDensity2 = BigDecimal("20")
+      val initialDensity3 = BigDecimal("30")
+      val changedDensity1 = BigDecimal("12.5")
+      val createdDensity4 = BigDecimal("25")
+      val speciesId3 = insertSpecies()
+      val speciesId4 = insertSpecies()
+      insertStratumT0TempDensity(speciesId = speciesId1, stratumDensity = initialDensity1)
+      insertStratumT0TempDensity(speciesId = speciesId2, stratumDensity = initialDensity2)
+      insertStratumT0TempDensity(speciesId = speciesId3, stratumDensity = initialDensity3)
+
+      fun createdEvent(speciesId: SpeciesId, density: BigDecimal) =
+          StratumT0DensityCreatedEvent(
+              density = density,
+              organizationId = inserted.organizationId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId,
+              stratumId = stratumId,
+              stratumName = "Stratum 2",
+          )
+
+      fun updatedEvent(
+          speciesId: SpeciesId,
+          previousDensity: BigDecimal,
+          newDensity: BigDecimal?,
+      ) =
+          StratumT0DensityUpdatedEvent(
+              changedFrom = StratumT0DensityUpdatedEventValues(density = previousDensity),
+              changedTo =
+                  newDensity?.let { StratumT0DensityUpdatedEventValues(density = it) }
+                      ?: StratumT0DensityUpdatedEventValues(),
+              organizationId = inserted.organizationId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId,
+              stratumId = stratumId,
+              stratumName = "Stratum 2",
+          )
+
+      store.assignT0TempStratumSpeciesDensities(
+          stratumId,
+          listOf(
+              SpeciesDensityModel(speciesId1, changedDensity1),
+              SpeciesDensityModel(speciesId2, BigDecimal("20.00")),
+              SpeciesDensityModel(speciesId4, createdDensity4),
+          ),
+      )
+
+      val unchangedDensity =
+          dslContext
+              .select(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY)
+              .from(STRATUM_T0_TEMP_DENSITIES)
+              .where(
+                  STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(stratumId)
+                      .and(STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesId2))
+              )
+              .fetchOne(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY)!!
+
+      assertTableEquals(
+          listOf(
+              stratumDensityRecord(stratumId, speciesId1, changedDensity1),
+              stratumDensityRecord(stratumId, speciesId2, unchangedDensity),
+              stratumDensityRecord(stratumId, speciesId4, createdDensity4),
+          ),
+          "Should store changed, unchanged, and newly assigned densities",
+      )
+      eventPublisher.assertExactEventsPublished(
+          setOf(
+              T0StratumDataAssignedEvent(stratumId = stratumId),
+              updatedEvent(speciesId1, initialDensity1, changedDensity1),
+              updatedEvent(speciesId3, initialDensity3, null),
+              createdEvent(speciesId4, createdDensity4),
+          )
+      )
+
+      eventPublisher.clear()
+      store.assignT0TempStratumSpeciesDensities(stratumId, emptyList())
+
+      assertTableEmpty(
+          STRATUM_T0_TEMP_DENSITIES,
+          where = STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(stratumId),
+      )
+      eventPublisher.assertExactEventsPublished(
+          setOf(
+              T0StratumDataAssignedEvent(stratumId = stratumId),
+              updatedEvent(speciesId1, changedDensity1, null),
+              updatedEvent(speciesId2, unchangedDensity, null),
+              updatedEvent(speciesId4, createdDensity4, null),
+          )
+      )
+    }
+
+    @Test
     fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
@@ -1817,6 +1915,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(-1))),
         )
       }
+
+      eventPublisher.assertEventNotPublished<StratumT0DensityPersistentEvent>()
     }
   }
 
