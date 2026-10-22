@@ -1,6 +1,6 @@
 # Removes the "Stack created with GitHub Stacks CLI" footer that gh-stack appends to PR
-# descriptions. Runs on edits too, since adding an existing PR to a stack later rewrites
-# its description.
+# descriptions, as well as the "Generated with Claude Code" line that Claude Code adds.
+# Runs on edits too, since adding an existing PR to a stack later rewrites its description.
 #
 # This uses GitHub Actions rather than Buildkite because Buildkite builds aren't triggered
 # by PR description edits.
@@ -8,7 +8,7 @@
 # pull_request_target is safe here because the workflow never checks out PR code; it only
 # rewrites the description.
 
-name: Strip gh-stack footer
+name: Strip PR description footers
 
 on:
   pull_request_target:
@@ -19,7 +19,9 @@ permissions:
 
 jobs:
   strip:
-    if: contains(github.event.pull_request.body, 'github.com/github/gh-stack')
+    if: >-
+      contains(github.event.pull_request.body, 'github.com/github/gh-stack') ||
+      contains(github.event.pull_request.body, 'Generated with [Claude Code](https://claude.com/claude-code)')
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -30,11 +32,15 @@ jobs:
             // Re-fetch rather than using the event payload so we don't clobber an edit
             // made between the event firing and this job running.
             const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
-            const body = (pr.body ?? '').replace(
-              /\s*(?:-{3,}\s*)?<sub>Stack created with <a href="https:\/\/github\.com\/github\/gh-stack">[\s\S]*?<\/sub>\s*$/,
-              '',
-            );
-            if (body !== pr.body) {
+            const original = pr.body ?? '';
+            const body = original
+              .replace(/^.*Generated with \[Claude Code\]\(https:\/\/claude\.com\/claude-code\).*(?:\r?\n|$)/gm, '')
+              .replace(
+                /\s*(?:-{3,}\s*)?<sub>Stack created with <a href="https:\/\/github\.com\/github\/gh-stack">[\s\S]*?<\/sub>\s*$/,
+                '',
+              )
+              .trimEnd();
+            if (body !== original.trimEnd()) {
               await github.rest.pulls.update({ ...context.repo, pull_number: number, body });
-              core.info(`Removed gh-stack footer from #${number}`);
+              core.info(`Removed footers from #${number}`);
             }
