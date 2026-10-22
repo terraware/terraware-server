@@ -30,17 +30,17 @@ sealed interface WithdrawalPersistentEvent : PersistentEvent {
 }
 
 data class WithdrawalCreatedEventV1(
-    override val accessionId: AccessionId,
+    val accessionId: AccessionId,
     val batchId: BatchId? = null,
     val date: LocalDate,
-    override val facilityId: FacilityId,
+    val facilityId: FacilityId,
     val notes: String? = null,
-    override val organizationId: OrganizationId,
+    val organizationId: OrganizationId,
     val purpose: WithdrawalPurpose? = null,
     val staffResponsible: String? = null,
-    override val withdrawalId: WithdrawalId,
+    val withdrawalId: WithdrawalId,
     val withdrawnQuantity: SeedQuantityModel? = null,
-) : UpgradableEvent, WithdrawalPersistentEvent {
+) : UpgradableEvent {
   override fun toNextVersion(
       eventLogId: EventLogId,
       eventUpgradeUtils: EventUpgradeUtils,
@@ -48,33 +48,56 @@ data class WithdrawalCreatedEventV1(
 }
 
 data class WithdrawalCreatedEventV2(
-    override val accessionId: AccessionId,
+    val accessionId: AccessionId,
     val batchId: BatchId? = null,
     val date: LocalDate,
     val destination: String? = null,
-    override val facilityId: FacilityId,
+    val facilityId: FacilityId,
     val notes: String? = null,
-    override val organizationId: OrganizationId,
+    val organizationId: OrganizationId,
     val purpose: WithdrawalPurpose? = null,
     val staffResponsible: String? = null,
     val viabilityTestId: ViabilityTestId? = null,
-    override val withdrawalId: WithdrawalId,
+    val withdrawalId: WithdrawalId,
     val withdrawnByUserId: UserId? = null,
     val withdrawnQuantity: SeedQuantityModel? = null,
-) : UpgradableEvent, WithdrawalPersistentEvent {
+) : UpgradableEvent {
   override fun toNextVersion(
       eventLogId: EventLogId,
       eventUpgradeUtils: EventUpgradeUtils,
   ): WithdrawalCreatedEventV3 = eventUpgradeUtils.upgrade(this)
 }
 
-/** Published when a withdrawal is added to an accession. */
 data class WithdrawalCreatedEventV3(
+    val accessionId: AccessionId,
+    val batchId: BatchId? = null,
+    val date: LocalDate,
+    val destination: String? = null,
+    val estimatedCount: Long? = null,
+    val facilityId: FacilityId,
+    val notes: String? = null,
+    val organizationId: OrganizationId,
+    val purpose: WithdrawalPurpose? = null,
+    val staffResponsible: String? = null,
+    val viabilityTestId: ViabilityTestId? = null,
+    val withdrawalId: WithdrawalId,
+    val withdrawnByUserId: UserId? = null,
+    val withdrawnQuantity: SeedQuantityModel? = null,
+) : UpgradableEvent {
+  override fun toNextVersion(
+      eventLogId: EventLogId,
+      eventUpgradeUtils: EventUpgradeUtils,
+  ): WithdrawalCreatedEventV4 = eventUpgradeUtils.upgrade(this)
+}
+
+/** Published when a withdrawal is added to an accession. */
+data class WithdrawalCreatedEventV4(
     override val accessionId: AccessionId,
     val batchId: BatchId? = null,
     val date: LocalDate,
     val destination: String? = null,
     val estimatedCount: Long? = null,
+    val estimatedWeight: SeedQuantityModel? = null,
     override val facilityId: FacilityId,
     val notes: String? = null,
     override val organizationId: OrganizationId,
@@ -96,6 +119,7 @@ data class WithdrawalCreatedEventV3(
                 messages.seedQuantity(SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds))
               },
           ),
+          createInitialField("estimatedWeight", messages.seedQuantityOrNull(estimatedWeight)),
           createInitialField("notes", notes),
           createInitialField("purpose", purpose?.getDisplayName(currentLocale())),
           createInitialField("staffResponsible", staffResponsible),
@@ -105,7 +129,7 @@ data class WithdrawalCreatedEventV3(
       )
 }
 
-typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV3
+typealias WithdrawalCreatedEvent = WithdrawalCreatedEventV4
 
 /** Published when the user edits an existing withdrawal. */
 data class WithdrawalUpdatedEventV1(

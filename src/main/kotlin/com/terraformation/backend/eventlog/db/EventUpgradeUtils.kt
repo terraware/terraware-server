@@ -22,7 +22,9 @@ import com.terraformation.backend.seedbank.event.ViabilityTestUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV1
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV2
 import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV3
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEventV4
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
+import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV2
@@ -209,6 +211,54 @@ class EventUpgradeUtils(
         date = original.date,
         destination = original.destination,
         estimatedCount = estimatedCount,
+        facilityId = original.facilityId,
+        notes = original.notes,
+        organizationId = original.organizationId,
+        purpose = original.purpose,
+        staffResponsible = original.staffResponsible,
+        viabilityTestId = original.viabilityTestId,
+        withdrawalId = original.withdrawalId,
+        withdrawnByUserId = original.withdrawnByUserId,
+        withdrawnQuantity = original.withdrawnQuantity,
+    )
+  }
+
+  fun upgrade(original: WithdrawalCreatedEventV3): WithdrawalCreatedEventV4 {
+    val estimatedWeight =
+        if (original.withdrawnQuantity?.units == SeedQuantityUnits.Seeds) {
+          dslContext
+              .select(
+                  WITHDRAWALS.ESTIMATED_WEIGHT_QUANTITY,
+                  WITHDRAWALS.ESTIMATED_WEIGHT_UNITS_ID,
+                  WITHDRAWALS.WITHDRAWN_QUANTITY,
+                  WITHDRAWALS.WITHDRAWN_UNITS_ID,
+              )
+              .from(WITHDRAWALS)
+              .where(WITHDRAWALS.ID.eq(original.withdrawalId))
+              .fetchOne()
+              ?.takeIf { record ->
+                SeedQuantityModel.of(
+                    record[WITHDRAWALS.WITHDRAWN_QUANTITY],
+                    record[WITHDRAWALS.WITHDRAWN_UNITS_ID],
+                ) == original.withdrawnQuantity
+              }
+              ?.let { record ->
+                SeedQuantityModel.of(
+                    record[WITHDRAWALS.ESTIMATED_WEIGHT_QUANTITY],
+                    record[WITHDRAWALS.ESTIMATED_WEIGHT_UNITS_ID],
+                )
+              }
+        } else {
+          null
+        }
+
+    return WithdrawalCreatedEventV4(
+        accessionId = original.accessionId,
+        batchId = original.batchId,
+        date = original.date,
+        destination = original.destination,
+        estimatedCount = original.estimatedCount,
+        estimatedWeight = estimatedWeight,
         facilityId = original.facilityId,
         notes = original.notes,
         organizationId = original.organizationId,

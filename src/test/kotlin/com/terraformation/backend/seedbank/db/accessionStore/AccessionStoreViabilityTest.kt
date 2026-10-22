@@ -7,6 +7,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
+import com.terraformation.backend.seedbank.event.WithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
@@ -136,6 +137,9 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         initial.remaining,
         "Accession remaining quantity before update",
     )
+    publisher.assertEventPublished { event ->
+      event is WithdrawalCreatedEvent && event.estimatedWeight == grams<SeedQuantityModel>(25)
+    }
 
     val desired =
         initial.updateViabilityTest(initial.viabilityTests[0].id!!) { it.copy(seedsTested = 80) }
