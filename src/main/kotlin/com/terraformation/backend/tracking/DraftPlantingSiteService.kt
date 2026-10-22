@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.gis.InvalidGeometryException
 import com.terraformation.backend.gis.NoPolygonsException
@@ -44,21 +43,6 @@ class DraftPlantingSiteService(
     model.requireValidMap()
 
     return draftPlantingSiteStore.create(model)
-  }
-
-  /**
-   * Updates a draft and validates its updated map. Validation runs inside the store's transaction
-   * before anything is written.
-   *
-   * @throws PlantingSiteMapInvalidException The updated map failed validation. Nothing is written.
-   */
-  fun updateTyped(
-      id: DraftPlantingSiteId,
-      buildModel: (DraftPlantingSiteModel) -> DraftPlantingSiteModel,
-  ) {
-    draftPlantingSiteStore.update(id) { existing ->
-      buildModel(existing).also { it.requireValidMap() }
-    }
   }
 
   /**

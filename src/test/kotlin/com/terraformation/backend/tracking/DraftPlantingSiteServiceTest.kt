@@ -9,7 +9,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
@@ -360,7 +359,6 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
       every { user.canCreateDraftPlantingSite(any()) } returns true
       every { user.canReadDraftPlantingSite(any()) } returns true
-      every { user.canUpdateDraftPlantingSite(any()) } returns true
     }
 
     private fun stratum(name: String, boundary: MultiPolygon) =
@@ -405,9 +403,6 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
                         }
                 )
         )
-
-    private fun createDraftWithTwoStrata(): DraftPlantingSiteId =
-        store.create(siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB)))).id!!
 
     @Test
     fun `create rejects overlapping strata and stores nothing`() {
@@ -458,58 +453,6 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       assertEquals(expected, store.fetchOneById(created.id!!).withoutStratumIds())
-    }
-
-    @Test
-    fun `updateTyped rejects invalid map and writes nothing`() {
-      val id = createDraftWithTwoStrata()
-      val before = store.fetchOneById(id)
-
-      clock.instant = clock.instant().plusSeconds(60)
-
-      // Stratum A extends outside the site boundary, and stratum B is deleted.
-      val wide = rectangle(1200, 500, 0, 0)
-      val exception =
-          assertThrows<PlantingSiteMapInvalidException> {
-            service.updateTyped(id) { existing ->
-              existing.copy(
-                  name = "Renamed",
-                  map =
-                      existing.map.copy(
-                          strata = listOf(existing.map.strata[0].copy(boundary = wide))
-                      ),
-              )
-            }
-          }
-
-      assertThat(exception.problems).anyMatch {
-        it.type == PlantingSiteValidationFailureType.StratumNotInSite
-      }
-      assertEquals(before, store.fetchOneById(id))
-    }
-
-    @Test
-    fun `updateTyped stores valid update`() {
-      val id = createDraftWithTwoStrata()
-      val before = store.fetchOneById(id)
-
-      clock.instant = clock.instant().plusSeconds(60)
-
-      service.updateTyped(id) { existing ->
-        existing.copy(
-            name = "Renamed",
-            map = existing.map.copy(strata = listOf(existing.map.strata[0])),
-        )
-      }
-
-      val expected =
-          before.copy(
-              name = "Renamed",
-              map = before.map.copy(strata = listOf(before.map.strata[0])),
-              modifiedTime = clock.instant,
-          )
-
-      assertEquals(expected, store.fetchOneById(id))
     }
   }
 
