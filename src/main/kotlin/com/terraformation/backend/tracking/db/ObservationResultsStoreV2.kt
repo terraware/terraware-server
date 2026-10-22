@@ -299,6 +299,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
     return DSL.multiset(
             DSL.select(
+                    biomassDetailsMultiset,
                     USERS.FIRST_NAME,
                     USERS.LAST_NAME,
                     OBSERVATION_PLOTS.CLAIMED_BY,
@@ -385,6 +386,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             val status = record[OBSERVATION_PLOTS.STATUS_ID]!!
 
             ObservationMonitoringPlotResultsModel(
+                biomassDetails = record[biomassDetailsMultiset],
                 boundary = record[monitoringPlotsBoundaryField] as Polygon,
                 claimedByName =
                     TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
@@ -796,7 +798,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     val results =
         dslContext
             .select(
-                biomassDetailsMultiset,
                 OBSERVATIONS.COMPLETED_TIME,
                 OBSERVATIONS.ID,
                 OBSERVATIONS.IS_AD_HOC,
@@ -864,7 +865,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   adHocPlot = null,
                   anyPlotsCompleted = anyCompleted,
                   areaHa = areaHa,
-                  biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
                   completedTime = record[OBSERVATIONS.COMPLETED_TIME],
                   estimatedPlants = estimatedPlants,
                   isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
@@ -939,7 +939,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         dslContext
             .select(
                 adHocPlotsField,
-                biomassDetailsMultiset,
                 OBSERVATIONS.COMPLETED_TIME,
                 OBSERVATIONS.ID,
                 OBSERVATIONS.OBSERVATION_TYPE_ID,
@@ -962,7 +961,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   adHocPlot = record[adHocPlotsField].firstOrNull(),
                   anyPlotsCompleted = false,
                   areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA],
-                  biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
                   completedTime = record[OBSERVATIONS.COMPLETED_TIME],
                   estimatedPlants = null,
                   isAdHoc = true,
