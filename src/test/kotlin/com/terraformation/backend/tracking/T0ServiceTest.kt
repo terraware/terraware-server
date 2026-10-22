@@ -15,6 +15,8 @@ import com.terraformation.backend.db.tracking.tables.records.StratumT0TempDensit
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.T0Store
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
@@ -24,6 +26,7 @@ import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventMod
 import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
+import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -214,6 +217,54 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                           ),
                       ),
                   ),
+          )
+      )
+    }
+
+    @Test
+    fun `publishes observation events in plot ID order when input is descending`() {
+      val observationId2 = insertObservation(startDate = LocalDate.of(2023, 1, 2))
+      insertObservationPlot(
+          observationId = observationId2,
+          monitoringPlotId = monitoringPlotId2,
+          isPermanent = true,
+      )
+
+      service.assignT0PlotsData(
+          listOf(
+              PlotT0DataModel(monitoringPlotId2, observationId = observationId2),
+              PlotT0DataModel(monitoringPlotId1, observationId = observationId),
+          )
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              PlotT0ObservationUpdatedEvent(
+                  changedFrom = PlotT0ObservationUpdatedEventValues(),
+                  changedTo =
+                      PlotT0ObservationUpdatedEventValues(
+                          observationId = observationId,
+                          observationStartDate = LocalDate.of(2023, 1, 1),
+                      ),
+                  monitoringPlotId = monitoringPlotId1,
+                  observationId = observationId,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  plotNumber = 1L,
+              ),
+              PlotT0ObservationUpdatedEvent(
+                  changedFrom = PlotT0ObservationUpdatedEventValues(),
+                  changedTo =
+                      PlotT0ObservationUpdatedEventValues(
+                          observationId = observationId2,
+                          observationStartDate = LocalDate.of(2023, 1, 2),
+                      ),
+                  monitoringPlotId = monitoringPlotId2,
+                  observationId = observationId2,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  plotNumber = 2L,
+              ),
           )
       )
     }

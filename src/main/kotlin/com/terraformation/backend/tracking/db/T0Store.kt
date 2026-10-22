@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -24,6 +25,8 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.MonitoringPlotT0StatusModel
@@ -343,7 +346,6 @@ class T0Store(
     val now = clock.instant()
     val currentUserId = currentUser().userId
 
-    val existingDensities = fetchExistingDensities(monitoringPlotId)
     val observationDensities: Map<SpeciesId, Int> =
         with(OBSERVED_PLOT_SPECIES_TOTALS) {
           dslContext
@@ -393,7 +395,15 @@ class T0Store(
     val speciesNotInObservation =
         withdrawnSpeciesNotInObservation.plus(observedSpeciesNotInObservation)
 
-    dslContext.transaction { _ ->
+    val newDensities =
+        observationDensities.mapValues { it.value.toBigDecimal().toPlantsPerHectare() } +
+            speciesNotInObservation.associateWith { BigDecimal.ZERO }
+
+    val speciesDensityChanges = dslContext.transactionResult { _ ->
+      lockMonitoringPlot(monitoringPlotId)
+      val previousT0Observation = fetchT0Observation(monitoringPlotId)
+      val existingDensities = fetchExistingDensities(monitoringPlotId)
+
       with(PLOT_T0_OBSERVATIONS) {
         dslContext
             .insertInto(this)
@@ -479,13 +489,26 @@ class T0Store(
                 observationId = observationId,
             )
         )
-      }
-    }
 
-    val newDensities =
-        observationDensities.mapValues { it.value.toBigDecimal().toPlantsPerHectare() } +
-            speciesNotInObservation.associateWith { BigDecimal.ZERO }
-    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
+        if (previousT0Observation?.observationId != observationId) {
+          val plotEventInfo = fetchPlotEventInfo(monitoringPlotId)
+
+          eventPublisher.publishEvent(
+              PlotT0ObservationUpdatedEvent(
+                  changedFrom = previousT0Observation ?: PlotT0ObservationUpdatedEventValues(),
+                  changedTo = fetchT0Observation(monitoringPlotId)!!,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+                  organizationId = plotEventInfo.organizationId,
+                  plantingSiteId = plotEventInfo.plantingSiteId,
+                  plotNumber = plotEventInfo.plotNumber,
+              )
+          )
+        }
+      }
+
+      buildSpeciesDensityChangeList(existingDensities, newDensities)
+    }
 
     return PlotT0DensityChangedModel(
         monitoringPlotId = monitoringPlotId,
@@ -506,9 +529,13 @@ class T0Store(
     val now = clock.instant()
     val currentUserId = currentUser().userId
 
-    val existingDensities = fetchExistingDensities(monitoringPlotId)
+    val newDensities = densities.associate { it.speciesId to it.density }
 
-    dslContext.transaction { _ ->
+    val speciesDensityChanges = dslContext.transactionResult { _ ->
+      lockMonitoringPlot(monitoringPlotId)
+      val previousT0Observation = fetchT0Observation(monitoringPlotId)
+      val existingDensities = fetchExistingDensities(monitoringPlotId)
+
       with(PLOT_T0_OBSERVATIONS) {
         // delete t0 observations associated with this plot so that retrieval doesn't return
         // incorrect data
@@ -560,10 +587,25 @@ class T0Store(
       }
 
       eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
-    }
 
-    val newDensities = densities.associate { it.speciesId to it.density }
-    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
+      if (previousT0Observation != null) {
+        val plotEventInfo = fetchPlotEventInfo(monitoringPlotId)
+
+        eventPublisher.publishEvent(
+            PlotT0ObservationUpdatedEvent(
+                changedFrom = previousT0Observation,
+                changedTo = PlotT0ObservationUpdatedEventValues(),
+                monitoringPlotId = monitoringPlotId,
+                observationId = null,
+                organizationId = plotEventInfo.organizationId,
+                plantingSiteId = plotEventInfo.plantingSiteId,
+                plotNumber = plotEventInfo.plotNumber,
+            )
+        )
+      }
+
+      buildSpeciesDensityChangeList(existingDensities, newDensities)
+    }
 
     return PlotT0DensityChangedModel(
         monitoringPlotId = monitoringPlotId,
@@ -827,6 +869,55 @@ class T0Store(
         }
 
     return changeList.values.toSet()
+  }
+
+  private data class PlotEventInfo(
+      val organizationId: OrganizationId,
+      val plantingSiteId: PlantingSiteId,
+      val plotNumber: Long,
+  )
+
+  private fun fetchPlotEventInfo(monitoringPlotId: MonitoringPlotId): PlotEventInfo =
+      dslContext
+          .select(
+              MONITORING_PLOTS.ORGANIZATION_ID,
+              MONITORING_PLOTS.PLANTING_SITE_ID,
+              MONITORING_PLOTS.PLOT_NUMBER,
+          )
+          .from(MONITORING_PLOTS)
+          .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+          .fetchOne { record ->
+            PlotEventInfo(
+                organizationId = record[MONITORING_PLOTS.ORGANIZATION_ID]!!,
+                plantingSiteId = record[MONITORING_PLOTS.PLANTING_SITE_ID]!!,
+                plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
+            )
+          }!!
+
+  private fun fetchT0Observation(
+      monitoringPlotId: MonitoringPlotId
+  ): PlotT0ObservationUpdatedEventValues? =
+      dslContext
+          .select(PLOT_T0_OBSERVATIONS.OBSERVATION_ID, OBSERVATIONS.START_DATE)
+          .from(PLOT_T0_OBSERVATIONS)
+          .join(OBSERVATIONS)
+          .on(OBSERVATIONS.ID.eq(PLOT_T0_OBSERVATIONS.OBSERVATION_ID))
+          .where(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .fetchOne { record ->
+            PlotT0ObservationUpdatedEventValues(
+                observationId = record[PLOT_T0_OBSERVATIONS.OBSERVATION_ID]!!,
+                observationStartDate = record[OBSERVATIONS.START_DATE]!!,
+            )
+          }
+
+  private fun lockMonitoringPlot(monitoringPlotId: MonitoringPlotId) {
+    // Serializes concurrent T0 updates so the prior state used for event-log diffs isn't stale.
+    dslContext
+        .selectOne()
+        .from(MONITORING_PLOTS)
+        .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+        .forUpdate()
+        .execute()
   }
 
   private fun isMonitoringPlotPermanent(monitoringPlotId: MonitoringPlotId): Boolean {
