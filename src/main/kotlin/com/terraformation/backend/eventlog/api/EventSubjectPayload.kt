@@ -71,6 +71,7 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEve
 import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
+import com.terraformation.backend.tracking.event.PlantingSitePersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
@@ -860,6 +861,26 @@ data class PlantingSeasonWithdrawalSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingSite")
+data class PlantingSiteSubjectPayload(
+    override val fullText: String,
+    val plantingSiteId: PlantingSiteId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingSitePersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingSiteSubjectPayload {
+      return PlantingSiteSubjectPayload(
+          fullText = context.subjectFullText<PlantingSiteSubjectPayload>(event.plantingSiteName),
+          plantingSiteId = event.plantingSiteId,
+          shortText = context.subjectShortText<PlantingSiteSubjectPayload>(),
+      )
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -1040,6 +1061,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingSeasonScheduledDateSpecies(PlantingSeasonScheduledDateSpeciesPersistentEvent::class),
   PlantingSeasonSpeciesTarget(PlantingSeasonSpeciesTargetPersistentEvent::class),
   PlantingSeasonWithdrawal(PlantingSeasonWithdrawalCreatedEvent::class),
+  PlantingSite(PlantingSitePersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
   ViabilityTest(ViabilityTestPersistentEvent::class),

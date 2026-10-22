@@ -30,6 +30,7 @@ import com.terraformation.backend.eventlog.api.PlantingSeasonScheduledDateSubjec
 import com.terraformation.backend.eventlog.api.PlantingSeasonSpeciesTargetSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonWithdrawalSubjectPayload
+import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
 import com.terraformation.backend.eventlog.api.ProjectSubjectPayload
 import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
@@ -59,6 +60,7 @@ import com.terraformation.backend.tracking.event.MonitoringSpeciesPersistentEven
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
+import com.terraformation.backend.tracking.event.PlantingSitePersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import jakarta.inject.Named
 import org.jooq.DSLContext
@@ -144,6 +146,7 @@ class EventLogPayloadTransformer(
           PlantingSeasonSpeciesTargetSubjectPayload.forEvent(event, context)
       is PlantingSeasonWithdrawalCreatedEvent ->
           PlantingSeasonWithdrawalSubjectPayload.forEvent(event, context)
+      is PlantingSitePersistentEvent -> PlantingSiteSubjectPayload.forEvent(event, context)
       is ProjectPersistentEvent -> ProjectSubjectPayload.forEvent(event, context)
       is RecordedTreePersistentEvent -> RecordedTreeSubjectPayload.forEvent(event, context)
       is ViabilityTestPersistentEvent -> ViabilityTestSubjectPayload.forEvent(event, context)

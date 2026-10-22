@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import java.time.Instant
@@ -453,10 +454,17 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
 
       invalidator.on(
           SurvivalRateIncludesTempPlotsChangedEvent(
+              changedFrom =
+                  SurvivalRateIncludesTempPlotsChangedEventValues(
+                      survivalRateIncludesTempPlots = false
+                  ),
+              changedTo =
+                  SurvivalRateIncludesTempPlotsChangedEventValues(
+                      survivalRateIncludesTempPlots = true
+                  ),
               organizationId = inserted.organizationId,
               plantingSiteId = inserted.plantingSiteId,
-              previousValue = false,
-              newValue = true,
+              plantingSiteName = "planting site",
           )
       )
 

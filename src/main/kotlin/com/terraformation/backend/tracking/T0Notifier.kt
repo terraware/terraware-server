@@ -17,8 +17,8 @@ class T0Notifier(
         RateLimitedT0DataAssignedEvent(
             organizationId = event.organizationId,
             plantingSiteId = event.plantingSiteId,
-            previousSiteTempSetting = event.previousValue,
-            newSiteTempSetting = event.newValue,
+            previousSiteTempSetting = event.changedFrom.survivalRateIncludesTempPlots,
+            newSiteTempSetting = event.changedTo.survivalRateIncludesTempPlots,
         )
     )
   }

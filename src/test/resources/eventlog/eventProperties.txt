@@ -403,6 +403,9 @@ com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/monitorin
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/observationId: ObservationId
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/plantingSiteName: String
 
 #
 # Please add new entries in alphabetical (case-sensitive ASCII) order.

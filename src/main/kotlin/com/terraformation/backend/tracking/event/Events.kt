@@ -238,17 +238,6 @@ data class T0PlotDataAssignedEvent(
 
 data class T0StratumDataAssignedEvent(val stratumId: StratumId)
 
-/**
- * Published inside the transaction that changes a planting site's setting for including temporary
- * plots in survival rates.
- */
-data class SurvivalRateIncludesTempPlotsChangedEvent(
-    val organizationId: OrganizationId,
-    val plantingSiteId: PlantingSiteId,
-    val previousValue: Boolean,
-    val newValue: Boolean,
-)
-
 data class RateLimitedT0DataAssignedEvent(
     val organizationId: OrganizationId,
     val plantingSiteId: PlantingSiteId,
