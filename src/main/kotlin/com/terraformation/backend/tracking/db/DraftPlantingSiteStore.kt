@@ -10,6 +10,7 @@ import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.DraftStratumId
+import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
@@ -27,6 +28,7 @@ import org.jooq.Field
 import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.springframework.security.access.AccessDeniedException
 
 @Named
@@ -151,7 +153,7 @@ class DraftPlantingSiteStore(
 
     requireProjectInOrganization(model.projectId, model.organizationId)
     requireValidSiteType(model.map)
-    requireValidStrata(model.map.strata)
+    requireValidStrata(emptyList(), model.map.strata)
 
     val now = clock.instant()
     val userId = currentUser().userId
@@ -179,7 +181,7 @@ class DraftPlantingSiteStore(
                 .fetchOne(ID)!!
           }
 
-      insertStrata(id, model.map.strata)
+      updateStrata(id, emptyList(), model.map.strata)
 
       fetchModelById(id)
     }
@@ -241,19 +243,31 @@ class DraftPlantingSiteStore(
   }
 
   /**
-   * Checks that a list of new strata has no stratum or substratum IDs, since none of them exist
-   * yet. Also checks that stratum names are unique within the draft and substratum names are unique
-   * within each stratum, which the database requires.
+   * Checks that every stratum and substratum ID in a desired list refers to an existing stratum or
+   * substratum in the right place, and that no ID appears more than once. Also checks that stratum
+   * names are unique within the draft and substratum names are unique within each stratum, which
+   * the database requires.
    */
-  private fun requireValidStrata(desiredStrata: List<DraftStratumModel>) {
+  private fun requireValidStrata(
+      existingStrata: List<DraftStratumModel>,
+      desiredStrata: List<DraftStratumModel>,
+  ) {
+    val existingStrataById = existingStrata.associateBy { it.id }
+    val seenStratumIds = mutableSetOf<DraftStratumId>()
+    val seenSubstratumIds = mutableSetOf<DraftSubstratumId>()
     val seenStratumNames = mutableSetOf<String>()
 
     desiredStrata.forEach { stratum ->
-      stratum.id?.let { throw DraftStratumNotFoundException(it) }
+      val existingStratum =
+          stratum.id?.let { existingStrataById[it] ?: throw DraftStratumNotFoundException(it) }
+      if (stratum.id != null && !seenStratumIds.add(stratum.id)) {
+        throw IllegalArgumentException("Stratum ID ${stratum.id} appears more than once")
+      }
       if (!seenStratumNames.add(stratum.name)) {
         throw IllegalArgumentException("Stratum name ${stratum.name} appears more than once")
       }
 
+      val existingSubstratumIds = existingStratum?.substrata?.map { it.id }?.toSet() ?: emptySet()
       val seenSubstratumNames = mutableSetOf<String>()
 
       stratum.substrata.forEach { substratum ->
@@ -262,46 +276,127 @@ class DraftPlantingSiteStore(
               "Substratum name ${substratum.name} appears more than once in stratum ${stratum.name}"
           )
         }
-        substratum.id?.let { throw DraftSubstratumNotFoundException(it) }
+        if (substratum.id != null) {
+          if (substratum.id !in existingSubstratumIds) {
+            throw DraftSubstratumNotFoundException(substratum.id)
+          }
+          if (!seenSubstratumIds.add(substratum.id)) {
+            throw IllegalArgumentException("Substratum ID ${substratum.id} appears more than once")
+          }
+        }
       }
     }
   }
 
-  /** Inserts new strata and their substrata into a draft. */
-  private fun insertStrata(
+  /**
+   * Makes a draft's strata and substrata match a desired list whose IDs have already been checked
+   * by [requireValidStrata].
+   *
+   * Strata and substrata whose names are changing are first given temporary names so that renames
+   * that swap or shift names don't violate the uniqueness constraints regardless of update order.
+   */
+  private fun updateStrata(
       draftPlantingSiteId: DraftPlantingSiteId,
-      strata: List<DraftStratumModel>,
+      existingStrata: List<DraftStratumModel>,
+      desiredStrata: List<DraftStratumModel>,
   ) {
-    strata.forEach { stratum ->
-      val stratumId =
-          with(DRAFT_STRATA) {
-            dslContext
-                .insertInto(DRAFT_STRATA)
-                .set(BOUNDARY, stratum.boundary)
-                .set(DRAFT_PLANTING_SITE_ID, draftPlantingSiteId)
-                .set(INITIAL_PLANTING_DENSITY, stratum.initialPlantingDensity)
-                .set(NAME, stratum.name)
-                .returning(ID)
-                .fetchOne(ID)!!
-          }
+    val existingStrataById = existingStrata.associateBy { it.id }
 
-      insertSubstrata(stratumId, stratum.substrata)
+    val deletedStratumIds = existingStrataById.keys - desiredStrata.map { it.id }.toSet()
+    if (deletedStratumIds.isNotEmpty()) {
+      dslContext.deleteFrom(DRAFT_STRATA).where(DRAFT_STRATA.ID.`in`(deletedStratumIds)).execute()
+    }
+
+    val renamedStrata = desiredStrata.filter {
+      it.id != null && existingStrataById.getValue(it.id).name != it.name
+    }
+    if (renamedStrata.isNotEmpty()) {
+      dslContext
+          .update(DRAFT_STRATA)
+          .set(DRAFT_STRATA.NAME, DSL.uuid().cast(SQLDataType.VARCHAR))
+          .where(DRAFT_STRATA.ID.`in`(renamedStrata.map { it.id }))
+          .execute()
+    }
+
+    desiredStrata.forEach { stratum ->
+      if (stratum.id != null) {
+        with(DRAFT_STRATA) {
+          dslContext
+              .update(DRAFT_STRATA)
+              .set(BOUNDARY, stratum.boundary)
+              .set(INITIAL_PLANTING_DENSITY, stratum.initialPlantingDensity)
+              .set(NAME, stratum.name)
+              .where(ID.eq(stratum.id))
+              .execute()
+        }
+
+        updateSubstrata(
+            stratum.id,
+            existingStrataById.getValue(stratum.id).substrata,
+            stratum.substrata,
+        )
+      } else {
+        val stratumId =
+            with(DRAFT_STRATA) {
+              dslContext
+                  .insertInto(DRAFT_STRATA)
+                  .set(BOUNDARY, stratum.boundary)
+                  .set(DRAFT_PLANTING_SITE_ID, draftPlantingSiteId)
+                  .set(INITIAL_PLANTING_DENSITY, stratum.initialPlantingDensity)
+                  .set(NAME, stratum.name)
+                  .returning(ID)
+                  .fetchOne(ID)!!
+            }
+
+        updateSubstrata(stratumId, emptyList(), stratum.substrata)
+      }
     }
   }
 
-  /** Inserts new substrata into a stratum. */
-  private fun insertSubstrata(
+  /** Makes a stratum's substrata match a desired list whose IDs have already been checked. */
+  private fun updateSubstrata(
       draftStratumId: DraftStratumId,
-      substrata: List<DraftSubstratumModel>,
+      existingSubstrata: List<DraftSubstratumModel>,
+      desiredSubstrata: List<DraftSubstratumModel>,
   ) {
+    val existingSubstrataById = existingSubstrata.associateBy { it.id }
+
+    val deletedSubstratumIds = existingSubstrataById.keys - desiredSubstrata.map { it.id }.toSet()
+    if (deletedSubstratumIds.isNotEmpty()) {
+      dslContext
+          .deleteFrom(DRAFT_SUBSTRATA)
+          .where(DRAFT_SUBSTRATA.ID.`in`(deletedSubstratumIds))
+          .execute()
+    }
+
+    val renamedSubstrata = desiredSubstrata.filter {
+      it.id != null && existingSubstrataById.getValue(it.id).name != it.name
+    }
+    if (renamedSubstrata.isNotEmpty()) {
+      dslContext
+          .update(DRAFT_SUBSTRATA)
+          .set(DRAFT_SUBSTRATA.NAME, DSL.uuid().cast(SQLDataType.VARCHAR))
+          .where(DRAFT_SUBSTRATA.ID.`in`(renamedSubstrata.map { it.id }))
+          .execute()
+    }
+
     with(DRAFT_SUBSTRATA) {
-      substrata.forEach { substratum ->
-        dslContext
-            .insertInto(DRAFT_SUBSTRATA)
-            .set(BOUNDARY, substratum.boundary)
-            .set(DRAFT_STRATUM_ID, draftStratumId)
-            .set(NAME, substratum.name)
-            .execute()
+      desiredSubstrata.forEach { substratum ->
+        if (substratum.id != null) {
+          dslContext
+              .update(DRAFT_SUBSTRATA)
+              .set(BOUNDARY, substratum.boundary)
+              .set(NAME, substratum.name)
+              .where(ID.eq(substratum.id))
+              .execute()
+        } else {
+          dslContext
+              .insertInto(DRAFT_SUBSTRATA)
+              .set(BOUNDARY, substratum.boundary)
+              .set(DRAFT_STRATUM_ID, draftStratumId)
+              .set(NAME, substratum.name)
+              .execute()
+        }
       }
     }
   }
