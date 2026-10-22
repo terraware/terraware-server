@@ -217,21 +217,21 @@ class DraftPlantingSiteMapConverterTest {
 
   @Test
   fun `rejects strata that are not arrays`() {
-    listOf("\"corrupt\"", "1", "{\"name\": \"A\"}").forEach { strata ->
-      assertThrows<IllegalArgumentException>("strata $strata") {
-        parse("""{"siteType": "detailed", "strata": $strata}""")
+    listOf("\"corrupt\"", "1", "{\"name\": \"A\"}").forEach { stratum ->
+      assertThrows<IllegalArgumentException>("stratum $stratum") {
+        parse("""{"siteType": "detailed", "strata": $stratum}""")
       }
     }
   }
 
   @Test
   fun `rejects substrata that are not arrays`() {
-    listOf("\"corrupt\"", "1", "{\"name\": \"1\"}").forEach { substrata ->
-      assertThrows<IllegalArgumentException>("substrata $substrata") {
+    listOf("\"corrupt\"", "1", "{\"name\": \"1\"}").forEach { substratum ->
+      assertThrows<IllegalArgumentException>("substratum $substratum") {
         parse(
             """
             {"siteType": "detailed", "strata": [
-              {"name": "A", "boundary": ${geoJson(stratumBoundary)}, "substrata": $substrata}
+              {"name": "A", "boundary": ${geoJson(stratumBoundary)}, "substrata": $substratum}
             ]}
             """
         )
