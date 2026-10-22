@@ -1,5 +1,7 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.gis.InvalidGeometryException
 import com.terraformation.backend.gis.NoPolygonsException
@@ -8,7 +10,10 @@ import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.gis.convertToXY
 import com.terraformation.backend.gis.extractPolygons
 import com.terraformation.backend.gis.mergeToMultiPolygon
+import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.BoundaryFileModel
+import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import kotlinx.coroutines.Dispatchers
@@ -19,9 +24,41 @@ import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.TopologyException
 
 @Named
-class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParser) {
+class DraftPlantingSiteService(
+    private val draftPlantingSiteStore: DraftPlantingSiteStore,
+    private val geometryFileParser: GeometryFileParser,
+) {
   companion object {
     private const val MAX_BOUNDARY_VERTICES = 50000
+  }
+
+  /**
+   * Validates a draft's map and, if it is valid, stores the draft. Permission is checked first so
+   * callers without access get a permission error instead of the results of validation.
+   *
+   * @throws PlantingSiteMapInvalidException The map failed validation. Nothing is stored.
+   */
+  fun create(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
+    requirePermissions { createDraftPlantingSite(model.organizationId) }
+
+    model.requireValidMap()
+
+    return draftPlantingSiteStore.create(model)
+  }
+
+  /**
+   * Updates a draft and validates its updated map. Validation runs inside the store's transaction
+   * before anything is written.
+   *
+   * @throws PlantingSiteMapInvalidException The updated map failed validation. Nothing is written.
+   */
+  fun updateTyped(
+      id: DraftPlantingSiteId,
+      buildModel: (DraftPlantingSiteModel) -> DraftPlantingSiteModel,
+  ) {
+    draftPlantingSiteStore.update(id) { existing ->
+      buildModel(existing).also { it.requireValidMap() }
+    }
   }
 
   /**
@@ -46,6 +83,23 @@ class DraftPlantingSiteService(private val geometryFileParser: GeometryFileParse
         geometry = boundary,
         numPolygons = boundary.numGeometries,
     )
+  }
+
+  /**
+   * @throws PlantingSiteMapInvalidException The map failed validation.
+   * @throws IllegalArgumentException The map's geometries couldn't be compared with one another.
+   */
+  private fun DraftPlantingSiteModel.requireValidMap() {
+    val problems =
+        try {
+          validate()
+        } catch (e: TopologyException) {
+          throw IllegalArgumentException("Planting site map has invalid geometry", e)
+        }
+
+    if (problems != null) {
+      throw PlantingSiteMapInvalidException(problems)
+    }
   }
 
   /**
