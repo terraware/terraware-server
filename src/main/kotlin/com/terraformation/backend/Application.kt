@@ -1,6 +1,7 @@
 package com.terraformation.backend
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.initializeJooqKeys
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
@@ -63,6 +64,8 @@ fun main(args: Array<String>) {
         "Please add -Djava.locale.providers=$expectedProviders to the JVM's command-line arguments."
     )
   }
+
+  initializeJooqKeys()
 
   SpringApplication.run(Application::class.java, *args)
 }

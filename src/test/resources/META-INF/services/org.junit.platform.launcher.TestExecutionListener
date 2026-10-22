@@ -1,2 +1,3 @@
 com.terraformation.backend.TestHangWatchdog
 com.terraformation.backend.SpringShutdownListener
+com.terraformation.backend.JooqKeysInitializationListener
