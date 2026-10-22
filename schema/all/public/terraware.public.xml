@@ -364,6 +364,16 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="email_notification_categories" remarks="(Enum) Categories of email notifications that users can individually opt into or out of." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="email_notification_category_id" foreignKey="user_email_notification_categ_email_notification_category__fkey" implied="false" onDeleteCascade="false" schema="public" table="user_email_notification_categories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="email_notification_categories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="event_log" remarks="Holds historical information about what operations were performed at what times. Events are JSON-serialized objects that may contain identifiers such as organization IDs; identifiers are not treated as foreign keys, so events may contain references to objects that were subsequently deleted." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="last_dismissed_event_log_id" foreignKey="planting_season_notifications_last_dismissed_event_log_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_notifications"/>
@@ -1989,6 +1999,23 @@
             <column ascending="true" name="user_id"/>
          </index>
       </table>
+      <table name="user_email_notification_categories" remarks="Which categories of email notifications each user has opted into. Users only receive categorized email notifications if they have opted into the category and have also enabled email notifications in `users.email_notifications_enabled`." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_email_notification_categories_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="email_notification_category_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="user_email_notification_categ_email_notification_category__fkey" implied="false" onDeleteCascade="false" schema="public" table="email_notification_categories"/>
+         </column>
+         <primaryKey column="user_id" sequenceNumberInPK="1"/>
+         <primaryKey column="email_notification_category_id" sequenceNumberInPK="2"/>
+         <index name="user_email_notification_categories_pkey" unique="true">
+            <column ascending="true" name="user_id"/>
+            <column ascending="true" name="email_notification_category_id"/>
+         </index>
+         <index name="user_email_notification_categ_email_notification_category_i_idx" unique="false">
+            <column ascending="true" name="email_notification_category_id"/>
+         </index>
+      </table>
       <table name="user_global_roles" remarks="Which users have which global roles." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="user_global_roles_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
@@ -2137,6 +2164,7 @@
             <child column="modified_by" foreignKey="timeseries_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
             <child column="created_by" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="user_id" foreignKey="user_disclaimers_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_disclaimers"/>
+            <child column="user_id" foreignKey="user_email_notification_categories_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_email_notification_categories"/>
             <child column="user_id" foreignKey="user_global_roles_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_global_roles"/>
             <child column="user_id" foreignKey="user_preferences_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_preferences"/>
             <child column="created_by" foreignKey="accession_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_quantity_history"/>

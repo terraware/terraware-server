@@ -399,9 +399,9 @@
 <ellipse fill="none" stroke="black" cx="584.8" cy="-2733.22" rx="3.2" ry="3.2"/>
 </g>
 <!-- collection_sources -->
-<g id="node6" class="node">
+<g id="node7" class="node">
 <title>collection_sources</title>
-<g id="a_node6"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="36.5,-1038.23 36.5,-1122.23 189.5,-1122.23 189.5,-1038.23 36.5,-1038.23"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="37,-1100.23 37,-1122.23 190,-1122.23 190,-1100.23 37,-1100.23"/>
 <polygon fill="none" stroke="black" points="37,-1100.23 37,-1122.23 190,-1122.23 190,-1100.23 37,-1100.23"/>
@@ -737,9 +737,9 @@
 <ellipse fill="none" stroke="black" cx="261.39" cy="-1820.69" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_tests -->
-<g id="node7" class="node">
+<g id="node6" class="node">
 <title>viability_tests</title>
-<g id="a_node7"><a xlink:href="../../tables/viability_tests.html" xlink:title="viability_tests" target="_top">
+<g id="a_node6"><a xlink:href="../../tables/viability_tests.html" xlink:title="viability_tests" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="601.5,-634.23 601.5,-1048.23 776.5,-1048.23 776.5,-634.23 601.5,-634.23"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="602,-1026.23 602,-1048.23 777,-1048.23 777,-1026.23 602,-1026.23"/>
 <polygon fill="none" stroke="black" points="602,-1026.23 602,-1048.23 777,-1048.23 777,-1026.23 602,-1026.23"/>
@@ -813,9 +813,9 @@
 <ellipse fill="none" stroke="black" cx="589.91" cy="-994.83" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_test_types -->
-<g id="node12" class="node">
+<g id="node11" class="node">
 <title>viability_test_types</title>
-<g id="a_node12"><a xlink:href="../../tables/viability_test_types.html" xlink:title="viability_test_types" target="_top">
+<g id="a_node11"><a xlink:href="../../tables/viability_test_types.html" xlink:title="viability_test_types" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="309.5,-981.23 309.5,-1065.23 467.5,-1065.23 467.5,-981.23 309.5,-981.23"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="309.5,-1043.23 309.5,-1065.23 467.5,-1065.23 467.5,-1043.23 309.5,-1043.23"/>
 <polygon fill="none" stroke="black" points="309.5,-1043.23 309.5,-1065.23 467.5,-1065.23 467.5,-1043.23 309.5,-1043.23"/>
@@ -951,9 +951,9 @@
 <ellipse fill="none" stroke="black" cx="864.8" cy="-1015.23" rx="3.2" ry="3.2"/>
 </g>
 <!-- accession_quantity_history_types -->
-<g id="node11" class="node">
+<g id="node12" class="node">
 <title>accession_quantity_history_types</title>
-<g id="a_node11"><a xlink:href="../../tables/accession_quantity_history_types.html" xlink:title="accession_quantity_history_types" target="_top">
+<g id="a_node12"><a xlink:href="../../tables/accession_quantity_history_types.html" xlink:title="accession_quantity_history_types" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="267,-236.23 267,-320.23 510,-320.23 510,-236.23 267,-236.23"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="267.5,-298.23 267.5,-320.23 510.5,-320.23 510.5,-298.23 267.5,-298.23"/>
 <polygon fill="none" stroke="black" points="267.5,-298.23 267.5,-320.23 510.5,-320.23 510.5,-298.23 267.5,-298.23"/>

@@ -1109,6 +1109,7 @@
 <polygon fill="none" stroke="black" points="2078,-219.04 2078,-241.04 2281,-241.04 2281,-219.04 2078,-219.04"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2083" y="-236.037"/>
 <text text-anchor="start" x="2098" y="-227.24" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="2078,-197.04 2078,-219.04 2281,-219.04 2281,-197.04 2078,-197.04"/>
 <polygon fill="none" stroke="black" points="2078,-197.04 2078,-219.04 2281,-219.04 2281,-197.04 2078,-197.04"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2083" y="-214.037"/>
 <text text-anchor="start" x="2098" y="-205.24" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>

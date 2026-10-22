@@ -1438,54 +1438,54 @@
 <g id="node44" class="node">
 <title>strata</title>
 <g id="a_node44"><a xlink:href="../../tables/strata.html" xlink:title="strata" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="538,-1749.54 538,-1961.54 707,-1961.54 707,-1749.54 538,-1749.54"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="538.5,-1939.54 538.5,-1961.54 707.5,-1961.54 707.5,-1939.54 538.5,-1939.54"/>
-<polygon fill="none" stroke="black" points="538.5,-1939.54 538.5,-1961.54 707.5,-1961.54 707.5,-1939.54 538.5,-1939.54"/>
-<text text-anchor="start" x="542.5" y="-1948.74" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">strata</text>
-<text text-anchor="start" x="668.5" y="-1947.74" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="538.5,-1917.54 538.5,-1939.54 707.5,-1939.54 707.5,-1917.54 538.5,-1917.54"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="543.5" y="-1934.54"/>
-<text text-anchor="start" x="558.5" y="-1925.74" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="538.5,-1895.54 538.5,-1917.54 707.5,-1917.54 707.5,-1895.54 538.5,-1895.54"/>
-<polygon fill="none" stroke="black" points="538.5,-1895.54 538.5,-1917.54 707.5,-1917.54 707.5,-1895.54 538.5,-1895.54"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="543.5" y="-1912.54"/>
-<text text-anchor="start" x="558.5" y="-1903.74" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="538.5,-1873.54 538.5,-1895.54 707.5,-1895.54 707.5,-1873.54 538.5,-1873.54"/>
-<polygon fill="none" stroke="black" points="538.5,-1873.54 538.5,-1895.54 707.5,-1895.54 707.5,-1873.54 538.5,-1873.54"/>
-<text text-anchor="start" x="558.5" y="-1881.74" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="none" stroke="black" points="538.5,-1851.54 538.5,-1873.54 707.5,-1873.54 707.5,-1851.54 538.5,-1851.54"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="543.5" y="-1868.54"/>
-<text text-anchor="start" x="558.5" y="-1859.74" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
-<polygon fill="none" stroke="black" points="538.5,-1829.54 538.5,-1851.54 707.5,-1851.54 707.5,-1829.54 538.5,-1829.54"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="543.5" y="-1846.54"/>
-<text text-anchor="start" x="558.5" y="-1837.74" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="none" stroke="black" points="538.5,-1807.54 538.5,-1829.54 707.5,-1829.54 707.5,-1807.54 538.5,-1807.54"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="543.5" y="-1824.54"/>
-<text text-anchor="start" x="558.5" y="-1815.74" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_by</text>
-<polygon fill="#ffffff" stroke="transparent" points="538.5,-1785.54 538.5,-1807.54 707.5,-1807.54 707.5,-1785.54 538.5,-1785.54"/>
-<polygon fill="none" stroke="black" points="538.5,-1785.54 538.5,-1807.54 707.5,-1807.54 707.5,-1785.54 538.5,-1785.54"/>
-<text text-anchor="start" x="558.5" y="-1793.74" font-family="Helvetica,sans-Serif" font-size="11.00">stable_id</text>
-<polygon fill="none" stroke="black" points="538.5,-1767.54 538.5,-1785.54 707.5,-1785.54 707.5,-1767.54 538.5,-1767.54"/>
-<text text-anchor="start" x="541.5" y="-1773.74" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="538.5,-1749.54 538.5,-1767.54 613.5,-1767.54 613.5,-1749.54 538.5,-1749.54"/>
-<polygon fill="none" stroke="black" points="538.5,-1749.54 538.5,-1767.54 613.5,-1767.54 613.5,-1749.54 538.5,-1749.54"/>
-<text text-anchor="start" x="541.5" y="-1755.74" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="613.5,-1749.54 613.5,-1767.54 652.5,-1767.54 652.5,-1749.54 613.5,-1749.54"/>
-<polygon fill="none" stroke="black" points="613.5,-1749.54 613.5,-1767.54 652.5,-1767.54 652.5,-1749.54 613.5,-1749.54"/>
-<text text-anchor="start" x="642.5" y="-1755.74" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="652.5,-1749.54 652.5,-1767.54 707.5,-1767.54 707.5,-1749.54 652.5,-1749.54"/>
-<polygon fill="none" stroke="black" points="652.5,-1749.54 652.5,-1767.54 707.5,-1767.54 707.5,-1749.54 652.5,-1749.54"/>
-<text text-anchor="start" x="682.5" y="-1755.74" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="517.5,-1749.54 517.5,-1961.54 727.5,-1961.54 727.5,-1749.54 517.5,-1749.54"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="517.5,-1939.54 517.5,-1961.54 727.5,-1961.54 727.5,-1939.54 517.5,-1939.54"/>
+<polygon fill="none" stroke="black" points="517.5,-1939.54 517.5,-1961.54 727.5,-1961.54 727.5,-1939.54 517.5,-1939.54"/>
+<text text-anchor="start" x="521.5" y="-1948.74" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">strata</text>
+<text text-anchor="start" x="688.5" y="-1947.74" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="517.5,-1917.54 517.5,-1939.54 727.5,-1939.54 727.5,-1917.54 517.5,-1917.54"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="522.5" y="-1934.54"/>
+<text text-anchor="start" x="537.5" y="-1925.74" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="517.5,-1895.54 517.5,-1917.54 727.5,-1917.54 727.5,-1895.54 517.5,-1895.54"/>
+<polygon fill="none" stroke="black" points="517.5,-1895.54 517.5,-1917.54 727.5,-1917.54 727.5,-1895.54 517.5,-1895.54"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="522.5" y="-1912.54"/>
+<text text-anchor="start" x="537.5" y="-1903.74" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="517.5,-1873.54 517.5,-1895.54 727.5,-1895.54 727.5,-1873.54 517.5,-1873.54"/>
+<polygon fill="none" stroke="black" points="517.5,-1873.54 517.5,-1895.54 727.5,-1895.54 727.5,-1873.54 517.5,-1873.54"/>
+<text text-anchor="start" x="537.5" y="-1881.74" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="none" stroke="black" points="517.5,-1851.54 517.5,-1873.54 727.5,-1873.54 727.5,-1851.54 517.5,-1851.54"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="522.5" y="-1868.54"/>
+<text text-anchor="start" x="537.5" y="-1859.74" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<polygon fill="none" stroke="black" points="517.5,-1829.54 517.5,-1851.54 727.5,-1851.54 727.5,-1829.54 517.5,-1829.54"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="522.5" y="-1846.54"/>
+<text text-anchor="start" x="537.5" y="-1837.74" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<polygon fill="none" stroke="black" points="517.5,-1807.54 517.5,-1829.54 727.5,-1829.54 727.5,-1807.54 517.5,-1807.54"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="522.5" y="-1824.54"/>
+<text text-anchor="start" x="537.5" y="-1815.74" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_by</text>
+<polygon fill="#ffffff" stroke="transparent" points="517.5,-1785.54 517.5,-1807.54 727.5,-1807.54 727.5,-1785.54 517.5,-1785.54"/>
+<polygon fill="none" stroke="black" points="517.5,-1785.54 517.5,-1807.54 727.5,-1807.54 727.5,-1785.54 517.5,-1785.54"/>
+<text text-anchor="start" x="537.5" y="-1793.74" font-family="Helvetica,sans-Serif" font-size="11.00">stable_id</text>
+<polygon fill="none" stroke="black" points="517.5,-1767.54 517.5,-1785.54 727.5,-1785.54 727.5,-1767.54 517.5,-1767.54"/>
+<text text-anchor="start" x="520.5" y="-1773.74" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="517.5,-1749.54 517.5,-1767.54 612.5,-1767.54 612.5,-1749.54 517.5,-1749.54"/>
+<polygon fill="none" stroke="black" points="517.5,-1749.54 517.5,-1767.54 612.5,-1767.54 612.5,-1749.54 517.5,-1749.54"/>
+<text text-anchor="start" x="520.5" y="-1755.74" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="612.5,-1749.54 612.5,-1767.54 662.5,-1767.54 662.5,-1749.54 612.5,-1749.54"/>
+<polygon fill="none" stroke="black" points="612.5,-1749.54 612.5,-1767.54 662.5,-1767.54 662.5,-1749.54 612.5,-1749.54"/>
+<text text-anchor="start" x="652.5" y="-1755.74" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="662.5,-1749.54 662.5,-1767.54 727.5,-1767.54 727.5,-1749.54 662.5,-1749.54"/>
+<polygon fill="none" stroke="black" points="662.5,-1749.54 662.5,-1767.54 727.5,-1767.54 727.5,-1749.54 662.5,-1749.54"/>
+<text text-anchor="start" x="702.5" y="-1755.74" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>
 <!-- simplified_strata&#45;&gt;strata -->
 <g id="edge204" class="edge">
 <title>simplified_strata:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M836.53,-2026.85C772.38,-2018.11 780.47,-1928.54 708.5,-1928.54"/>
-<polygon fill="black" stroke="black" points="846.46,-2023.49 845.94,-2031.48 844.34,-2031.37 844.87,-2023.39 846.46,-2023.49"/>
-<polyline fill="none" stroke="black" points="847,-2027.54 843.01,-2027.28 "/>
-<ellipse fill="none" stroke="black" cx="839.82" cy="-2027.07" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M836.5,-2026.68C780.16,-2017.01 793.37,-1928.54 728.5,-1928.54"/>
+<polygon fill="black" stroke="black" points="846.53,-2023.49 845.88,-2031.46 844.28,-2031.33 844.93,-2023.36 846.53,-2023.49"/>
+<polyline fill="none" stroke="black" points="847,-2027.54 843.01,-2027.21 "/>
+<ellipse fill="none" stroke="black" cx="839.82" cy="-2026.95" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_site_histories&#45;&gt;planting_sites -->
 <g id="edge152" class="edge">
@@ -1541,14 +1541,14 @@
 <!-- stratum_species_targets&#45;&gt;strata -->
 <g id="edge218" class="edge">
 <title>stratum_species_targets:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M1418.07,-1836.25C1398.49,-1841.52 1391.68,-1858.52 1380,-1881.54 1346.16,-1948.25 1402.43,-2166.3 1347,-2216.54 1303.37,-2256.08 1126.32,-2255.31 1082,-2216.54 998.97,-2143.9 1124.93,-2050.56 1049,-1970.54 943.01,-1858.84 862.48,-1906.54 708.5,-1906.54"/>
+<path fill="none" stroke="black" d="M1418.07,-1836.25C1398.49,-1841.52 1391.68,-1858.52 1380,-1881.54 1346.16,-1948.25 1402.43,-2166.3 1347,-2216.54 1303.37,-2256.08 1126.32,-2255.31 1082,-2216.54 998.97,-2143.9 1124.48,-2050.99 1049,-1970.54 949.61,-1864.6 873.76,-1906.54 728.5,-1906.54"/>
 <polygon fill="black" stroke="black" points="1424.56,-1835.48 1432.92,-1838.11 1428.53,-1835.01 1432.5,-1834.54 1432.5,-1834.54 1432.5,-1834.54 1428.53,-1835.01 1432.08,-1830.96 1424.56,-1835.48 1424.56,-1835.48"/>
 <ellipse fill="none" stroke="black" cx="1421.38" cy="-1835.86" rx="3.2" ry="3.2"/>
 </g>
 <!-- stratum_species_targets&#45;&gt;strata -->
 <g id="edge221" class="edge">
 <title>stratum_species_targets:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M1418.05,-1814.52C1393.7,-1822.17 1392.05,-1850.85 1380,-1881.54 1352.65,-1951.16 1402.43,-2166.3 1347,-2216.54 1259.73,-2295.63 1196.65,-2243.52 1082,-2216.54 941.34,-2183.43 896.25,-2170.55 791,-2071.54 737.56,-2021.26 781.87,-1928.54 708.5,-1928.54"/>
+<path fill="none" stroke="black" d="M1418.05,-1814.52C1393.7,-1822.17 1392.05,-1850.85 1380,-1881.54 1352.65,-1951.16 1402.43,-2166.3 1347,-2216.54 1259.73,-2295.63 1196.65,-2243.52 1082,-2216.54 941.34,-2183.43 890.58,-2176.25 791,-2071.54 743.2,-2021.28 797.86,-1928.54 728.5,-1928.54"/>
 <polygon fill="black" stroke="black" points="1424.57,-1813.63 1432.99,-1816.1 1428.54,-1813.08 1432.5,-1812.54 1432.5,-1812.54 1432.5,-1812.54 1428.54,-1813.08 1432.01,-1808.97 1424.57,-1813.63 1424.57,-1813.63"/>
 <ellipse fill="none" stroke="black" cx="1421.4" cy="-1814.06" rx="3.2" ry="3.2"/>
 </g>
@@ -1850,9 +1850,9 @@
 <!-- observation_stratum_results&#45;&gt;strata -->
 <g id="edge95" class="edge">
 <title>observation_stratum_results:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M1404.96,-3024.52C1111.46,-3023.8 966.97,-2999.57 791,-2758.54 681.71,-2608.83 893.85,-1928.54 708.5,-1928.54"/>
+<path fill="none" stroke="black" d="M1404.96,-3024.52C1111.36,-3023.87 964.08,-3001.66 791,-2758.54 737.36,-2683.2 820.98,-1928.54 728.5,-1928.54"/>
 <polygon fill="black" stroke="black" points="1411.5,-3024.53 1419.5,-3028.14 1415.5,-3024.53 1419.5,-3024.54 1419.5,-3024.54 1419.5,-3024.54 1415.5,-3024.53 1419.5,-3020.94 1411.5,-3024.53 1411.5,-3024.53"/>
-<ellipse fill="none" stroke="black" cx="1408.3" cy="-3024.52" rx="3.2" ry="3.2"/>
+<ellipse fill="none" stroke="black" cx="1408.3" cy="-3024.53" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_stratum_results&#45;&gt;observations -->
 <g id="edge93" class="edge">
@@ -2957,37 +2957,37 @@
 <!-- stratum_histories&#45;&gt;strata -->
 <g id="edge213" class="edge">
 <title>stratum_histories:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M824.37,-2668.41C683.99,-2624.89 870.69,-1928.54 708.5,-1928.54"/>
-<polygon fill="black" stroke="black" points="831.08,-2669.39 838.48,-2674.1 835.04,-2669.96 839,-2670.54 839,-2670.54 839,-2670.54 835.04,-2669.96 839.52,-2666.97 831.08,-2669.39 831.08,-2669.39"/>
-<ellipse fill="none" stroke="black" cx="827.92" cy="-2668.92" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M826.13,-2663.67C761.57,-2588.86 807.13,-1928.54 728.5,-1928.54"/>
+<polygon fill="black" stroke="black" points="831.94,-2666.77 837.3,-2673.71 835.47,-2668.65 839,-2670.54 839,-2670.54 839,-2670.54 835.47,-2668.65 840.7,-2667.36 831.94,-2666.77 831.94,-2666.77"/>
+<ellipse fill="none" stroke="black" cx="829.12" cy="-2665.26" rx="3.2" ry="3.2"/>
 </g>
 <!-- strata&#45;&gt;planting_sites -->
 <g id="edge211" class="edge">
 <title>strata:w&#45;&gt;planting_sites:e</title>
-<path fill="none" stroke="black" d="M533.54,-1920.65C509.37,-2083.31 469.26,-3597.54 447,-3597.54"/>
-<polygon fill="black" stroke="black" points="535.34,-1914.24 540.97,-1907.51 536.42,-1910.39 537.5,-1906.54 537.5,-1906.54 537.5,-1906.54 536.42,-1910.39 534.03,-1905.57 535.34,-1914.24 535.34,-1914.24"/>
-<ellipse fill="none" stroke="black" cx="534.48" cy="-1917.32" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M505.3,-1916.05C432.48,-2051.89 536.89,-3597.54 447,-3597.54"/>
+<polygon fill="black" stroke="black" points="510.4,-1911.72 518.83,-1909.28 513.45,-1909.13 516.5,-1906.54 516.5,-1906.54 516.5,-1906.54 513.45,-1909.13 514.17,-1903.79 510.4,-1911.72 510.4,-1911.72"/>
+<ellipse fill="none" stroke="black" cx="507.96" cy="-1913.79" rx="3.2" ry="3.2"/>
 </g>
 <!-- strata&#45;&gt;public.users -->
 <g id="edge208" class="edge">
 <title>strata:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M523.14,-1817.23C494.43,-1811.54 487.93,-1788.62 454,-1775.54 351,-1735.81 320.19,-1741.72 214,-1711.54 195.3,-1706.22 175.07,-1700.22 156.55,-1694.62"/>
-<polygon fill="black" stroke="black" points="529.53,-1817.81 537.17,-1822.12 533.52,-1818.17 537.5,-1818.54 537.5,-1818.54 537.5,-1818.54 533.52,-1818.17 537.83,-1814.95 529.53,-1817.81 529.53,-1817.81"/>
-<ellipse fill="none" stroke="black" cx="526.35" cy="-1817.52" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M502.2,-1816.3C482.49,-1809.25 479.48,-1787.27 454,-1775.54 353.73,-1729.36 320.19,-1741.72 214,-1711.54 195.3,-1706.22 175.07,-1700.22 156.55,-1694.62"/>
+<polygon fill="black" stroke="black" points="508.6,-1817.3 515.94,-1822.09 512.55,-1817.92 516.5,-1818.54 516.5,-1818.54 516.5,-1818.54 512.55,-1817.92 517.06,-1814.98 508.6,-1817.3 508.6,-1817.3"/>
+<ellipse fill="none" stroke="black" cx="505.43" cy="-1816.81" rx="3.2" ry="3.2"/>
 </g>
 <!-- strata&#45;&gt;public.users -->
 <g id="edge209" class="edge">
 <title>strata:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M522.79,-1862.54C387.35,-1862.61 339.01,-1862.49 214,-1795.54 173.95,-1774.08 138.27,-1735.45 115.89,-1707.6"/>
-<polygon fill="black" stroke="black" points="529.5,-1862.54 537.5,-1866.14 533.5,-1862.54 537.5,-1862.54 537.5,-1862.54 537.5,-1862.54 533.5,-1862.54 537.5,-1858.94 529.5,-1862.54 529.5,-1862.54"/>
-<ellipse fill="none" stroke="black" cx="526.3" cy="-1862.54" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M501.93,-1862.53C375.53,-1862.37 330.57,-1859.01 214,-1795.54 174.23,-1773.88 138.63,-1735.48 116.19,-1707.74"/>
+<polygon fill="black" stroke="black" points="508.5,-1862.53 516.5,-1866.14 512.5,-1862.54 516.5,-1862.54 516.5,-1862.54 516.5,-1862.54 512.5,-1862.54 516.5,-1858.94 508.5,-1862.53 508.5,-1862.53"/>
+<ellipse fill="none" stroke="black" cx="505.3" cy="-1862.53" rx="3.2" ry="3.2"/>
 </g>
 <!-- strata&#45;&gt;public.users -->
 <g id="edge210" class="edge">
 <title>strata:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M523.11,-1839.12C494.44,-1832.99 488.56,-1808.42 454,-1796.54 351.52,-1761.31 314.83,-1793.23 214,-1753.54 185.39,-1742.27 156.34,-1723.91 133.72,-1707.72"/>
-<polygon fill="black" stroke="black" points="529.54,-1839.76 537.15,-1844.12 533.52,-1840.15 537.5,-1840.54 537.5,-1840.54 537.5,-1840.54 533.52,-1840.15 537.85,-1836.95 529.54,-1839.76 529.54,-1839.76"/>
-<ellipse fill="none" stroke="black" cx="526.35" cy="-1839.44" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M502.16,-1838.15C482.51,-1830.65 480.08,-1807.42 454,-1796.54 353.99,-1754.8 314.83,-1793.23 214,-1753.54 185.39,-1742.27 156.34,-1723.91 133.72,-1707.72"/>
+<polygon fill="black" stroke="black" points="508.61,-1839.22 515.91,-1844.09 512.55,-1839.88 516.5,-1840.54 516.5,-1840.54 516.5,-1840.54 512.55,-1839.88 517.09,-1836.99 508.61,-1839.22 508.61,-1839.22"/>
+<ellipse fill="none" stroke="black" cx="505.45" cy="-1838.7" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_dependent_substrata -->
 <g id="node45" class="node">
@@ -3084,9 +3084,9 @@
 <!-- stratum_populations&#45;&gt;strata -->
 <g id="edge215" class="edge">
 <title>stratum_populations:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M1114.92,-1435.59C961.92,-1436.74 893.18,-1457.54 791,-1578.54 687.88,-1700.64 868.32,-1928.54 708.5,-1928.54"/>
-<polygon fill="black" stroke="black" points="1121.5,-1435.57 1129.51,-1439.14 1125.5,-1435.55 1129.5,-1435.54 1129.5,-1435.54 1129.5,-1435.54 1125.5,-1435.55 1129.49,-1431.94 1121.5,-1435.57 1121.5,-1435.57"/>
-<ellipse fill="none" stroke="black" cx="1118.3" cy="-1435.58" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1114.91,-1435.58C961.72,-1436.57 889.83,-1454.78 791,-1578.54 741.7,-1640.27 807.51,-1928.54 728.5,-1928.54"/>
+<polygon fill="black" stroke="black" points="1121.5,-1435.56 1129.51,-1439.14 1125.5,-1435.55 1129.5,-1435.54 1129.5,-1435.54 1129.5,-1435.54 1125.5,-1435.55 1129.49,-1431.94 1121.5,-1435.56 1121.5,-1435.56"/>
+<ellipse fill="none" stroke="black" cx="1118.3" cy="-1435.57" rx="3.2" ry="3.2"/>
 </g>
 <!-- stratum_populations&#45;&gt;public.species -->
 <g id="edge214" class="edge">
@@ -3658,16 +3658,16 @@
 <!-- substrata&#45;&gt;strata -->
 <g id="edge229" class="edge">
 <title>substrata:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M818.38,-1658.88C719.38,-1678.48 826.91,-1906.54 708.5,-1906.54"/>
-<polygon fill="black" stroke="black" points="825.03,-1658.27 833.33,-1661.12 829.02,-1657.9 833,-1657.54 833,-1657.54 833,-1657.54 829.02,-1657.9 832.67,-1653.95 825.03,-1658.27 825.03,-1658.27"/>
-<ellipse fill="none" stroke="black" cx="821.85" cy="-1658.56" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M818.61,-1658.94C724.4,-1678.94 843.24,-1906.54 728.5,-1906.54"/>
+<polygon fill="black" stroke="black" points="825.04,-1658.31 833.35,-1661.12 829.02,-1657.92 833,-1657.54 833,-1657.54 833,-1657.54 829.02,-1657.92 832.65,-1653.95 825.04,-1658.31 825.04,-1658.31"/>
+<ellipse fill="none" stroke="black" cx="821.85" cy="-1658.62" rx="3.2" ry="3.2"/>
 </g>
 <!-- substrata&#45;&gt;strata -->
 <g id="edge230" class="edge">
 <title>substrata:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M818.34,-1747.12C742.02,-1765.01 801.49,-1928.54 708.5,-1928.54"/>
-<polygon fill="black" stroke="black" points="825.05,-1746.4 833.39,-1749.12 829.02,-1745.97 833,-1745.54 833,-1745.54 833,-1745.54 829.02,-1745.97 832.61,-1741.96 825.05,-1746.4 825.05,-1746.4"/>
-<ellipse fill="none" stroke="black" cx="821.86" cy="-1746.74" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M818.28,-1747.35C748.44,-1766.35 816.67,-1928.54 728.5,-1928.54"/>
+<polygon fill="black" stroke="black" points="825.06,-1746.51 833.44,-1749.11 829.03,-1746.03 833,-1745.54 833,-1745.54 833,-1745.54 829.03,-1746.03 832.56,-1741.96 825.06,-1746.51 825.06,-1746.51"/>
+<ellipse fill="none" stroke="black" cx="821.88" cy="-1746.91" rx="3.2" ry="3.2"/>
 </g>
 <!-- substrata&#45;&gt;public.users -->
 <g id="edge226" class="edge">
@@ -3745,7 +3745,7 @@
 <!-- observed_stratum_species_totals&#45;&gt;strata -->
 <g id="edge122" class="edge">
 <title>observed_stratum_species_totals:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M1392.1,-1686.76C1312.93,-1701.85 1424.22,-1852.01 1347,-1916.54 1238.1,-2007.54 850.41,-1928.54 708.5,-1928.54"/>
+<path fill="none" stroke="black" d="M1392.1,-1686.76C1312.93,-1701.85 1424.2,-1851.98 1347,-1916.54 1241.54,-2004.72 865.97,-1928.54 728.5,-1928.54"/>
 <polygon fill="black" stroke="black" points="1398.53,-1686.22 1406.81,-1689.12 1402.51,-1685.88 1406.5,-1685.54 1406.5,-1685.54 1406.5,-1685.54 1402.51,-1685.88 1406.19,-1681.95 1398.53,-1686.22 1398.53,-1686.22"/>
 <ellipse fill="none" stroke="black" cx="1395.34" cy="-1686.49" rx="3.2" ry="3.2"/>
 </g>
@@ -4135,6 +4135,7 @@
 <polygon fill="none" stroke="black" points="2726,-2534.54 2726,-2556.54 2929,-2556.54 2929,-2534.54 2726,-2534.54"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2731" y="-2551.54"/>
 <text text-anchor="start" x="2746" y="-2542.74" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="2726,-2512.54 2726,-2534.54 2929,-2534.54 2929,-2512.54 2726,-2512.54"/>
 <polygon fill="none" stroke="black" points="2726,-2512.54 2726,-2534.54 2929,-2534.54 2929,-2512.54 2726,-2512.54"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2731" y="-2529.54"/>
 <text text-anchor="start" x="2746" y="-2520.74" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
@@ -4244,7 +4245,7 @@
 <!-- stratum_t0_temp_densities&#45;&gt;strata -->
 <g id="edge225" class="edge">
 <title>stratum_t0_temp_densities:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M1097.43,-464.74C1088.19,-472.12 1087.6,-488.18 1082,-504.54 1047.39,-605.7 1107.48,-895.03 1049,-984.54 978.22,-1092.88 863.56,-1012.37 791,-1119.54 689.68,-1269.17 889.21,-1928.54 708.5,-1928.54"/>
+<path fill="none" stroke="black" d="M1097.43,-464.74C1088.19,-472.12 1087.6,-488.18 1082,-504.54 1047.39,-605.7 1107.48,-895.03 1049,-984.54 978.22,-1092.88 862.24,-1011.49 791,-1119.54 741.37,-1194.81 818.66,-1928.54 728.5,-1928.54"/>
 <polygon fill="black" stroke="black" points="1103.83,-462.83 1112.53,-463.99 1107.67,-461.68 1111.5,-460.54 1111.5,-460.54 1111.5,-460.54 1107.67,-461.68 1110.47,-457.09 1103.83,-462.83 1103.83,-462.83"/>
 <ellipse fill="none" stroke="black" cx="1100.77" cy="-463.74" rx="3.2" ry="3.2"/>
 </g>

@@ -323,7 +323,7 @@
                                     <td><p>When the stratum was most recently modified.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="variance">variance</span></td>
+                                    <td><span id="plant_variance">plant_variance</span></td>
                                     <td>numeric</td>
                                     <td>0</td>
                                     <td title=''></td>
@@ -340,7 +340,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="students_t">students_t</span></td>
+                                    <td><span id="plant_students_t">plant_students_t</span></td>
                                     <td>numeric</td>
                                     <td>0</td>
                                     <td title=''></td>
@@ -357,7 +357,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="error_margin">error_margin</span></td>
+                                    <td><span id="plant_error_margin">plant_error_margin</span></td>
                                     <td>numeric</td>
                                     <td>0</td>
                                     <td title=''></td>
@@ -374,7 +374,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="num_permanent_plots">num_permanent_plots</span></td>
+                                    <td><span id="plant_num_permanent_plots">plant_num_permanent_plots</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -388,10 +388,10 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Number of permanent plots to assign to the next observation. This is typically derived from a statistical formula.</p></td>
+                                    <td><p>Number of permanent plots to assign to the next plant monitoring observation. This is typically derived from a statistical formula.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="num_temporary_plots">num_temporary_plots</span></td>
+                                    <td><span id="plant_num_temporary_plots">plant_num_temporary_plots</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -514,6 +514,91 @@
                                     </td>
                                     <td><p>Number of plants per hectare that the stratum should have after planting is fully completed. This may be less than the initial planting density to account for seedlings not surviving.</p></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="biomass_error_margin">biomass_error_margin</span></td>
+                                    <td>numeric</td>
+                                    <td>0</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="biomass_num_permanent_plots">biomass_num_permanent_plots</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Number of permanent plots to assign to the next biomass monitoring observation. This is typically derived from a statistical formula.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="biomass_num_temporary_plots">biomass_num_temporary_plots</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="biomass_students_t">biomass_students_t</span></td>
+                                    <td>numeric</td>
+                                    <td>0</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="biomass_variance">biomass_variance</span></td>
+                                    <td>numeric</td>
+                                    <td>0</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -598,7 +683,7 @@
                                 <tbody>
                                 <tr>
                                     <td>no_negative_temporary_plots</td>
-                                    <td>(num_temporary_plots &gt;&#61; 0)</td>
+                                    <td>(plant_num_temporary_plots &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>area_positive</td>
@@ -606,15 +691,15 @@
                                 </tr>
                                 <tr>
                                     <td>must_have_permanent_clusters</td>
-                                    <td>(num_permanent_plots &gt; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>target_plant_density_positive</td>
-                                    <td>(target_plant_density &gt; (0)::numeric)</td>
+                                    <td>(plant_num_permanent_plots &gt; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>positive_target_density</td>
                                     <td>(initial_planting_density &gt; (0)::numeric)</td>
+                                </tr>
+                                <tr>
+                                    <td>target_plant_density_positive</td>
+                                    <td>(target_plant_density &gt; (0)::numeric)</td>
                                 </tr>
                                 </tbody>
                             </table>

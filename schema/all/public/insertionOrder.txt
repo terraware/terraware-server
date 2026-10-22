@@ -10,6 +10,7 @@ conservation_categories
 device_template_categories
 disclaimers
 ecosystem_types
+email_notification_categories
 facility_connection_states
 facility_types
 file_batch_statuses
@@ -82,6 +83,7 @@ species_successional_groups
 splat_additional_files
 upload_problems
 user_disclaimers
+user_email_notification_categories
 user_global_roles
 user_preferences
 birdnet_results

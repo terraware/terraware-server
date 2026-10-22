@@ -14,6 +14,7 @@ notifications
 birdnet_results
 user_preferences
 user_global_roles
+user_email_notification_categories
 user_disclaimers
 upload_problems
 splat_additional_files
@@ -86,6 +87,7 @@ file_batch_types
 file_batch_statuses
 facility_types
 facility_connection_states
+email_notification_categories
 ecosystem_types
 disclaimers
 device_template_categories

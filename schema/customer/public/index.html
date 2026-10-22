@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware.public</h4>
-                                <p>Generated on Thu Oct 15 19:28 GMT 2026</p>
+                                <p>Generated on Thu Oct 22 18:14 GMT 2026</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">44</span>
+                                    <span class="info-box-number">46</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">233</span>
+                                    <span class="info-box-number">237</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">72</span>
+                                    <span class="info-box-number">74</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -350,6 +350,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of users. Most users are of type 1, &ldquo;Individual.&rdquo;</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/email_notification_categories.html">email_notification_categories</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Categories of email notifications that users can individually opt into or out of.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_land_use_model_types.html">project_land_use_model_types</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
@@ -567,7 +576,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/users.html">users</a></td>
-                                        <td class="detail" align="right">124</td>
+                                        <td class="detail" align="right">125</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">16</td>
                                         <td class="detail" align="right">-1</td>
@@ -600,6 +609,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Which internal (non-user-facing) tags apply to which organizations.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/user_email_notification_categories.html">user_email_notification_categories</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Which categories of email notifications each user has opted into. Users only receive categorized email notifications if they have opted into the category and have also enabled email notifications in <code>users.email_notifications_enabled</code>.</p></td>
                                     </tr>
                             </table>
                         </div>

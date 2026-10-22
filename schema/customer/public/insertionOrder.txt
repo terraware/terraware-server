@@ -1,5 +1,6 @@
 land_use_model_types
 disclaimers
+email_notification_categories
 facility_connection_states
 facility_types
 global_roles
@@ -35,6 +36,7 @@ seed_fund_report_files
 seed_fund_report_photos
 upload_problems
 user_disclaimers
+user_email_notification_categories
 user_global_roles
 user_preferences
 notifications
