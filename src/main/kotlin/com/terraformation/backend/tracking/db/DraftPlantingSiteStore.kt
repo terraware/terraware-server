@@ -8,6 +8,8 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteType
+import com.terraformation.backend.db.tracking.DraftStratumId
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
@@ -139,6 +141,50 @@ class DraftPlantingSiteStore(
     return record
   }
 
+  /**
+   * Creates a new draft planting site. The model's ID and audit fields are ignored.
+   *
+   * @return The draft as stored, including the IDs of its strata and substrata.
+   */
+  fun create(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
+    requirePermissions { createDraftPlantingSite(model.organizationId) }
+
+    requireProjectInOrganization(model.projectId, model.organizationId)
+    requireValidSiteType(model.map)
+    requireValidStrata(model.map.strata)
+
+    val now = clock.instant()
+    val userId = currentUser().userId
+
+    return dslContext.transactionResult { _ ->
+      val id =
+          with(DRAFT_PLANTING_SITES) {
+            dslContext
+                .insertInto(DRAFT_PLANTING_SITES)
+                .set(BOUNDARY, model.map.boundary)
+                .set(BOUNDARY_SOURCE, model.map.boundarySource)
+                .set(CREATED_BY, userId)
+                .set(CREATED_TIME, now)
+                .set(DESCRIPTION, model.description)
+                .set(EXCLUSION, model.map.exclusion)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
+                .set(NAME, model.name)
+                .set(ORGANIZATION_ID, model.organizationId)
+                .set(PROJECT_ID, model.projectId)
+                .set(SITE_EDIT_STEP, model.map.siteEditStep)
+                .set(SITE_TYPE_ID, model.map.siteType)
+                .set(TIME_ZONE, model.timeZone)
+                .returning(ID)
+                .fetchOne(ID)!!
+          }
+
+      insertStrata(id, model.map.strata)
+
+      fetchModelById(id)
+    }
+  }
+
   fun delete(draftPlantingSiteId: DraftPlantingSiteId) {
     requirePermissions { deleteDraftPlantingSite(draftPlantingSiteId) }
 
@@ -177,6 +223,87 @@ class DraftPlantingSiteStore(
     record.modifiedTime = clock.instant()
 
     record.store()
+  }
+
+  private fun requireProjectInOrganization(projectId: ProjectId?, organizationId: OrganizationId) {
+    if (projectId != null) {
+      requirePermissions { readProject(projectId) }
+      if (parentStore.getOrganizationId(projectId) != organizationId) {
+        throw ProjectInDifferentOrganizationException()
+      }
+    }
+  }
+
+  private fun requireValidSiteType(map: DraftPlantingSiteMap) {
+    if (map.siteType == DraftPlantingSiteType.Simple && map.strata.isNotEmpty()) {
+      throw IllegalArgumentException("Simple planting sites cannot have strata")
+    }
+  }
+
+  /**
+   * Checks that a list of new strata has no stratum or substratum IDs, since none of them exist
+   * yet. Also checks that stratum names are unique within the draft and substratum names are unique
+   * within each stratum, which the database requires.
+   */
+  private fun requireValidStrata(desiredStrata: List<DraftStratumModel>) {
+    val seenStratumNames = mutableSetOf<String>()
+
+    desiredStrata.forEach { stratum ->
+      stratum.id?.let { throw DraftStratumNotFoundException(it) }
+      if (!seenStratumNames.add(stratum.name)) {
+        throw IllegalArgumentException("Stratum name ${stratum.name} appears more than once")
+      }
+
+      val seenSubstratumNames = mutableSetOf<String>()
+
+      stratum.substrata.forEach { substratum ->
+        if (!seenSubstratumNames.add(substratum.name)) {
+          throw IllegalArgumentException(
+              "Substratum name ${substratum.name} appears more than once in stratum ${stratum.name}"
+          )
+        }
+        substratum.id?.let { throw DraftSubstratumNotFoundException(it) }
+      }
+    }
+  }
+
+  /** Inserts new strata and their substrata into a draft. */
+  private fun insertStrata(
+      draftPlantingSiteId: DraftPlantingSiteId,
+      strata: List<DraftStratumModel>,
+  ) {
+    strata.forEach { stratum ->
+      val stratumId =
+          with(DRAFT_STRATA) {
+            dslContext
+                .insertInto(DRAFT_STRATA)
+                .set(BOUNDARY, stratum.boundary)
+                .set(DRAFT_PLANTING_SITE_ID, draftPlantingSiteId)
+                .set(INITIAL_PLANTING_DENSITY, stratum.initialPlantingDensity)
+                .set(NAME, stratum.name)
+                .returning(ID)
+                .fetchOne(ID)!!
+          }
+
+      insertSubstrata(stratumId, stratum.substrata)
+    }
+  }
+
+  /** Inserts new substrata into a stratum. */
+  private fun insertSubstrata(
+      draftStratumId: DraftStratumId,
+      substrata: List<DraftSubstratumModel>,
+  ) {
+    with(DRAFT_SUBSTRATA) {
+      substrata.forEach { substratum ->
+        dslContext
+            .insertInto(DRAFT_SUBSTRATA)
+            .set(BOUNDARY, substratum.boundary)
+            .set(DRAFT_STRATUM_ID, draftStratumId)
+            .set(NAME, substratum.name)
+            .execute()
+      }
+    }
   }
 
   private fun substrataMultiset(): Field<List<DraftSubstratumModel>> {
