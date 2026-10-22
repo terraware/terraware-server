@@ -102,11 +102,14 @@ class T0Service(
 
     val strataChangeList = mutableListOf<StratumT0TempDensityChangedModel>()
     dslContext.transaction { _ ->
-      strataList.forEach { model ->
-        strataChangeList.add(
-            t0Store.assignT0TempStratumSpeciesDensities(model.stratumId, model.densityData)
-        )
-      }
+      // Keep row-lock order consistent between concurrent requests.
+      strataList
+          .sortedBy { it.stratumId.value }
+          .forEach { model ->
+            strataChangeList.add(
+                t0Store.assignT0TempStratumSpeciesDensities(model.stratumId, model.densityData)
+            )
+          }
     }
 
     val speciesToFetch =

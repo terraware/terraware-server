@@ -18,6 +18,7 @@ import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityCreatedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
@@ -264,6 +265,43 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   organizationId = inserted.organizationId,
                   plantingSiteId = inserted.plantingSiteId,
                   plotNumber = 2L,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `publishes persistent events in stratum ID order when input is descending`() {
+      service.assignT0TempStratumData(
+          listOf(
+              StratumT0TempDataModel(
+                  stratumId2,
+                  densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(20))),
+              ),
+              StratumT0TempDataModel(
+                  stratumId1,
+                  densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+              ),
+          )
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              StratumT0DensityCreatedEvent(
+                  density = BigDecimal.TEN,
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  speciesId = speciesId1,
+                  stratumId = stratumId1,
+                  stratumName = "S1",
+              ),
+              StratumT0DensityCreatedEvent(
+                  density = BigDecimal.valueOf(20),
+                  organizationId = inserted.organizationId,
+                  plantingSiteId = inserted.plantingSiteId,
+                  speciesId = speciesId1,
+                  stratumId = stratumId2,
+                  stratumName = "S2",
               ),
           )
       )

@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
@@ -30,6 +31,9 @@ import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
+import com.terraformation.backend.tracking.event.StratumT0DensityCreatedEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.MonitoringPlotT0StatusModel
@@ -662,9 +666,12 @@ class T0Store(
     val now = clock.instant()
     val currentUserId = currentUser().userId
 
-    val existingDensities = fetchExistingDensities(stratumId)
+    val newDensities = densities.associate { it.speciesId to it.density }
 
-    dslContext.transaction { _ ->
+    val speciesDensityChanges = dslContext.transactionResult { _ ->
+      lockStratum(stratumId)
+      val existingDensities = fetchExistingDensities(stratumId)
+
       with(STRATUM_T0_TEMP_DENSITIES) {
         dslContext
             .deleteFrom(this)
@@ -709,10 +716,47 @@ class T0Store(
       }
 
       eventPublisher.publishEvent(T0StratumDataAssignedEvent(stratumId = stratumId))
-    }
 
-    val newDensities = densities.associate { it.speciesId to it.density }
-    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
+      val densityEventChanges =
+          buildSpeciesDensityChangeList(
+              existingDensities,
+              newDensities,
+              ignoreScale = true,
+          )
+      if (densityEventChanges.isNotEmpty()) {
+        val stratumEventInfo = fetchStratumEventInfo(stratumId)
+
+        densityEventChanges.forEach { change ->
+          if (change.previousDensity == null) {
+            eventPublisher.publishEvent(
+                StratumT0DensityCreatedEvent(
+                    density = change.newDensity!!,
+                    organizationId = stratumEventInfo.organizationId,
+                    plantingSiteId = stratumEventInfo.plantingSiteId,
+                    speciesId = change.speciesId,
+                    stratumId = stratumId,
+                    stratumName = stratumEventInfo.stratumName,
+                )
+            )
+          } else {
+            eventPublisher.publishEvent(
+                StratumT0DensityUpdatedEvent(
+                    changedFrom =
+                        StratumT0DensityUpdatedEventValues(density = change.previousDensity),
+                    changedTo = StratumT0DensityUpdatedEventValues(density = change.newDensity),
+                    organizationId = stratumEventInfo.organizationId,
+                    plantingSiteId = stratumEventInfo.plantingSiteId,
+                    speciesId = change.speciesId,
+                    stratumId = stratumId,
+                    stratumName = stratumEventInfo.stratumName,
+                )
+            )
+          }
+        }
+      }
+
+      buildSpeciesDensityChangeList(existingDensities, newDensities)
+    }
 
     return StratumT0TempDensityChangedModel(
         stratumId = stratumId,
@@ -941,6 +985,31 @@ class T0Store(
             )
           }!!
 
+  private data class StratumEventInfo(
+      val organizationId: OrganizationId,
+      val plantingSiteId: PlantingSiteId,
+      val stratumName: String,
+  )
+
+  private fun fetchStratumEventInfo(stratumId: StratumId): StratumEventInfo =
+      dslContext
+          .select(
+              PLANTING_SITES.ORGANIZATION_ID,
+              STRATA.PLANTING_SITE_ID,
+              STRATA.NAME,
+          )
+          .from(STRATA)
+          .join(PLANTING_SITES)
+          .on(PLANTING_SITES.ID.eq(STRATA.PLANTING_SITE_ID))
+          .where(STRATA.ID.eq(stratumId))
+          .fetchOne { record ->
+            StratumEventInfo(
+                organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
+                plantingSiteId = record[STRATA.PLANTING_SITE_ID]!!,
+                stratumName = record[STRATA.NAME]!!,
+            )
+          }!!
+
   private fun fetchT0Observation(
       monitoringPlotId: MonitoringPlotId
   ): PlotT0ObservationUpdatedEventValues? =
@@ -965,6 +1034,10 @@ class T0Store(
         .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
         .forUpdate()
         .execute()
+  }
+
+  private fun lockStratum(stratumId: StratumId) {
+    dslContext.selectOne().from(STRATA).where(STRATA.ID.eq(stratumId)).forUpdate().execute()
   }
 
   private fun isMonitoringPlotPermanent(monitoringPlotId: MonitoringPlotId): Boolean {

@@ -35,6 +35,7 @@ import com.terraformation.backend.eventlog.api.PlotT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0ObservationSubjectPayload
 import com.terraformation.backend.eventlog.api.ProjectSubjectPayload
 import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
+import com.terraformation.backend.eventlog.api.StratumT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.db.EventLogStore
@@ -66,6 +67,7 @@ import com.terraformation.backend.tracking.event.PlantingSitePersistentEvent
 import com.terraformation.backend.tracking.event.PlotT0DensityPersistentEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
+import com.terraformation.backend.tracking.event.StratumT0DensityPersistentEvent
 import jakarta.inject.Named
 import org.jooq.DSLContext
 
@@ -156,6 +158,7 @@ class EventLogPayloadTransformer(
           PlotT0ObservationSubjectPayload.forEvent(event, context)
       is ProjectPersistentEvent -> ProjectSubjectPayload.forEvent(event, context)
       is RecordedTreePersistentEvent -> RecordedTreeSubjectPayload.forEvent(event, context)
+      is StratumT0DensityPersistentEvent -> StratumT0DensitySubjectPayload.forEvent(event, context)
       is ViabilityTestPersistentEvent -> ViabilityTestSubjectPayload.forEvent(event, context)
       is WithdrawalPersistentEvent -> WithdrawalSubjectPayload.forEvent(event, context)
       else -> {
