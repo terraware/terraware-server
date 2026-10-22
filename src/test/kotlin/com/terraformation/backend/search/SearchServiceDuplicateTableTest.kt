@@ -37,18 +37,24 @@ internal class SearchServiceDuplicateTableTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(modifier)
 
     insertDraftPlantingSite(createdBy = creator, modifiedBy = modifier, name = "Draft")
+    insertDraftStratum()
+    insertDraftSubstratum()
+    insertDraftSubstratum()
   }
 
   @Test
   fun `can select fields from nested sublists that refer to the same table`() {
     val fields =
-        listOf("name", "createdBy.firstName", "modifiedBy.firstName").map { prefix.resolve(it) }
+        listOf("name", "numStrata", "numSubstrata", "createdBy.firstName", "modifiedBy.firstName")
+            .map { prefix.resolve(it) }
 
     assertEquals(
         SearchResults(
             listOf(
                 mapOf(
                     "name" to "Draft",
+                    "numStrata" to "1",
+                    "numSubstrata" to "2",
                     "createdBy" to mapOf("firstName" to "Ada"),
                     "modifiedBy" to mapOf("firstName" to "Grace"),
                 )
