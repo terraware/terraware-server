@@ -72,6 +72,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesPersi
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.PlantingSitePersistentEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
@@ -881,6 +882,29 @@ data class PlantingSiteSubjectPayload(
   }
 }
 
+@JsonTypeName("PlotT0Observation")
+data class PlotT0ObservationSubjectPayload(
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val plantingSiteId: PlantingSiteId,
+    val plotNumber: Long,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlotT0ObservationPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlotT0ObservationSubjectPayload =
+        PlotT0ObservationSubjectPayload(
+            fullText = context.subjectFullText<PlotT0ObservationSubjectPayload>(event.plotNumber),
+            monitoringPlotId = event.monitoringPlotId,
+            plantingSiteId = event.plantingSiteId,
+            plotNumber = event.plotNumber,
+            shortText = context.subjectShortText<PlotT0ObservationSubjectPayload>(),
+        )
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -1062,6 +1086,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingSeasonSpeciesTarget(PlantingSeasonSpeciesTargetPersistentEvent::class),
   PlantingSeasonWithdrawal(PlantingSeasonWithdrawalCreatedEvent::class),
   PlantingSite(PlantingSitePersistentEvent::class),
+  PlotT0Observation(PlotT0ObservationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
   ViabilityTest(ViabilityTestPersistentEvent::class),

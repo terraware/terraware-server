@@ -40,6 +40,7 @@ import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
+import com.terraformation.backend.eventlog.api.PlotT0ObservationSubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
@@ -73,6 +74,8 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
@@ -967,6 +970,110 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     assertEquals(expected, transformer.eventsToPayloads(listOf(entry)).single())
+  }
+
+  @Test
+  fun `maps PlotT0Observation event to payload`() {
+    val event =
+        PlotT0ObservationUpdatedEvent(
+            changedFrom =
+                PlotT0ObservationUpdatedEventValues(
+                    observationId = observationId,
+                    observationStartDate = LocalDate.of(2024, 1, 1),
+                ),
+            changedTo = PlotT0ObservationUpdatedEventValues(),
+            monitoringPlotId = monitoringPlotId,
+            observationId = null,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+        )
+
+    val entry = eventLogEntry(knownUserId, event)
+    val expected =
+        EventLogEntryPayload(
+            action =
+                FieldUpdatedActionPayload(
+                    fieldName = "observation",
+                    changedFrom = listOf("2024-01-01"),
+                    changedTo = null,
+                ),
+            subject =
+                PlotT0ObservationSubjectPayload(
+                    fullText = "Plot 7 T0 observation",
+                    monitoringPlotId = monitoringPlotId,
+                    plantingSiteId = plantingSiteId,
+                    plotNumber = 7,
+                    shortText = "T0 observation",
+                ),
+            timestamp = entry.createdTime,
+            userId = knownUserId,
+            userName = "Known User",
+        )
+
+    assertEquals(expected, transformer.eventsToPayloads(listOf(entry)).single())
+  }
+
+  @Test
+  fun `maps same-date T0 observation changes with observation ID`() {
+    val startDate = LocalDate.of(2024, 1, 1)
+    val event =
+        PlotT0ObservationUpdatedEvent(
+            changedFrom =
+                PlotT0ObservationUpdatedEventValues(
+                    observationId = observationId,
+                    observationStartDate = startDate,
+                ),
+            changedTo =
+                PlotT0ObservationUpdatedEventValues(
+                    observationId = ObservationId(4),
+                    observationStartDate = startDate,
+                ),
+            monitoringPlotId = monitoringPlotId,
+            observationId = ObservationId(4),
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+        )
+
+    val entry = eventLogEntry(knownUserId, event)
+    val subject =
+        PlotT0ObservationSubjectPayload(
+            fullText = "Plot 7 T0 observation",
+            monitoringPlotId = monitoringPlotId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 7,
+            shortText = "T0 observation",
+        )
+    val expected =
+        listOf(
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "observation",
+                        changedFrom = listOf("2024-01-01"),
+                        changedTo = listOf("2024-01-01"),
+                    ),
+                subject = subject,
+                timestamp = entry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "observation ID",
+                        changedFrom = listOf("3"),
+                        changedTo = listOf("4"),
+                    ),
+                subject = subject,
+                timestamp = entry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+        )
+
+    assertEquals(expected, transformer.eventsToPayloads(listOf(entry)))
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =

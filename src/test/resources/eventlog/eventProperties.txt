@@ -403,6 +403,10 @@ com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/monitorin
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/observationId: ObservationId
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/plotNumber: Long
 com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventV1/plantingSiteName: String

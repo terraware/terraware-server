@@ -25,10 +25,15 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.toBigDecimal
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.MonitoringPlotT0StatusModel
@@ -842,6 +847,112 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `publishes observation updated event when T0 observation changes`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      eventPublisher.clear()
+
+      val secondObservationStartDate = observationStartDate.plusDays(1)
+      val secondObservationId =
+          insertObservation(
+              startDate = secondObservationStartDate,
+              completedTime = observationTime,
+          )
+      insertObservationPlot(
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+          isPermanent = true,
+          monitoringPlotId = monitoringPlotId,
+          observationId = secondObservationId,
+      )
+      insertObservedPlotSpeciesTotals(
+          observationId = secondObservationId,
+          monitoringPlotId = monitoringPlotId,
+          speciesId = speciesId1,
+          totalLive = 2,
+      )
+
+      store.assignT0PlotObservation(monitoringPlotId, secondObservationId)
+
+      eventPublisher.assertEventPublished(
+          PlotT0ObservationUpdatedEvent(
+              changedFrom =
+                  PlotT0ObservationUpdatedEventValues(
+                      observationId = observationId,
+                      observationStartDate = observationStartDate,
+                  ),
+              changedTo =
+                  PlotT0ObservationUpdatedEventValues(
+                      observationId = secondObservationId,
+                      observationStartDate = secondObservationStartDate,
+                  ),
+              monitoringPlotId = monitoringPlotId,
+              observationId = secondObservationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = plantingSiteId,
+              plotNumber = 2,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish persistent events when T0 observation species totals are edited`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      eventPublisher.clear()
+
+      store.on(
+          MonitoringSpeciesTotalsEditedEvent(
+              certainty = RecordedSpeciesCertainty.Known,
+              changedFrom = MonitoringSpeciesTotalsEditedEventValues(totalLive = 1),
+              changedTo = MonitoringSpeciesTotalsEditedEventValues(totalLive = 2),
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId1,
+              speciesName = null,
+          )
+      )
+
+      eventPublisher.assertEventNotPublished<PersistentEvent>()
+    }
+
+    @Test
+    fun `publishes observation updated event when switching from manual densities but not on reassignment`() {
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+      eventPublisher.clear()
+
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      eventPublisher.assertEventPublished(
+          PlotT0ObservationUpdatedEvent(
+              changedFrom = PlotT0ObservationUpdatedEventValues(),
+              changedTo =
+                  PlotT0ObservationUpdatedEventValues(
+                      observationId = observationId,
+                      observationStartDate = observationStartDate,
+                  ),
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = inserted.organizationId,
+              plantingSiteId = plantingSiteId,
+              plotNumber = 2,
+          )
+      )
+
+      eventPublisher.clear()
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      eventPublisher.assertEventNotPublished<PersistentEvent>()
+    }
+
+    @Test
     fun `stores observation densities and adds 0 for all withdrawn or recorded species not in observation`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 3, totalDead = 4)
@@ -1119,6 +1230,44 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class AssignT0PlotSpeciesDensities {
+    @Test
+    fun `publishes observation updated event when switching from observation to manual densities`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      eventPublisher.clear()
+
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+
+      eventPublisher.assertEventPublished(
+          PlotT0ObservationUpdatedEvent(
+              changedFrom =
+                  PlotT0ObservationUpdatedEventValues(
+                      observationId = observationId,
+                      observationStartDate = observationStartDate,
+                  ),
+              changedTo = PlotT0ObservationUpdatedEventValues(),
+              monitoringPlotId = monitoringPlotId,
+              observationId = null,
+              organizationId = inserted.organizationId,
+              plantingSiteId = plantingSiteId,
+              plotNumber = 2,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish observation updated event when plot already uses manual densities`() {
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+
+      eventPublisher.assertEventNotPublished<PlotT0ObservationUpdatedEvent>()
+    }
+
     @Test
     fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()

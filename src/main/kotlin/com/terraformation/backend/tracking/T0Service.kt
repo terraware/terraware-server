@@ -48,15 +48,18 @@ class T0Service(
 
     val plotsChangeList = mutableListOf<PlotT0DensityChangedModel>()
     dslContext.transaction { _ ->
-      plotsList.forEach { model ->
-        plotsChangeList.add(
-            if (model.observationId == null) {
-              t0Store.assignT0PlotSpeciesDensities(model.monitoringPlotId, model.densityData)
-            } else {
-              t0Store.assignT0PlotObservation(model.monitoringPlotId, model.observationId)
-            }
-        )
-      }
+      // Keep row-lock order consistent between concurrent requests.
+      plotsList
+          .sortedBy { it.monitoringPlotId.value }
+          .forEach { model ->
+            plotsChangeList.add(
+                if (model.observationId == null) {
+                  t0Store.assignT0PlotSpeciesDensities(model.monitoringPlotId, model.densityData)
+                } else {
+                  t0Store.assignT0PlotObservation(model.monitoringPlotId, model.observationId)
+                }
+            )
+          }
     }
 
     val speciesToFetch =
