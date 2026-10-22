@@ -9,7 +9,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.DraftStratumId
-import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_SUBSTRATA
@@ -20,10 +19,8 @@ import com.terraformation.backend.tracking.model.DraftSubstratumModel
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.time.InstantSource
-import java.time.ZoneId
 import org.jooq.DSLContext
 import org.jooq.Field
-import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -37,16 +34,7 @@ class DraftPlantingSiteStore(
 ) {
   private val strataField: Field<List<DraftStratumModel>> = strataMultiset()
 
-  fun fetchOneById(draftPlantingSiteId: DraftPlantingSiteId): DraftPlantingSitesRecord {
-    requirePermissions { readDraftPlantingSite(draftPlantingSiteId) }
-
-    return dslContext
-        .selectFrom(DRAFT_PLANTING_SITES)
-        .where(DRAFT_PLANTING_SITES.ID.eq(draftPlantingSiteId))
-        .fetchOne() ?: throw DraftPlantingSiteNotFoundException(draftPlantingSiteId)
-  }
-
-  fun fetchModelById(id: DraftPlantingSiteId): DraftPlantingSiteModel {
+  fun fetchOneById(id: DraftPlantingSiteId): DraftPlantingSiteModel {
     requirePermissions { readDraftPlantingSite(id) }
 
     return with(DRAFT_PLANTING_SITES) {
@@ -97,50 +85,6 @@ class DraftPlantingSiteStore(
     } ?: throw DraftPlantingSiteNotFoundException(id)
   }
 
-  fun create(
-      data: JSONB,
-      name: String,
-      organizationId: OrganizationId,
-      description: String? = null,
-      numSubstrata: Int? = null,
-      numStrata: Int? = null,
-      projectId: ProjectId? = null,
-      timeZone: ZoneId? = null,
-  ): DraftPlantingSitesRecord {
-    requirePermissions { createDraftPlantingSite(organizationId) }
-
-    if (projectId != null) {
-      requirePermissions { readProject(projectId) }
-      if (parentStore.getOrganizationId(projectId) != organizationId) {
-        throw ProjectInDifferentOrganizationException()
-      }
-    }
-
-    val now = clock.instant()
-    val userId = currentUser().userId
-
-    val record =
-        DraftPlantingSitesRecord(
-            createdBy = userId,
-            createdTime = now,
-            data = data,
-            description = description,
-            modifiedBy = userId,
-            modifiedTime = now,
-            name = name,
-            numSubstrata = numSubstrata,
-            numStrata = numStrata,
-            organizationId = organizationId,
-            projectId = projectId,
-            timeZone = timeZone,
-        )
-
-    dslContext.attach(record)
-    record.insert()
-
-    return record
-  }
-
   /**
    * Creates a new draft planting site. The model's ID and audit fields are ignored.
    *
@@ -180,55 +124,21 @@ class DraftPlantingSiteStore(
 
       updateStrata(id, emptyList(), model.map.strata)
 
-      fetchModelById(id)
+      fetchOneById(id)
     }
   }
 
-  fun delete(draftPlantingSiteId: DraftPlantingSiteId) {
-    requirePermissions { deleteDraftPlantingSite(draftPlantingSiteId) }
+  fun delete(id: DraftPlantingSiteId) {
+    requirePermissions { deleteDraftPlantingSite(id) }
 
-    dslContext
-        .deleteFrom(DRAFT_PLANTING_SITES)
-        .where(DRAFT_PLANTING_SITES.ID.eq(draftPlantingSiteId))
-        .execute()
-  }
-
-  fun update(
-      draftPlantingSiteId: DraftPlantingSiteId,
-      updateFunc: (DraftPlantingSitesRecord) -> Unit,
-  ) {
-    requirePermissions { updateDraftPlantingSite(draftPlantingSiteId) }
-
-    val record = fetchOneById(draftPlantingSiteId)
-    updateFunc(record)
-
-    val readOnlyFields =
-        with(DRAFT_PLANTING_SITES) { listOf(CREATED_BY, CREATED_TIME, ID, ORGANIZATION_ID) }
-
-    readOnlyFields.forEach { field ->
-      if (record.modified(field)) {
-        throw AccessDeniedException("No permission to change $field")
-      }
-    }
-
-    record.projectId?.let { projectId ->
-      requirePermissions { readProject(projectId) }
-      if (parentStore.getOrganizationId(projectId) != record.organizationId) {
-        throw ProjectInDifferentOrganizationException()
-      }
-    }
-
-    record.modifiedBy = currentUser().userId
-    record.modifiedTime = clock.instant()
-
-    record.store()
+    dslContext.deleteFrom(DRAFT_PLANTING_SITES).where(DRAFT_PLANTING_SITES.ID.eq(id)).execute()
   }
 
   /**
    * Updates a draft planting site. Strata and substrata with IDs are updated in place, those
    * without IDs are inserted, and existing ones that are absent from the updated model are deleted.
    */
-  fun updateFromModel(
+  fun update(
       id: DraftPlantingSiteId,
       updateFunc: (DraftPlantingSiteModel) -> DraftPlantingSiteModel,
   ) {
@@ -243,7 +153,7 @@ class DraftPlantingSiteStore(
           .forUpdate()
           .execute()
 
-      val existing = fetchModelById(id)
+      val existing = fetchOneById(id)
       val updated = updateFunc(existing)
 
       if (updated.organizationId != existing.organizationId) {

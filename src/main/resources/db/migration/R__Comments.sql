@@ -462,10 +462,7 @@ COMMENT ON TABLE tracking.draft_planting_site_types IS '(Enum) Whether a draft p
 COMMENT ON TABLE tracking.draft_planting_sites IS 'Details of planting sites that are in the process of being defined.';
 COMMENT ON COLUMN tracking.draft_planting_sites.boundary IS 'Boundary of the planting site as defined so far. Null if the user has not drawn or uploaded a boundary yet.';
 COMMENT ON COLUMN tracking.draft_planting_sites.boundary_source IS 'Client-defined indicator of how the boundary was created, e.g., drawn or uploaded. Opaque to the server.';
-COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Deprecated: legacy client-defined JSON state of the draft planting site, superseded by the map columns and the draft strata and substrata tables. Null for drafts saved after the move to tables. Will be removed.';
 COMMENT ON COLUMN tracking.draft_planting_sites.exclusion IS 'Areas inside the boundary that are excluded from the planting site.';
-COMMENT ON COLUMN tracking.draft_planting_sites.num_substrata is 'Number of substrata defined so far.';
-COMMENT ON COLUMN tracking.draft_planting_sites.num_strata is 'Number of strata defined so far.';
 COMMENT ON COLUMN tracking.draft_planting_sites.site_edit_step IS 'Client-defined identifier of the step of the site creation process the user is on. Opaque to the server.';
 
 COMMENT ON TABLE tracking.draft_strata IS 'Strata of draft planting sites. Only detailed drafts have strata.';
