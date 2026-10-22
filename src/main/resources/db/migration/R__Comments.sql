@@ -457,10 +457,21 @@ COMMENT ON COLUMN tracking.deliveries.reassigned_from_delivery_id IS 'If this de
 COMMENT ON COLUMN tracking.deliveries.reassigned_time IS 'When the reassignment was recorded. Null if this delivery has no reassignment.';
 COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal the plants came from.';
 
+COMMENT ON TABLE tracking.draft_planting_site_types IS '(Enum) Whether a draft planting site is a simple site with only a boundary or a detailed one with strata and substrata.';
+
 COMMENT ON TABLE tracking.draft_planting_sites IS 'Details of planting sites that are in the process of being defined.';
-COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Client-defined state of the definition of the planting site. This may include a mix of map data and application state and is treated as opaque by the server.';
+COMMENT ON COLUMN tracking.draft_planting_sites.boundary IS 'Boundary of the planting site as defined so far. Null if the user has not drawn or uploaded a boundary yet.';
+COMMENT ON COLUMN tracking.draft_planting_sites.boundary_source IS 'Client-defined indicator of how the boundary was created, e.g., drawn or uploaded. Opaque to the server.';
+COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Deprecated: legacy client-defined JSON state of the draft planting site, superseded by the map columns and the draft strata and substrata tables. Null for drafts saved after the move to tables. Will be removed.';
+COMMENT ON COLUMN tracking.draft_planting_sites.exclusion IS 'Areas inside the boundary that are excluded from the planting site.';
 COMMENT ON COLUMN tracking.draft_planting_sites.num_substrata is 'Number of substrata defined so far.';
 COMMENT ON COLUMN tracking.draft_planting_sites.num_strata is 'Number of strata defined so far.';
+COMMENT ON COLUMN tracking.draft_planting_sites.site_edit_step IS 'Client-defined identifier of the step of the site creation process the user is on. Opaque to the server.';
+
+COMMENT ON TABLE tracking.draft_strata IS 'Strata of draft planting sites. Only detailed drafts have strata.';
+COMMENT ON COLUMN tracking.draft_strata.initial_planting_density IS 'Planned planting density in plants per hectare.';
+
+COMMENT ON TABLE tracking.draft_substrata IS 'Substrata of the strata of draft planting sites.';
 
 COMMENT ON TABLE tracking.mangrove_tides IS '(Enum) High/Low tide at a mangrove during an observation.';
 

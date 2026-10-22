@@ -225,6 +225,11 @@ VALUES (1, 'SeedBank'),
        (4, 'Accelerator')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.draft_planting_site_types (id, name)
+VALUES (1, 'Simple'),
+       (2, 'Detailed')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO ecosystem_types (id, name)
 VALUES (1, 'Boreal forests/Taiga'),
        (2, 'Deserts and xeric shrublands'),

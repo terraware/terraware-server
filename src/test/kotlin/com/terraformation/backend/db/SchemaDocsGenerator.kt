@@ -412,7 +412,10 @@ class SchemaDocsGenerator : DatabaseTest() {
               mapOf(
                   "biomass_forest_types" to setOf(ALL, TRACKING),
                   "deliveries" to setOf(ALL, TRACKING),
+                  "draft_planting_site_types" to setOf(ALL, TRACKING),
                   "draft_planting_sites" to setOf(ALL, TRACKING),
+                  "draft_strata" to setOf(ALL, TRACKING),
+                  "draft_substrata" to setOf(ALL, TRACKING),
                   "mangrove_tides" to setOf(ALL, TRACKING),
                   "monitoring_plot_histories" to setOf(ALL, TRACKING),
                   "monitoring_plot_overlaps" to setOf(ALL, TRACKING),

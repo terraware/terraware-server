@@ -448,6 +448,9 @@ import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.DraftPlantingSiteType
+import com.terraformation.backend.db.tracking.DraftStratumId
+import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -482,6 +485,8 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.keys.PLANTING_SITES_PKEY
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.DraftPlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.DraftStrataDao
+import com.terraformation.backend.db.tracking.tables.daos.DraftSubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotOverlapsDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
@@ -530,6 +535,8 @@ import com.terraformation.backend.db.tracking.tables.daos.SubstratumHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstratumPopulationsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.DraftStrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.DraftSubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlapsRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
@@ -770,6 +777,8 @@ abstract class DatabaseBackedTest {
   protected val documentSavedVersionsDao: DocumentSavedVersionsDao by lazyDao()
   protected val documentsDao: DocumentsDao by lazyDao()
   protected val draftPlantingSitesDao: DraftPlantingSitesDao by lazyDao()
+  protected val draftStrataDao: DraftStrataDao by lazyDao()
+  protected val draftSubstrataDao: DraftSubstrataDao by lazyDao()
   protected val eventProjectsDao: EventProjectsDao by lazyDao()
   protected val eventsDao: EventsDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
@@ -3293,8 +3302,11 @@ abstract class DatabaseBackedTest {
       row: DraftPlantingSitesRow = DraftPlantingSitesRow(),
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: clock.instant(),
+      boundary: Geometry? = row.boundary,
+      boundarySource: String? = row.boundarySource,
       data: ArbitraryJsonObject = row.data ?: JSONB.valueOf("{}"),
       description: String? = row.description,
+      exclusion: Geometry? = row.exclusion,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "Draft site ${nextDraftPlantingSiteNumber++}",
@@ -3302,14 +3314,19 @@ abstract class DatabaseBackedTest {
       numStrata: Int? = row.numStrata,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: ProjectId? = row.projectId,
+      siteEditStep: String? = row.siteEditStep,
+      siteType: DraftPlantingSiteType = row.siteTypeId ?: DraftPlantingSiteType.Detailed,
       timeZone: ZoneId? = row.timeZone,
   ): DraftPlantingSiteId {
     val rowWithDefaults =
         row.copy(
             createdBy = createdBy,
             createdTime = createdTime,
+            boundary = boundary,
+            boundarySource = boundarySource,
             data = data,
             description = description,
+            exclusion = exclusion,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
@@ -3317,12 +3334,57 @@ abstract class DatabaseBackedTest {
             numStrata = numStrata,
             organizationId = organizationId,
             projectId = projectId,
+            siteEditStep = siteEditStep,
+            siteTypeId = siteType,
             timeZone = timeZone,
         )
 
     draftPlantingSitesDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.draftPlantingSiteIds.add(it) }
+  }
+
+  private var nextDraftStratumNumber = 1
+
+  fun insertDraftStratum(
+      row: DraftStrataRow = DraftStrataRow(),
+      draftPlantingSiteId: DraftPlantingSiteId =
+          row.draftPlantingSiteId ?: inserted.draftPlantingSiteId,
+      name: String = row.name ?: "Stratum ${nextDraftStratumNumber++}",
+      boundary: Geometry = row.boundary ?: rectangle(100),
+      initialPlantingDensity: BigDecimal = row.initialPlantingDensity ?: BigDecimal(1500),
+  ): DraftStratumId {
+    val rowWithDefaults =
+        row.copy(
+            boundary = boundary,
+            draftPlantingSiteId = draftPlantingSiteId,
+            initialPlantingDensity = initialPlantingDensity,
+            name = name,
+        )
+
+    draftStrataDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.draftStratumIds.add(it) }
+  }
+
+  private var nextDraftSubstratumNumber = 1
+
+  fun insertDraftSubstratum(
+      row: DraftSubstrataRow = DraftSubstrataRow(),
+      draftStratumId: DraftStratumId = row.draftStratumId ?: inserted.draftStratumId,
+      name: String = row.name ?: "Substratum ${nextDraftSubstratumNumber++}",
+      boundary: Geometry = row.boundary ?: rectangle(100),
+  ): DraftSubstratumId {
+    val rowWithDefaults =
+        row.copy(
+            boundary = boundary,
+            draftStratumId = draftStratumId,
+            name = name,
+        )
+
+    draftSubstrataDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.draftSubstratumIds.add(it) }
   }
 
   fun insertDelivery(

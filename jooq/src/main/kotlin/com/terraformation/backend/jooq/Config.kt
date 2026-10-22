@@ -306,6 +306,11 @@ val ENUM_TABLES =
                     "biomass_forest_types",
                     listOf("observation_biomass_details\\.forest_type_id"),
                 ),
+                EnumTable(
+                    "draft_planting_site_types",
+                    listOf("draft_planting_sites\\.site_type_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("mangrove_tides", listOf("observation_biomass_details\\.tide_id")),
                 EnumTable(
                     "observable_conditions",
@@ -573,7 +578,12 @@ val ID_WRAPPERS =
                         ".*\\.reassigned_from_delivery_id",
                     ),
                 ),
-                IdWrapper("DraftPlantingSiteId", listOf("draft_planting_sites\\.id")),
+                IdWrapper(
+                    "DraftPlantingSiteId",
+                    listOf("draft_planting_sites\\.id", ".*\\.draft_planting_site_id"),
+                ),
+                IdWrapper("DraftStratumId", listOf("draft_strata\\.id", ".*\\.draft_stratum_id")),
+                IdWrapper("DraftSubstratumId", listOf("draft_substrata\\.id")),
                 IdWrapper(
                     "MonitoringPlotHistoryId",
                     listOf("monitoring_plot_histories\\.id", ".*\\.monitoring_plot_history_id"),
