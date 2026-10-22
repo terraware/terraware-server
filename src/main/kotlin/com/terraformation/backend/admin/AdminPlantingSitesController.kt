@@ -23,6 +23,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.ObservationService
+import com.terraformation.backend.tracking.PlantingSiteMapEditService
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -32,7 +33,6 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ShapefilesInvalidException
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.mapbox.MapboxService
@@ -89,6 +89,7 @@ class AdminPlantingSitesController(
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
+    private val plantingSiteMapEditService: PlantingSiteMapEditService,
     private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
@@ -457,15 +458,13 @@ class AdminPlantingSitesController(
                 requireStableIds = existing.boundary != null,
             )
 
-        val calculator = PlantingSiteEditCalculator(existing, desired)
-
-        val edit = calculator.calculateSiteEdit()
+        val edit = plantingSiteMapEditService.calculateEdit(existing, desired, validate = false)
 
         if (dryRun) {
           redirectAttributes.successMessage = "Would make the following changes:"
           redirectAttributes.successDetails = describeSiteEdit(edit)
         } else {
-          plantingSiteStore.applyPlantingSiteEdit(
+          plantingSiteMapEditService.applyEdit(
               edit,
               substratumIdsToMarkIncomplete?.split(",")?.map { SubstratumId(it.trim()) }?.toSet()
                   ?: emptySet(),
