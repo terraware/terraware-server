@@ -2,7 +2,12 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.rectangle
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
+import com.terraformation.backend.tracking.db.StratumNotFoundException
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import java.math.BigDecimal
 import java.time.Instant
@@ -164,6 +169,102 @@ class PlantingSiteMapEditModelTest {
       assertThrows<IllegalArgumentException> {
         PlantingSiteMapEditModel(null, null, emptyList()).toDesiredModel(existing)
       }
+    }
+
+    @Test
+    fun `throws exception if all strata are removed`() {
+      val existing = existingSite()
+
+      assertThrows<IllegalArgumentException> {
+        PlantingSiteMapEditModel(rectangle(500), null, emptyList()).toDesiredModel(existing)
+      }
+    }
+
+    @Test
+    fun `throws exception if stratum has no substrata`() {
+      val existing = existingSite()
+
+      val edit =
+          PlantingSiteMapEditModel.of(existing).let { edit ->
+            edit.copy(strata = listOf(edit.strata[0].copy(substrata = emptyList())))
+          }
+
+      val exception =
+          assertThrows<PlantingSiteMapInvalidException> { edit.toDesiredModel(existing) }
+      assertEquals(
+          listOf(PlantingSiteValidationFailure.stratumHasNoSubstrata("S1")),
+          exception.problems,
+      )
+    }
+
+    @Test
+    fun `throws exception if stratum ID is not from the site`() {
+      val existing = existingSite()
+
+      val edit =
+          PlantingSiteMapEditModel.of(existing).let { edit ->
+            edit.copy(strata = listOf(edit.strata[0].copy(id = StratumId(1000))))
+          }
+
+      assertThrows<StratumNotFoundException> { edit.toDesiredModel(existing) }
+    }
+
+    @Test
+    fun `throws exception if substratum ID is not from the site`() {
+      val existing = existingSite()
+
+      val edit =
+          PlantingSiteMapEditModel.of(existing).let { edit ->
+            edit.copy(
+                strata =
+                    listOf(
+                        edit.strata[0].copy(
+                            substrata =
+                                listOf(edit.strata[0].substrata[0].copy(id = SubstratumId(1000)))
+                        )
+                    )
+            )
+          }
+
+      assertThrows<SubstratumNotFoundException> { edit.toDesiredModel(existing) }
+    }
+
+    @Test
+    fun `throws exception if stratum ID appears more than once`() {
+      val existing = existingSite()
+
+      val edit =
+          PlantingSiteMapEditModel.of(existing).let { edit ->
+            edit.copy(
+                strata =
+                    listOf(
+                        edit.strata[0],
+                        edit.strata[0].copy(name = "Other", substrata = emptyList()),
+                    )
+            )
+          }
+
+      assertThrows<IllegalArgumentException> { edit.toDesiredModel(existing) }
+    }
+
+    @Test
+    fun `throws exception if substratum ID appears more than once`() {
+      val existing = existingSite()
+
+      val edit =
+          PlantingSiteMapEditModel.of(existing).let { edit ->
+            val substratum = edit.strata[0].substrata[0]
+            edit.copy(
+                strata =
+                    listOf(
+                        edit.strata[0].copy(
+                            substrata = listOf(substratum, substratum.copy(name = "X"))
+                        )
+                    )
+            )
+          }
+
+      assertThrows<IllegalArgumentException> { edit.toDesiredModel(existing) }
     }
   }
 }
