@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.util.Turtle
@@ -99,10 +100,17 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
 
       eventPublisher.assertEventPublished(
           SurvivalRateIncludesTempPlotsChangedEvent(
+              changedFrom =
+                  SurvivalRateIncludesTempPlotsChangedEventValues(
+                      survivalRateIncludesTempPlots = false
+                  ),
+              changedTo =
+                  SurvivalRateIncludesTempPlotsChangedEventValues(
+                      survivalRateIncludesTempPlots = true
+                  ),
               organizationId = organizationId,
               plantingSiteId = initialModel.id,
-              previousValue = false,
-              newValue = true,
+              plantingSiteName = "new name",
           )
       )
     }

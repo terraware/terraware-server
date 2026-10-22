@@ -73,6 +73,7 @@ import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyStratumModel
 import com.terraformation.backend.tracking.model.AnySubstratumModel
@@ -515,24 +516,24 @@ class PlantingSiteStore(
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Stratum)
-    val edited = editFunc(initial)
+    entityLocker.withLockedPlantingSite(plantingSiteId) {
+      val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Stratum)
+      val edited = editFunc(initial)
 
-    if (edited.projectId != null) {
-      requirePermissions { readProject(edited.projectId) }
+      if (edited.projectId != null) {
+        requirePermissions { readProject(edited.projectId) }
 
-      if (initial.organizationId != parentStore.getOrganizationId(edited.projectId)) {
-        throw ProjectInDifferentOrganizationException()
+        if (initial.organizationId != parentStore.getOrganizationId(edited.projectId)) {
+          throw ProjectInDifferentOrganizationException()
+        }
       }
-    }
 
-    val initialTimeZone = initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
-    val editedTimeZone = edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
-    val editedArea = edited.boundary?.calculateAreaHectares()
+      val initialTimeZone = initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
+      val editedTimeZone = edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
+      val editedArea = edited.boundary?.calculateAreaHectares()
 
-    val now = clock.instant()
+      val now = clock.instant()
 
-    dslContext.transaction { _ ->
       with(PLANTING_SITES) {
         dslContext
             .update(PLANTING_SITES)
@@ -586,10 +587,17 @@ class PlantingSiteStore(
       if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
         eventPublisher.publishEvent(
             SurvivalRateIncludesTempPlotsChangedEvent(
+                changedFrom =
+                    SurvivalRateIncludesTempPlotsChangedEventValues(
+                        survivalRateIncludesTempPlots = initial.survivalRateIncludesTempPlots
+                    ),
+                changedTo =
+                    SurvivalRateIncludesTempPlotsChangedEventValues(
+                        survivalRateIncludesTempPlots = edited.survivalRateIncludesTempPlots
+                    ),
                 organizationId = edited.organizationId,
                 plantingSiteId = edited.id,
-                previousValue = initial.survivalRateIncludesTempPlots,
-                newValue = edited.survivalRateIncludesTempPlots,
+                plantingSiteName = edited.name,
             )
         )
       }

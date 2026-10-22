@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
 import org.junit.jupiter.api.Test
 
 class T0NotifierTest {
@@ -17,10 +18,17 @@ class T0NotifierTest {
   fun `publishes RateLimitedT0DataAssignedEvent when survival rate temp plots setting changes`() {
     val event =
         SurvivalRateIncludesTempPlotsChangedEvent(
+            changedFrom =
+                SurvivalRateIncludesTempPlotsChangedEventValues(
+                    survivalRateIncludesTempPlots = false
+                ),
+            changedTo =
+                SurvivalRateIncludesTempPlotsChangedEventValues(
+                    survivalRateIncludesTempPlots = true
+                ),
             organizationId = OrganizationId(1),
             plantingSiteId = PlantingSiteId(2),
-            previousValue = false,
-            newValue = true,
+            plantingSiteName = "Planting site",
         )
 
     notifier.on(event)

@@ -39,6 +39,7 @@ import com.terraformation.backend.eventlog.api.EventLogEntryPayload
 import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSubjectPayload
+import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
@@ -75,6 +76,8 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEve
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
+import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -926,6 +929,46 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         payloads.last().action,
         "Action",
     )
+  }
+
+  @Test
+  fun `maps PlantingSite survival rate setting event to payload`() {
+    val event =
+        SurvivalRateIncludesTempPlotsChangedEvent(
+            changedFrom =
+                SurvivalRateIncludesTempPlotsChangedEventValues(
+                    survivalRateIncludesTempPlots = false
+                ),
+            changedTo =
+                SurvivalRateIncludesTempPlotsChangedEventValues(
+                    survivalRateIncludesTempPlots = true
+                ),
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteName = "Example site",
+        )
+
+    val entry = eventLogEntry(knownUserId, event)
+    val expected =
+        EventLogEntryPayload(
+            action =
+                FieldUpdatedActionPayload(
+                    fieldName = "include temporary plots in survival rates",
+                    changedFrom = listOf("false"),
+                    changedTo = listOf("true"),
+                ),
+            subject =
+                PlantingSiteSubjectPayload(
+                    fullText = "Planting site Example site",
+                    plantingSiteId = plantingSiteId,
+                    shortText = "Planting site",
+                ),
+            timestamp = entry.createdTime,
+            userId = knownUserId,
+            userName = "Known User",
+        )
+
+    assertEquals(expected, transformer.eventsToPayloads(listOf(entry)).single())
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =
