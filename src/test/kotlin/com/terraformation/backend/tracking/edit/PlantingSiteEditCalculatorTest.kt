@@ -1270,6 +1270,49 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
+  fun `replaces stratum if new stratum has the same name but a different stable ID`() {
+    val existing =
+        existingSite(width = 500) { stratum(name = "A", plantNumPermanent = 1) { substratum() } }
+    val desired =
+        newSite(width = 500) {
+          stratum(name = "A", stableId = StableId("A-2"), plantNumPermanent = 1) {
+            substratum(stableId = StableId("A-1-2"))
+          }
+        }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal.ZERO,
+            desiredModel = desired,
+            existingModel = existing,
+            stratumEdits =
+                listOf(
+                    StratumEdit.Create(
+                        desiredModel = desired.strata[0],
+                        monitoringPlotEdits =
+                            listOf(MonitoringPlotEdit.Create(desired.strata[0].boundary, 1)),
+                        substratumEdits =
+                            listOf(
+                                SubstratumEdit.Create(desiredModel = desired.strata[0].substrata[0])
+                            ),
+                    ),
+                    StratumEdit.Delete(
+                        existingModel = existing.strata[0],
+                        substratumEdits =
+                            listOf(
+                                SubstratumEdit.Delete(
+                                    existingModel = existing.strata[0].substrata[0]
+                                )
+                            ),
+                    ),
+                ),
+        ),
+        existing,
+        desired,
+    )
+  }
+
+  @Test
   fun `ejects monitoring plots that overlap with added exclusion area`() {
     val existing = existingSite {
       stratum {

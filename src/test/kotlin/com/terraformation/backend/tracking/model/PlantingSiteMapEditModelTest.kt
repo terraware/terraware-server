@@ -50,6 +50,68 @@ class PlantingSiteMapEditModelTest {
   }
 
   @Test
+  fun `new strata and substrata get stable IDs that do not collide with existing ones`() {
+    val existing = existingSite(width = 1000) { stratum(name = "A", width = 500) }
+
+    val desired =
+        PlantingSiteMapEditModel(
+                boundary = null,
+                exclusion = null,
+                strata =
+                    listOf(
+                        // Replaces the existing stratum with a new one of the same name.
+                        StratumMapEditModel(
+                            id = null,
+                            name = "A",
+                            substrata =
+                                listOf(SubstratumMapEditModel(null, "Sub1", rectangle(500))),
+                        ),
+                        StratumMapEditModel(
+                            id = null,
+                            name = "A-2",
+                            substrata =
+                                listOf(SubstratumMapEditModel(null, "X", rectangle(500, x = 500))),
+                        ),
+                    ),
+            )
+            .toDesiredModel(existing)
+
+    val expected =
+        listOf(
+            StratumModel.create(
+                boundary = rectangle(500),
+                name = "A",
+                stableId = StableId("A-2"),
+                substrata =
+                    listOf(
+                        SubstratumModel.create(
+                            boundary = rectangle(500),
+                            fullName = "A-Sub1",
+                            name = "Sub1",
+                            stableId = StableId("A-Sub1-2"),
+                        )
+                    ),
+            ),
+            StratumModel.create(
+                boundary = rectangle(500, x = 500),
+                name = "A-2",
+                stableId = StableId("A-2-2"),
+                substrata =
+                    listOf(
+                        SubstratumModel.create(
+                            boundary = rectangle(500, x = 500),
+                            fullName = "A-2-X",
+                            name = "X",
+                            stableId = StableId("A-2-X"),
+                        )
+                    ),
+            ),
+        )
+
+    assertEquals(expected, desired.strata)
+  }
+
+  @Test
   fun `new strata use default settings`() {
     val existing = existingSite(width = 1000) { stratum(width = 500, plantNumPermanent = 10) }
 
