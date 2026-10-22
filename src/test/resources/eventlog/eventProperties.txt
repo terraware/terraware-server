@@ -408,6 +408,17 @@ com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/monitorin
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/observationId: ObservationId
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.PlotT0DensityCreatedEventV1/density: BigDecimal
+com.terraformation.backend.tracking.event.PlotT0DensityCreatedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.PlotT0DensityCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.PlotT0DensityCreatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.PlotT0DensityCreatedEventV1/plotNumber: Long
+com.terraformation.backend.tracking.event.PlotT0DensityCreatedEventV1/speciesId: SpeciesId
+com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventV1/plotNumber: Long
+com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventV1/speciesId: SpeciesId
 com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/monitoringPlotId: MonitoringPlotId
 com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventV1/plantingSiteId: PlantingSiteId

@@ -283,6 +283,13 @@ class Messages {
 
   fun numericValueOrNull(value: BigDecimal?) = value?.let { decimalFormat().format(it) }
 
+  /** Formats a number using the current locale without rounding away any significant digits. */
+  fun exactNumericValueOrNull(value: BigDecimal?) = value?.let {
+    decimalFormat()
+        .apply { maximumFractionDigits = it.stripTrailingZeros().scale().coerceAtLeast(0) }
+        .format(it)
+  }
+
   fun numericValueOrNull(value: Int?) = value?.let { decimalFormat().format(it) }
 
   fun numericValueOrNull(value: Long?) = value?.let { decimalFormat().format(it) }

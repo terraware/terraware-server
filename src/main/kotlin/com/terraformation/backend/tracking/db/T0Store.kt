@@ -25,6 +25,9 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityCreatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEvent
+import com.terraformation.backend.tracking.event.PlotT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEvent
 import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
@@ -535,6 +538,8 @@ class T0Store(
       lockMonitoringPlot(monitoringPlotId)
       val previousT0Observation = fetchT0Observation(monitoringPlotId)
       val existingDensities = fetchExistingDensities(monitoringPlotId)
+      val densityEventBaseline =
+          if (previousT0Observation != null) emptyMap() else existingDensities
 
       with(PLOT_T0_OBSERVATIONS) {
         // delete t0 observations associated with this plot so that retrieval doesn't return
@@ -588,20 +593,55 @@ class T0Store(
 
       eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
 
-      if (previousT0Observation != null) {
+      val densityEventChanges =
+          buildSpeciesDensityChangeList(
+              densityEventBaseline,
+              newDensities,
+              ignoreScale = true,
+          )
+      if (previousT0Observation != null || densityEventChanges.isNotEmpty()) {
         val plotEventInfo = fetchPlotEventInfo(monitoringPlotId)
 
-        eventPublisher.publishEvent(
-            PlotT0ObservationUpdatedEvent(
-                changedFrom = previousT0Observation,
-                changedTo = PlotT0ObservationUpdatedEventValues(),
-                monitoringPlotId = monitoringPlotId,
-                observationId = null,
-                organizationId = plotEventInfo.organizationId,
-                plantingSiteId = plotEventInfo.plantingSiteId,
-                plotNumber = plotEventInfo.plotNumber,
+        if (previousT0Observation != null) {
+          eventPublisher.publishEvent(
+              PlotT0ObservationUpdatedEvent(
+                  changedFrom = previousT0Observation,
+                  changedTo = PlotT0ObservationUpdatedEventValues(),
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = null,
+                  organizationId = plotEventInfo.organizationId,
+                  plantingSiteId = plotEventInfo.plantingSiteId,
+                  plotNumber = plotEventInfo.plotNumber,
+              )
+          )
+        }
+
+        densityEventChanges.forEach { change ->
+          if (change.previousDensity == null) {
+            eventPublisher.publishEvent(
+                PlotT0DensityCreatedEvent(
+                    density = change.newDensity!!,
+                    monitoringPlotId = monitoringPlotId,
+                    organizationId = plotEventInfo.organizationId,
+                    plantingSiteId = plotEventInfo.plantingSiteId,
+                    plotNumber = plotEventInfo.plotNumber,
+                    speciesId = change.speciesId,
+                )
             )
-        )
+          } else {
+            eventPublisher.publishEvent(
+                PlotT0DensityUpdatedEvent(
+                    changedFrom = PlotT0DensityUpdatedEventValues(density = change.previousDensity),
+                    changedTo = PlotT0DensityUpdatedEventValues(density = change.newDensity),
+                    monitoringPlotId = monitoringPlotId,
+                    organizationId = plotEventInfo.organizationId,
+                    plantingSiteId = plotEventInfo.plantingSiteId,
+                    plotNumber = plotEventInfo.plotNumber,
+                    speciesId = change.speciesId,
+                )
+            )
+          }
+        }
       }
 
       buildSpeciesDensityChangeList(existingDensities, newDensities)
@@ -844,11 +884,18 @@ class T0Store(
   private fun buildSpeciesDensityChangeList(
       existingDensities: Map<SpeciesId, BigDecimal>,
       newDensities: Map<SpeciesId, BigDecimal>,
+      ignoreScale: Boolean = false,
   ): Set<SpeciesDensityChangedModel> {
     val changeList = mutableMapOf<SpeciesId, SpeciesDensityChangedModel>()
     for ((speciesId, newDensity) in newDensities) {
       val previous = existingDensities[speciesId]
-      if (previous != newDensity) {
+      val changed =
+          if (ignoreScale) {
+            previous == null || previous.compareTo(newDensity) != 0
+          } else {
+            previous != newDensity
+          }
+      if (changed) {
         changeList[speciesId] =
             SpeciesDensityChangedModel(
                 speciesId,
