@@ -9,7 +9,13 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.tables.records.DraftPlantingSitesRecord
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.rectangle
+import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
+import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
+import com.terraformation.backend.tracking.model.DraftStratumModel
+import com.terraformation.backend.tracking.model.DraftSubstratumModel
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
 import org.jooq.JSONB
@@ -221,6 +227,94 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<ProjectInDifferentOrganizationException> {
         store.update(inserted.draftPlantingSiteId) { it.projectId = inserted.projectId }
+      }
+    }
+  }
+
+  @Nested
+  inner class FetchModelById {
+    @Test
+    fun `returns model`() {
+      val projectId = insertProject()
+      insertDraftPlantingSite(
+          boundary = rectangle(500),
+          boundarySource = "shapefile",
+          description = "Description",
+          exclusion = rectangle(10),
+          name = "Fetch test",
+          projectId = projectId,
+          siteEditStep = "zone_boundaries",
+          timeZone = timeZone,
+      )
+
+      val expected =
+          DraftPlantingSiteModel(
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              description = "Description",
+              id = inserted.draftPlantingSiteId,
+              map =
+                  DraftPlantingSiteMap(
+                      boundary = rectangle(500),
+                      boundarySource = "shapefile",
+                      exclusion = rectangle(10),
+                      siteEditStep = "zone_boundaries",
+                      siteType = DraftPlantingSiteType.Detailed,
+                      strata = emptyList(),
+                  ),
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              name = "Fetch test",
+              organizationId = organizationId,
+              projectId = projectId,
+              timeZone = timeZone,
+          )
+
+      assertEquals(expected, store.fetchModelById(inserted.draftPlantingSiteId))
+    }
+
+    @Test
+    fun `returns strata and substrata in id order`() {
+      insertDraftPlantingSite()
+      val stratumId1 = insertDraftStratum(name = "Zebra")
+      val substratumId1 = insertDraftSubstratum(name = "Zulu")
+      val substratumId2 = insertDraftSubstratum(name = "Alpha")
+      val stratumId2 = insertDraftStratum(name = "Alpha")
+      val substratumId3 = insertDraftSubstratum(name = "Beta")
+
+      val expected =
+          listOf(
+              DraftStratumModel(
+                  id = stratumId1,
+                  name = "Zebra",
+                  boundary = rectangle(100),
+                  initialPlantingDensity = BigDecimal(1500),
+                  substrata =
+                      listOf(
+                          DraftSubstratumModel(substratumId1, "Zulu", rectangle(100)),
+                          DraftSubstratumModel(substratumId2, "Alpha", rectangle(100)),
+                      ),
+              ),
+              DraftStratumModel(
+                  id = stratumId2,
+                  name = "Alpha",
+                  boundary = rectangle(100),
+                  initialPlantingDensity = BigDecimal(1500),
+                  substrata = listOf(DraftSubstratumModel(substratumId3, "Beta", rectangle(100))),
+              ),
+          )
+
+      assertEquals(expected, store.fetchModelById(inserted.draftPlantingSiteId).map.strata)
+    }
+
+    @Test
+    fun `throws exception if no permission to read draft`() {
+      every { user.canReadDraftPlantingSite(any()) } returns false
+
+      insertDraftPlantingSite()
+
+      assertThrows<DraftPlantingSiteNotFoundException> {
+        store.fetchModelById(inserted.draftPlantingSiteId)
       }
     }
   }
