@@ -119,7 +119,9 @@ data class PlantingSiteMapEditModel(
                   )
                 }
 
-            val boundary = mergeToMultiPolygon(substrata.map { it.boundary })
+            val boundary =
+                mergeToMultiPolygon(substrata.map { it.boundary })
+                    .unlessSameShapeAs(existingStratum?.boundary)
 
             if (existingStratum == null) {
               StratumModel.create(
@@ -143,8 +145,9 @@ data class PlantingSiteMapEditModel(
     val siteBoundary =
         if (desiredStrata.isNotEmpty()) {
           runBlocking(Dispatchers.Default) {
-            mergeToMultiPolygon(desiredStrata.map { it.boundary })
-          }
+                mergeToMultiPolygon(desiredStrata.map { it.boundary })
+              }
+              .unlessSameShapeAs(existing.boundary)
         } else {
           boundary ?: throw IllegalArgumentException("Cannot remove map from planting site")
         }
@@ -189,6 +192,17 @@ data class PlantingSiteMapEditModel(
         }
       }
     }
+  }
+
+  /**
+   * Returns [existing] if it covers exactly the same area as this geometry, or this geometry if
+   * not. Merging polygons can add or move vertices without changing the shape, and the edit
+   * calculator compares boundaries vertex by vertex, so this prevents unchanged boundaries from
+   * being treated as edited.
+   */
+  private fun MultiPolygon.unlessSameShapeAs(existing: MultiPolygon?): MultiPolygon {
+    val isSameShape = existing != null && runCatching { equalsTopo(existing) }.getOrDefault(false)
+    return if (isSameShape) existing else this
   }
 
   /**
