@@ -181,9 +181,10 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class IsOptedIn {
     @Test
     fun `returns true only for categories the user opted into`() {
-      val otherUserId = insertUser()
+      val userId = insertUser(emailNotificationsEnabled = true)
+      val otherUserId = insertUser(emailNotificationsEnabled = true)
       insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
-      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, user.userId)
+      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, userId)
 
       assertEquals(
           mapOf(
@@ -192,8 +193,24 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               EmailNotificationCategory.PlantingAndObservations to false,
               EmailNotificationCategory.Accelerator to false,
           ),
-          EmailNotificationCategory.entries.associateWith { store.isOptedIn(user.userId, it) },
+          EmailNotificationCategory.entries.associateWith { store.isOptedIn(userId, it) },
       )
+    }
+
+    @Test
+    fun `returns false if user disabled email notifications`() {
+      val userId = insertUser(emailNotificationsEnabled = false)
+      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, userId)
+
+      assertFalse(store.isOptedIn(userId, EmailNotificationCategory.Nursery), "Categorized")
+      assertFalse(store.isOptedIn(userId, null), "Uncategorized")
+    }
+
+    @Test
+    fun `returns true for uncategorized emails if user enabled email notifications`() {
+      val userId = insertUser(emailNotificationsEnabled = true)
+
+      assertTrue(store.isOptedIn(userId, null))
     }
   }
 }

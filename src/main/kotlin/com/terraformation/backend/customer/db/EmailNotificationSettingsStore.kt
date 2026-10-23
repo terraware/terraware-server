@@ -75,16 +75,29 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
   }
 
   /**
-   * Returns true if a user has opted into a category of email notifications. This doesn't check
-   * permissions; it's for use by code that decides who should receive notifications.
+   * Returns true if a user has enabled email notifications and, if [category] is non-null, has
+   * opted into that category. This doesn't check permissions; it's for use by code that decides who
+   * should receive notifications.
    */
-  fun isOptedIn(userId: UserId, category: EmailNotificationCategory): Boolean {
-    return with(USER_EMAIL_NOTIFICATION_CATEGORIES) {
-      dslContext.fetchExists(
-          this,
-          USER_ID.eq(userId).and(EMAIL_NOTIFICATION_CATEGORY_ID.eq(category)),
-      )
-    }
+  fun isOptedIn(userId: UserId, category: EmailNotificationCategory?): Boolean {
+    val categoryCondition =
+        if (category != null) {
+          DSL.exists(
+              DSL.selectOne()
+                  .from(USER_EMAIL_NOTIFICATION_CATEGORIES)
+                  .where(USER_EMAIL_NOTIFICATION_CATEGORIES.USER_ID.eq(userId))
+                  .and(
+                      USER_EMAIL_NOTIFICATION_CATEGORIES.EMAIL_NOTIFICATION_CATEGORY_ID.eq(category)
+                  )
+          )
+        } else {
+          DSL.trueCondition()
+        }
+
+    return dslContext.fetchExists(
+        USERS,
+        USERS.ID.eq(userId).and(USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue).and(categoryCondition),
+    )
   }
 
   private fun fetchOptedInCategories(userId: UserId): Set<EmailNotificationCategory> {

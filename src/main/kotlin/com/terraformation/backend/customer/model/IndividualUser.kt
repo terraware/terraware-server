@@ -87,7 +87,6 @@ data class IndividualUser(
     override val userId: UserId,
     override val authId: String?,
     override val email: String,
-    override val emailNotificationsEnabled: Boolean,
     override val firstName: String?,
     override val lastName: String?,
     override val countryCode: String?,

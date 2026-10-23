@@ -622,7 +622,6 @@ internal class NotificationServiceEmailTest {
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
     every { speciesStore.fetchSpeciesById(species.id) } returns species
     every { user.email } returns "user@test.com"
-    every { user.emailNotificationsEnabled } returns true
     every { user.fullName } returns "Normal User"
     every { user.firstName } returns "Normal"
     every { user.locale } returns Locale.ENGLISH
@@ -2086,6 +2085,7 @@ internal class NotificationServiceEmailTest {
   @Test
   fun `uncategorized emails are sent regardless of category opt-ins`() {
     every { emailNotificationSettingsStore.isOptedIn(any(), any()) } returns false
+    every { emailNotificationSettingsStore.isOptedIn(any(), isNull()) } returns true
 
     emailService.sendUserNotification(user, ObservationNotScheduled(config, "org", "site"))
 
@@ -2093,11 +2093,10 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
-  fun `categorized emails are not sent to users who disabled email notifications`() {
-    val disabledUser = userForEmail("disabled@test.com", UserId(1000))
-    every { disabledUser.emailNotificationsEnabled } returns false
+  fun `uncategorized emails are not sent to users who disabled email notifications`() {
+    every { emailNotificationSettingsStore.isOptedIn(any(), isNull()) } returns false
 
-    emailService.sendUserNotification(disabledUser, FacilityIdle(config, facility, "https://x"))
+    emailService.sendUserNotification(user, ObservationNotScheduled(config, "org", "site"))
 
     assertNoMessageSent()
   }
@@ -2377,7 +2376,6 @@ internal class NotificationServiceEmailTest {
     val mock: IndividualUser = mockk()
 
     every { mock.email } returns email
-    every { mock.emailNotificationsEnabled } returns true
     if (email.startsWith("gibberish")) {
       every { mock.locale } returns Locales.GIBBERISH
     } else {
@@ -2392,7 +2390,6 @@ internal class NotificationServiceEmailTest {
     val mock: FunderUser = mockk()
 
     every { mock.email } returns email
-    every { mock.emailNotificationsEnabled } returns true
     if (email.startsWith("gibberish")) {
       every { mock.locale } returns Locales.GIBBERISH
     } else {
