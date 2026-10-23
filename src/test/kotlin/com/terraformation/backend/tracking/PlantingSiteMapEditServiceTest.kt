@@ -20,6 +20,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureTy
 import com.terraformation.backend.tracking.model.StratumMapEditModel
 import com.terraformation.backend.tracking.model.SubstratumMapEditModel
 import io.mockk.every
+import io.mockk.spyk
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.TopologyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
@@ -115,6 +117,16 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
           setOf(PlantingSiteValidationFailureType.SubstratumBoundaryOverlaps),
           exception.problems.map { it.type }.toSet(),
       )
+    }
+
+    @Test
+    fun `reports topology failures while building desired site as invalid arguments`() {
+      val existing = createSite(newSite())
+      val mapEdit = spyk(PlantingSiteMapEditModel.of(existing))
+
+      every { mapEdit.toDesiredModel(any()) } throws TopologyException("Test failure")
+
+      assertThrows<IllegalArgumentException> { service.calculateEdit(existing.id, mapEdit) }
     }
 
     @Test
