@@ -28,8 +28,7 @@ class PlantingSiteMapEditModelTest {
     val existingStratum = existing.strata[0]
 
     val desired =
-        existing
-            .toMapEdit()
+        PlantingSiteMapEditModel.of(existing)
             .let { it.copy(strata = listOf(it.strata[0].copy(name = "New"))) }
             .toDesiredModel(existing)
 
@@ -50,8 +49,7 @@ class PlantingSiteMapEditModelTest {
     val existing = existingSite(width = 1000) { stratum(width = 500, plantNumPermanent = 10) }
 
     val desired =
-        existing
-            .toMapEdit()
+        PlantingSiteMapEditModel.of(existing)
             .let {
               it.copy(
                   strata =
@@ -97,8 +95,7 @@ class PlantingSiteMapEditModelTest {
     val destinationStratum = existing.strata[1]
 
     val desired =
-        existing
-            .toMapEdit()
+        PlantingSiteMapEditModel.of(existing)
             .let { edit ->
               edit.copy(
                   strata =
@@ -134,8 +131,7 @@ class PlantingSiteMapEditModelTest {
     val existing = existingSite(width = 1000) { stratum(width = 500) }
 
     val desired =
-        existing
-            .toMapEdit()
+        PlantingSiteMapEditModel.of(existing)
             .copy(boundary = rectangle(5000))
             .let { it.copy(strata = it.strata.take(1)) }
             .toDesiredModel(existing)

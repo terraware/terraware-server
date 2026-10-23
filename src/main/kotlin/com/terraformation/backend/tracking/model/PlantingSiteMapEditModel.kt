@@ -13,7 +13,12 @@ data class SubstratumMapEditModel(
     val id: SubstratumId?,
     val name: String,
     val boundary: MultiPolygon,
-)
+) {
+  companion object {
+    fun of(existing: ExistingSubstratumModel) =
+        SubstratumMapEditModel(id = existing.id, name = existing.name, boundary = existing.boundary)
+  }
+}
 
 /**
  * A model representing a stratum's edits to be applied.
@@ -26,7 +31,16 @@ data class StratumMapEditModel(
     val id: StratumId?,
     val name: String,
     val substrata: List<SubstratumMapEditModel>,
-)
+) {
+  companion object {
+    fun of(existing: ExistingStratumModel) =
+        StratumMapEditModel(
+            id = existing.id,
+            name = existing.name,
+            substrata = existing.substrata.map { SubstratumMapEditModel.of(it) },
+        )
+  }
+}
 
 /**
  * The full desired map of an existing planting site, as edited by a user.
@@ -130,5 +144,15 @@ data class PlantingSiteMapEditModel(
         strata = desiredStrata,
         timeZone = existing.timeZone,
     )
+  }
+
+  companion object {
+    /** Returns a map edit that would leave an existing planting site's map unchanged. */
+    fun of(existing: ExistingPlantingSiteModel) =
+        PlantingSiteMapEditModel(
+            boundary = existing.boundary,
+            exclusion = existing.exclusion,
+            strata = existing.strata.map { StratumMapEditModel.of(it) },
+        )
   }
 }
