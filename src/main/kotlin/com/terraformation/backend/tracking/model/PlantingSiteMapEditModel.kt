@@ -101,24 +101,11 @@ data class PlantingSiteMapEditModel(
                   substrata = substrata,
               )
             } else {
-              StratumModel.create(
-                  biomassErrorMargin = existingStratum.biomassPlotCounts.errorMargin,
-                  biomassNumPermanentPlots = existingStratum.biomassPlotCounts.numPermanentPlots,
-                  biomassNumTemporaryPlots = existingStratum.biomassPlotCounts.numTemporaryPlots,
-                  biomassStudentsT = existingStratum.biomassPlotCounts.studentsT,
-                  biomassVariance = existingStratum.biomassPlotCounts.variance,
+              existingStratum.toNew(
                   boundary = boundary,
                   exclusion = exclusion,
-                  initialPlantingDensity = existingStratum.initialPlantingDensity,
                   name = stratum.name,
-                  plantErrorMargin = existingStratum.plantPlotCounts.errorMargin,
-                  plantNumPermanentPlots = existingStratum.plantPlotCounts.numPermanentPlots,
-                  plantNumTemporaryPlots = existingStratum.plantPlotCounts.numTemporaryPlots,
-                  plantStudentsT = existingStratum.plantPlotCounts.studentsT,
-                  plantVariance = existingStratum.plantPlotCounts.variance,
-                  stableId = existingStratum.stableId,
                   substrata = substrata,
-                  targetPlantDensity = existingStratum.targetPlantDensity,
               )
             }
           }

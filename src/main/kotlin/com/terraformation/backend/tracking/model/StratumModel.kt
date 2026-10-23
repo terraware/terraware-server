@@ -553,6 +553,24 @@ data class StratumModel<
           targetPlantDensity = targetPlantDensity,
       )
 
+  /**
+   * Returns a new stratum with this stratum's stable ID, plot count settings, and planting
+   * densities, but with a different map. The area is recalculated from the new boundary.
+   */
+  fun toNew(
+      boundary: MultiPolygon,
+      exclusion: MultiPolygon?,
+      name: String,
+      substrata: List<NewSubstratumModel>,
+  ): NewStratumModel =
+      toNew()
+          .copy(
+              areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
+              boundary = boundary,
+              name = name,
+              substrata = substrata,
+          )
+
   companion object {
     // Default values of the three parameters that determine how many monitoring plots should be
     // required in each observation. The "Student's t" value is a constant based on a 90%
