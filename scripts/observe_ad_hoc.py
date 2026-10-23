@@ -85,13 +85,15 @@ def generate_quadrats(master_species_list):
     for position in positions:
         if random.random() < 0.9:  # 90% chance of including each position
             # Select a random subset of species for this quadrat
-            max_species = min(5, len(master_species_list))
+            max_species = min(5, len(master_species_list) - 1)
             num_quadrat_species = random.randint(1, max_species)
-            selected_species = random.sample(master_species_list, num_quadrat_species)
+            selected_species = random.sample(
+                master_species_list[:-1], num_quadrat_species
+            )
 
             # Create species entries for the quadrat
             quadrat_species = [
-                {"abundancePercent": random.randint(5, 95), **get_species_refs(species)}
+                {"abundanceCount": random.randint(1, 25), **get_species_refs(species)}
                 for species in selected_species
             ]
 
@@ -113,7 +115,7 @@ def generate_trees(master_species_list, num_trees=None):
 
     trees = []
     for _ in range(num_trees):
-        species = random.choice(master_species_list)
+        species = random.choice(master_species_list[:-1])
         species_refs = get_species_refs(species)
 
         if random.choice(["shrub", "tree"]) == "shrub":
