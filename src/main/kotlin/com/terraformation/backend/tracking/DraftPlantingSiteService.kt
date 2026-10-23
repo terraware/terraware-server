@@ -36,11 +36,19 @@ class DraftPlantingSiteService(
    * callers without access get a permission error instead of the results of validation.
    *
    * @throws PlantingSiteMapInvalidException The map failed validation. Nothing is stored.
+   * @throws IllegalArgumentException The map's geometries couldn't be compared with one another.
    */
   fun create(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
     requirePermissions { createDraftPlantingSite(model.organizationId) }
 
-    model.toPlantingSiteModel().requireValid()
+    val plantingSiteModel =
+        try {
+          model.toPlantingSiteModel()
+        } catch (e: TopologyException) {
+          throw IllegalArgumentException("Planting site map has invalid geometry", e)
+        }
+
+    plantingSiteModel.requireValid()
 
     return draftPlantingSiteStore.create(model)
   }

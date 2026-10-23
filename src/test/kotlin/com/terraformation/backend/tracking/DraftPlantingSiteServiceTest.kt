@@ -440,6 +440,15 @@ class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `create reports topology failures while building site model as invalid arguments`() {
+      val model = spyk(siteModel(listOf(stratum("A", boundaryA))))
+      every { model.toPlantingSiteModel() } throws TopologyException("Test failure")
+
+      assertThrows<IllegalArgumentException> { service.create(model) }
+      assertTableEmpty(DRAFT_PLANTING_SITES)
+    }
+
+    @Test
     fun `create stores valid draft`() {
       val model = siteModel(listOf(stratum("A", boundaryA), stratum("B", boundaryB)))
 
