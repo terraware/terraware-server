@@ -1,3 +1,4 @@
+0fffd403 SW-9145 Move biomass measurements to per-plot results (#5226)
 2650f2fc Record temporary plot T0 density changes in event log (#5223)
 ec62cfb6 Record manual plot T0 density changes in event log (#5222)
 4c83ba89 Record T0 observation changes in event log (#5221)
