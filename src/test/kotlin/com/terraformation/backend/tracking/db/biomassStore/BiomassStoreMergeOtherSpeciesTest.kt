@@ -268,6 +268,81 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
   }
 
   @Test
+  fun `does not combine quadrat counts from different plots`() {
+    observationId =
+        insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
+    val firstPlotId = insertMonitoringPlot(substratumId = null, isAdHoc = true)
+    monitoringPlotId = firstPlotId
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+    insertObservationBiomassDetails()
+
+    val targetSpeciesId = insertSpecies()
+    val targetBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = targetSpeciesId)
+    val otherBiomassSpeciesId = insertObservationBiomassSpecies(scientificName = "Other")
+    val position = ObservationPlotPosition.NortheastCorner
+    insertObservationBiomassQuadratDetails(position = position)
+    insertObservationBiomassQuadratSpecies(
+        monitoringPlotId = firstPlotId,
+        position = position,
+        biomassSpeciesId = otherBiomassSpeciesId,
+        abundanceCount = 5,
+    )
+
+    val secondPlotId = insertMonitoringPlot(substratumId = null, isAdHoc = true)
+    monitoringPlotId = secondPlotId
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+    insertObservationBiomassDetails()
+    insertObservationBiomassQuadratDetails(position = position)
+    insertObservationBiomassQuadratSpecies(
+        monitoringPlotId = secondPlotId,
+        position = position,
+        biomassSpeciesId = targetBiomassSpeciesId,
+        abundanceCount = 7,
+    )
+
+    val quadratSpeciesBeforeMerge =
+        setOf(
+            ObservationBiomassQuadratSpeciesRecord(
+                observationId = observationId,
+                monitoringPlotId = firstPlotId,
+                positionId = position,
+                biomassSpeciesId = otherBiomassSpeciesId,
+                abundanceCount = 5,
+            ),
+            ObservationBiomassQuadratSpeciesRecord(
+                observationId = observationId,
+                monitoringPlotId = secondPlotId,
+                positionId = position,
+                biomassSpeciesId = targetBiomassSpeciesId,
+                abundanceCount = 7,
+            ),
+        )
+    assertTableEquals(quadratSpeciesBeforeMerge, "Quadrat species before merge")
+
+    store.mergeOtherSpecies(observationId, "Other", targetSpeciesId)
+
+    assertTableEquals(
+        setOf(
+            ObservationBiomassQuadratSpeciesRecord(
+                observationId = observationId,
+                monitoringPlotId = firstPlotId,
+                positionId = position,
+                biomassSpeciesId = targetBiomassSpeciesId,
+                abundanceCount = 5,
+            ),
+            ObservationBiomassQuadratSpeciesRecord(
+                observationId = observationId,
+                monitoringPlotId = secondPlotId,
+                positionId = position,
+                biomassSpeciesId = targetBiomassSpeciesId,
+                abundanceCount = 7,
+            ),
+        ),
+        "Quadrat species after merge",
+    )
+  }
+
+  @Test
   fun `makes biomass species refer to target species ID if target was not already in observation`() {
     val observationId =
         insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
@@ -333,7 +408,6 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
         ObservationBiomassSpeciesRecord(
             isInvasive = true,
             isThreatened = false,
-            monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             scientificName = null,
             speciesId = speciesId,
@@ -368,7 +442,6 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
       ObservationBiomassSpeciesRecord(
           id = id,
           observationId = observationId,
-          monitoringPlotId = monitoringPlotId,
           speciesId = speciesId,
           scientificName = speciesName,
           isInvasive = isInvasive,

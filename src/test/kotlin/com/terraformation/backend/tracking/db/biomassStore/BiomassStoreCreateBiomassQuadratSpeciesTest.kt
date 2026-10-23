@@ -109,14 +109,16 @@ class BiomassStoreCreateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
   fun `removes species from additional species of only the quadrat's plot`() {
     val speciesId = insertSpecies()
     val monitoringPlotId = inserted.monitoringPlotId
-    insertObservationBiomassSpecies(speciesId = speciesId)
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     insertObservationBiomassAdditionalSpecies()
 
     val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
-    insertObservationPlot()
-    insertObservationBiomassDetails()
-    val otherPlotBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    insertObservationBiomassAdditionalSpecies()
+    insertObservationPlot(monitoringPlotId = otherMonitoringPlotId)
+    insertObservationBiomassDetails(monitoringPlotId = otherMonitoringPlotId)
+    insertObservationBiomassAdditionalSpecies(
+        monitoringPlotId = otherMonitoringPlotId,
+        biomassSpeciesId = biomassSpeciesId,
+    )
 
     store.createBiomassQuadratSpecies(
         inserted.observationId,
@@ -129,7 +131,7 @@ class BiomassStoreCreateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
 
     assertTableEquals(
         ObservationBiomassAdditionalSpeciesRecord(
-            biomassSpeciesId = otherPlotBiomassSpeciesId,
+            biomassSpeciesId = biomassSpeciesId,
             monitoringPlotId = otherMonitoringPlotId,
             observationId = inserted.observationId,
         ),

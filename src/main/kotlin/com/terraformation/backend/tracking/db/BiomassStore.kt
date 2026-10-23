@@ -193,35 +193,48 @@ class BiomassStore(
       )
 
       model.species.forEach { speciesModel ->
-        val record =
-            ObservationBiomassSpeciesRecord(
-                    observationId = observationId,
-                    monitoringPlotId = plotId,
-                    commonName = speciesModel.commonName,
-                    isInvasive = speciesModel.isInvasive,
-                    isThreatened = speciesModel.isThreatened,
-                    scientificName = speciesModel.scientificName,
-                    speciesId = speciesModel.speciesId,
-                )
-                .attach(dslContext)
+        val existing =
+            with(OBSERVATION_BIOMASS_SPECIES) {
+              dslContext
+                  .selectFrom(this)
+                  .where(OBSERVATION_ID.eq(observationId))
+                  .and(
+                      speciesModel.speciesId?.let { SPECIES_ID.eq(it) }
+                          ?: SCIENTIFIC_NAME.eq(speciesModel.scientificName)
+                  )
+                  .fetchOne()
+            }
 
-        record.insert()
+        if (existing == null) {
+          val record =
+              ObservationBiomassSpeciesRecord(
+                      observationId = observationId,
+                      commonName = speciesModel.commonName,
+                      isInvasive = speciesModel.isInvasive,
+                      isThreatened = speciesModel.isThreatened,
+                      scientificName = speciesModel.scientificName,
+                      speciesId = speciesModel.speciesId,
+                  )
+                  .attach(dslContext)
 
-        eventPublisher.publishEvent(
-            BiomassSpeciesCreatedEvent(
-                biomassSpeciesId = record.id!!,
-                commonName = speciesModel.commonName,
-                isInvasive = speciesModel.isInvasive,
-                isThreatened = speciesModel.isThreatened,
-                monitoringPlotId = plotId,
-                observationId = observationId,
-                organizationId = organizationId,
-                plantingSiteId = plantingSiteId,
-                scientificName = speciesModel.scientificName,
-                speciesId = speciesModel.speciesId,
-                speciesName = getBiomassSpeciesName(record.speciesId, record.scientificName),
-            )
-        )
+          record.insert()
+
+          eventPublisher.publishEvent(
+              BiomassSpeciesCreatedEvent(
+                  biomassSpeciesId = record.id!!,
+                  commonName = speciesModel.commonName,
+                  isInvasive = speciesModel.isInvasive,
+                  isThreatened = speciesModel.isThreatened,
+                  monitoringPlotId = plotId,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = plantingSiteId,
+                  scientificName = speciesModel.scientificName,
+                  speciesId = speciesModel.speciesId,
+                  speciesName = getBiomassSpeciesName(record.speciesId, record.scientificName),
+              )
+          )
+        }
       }
 
       val biomassSpeciesIdsBySpeciesIdentifiers =
@@ -560,6 +573,7 @@ class BiomassStore(
                   .from(quadratSpeciesTable2)
                   .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
                   .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
+                  .and(quadratSpeciesTable2.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
           )
           .execute()
 
@@ -576,6 +590,7 @@ class BiomassStore(
                                   quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId)
                               )
                               .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
+                              .and(quadratSpeciesTable2.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
                       )
                   ),
                   DSL.value(25),
@@ -587,6 +602,7 @@ class BiomassStore(
                   .from(quadratSpeciesTable2)
                   .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
                   .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
+                  .and(quadratSpeciesTable2.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
           )
           .execute()
     }
@@ -775,8 +791,8 @@ class BiomassStore(
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { _ ->
-      val biomassSpeciesRecord =
-          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
+      validateBiomassSpeciesPlot(observationId, monitoringPlotId)
+      val biomassSpeciesRecord = fetchBiomassSpecies(speciesId, scientificName, observationId)
 
       val biomassSpeciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.ID]!!
 
@@ -847,9 +863,7 @@ class BiomassStore(
       val alreadyExists =
           dslContext.fetchExists(
               OBSERVATION_BIOMASS_SPECIES,
-              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(observationId)
-                  .and(OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
-                  .and(speciesCondition),
+              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(observationId).and(speciesCondition),
           )
       if (alreadyExists) {
         throw IllegalArgumentException("Biomass species already exists in observation plot")
@@ -904,8 +918,8 @@ class BiomassStore(
     }
 
     entityLocker.withLockedObservation(observationId) { _ ->
-      val biomassSpecies =
-          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
+      validateBiomassSpeciesPlot(observationId, monitoringPlotId)
+      val biomassSpecies = fetchBiomassSpecies(speciesId, scientificName, observationId)
       val biomassSpeciesId = biomassSpecies.id!!
       val hasRecordedTrees =
           dslContext.fetchExists(
@@ -1057,8 +1071,7 @@ class BiomassStore(
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { observation ->
-      val biomassSpeciesRecord =
-          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
+      val biomassSpeciesRecord = fetchBiomassSpecies(speciesId, scientificName, observationId)
 
       val biomassSpeciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.ID]!!
 
@@ -1248,8 +1261,7 @@ class BiomassStore(
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { observation ->
-      val biomassSpecies =
-          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
+      val biomassSpecies = fetchBiomassSpecies(speciesId, scientificName, observationId)
       val biomassSpeciesId = biomassSpecies[OBSERVATION_BIOMASS_SPECIES.ID]!!
       val exists =
           dslContext.fetchExists(
@@ -1521,7 +1533,6 @@ class BiomassStore(
       speciesId: SpeciesId?,
       scientificName: String?,
       observationId: ObservationId,
-      monitoringPlotId: MonitoringPlotId,
   ): ObservationBiomassSpeciesRecord {
     return with(OBSERVATION_BIOMASS_SPECIES) {
       val idOrNameCondition =
@@ -1531,7 +1542,6 @@ class BiomassStore(
       dslContext
           .selectFrom(OBSERVATION_BIOMASS_SPECIES)
           .where(OBSERVATION_ID.eq(observationId))
-          .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
           .and(idOrNameCondition)
           .fetchOne() ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
     }
@@ -1569,7 +1579,6 @@ class BiomassStore(
           dslContext
               .selectFrom(OBSERVATION_BIOMASS_SPECIES)
               .where(OBSERVATION_ID.eq(observationId))
-              .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
               .and(speciesCondition)
               .fetchOne()
         }
@@ -1613,7 +1622,6 @@ class BiomassStore(
                 commonName = commonName,
                 isInvasive = isInvasive,
                 isThreatened = isThreatened,
-                monitoringPlotId = monitoringPlotId,
                 observationId = observationId,
                 scientificName = scientificName,
                 speciesId = speciesId,

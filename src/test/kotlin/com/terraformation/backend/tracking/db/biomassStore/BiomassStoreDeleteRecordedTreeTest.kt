@@ -15,6 +15,7 @@ import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import io.mockk.every
 import java.math.BigDecimal
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -115,6 +116,28 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
     assertTableEmpty(RECORDED_TREES)
     assertTableEquals(expectedSpecies, "Biomass species")
     assertTableEquals(expectedAdditionalSpecies, "Additional species")
+    eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
+  }
+
+  @Test
+  fun `keeps a biomass species referenced by a tree in another plot`() {
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    val remainingTreeId = insertTree(biomassSpeciesId)
+
+    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot(monitoringPlotId = otherMonitoringPlotId)
+    insertObservationBiomassDetails(monitoringPlotId = otherMonitoringPlotId)
+    val deletedTreeId = insertTree(biomassSpeciesId, treeNumber = 2)
+
+    val expectedSpecies = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    store.deleteRecordedTree(observationId, otherMonitoringPlotId, deletedTreeId)
+
+    assertTableEquals(expectedSpecies, "Biomass species table")
+    assertEquals(
+        remainingTreeId,
+        dslContext.fetchSingle(RECORDED_TREES).id,
+        "Tree in the first plot should remain",
+    )
     eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
   }
 

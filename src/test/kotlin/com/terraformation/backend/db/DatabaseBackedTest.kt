@@ -3718,7 +3718,6 @@ abstract class DatabaseBackedTest {
   fun insertObservationBiomassSpecies(
       row: ObservationBiomassSpeciesRow = ObservationBiomassSpeciesRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       speciesId: SpeciesId? = row.speciesId,
       scientificName: String? = row.scientificName,
       commonName: String? = row.commonName,
@@ -3728,7 +3727,6 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             observationId = observationId,
-            monitoringPlotId = monitoringPlotId,
             speciesId = speciesId,
             scientificName = scientificName,
             commonName = commonName,

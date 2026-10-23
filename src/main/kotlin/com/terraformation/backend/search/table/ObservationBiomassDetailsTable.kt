@@ -40,8 +40,8 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
           ),
           observationBiomassSpecies.asMultiValueSublist(
               "species",
-              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID,
-              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_PLOT_ID,
+              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID,
+              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID,
           ),
       )
     }

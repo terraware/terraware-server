@@ -36,7 +36,6 @@ class ObservationStoreDeleteObservationTest : BaseObservationStoreTest() {
     val biomassSpeciesId =
         insertObservationBiomassSpecies(
             observationId = observationId,
-            monitoringPlotId = plotId,
             speciesId = speciesId,
         )
     insertRecordedTree(
