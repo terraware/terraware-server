@@ -75,18 +75,6 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
   }
 
   /**
-   * Opts the current user into all the email notification categories that apply to them if they
-   * haven't opted into any. This is used when the user turns on email notifications so they aren't
-   * left with notifications enabled but no categories to receive.
-   */
-  fun optIntoAllCategoriesIfNoneForCurrentUser() {
-    val user = currentUser()
-    if (fetchOptedInCategories(user.userId).isEmpty()) {
-      updateForCurrentUser(fetchApplicableCategories(user).associateWith { true })
-    }
-  }
-
-  /**
    * Returns true if a user has opted into a category of email notifications. This doesn't check
    * permissions; it's for use by code that decides who should receive notifications.
    */
