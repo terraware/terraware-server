@@ -40,6 +40,7 @@ data class PlantingDateRequestUpdatedEventV1(
 ) : FieldsUpdatedPersistentEvent, PlantingDateRequestPersistentEvent {
   data class Values(
       val date: LocalDate? = null,
+      val manuallyFulfilled: Boolean? = null,
       val notes: String? = null,
       val status: PlantingDateRequestStatus? = null,
   )
@@ -47,6 +48,11 @@ data class PlantingDateRequestUpdatedEventV1(
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
           createUpdatedField("date", changedFrom.date?.toString(), changedTo.date?.toString()),
+          createUpdatedField(
+              "manuallyFulfilled",
+              messages.booleanOrNull(changedFrom.manuallyFulfilled),
+              messages.booleanOrNull(changedTo.manuallyFulfilled),
+          ),
           createUpdatedField("notes", changedFrom.notes, changedTo.notes),
           createUpdatedField(
               "status",

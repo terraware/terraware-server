@@ -164,7 +164,11 @@ class PlantingDateRequestsStore(
 
       insertRequestSpecies(scheduledPlantingDateId)
 
-      updateRequestStatus(scheduledPlantingDateId)
+      val newSpecies = fetchRequestSpeciesQuantities(scheduledPlantingDateId)
+      updateRequestStatus(
+          scheduledPlantingDateId,
+          clearManualFulfillment = oldSpecies != newSpecies,
+      )
 
       val newDate =
           dslContext
@@ -172,7 +176,6 @@ class PlantingDateRequestsStore(
               .from(PLANTING_DATE_REQUESTS)
               .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
               .fetchOne(PLANTING_DATE_REQUESTS.DATE)
-      val newSpecies = fetchRequestSpeciesQuantities(scheduledPlantingDateId)
 
       if (oldDate != newDate || oldNotes != notes) {
         eventPublisher.publishEvent(
@@ -208,7 +211,10 @@ class PlantingDateRequestsStore(
 
   @EventListener
   fun on(event: WithdrawalAssociatedWithPlantingDateRequestEvent) {
-    updateRequestStatus(event.scheduledPlantingDateRequestId)
+    updateRequestStatus(
+        event.scheduledPlantingDateRequestId,
+        clearManualFulfillment = event.isUndo,
+    )
   }
 
   private fun insertRequestSpecies(scheduledPlantingDateId: ScheduledPlantingDateId) {
@@ -314,8 +320,27 @@ class PlantingDateRequestsStore(
     }
   }
 
-  private fun updateRequestStatus(scheduledPlantingDateId: ScheduledPlantingDateId) {
+  private fun updateRequestStatus(
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      clearManualFulfillment: Boolean,
+  ) {
     seasonHelper.withLockedScheduledPlantingDate(scheduledPlantingDateId) {
+      val oldRequest =
+          dslContext
+              .select(
+                  PLANTING_DATE_REQUESTS.STATUS_ID,
+                  PLANTING_DATE_REQUESTS.MANUALLY_FULFILLED,
+              )
+              .from(PLANTING_DATE_REQUESTS)
+              .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+              .fetchOne() ?: return@withLockedScheduledPlantingDate
+      val oldStatus = oldRequest.value1()
+      val oldManuallyFulfilled = oldRequest.value2() ?: false
+
+      if (oldManuallyFulfilled && !clearManualFulfillment) {
+        return@withLockedScheduledPlantingDate
+      }
+
       val requestedQuantities: Map<SpeciesId, BigDecimal> =
           with(PLANTING_DATE_REQUEST_SPECIES) {
             dslContext
@@ -341,13 +366,6 @@ class PlantingDateRequestsStore(
                     it[DSL.sum(BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN)]!!
               }
 
-      val oldStatus =
-          dslContext
-              .select(PLANTING_DATE_REQUESTS.STATUS_ID)
-              .from(PLANTING_DATE_REQUESTS)
-              .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
-              .fetchOne(PLANTING_DATE_REQUESTS.STATUS_ID)
-
       val newStatus =
           when {
             requestedQuantities.isEmpty() -> PlantingDateRequestStatus.Pending
@@ -366,11 +384,12 @@ class PlantingDateRequestsStore(
       // edit, so modified_by and modified_time are intentionally left unchanged.
       dslContext
           .update(PLANTING_DATE_REQUESTS)
+          .set(PLANTING_DATE_REQUESTS.MANUALLY_FULFILLED, false)
           .set(PLANTING_DATE_REQUESTS.STATUS_ID, newStatus)
           .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
           .execute()
 
-      if (oldStatus != newStatus) {
+      if (oldStatus != newStatus || oldManuallyFulfilled) {
         val plantingSeasonId =
             dslContext
                 .select(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID)
@@ -382,8 +401,16 @@ class PlantingDateRequestsStore(
 
         eventPublisher.publishEvent(
             PlantingDateRequestUpdatedEvent(
-                changedFrom = PlantingDateRequestUpdatedEventValues(status = oldStatus),
-                changedTo = PlantingDateRequestUpdatedEventValues(status = newStatus),
+                changedFrom =
+                    PlantingDateRequestUpdatedEventValues(
+                        manuallyFulfilled = oldManuallyFulfilled.nullIfEquals(false),
+                        status = oldStatus.nullIfEquals(newStatus),
+                    ),
+                changedTo =
+                    PlantingDateRequestUpdatedEventValues(
+                        manuallyFulfilled = false.nullIfEquals(oldManuallyFulfilled),
+                        status = newStatus.nullIfEquals(oldStatus),
+                    ),
                 organizationId = organizationId,
                 plantingSeasonId = plantingSeasonId,
                 plantingSiteId = plantingSiteId,

@@ -583,6 +583,7 @@ COMMENT ON COLUMN tracking.observed_stratum_species_totals.survival_rate IS 'Per
 COMMENT ON TABLE tracking.planting_date_request_statuses IS '(Enum) Possible statuses of a planting date request.';
 
 COMMENT ON TABLE tracking.planting_date_requests IS 'Requested planting date for a planting season.';
+COMMENT ON COLUMN tracking.planting_date_requests.manually_fulfilled IS 'Whether the request was marked fulfilled manually rather than by nursery withdrawals.';
 
 COMMENT ON TABLE tracking.planting_date_request_species IS 'Quantities of each species requested for a planting date.';
 

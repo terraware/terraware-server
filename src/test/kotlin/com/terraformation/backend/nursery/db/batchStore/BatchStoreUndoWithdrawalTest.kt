@@ -221,7 +221,10 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
     )
 
     eventPublisher.assertEventPublished(
-        WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId)
+        WithdrawalAssociatedWithPlantingDateRequestEvent(
+            isUndo = true,
+            scheduledPlantingDateRequestId = scheduledPlantingDateId,
+        )
     )
   }
 
