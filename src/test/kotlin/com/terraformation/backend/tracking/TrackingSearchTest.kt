@@ -1261,4 +1261,36 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         "Substratum history plots",
     )
   }
+
+  @Test
+  fun `biomass species search returns monitoring plot number for ad-hoc observations`() {
+    insertPlantingSite()
+    val monitoringPlotId = insertMonitoringPlot(isAdHoc = true, plotNumber = 42)
+    val observationId =
+        insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
+    insertObservationPlot(
+        monitoringPlotId = monitoringPlotId,
+        observationId = observationId,
+    )
+    insertObservationBiomassDetails(
+        monitoringPlotId = monitoringPlotId,
+        observationId = observationId,
+    )
+    insertObservationBiomassSpecies(
+        observationId = observationId,
+        scientificName = "Other species",
+    )
+
+    val prefix = SearchFieldPrefix(searchTables.observationBiomassSpecies)
+
+    assertEquals(
+        SearchResults(listOf(mapOf("monitoringPlot_plotNumber" to "42"))),
+        searchService.search(
+            prefix,
+            listOf(prefix.resolve("monitoringPlot_plotNumber")),
+            mapOf(prefix to NoConditionNode()),
+        ),
+        "Ad-hoc biomass species monitoring plot number",
+    )
+  }
 }

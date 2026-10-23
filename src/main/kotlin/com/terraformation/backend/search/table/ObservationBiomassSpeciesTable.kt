@@ -3,9 +3,9 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -22,16 +22,23 @@ class ObservationBiomassSpeciesTable(private val tables: SearchTables) : SearchT
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          monitoringPlots.asSingleValueSublist(
-              "monitoringPlot",
-              OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID,
-              MONITORING_PLOTS.ID,
-          ),
-          observationPlots.asSingleValueSublist(
-              "observationPlot",
-              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_PLOT_ID,
-              OBSERVATION_PLOTS.OBSERVATION_PLOT_ID,
-          ),
+          // This sublist is only valid for single-plot observations, e.g., ad-hoc ones.
+          monitoringPlots.asSingleValueSublist("monitoringPlot") { thisTable, otherTable ->
+            DSL.exists(
+                DSL.selectOne()
+                    .from(OBSERVATION_BIOMASS_DETAILS)
+                    .where(
+                        OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(
+                            thisTable.column(OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID)
+                        )
+                    )
+                    .and(
+                        OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(
+                            otherTable.column(MONITORING_PLOTS.ID)
+                        )
+                    )
+            )
+          },
           observations.asSingleValueSublist(
               "observation",
               OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID,

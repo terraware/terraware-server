@@ -832,25 +832,7 @@ class BiomassStore(
     }
 
     entityLocker.withLockedObservation(observationId) { _ ->
-      val isObservationPlot =
-          dslContext.fetchExists(
-              OBSERVATION_PLOTS,
-              OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
-                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
-          )
-      if (!isObservationPlot) {
-        throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
-      }
-
-      val hasBiomassDetails =
-          dslContext.fetchExists(
-              OBSERVATION_BIOMASS_DETAILS,
-              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
-                  .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
-          )
-      if (!hasBiomassDetails) {
-        throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
-      }
+      validateBiomassSpeciesPlot(observationId, monitoringPlotId)
 
       val organizationId =
           parentStore.getOrganizationId(observationId)
@@ -970,7 +952,7 @@ class BiomassStore(
         )
       }
 
-      deleteBiomassSpeciesRow(biomassSpecies, isImplicit = false)
+      deleteBiomassSpeciesRow(biomassSpecies, monitoringPlotId, isImplicit = false)
     }
   }
 
@@ -1306,7 +1288,7 @@ class BiomassStore(
           )
       )
 
-      deleteBiomassSpeciesIfUnreferenced(biomassSpeciesId)
+      deleteBiomassSpeciesIfUnreferenced(biomassSpeciesId, monitoringPlotId)
     }
   }
 
@@ -1453,7 +1435,7 @@ class BiomassStore(
         )
       }
 
-      deleteBiomassSpeciesIfUnreferenced(oldBiomassSpeciesId)
+      deleteBiomassSpeciesIfUnreferenced(oldBiomassSpeciesId, recordedTree.monitoringPlotId!!)
     }
   }
 
@@ -1506,7 +1488,32 @@ class BiomassStore(
           )
       )
 
-      deleteBiomassSpeciesIfUnreferenced(recordedTree.biomassSpeciesId!!)
+      deleteBiomassSpeciesIfUnreferenced(recordedTree.biomassSpeciesId!!, monitoringPlotId)
+    }
+  }
+
+  private fun validateBiomassSpeciesPlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+  ) {
+    val isObservationPlot =
+        dslContext.fetchExists(
+            OBSERVATION_PLOTS,
+            OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+                .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
+        )
+    if (!isObservationPlot) {
+      throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+    }
+
+    val hasBiomassDetails =
+        dslContext.fetchExists(
+            OBSERVATION_BIOMASS_DETAILS,
+            OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(observationId)
+                .and(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
+        )
+    if (!hasBiomassDetails) {
+      throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
     }
   }
 
@@ -1636,7 +1643,10 @@ class BiomassStore(
     return record.id!!
   }
 
-  private fun deleteBiomassSpeciesIfUnreferenced(biomassSpeciesId: BiomassSpeciesId) {
+  private fun deleteBiomassSpeciesIfUnreferenced(
+      biomassSpeciesId: BiomassSpeciesId,
+      monitoringPlotId: MonitoringPlotId,
+  ) {
     val hasRecordedTrees =
         dslContext.fetchExists(
             RECORDED_TREES,
@@ -1661,11 +1671,12 @@ class BiomassStore(
             .selectFrom(OBSERVATION_BIOMASS_SPECIES)
             .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
             .fetchOne() ?: return
-    deleteBiomassSpeciesRow(record, isImplicit = true)
+    deleteBiomassSpeciesRow(record, monitoringPlotId, isImplicit = true)
   }
 
   private fun deleteBiomassSpeciesRow(
       record: ObservationBiomassSpeciesRecord,
+      monitoringPlotId: MonitoringPlotId,
       isImplicit: Boolean,
   ) {
     val biomassSpeciesId = record.id!!
@@ -1692,7 +1703,7 @@ class BiomassStore(
             biomassSpeciesId = biomassSpeciesId,
             commonName = record.commonName,
             isImplicit = isImplicit,
-            monitoringPlotId = record.monitoringPlotId!!,
+            monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             organizationId = organizationId,
             plantingSiteId = plantingSiteId,
