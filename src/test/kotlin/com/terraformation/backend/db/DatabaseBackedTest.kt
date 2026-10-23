@@ -589,6 +589,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumT0TempDensitie
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
@@ -3738,6 +3739,21 @@ abstract class DatabaseBackedTest {
     observationBiomassSpeciesDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.biomassSpeciesIds.add(it) }
+  }
+
+  fun insertObservationBiomassAdditionalSpecies(
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      biomassSpeciesId: BiomassSpeciesId = inserted.biomassSpeciesId,
+  ) {
+    with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
+      dslContext
+          .insertInto(this)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
+          .execute()
+    }
   }
 
   fun insertObservationBiomassQuadratDetails(

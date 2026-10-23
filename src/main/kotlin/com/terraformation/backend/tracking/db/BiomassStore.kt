@@ -18,11 +18,13 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
@@ -231,6 +233,26 @@ class BiomassStore(
                   BiomassSpeciesKey(it[SPECIES_ID], it[SCIENTIFIC_NAME]) to it[ID.asNonNullable()]
                 }
           }
+
+      val measuredSpeciesKeys =
+          model.trees.map { BiomassSpeciesKey(it.speciesId, it.speciesName) }.toSet() +
+              model.quadrats.values.flatMap { quadrat ->
+                quadrat.species.map { BiomassSpeciesKey(it.speciesId, it.speciesName) }
+              }
+      val additionalSpeciesRecords =
+          model.species
+              .map { BiomassSpeciesKey(it.speciesId, it.scientificName) }
+              .filter { it !in measuredSpeciesKeys }
+              .map { key ->
+                ObservationBiomassAdditionalSpeciesRecord(
+                    biomassSpeciesId = biomassSpeciesIdsBySpeciesIdentifiers[key],
+                    monitoringPlotId = plotId,
+                    observationId = observationId,
+                )
+              }
+      if (additionalSpeciesRecords.isNotEmpty()) {
+        dslContext.batchInsert(additionalSpeciesRecords).execute()
+      }
 
       model.quadrats.forEach { (position, details) ->
         val record =
@@ -593,6 +615,30 @@ class BiomassStore(
         .where(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
         .execute()
 
+    // The target species is additional in each plot where either version of the species was
+    // additional.
+    with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
+      val additionalSpeciesTable2 = OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.`as`("additional2")
+
+      dslContext
+          .update(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES)
+          .set(BIOMASS_SPECIES_ID, targetBiomassSpeciesId)
+          .where(BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(additionalSpeciesTable2)
+                  .where(additionalSpeciesTable2.BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
+                  .and(additionalSpeciesTable2.OBSERVATION_ID.eq(OBSERVATION_ID))
+                  .and(additionalSpeciesTable2.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
+          )
+          .execute()
+
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES)
+          .where(BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+          .execute()
+    }
+
     dslContext
         .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
         .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherBiomassSpeciesId))
@@ -789,16 +835,26 @@ class BiomassStore(
         throw IllegalArgumentException("Biomass species already exists in observation plot")
       }
 
-      insertBiomassSpecies(
-          observationId,
-          monitoringPlotId,
-          speciesId,
-          scientificName,
-          commonName,
-          isInvasive,
-          isThreatened,
-          organizationId = organizationId,
-      )
+      val biomassSpeciesId =
+          insertBiomassSpecies(
+              observationId,
+              monitoringPlotId,
+              speciesId,
+              scientificName,
+              commonName,
+              isInvasive,
+              isThreatened,
+              organizationId = organizationId,
+          )
+
+      with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
+        dslContext
+            .insertInto(this)
+            .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
+            .set(MONITORING_PLOT_ID, monitoringPlotId)
+            .set(OBSERVATION_ID, observationId)
+            .execute()
+      }
     }
   }
 
@@ -1038,7 +1094,12 @@ class BiomassStore(
       }
 
       val biomassSpeciesId =
-          getOrCreateBiomassSpecies(observationId, monitoringPlotId, speciesId, scientificName)
+          getOrCreateBiomassSpecies(
+              observationId,
+              monitoringPlotId,
+              speciesId,
+              scientificName,
+          )
       val hasQuadratDetails =
           dslContext.fetchExists(
               OBSERVATION_BIOMASS_QUADRAT_DETAILS,
@@ -1251,7 +1312,12 @@ class BiomassStore(
           parentStore.getOrganizationId(observationId)
               ?: throw ObservationNotFoundException(observationId)
       val newBiomassSpeciesId =
-          getOrCreateBiomassSpecies(observationId, monitoringPlotId, speciesId, scientificName)
+          getOrCreateBiomassSpecies(
+              observationId,
+              monitoringPlotId,
+              speciesId,
+              scientificName,
+          )
       if (newBiomassSpeciesId == oldBiomassSpeciesId) {
         return@withLockedObservation
       }
@@ -1510,6 +1576,11 @@ class BiomassStore(
     val plantingSiteId =
         parentStore.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
+
+    dslContext
+        .deleteFrom(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES)
+        .where(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
+        .execute()
 
     dslContext
         .deleteFrom(OBSERVATION_BIOMASS_SPECIES)

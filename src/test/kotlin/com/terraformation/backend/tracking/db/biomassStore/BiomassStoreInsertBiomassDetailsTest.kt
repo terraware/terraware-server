@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
@@ -556,6 +557,63 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                 trunkNumber = 2,
             ),
         )
+    )
+  }
+
+  @Test
+  fun `records species without trees or quadrat entries as additional species`() {
+    val measuredSpeciesId = insertSpecies()
+
+    store.insertBiomassDetails(
+        observationId,
+        plotId,
+        NewBiomassDetailsModel(
+            forestType = BiomassForestType.Terrestrial,
+            herbaceousCoverPercent = 10,
+            observationId = null,
+            plotId = null,
+            quadrats =
+                mapOf(
+                    ObservationPlotPosition.NortheastCorner to
+                        BiomassQuadratModel(
+                            species =
+                                setOf(
+                                    BiomassQuadratSpeciesModel(
+                                        abundanceCount = 1,
+                                        speciesId = measuredSpeciesId,
+                                    )
+                                )
+                        )
+                ),
+            smallTreeCountRange = 0 to 10,
+            soilAssessment = "soil",
+            species =
+                setOf(
+                    BiomassSpeciesModel(
+                        speciesId = measuredSpeciesId,
+                        isInvasive = false,
+                        isThreatened = false,
+                    ),
+                    BiomassSpeciesModel(
+                        scientificName = "Additional species",
+                        isInvasive = false,
+                        isThreatened = false,
+                    ),
+                ),
+        ),
+    )
+
+    assertTableEquals(
+        ObservationBiomassAdditionalSpeciesRecord(
+            biomassSpeciesId =
+                dslContext.fetchValue(
+                    OBSERVATION_BIOMASS_SPECIES.ID,
+                    OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME.eq("Additional species"),
+                ),
+            monitoringPlotId = plotId,
+            observationId = observationId,
+        ),
+        "Additional species",
     )
   }
 
