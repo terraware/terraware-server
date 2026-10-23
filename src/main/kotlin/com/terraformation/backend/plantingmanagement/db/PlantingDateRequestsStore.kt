@@ -209,6 +209,70 @@ class PlantingDateRequestsStore(
     }
   }
 
+  fun markFulfilled(
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      plantingSeasonId: PlantingSeasonId,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+    val (plantingSiteId, organizationId) =
+        seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
+
+    seasonHelper.withLockedScheduledPlantingDate(scheduledPlantingDateId) {
+      seasonHelper.withLockedPlantingSeason(plantingSeasonId) {
+        seasonHelper.validateSeasonNotClosed(plantingSeasonId)
+
+        val oldStatus =
+            with(PLANTING_DATE_REQUESTS) {
+              dslContext
+                  .select(STATUS_ID)
+                  .from(PLANTING_DATE_REQUESTS)
+                  .join(SCHEDULED_PLANTING_DATES)
+                  .on(SCHEDULED_PLANTING_DATES.ID.eq(SCHEDULED_PLANTING_DATE_ID))
+                  .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+                  .and(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(plantingSeasonId))
+                  .fetchOne(STATUS_ID)
+            } ?: throw PlantingSeasonDateRequestNotFoundException(scheduledPlantingDateId)
+
+        if (oldStatus == PlantingDateRequestStatus.Fulfilled) {
+          throw PlantingSeasonDateRequestFulfilledException(scheduledPlantingDateId)
+        }
+
+        with(PLANTING_DATE_REQUESTS) {
+          dslContext
+              .update(PLANTING_DATE_REQUESTS)
+              .set(MANUALLY_FULFILLED, true)
+              .set(STATUS_ID, PlantingDateRequestStatus.Fulfilled)
+              .set(MODIFIED_BY, userId)
+              .set(MODIFIED_TIME, now)
+              .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+              .execute()
+        }
+
+        eventPublisher.publishEvent(
+            PlantingDateRequestUpdatedEvent(
+                changedFrom =
+                    PlantingDateRequestUpdatedEventValues(
+                        manuallyFulfilled = false,
+                        status = oldStatus,
+                    ),
+                changedTo =
+                    PlantingDateRequestUpdatedEventValues(
+                        manuallyFulfilled = true,
+                        status = PlantingDateRequestStatus.Fulfilled,
+                    ),
+                organizationId = organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                scheduledPlantingDateId = scheduledPlantingDateId,
+            )
+        )
+      }
+    }
+  }
+
   @EventListener
   fun on(event: WithdrawalAssociatedWithPlantingDateRequestEvent) {
     updateRequestStatus(
