@@ -2,6 +2,7 @@ package com.terraformation.backend.plantingmanagement.api
 
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -14,6 +15,7 @@ import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonSched
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDatesService
+import com.terraformation.backend.plantingmanagement.db.PlantingDateRequestsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController
 class PlantingSeasonScheduledDatesController(
     private val plantingSeasonScheduledDatesService: PlantingSeasonScheduledDatesService,
     private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore,
+    private val plantingDateRequestsStore: PlantingDateRequestsStore,
 ) {
   @ApiResponse200
   @Operation(summary = "Gets all scheduled dates for a planting season.")
@@ -111,6 +114,24 @@ class PlantingSeasonScheduledDatesController(
       @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
   ): SimpleSuccessResponsePayload {
     plantingSeasonScheduledDatesStore.delete(plantingSeasonId, scheduledPlantingDateId)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @ApiResponse409("The planting season is closed or the request is already fulfilled.")
+  @Operation(
+      summary = "Marks a scheduled date's nursery request as fulfilled.",
+      description =
+          "Use this for requests fulfilled in ways that withdrawal quantities do not reflect, such as species substitutions.",
+  )
+  @PostMapping("/{scheduledPlantingDateId}/request/fulfill")
+  fun fulfillPlantingDateRequest(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
+      @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
+  ): SimpleSuccessResponsePayload {
+    plantingDateRequestsStore.markFulfilled(scheduledPlantingDateId, plantingSeasonId)
 
     return SimpleSuccessResponsePayload()
   }

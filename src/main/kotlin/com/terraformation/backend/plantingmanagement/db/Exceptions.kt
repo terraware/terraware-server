@@ -41,3 +41,10 @@ class PlantingSeasonDateRequestNotFoundException(scheduledPlantingDateId: Schedu
     EntityNotFoundException(
         "Planting date request for scheduled planting date $scheduledPlantingDateId not found"
     )
+
+class PlantingSeasonDateRequestFulfilledException(
+    scheduledPlantingDateId: ScheduledPlantingDateId
+) :
+    MismatchedStateException(
+        "Planting date request for scheduled planting date $scheduledPlantingDateId is already fulfilled"
+    )
