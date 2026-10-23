@@ -112,6 +112,7 @@ interface BaseMonitoringResult {
 }
 
 data class ObservationMonitoringPlotResultsModel(
+    val biomassDetails: ExistingBiomassDetailsModel?,
     val boundary: Polygon,
     val claimedByName: String?,
     val claimedByUserId: UserId?,
@@ -249,7 +250,6 @@ data class ObservationResultsModel(
     val adHocPlot: ObservationMonitoringPlotResultsModel?,
     override val anyPlotsCompleted: Boolean,
     val areaHa: BigDecimal?,
-    val biomassDetails: ExistingBiomassDetailsModel?,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
     val isAdHoc: Boolean,

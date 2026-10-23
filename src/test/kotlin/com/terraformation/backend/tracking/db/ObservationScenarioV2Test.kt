@@ -1235,9 +1235,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
           )
 
       val expected =
-          expectedAdHocResults()
-              .copy(
-                  observationType = ObservationType.BiomassMeasurements,
+          expectedAdHocResults(
                   biomassDetails =
                       ExistingBiomassDetailsModel(
                           description = "Forest plot",
@@ -1293,6 +1291,9 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                               ),
                       ),
               )
+              .copy(
+                  observationType = ObservationType.BiomassMeasurements,
+              )
 
       assertEquals(expected, resultsStoreV2.fetchOneById(observationId), "Observation by ID")
       assertEquals(
@@ -1311,10 +1312,12 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
         plotNumber: Long = 1,
         areaHa: BigDecimal? = BigDecimal(2500),
         completedTime: Instant = Instant.EPOCH,
+        biomassDetails: ExistingBiomassDetailsModel? = null,
     ) =
         ObservationResultsModel(
             adHocPlot =
                 ObservationMonitoringPlotResultsModel(
+                    biomassDetails = biomassDetails,
                     boundary = rectanglePolygon(30),
                     claimedByName = "First Last",
                     claimedByUserId = user.userId,
@@ -1348,7 +1351,6 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                 ),
             anyPlotsCompleted = false,
             areaHa = areaHa,
-            biomassDetails = null,
             completedTime = completedTime,
             estimatedPlants = null,
             isAdHoc = true,

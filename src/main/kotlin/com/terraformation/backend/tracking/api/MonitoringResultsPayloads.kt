@@ -114,6 +114,7 @@ data class ObservationMonitoringPlotMediaPayload(
 }
 
 data class ObservationMonitoringPlotResultsPayload(
+    val biomassMeasurements: ExistingBiomassMeasurementPayload?,
     val boundary: Polygon,
     val claimedByName: String?,
     val claimedByUserId: UserId?,
@@ -223,6 +224,7 @@ data class ObservationMonitoringPlotResultsPayload(
   constructor(
       model: ObservationMonitoringPlotResultsModel
   ) : this(
+      biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload.of(it) },
       boundary = model.boundary,
       claimedByName = model.claimedByName,
       claimedByUserId = model.claimedByUserId,
@@ -429,6 +431,10 @@ data class ObservationStratumResultsPayload(
 data class ObservationResultsPayload(
     val adHocPlot: ObservationMonitoringPlotResultsPayload?,
     val areaHa: BigDecimal?,
+    @Schema(
+        deprecated = true,
+        description = "Use the plot-level biomassMeasurements field instead.",
+    )
     val biomassMeasurements: ExistingBiomassMeasurementPayload?,
     val completedTime: Instant?,
     @Schema(
@@ -482,7 +488,8 @@ data class ObservationResultsPayload(
   ) : this(
       adHocPlot = model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it) },
       areaHa = model.areaHa,
-      biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload.of(it) },
+      biomassMeasurements =
+          model.adHocPlot?.biomassDetails?.let { ExistingBiomassMeasurementPayload.of(it) },
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
       isAdHoc = model.isAdHoc,

@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
@@ -147,10 +148,10 @@ internal val biomassDetailsMultiset =
                   )
                   .from(this)
                   .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .orderBy(MONITORING_PLOT_ID)
+                  .and(MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
           )
           .convertFrom { result ->
-            result.map { record ->
+            result.singleOrNull()?.let { record ->
               val quadratDescriptions = record[biomassQuadratDetailsMultiset]
               val quadratSpecies = record[biomassQuadratSpeciesMultiset]
               val quadrats =
