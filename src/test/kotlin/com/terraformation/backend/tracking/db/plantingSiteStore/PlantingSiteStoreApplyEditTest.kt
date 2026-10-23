@@ -43,6 +43,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Nested
@@ -705,6 +706,37 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           existing.strata.single().substrata.associate { it.stableId to it.id },
           edited.strata.single().substrata.associate { it.stableId to it.id },
           "Substratum IDs by stable ID after name swap",
+      )
+    }
+
+    @Test
+    fun `can create stratum with same name as deleted stratum`() {
+      val initial = newSite { stratum(name = "Z1", stableId = StableId("old")) }
+      val desired = newSite { stratum(name = "Z1", stableId = StableId("new")) }
+
+      val (edited, existing) = runScenario(initial, desired)
+
+      assertEquals(StableId("new"), edited.strata.single().stableId, "Stable ID")
+      assertNotEquals(existing.strata.single().id, edited.strata.single().id, "Stratum ID")
+    }
+
+    @Test
+    fun `can create substratum with same name as deleted substratum`() {
+      val initial = newSite {
+        stratum { substratum(name = "Sub1", stableId = StableId("old")) }
+      }
+      val desired = newSite {
+        stratum { substratum(name = "Sub1", stableId = StableId("new")) }
+      }
+
+      val (edited, existing) = runScenario(initial, desired)
+
+      val editedSubstratum = edited.strata.single().substrata.single()
+      assertEquals(StableId("new"), editedSubstratum.stableId, "Stable ID")
+      assertNotEquals(
+          existing.strata.single().substrata.single().id,
+          editedSubstratum.id,
+          "Substratum ID",
       )
     }
 

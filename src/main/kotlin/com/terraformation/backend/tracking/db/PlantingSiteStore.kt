@@ -661,6 +661,16 @@ class PlantingSiteStore(
                 .returning(ID)
                 .fetchOne(ID)!!
           }
+      // Publish deletion events here so that listeners can look up the names of substrata now.
+      // The substrata will be given temporary names below in order to allow new substrata to have
+      // the same names.
+      plantingSiteEdit.stratumEdits
+          .flatMap { it.substratumEdits }
+          .filterIsInstance<SubstratumEdit.Delete>()
+          .forEach {
+            eventPublisher.publishEvent(SubstratumDeletionStartedEvent(it.existingModel.id))
+          }
+
       useTemporaryNames(plantingSiteEdit)
 
       plantingSiteEdit.stratumEdits.forEach {
@@ -802,8 +812,8 @@ class PlantingSiteStore(
   }
 
   /**
-   * Gives unique temporary names to all the strata and substrata that are being updated. This is
-   * done before applying the actual stratum and substratum edits.
+   * Gives unique temporary names to all the strata and substrata that are being updated or deleted.
+   * This is done before applying the actual stratum and substratum edits.
    *
    * Using temporary names avoids potential unique constraint violations.
    *
@@ -815,11 +825,18 @@ class PlantingSiteStore(
    * Instead, we do it in two steps. We rename both A and B to random UUID names. Then we apply the
    * edits, which set the names to "B" and "C", neither of which collides with any of the UUIDs no
    * matter which order the updates are applied.
+   *
+   * Deletions are applied last, so strata and substrata that are being deleted need temporary names
+   * too. Otherwise, a new stratum or substratum couldn't use the name of one that's being deleted.
    */
   private fun useTemporaryNames(plantingSiteEdit: PlantingSiteEdit) {
     val stratumIdsToUpdate =
-        plantingSiteEdit.stratumEdits.filterIsInstance<StratumEdit.Update>().map {
-          it.existingModel.id
+        plantingSiteEdit.stratumEdits.mapNotNull { edit ->
+          when (edit) {
+            is StratumEdit.Update -> edit.existingModel.id
+            is StratumEdit.Delete -> edit.existingModel.id
+            is StratumEdit.Create -> null
+          }
         }
     if (stratumIdsToUpdate.isNotEmpty()) {
       with(STRATA) {
@@ -834,8 +851,13 @@ class PlantingSiteStore(
     val substratumIdsToUpdate =
         plantingSiteEdit.stratumEdits
             .flatMap { it.substratumEdits }
-            .filterIsInstance<SubstratumEdit.Update>()
-            .map { it.existingModel.id }
+            .mapNotNull { edit ->
+              when (edit) {
+                is SubstratumEdit.Update -> edit.existingModel.id
+                is SubstratumEdit.Delete -> edit.existingModel.id
+                is SubstratumEdit.Create -> null
+              }
+            }
     if (substratumIdsToUpdate.isNotEmpty()) {
       with(SUBSTRATA) {
         dslContext
@@ -1042,8 +1064,6 @@ class PlantingSiteStore(
       }
       is SubstratumEdit.Delete -> {
         val substratumIdToDelete = edit.existingModel.id
-
-        eventPublisher.publishEvent(SubstratumDeletionStartedEvent(substratumIdToDelete))
 
         // Plots in the substratum will have their substratum IDs set to null by ON DELETE SET
         // NULL. This may legitimately delete 0 rows if the parent stratum has already been deleted.
