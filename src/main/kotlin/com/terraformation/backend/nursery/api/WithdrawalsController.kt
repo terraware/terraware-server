@@ -90,6 +90,8 @@ class WithdrawalsController(
     return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal)
   }
 
+  @ApiResponse200
+  @ApiResponse409("The planting date request is already fulfilled.")
   @Operation(summary = "Withdraws seedlings from one or more seedling batches at a nursery.")
   @PostMapping
   fun createBatchWithdrawal(

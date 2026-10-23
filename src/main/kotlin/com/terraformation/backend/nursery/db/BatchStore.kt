@@ -53,6 +53,7 @@ import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.log.perClassLogger
@@ -69,6 +70,7 @@ import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonDateRequestFulfilledException
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonDateRequestNotFoundException
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDateNotFoundException
 import com.terraformation.backend.plantingmanagement.db.SeasonHelper
@@ -735,41 +737,37 @@ class BatchStore(
     } else if (withdrawal.destinationFacilityId != null) {
       throw IllegalArgumentException("Only nursery transfers may include destination facility ID")
     }
-    if (withdrawal.scheduledPlantingDateRequestId != null) {
-      val (plantingDateExists, requestExists) =
-          dslContext
-              .select(
-                  DSL.exists(
-                      DSL.selectOne()
-                          .from(SCHEDULED_PLANTING_DATES)
-                          .where(
-                              SCHEDULED_PLANTING_DATES.ID.eq(
-                                  withdrawal.scheduledPlantingDateRequestId
-                              )
-                          )
-                  ),
-                  DSL.exists(
-                      DSL.selectOne()
-                          .from(PLANTING_DATE_REQUESTS)
-                          .where(
-                              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(
-                                  withdrawal.scheduledPlantingDateRequestId
-                              )
-                          )
-                  ),
-              )
-              .fetchOne()!!
-
-      if (!plantingDateExists) {
-        throw PlantingSeasonScheduledDateNotFoundException(
-            withdrawal.scheduledPlantingDateRequestId
-        )
-      } else if (!requestExists) {
-        throw PlantingSeasonDateRequestNotFoundException(withdrawal.scheduledPlantingDateRequestId)
-      }
-    }
-
     return dslContext.transactionResult { _ ->
+      if (withdrawal.scheduledPlantingDateRequestId != null) {
+        val scheduledPlantingDateRequestId = withdrawal.scheduledPlantingDateRequestId
+        dslContext
+            .selectOne()
+            .from(SCHEDULED_PLANTING_DATES)
+            .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateRequestId))
+            .forUpdate()
+            .fetchOne()
+            ?: throw PlantingSeasonScheduledDateNotFoundException(scheduledPlantingDateRequestId)
+
+        val requestStatus =
+            dslContext
+                .select(PLANTING_DATE_REQUESTS.STATUS_ID)
+                .from(PLANTING_DATE_REQUESTS)
+                .where(
+                    PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(
+                        scheduledPlantingDateRequestId
+                    )
+                )
+                .fetchOne(PLANTING_DATE_REQUESTS.STATUS_ID)
+                ?: throw PlantingSeasonDateRequestNotFoundException(scheduledPlantingDateRequestId)
+
+        if (
+            requestStatus == PlantingDateRequestStatus.Fulfilled &&
+                withdrawal.purpose != WithdrawalPurpose.Undo
+        ) {
+          throw PlantingSeasonDateRequestFulfilledException(scheduledPlantingDateRequestId)
+        }
+      }
+
       val withdrawalsRow =
           WithdrawalsRow(
               createdBy = currentUser().userId,
