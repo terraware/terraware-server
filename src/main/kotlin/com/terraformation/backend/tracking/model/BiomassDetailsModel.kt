@@ -194,6 +194,12 @@ data class BiomassDetailsModel<
     PlotId : MonitoringPlotId?,
     TreeId : RecordedTreeId?,
 >(
+    /**
+     * Species that were seen in the plot but have no tree or quadrat measurements there. Each of
+     * these is also included in [species]. Ignored when inserting new biomass details; additional
+     * species are inferred from the entries in [species] that have no measurements.
+     */
+    val additionalSpecies: Set<BiomassSpeciesModel> = emptySet(),
     val description: String? = null,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: Int,

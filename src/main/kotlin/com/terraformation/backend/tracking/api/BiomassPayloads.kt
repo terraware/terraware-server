@@ -368,17 +368,6 @@ data class ExistingBiomassMeasurementPayload(
         model.trees.any { BiomassSpeciesKey(it.speciesId, it.speciesName) == key }
       }
 
-      val quadratSpecies = species.filterKeys { key ->
-        model.quadrats
-            .flatMap { it.value.species }
-            .any { BiomassSpeciesKey(it.speciesId, it.speciesName) == key }
-      }
-
-      // Find species that are not part of a tree or a quadrat
-      val additionalSpecies = species.filterKeys {
-        treeSpecies[it] == null && quadratSpecies[it] == null
-      }
-
       val treeSpeciesResults =
           model.trees
               .groupBy { tree ->
@@ -398,7 +387,7 @@ data class ExistingBiomassMeasurementPayload(
               }
 
       return ExistingBiomassMeasurementPayload(
-          additionalSpecies = additionalSpecies.map { BiomassSpeciesPayload(it.value) },
+          additionalSpecies = model.additionalSpecies.map { BiomassSpeciesPayload(it) },
           description = model.description,
           forestType = model.forestType,
           herbaceousCoverPercent = model.herbaceousCoverPercent,

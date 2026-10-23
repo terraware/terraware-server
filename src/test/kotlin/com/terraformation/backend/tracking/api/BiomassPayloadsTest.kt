@@ -172,6 +172,20 @@ class BiomassPayloadsTest {
     fun `converts model to payload`() {
       val model =
           ExistingBiomassDetailsModel(
+              additionalSpecies =
+                  setOf(
+                      BiomassSpeciesModel(
+                          speciesId = SpeciesId(3),
+                          isInvasive = false,
+                          isThreatened = true,
+                      ),
+                      BiomassSpeciesModel(
+                          scientificName = "Additional species",
+                          commonName = "additional herb",
+                          isInvasive = true,
+                          isThreatened = false,
+                      ),
+                  ),
               description = "description",
               forestType = BiomassForestType.Terrestrial,
               herbaceousCoverPercent = 10,
