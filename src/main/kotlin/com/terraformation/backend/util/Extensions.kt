@@ -207,6 +207,29 @@ fun Geometry.toMultiPolygon(): MultiPolygon {
   }
 }
 
+/**
+ * Returns this geometry if it is a Polygon or MultiPolygon.
+ *
+ * @param description What the geometry is, for the error message, e.g., "Exclusion area".
+ * @throws IllegalArgumentException The geometry is some other type.
+ */
+fun Geometry.requirePolygonal(description: String): Geometry {
+  if (this !is MultiPolygon && this !is Polygon) {
+    throw IllegalArgumentException("$description must be Polygon or MultiPolygon")
+  }
+  return this
+}
+
+/**
+ * Returns a MultiPolygon version of a Polygon or MultiPolygon.
+ *
+ * @param description What the geometry is, for the error message, e.g., "Exclusion area".
+ * @throws IllegalArgumentException The geometry is some other type.
+ */
+fun Geometry.toValidatedMultiPolygon(description: String): MultiPolygon {
+  return requirePolygonal(description).toMultiPolygon()
+}
+
 fun MultiPolygon.orEmpty(): MultiPolygon = if (isEmpty) factory.createMultiPolygon() else this
 
 fun Geometry.toNormalizedMultiPolygon() = norm().toMultiPolygon().orEmpty()
