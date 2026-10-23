@@ -123,7 +123,6 @@ data class DraftPlantingSiteModel(
   /** Returns a list of validation problems with the draft's map, or null if it is valid. */
   fun validate(): List<PlantingSiteValidationFailure>? = toPlantingSiteModel().validate()
 
-  /** Returns a planting site model with the draft's map. */
   fun toPlantingSiteModel(): NewPlantingSiteModel {
     val strata =
         map.strata.map { stratum ->
