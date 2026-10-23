@@ -65,6 +65,96 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
   }
 
   @Nested
+  inner class MarkFulfilled {
+    @Test
+    fun `marks the request fulfilled manually and publishes an event`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      insertPlantingDateRequest()
+
+      val now = Instant.ofEpochSecond(100)
+      clock.instant = now
+      store.markFulfilled(scheduledPlantingDateId, plantingSeasonId)
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              date = LocalDate.EPOCH,
+              manuallyFulfilled = true,
+              modifiedBy = user.userId,
+              modifiedTime = now,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              statusId = PlantingDateRequestStatus.Fulfilled,
+          )
+      )
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestUpdatedEvent(
+              changedFrom =
+                  PlantingDateRequestUpdatedEventValues(
+                      manuallyFulfilled = false,
+                      status = PlantingDateRequestStatus.Pending,
+                  ),
+              changedTo =
+                  PlantingDateRequestUpdatedEventValues(
+                      manuallyFulfilled = true,
+                      status = PlantingDateRequestStatus.Fulfilled,
+                  ),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+          )
+      )
+    }
+
+    @Test
+    fun `rejects a request that is already fulfilled`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      insertPlantingDateRequest(status = PlantingDateRequestStatus.Fulfilled)
+
+      assertThrows<PlantingSeasonDateRequestFulfilledException> {
+        store.markFulfilled(scheduledPlantingDateId, plantingSeasonId)
+      }
+    }
+
+    @Test
+    fun `does not fulfill a request from a different season`() {
+      val otherSeasonId = insertPlantingSeason()
+      val scheduledPlantingDateId =
+          insertPlantingSeasonScheduledDate(plantingSeasonId = otherSeasonId)
+      insertPlantingDateRequest(scheduledPlantingDateId = scheduledPlantingDateId)
+
+      assertThrows<PlantingSeasonDateRequestNotFoundException> {
+        store.markFulfilled(scheduledPlantingDateId, plantingSeasonId)
+      }
+    }
+
+    @Test
+    fun `rejects requests in closed seasons`() {
+      val closedSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
+      val scheduledPlantingDateId =
+          insertPlantingSeasonScheduledDate(plantingSeasonId = closedSeasonId)
+      insertPlantingDateRequest(scheduledPlantingDateId = scheduledPlantingDateId)
+
+      assertThrows<PlantingSeasonClosedException> {
+        store.markFulfilled(scheduledPlantingDateId, closedSeasonId)
+      }
+    }
+
+    @Test
+    fun `rejects users without season update permission`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      insertPlantingDateRequest()
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.markFulfilled(scheduledPlantingDateId, plantingSeasonId)
+      }
+    }
+  }
+
+  @Nested
   inner class Create {
     @Test
     fun `inserts a new request with no species`() {
