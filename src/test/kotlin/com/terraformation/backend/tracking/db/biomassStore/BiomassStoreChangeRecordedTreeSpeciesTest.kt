@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.db.RecordedTreeNotFoundException
@@ -153,6 +154,22 @@ class BiomassStoreChangeRecordedTreeSpeciesTest : BaseBiomassStoreTest() {
     assertTableEquals(treesBefore, "Recorded trees after rejected changes")
     assertTableEquals(speciesBefore, "Biomass species after rejected changes")
     eventPublisher.assertNoEventsPublished()
+  }
+
+  @Test
+  fun `removes new species from additional species of the plot`() {
+    val oldBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    val treeId = insertTree(oldBiomassSpeciesId)
+    val newSpeciesId = insertSpecies(scientificName = "New tree")
+    insertObservationBiomassSpecies(speciesId = newSpeciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    changeSpecies(treeId, newSpeciesId)
+
+    assertTableEmpty(
+        OBSERVATION_BIOMASS_ADDITIONAL_SPECIES,
+        "Additional species after changing tree species",
+    )
   }
 
   @Test

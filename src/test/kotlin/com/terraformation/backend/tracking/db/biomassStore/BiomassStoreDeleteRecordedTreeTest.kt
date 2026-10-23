@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
@@ -99,6 +100,22 @@ class BiomassStoreDeleteRecordedTreeTest : BaseBiomassStoreTest() {
         "Biomass species after deleting last tree with quadrat species remaining",
     )
     assertTableEquals(expectedQuadratSpecies, "Quadrat species after deleting last tree")
+  }
+
+  @Test
+  fun `keeps a biomass species that is an additional species`() {
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    val recordedTreeId = insertTree(biomassSpeciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    val expectedSpecies = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    val expectedAdditionalSpecies = dslContext.fetch(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES)
+    store.deleteRecordedTree(observationId, monitoringPlotId, recordedTreeId)
+
+    assertTableEmpty(RECORDED_TREES)
+    assertTableEquals(expectedSpecies, "Biomass species")
+    assertTableEquals(expectedAdditionalSpecies, "Additional species")
+    eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
   }
 
   @Test

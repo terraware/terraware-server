@@ -426,7 +426,7 @@ class BiomassStore(
       newTree.validate()
 
       val biomassSpeciesId =
-          getOrCreateBiomassSpecies(
+          getOrCreateMeasuredBiomassSpecies(
               observationId,
               monitoringPlotId,
               newTree.speciesId,
@@ -616,7 +616,8 @@ class BiomassStore(
         .execute()
 
     // The target species is additional in each plot where either version of the species was
-    // additional.
+    // additional, unless the target species has measurements (trees or quadrat abundance) in
+    // the plot.
     with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
       val additionalSpeciesTable2 = OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.`as`("additional2")
 
@@ -636,6 +637,41 @@ class BiomassStore(
       dslContext
           .deleteFrom(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES)
           .where(BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+          .execute()
+
+      dslContext
+          .deleteFrom(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES)
+          .where(BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
+          .and(
+              DSL.exists(
+                      DSL.selectOne()
+                          .from(RECORDED_TREES)
+                          .where(RECORDED_TREES.BIOMASS_SPECIES_ID.eq(BIOMASS_SPECIES_ID))
+                          .and(RECORDED_TREES.OBSERVATION_ID.eq(OBSERVATION_ID))
+                          .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
+                  )
+                  .or(
+                      DSL.exists(
+                          DSL.selectOne()
+                              .from(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+                              .where(
+                                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(
+                                      BIOMASS_SPECIES_ID
+                                  )
+                              )
+                              .and(
+                                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID.eq(
+                                      OBSERVATION_ID
+                                  )
+                              )
+                              .and(
+                                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.MONITORING_PLOT_ID.eq(
+                                      MONITORING_PLOT_ID
+                                  )
+                              )
+                      )
+                  )
+          )
           .execute()
     }
 
@@ -1094,7 +1130,7 @@ class BiomassStore(
       }
 
       val biomassSpeciesId =
-          getOrCreateBiomassSpecies(
+          getOrCreateMeasuredBiomassSpecies(
               observationId,
               monitoringPlotId,
               speciesId,
@@ -1312,7 +1348,7 @@ class BiomassStore(
           parentStore.getOrganizationId(observationId)
               ?: throw ObservationNotFoundException(observationId)
       val newBiomassSpeciesId =
-          getOrCreateBiomassSpecies(
+          getOrCreateMeasuredBiomassSpecies(
               observationId,
               monitoringPlotId,
               speciesId,
@@ -1456,7 +1492,12 @@ class BiomassStore(
               "Biomass species must have a species ID or scientific name"
           )
 
-  private fun getOrCreateBiomassSpecies(
+  /**
+   * Returns the ID of the biomass species that a new tree or quadrat measurement in a plot will
+   * refer to, creating it if needed. The species is removed from the plot's additional species list
+   * since it is now referenced in a measurement there.
+   */
+  private fun getOrCreateMeasuredBiomassSpecies(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       speciesId: SpeciesId?,
@@ -1481,6 +1522,15 @@ class BiomassStore(
               .fetchOne()
         }
     if (existing != null) {
+      with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
+        dslContext
+            .deleteFrom(this)
+            .where(OBSERVATION_ID.eq(observationId))
+            .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(BIOMASS_SPECIES_ID.eq(existing.id))
+            .execute()
+      }
+
       return existing.id!!
     }
 
@@ -1552,7 +1602,12 @@ class BiomassStore(
             OBSERVATION_BIOMASS_QUADRAT_SPECIES,
             OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
         )
-    if (hasRecordedTrees || hasQuadratSpecies) {
+    val isAdditionalSpecies =
+        dslContext.fetchExists(
+            OBSERVATION_BIOMASS_ADDITIONAL_SPECIES,
+            OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+        )
+    if (hasRecordedTrees || hasQuadratSpecies || isAdditionalSpecies) {
       return
     }
 
