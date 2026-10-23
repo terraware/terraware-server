@@ -31,7 +31,9 @@ import com.terraformation.backend.tracking.model.DraftPlantingSiteMapConverter
 import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
 import com.terraformation.backend.tracking.model.DraftStratumModel
 import com.terraformation.backend.tracking.model.DraftSubstratumModel
+import com.terraformation.backend.util.requirePolygonal
 import com.terraformation.backend.util.toMultiPolygon
+import com.terraformation.backend.util.toValidatedMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -305,17 +307,6 @@ data class DraftPlantingSiteMapInvalidResponsePayload(
     override val error: ErrorDetails,
     val problems: List<PlantingSiteValidationProblemPayload>,
 ) : ErrorResponsePayload
-
-private fun Geometry.requirePolygonal(description: String): Geometry {
-  if (this !is MultiPolygon && this !is Polygon) {
-    throw IllegalArgumentException("$description must be Polygon or MultiPolygon")
-  }
-  return this
-}
-
-private fun Geometry.toValidatedMultiPolygon(description: String): MultiPolygon {
-  return requirePolygonal(description).toMultiPolygon()
-}
 
 private const val DATA_DESCRIPTION =
     "In-progress state of the draft, including its map, in the legacy JSON format. " +
