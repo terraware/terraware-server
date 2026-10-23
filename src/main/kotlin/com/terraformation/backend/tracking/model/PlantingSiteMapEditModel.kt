@@ -4,6 +4,9 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.gis.mergeToMultiPolygon
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
+import com.terraformation.backend.tracking.db.StratumNotFoundException
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.locationtech.jts.geom.MultiPolygon
@@ -65,9 +68,26 @@ data class PlantingSiteMapEditModel(
    *
    * Use [PlantingSiteModel.validate] to check the geometry of the resulting site model.
    *
-   * @throws IllegalArgumentException The edit would remove the map from the site.
+   * @throws StratumNotFoundException A stratum ID doesn't refer to a stratum of the existing site.
+   * @throws SubstratumNotFoundException A substratum ID doesn't refer to a substratum of the
+   *   existing site.
+   * @throws IllegalArgumentException A stratum or substratum ID appears more than once, or the edit
+   *   would remove the map or all the strata from the site.
+   * @throws PlantingSiteMapInvalidException A stratum has no substrata.
    */
   fun toDesiredModel(existing: ExistingPlantingSiteModel): NewPlantingSiteModel {
+    requireValidIds(existing)
+
+    if (existing.strata.isNotEmpty() && strata.isEmpty()) {
+      throw IllegalArgumentException("Cannot remove all strata from a planting site")
+    }
+
+    strata
+        .filter { it.substrata.isEmpty() }
+        .map { PlantingSiteValidationFailure.stratumHasNoSubstrata(it.name) }
+        .ifEmpty { null }
+        ?.let { throw PlantingSiteMapInvalidException(it) }
+
     val existingStrataById = existing.strata.associateBy { it.id }
     val existingSubstrataById = existing.strata.flatMap { it.substrata }.associateBy { it.id }
 
@@ -131,6 +151,35 @@ data class PlantingSiteMapEditModel(
         strata = desiredStrata,
         timeZone = existing.timeZone,
     )
+  }
+
+  private fun requireValidIds(existing: ExistingPlantingSiteModel) {
+    val existingStratumIds = existing.strata.map { it.id }.toSet()
+    val existingSubstratumIds = existing.strata.flatMap { it.substrata }.map { it.id }.toSet()
+    val seenStratumIds = mutableSetOf<StratumId>()
+    val seenSubstratumIds = mutableSetOf<SubstratumId>()
+
+    strata.forEach { stratum ->
+      if (stratum.id != null) {
+        if (stratum.id !in existingStratumIds) {
+          throw StratumNotFoundException(stratum.id)
+        }
+        if (!seenStratumIds.add(stratum.id)) {
+          throw IllegalArgumentException("Stratum ID ${stratum.id} appears more than once")
+        }
+      }
+
+      stratum.substrata.forEach { substratum ->
+        if (substratum.id != null) {
+          if (substratum.id !in existingSubstratumIds) {
+            throw SubstratumNotFoundException(substratum.id)
+          }
+          if (!seenSubstratumIds.add(substratum.id)) {
+            throw IllegalArgumentException("Substratum ID ${substratum.id} appears more than once")
+          }
+        }
+      }
+    }
   }
 
   companion object {
