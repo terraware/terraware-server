@@ -89,6 +89,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
               statusId = PlantingDateRequestStatus.Pending,
               createdBy = user.userId,
               createdTime = clock.instant,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               notes = "Notes",
@@ -118,6 +119,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
               statusId = PlantingDateRequestStatus.Pending,
               createdBy = user.userId,
               createdTime = clock.instant,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
           )
@@ -147,6 +149,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
               statusId = PlantingDateRequestStatus.Pending,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               notes = "new notes",
@@ -186,6 +189,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
               statusId = PlantingDateRequestStatus.Pending,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
           )
