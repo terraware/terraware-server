@@ -12,6 +12,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteMapEditModel
 import jakarta.inject.Named
+import org.locationtech.jts.geom.TopologyException
 
 @Named
 class PlantingSiteMapEditService(
@@ -32,7 +33,14 @@ class PlantingSiteMapEditService(
 
     val existing = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
-    return calculateEdit(existing, mapEdit.toDesiredModel(existing))
+    val desired =
+        try {
+          mapEdit.toDesiredModel(existing)
+        } catch (e: TopologyException) {
+          throw IllegalArgumentException("Planting site map has invalid geometry", e)
+        }
+
+    return calculateEdit(existing, desired)
   }
 
   /**
