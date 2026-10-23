@@ -8,7 +8,6 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.EmailNotificationSettingsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
@@ -38,11 +37,7 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RequestMapping("/api/v1/users")
 @RestController
-class UsersController(
-    private val clock: InstantSource,
-    private val emailNotificationSettingsStore: EmailNotificationSettingsStore,
-    private val userStore: UserStore,
-) {
+class UsersController(private val clock: InstantSource, private val userStore: UserStore) {
   @GetMapping("/me")
   @Operation(summary = "Gets information about the current user.")
   fun getMyself(): GetUserResponsePayload {
@@ -54,38 +49,26 @@ class UsersController(
   @Operation(summary = "Updates information about the current user.")
   fun updateMyself(@RequestBody payload: UpdateUserRequestPayload): SimpleSuccessResponsePayload {
     val user = currentUser()
-    val enablingEmailNotifications =
-        payload.emailNotificationsEnabled == true && !user.emailNotificationsEnabled
     if (user is IndividualUser) {
       val model =
           user.copy(
               countryCode = payload.countryCode,
-              emailNotificationsEnabled =
-                  payload.emailNotificationsEnabled ?: user.emailNotificationsEnabled,
               firstName = payload.firstName,
               lastName = payload.lastName,
               locale = payload.locale?.let { Locale.forLanguageTag(it) },
               timeZone = payload.timeZone,
           )
-      if (enablingEmailNotifications) {
-        emailNotificationSettingsStore.optIntoAllCategoriesIfNoneForCurrentUser()
-      }
       userStore.updateUser(model)
       return SimpleSuccessResponsePayload()
     } else if (user is FunderUser) {
       val model =
           user.copy(
               countryCode = payload.countryCode,
-              emailNotificationsEnabled =
-                  payload.emailNotificationsEnabled ?: user.emailNotificationsEnabled,
               firstName = payload.firstName,
               lastName = payload.lastName,
               locale = payload.locale?.let { Locale.forLanguageTag(it) },
               timeZone = payload.timeZone,
           )
-      if (enablingEmailNotifications) {
-        emailNotificationSettingsStore.optIntoAllCategoriesIfNoneForCurrentUser()
-      }
       userStore.updateUser(model)
       return SimpleSuccessResponsePayload()
     } else {
@@ -208,13 +191,6 @@ data class UserProfilePayload(
     )
     val id: UserId,
     val email: String,
-    @Schema(
-        description =
-            "If true, the user wants to receive all the notifications for their organizations " +
-                "via email. This does not apply to certain kinds of notifications such as " +
-                "\"You've been added to a new organization.\""
-    )
-    val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val globalRoles: Set<GlobalRole>,
     val lastName: String?,
@@ -232,7 +208,6 @@ data class UserProfilePayload(
       user.countryCode,
       user.userId,
       user.email,
-      user.emailNotificationsEnabled,
       user.firstName,
       user.globalRoles,
       user.lastName,
@@ -247,14 +222,6 @@ data class GetUserResponsePayload(val user: UserProfilePayload) : SuccessRespons
 data class UpdateUserRequestPayload(
     @Schema(description = "Two-letter code of the user's country.", example = "US")
     val countryCode: String?,
-    @Schema(
-        description =
-            "If true, the user wants to receive all the notifications for their organizations " +
-                "via email. This does not apply to certain kinds of notifications such as " +
-                "\"You've been added to a new organization.\" If null, leave the existing value " +
-                "as-is."
-    )
-    val emailNotificationsEnabled: Boolean? = null,
     val firstName: String,
     val lastName: String,
     @Schema(description = "IETF locale code containing user's preferred language.", example = "en")
