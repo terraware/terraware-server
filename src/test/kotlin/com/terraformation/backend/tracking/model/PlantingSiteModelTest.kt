@@ -1,12 +1,15 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.rectangle
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PlantingSiteModelTest {
   @Nested
@@ -147,6 +150,27 @@ class PlantingSiteModelTest {
       val problems = site.validate()
 
       assertNull(problems, "Validation returned problems")
+    }
+  }
+
+  @Nested
+  inner class RequireValid {
+    @Test
+    fun `does not throw exception if site is valid`() {
+      assertDoesNotThrow { newSite().requireValid() }
+    }
+
+    @Test
+    fun `throws exception with validation problems if site is invalid`() {
+      val exception =
+          assertThrows<PlantingSiteMapInvalidException> {
+            newSite().copy(boundary = null).requireValid()
+          }
+
+      assertEquals(
+          listOf(PlantingSiteValidationFailure.strataWithoutSiteBoundary()),
+          exception.problems,
+      )
     }
   }
 }
