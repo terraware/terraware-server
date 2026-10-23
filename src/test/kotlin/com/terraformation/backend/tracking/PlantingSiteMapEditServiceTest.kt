@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertJsonEquals
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.rectangle
@@ -36,7 +37,9 @@ import org.locationtech.jts.geom.TopologyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
-  private val service: PlantingSiteMapEditService by lazy { PlantingSiteMapEditService(store) }
+  private val service: PlantingSiteMapEditService by lazy {
+    PlantingSiteMapEditService(EntityLocker(dslContext), store)
+  }
 
   private val editTime = Instant.ofEpochSecond(10000)
 

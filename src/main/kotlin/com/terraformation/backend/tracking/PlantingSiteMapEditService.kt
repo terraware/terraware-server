@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -16,6 +17,7 @@ import org.locationtech.jts.geom.TopologyException
 
 @Named
 class PlantingSiteMapEditService(
+    private val entityLocker: EntityLocker,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
   /**
@@ -44,7 +46,9 @@ class PlantingSiteMapEditService(
   }
 
   /**
-   * Edits a planting site's map to match a version edited by a user.
+   * Edits a planting site's map to match a version edited by a user. The site is locked while the
+   * edit is calculated and applied, so concurrent changes to the site can't be overwritten with
+   * stale data.
    *
    * @param substrataToMarkIncomplete IDs of edited substrata whose planting completed flags should
    *   be cleared.
@@ -56,10 +60,12 @@ class PlantingSiteMapEditService(
       mapEdit: PlantingSiteMapEditModel,
       substrataToMarkIncomplete: Set<SubstratumId> = emptySet(),
   ): ExistingPlantingSiteModel {
-    return plantingSiteStore.applyPlantingSiteEdit(
-        calculateEdit(plantingSiteId, mapEdit),
-        substrataToMarkIncomplete,
-    )
+    return entityLocker.withLockedPlantingSite(plantingSiteId) {
+      plantingSiteStore.applyPlantingSiteEdit(
+          calculateEdit(plantingSiteId, mapEdit),
+          substrataToMarkIncomplete,
+      )
+    }
   }
 
   /**
