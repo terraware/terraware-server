@@ -115,9 +115,7 @@ class PlantingSiteMapEditModelTest {
             .toDesiredModel(existing)
 
     val expectedSubstratum =
-        movedSubstratum
-            .toNew()
-            .copy(fullName = "${destinationStratum.name}-Moved", name = "Moved")
+        movedSubstratum.toNew().copy(fullName = "${destinationStratum.name}-Moved", name = "Moved")
 
     assertAll(
         { assertEquals(expectedSubstratum, desired.strata[1].substrata[1]) },
