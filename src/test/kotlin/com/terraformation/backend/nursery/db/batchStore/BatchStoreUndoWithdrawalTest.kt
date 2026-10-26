@@ -7,8 +7,10 @@ import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.nursery.db.UndoOfNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.nursery.db.WithdrawalAlreadyUndoneException
@@ -184,7 +186,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
   }
 
   @Test
-  fun `stores scheduled planting date request id in undo withdrawal`() {
+  fun `undoes a withdrawal after its request has become fulfilled`() {
     val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
     insertPlantingDateRequest()
 
@@ -193,6 +195,12 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             plantingSeasonId = plantingSeasonId,
             scheduledPlantingDateRequestId = scheduledPlantingDateId,
         )
+
+    dslContext
+        .update(PLANTING_DATE_REQUESTS)
+        .set(PLANTING_DATE_REQUESTS.STATUS_ID, PlantingDateRequestStatus.Fulfilled)
+        .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+        .execute()
 
     val undoWithdrawal = store.undoWithdrawal(withdrawalId)
 
