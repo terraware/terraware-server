@@ -782,10 +782,10 @@ he@^1.2.0:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-html-minifier-next@^9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-9.0.0.tgz#70a6b33ce5204dc01fac2845596ecd69d313574f"
-  integrity sha512-O+GK9Bgcak79D2eArZkSL499fyRyzXzgbHk9r8pQNx/GCQc1NSZYcQMCY4/MLVigrEsLEw/zvDShe1WndqyuxQ==
+html-minifier-next@^9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-9.1.0.tgz#738c212f640df19da0a1c520a1d34b06902f1b39"
+  integrity sha512-UD0nB4hgG+F2xSxG8OKzv5U3oA/taNnzPaGYIVfELemM8yZjqg5KlGWELKyT6fa8GxrroOXV7V9kKjXVWwW4AQ==
   dependencies:
     commander "^15.0.0"
     entities "^8.1.0"
