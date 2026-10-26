@@ -52,6 +52,11 @@ class UnusedSquareFinder(
    * @return The unused square, or null if no suitable area could be found.
    */
   fun findUnusedSquare(): Polygon? {
+    // The exclusion area can cover the entire stratum, in which case there's nowhere to search.
+    if (stratumGeometry.isEmpty) {
+      return null
+    }
+
     // The envelope of the stratum geometry may be wider on the north edge than on the south or vice
     // versa because degrees of longitude represent different distances depending on latitude.
     // So we convert all 4 corners of the envelope to meter offsets from the origin, and use the
