@@ -14,85 +14,23 @@ import org.junit.jupiter.api.assertThrows
 
 class PlantingSiteMapEditModelTest {
   @Test
-  fun `existing strata keep their stable IDs and settings when renamed`() {
-    val completedTime = Instant.ofEpochSecond(1000)
-    val existing = existingSite {
-      stratum(name = "Old", stableId = StableId("stable"), plantNumPermanent = 7) {
-        plantErrorMargin = BigDecimal(40)
-        plantStudentsT = BigDecimal(2)
-        plantVariance = BigDecimal(20000)
-        initialPlantingDensity = BigDecimal(1234)
-        substratum { plantingCompletedTime = completedTime }
-      }
-    }
-    val existingStratum = existing.strata[0]
-
-    val desired =
-        PlantingSiteMapEditModel.of(existing)
-            .let { it.copy(strata = listOf(it.strata[0].copy(name = "New"))) }
-            .toDesiredModel(existing)
-
-    val expected =
-        existingStratum
-            .toNew()
-            .copy(
-                name = "New",
-                substrata =
-                    existingStratum.substrata.map { it.toNew().copy(fullName = "New-${it.name}") },
-            )
-
-    assertEquals(expected, desired.strata[0])
-  }
-
-  @Test
-  fun `new strata use default settings`() {
-    val existing = existingSite(width = 1000) { stratum(width = 500, plantNumPermanent = 10) }
-
-    val desired =
-        PlantingSiteMapEditModel.of(existing)
-            .let {
-              it.copy(
-                  strata =
-                      it.strata +
-                          StratumMapEditModel(
-                              null,
-                              "New",
-                              listOf(SubstratumMapEditModel(null, "Sub", rectangle(500, x = 500))),
-                          )
-              )
-            }
-            .toDesiredModel(existing)
-
-    val expected =
-        StratumModel.create(
-            boundary = rectangle(500, x = 500),
-            name = "New",
-            substrata =
-                listOf(
-                    SubstratumModel.create(
-                        boundary = rectangle(500, x = 500),
-                        fullName = "New-Sub",
-                        name = "Sub",
-                    )
-                ),
-        )
-
-    assertEquals(expected, desired.strata[1])
-  }
-
-  @Test
-  fun `substratum moved to another stratum keeps its stable ID and planting completion`() {
+  fun `existing strata and substrata keep their settings and new ones use defaults`() {
     val completedTime = Instant.ofEpochSecond(1000)
     val existing =
-        existingSite(width = 1000) {
-          stratum(width = 500) {
+        existingSite(width = 1500) {
+          stratum(name = "Old", width = 500, stableId = StableId("stable"), plantNumPermanent = 7) {
+            plantErrorMargin = BigDecimal(40)
+            plantStudentsT = BigDecimal(2)
+            plantVariance = BigDecimal(20000)
+            initialPlantingDensity = BigDecimal(1234)
             substratum(width = 250)
             substratum { plantingCompletedTime = completedTime }
           }
-          stratum()
+          stratum(name = "Dest", width = 500)
         }
-    val movedSubstratum = existing.strata[0].substrata[1]
+    val renamedStratum = existing.strata[0]
     val destinationStratum = existing.strata[1]
+    val movedSubstratum = renamedStratum.substrata[1]
 
     val desired =
         PlantingSiteMapEditModel.of(existing)
@@ -100,30 +38,61 @@ class PlantingSiteMapEditModelTest {
               edit.copy(
                   strata =
                       listOf(
-                          edit.strata[0].copy(substrata = edit.strata[0].substrata.take(1)),
+                          edit.strata[0].copy(
+                              name = "New",
+                              substrata = edit.strata[0].substrata.take(1),
+                          ),
                           edit.strata[1].copy(
                               substrata =
                                   edit.strata[1].substrata +
                                       edit.strata[0].substrata[1].copy(name = "Moved")
+                          ),
+                          StratumMapEditModel(
+                              null,
+                              "Added",
+                              listOf(SubstratumMapEditModel(null, "Sub", rectangle(500, x = 1000))),
                           ),
                       )
               )
             }
             .toDesiredModel(existing)
 
-    val expectedSubstratum =
-        movedSubstratum.toNew().copy(fullName = "${destinationStratum.name}-Moved", name = "Moved")
+    val expected =
+        listOf(
+            renamedStratum.toNew(
+                areaHa = BigDecimal("12.500"),
+                boundary = renamedStratum.substrata[0].boundary,
+                name = "New",
+                substrata =
+                    listOf(
+                        renamedStratum.substrata[0]
+                            .toNew()
+                            .copy(fullName = "New-${renamedStratum.substrata[0].name}")
+                    ),
+            ),
+            destinationStratum.toNew(
+                // Merging the substrata adds vertices, so check the merged boundary via its area.
+                areaHa = BigDecimal("37.500"),
+                boundary = desired.strata[1].boundary,
+                substrata =
+                    destinationStratum.substrata.map { it.toNew() } +
+                        movedSubstratum.toNew().copy(fullName = "Dest-Moved", name = "Moved"),
+            ),
+            StratumModel.create(
+                boundary = rectangle(500, x = 1000),
+                name = "Added",
+                substrata =
+                    listOf(
+                        SubstratumModel.create(
+                            boundary = rectangle(500, x = 1000),
+                            fullName = "Added-Sub",
+                            name = "Sub",
+                        )
+                    ),
+            ),
+        )
 
-    assertAll(
-        { assertEquals(expectedSubstratum, desired.strata[1].substrata[1]) },
-        {
-          assertEquals(
-              BigDecimal("37.500"),
-              desired.strata[1].areaHa,
-              "Stratum area includes moved substratum",
-          )
-        },
-    )
+    assertEquals(expected, desired.strata)
   }
 
   @Test

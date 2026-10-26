@@ -538,7 +538,17 @@ data class StratumModel<
         boundary.equalsExact(other.boundary, tolerance)
   }
 
-  fun toNew(): NewStratumModel =
+  /**
+   * Returns a new stratum with this stratum's stable ID, plot count settings, and planting
+   * densities. The map and name default to this stratum's current values but may be overridden. If
+   * the boundary is overridden, [areaHa] should be too.
+   */
+  fun toNew(
+      areaHa: BigDecimal = this.areaHa,
+      boundary: MultiPolygon = this.boundary,
+      name: String = this.name,
+      substrata: List<NewSubstratumModel> = this.substrata.map { it.toNew() },
+  ): NewStratumModel =
       NewStratumModel(
           areaHa = areaHa,
           biomassPlotCounts = biomassPlotCounts,
@@ -548,28 +558,10 @@ data class StratumModel<
           initialPlantingDensity = initialPlantingDensity,
           name = name,
           plantPlotCounts = plantPlotCounts,
-          substrata = substrata.map { it.toNew() },
+          substrata = substrata,
           stableId = stableId,
           targetPlantDensity = targetPlantDensity,
       )
-
-  /**
-   * Returns a new stratum with this stratum's stable ID, plot count settings, and planting
-   * densities, but with a different map. The area is recalculated from the new boundary.
-   */
-  fun toNew(
-      boundary: MultiPolygon,
-      exclusion: MultiPolygon?,
-      name: String,
-      substrata: List<NewSubstratumModel>,
-  ): NewStratumModel =
-      toNew()
-          .copy(
-              areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
-              boundary = boundary,
-              name = name,
-              substrata = substrata,
-          )
 
   companion object {
     // Default values of the three parameters that determine how many monitoring plots should be

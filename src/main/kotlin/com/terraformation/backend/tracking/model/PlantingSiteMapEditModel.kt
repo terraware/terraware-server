@@ -4,6 +4,8 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.gis.mergeToMultiPolygon
+import com.terraformation.backend.util.calculateAreaHectares
+import com.terraformation.backend.util.differenceNullable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.locationtech.jts.geom.MultiPolygon
@@ -102,8 +104,8 @@ data class PlantingSiteMapEditModel(
               )
             } else {
               existingStratum.toNew(
+                  areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
                   boundary = boundary,
-                  exclusion = exclusion,
                   name = stratum.name,
                   substrata = substrata,
               )
