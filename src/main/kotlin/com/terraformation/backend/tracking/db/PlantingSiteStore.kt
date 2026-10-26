@@ -1079,7 +1079,7 @@ class PlantingSiteStore(
         }
 
         val substratumId = edit.existingModel.id
-        val markIncomplete = !edit.addedRegion.isEmpty && substratumId in substrataToMarkIncomplete
+        val markIncomplete = substratumId in substrataToMarkIncomplete
 
         with(SUBSTRATA) {
           val rowsUpdated =
