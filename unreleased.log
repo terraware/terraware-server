@@ -1,3 +1,4 @@
+54665ca1 SW-9124 Fix NoSuchElementException when stratum is fully excluded (#5255)
 83c7c0d6 Upgrade to Spring Boot 4 (#5249)
 6d7a5d6d SW-8847 Reject withdrawals to fulfilled planting date requests (#5238)
 5f0752c7 SW-8847 Allow manually fulfilling planting date requests (#5237)
