@@ -1,3 +1,4 @@
+5f44b0e9 Upgrade to Node 26.12.1 (#5246)
 559f8aa0 Update dependencies (#5245)
 0fffd403 SW-9145 Move biomass measurements to per-plot results (#5226)
 2650f2fc Record temporary plot T0 density changes in event log (#5223)
