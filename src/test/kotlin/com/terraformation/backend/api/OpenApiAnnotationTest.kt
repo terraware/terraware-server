@@ -161,7 +161,7 @@ class OpenApiAnnotationTest {
       propertySources.forEach { environment.propertySources.addFirst(it) }
       Binder.get(environment)
           .bind("springdoc.packages-to-scan", Bindable.listOf(String::class.java))
-          .orElse(emptyList())
+          .orElse(emptyList())!!
           .toSet()
     }
 

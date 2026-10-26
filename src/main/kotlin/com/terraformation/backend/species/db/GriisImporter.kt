@@ -1,8 +1,6 @@
 package com.terraformation.backend.species.db
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.opencsv.CSVParser
 import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.SpeciesNativity
@@ -31,6 +29,8 @@ import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 
 /**
  * Imports data from the Global Register of Introduced and Invasive Species.

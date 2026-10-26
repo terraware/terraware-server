@@ -1,12 +1,12 @@
 package com.terraformation.backend.api
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeParseException
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.ValueDeserializer
 
 /**
  * Custom deserializer for `Instant` fields that accepts either a full timestamp with time zone or a
@@ -16,9 +16,9 @@ import java.time.format.DateTimeParseException
  * This is a workaround for an issue where some mobile clients are not including time zones in some
  * of their timestamps.
  */
-class UtcDefaultInstantDeserializer : JsonDeserializer<Instant?>() {
+class UtcDefaultInstantDeserializer : ValueDeserializer<Instant?>() {
   override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Instant? {
-    val value = p.getText()
+    val value = p.getString()
     if (value.isNullOrBlank()) {
       return null
     }

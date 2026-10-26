@@ -28,7 +28,7 @@ class KeycloakInfoFactory {
     return KeycloakInfo(
         registration.clientId,
         registration.clientSecret,
-        registration.providerDetails.issuerUri,
+        registration.providerDetails.issuerUri!!,
     )
   }
 

@@ -61,7 +61,7 @@ class TestHangWatchdog : TestExecutionListener {
     lastActivity.set(Instant.now())
   }
 
-  override fun executionSkipped(testIdentifier: TestIdentifier, reason: String?) {
+  override fun executionSkipped(testIdentifier: TestIdentifier, reason: String) {
     lastActivity.set(Instant.now())
   }
 

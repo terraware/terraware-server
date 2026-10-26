@@ -3,17 +3,17 @@ package com.terraformation.backend.tracking.model
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.ObjectReader
 import com.terraformation.backend.db.GeometryDeserializer
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
-import java.io.IOException
 import java.math.BigDecimal
 import org.jooq.JSONB
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
+import tools.jackson.core.JacksonException
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectReader
 
 /**
  * Converts between the `data` JSON blob stored with a draft planting site and
@@ -37,7 +37,7 @@ class DraftPlantingSiteMapConverter(private val objectMapper: ObjectMapper) {
     val json =
         try {
           reader.readValue<DraftPlantingSiteJson>(data.data())
-        } catch (e: IOException) {
+        } catch (e: JacksonException) {
           throw IllegalArgumentException("Invalid draft planting site data: ${e.message}", e)
         }
 

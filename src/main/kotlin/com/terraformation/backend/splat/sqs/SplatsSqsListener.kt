@@ -1,6 +1,5 @@
 package com.terraformation.backend.splat.sqs
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.terraformation.backend.db.PointWithMDeserializer
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.log.perClassLogger
@@ -13,6 +12,7 @@ import java.math.BigDecimal
 import org.locationtech.jts.geom.MultiPoint
 import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import tools.jackson.databind.annotation.JsonDeserialize
 
 @ConditionalOnProperty("terraware.splatter.enabled")
 @Named

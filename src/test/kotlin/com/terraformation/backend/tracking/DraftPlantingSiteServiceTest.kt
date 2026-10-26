@@ -1,7 +1,5 @@
 package com.terraformation.backend.tracking
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.db.ParentStore
@@ -62,11 +60,13 @@ import org.locationtech.jts.geom.TopologyException
 import org.locationtech.jts.io.WKTReader
 import org.locationtech.jts.io.geojson.GeoJsonWriter
 import org.springframework.security.access.AccessDeniedException
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.module.kotlin.readValue
 
 class DraftPlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
+  private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
   private val parser = GeometryFileParser(objectMapper)
   private val store: DraftPlantingSiteStore by lazy {
     DraftPlantingSiteStore(clock, dslContext, ParentStore(dslContext))

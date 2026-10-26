@@ -339,7 +339,7 @@ class EmbeddingService(
     }
   }
 
-  private fun embedGoogleDriveFiles(projectId: ProjectId, baseMetadata: Map<String, Any?>) {
+  private fun embedGoogleDriveFiles(projectId: ProjectId, baseMetadata: Map<String, Any>) {
     dslContext
         .selectDistinct(SUBMISSIONS.DELIVERABLE_ID)
         .from(SUBMISSIONS)
@@ -371,7 +371,7 @@ class EmbeddingService(
       projectId: ProjectId,
       deliverable: ModuleDeliverableModel,
       submissionDocument: SubmissionDocumentModel,
-      baseMetadata: Map<String, Any?>,
+      baseMetadata: Map<String, Any>,
   ) {
     log.info(
         "Embedding project $projectId deliverable ${deliverable.id} file ${submissionDocument.name}"
@@ -406,7 +406,7 @@ class EmbeddingService(
               .read()
               .filter { it.isText }
               .map { document -> document.mutate().metadata(metadata).build() }
-              .flatMap { document -> TokenTextSplitter().split(document) }
+              .flatMap { document -> TokenTextSplitter.builder().build().split(document) }
 
       vectorStore.add(chunks)
     } catch (e: GoogleJsonResponseException) {

@@ -1,6 +1,5 @@
 package com.terraformation.backend.util
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
@@ -13,9 +12,10 @@ import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 class GeometrySimplifierTest {
-  private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
+  private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
   private val parser = GeometryFileParser(objectMapper)
   private val simplifier = GeometrySimplifier()
 

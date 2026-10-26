@@ -39,7 +39,7 @@ abstract class ControllerIntegrationTest :
               MockMvcRequestBuilders.get("")
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .apply { with(oidcLogin().idToken { it.subject(currentUser().authId) }) }
+                  .apply { with(oidcLogin().idToken { it.subject(currentUser().authId!!) }) }
           )
           .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
           .addFilter<DefaultMockMvcBuilder>(makeSetUserFilter())

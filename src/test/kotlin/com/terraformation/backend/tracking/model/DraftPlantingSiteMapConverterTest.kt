@@ -1,7 +1,5 @@
 package com.terraformation.backend.tracking.model
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.db.GeometryDeserializer
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
@@ -17,9 +15,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 class DraftPlantingSiteMapConverterTest {
-  private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(GeometryModule())
+  private val objectMapper: ObjectMapper =
+      jacksonMapperBuilder().addModule(GeometryModule()).build()
   private val converter = DraftPlantingSiteMapConverter(objectMapper)
 
   /** Rounds coordinates the same way the JSON serializer does so expected values compare equal. */

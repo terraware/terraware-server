@@ -173,7 +173,7 @@ class ObservationResultsRecalculator(
           } else {
             SiteRecalculationResult.AlreadyRunning
           }
-        } ?: SiteRecalculationResult.Failed
+        }
       }
     } catch (e: Exception) {
       if (e.isSerializationFailure()) {

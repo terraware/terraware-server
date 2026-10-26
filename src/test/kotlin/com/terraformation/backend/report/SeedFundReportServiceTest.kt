@@ -1,7 +1,5 @@
 package com.terraformation.backend.report
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
@@ -68,13 +66,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val googleDriveWriter: GoogleDriveWriter = mockk()
   private val messages = Messages()
-  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val objectMapper = jacksonObjectMapper()
   private val publisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore by lazy { ParentStore(dslContext) }

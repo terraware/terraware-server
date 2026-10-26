@@ -1,9 +1,5 @@
 package com.terraformation.backend.db
 
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.point
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,9 +12,13 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.io.WKTReader
+import tools.jackson.core.JacksonException
+import tools.jackson.core.exc.StreamReadException
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.module.kotlin.readValue
 
 internal class GeometrySerializerTest {
-  private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
+  private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
 
   @ParameterizedTest(name = "{index}: {0}")
   @MethodSource("successCases")
@@ -51,7 +51,7 @@ internal class GeometrySerializerTest {
   @ParameterizedTest(name = "{index}: {0}")
   @MethodSource("malformedCases")
   fun `detects malformed GeoJSON input`(name: String, json: String) {
-    assertThrows<JsonParseException>(name) { objectMapper.readValue<Geometry>(json) }
+    assertThrows<StreamReadException>(name) { objectMapper.readValue<Geometry>(json) }
   }
 
   @Test
@@ -68,7 +68,7 @@ internal class GeometrySerializerTest {
   fun `rejects incorrect geometry type`() {
     val json = """{"point":{"type":"LineString","coordinates":[[1.1,2.2,3.3],[4,5,6]]}}"""
 
-    assertThrows<JsonProcessingException> { objectMapper.readValue<PointPayload>(json) }
+    assertThrows<JacksonException> { objectMapper.readValue<PointPayload>(json) }
   }
 
   @Test

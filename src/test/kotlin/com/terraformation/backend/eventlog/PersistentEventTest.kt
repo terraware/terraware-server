@@ -15,7 +15,6 @@ import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
-import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -118,7 +117,7 @@ class PersistentEventTest {
   ) {
     val subjectName =
         EventSubjectName.entries.firstOrNull { kClasses.first().isSubclassOf(it.eventInterface) }
-    assumeNotNull(subjectName)
+    assumeTrue(subjectName != null)
 
     val valuesClasses = kClasses.mapNotNull { kClass ->
       kClass.memberProperties.firstOrNull { it.name == "changedFrom" }?.returnType?.jvmErasure
