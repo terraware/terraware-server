@@ -3,6 +3,8 @@ package com.terraformation.backend.tracking.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Svg
+import com.terraformation.backend.api.ApiResponse400
+import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -22,6 +24,7 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.MEDIA_TYPE_SVG
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
+import com.terraformation.backend.tracking.PlantingSiteMapEditService
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -35,21 +38,27 @@ import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.NewSubstratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
+import com.terraformation.backend.tracking.model.PlantingSiteMapEditModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureType
 import com.terraformation.backend.tracking.model.StratumHistoryModel
+import com.terraformation.backend.tracking.model.StratumMapEditModel
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
+import com.terraformation.backend.tracking.model.SubstratumMapEditModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.GeometrySvgRenderer
 import com.terraformation.backend.util.requirePolygonal
 import com.terraformation.backend.util.toMultiPolygon
+import com.terraformation.backend.util.toValidatedMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Duration
@@ -81,6 +90,7 @@ class PlantingSitesController(
     private val geometrySvgRenderer: GeometrySvgRenderer,
     private val observationResultsRecalculator: ObservationResultsRecalculator,
     private val observationStore: ObservationStore,
+    private val plantingSiteMapEditService: PlantingSiteMapEditService,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteService: PlantingSiteService,
 ) {
@@ -303,6 +313,58 @@ class PlantingSitesController(
       @RequestBody payload: UpdatePlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
     plantingSiteStore.updatePlantingSite(id, payload::applyTo)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400(
+      description = "The edited map was malformed, e.g., it listed a stratum ID more than once."
+  )
+  @ApiResponse404(description = "The site, or a stratum or substratum in the edit, was not found.")
+  @ApiResponse(
+      responseCode = "409",
+      description =
+          "The edited map failed validation; nothing was changed. The problems list describes " +
+              "what is wrong.",
+      content =
+          [
+              Content(
+                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                  schema = Schema(implementation = PlantingSiteMapInvalidResponsePayload::class),
+              )
+          ],
+  )
+  @Operation(
+      summary = "Edits the map of an existing planting site.",
+      description =
+          "The request contains the site's full desired map. Existing strata and substrata are " +
+              "matched by ID; those that are omitted are deleted, and those without IDs are " +
+              "created.",
+  )
+  @PutMapping("/{id}/map")
+  fun updatePlantingSiteMap(
+      @PathVariable id: PlantingSiteId,
+      @RequestParam
+      @Schema(
+          description = "If true, check whether the edit is valid without changing the site.",
+          defaultValue = "false",
+      )
+      dryRun: Boolean? = false,
+      @RequestBody payload: UpdatePlantingSiteMapRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    val mapEdit = payload.toModel()
+
+    if (dryRun == true) {
+      // just a placeholder for now. Later these edits will be shown in the FE.
+      plantingSiteMapEditService.calculateEdit(id, mapEdit)
+    } else {
+      plantingSiteMapEditService.applyEdit(
+          id,
+          mapEdit,
+          payload.substratumIdsToMarkIncomplete ?: emptySet(),
+      )
+    }
 
     return SimpleSuccessResponsePayload()
   }
@@ -843,6 +905,81 @@ data class UpdatePlantingSiteRequestPayload(
           timeZone = timeZone,
           survivalRateIncludesTempPlots = survivalRateIncludesTempPlots ?: false,
       )
+}
+
+data class SubstratumMapEditPayload(
+    @Schema(
+        description = "ID of the existing substratum this represents. Omit to create a substratum."
+    )
+    val id: SubstratumId? = null,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry,
+    @Schema(
+        description =
+            "Name of this substratum. Two substrata in the same stratum may not have the same name, " +
+                "but using the same substratum name in different strata is valid."
+    )
+    val name: String,
+) {
+  fun toModel(): SubstratumMapEditModel {
+    return SubstratumMapEditModel(
+        id = id,
+        name = name,
+        boundary = boundary.toValidatedMultiPolygon("Substratum boundaries"),
+    )
+  }
+}
+
+data class StratumMapEditPayload(
+    @Schema(description = "ID of the existing stratum this represents. Omit to create a stratum.")
+    val id: StratumId? = null,
+    @Schema(
+        description =
+            "Name of this stratum. Two strata in the same planting site may not have the same name."
+    )
+    val name: String,
+    @Schema(
+        description =
+            "Substrata of this stratum. The stratum's boundary is the union of its substrata's " +
+                "boundaries. Must not be empty."
+    )
+    val substrata: List<SubstratumMapEditPayload>,
+) {
+  fun toModel(): StratumMapEditModel {
+    return StratumMapEditModel(id = id, name = name, substrata = substrata.map { it.toModel() })
+  }
+}
+
+data class UpdatePlantingSiteMapRequestPayload(
+    @Schema(
+        description =
+            "Site boundary. Required if the site has no strata; ignored otherwise, since the " +
+                "boundary of a site with strata is the union of its strata's boundaries.",
+        oneOf = [MultiPolygon::class, Polygon::class],
+    )
+    val boundary: Geometry? = null,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val exclusion: Geometry? = null,
+    @Schema(
+        description =
+            "Strata and substrata. Existing strata and substrata are matched by ID; those that " +
+                "are omitted are deleted. Must not be empty if the site already has strata."
+    )
+    val strata: List<StratumMapEditPayload>,
+    @Schema(
+        description =
+            "IDs of edited substrata whose planting completed flags should be cleared. Ignored " +
+                "if dryRun is true."
+    )
+    val substratumIdsToMarkIncomplete: Set<SubstratumId>? = null,
+) {
+  fun toModel(): PlantingSiteMapEditModel {
+    return PlantingSiteMapEditModel(
+        boundary = boundary?.toValidatedMultiPolygon("Planting site boundary"),
+        exclusion = exclusion?.toValidatedMultiPolygon("Exclusion area"),
+        strata = strata.map { it.toModel() },
+    )
+  }
 }
 
 data class ValidatePlantingSiteResponsePayload(

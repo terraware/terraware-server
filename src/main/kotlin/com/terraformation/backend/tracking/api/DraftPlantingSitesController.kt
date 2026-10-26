@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ArbitraryJsonObject
-import com.terraformation.backend.api.ErrorDetails
-import com.terraformation.backend.api.ErrorResponsePayload
 import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
@@ -24,7 +22,6 @@ import com.terraformation.backend.gis.GeometryFileFormat
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.DraftPlantingSiteService
 import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
-import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.BoundaryFileModel
 import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
 import com.terraformation.backend.tracking.model.DraftPlantingSiteMapConverter
@@ -44,11 +41,8 @@ import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -95,8 +89,7 @@ class DraftPlantingSitesController(
           [
               Content(
                   mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  schema =
-                      Schema(implementation = DraftPlantingSiteMapInvalidResponsePayload::class),
+                  schema = Schema(implementation = PlantingSiteMapInvalidResponsePayload::class),
               )
           ],
   )
@@ -141,19 +134,6 @@ class DraftPlantingSitesController(
     }
 
     return SimpleSuccessResponsePayload()
-  }
-
-  @ExceptionHandler(PlantingSiteMapInvalidException::class)
-  fun handlePlantingSiteMapInvalidException(
-      ex: PlantingSiteMapInvalidException
-  ): ResponseEntity<DraftPlantingSiteMapInvalidResponsePayload> {
-    val payload =
-        DraftPlantingSiteMapInvalidResponsePayload(
-            error = ErrorDetails(ex.message ?: "Planting site map is invalid"),
-            problems = ex.problems.map { PlantingSiteValidationProblemPayload(it) },
-        )
-
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(payload)
   }
 
   @Operation(
@@ -302,11 +282,6 @@ data class DraftStratumPayload(
     )
   }
 }
-
-data class DraftPlantingSiteMapInvalidResponsePayload(
-    override val error: ErrorDetails,
-    val problems: List<PlantingSiteValidationProblemPayload>,
-) : ErrorResponsePayload
 
 private const val DATA_DESCRIPTION =
     "In-progress state of the draft, including its map, in the legacy JSON format. " +
