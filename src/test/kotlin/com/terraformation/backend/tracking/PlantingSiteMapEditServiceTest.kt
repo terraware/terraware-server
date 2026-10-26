@@ -4,6 +4,12 @@ import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
+import com.terraformation.backend.db.tracking.tables.records.StrataRecord
+import com.terraformation.backend.db.tracking.tables.records.SubstrataRecord
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -52,6 +58,8 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
       val mapEdit =
           PlantingSiteMapEditModel.of(existing).withSubstratumBoundary(0, 0, rectangle(400, 500))
       val desired = mapEdit.toDesiredModel(existing)
+      val sitesBefore = dslContext.selectFrom(PLANTING_SITES).fetch()
+      val historiesBefore = dslContext.selectFrom(PLANTING_SITE_HISTORIES).fetch()
 
       val edit = service.calculateEdit(existing.id, mapEdit)
 
@@ -85,12 +93,8 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
           ),
           edit,
       )
-      assertGeometryEquals(
-          existing.boundary,
-          store.fetchSiteById(existing.id, PlantingSiteDepth.Site).boundary,
-          "Site boundary should not have changed",
-      )
-      assertEquals(1, plantingSiteHistoriesDao.findAll().size, "Number of site histories")
+      assertTableEquals(sitesBefore, "Planting site should not have changed")
+      assertTableEquals(historiesBefore, "Site histories should not have changed")
     }
 
     @Test
@@ -209,55 +213,119 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
                   ),
           )
 
+      val siteRow = dslContext.fetchSingle(PLANTING_SITES, PLANTING_SITES.ID.eq(existing.id))
+      val keptStratumRow = dslContext.fetchSingle(STRATA, STRATA.ID.eq(keptStratum.id))
+      val keptSubstratumRows =
+          dslContext.fetch(SUBSTRATA, SUBSTRATA.STRATUM_ID.eq(keptStratum.id)).sortedBy { it.id }
+
       clock.instant = editTime
       val edited = service.applyEdit(existing.id, mapEdit)
 
-      val renamedStratum = edited.strata.single { it.name == "Renamed" }
       val newStratum = edited.strata.single { it.name == "Deleted" }
 
+      // Plot creation is random and geometry unions can add vertices, so boundaries are compared
+      // via areas only.
       assertAll(
-          { assertEquals(keptStratum.id, renamedStratum.id, "Kept stratum ID") },
-          { assertEquals(keptStratum.stableId, renamedStratum.stableId, "Kept stable ID") },
           {
-            assertEquals(
-                keptStratum.plantPlotCounts,
-                renamedStratum.plantPlotCounts,
-                "Kept stratum plot counts",
+            assertTableEquals(
+                siteRow.apply {
+                  areaHa = BigDecimal("37.500")
+                  boundary = null
+                  gridOrigin = null
+                  modifiedTime = editTime
+                },
+                transform = {
+                  it.apply {
+                    boundary = null
+                    gridOrigin = null
+                  }
+                },
             )
           },
           {
-            assertEquals(
-                keptStratum.substrata.map { it.id },
-                renamedStratum.substrata.map { it.id },
-                "Kept substratum IDs",
+            assertTableEquals(
+                listOf(
+                    keptStratumRow.apply {
+                      boundary = null
+                      boundaryModifiedTime = editTime
+                      modifiedTime = editTime
+                      name = "Renamed"
+                    },
+                    StrataRecord(
+                        id = newStratum.id,
+                        plantingSiteId = existing.id,
+                        name = "Deleted",
+                        createdBy = user.userId,
+                        createdTime = editTime,
+                        modifiedBy = user.userId,
+                        modifiedTime = editTime,
+                        plantVariance = BigDecimal(850),
+                        plantStudentsT = BigDecimal("1.645"),
+                        plantErrorMargin = BigDecimal(10),
+                        plantNumPermanentPlots = 18,
+                        plantNumTemporaryPlots = 6,
+                        areaHa = BigDecimal("12.500"),
+                        initialPlantingDensity = BigDecimal(1500),
+                        boundaryModifiedBy = user.userId,
+                        boundaryModifiedTime = editTime,
+                        stableId = StableId("Deleted-2"),
+                        biomassErrorMargin = BigDecimal(10),
+                        biomassNumPermanentPlots = 18,
+                        biomassNumTemporaryPlots = 6,
+                        biomassStudentsT = BigDecimal("1.645"),
+                        biomassVariance = BigDecimal(850),
+                    ),
+                ),
+                transform = { it.apply { boundary = null } },
             )
           },
           {
-            assertEquals(
-                listOf("Renamed-A", "Renamed-B"),
-                renamedStratum.substrata.map { it.fullName },
-                "Kept substratum full names",
+            assertTableEquals(
+                keptSubstratumRows.map { row ->
+                  row.apply {
+                    boundary = null
+                    fullName = "Renamed-$name"
+                    modifiedTime = editTime
+                  }
+                } +
+                    SubstrataRecord(
+                        id = newStratum.substrata[0].id,
+                        stratumId = newStratum.id,
+                        name = "C",
+                        fullName = "Deleted-C",
+                        createdBy = user.userId,
+                        createdTime = editTime,
+                        modifiedBy = user.userId,
+                        modifiedTime = editTime,
+                        plantingSiteId = existing.id,
+                        areaHa = BigDecimal("12.500"),
+                        stableId = StableId("Deleted-C"),
+                    ),
+                transform = { it.apply { boundary = null } },
             )
           },
           {
-            assertEquals(
-                StableId("Deleted-2"),
-                newStratum.stableId,
-                "Replacement stratum gets a new stable ID",
-            )
-          },
-          {
-            assertEquals(
-                BigDecimal("37.500"),
-                edited.areaHa,
-                "Site area is that of union of strata",
-            )
-          },
-          {
-            assertEquals(
-                2,
-                plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).size,
-                "Number of site histories",
+            assertTableEquals(
+                listOf(
+                    PlantingSiteHistoriesRecord(
+                        plantingSiteId = existing.id,
+                        createdBy = user.userId,
+                        createdTime = Instant.EPOCH,
+                        areaHa = BigDecimal("50.000"),
+                    ),
+                    PlantingSiteHistoriesRecord(
+                        plantingSiteId = existing.id,
+                        createdBy = user.userId,
+                        createdTime = editTime,
+                        areaHa = BigDecimal("37.500"),
+                    ),
+                ),
+                transform = {
+                  it.apply {
+                    boundary = null
+                    gridOrigin = null
+                  }
+                },
             )
           },
       )
@@ -316,10 +384,25 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
           { assertGeometryEquals(rectangle(10), edited.exclusion, "Exclusion") },
           { assertEquals(emptyList<Any>(), edited.strata, "Strata") },
           {
-            assertEquals(
-                2,
-                plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).size,
-                "Number of site histories",
+            assertTableEquals(
+                listOf(
+                    PlantingSiteHistoriesRecord(
+                        plantingSiteId = existing.id,
+                        createdBy = user.userId,
+                        createdTime = Instant.EPOCH,
+                        boundary = rectangle(500),
+                        areaHa = BigDecimal("25.000"),
+                    ),
+                    PlantingSiteHistoriesRecord(
+                        plantingSiteId = existing.id,
+                        createdBy = user.userId,
+                        createdTime = editTime,
+                        boundary = rectangle(800),
+                        exclusion = rectangle(10),
+                        areaHa = BigDecimal("63.990"),
+                    ),
+                ),
+                transform = { it.apply { gridOrigin = null } },
             )
           },
       )
@@ -330,14 +413,12 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
       val existing =
           createSite(newSite { stratum(plantNumPermanent = 1) { substratum { permanent() } } })
 
+      val historiesBefore = dslContext.selectFrom(PLANTING_SITE_HISTORIES).fetch()
+
       clock.instant = editTime
       service.applyEdit(existing.id, PlantingSiteMapEditModel.of(existing))
 
-      assertEquals(
-          1,
-          plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).size,
-          "Number of site histories",
-      )
+      assertTableEquals(historiesBefore, "Site histories should not have changed")
     }
   }
 
