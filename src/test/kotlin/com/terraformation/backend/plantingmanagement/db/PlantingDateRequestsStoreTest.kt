@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestsRecord
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
 import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
@@ -76,6 +77,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
               date = date,
               createdBy = user.userId,
               createdTime = clock.instant,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               scheduledPlantingDateId = scheduledPlantingDateId,
@@ -101,6 +103,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
               date = date,
               createdBy = user.userId,
               createdTime = clock.instant,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               scheduledPlantingDateId = scheduledPlantingDateId,
@@ -138,6 +141,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
               date = date,
               createdBy = user.userId,
               createdTime = clock.instant,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               notes = "notes",
@@ -221,6 +225,32 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
   @Nested
   inner class Update {
     @Test
+    fun `preserves manual fulfillment when request date and notes change`() {
+      val newDate = LocalDate.EPOCH.plusDays(1)
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = newDate)
+      insertPlantingDateRequest(
+          manuallyFulfilled = true,
+          status = PlantingDateRequestStatus.Fulfilled,
+      )
+
+      store.update(scheduledPlantingDateId, plantingSeasonId, notes = "updated notes")
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              date = newDate,
+              manuallyFulfilled = true,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              notes = "updated notes",
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              statusId = PlantingDateRequestStatus.Fulfilled,
+          )
+      )
+    }
+
+    @Test
     fun `updates the request and species`() {
       val oldDate = LocalDate.EPOCH
       val newDate = LocalDate.EPOCH.plusDays(1)
@@ -237,6 +267,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
               date = newDate,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               notes = "new notes",
@@ -269,10 +300,13 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
     }
 
     @Test
-    fun `changes status back to Partial when a species is added to the date`() {
+    fun `clears manual fulfillment and changes status to Partial when a species is added`() {
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
       insertScheduledPlantingDateSpecies(quantity = 5)
-      insertPlantingDateRequest(status = PlantingDateRequestStatus.Fulfilled)
+      insertPlantingDateRequest(
+          manuallyFulfilled = true,
+          status = PlantingDateRequestStatus.Fulfilled,
+      )
       insertFacility()
       insertBatch()
       insertNurseryWithdrawal(
@@ -291,10 +325,29 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
               date = LocalDate.EPOCH,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
+              manuallyFulfilled = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               scheduledPlantingDateId = scheduledPlantingDateId,
               statusId = PlantingDateRequestStatus.Partial,
+          )
+      )
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestUpdatedEvent(
+              changedFrom =
+                  PlantingDateRequestUpdatedEventValues(
+                      manuallyFulfilled = true,
+                      status = PlantingDateRequestStatus.Fulfilled,
+                  ),
+              changedTo =
+                  PlantingDateRequestUpdatedEventValues(
+                      manuallyFulfilled = false,
+                      status = PlantingDateRequestStatus.Partial,
+                  ),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
           )
       )
     }
@@ -446,7 +499,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       withdraw(species = speciesId, readyQuantity = 5)
       withdraw(species = speciesId2, readyQuantity = 10)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Fulfilled, statusOf())
     }
@@ -455,7 +508,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
     fun `marks request Pending when no species has positive net withdrawn`() {
       insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Pending, statusOf())
     }
@@ -468,7 +521,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
 
       withdraw(species = speciesId, readyQuantity = 5)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Partial, statusOf())
     }
@@ -479,7 +532,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
 
       withdraw(species = speciesId, readyQuantity = 4)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Partial, statusOf())
     }
@@ -490,7 +543,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
 
       withdraw(species = speciesId, readyQuantity = 8)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Fulfilled, statusOf())
 
@@ -526,7 +579,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
 
       withdraw(species = speciesId, readyQuantity = 7)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Fulfilled, statusOf())
     }
@@ -543,9 +596,80 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
           undoesWithdrawalId = originalWithdrawalId,
       )
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = true))
 
       assertEquals(PlantingDateRequestStatus.Pending, statusOf())
+    }
+
+    @Test
+    fun `undoing a withdrawal clears manual fulfillment and recalculates status`() {
+      markManuallyFulfilled()
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+
+      val originalWithdrawalId = withdraw(species = speciesId, readyQuantity = 5)
+      withdraw(
+          species = speciesId,
+          readyQuantity = -5,
+          purpose = WithdrawalPurpose.Undo,
+          undoesWithdrawalId = originalWithdrawalId,
+      )
+
+      val originalModifiedTime = clock.instant
+      clock.instant = Instant.ofEpochSecond(100)
+      store.on(withdrawalRequestEvent(isUndo = true))
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              date = LocalDate.EPOCH,
+              manuallyFulfilled = false,
+              modifiedBy = user.userId,
+              modifiedTime = originalModifiedTime,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              statusId = PlantingDateRequestStatus.Pending,
+          )
+      )
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestUpdatedEvent(
+              changedFrom =
+                  PlantingDateRequestUpdatedEventValues(
+                      manuallyFulfilled = true,
+                      status = PlantingDateRequestStatus.Fulfilled,
+                  ),
+              changedTo =
+                  PlantingDateRequestUpdatedEventValues(
+                      manuallyFulfilled = false,
+                      status = PlantingDateRequestStatus.Pending,
+                  ),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+          )
+      )
+    }
+
+    @Test
+    fun `new withdrawals do not clear manual fulfillment`() {
+      markManuallyFulfilled()
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+      withdraw(species = speciesId, readyQuantity = 2)
+
+      store.on(withdrawalRequestEvent(isUndo = false))
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              date = LocalDate.EPOCH,
+              manuallyFulfilled = true,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              statusId = PlantingDateRequestStatus.Fulfilled,
+          )
+      )
     }
 
     @Test
@@ -555,14 +679,14 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
 
       withdraw(species = unrequestedSpeciesId, readyQuantity = 5)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Pending, statusOf())
     }
 
     @Test
     fun `marks a request with no species Pending`() {
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       assertEquals(PlantingDateRequestStatus.Pending, statusOf())
     }
@@ -571,13 +695,28 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
     fun `does not publish event when status is unchanged`() {
       insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
 
-      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+      store.on(withdrawalRequestEvent(isUndo = false))
 
       eventPublisher.assertEventNotPublished<PlantingDateRequestUpdatedEvent>()
     }
 
     private fun statusOf(id: ScheduledPlantingDateId = scheduledPlantingDateId) =
         plantingDateRequestsDao.fetchOneByScheduledPlantingDateId(id)!!.statusId
+
+    private fun markManuallyFulfilled() {
+      dslContext
+          .update(PLANTING_DATE_REQUESTS)
+          .set(PLANTING_DATE_REQUESTS.MANUALLY_FULFILLED, true)
+          .set(PLANTING_DATE_REQUESTS.STATUS_ID, PlantingDateRequestStatus.Fulfilled)
+          .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+          .execute()
+    }
+
+    private fun withdrawalRequestEvent(isUndo: Boolean) =
+        WithdrawalAssociatedWithPlantingDateRequestEvent(
+            isUndo = isUndo,
+            scheduledPlantingDateRequestId = scheduledPlantingDateId,
+        )
 
     /** Inserts a batch + withdrawal + batch withdrawal tied to the request under test. */
     private fun withdraw(

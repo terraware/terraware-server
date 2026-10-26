@@ -878,7 +878,8 @@ class BatchStore(
       if (withdrawal.scheduledPlantingDateRequestId != null) {
         eventPublisher.publishEvent(
             WithdrawalAssociatedWithPlantingDateRequestEvent(
-                withdrawal.scheduledPlantingDateRequestId
+                isUndo = withdrawal.purpose == WithdrawalPurpose.Undo,
+                scheduledPlantingDateRequestId = withdrawal.scheduledPlantingDateRequestId,
             )
         )
       }
