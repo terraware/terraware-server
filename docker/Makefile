@@ -9,7 +9,8 @@ DEFAULT: image
 
 prepare: $(BUILD_DIR) $(FILES)
 	cd .. && ./gradlew assemble
-	cd $(BUILD_DIR) && java -Djarmode=layertools -jar `ls -t ../libs/*.jar | grep -v plain.jar | head -1` extract
+	mkdir -p $(BUILD_DIR)
+	cd $(BUILD_DIR) && jar -xf `ls -t ../libs/*.jar | grep -v plain.jar | head -1`
 
 image: prepare
 	docker build -f Dockerfile -t $(IMAGE_NAME) $(BUILD_DIR)

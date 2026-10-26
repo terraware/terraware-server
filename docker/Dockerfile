@@ -10,10 +10,10 @@ WORKDIR /app
 # dependencies haven't changed will be able to reuse the existing image layer from
 # the previous version.
 COPY --chown=$USER_ID --chmod=755 start.sh ./
-COPY --chown=$USER_ID dependencies/ ./
-COPY --chown=$USER_ID spring-boot-loader/ ./
-COPY --chown=$USER_ID snapshot-dependencies/ ./
-COPY --chown=$USER_ID application/ ./
+COPY --chown=$USER_ID org ./org
+COPY --chown=$USER_ID BOOT-INF/lib ./lib
+COPY --chown=$USER_ID META-INF ./META-INF
+COPY --chown=$USER_ID BOOT-INF/classes ./
 
 EXPOSE 8080
 
