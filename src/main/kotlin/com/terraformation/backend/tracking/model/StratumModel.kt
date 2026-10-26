@@ -538,7 +538,17 @@ data class StratumModel<
         boundary.equalsExact(other.boundary, tolerance)
   }
 
-  fun toNew(): NewStratumModel =
+  /**
+   * Returns a new stratum with this stratum's stable ID, plot count settings, and planting
+   * densities. The map and name default to this stratum's current values but may be overridden. If
+   * the boundary is overridden, [areaHa] should be too.
+   */
+  fun toNew(
+      areaHa: BigDecimal = this.areaHa,
+      boundary: MultiPolygon = this.boundary,
+      name: String = this.name,
+      substrata: List<NewSubstratumModel> = this.substrata.map { it.toNew() },
+  ): NewStratumModel =
       NewStratumModel(
           areaHa = areaHa,
           biomassPlotCounts = biomassPlotCounts,
@@ -548,7 +558,7 @@ data class StratumModel<
           initialPlantingDensity = initialPlantingDensity,
           name = name,
           plantPlotCounts = plantPlotCounts,
-          substrata = substrata.map { it.toNew() },
+          substrata = substrata,
           stableId = stableId,
           targetPlantDensity = targetPlantDensity,
       )
