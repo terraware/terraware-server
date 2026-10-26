@@ -56,7 +56,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -509,7 +508,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             email = "newemail@x.com",
             firstName = newFirstName,
             lastName = newLastName,
-            emailNotificationsEnabled = true,
             locale = newLanguage,
             timeZone = newTimeZone,
         )
@@ -529,7 +527,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(newLastName, updatedModel.lastName, "Last name (DB)")
     assertEquals(newLocale, updatedModel.locale, "Locale (DB)")
     assertEquals(newTimeZone, updatedModel.timeZone, "Time zone (DB)")
-    assertTrue(updatedModel.emailNotificationsEnabled, "Email notifications enabled (DB)")
 
     val updatedRepresentation = keycloakAdminClient.get(model.authId!!)
     assertEquals(oldEmail, updatedRepresentation?.email, "Email (Keycloak)")

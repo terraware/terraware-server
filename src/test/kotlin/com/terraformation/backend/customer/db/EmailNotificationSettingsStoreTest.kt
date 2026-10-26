@@ -178,78 +178,13 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class OptIntoAllCategoriesIfNoneForCurrentUser {
-    @Test
-    fun `opts into all non-accelerator categories if non-accelerator user has no opt-ins`() {
-      val otherUserId = insertUser()
-      insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
-
-      store.optIntoAllCategoriesIfNoneForCurrentUser()
-
-      assertTableEquals(
-          listOf(
-              UserEmailNotificationCategoriesRecord(
-                  otherUserId,
-                  EmailNotificationCategory.SeedBank,
-              ),
-              UserEmailNotificationCategoriesRecord(
-                  user.userId,
-                  EmailNotificationCategory.SeedBank,
-              ),
-              UserEmailNotificationCategoriesRecord(user.userId, EmailNotificationCategory.Nursery),
-              UserEmailNotificationCategoriesRecord(
-                  user.userId,
-                  EmailNotificationCategory.PlantingAndObservations,
-              ),
-          )
-      )
-    }
-
-    @Test
-    fun `opts into all categories if accelerator user has no opt-ins`() {
-      insertOrganization()
-      insertOrganizationUser()
-      insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
-
-      store.optIntoAllCategoriesIfNoneForCurrentUser()
-
-      assertTableEquals(
-          EmailNotificationCategory.entries.map {
-            UserEmailNotificationCategoriesRecord(user.userId, it)
-          }
-      )
-    }
-
-    @Test
-    fun `opts funders into accelerator category if they have no opt-ins`() {
-      switchToUser(insertUser(type = UserType.Funder))
-
-      store.optIntoAllCategoriesIfNoneForCurrentUser()
-
-      assertTableEquals(
-          UserEmailNotificationCategoriesRecord(user.userId, EmailNotificationCategory.Accelerator)
-      )
-    }
-
-    @Test
-    fun `does not modify existing opt-ins`() {
-      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery)
-
-      store.optIntoAllCategoriesIfNoneForCurrentUser()
-
-      assertTableEquals(
-          UserEmailNotificationCategoriesRecord(user.userId, EmailNotificationCategory.Nursery)
-      )
-    }
-  }
-
-  @Nested
   inner class IsOptedIn {
     @Test
     fun `returns true only for categories the user opted into`() {
-      val otherUserId = insertUser()
+      val userId = insertUser(emailNotificationsEnabled = true)
+      val otherUserId = insertUser(emailNotificationsEnabled = true)
       insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
-      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, user.userId)
+      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, userId)
 
       assertEquals(
           mapOf(
@@ -258,8 +193,24 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               EmailNotificationCategory.PlantingAndObservations to false,
               EmailNotificationCategory.Accelerator to false,
           ),
-          EmailNotificationCategory.entries.associateWith { store.isOptedIn(user.userId, it) },
+          EmailNotificationCategory.entries.associateWith { store.isOptedIn(userId, it) },
       )
+    }
+
+    @Test
+    fun `returns false if user disabled email notifications`() {
+      val userId = insertUser(emailNotificationsEnabled = false)
+      insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, userId)
+
+      assertFalse(store.isOptedIn(userId, EmailNotificationCategory.Nursery), "Categorized")
+      assertFalse(store.isOptedIn(userId, null), "Uncategorized")
+    }
+
+    @Test
+    fun `returns true for uncategorized emails if user enabled email notifications`() {
+      val userId = insertUser(emailNotificationsEnabled = true)
+
+      assertTrue(store.isOptedIn(userId, null))
     }
   }
 }

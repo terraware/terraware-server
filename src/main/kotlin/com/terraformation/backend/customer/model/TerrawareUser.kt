@@ -107,9 +107,6 @@ interface TerrawareUser : Principal, UserDetails {
   val locale: Locale?
     get() = Locale.ENGLISH
 
-  val emailNotificationsEnabled: Boolean
-    get() = true
-
   /**
    * The user's Keycloak ID, if any. Null if this is an internal pseudo-user or if this user has
    * been invited to the system but has not yet registered with Keycloak.

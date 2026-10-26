@@ -19,7 +19,6 @@ data class FunderUser(
     override val userId: UserId,
     override val authId: String? = null,
     override val email: String,
-    override val emailNotificationsEnabled: Boolean = true,
     override val firstName: String? = null,
     override val lastName: String? = null,
     override val countryCode: String? = null,

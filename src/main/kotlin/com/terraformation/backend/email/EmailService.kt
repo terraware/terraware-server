@@ -198,21 +198,22 @@ class EmailService(
    */
   private fun isOptedIn(user: TerrawareUser, model: EmailTemplateModel): Boolean {
     val category = model.emailNotificationCategory
+    val optedIn = emailNotificationSettingsStore.isOptedIn(user.userId, category)
 
-    return if (!user.emailNotificationsEnabled) {
-      log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
-      false
-    } else if (
-        category != null && !emailNotificationSettingsStore.isOptedIn(user.userId, category)
-    ) {
-      log.info(
-          "Skipping email notification for user ${user.userId} because they didn't opt into " +
-              "category $category"
-      )
-      false
-    } else {
-      true
+    if (!optedIn) {
+      if (category != null) {
+        log.info(
+            "Skipping email notification for user ${user.userId} because they didn't enable " +
+                "email notifications or opt into category $category"
+        )
+      } else {
+        log.info(
+            "Skipping email notification for user ${user.userId} because they didn't enable it"
+        )
+      }
     }
+
+    return optedIn
   }
 
   /** Renders a Freemarker template if it exists. Returns null if the template doesn't exist. */
