@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -744,6 +745,25 @@ class StratumModelTest : BaseStratumModelTest() {
                   "fit inside"
           )
           .isGreaterThanOrEqualTo(square.area * 0.999)
+    }
+
+    @Test
+    fun `returns null if stratum is entirely within exclusion area`() {
+      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { square(100) }
+      val exclusion =
+          Turtle(siteOrigin).makeMultiPolygon {
+            west(10)
+            south(10)
+            square(120)
+          }
+
+      val stratum =
+          stratumModel(
+              boundary = siteBoundary,
+              substrata = listOf(substratumModel(boundary = siteBoundary, plots = emptyList())),
+          )
+
+      assertNull(stratum.findUnusedSquare(siteOrigin, 30, exclusion))
     }
   }
 
