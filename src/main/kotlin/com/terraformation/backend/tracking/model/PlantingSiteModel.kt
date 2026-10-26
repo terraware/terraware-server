@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.differenceNullable
@@ -25,6 +26,7 @@ import org.jooq.Record
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.TopologyException
 
 data class PlantingSiteModel<
     PSID : PlantingSiteId?,
@@ -116,6 +118,23 @@ data class PlantingSiteModel<
     }
 
     return problems.ifEmpty { null }
+  }
+
+  /**
+   * @throws PlantingSiteMapInvalidException The map failed validation.
+   * @throws IllegalArgumentException The map's geometries couldn't be compared with one another.
+   */
+  fun requireValid() {
+    val problems =
+        try {
+          validate()
+        } catch (e: TopologyException) {
+          throw IllegalArgumentException("Planting site map has invalid geometry", e)
+        }
+
+    if (problems != null) {
+      throw PlantingSiteMapInvalidException(problems)
+    }
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
