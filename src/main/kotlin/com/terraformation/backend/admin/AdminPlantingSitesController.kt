@@ -464,7 +464,7 @@ class AdminPlantingSitesController(
           redirectAttributes.successMessage = "Would make the following changes:"
           redirectAttributes.successDetails = describeSiteEdit(edit)
         } else {
-          plantingSiteMapEditService.applyEdit(
+          plantingSiteStore.applyPlantingSiteEdit(
               edit,
               substratumIdsToMarkIncomplete?.split(",")?.map { SubstratumId(it.trim()) }?.toSet()
                   ?: emptySet(),

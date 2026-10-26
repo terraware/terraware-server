@@ -6,16 +6,14 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
-  private val service: PlantingSiteMapEditService by lazy { PlantingSiteMapEditService(store) }
+  private val service: PlantingSiteMapEditService by lazy { PlantingSiteMapEditService() }
 
   @Nested
   inner class CalculateEdit {
@@ -31,19 +29,6 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
 
       assertThrows<PlantingSiteMapInvalidException> { service.calculateEdit(existing, desired) }
       assertDoesNotThrow { service.calculateEdit(existing, desired, validate = false) }
-    }
-  }
-
-  @Nested
-  inner class ApplyEdit {
-    @Test
-    fun `applies calculated edit`() {
-      val existing = createSite(newSite(width = 500))
-      val edit = service.calculateEdit(existing, newSite(width = 400))
-
-      val edited = service.applyEdit(edit)
-
-      assertEquals(BigDecimal("20.000"), edited.areaHa, "Area")
     }
   }
 
