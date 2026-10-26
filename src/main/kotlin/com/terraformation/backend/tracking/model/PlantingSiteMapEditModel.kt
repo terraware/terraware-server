@@ -65,8 +65,9 @@ data class PlantingSiteMapEditModel(
   /**
    * Returns the planting site that would result from applying this edit to [existing].
    *
-   * Existing strata and substrata keep their stable IDs and settings. New strata and substrata get
-   * stable IDs based on their names.
+   * Existing strata and substrata keep their stable IDs and settings. New strata and substrata are
+   * given stable IDs that aren't used by anything in the existing site, so a new stratum or
+   * substratum never inherits the history of one that's being deleted.
    *
    * Use [PlantingSiteModel.validate] to check the geometry of the resulting site model.
    *
@@ -92,6 +93,11 @@ data class PlantingSiteMapEditModel(
 
     val existingStrataById = existing.strata.associateBy { it.id }
     val existingSubstrataById = existing.strata.flatMap { it.substrata }.associateBy { it.id }
+    val usedStableIds =
+        existing.strata.flatMap { stratum ->
+          listOf(stratum.stableId) + stratum.substrata.map { it.stableId }
+        }
+    val stableIdAllocator = StableIdAllocator(usedStableIds)
 
     val desiredStrata =
         runBlocking(Dispatchers.Default) {
@@ -108,7 +114,8 @@ data class PlantingSiteMapEditModel(
                       fullName = fullName,
                       name = substratum.name,
                       plantingCompletedTime = existingSubstratum?.plantingCompletedTime,
-                      stableId = existingSubstratum?.stableId ?: StableId(fullName),
+                      stableId =
+                          existingSubstratum?.stableId ?: stableIdAllocator.allocate(fullName),
                   )
                 }
 
@@ -119,7 +126,7 @@ data class PlantingSiteMapEditModel(
                   boundary = boundary,
                   exclusion = exclusion,
                   name = stratum.name,
-                  stableId = StableId(stratum.name),
+                  stableId = stableIdAllocator.allocate(stratum.name),
                   substrata = substrata,
               )
             } else {
@@ -181,6 +188,23 @@ data class PlantingSiteMapEditModel(
           }
         }
       }
+    }
+  }
+
+  /**
+   * Generates stable IDs based on names, adding numeric suffixes as needed to avoid collisions with
+   * existing stable IDs or ones that were already allocated.
+   */
+  private class StableIdAllocator(usedStableIds: Collection<StableId>) {
+    private val used = usedStableIds.map { it.value }.toMutableSet()
+
+    fun allocate(name: String): StableId {
+      val value =
+          generateSequence(1) { it + 1 }
+              .map { if (it == 1) name else "$name-$it" }
+              .first { it !in used }
+      used.add(value)
+      return StableId(value)
     }
   }
 
