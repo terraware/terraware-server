@@ -8,6 +8,8 @@ import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.StratumNotFoundException
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
+import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import java.math.BigDecimal
 import java.time.Instant
@@ -18,6 +20,27 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 class PlantingSiteMapEditModelTest {
+  @Test
+  fun `unchanged map results in no-op edit`() {
+    // No permanent plots, so the edit calculator doesn't add plots to fill out the strata.
+    val existing =
+        existingSite(width = 1000) {
+          stratum(width = 600, plantNumPermanent = 0, plantNumTemporary = 3) {
+            plantErrorMargin = BigDecimal(50)
+            plantVariance = BigDecimal(30000)
+            initialPlantingDensity = BigDecimal(1500)
+            substratum(width = 200) { plantingCompletedTime = Instant.ofEpochSecond(1000) }
+            substratum()
+          }
+          stratum(plantNumPermanent = 0, plantNumTemporary = 4)
+        }
+
+    val desired = PlantingSiteMapEditModel.of(existing).toDesiredModel(existing)
+    val edit = PlantingSiteEditCalculator(existing, desired).calculateSiteEdit()
+
+    assertEquals(emptyList<StratumEdit>(), edit.stratumEdits.filterNot { it.isNoOp() })
+  }
+
   @Test
   fun `existing strata and substrata keep their settings and new ones use defaults`() {
     val completedTime = Instant.ofEpochSecond(1000)
