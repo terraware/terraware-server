@@ -44,6 +44,7 @@ import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.GeometrySvgRenderer
+import com.terraformation.backend.util.requirePolygonal
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -690,9 +691,7 @@ data class NewSubstratumPayload(
     val name: String,
 ) {
   fun validate() {
-    if (boundary !is MultiPolygon && boundary !is Polygon) {
-      throw IllegalArgumentException("Substratum boundaries must be Polygon or MultiPolygon")
-    }
+    boundary.requirePolygonal("Substratum boundaries")
   }
 
   fun toModel(stratumName: String, exclusion: MultiPolygon?): NewSubstratumModel {
@@ -722,10 +721,7 @@ data class NewStratumPayload(
     val targetPlantDensity: BigDecimal?,
 ) {
   fun validate() {
-    if (boundary !is MultiPolygon && boundary !is Polygon) {
-      throw IllegalArgumentException("Stratum boundaries must be Polygon or MultiPolygon")
-    }
-
+    boundary.requirePolygonal("Stratum boundaries")
     substrata?.forEach { it.validate() }
   }
 
@@ -787,14 +783,8 @@ data class CreatePlantingSiteRequestPayload(
     val timeZone: ZoneId?,
 ) {
   fun validate() {
-    if (boundary != null && boundary !is MultiPolygon && boundary !is Polygon) {
-      throw IllegalArgumentException("Planting site boundary must be Polygon or MultiPolygon")
-    }
-
-    if (exclusion != null && exclusion !is MultiPolygon && exclusion !is Polygon) {
-      throw IllegalArgumentException("Exclusion area must be Polygon or MultiPolygon")
-    }
-
+    boundary?.requirePolygonal("Planting site boundary")
+    exclusion?.requirePolygonal("Exclusion area")
     strata?.forEach { it.validate() }
   }
 
