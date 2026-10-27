@@ -1,3 +1,5 @@
+6bd6c7c1 Move observation plot assignment into ObservationPlotStore (#5257)
+0d33b85a Rebuild only plot totals when recalculating observation totals (#5256)
 89a71cbd SW-9153 Read biomass additional species from table (#5253)
 bf9a08ea SW-9153 Remove measured species from additional species (#5252)
 3da5303f SW-9153 Add table for biomass additional species (#5251)
