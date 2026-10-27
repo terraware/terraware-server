@@ -238,6 +238,7 @@ class ObservationPlotsUnderallocated(
 
 class ObservationUpcoming(
     config: TerrawareServerConfig,
+    val observationType: ObservationType,
     val plantingSiteName: String,
     val startDate: LocalDate,
     val observationsUrl: String,
@@ -246,6 +247,9 @@ class ObservationUpcoming(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/upcoming"
+
+  val stringsPrefix: String
+    get() = observationStringsPrefix("notification.observation.upcoming", observationType)
 
   override val emailNotificationCategory: EmailNotificationCategory
     get() = EmailNotificationCategory.PlantingAndObservations

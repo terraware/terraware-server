@@ -487,13 +487,18 @@ class NotificationService(
             notificationType = NotificationType.ObservationUpcoming,
             localUrl = webAppUrls.observations(plantingSite.organizationId, plantingSite.id),
             renderMessage = {
-              messages.observationUpcoming(plantingSite.name, event.observation.startDate)
+              messages.observationUpcoming(
+                  event.observation.observationType,
+                  plantingSite.name,
+                  event.observation.startDate,
+              )
             },
         )
 
     val emailContent =
         ObservationUpcoming(
             config,
+            event.observation.observationType,
             plantingSite.name,
             event.observation.startDate,
             webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),

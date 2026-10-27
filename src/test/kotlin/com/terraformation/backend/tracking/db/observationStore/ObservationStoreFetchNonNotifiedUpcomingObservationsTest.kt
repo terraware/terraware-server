@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import java.time.LocalDate
 import java.time.LocalTime
@@ -85,6 +86,42 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
 
     val expected = setOf(startableObservationId)
     val actual = store.fetchNonNotifiedUpcomingObservations().map { it.id }.toSet()
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `returns both plant monitoring and biomass observations at the same site`() {
+    val timeZone = ZoneId.of("America/Denver")
+    val startDate = LocalDate.of(2023, 4, 1)
+    val endDate = LocalDate.of(2023, 4, 30)
+
+    clock.instant = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
+
+    helper.insertPlantedSite(timeZone = timeZone)
+    val plantMonitoringObservationId =
+        insertObservation(
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
+    insertObservationRequestedSubstratum()
+    val biomassObservationId =
+        insertObservation(
+            endDate = endDate,
+            observationType = ObservationType.BiomassMeasurements,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
+    insertObservationRequestedSubstratum()
+
+    val expected =
+        mapOf(
+            plantMonitoringObservationId to ObservationType.Monitoring,
+            biomassObservationId to ObservationType.BiomassMeasurements,
+        )
+    val actual =
+        store.fetchNonNotifiedUpcomingObservations().associate { it.id to it.observationType }
 
     assertEquals(expected, actual)
   }

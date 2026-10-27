@@ -850,7 +850,11 @@ internal class NotificationServiceEmailTest {
     val englishMessage = sentMessageFor("english@x.com")
     val gibberishMessage = sentMessageFor("gibberish@x.com")
 
-    assertBodyContains("Observation", message = englishMessage)
+    assertSubjectContains("Upcoming Plant Monitoring Observation", message = englishMessage)
+    assertBodyContains(
+        "My Site has a Plant Monitoring observation event",
+        message = englishMessage,
+    )
     assertBodyContains("September 1, 2023", "Start date", message = englishMessage)
     assertBodyContains(
         webAppUrls.googlePlay.toString(),
@@ -871,6 +875,23 @@ internal class NotificationServiceEmailTest {
     )
 
     assertRecipientsEqual(recipients)
+  }
+
+  @Test
+  fun `observationUpcomingNotificationDue for biomass observation`() {
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        listOf(userForEmail("english@x.com"))
+
+    val event =
+        ObservationUpcomingNotificationDueEvent(
+            upcomingObservation.copy(observationType = ObservationType.BiomassMeasurements)
+        )
+
+    service.on(event)
+
+    assertSubjectContains("Upcoming Biomass Monitoring Observation")
+    assertBodyContains("My Site has a Biomass Monitoring observation event")
+    assertBodyContains("September 1, 2023", "Start date")
   }
 
   @Test
