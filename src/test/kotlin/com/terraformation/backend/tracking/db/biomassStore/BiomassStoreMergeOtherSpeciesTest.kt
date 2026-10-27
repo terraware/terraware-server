@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
@@ -397,5 +398,24 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
         ),
         "Additional species after merge",
     )
+  }
+
+  @Test
+  fun `does not make target species additional if it was measured`() {
+    observationId =
+        insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
+    monitoringPlotId = insertMonitoringPlot(substratumId = null, isAdHoc = true)
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+    insertObservationBiomassDetails()
+    val speciesId = insertSpecies()
+    insertObservationBiomassSpecies(speciesId = speciesId)
+    insertObservationBiomassQuadratDetails()
+    insertObservationBiomassQuadratSpecies()
+    insertObservationBiomassSpecies(scientificName = "Other")
+    insertObservationBiomassAdditionalSpecies()
+
+    store.mergeOtherSpecies(observationId, "Other", speciesId)
+
+    assertTableEmpty(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES, "Additional species after merge")
   }
 }

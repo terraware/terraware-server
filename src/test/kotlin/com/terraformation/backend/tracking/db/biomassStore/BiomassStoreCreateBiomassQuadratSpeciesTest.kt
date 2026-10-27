@@ -4,6 +4,7 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
@@ -102,6 +103,38 @@ class BiomassStoreCreateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
     eventPublisher.assertEventPublished {
       it is BiomassSpeciesCreatedEvent && it.scientificName == otherSpeciesName
     }
+  }
+
+  @Test
+  fun `removes species from additional species of only the quadrat's plot`() {
+    val speciesId = insertSpecies()
+    val monitoringPlotId = inserted.monitoringPlotId
+    insertObservationBiomassSpecies(speciesId = speciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+    val otherPlotBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    store.createBiomassQuadratSpecies(
+        inserted.observationId,
+        monitoringPlotId,
+        ObservationPlotPosition.NortheastCorner,
+        speciesId,
+        null,
+        1,
+    )
+
+    assertTableEquals(
+        ObservationBiomassAdditionalSpeciesRecord(
+            biomassSpeciesId = otherPlotBiomassSpeciesId,
+            monitoringPlotId = otherMonitoringPlotId,
+            observationId = inserted.observationId,
+        ),
+        "Additional species after creating quadrat species",
+    )
   }
 
   @Test

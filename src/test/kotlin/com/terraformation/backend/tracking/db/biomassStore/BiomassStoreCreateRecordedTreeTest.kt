@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDetailsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
@@ -145,6 +146,30 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
     eventPublisher.assertEventPublished {
       it is BiomassSpeciesCreatedEvent && it.speciesName == "Other tree"
     }
+  }
+
+  @Test
+  fun `removes species from additional species of only the tree's plot`() {
+    insertObservationBiomassDetails()
+    insertObservationBiomassSpecies(speciesId = speciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot(monitoringPlotId = otherMonitoringPlotId, completedBy = user.userId)
+    insertObservationBiomassDetails(monitoringPlotId = otherMonitoringPlotId)
+    val otherPlotBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
+
+    assertTableEquals(
+        ObservationBiomassAdditionalSpeciesRecord(
+            biomassSpeciesId = otherPlotBiomassSpeciesId,
+            monitoringPlotId = otherMonitoringPlotId,
+            observationId = observationId,
+        ),
+        "Additional species after creating tree",
+    )
   }
 
   @Test
