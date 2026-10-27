@@ -1871,6 +1871,33 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `ignores biomass and ad hoc observations`() {
+      val siteWithOnlyIgnoredObservations = helper.insertPlantedSite()
+      insertObservation(
+          completedTime = Instant.EPOCH,
+          observationType = ObservationType.BiomassMeasurements,
+      )
+      insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+
+      val siteWithOldPlantMonitoringObservation = helper.insertPlantedSite()
+      insertObservation(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS))
+      insertObservation(
+          completedTime = Instant.EPOCH,
+          observationType = ObservationType.BiomassMeasurements,
+      )
+      insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      insertObservation(
+          observationType = ObservationType.BiomassMeasurements,
+          state = ObservationState.Upcoming,
+      )
+
+      assertEquals(
+          setOf(siteWithOnlyIgnoredObservations, siteWithOldPlantMonitoringObservation),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+      )
+    }
+
+    @Test
     fun `returns sites with observations completed earlier than two weeks or have substratum plantings`() {
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
