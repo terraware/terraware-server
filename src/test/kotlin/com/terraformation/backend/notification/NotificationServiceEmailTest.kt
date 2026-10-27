@@ -881,8 +881,8 @@ internal class NotificationServiceEmailTest {
 
     assertSubjectContains("Test Organization")
     assertSubjectContains("My Site")
-    assertSubjectContains("has scheduled an observation")
-    assertBodyContains("observation scheduled")
+    assertSubjectContains("has scheduled a Plant Monitoring observation")
+    assertBodyContains("Plant Monitoring observation scheduled")
     assertBodyContains("September 1, 2023", "Start date")
     assertBodyContains("September 30, 2023", "End date")
 
@@ -909,12 +909,51 @@ internal class NotificationServiceEmailTest {
 
     assertSubjectContains("Test Organization")
     assertSubjectContains("My Site")
-    assertSubjectContains("has rescheduled an observation")
-    assertBodyContains("observation rescheduled")
+    assertSubjectContains("has rescheduled a Plant Monitoring observation")
+    assertBodyContains("Plant Monitoring observation rescheduled")
     assertBodyContains("September 1, 2023", "Original start date")
     assertBodyContains("September 30, 2023", "Original end date")
     assertBodyContains("October 1, 2023", "New start date")
     assertBodyContains("October 31, 2023", "New end date")
+
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
+  }
+
+  @Test
+  fun `observationScheduledNotification for biomass observation`() {
+    val event =
+        ObservationScheduledEvent(
+            upcomingObservation.copy(observationType = ObservationType.BiomassMeasurements)
+        )
+
+    service.on(event)
+
+    assertSubjectContains("has scheduled a Biomass Monitoring observation")
+    assertBodyContains("Biomass Monitoring observation scheduled")
+    assertBodyContains("September 1, 2023", "Start date")
+    assertBodyContains("September 30, 2023", "End date")
+
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
+  }
+
+  @Test
+  fun `observationRescheduledNotification for biomass observation`() {
+    val originalObservation =
+        upcomingObservation.copy(observationType = ObservationType.BiomassMeasurements)
+    val event =
+        ObservationRescheduledEvent(
+            originalObservation,
+            originalObservation.copy(
+                endDate = LocalDate.of(2023, 10, 31),
+                startDate = LocalDate.of(2023, 10, 1),
+            ),
+        )
+
+    service.on(event)
+
+    assertSubjectContains("has rescheduled a Biomass Monitoring observation")
+    assertBodyContains("Biomass Monitoring observation rescheduled")
+    assertBodyContains("October 1, 2023", "New start date")
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
