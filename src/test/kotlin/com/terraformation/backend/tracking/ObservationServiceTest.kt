@@ -71,6 +71,7 @@ import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
+import com.terraformation.backend.tracking.db.ObservationPlotStore
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -164,6 +165,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val observationResultsInvalidator: ObservationResultsInvalidator by lazy {
     spyk(ObservationResultsInvalidator(dslContext))
   }
+  private val observationPlotStore: ObservationPlotStore by lazy {
+    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentStore)
+  }
   private val observationStore: ObservationStore by lazy {
     spyk(
         ObservationStore(
@@ -209,6 +213,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         monitoringPlotsDao,
         muxService,
         observationMediaFilesDao,
+        observationPlotStore,
         observationResultsInvalidator,
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
@@ -2760,6 +2765,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               monitoringPlotsDao,
               muxService,
               observationMediaFilesDao,
+              observationPlotStore,
               observationResultsInvalidator,
               spyStore,
               PlantingSiteNotificationStore(clock, dslContext),

@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.tracking.ObservationId
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
+class ObservationPlotStoreCountPlotsTest : BaseObservationPlotStoreTest() {
   @BeforeEach
   fun insertDetailedSite() {
     insertStratum()

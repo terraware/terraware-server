@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest() {
+class ObservationPlotStoreAddAdHocPlotToObservationTest : BaseObservationPlotStoreTest() {
   @Test
   fun `inserts a non-permanent observation plot`() {
     insertStratum()
