@@ -581,6 +581,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
+      @RequestParam observationType: ObservationType,
       @RequestParam requestedSubstratumIds: Set<SubstratumId>,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -591,7 +592,7 @@ class AdminPlantingSitesController(
                   endDate = LocalDate.parse(endDate),
                   id = null,
                   isAdHoc = false,
-                  observationType = ObservationType.Monitoring,
+                  observationType = observationType,
                   plantingSiteId = plantingSiteId,
                   requestedSubstratumIds = requestedSubstratumIds,
                   startDate = LocalDate.parse(startDate),
