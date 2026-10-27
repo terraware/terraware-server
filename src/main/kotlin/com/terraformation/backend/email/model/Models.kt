@@ -225,12 +225,16 @@ class ObservationStarted(
 
 class ObservationPlotsUnderallocated(
     config: TerrawareServerConfig,
+    val observationType: ObservationType,
     val observationUrl: String,
     val plantingSiteName: String,
     val shortfalls: List<ObservationPlotsUnderallocatedEvent.Shortfall>,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/underallocated"
+
+  val stringsPrefix: String
+    get() = observationStringsPrefix("notification.observation.underallocated", observationType)
 
   override val emailNotificationCategory: EmailNotificationCategory
     get() = EmailNotificationCategory.PlantingAndObservations
@@ -347,11 +351,15 @@ class ObservationNotScheduled(
 
 class ObservationNotStarted(
     config: TerrawareServerConfig,
+    val observationType: ObservationType,
     val plantingSiteName: String,
     val contactUsUrl: String,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/notStarted"
+
+  val stringsPrefix: String
+    get() = observationStringsPrefix("notification.observation.notStarted", observationType)
 
   override val emailNotificationCategory: EmailNotificationCategory
     get() = EmailNotificationCategory.PlantingAndObservations

@@ -715,7 +715,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.startObservation(observationId)
 
-      eventPublisher.assertEventPublished(ObservationNotStartedEvent(observationId, plantingSiteId))
+      eventPublisher.assertEventPublished(
+          ObservationNotStartedEvent(observationId, ObservationType.Monitoring, plantingSiteId)
+      )
       eventPublisher.assertEventNotPublished<ObservationStartedEvent>()
       eventPublisher.assertEventNotPublished<ObservationPlotsUnderallocatedEvent>()
 

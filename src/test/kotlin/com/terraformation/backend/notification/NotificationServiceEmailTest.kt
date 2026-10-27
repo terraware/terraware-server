@@ -1075,14 +1075,31 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun observationNotStarted() {
-    val event = ObservationNotStartedEvent(ObservationId(1), PlantingSiteId(1))
+    val event =
+        ObservationNotStartedEvent(ObservationId(1), ObservationType.Monitoring, PlantingSiteId(1))
 
     service.on(event)
 
-    assertSubjectContains("Not Started")
-    assertSubjectContains("My Site")
-    assertBodyContains("My Site")
+    assertSubjectContains("Scheduled Plant Monitoring Observation for My Site Not Started")
+    assertBodyContains("You scheduled a Plant Monitoring Observation for My Site")
     assertBodyContains("Contact Us")
+
+    assertRecipientsEqual(organizationRecipients)
+  }
+
+  @Test
+  fun `observationNotStarted for deleted biomass observation`() {
+    val event =
+        ObservationNotStartedEvent(
+            ObservationId(999),
+            ObservationType.BiomassMeasurements,
+            PlantingSiteId(1),
+        )
+
+    service.on(event)
+
+    assertSubjectContains("Scheduled Biomass Monitoring Observation for My Site Not Started")
+    assertBodyContains("You scheduled a Biomass Monitoring Observation for My Site")
 
     assertRecipientsEqual(organizationRecipients)
   }
@@ -1176,6 +1193,7 @@ internal class NotificationServiceEmailTest {
     val event =
         ObservationPlotsUnderallocatedEvent(
             observation.id,
+            ObservationType.Monitoring,
             plantingSite.id,
             listOf(
                 ObservationPlotsUnderallocatedEvent.Shortfall(
@@ -1195,12 +1213,41 @@ internal class NotificationServiceEmailTest {
 
     service.on(event)
 
+    assertSubjectContains(
+        "Plant Monitoring observation started with fewer than requested monitoring plots"
+    )
+    assertBodyContains("started the scheduled Plant Monitoring observation for My Site")
     assertBodyContains("stratum Stratum 1")
     assertBodyContains("stratum Stratum 5")
     assertBodyContains(" 5 assigned monitoring plots")
     assertBodyContains("enough space to fit 2 ")
 
     assertIsEventListener<ObservationPlotsUnderallocatedEvent>(service)
+  }
+
+  @Test
+  fun `observationPlotsUnderallocated for biomass observation`() {
+    val event =
+        ObservationPlotsUnderallocatedEvent(
+            observation.id,
+            ObservationType.BiomassMeasurements,
+            plantingSite.id,
+            listOf(
+                ObservationPlotsUnderallocatedEvent.Shortfall(
+                    numAllocated = 3,
+                    numConfigured = 5,
+                    stratumId = stratum.id,
+                    stratumName = "Stratum 1",
+                )
+            ),
+        )
+
+    service.on(event)
+
+    assertSubjectContains(
+        "Biomass Monitoring observation started with fewer than requested monitoring plots"
+    )
+    assertBodyContains("started the scheduled Biomass Monitoring observation for My Site")
   }
 
   @Test
