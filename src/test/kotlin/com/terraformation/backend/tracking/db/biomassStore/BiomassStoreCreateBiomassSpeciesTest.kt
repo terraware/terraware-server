@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -94,6 +95,15 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
                 speciesId = knownSpeciesId,
                 speciesName = "Known species",
             ),
+            BiomassAdditionalSpeciesCreatedEvent(
+                biomassSpeciesId = knownRecord.id!!,
+                monitoringPlotId = inserted.monitoringPlotId,
+                observationId = inserted.observationId,
+                organizationId = inserted.organizationId,
+                plantingSiteId = inserted.plantingSiteId,
+                speciesId = knownSpeciesId,
+                speciesName = "Known species",
+            ),
             BiomassSpeciesCreatedEvent(
                 biomassSpeciesId = otherRecord.id!!,
                 commonName = "Other common",
@@ -104,6 +114,15 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
                 organizationId = inserted.organizationId,
                 plantingSiteId = inserted.plantingSiteId,
                 scientificName = "Other species",
+                speciesId = null,
+                speciesName = "Other species",
+            ),
+            BiomassAdditionalSpeciesCreatedEvent(
+                biomassSpeciesId = otherRecord.id!!,
+                monitoringPlotId = inserted.monitoringPlotId,
+                observationId = inserted.observationId,
+                organizationId = inserted.organizationId,
+                plantingSiteId = inserted.plantingSiteId,
                 speciesId = null,
                 speciesName = "Other species",
             ),

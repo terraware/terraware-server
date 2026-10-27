@@ -31,6 +31,7 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.api.AccessionPhotoSubjectPayload
 import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
+import com.terraformation.backend.eventlog.api.BiomassAdditionalSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
@@ -71,6 +72,8 @@ import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalUpdatedEventValues
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
@@ -860,6 +863,83 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val subject = payload.subject as BiomassSpeciesSubjectPayload
     assertNull(subject.speciesId)
     assertEquals("Scientific name", subject.scientificName)
+  }
+
+  @Test
+  fun `maps additional species events to payloads`() {
+    val knownBiomassSpeciesId = BiomassSpeciesId(10)
+    val otherBiomassSpeciesId = BiomassSpeciesId(12)
+    val speciesId = SpeciesId(11)
+    val knownCreatedEvent =
+        BiomassAdditionalSpeciesCreatedEvent(
+            biomassSpeciesId = knownBiomassSpeciesId,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
+            speciesName = "Species name",
+        )
+    val payloads =
+        transformer.eventsToPayloads(
+            listOf(
+                eventLogEntry(knownUserId, knownCreatedEvent),
+                eventLogEntry(
+                    knownUserId,
+                    BiomassAdditionalSpeciesCreatedEvent(
+                        biomassSpeciesId = otherBiomassSpeciesId,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        speciesId = null,
+                        speciesName = "Other name",
+                    ),
+                ),
+                eventLogEntry(
+                    knownUserId,
+                    BiomassAdditionalSpeciesDeletedEvent(
+                        biomassSpeciesId = knownBiomassSpeciesId,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                        organizationId = organizationId,
+                        plantingSiteId = plantingSiteId,
+                        speciesId = speciesId,
+                        speciesName = "Species name",
+                    ),
+                ),
+            )
+        )
+
+    val deletedKnownSubject =
+        BiomassAdditionalSpeciesSubjectPayload(
+            deleted = true,
+            fullText = "Additional species Species name",
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            scientificName = null,
+            shortText = "Additional species",
+            speciesId = speciesId,
+        )
+    assertEquals(
+        listOf(
+            CreatedActionPayload(emptyList()) to deletedKnownSubject,
+            CreatedActionPayload(emptyList()) to
+                BiomassAdditionalSpeciesSubjectPayload(
+                    deleted = null,
+                    fullText = "Additional species Other name",
+                    monitoringPlotId = monitoringPlotId,
+                    observationId = observationId,
+                    plantingSiteId = plantingSiteId,
+                    scientificName = "Other name",
+                    shortText = "Additional species",
+                    speciesId = null,
+                ),
+            DeletedActionPayload() to deletedKnownSubject,
+        ),
+        payloads.map { it.action to it.subject },
+    )
   }
 
   @Test

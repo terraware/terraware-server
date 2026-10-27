@@ -32,6 +32,8 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
@@ -891,6 +893,20 @@ class BiomassStore(
             .set(OBSERVATION_ID, observationId)
             .execute()
       }
+
+      eventPublisher.publishEvent(
+          BiomassAdditionalSpeciesCreatedEvent(
+              biomassSpeciesId = biomassSpeciesId,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId =
+                  parentStore.getPlantingSiteId(observationId)
+                      ?: throw ObservationNotFoundException(observationId),
+              speciesId = speciesId,
+              speciesName = getBiomassSpeciesName(speciesId, scientificName),
+          )
+      )
     }
   }
 
@@ -922,6 +938,35 @@ class BiomassStore(
       if (hasRecordedTrees || hasQuadratSpecies) {
         throw IllegalArgumentException(
             "Biomass species is still referenced by trees or quadrat entries"
+        )
+      }
+
+      val additionalSpeciesRowsDeleted =
+          with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
+            dslContext
+                .deleteFrom(this)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
+                .execute()
+          }
+
+      if (additionalSpeciesRowsDeleted > 0) {
+        eventPublisher.publishEvent(
+            BiomassAdditionalSpeciesDeletedEvent(
+                biomassSpeciesId = biomassSpeciesId,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId =
+                    parentStore.getOrganizationId(observationId)
+                        ?: throw ObservationNotFoundException(observationId),
+                plantingSiteId =
+                    parentStore.getPlantingSiteId(observationId)
+                        ?: throw ObservationNotFoundException(observationId),
+                speciesId = biomassSpecies.speciesId,
+                speciesName =
+                    getBiomassSpeciesName(biomassSpecies.speciesId, biomassSpecies.scientificName),
+            )
         )
       }
 
