@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
@@ -15,6 +16,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -89,6 +91,8 @@ import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.NewSubstratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteHistoryEventModel
+import com.terraformation.backend.tracking.model.PlantingSiteHistoryEventType
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
@@ -190,6 +194,40 @@ class PlantingSiteStore(
             simplified,
         )
         .firstOrNull() ?: throw PlantingSiteHistoryNotFoundException(plantingSiteHistoryId)
+  }
+
+  /**
+   * Returns the list of changes to a planting site's map, newest first. The earliest version of the
+   * map is reported as the site's creation; later versions are reported as edits. Sites that have
+   * never had a map have no events.
+   */
+  fun fetchSiteHistoryEvents(plantingSiteId: PlantingSiteId): List<PlantingSiteHistoryEventModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val records =
+        with(PLANTING_SITE_HISTORIES) {
+          dslContext
+              .select(ID, CREATED_BY, CREATED_TIME, USERS.FIRST_NAME, USERS.LAST_NAME)
+              .from(PLANTING_SITE_HISTORIES)
+              .leftJoin(USERS)
+              .on(CREATED_BY.eq(USERS.ID))
+              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .orderBy(CREATED_TIME.desc(), ID.desc())
+              .fetch()
+        }
+
+    return records.mapIndexed { index, record ->
+      PlantingSiteHistoryEventModel(
+          createdBy = record[PLANTING_SITE_HISTORIES.CREATED_BY]!!,
+          createdByName =
+              TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+          createdTime = record[PLANTING_SITE_HISTORIES.CREATED_TIME]!!,
+          historyId = record[PLANTING_SITE_HISTORIES.ID]!!,
+          type =
+              if (index == records.lastIndex) PlantingSiteHistoryEventType.Created
+              else PlantingSiteHistoryEventType.Edited,
+      )
+    }
   }
 
   /**
