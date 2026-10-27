@@ -48,7 +48,7 @@ install_rsync() {
 }
 
 install_node() {
-    if command -v node &>/dev/null; then
+    if command -v node &>/dev/null && node --version 2>&1 | grep -q "^v${NODE_VERSION}\."; then
         return
     fi
     echo "Installing Node.js ${NODE_VERSION}..."
