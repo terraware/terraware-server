@@ -29,17 +29,14 @@ import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ShapefilesInvalidException
-import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.StratumEdit
-import com.terraformation.backend.tracking.edit.SubstratumEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEditSummaryItem
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
-import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Hidden
 import java.math.BigDecimal
@@ -51,7 +48,6 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.io.path.createTempFile
 import org.locationtech.jts.geom.Coordinate
-import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
@@ -751,122 +747,75 @@ class AdminPlantingSitesController(
 
   private fun describeSiteEdit(edit: PlantingSiteEdit): List<String> {
     log.info("Site edit ${objectMapper.writeValueAsString(edit)}")
-    val stratumChanges =
-        edit.stratumEdits.flatMap { stratumEdit -> describeStratumEdit(stratumEdit) }
 
-    val affectedObservationIds =
-        observationStore.fetchActiveObservationIds(
-            edit.existingModel.id,
-            edit.stratumEdits.mapNotNull { it.existingModel?.id },
-        )
-    val affectedObservationsMessage =
-        if (affectedObservationIds.isNotEmpty()) {
+    return plantingSiteMapEditService.summarizeEdit(edit, PlantingSiteDepth.Plot).map {
+      describeSummaryItem(it)
+    }
+  }
+
+  private fun describeSummaryItem(item: PlantingSiteEditSummaryItem): String {
+    return when (item) {
+      is PlantingSiteEditSummaryItem.ObservationsAbandoned ->
           "The following observations will be abandoned because they have incomplete " +
               "plots in edited strata: " +
-              affectedObservationIds.joinToString(", ")
-        } else {
-          null
-        }
-
-    return listOfNotNull(
-        affectedObservationsMessage,
-        "Total change in plantable area: ${edit.areaHaDifference.toPlainString()}ha",
-    ) + stratumChanges
-  }
-
-  private fun describeStratumEdit(stratumEdit: StratumEdit): List<String> {
-    val desiredModel = stratumEdit.desiredModel
-    val existingModel = stratumEdit.existingModel
-    val existingBoundary = existingModel?.boundary
-    val stratumName = existingModel?.name ?: desiredModel!!.name
-    val prefix = "Stratum $stratumName:"
-    val monitoringPlotCreations =
-        stratumEdit.monitoringPlotEdits.map { plotEdit ->
-          val existingOrNew =
-              if (existingBoundary != null && plotEdit.region.nearlyCoveredBy(existingBoundary)) {
-                "existing"
-              } else {
-                "new"
-              }
-          "$prefix Create permanent plot index ${plotEdit.permanentIndex} in $existingOrNew area"
-        }
-    val substratumEdits =
-        stratumEdit.substratumEdits.flatMap { describeSubstratumEdit(stratumEdit, it) }
-
-    val totalPermanent =
-        stratumEdit.monitoringPlotEdits.size +
-            stratumEdit.substratumEdits.sumOf { substratumEdit ->
-              substratumEdit.monitoringPlotEdits.count { it.permanentIndex != null }
-            }
-
-    return listOf(
-        if (existingModel != null) {
-          if (desiredModel != null) {
-            val overlapPercent = renderOverlapPercent(existingModel.boundary, desiredModel.boundary)
-            val areaDifference = stratumEdit.areaHaDifference.toPlainString()
-            "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%, " +
-                "$totalPermanent permanent plots"
+              item.observationIds.joinToString(", ")
+      is PlantingSiteEditSummaryItem.SiteAreaChanged ->
+          "Total change in plantable area: ${item.areaHaDifference.toPlainString()}ha"
+      is PlantingSiteEditSummaryItem.StratumCreated ->
+          "Stratum ${item.stratumName}: Create (stable ID ${item.stableId}), " +
+              "${item.numPermanentPlots} permanent plots"
+      is PlantingSiteEditSummaryItem.StratumDeleted ->
+          "Stratum ${item.stratumName}: Delete (stable ID ${item.stableId})"
+      is PlantingSiteEditSummaryItem.StratumUpdated ->
+          "Stratum ${item.stratumName}: Change in plantable area: " +
+              "${item.areaHaDifference.toPlainString()}ha, " +
+              "overlap ${renderOverlapPercent(item.overlapPercent)}%, " +
+              "${item.numPermanentPlots} permanent plots"
+      is PlantingSiteEditSummaryItem.SubstratumCreated ->
+          "${substratumPrefix(item.stratumName, item.substratumName)} Create " +
+              "(stable ID ${item.stableId})"
+      is PlantingSiteEditSummaryItem.SubstratumDeleted ->
+          "${substratumPrefix(item.stratumName, item.substratumName)} Delete " +
+              "(stable ID ${item.stableId})"
+      is PlantingSiteEditSummaryItem.SubstratumUpdated ->
+          "${substratumPrefix(item.stratumName, item.substratumName)} Change in plantable area: " +
+              "${item.areaHaDifference.toPlainString()}ha, " +
+              "overlap ${renderOverlapPercent(item.overlapPercent)}%"
+      is PlantingSiteEditSummaryItem.PermanentPlotCreated ->
+          if (item.substratumName != null) {
+            "${substratumPrefix(item.stratumName, item.substratumName)} BUG! Create plot " +
+                "${item.permanentIndex} (should be at stratum level)"
           } else {
-            "$prefix Delete (stable ID ${existingModel.stableId})"
+            val existingOrNew = if (item.inExistingArea) "existing" else "new"
+            "Stratum ${item.stratumName}: Create permanent plot index ${item.permanentIndex} " +
+                "in $existingOrNew area"
           }
-        } else {
-          "$prefix Create (stable ID ${desiredModel?.stableId}), $totalPermanent permanent plots"
-        }
-    ) + monitoringPlotCreations + substratumEdits
+      is PlantingSiteEditSummaryItem.PlotAdopted ->
+          "${substratumPrefix(item.stratumName, item.substratumName)} Adopt plot ID " +
+              "${item.monitoringPlotId} " +
+              if (item.permanentIndex != null) {
+                "as permanent index ${item.permanentIndex}"
+              } else {
+                "without permanent index"
+              }
+      is PlantingSiteEditSummaryItem.PlotEjected ->
+          "${substratumPrefix(item.stratumName, item.substratumName)} Eject plot ID " +
+              "${item.monitoringPlotId}"
+      is PlantingSiteEditSummaryItem.PlotAccepted ->
+          "${substratumPrefix(item.stratumName, item.substratumName)} Accept plot ID " +
+              "${item.monitoringPlotId} " +
+              if (item.permanentIndex != null) {
+                "with permanent index ${item.permanentIndex}"
+              } else {
+                "without permanent index"
+              }
+    }
   }
 
-  private fun describeSubstratumEdit(
-      stratumEdit: StratumEdit,
-      substratumEdit: SubstratumEdit,
-  ): List<String> {
-    val stratumName = stratumEdit.existingModel?.name ?: stratumEdit.desiredModel!!.name
-    val substratumName = substratumEdit.existingModel?.name ?: substratumEdit.desiredModel!!.name
-    val prefix = "Stratum $stratumName substratum $substratumName:"
-    val substratumEditText =
-        when (substratumEdit) {
-          is SubstratumEdit.Create ->
-              "$prefix Create (stable ID ${substratumEdit.desiredModel.stableId})"
-          is SubstratumEdit.Delete ->
-              "$prefix Delete (stable ID ${substratumEdit.existingModel.stableId})"
-          is SubstratumEdit.Update -> {
-            val overlapPercent =
-                renderOverlapPercent(
-                    substratumEdit.existingModel.boundary,
-                    substratumEdit.desiredModel.boundary,
-                )
-            val areaDifference = substratumEdit.areaHaDifference.toPlainString()
-            "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
-          }
-        }
-    val monitoringPlotEdits =
-        substratumEdit.monitoringPlotEdits.map { plotEdit ->
-          val permanentIndex = plotEdit.permanentIndex
-          val plotId = plotEdit.monitoringPlotId
-          when (plotEdit) {
-            is MonitoringPlotEdit.Create ->
-                "$prefix BUG! Create plot $permanentIndex (should be at stratum level)"
-            is MonitoringPlotEdit.Adopt ->
-                if (permanentIndex != null) {
-                  "$prefix Adopt plot ID $plotId as permanent index $permanentIndex"
-                } else {
-                  "$prefix Adopt plot ID $plotId without permanent index"
-                }
-            is MonitoringPlotEdit.Eject -> "$prefix Eject plot ID $plotId"
-            is MonitoringPlotEdit.Accept ->
-                if (permanentIndex != null) {
-                  "$prefix Accept plot ID $plotId with permanent index $permanentIndex"
-                } else {
-                  "$prefix Accept plot ID $plotId without permanent index"
-                }
-          }
-        }
+  private fun substratumPrefix(stratumName: String, substratumName: String) =
+      "Stratum $stratumName substratum $substratumName:"
 
-    return listOf(substratumEditText) + monitoringPlotEdits
-  }
-
-  private fun renderOverlapPercent(existing: Geometry, desired: Geometry): String {
-    return "%.2f".format(existing.intersection(desired).area / desired.area * 100.0)
-  }
+  private fun renderOverlapPercent(overlapPercent: Double): String = "%.2f".format(overlapPercent)
 
   private fun redirectToAdminHome() = "redirect:/admin/"
 
