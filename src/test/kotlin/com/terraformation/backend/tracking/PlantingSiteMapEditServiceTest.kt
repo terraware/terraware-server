@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertJsonEquals
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
@@ -12,10 +13,13 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HI
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.rectangle
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
+import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.plantingSiteStore.BasePlantingSiteStoreTest
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEditSummaryItem
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -44,7 +48,21 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
   private val service: PlantingSiteMapEditService by lazy {
-    PlantingSiteMapEditService(EntityLocker(dslContext), store)
+    PlantingSiteMapEditService(EntityLocker(dslContext), observationStore, store)
+  }
+  private val observationStore: ObservationStore by lazy {
+    ObservationStore(
+        clock,
+        dslContext,
+        EntityLocker(dslContext),
+        eventPublisher,
+        ObservationResultsInvalidator(dslContext),
+        observationsDao,
+        observationPlotConditionsDao,
+        observationPlotsDao,
+        observationRequestedSubstrataDao,
+        ParentStore(dslContext),
+    )
   }
 
   private val editTime = Instant.ofEpochSecond(10000)
@@ -419,6 +437,142 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
       service.applyEdit(existing.id, PlantingSiteMapEditModel.of(existing))
 
       assertTableEquals(historiesBefore, "Site histories should not have changed")
+    }
+  }
+
+  @Nested
+  inner class SummarizeEdit {
+    @Test
+    fun `only includes items down to the requested depth`() {
+      val existing =
+          createSite(
+              newSite(width = 500) { stratum(plantNumPermanent = 1) { substratum { permanent() } } }
+          )
+      val plotId = existing.strata[0].substrata[0].monitoringPlots[0].id
+      val historyId = plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).single().id!!
+      val observationId =
+          insertObservation(plantingSiteId = existing.id, plantingSiteHistoryId = historyId)
+      val plotHistoryId =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotId,
+              plantingSiteId = existing.id,
+              plantingSiteHistoryId = historyId,
+              substratumId = null,
+          )
+      insertObservationPlot(monitoringPlotId = plotId, monitoringPlotHistoryId = plotHistoryId)
+
+      val mapEdit =
+          PlantingSiteMapEditModel.of(existing).withSubstratumBoundary(0, 0, rectangle(400, 500))
+      val edit = service.calculateEdit(existing.id, mapEdit)
+
+      val siteItems =
+          listOf(
+              PlantingSiteEditSummaryItem.ObservationsAbandoned(listOf(observationId)),
+              PlantingSiteEditSummaryItem.SiteAreaChanged(BigDecimal("-5.000")),
+          )
+      val stratumItems =
+          siteItems +
+              PlantingSiteEditSummaryItem.StratumUpdated(
+                  stratumName = "S1",
+                  areaHaDifference = BigDecimal("-5.000"),
+                  overlapPercent = 100.0,
+                  numPermanentPlots = 1,
+              )
+      val substratumItems =
+          stratumItems +
+              PlantingSiteEditSummaryItem.SubstratumUpdated(
+                  stratumName = "S1",
+                  substratumName = "Sub1",
+                  areaHaDifference = BigDecimal("-5.000"),
+                  overlapPercent = 100.0,
+              )
+      val plotItems =
+          substratumItems +
+              PlantingSiteEditSummaryItem.PlotAccepted(
+                  stratumName = "S1",
+                  substratumName = "Sub1",
+                  monitoringPlotId = plotId,
+                  permanentIndex = 1,
+              )
+
+      assertAll(
+          { assertEquals(siteItems, service.summarizeEdit(edit, PlantingSiteDepth.Site), "Site") },
+          {
+            assertEquals(
+                stratumItems,
+                service.summarizeEdit(edit, PlantingSiteDepth.Stratum),
+                "Stratum",
+            )
+          },
+          {
+            assertEquals(
+                substratumItems,
+                service.summarizeEdit(edit, PlantingSiteDepth.Substratum),
+                "Substratum",
+            )
+          },
+          { assertEquals(plotItems, service.summarizeEdit(edit, PlantingSiteDepth.Plot), "Plot") },
+      )
+    }
+
+    @Test
+    fun `does not list unchanged strata or their observations as abandoned`() {
+      val existing =
+          createSite(newSite { stratum(plantNumPermanent = 1) { substratum { permanent() } } })
+      val plotId = existing.strata[0].substrata[0].monitoringPlots[0].id
+      val historyId = plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).single().id!!
+      insertObservation(plantingSiteId = existing.id, plantingSiteHistoryId = historyId)
+      val plotHistoryId =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotId,
+              plantingSiteId = existing.id,
+              plantingSiteHistoryId = historyId,
+              substratumId = null,
+          )
+      insertObservationPlot(monitoringPlotId = plotId, monitoringPlotHistoryId = plotHistoryId)
+
+      val edit = service.calculateEdit(existing.id, PlantingSiteMapEditModel.of(existing))
+
+      assertEquals(
+          listOf(PlantingSiteEditSummaryItem.SiteAreaChanged(edit.areaHaDifference)),
+          service.summarizeEdit(edit, PlantingSiteDepth.Plot),
+          "Summary",
+      )
+    }
+
+    @Test
+    fun `summarizes created and deleted strata and substrata`() {
+      val existing =
+          createSite(
+              newSite(width = 500) {
+                stratum(width = 250, plantNumPermanent = 1) { substratum() }
+                stratum(width = 250, plantNumPermanent = 1) { substratum() }
+              }
+          )
+      val desired =
+          newSite(width = 500) {
+            stratum(width = 250, plantNumPermanent = 1) { substratum() }
+            stratum(width = 250, name = "New", plantNumPermanent = 1) {
+              substratum(name = "NewSub")
+            }
+          }
+      val edit = service.calculateEdit(existing, desired)
+
+      assertEquals(
+          listOf(
+              PlantingSiteEditSummaryItem.SiteAreaChanged(edit.areaHaDifference),
+              PlantingSiteEditSummaryItem.StratumCreated("New", StableId("New"), 1),
+              PlantingSiteEditSummaryItem.SubstratumCreated(
+                  "New",
+                  "NewSub",
+                  StableId("New-NewSub"),
+              ),
+              PlantingSiteEditSummaryItem.StratumUpdated("S1", edit.areaHaDifference, 100.0, 1),
+              PlantingSiteEditSummaryItem.StratumDeleted("S2", StableId("S2")),
+              PlantingSiteEditSummaryItem.SubstratumDeleted("S2", "Sub2", StableId("S2-Sub2")),
+          ),
+          service.summarizeEdit(edit, PlantingSiteDepth.Substratum),
+      )
     }
   }
 
