@@ -516,7 +516,7 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `does not list observations as abandoned if their strata are unchanged`() {
+    fun `does not list unchanged strata or their observations as abandoned`() {
       val existing =
           createSite(newSite { stratum(plantNumPermanent = 1) { substratum { permanent() } } })
       val plotId = existing.strata[0].substrata[0].monitoringPlots[0].id
@@ -534,10 +534,9 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
       val edit = service.calculateEdit(existing.id, PlantingSiteMapEditModel.of(existing))
 
       assertEquals(
-          emptyList<PlantingSiteEditSummaryItem.ObservationsAbandoned>(),
-          service
-              .summarizeEdit(edit, PlantingSiteDepth.Site)
-              .filterIsInstance<PlantingSiteEditSummaryItem.ObservationsAbandoned>(),
+          listOf(PlantingSiteEditSummaryItem.SiteAreaChanged(edit.areaHaDifference)),
+          service.summarizeEdit(edit, PlantingSiteDepth.Plot),
+          "Summary",
       )
     }
 

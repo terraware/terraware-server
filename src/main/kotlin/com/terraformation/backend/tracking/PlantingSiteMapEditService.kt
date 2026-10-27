@@ -118,7 +118,7 @@ class PlantingSiteMapEditService(
               null
             },
             PlantingSiteEditSummaryItem.SiteAreaChanged(edit.areaHaDifference),
-        ) + edit.stratumEdits.flatMap { summarizeStratumEdit(it) }
+        ) + edit.stratumEdits.filterNot { it.isNoOp() }.flatMap { summarizeStratumEdit(it) }
 
     return items.filter { it.depth <= depth }
   }
@@ -167,7 +167,9 @@ class PlantingSiteMapEditService(
         }
 
     val substratumItems =
-        stratumEdit.substratumEdits.flatMap { summarizeSubstratumEdit(stratumName, it) }
+        stratumEdit.substratumEdits
+            .filterNot { it.isNoOp() }
+            .flatMap { summarizeSubstratumEdit(stratumName, it) }
 
     return listOf(stratumItem) + monitoringPlotCreations + substratumItems
   }
