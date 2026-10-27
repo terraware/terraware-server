@@ -420,6 +420,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "monitoring_plot_histories" to setOf(ALL, TRACKING),
                   "monitoring_plot_overlaps" to setOf(ALL, TRACKING),
                   "monitoring_plots" to setOf(ALL, TRACKING),
+                  "observation_biomass_additional_species" to setOf(ALL, TRACKING),
                   "observation_biomass_details" to setOf(ALL, TRACKING),
                   "observation_biomass_quadrat_details" to setOf(ALL, TRACKING),
                   "observation_biomass_quadrat_species" to setOf(ALL, TRACKING),

@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db.biomassStore
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
@@ -55,6 +56,21 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
             }
             .toSet(),
         "Known and Other biomass species records",
+    )
+    assertTableEquals(
+        listOf(
+            ObservationBiomassAdditionalSpeciesRecord(
+                biomassSpeciesId = knownRecord.id,
+                monitoringPlotId = inserted.monitoringPlotId,
+                observationId = inserted.observationId,
+            ),
+            ObservationBiomassAdditionalSpeciesRecord(
+                biomassSpeciesId = otherRecord.id,
+                monitoringPlotId = inserted.monitoringPlotId,
+                observationId = inserted.observationId,
+            ),
+        ),
+        "Additional species",
     )
 
     assertThrows<IllegalArgumentException> { createBiomassSpecies(knownSpeciesId) }

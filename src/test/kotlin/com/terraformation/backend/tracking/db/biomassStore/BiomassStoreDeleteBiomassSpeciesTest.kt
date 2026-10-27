@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.biomassStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.tracking.db.BiomassSpeciesNotFoundException
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
@@ -32,6 +33,8 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
             commonName = "Existing common",
         )
     val otherBiomassSpeciesId = insertObservationBiomassSpecies(scientificName = "Other species")
+    insertObservationBiomassAdditionalSpecies(biomassSpeciesId = biomassSpeciesId)
+    insertObservationBiomassAdditionalSpecies(biomassSpeciesId = otherBiomassSpeciesId)
 
     deleteBiomassSpecies(speciesId)
 
@@ -39,6 +42,14 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
         otherBiomassSpeciesId,
         dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES).id,
         "Remaining biomass species after deleting target species",
+    )
+    assertTableEquals(
+        ObservationBiomassAdditionalSpeciesRecord(
+            biomassSpeciesId = otherBiomassSpeciesId,
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
+        ),
+        "Remaining additional species after deleting target species",
     )
     eventPublisher.assertExactEventsPublished(
         listOf(

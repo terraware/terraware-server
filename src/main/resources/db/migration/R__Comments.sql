@@ -543,6 +543,8 @@ COMMENT ON COLUMN tracking.observations.planting_site_history_id IS 'Which versi
 COMMENT ON COLUMN tracking.observations.start_date IS 'First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.';
 COMMENT ON COLUMN tracking.observations.upcoming_notification_sent_time IS 'When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.';
 
+COMMENT ON TABLE tracking.observation_biomass_additional_species IS 'Species that were seen in a monitoring plot during a biomass observation but that have no recorded trees or quadrat measurements in the plot.';
+
 COMMENT ON TABLE tracking.observation_biomass_details IS 'Recorded data for a biomass observation.';
 COMMENT ON COLUMN tracking.observation_biomass_details.next_tree_number IS 'Number to assign to the next tree recorded in this observation plot. Never decreases, so numbers of deleted trees are not reused.';
 COMMENT ON COLUMN tracking.observation_biomass_details.ph IS 'Acidity of water in pH. Only allowed if forest type is "Mangrove". Null value indicates no water in monitoring plot.';
