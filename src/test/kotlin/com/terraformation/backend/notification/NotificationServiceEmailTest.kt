@@ -823,6 +823,21 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
+  fun `observationStarted does not notify for biomass observation`() {
+    val event =
+        ObservationStartedEvent(
+            upcomingObservation.copy(
+                observationType = ObservationType.BiomassMeasurements,
+                state = ObservationState.InProgress,
+            )
+        )
+
+    service.on(event)
+
+    assertNoMessageSent()
+  }
+
+  @Test
   fun observationUpcomingNotificationDue() {
     val recipients = setOf("english@x.com", "gibberish@x.com")
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
@@ -1034,6 +1049,24 @@ internal class NotificationServiceEmailTest {
     assertBodyContains("duration for the change is: Long-Term/Permanent")
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
+  }
+
+  @Test
+  fun `observationMonitoringPlotReplaced does not notify for biomass observation`() {
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
+
+    val event =
+        ObservationPlotReplacedEvent(
+            ReplacementDuration.LongTerm,
+            "Just because",
+            upcomingObservation.copy(observationType = ObservationType.BiomassMeasurements),
+            MonitoringPlotId(1),
+        )
+
+    service.on(event)
+
+    assertNoMessageSent()
   }
 
   @Test

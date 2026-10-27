@@ -717,6 +717,37 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `does not store started notification for biomass observation`() {
+    val startDate = LocalDate.of(2023, 3, 1)
+    val endDate = startDate.plusDays(1)
+
+    insertPlantingSite()
+    insertObservation(
+        endDate = endDate,
+        observationType = ObservationType.BiomassMeasurements,
+        startDate = startDate,
+        state = ObservationState.Upcoming,
+    )
+    insertOrganizationUser(role = Role.Contributor)
+
+    service.on(
+        ObservationStartedEvent(
+            ExistingObservationModel(
+                endDate = endDate,
+                id = inserted.observationId,
+                isAdHoc = false,
+                observationType = ObservationType.BiomassMeasurements,
+                plantingSiteId = inserted.plantingSiteId,
+                startDate = startDate,
+                state = ObservationState.InProgress,
+            )
+        )
+    )
+
+    assertNotifications(emptyList())
+  }
+
+  @Test
   fun `should store upcoming observation notification`() {
     val plantingSiteName = "My Site"
     val startDate = LocalDate.of(2023, 3, 1)
