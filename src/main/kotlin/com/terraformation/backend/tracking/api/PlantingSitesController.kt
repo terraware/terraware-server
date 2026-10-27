@@ -13,6 +13,7 @@ import com.terraformation.backend.db.PlantingSiteHasNoBoundaryException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -37,6 +38,8 @@ import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.NewSubstratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteHistoryEventModel
+import com.terraformation.backend.tracking.model.PlantingSiteHistoryEventType
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteMapEditModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -191,6 +194,23 @@ class PlantingSitesController(
 
     return GetSurvivalRateCalculationInProgressResponsePayload(
         observationStore.fetchSurvivalRateCalculationInProgress(id)
+    )
+  }
+
+  @GetMapping("/{id}/history")
+  @Operation(
+      summary = "Lists the changes to a planting site's map.",
+      description =
+          "The earliest version of the map is reported as the site's creation; later versions " +
+              "are reported as edits. Events are returned newest first. Sites that have never " +
+              "had a map have no events.",
+  )
+  fun listPlantingSiteHistoryEvents(
+      @PathVariable id: PlantingSiteId
+  ): ListPlantingSiteHistoryEventsResponsePayload {
+    val events = plantingSiteStore.fetchSiteHistoryEvents(id)
+    return ListPlantingSiteHistoryEventsResponsePayload(
+        events.map { PlantingSiteHistoryEventPayload(it) }
     )
   }
 
@@ -652,6 +672,24 @@ data class StratumHistoryResponsePayload(
   )
 }
 
+data class PlantingSiteHistoryEventPayload(
+    val date: Instant,
+    val editedByName: String?,
+    val editedByUserId: UserId,
+    val historyId: PlantingSiteHistoryId,
+    val type: PlantingSiteHistoryEventType,
+) {
+  constructor(
+      model: PlantingSiteHistoryEventModel
+  ) : this(
+      date = model.createdTime,
+      editedByName = model.createdByName,
+      editedByUserId = model.createdBy,
+      historyId = model.historyId,
+      type = model.type,
+  )
+}
+
 // response payload
 data class PlantingSiteHistoryPayload(
     val areaHa: BigDecimal?,
@@ -870,6 +908,10 @@ data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessRe
 
 data class GetPlantingSiteHistoryResponsePayload(val site: PlantingSiteHistoryPayload) :
     SuccessResponsePayload
+
+data class ListPlantingSiteHistoryEventsResponsePayload(
+    val events: List<PlantingSiteHistoryEventPayload>
+) : SuccessResponsePayload
 
 data class GetPlantingSiteResponsePayload(val site: PlantingSitePayload) : SuccessResponsePayload
 
