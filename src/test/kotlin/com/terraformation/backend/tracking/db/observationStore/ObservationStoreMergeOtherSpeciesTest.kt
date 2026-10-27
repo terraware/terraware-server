@@ -59,7 +59,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     store.mergeOtherSpeciesForMonitoring(
         observationId1,
         plantingSiteId,
-        false,
         "Species to merge",
         speciesId,
     )
@@ -230,7 +229,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     assertTableEquals(expectedPlotsBeforeMerge.map { it.toStratum() }, "Before merge")
     assertTableEquals(expectedPlotsBeforeMerge.map { it.toSite() }, "Before merge")
 
-    store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, false, "Merge", speciesId)
+    store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, "Merge", speciesId)
 
     assertEquals(
         mapOf(observationId1 to true, observationId2 to false),
@@ -342,7 +341,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
 
-    store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, true, "Merge", speciesId)
+    store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, "Merge", speciesId)
 
     recalculator.recalculateAllSites()
 

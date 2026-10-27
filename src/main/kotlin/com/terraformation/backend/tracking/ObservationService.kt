@@ -542,7 +542,6 @@ class ObservationService(
             observationStore.mergeOtherSpeciesForMonitoring(
                 observationId,
                 observation.plantingSiteId,
-                observation.isAdHoc,
                 otherSpeciesName,
                 speciesId,
             )
