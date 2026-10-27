@@ -107,7 +107,7 @@ class PlantingSiteMapEditService(
     val affectedObservationIds =
         observationStore.fetchActiveObservationIds(
             edit.existingModel.id,
-            edit.stratumEdits.mapNotNull { it.existingModel?.id },
+            edit.stratumEdits.filterNot { it.isNoOp() }.mapNotNull { it.existingModel?.id },
         )
 
     val items =
