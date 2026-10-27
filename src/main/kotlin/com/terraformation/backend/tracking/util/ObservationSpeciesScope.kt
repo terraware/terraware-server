@@ -11,20 +11,15 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.ObservationPlots
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
-import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.Record1
@@ -101,28 +96,6 @@ class ObservationSpeciesSubstratum(
     val substratumId: SubstratumId? = null,
     val plotId: MonitoringPlotId? = null,
 ) : ObservationSpeciesScope<SubstratumId, SubstratumHistoryId> {
-  constructor(
-      substratumHistoryId: SubstratumHistoryId,
-      substratumId: SubstratumId? = null,
-      plotId: MonitoringPlotId? = null,
-  ) : this(
-      DSL.select(DSL.inline(substratumHistoryId, SUBSTRATUM_HISTORIES.ID.dataType)),
-      substratumId,
-      plotId,
-  )
-
-  constructor(
-      plotId: MonitoringPlotId
-  ) : this(
-      DSL.select(OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID)
-          .from(OBSERVATION_PLOTS)
-          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
-          .and(
-              OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID)
-          ),
-      plotId = plotId,
-  )
-
   override val scopeId: Select<Record1<SubstratumId?>> =
       if (substratumId != null) {
         DSL.select(DSL.inline(substratumId, SUBSTRATA.ID.dataType))
@@ -161,37 +134,6 @@ class ObservationSpeciesStratum(
     val stratumId: StratumId? = null,
     val plotId: MonitoringPlotId? = null,
 ) : ObservationSpeciesScope<StratumId, StratumHistoryId> {
-  constructor(
-      stratumHistoryId: StratumHistoryId,
-      stratumId: StratumId? = null,
-      plotId: MonitoringPlotId? = null,
-  ) : this(
-      DSL.select(DSL.inline(stratumHistoryId, STRATUM_HISTORIES.ID.dataType)),
-      stratumId,
-      plotId,
-  )
-
-  constructor(
-      stratumId: StratumId,
-      plotId: MonitoringPlotId? = null,
-  ) : this(
-      DSL.select(STRATUM_HISTORIES.ID)
-          .from(STRATUM_HISTORIES)
-          .where(STRATUM_HISTORIES.STRATUM_ID.eq(stratumId)),
-      stratumId,
-      plotId,
-  )
-
-  constructor(
-      plotId: MonitoringPlotId
-  ) : this(
-      DSL.select(OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID)
-          .from(OBSERVATION_PLOTS)
-          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
-          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID)),
-      plotId = plotId,
-  )
-
   override val scopeId: Select<Record1<StratumId?>> =
       if (stratumId != null) {
         DSL.select(DSL.inline(stratumId, STRATA.ID.dataType))
@@ -236,46 +178,6 @@ class ObservationSpeciesSite(
     siteHistorySelect: Select<Record1<PlantingSiteHistoryId?>>,
     val plotId: MonitoringPlotId? = null,
 ) : ObservationSpeciesScope<PlantingSiteId, PlantingSiteHistoryId> {
-  constructor(
-      siteId: PlantingSiteId,
-      siteHistoryId: PlantingSiteHistoryId,
-      plotId: MonitoringPlotId? = null,
-  ) : this(
-      DSL.select(DSL.inline(siteId, PLANTING_SITES.ID.dataType)),
-      DSL.select(DSL.inline(siteHistoryId, PLANTING_SITE_HISTORIES.ID.dataType)),
-      plotId,
-  )
-
-  constructor(
-      plotId: MonitoringPlotId
-  ) : this(
-      DSL.select(MONITORING_PLOTS.PLANTING_SITE_ID)
-          .from(MONITORING_PLOTS)
-          .where(MONITORING_PLOTS.ID.eq(plotId)),
-      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
-          .from(OBSERVATIONS)
-          .where(OBSERVATIONS.ID.eq(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID)),
-      plotId,
-  )
-
-  constructor(
-      stratumId: StratumId
-  ) : this(
-      DSL.select(STRATA.PLANTING_SITE_ID).from(STRATA).where(STRATA.ID.eq(stratumId)),
-      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
-          .from(OBSERVATIONS)
-          .where(OBSERVATIONS.ID.eq(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID)),
-  )
-
-  constructor(
-      plantingSiteId: PlantingSiteId
-  ) : this(
-      DSL.select(DSL.inline(plantingSiteId, PLANTING_SITES.ID.dataType)),
-      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
-          .from(OBSERVATIONS)
-          .where(OBSERVATIONS.ID.eq(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID)),
-  )
-
   override val scopeId = siteSelect
 
   override val scopeHistoryId = siteHistorySelect

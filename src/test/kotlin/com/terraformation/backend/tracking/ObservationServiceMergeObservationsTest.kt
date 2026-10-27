@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -29,6 +30,7 @@ import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
+import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
@@ -47,6 +49,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
+import org.springframework.transaction.TransactionDefinition
 
 class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -59,6 +62,18 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
     FileService(dslContext, clock, eventPublisher, filesDao, InMemoryFileStore())
   }
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
+  private val recalculator: ObservationResultsRecalculator by lazy {
+    ObservationResultsRecalculator(
+            LockService(dslContext),
+            ObservationResultsInvalidator(dslContext),
+            ObservationRecalculationStore(dslContext),
+            systemUser,
+            transactionManager,
+        )
+        .apply {
+          siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED
+        }
+  }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
@@ -141,6 +156,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
     completePermanentPlot(targetObservationId, plotB, speciesId, 1)
 
     service.mergeObservations(sourceObservationId, targetObservationId)
+    recalculator.recalculateAllSites()
 
     assertTableEmpty(OBSERVATIONS, where = OBSERVATIONS.ID.eq(sourceObservationId))
     assertEquals(
@@ -225,6 +241,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
     )
 
     service.mergeObservations(sourceObservationId, targetObservationId)
+    recalculator.recalculateAllSites()
 
     assertEquals(
         (100.0 / 11).roundToInt(),

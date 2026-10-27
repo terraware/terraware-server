@@ -26,8 +26,10 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIE
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -206,6 +208,7 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
 
   @Test
   fun `recalculateObservationTotals reproduces the totals from scratch`() {
+    val plantingSiteId = inserted.plantingSiteId
     val observationId = insertObservation()
     val plotId1 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId)
@@ -270,6 +273,13 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
         .execute()
 
     store.recalculateObservationTotals(observationId)
+
+    assertTrue(
+        ObservationResultsInvalidator(dslContext).plantingSiteNeedsRecalculation(plantingSiteId),
+        "Planting site flagged for recalculation",
+    )
+
+    recalculator.recalculateAllSites()
 
     assertEquals(expectedTotals, helper.fetchAllTotals(), "Species totals after rebuild")
     assertEquals(expectedResults, helper.fetchAllResults(), "Observation results after rebuild")
