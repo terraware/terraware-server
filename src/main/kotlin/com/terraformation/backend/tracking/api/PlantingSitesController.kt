@@ -365,28 +365,59 @@ class PlantingSitesController(
   @PutMapping("/{id}/map")
   fun updatePlantingSiteMap(
       @PathVariable id: PlantingSiteId,
-      @RequestParam
-      @Schema(
-          description = "If true, check whether the edit is valid without changing the site.",
-          defaultValue = "false",
-      )
-      dryRun: Boolean? = false,
       @RequestBody payload: UpdatePlantingSiteMapRequestPayload,
   ): SimpleSuccessResponsePayload {
-    val mapEdit = payload.toModel()
-
-    if (dryRun == true) {
-      // just a placeholder for now. Later these edits will be shown in the FE.
-      plantingSiteMapEditService.calculateEdit(id, mapEdit)
-    } else {
-      plantingSiteMapEditService.applyEdit(
-          id,
-          mapEdit,
-          payload.substratumIdsToMarkIncomplete ?: emptySet(),
-      )
-    }
+    plantingSiteMapEditService.applyEdit(
+        id,
+        payload.toModel(),
+        payload.substratumIdsToMarkIncomplete ?: emptySet(),
+    )
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400(
+      description = "The edited map was malformed, e.g., it listed a stratum ID more than once."
+  )
+  @ApiResponse404(description = "The site, or a stratum or substratum in the edit, was not found.")
+  @ApiResponse(
+      responseCode = "409",
+      description =
+          "The edited map failed validation; nothing was changed. The problems list describes " +
+              "what is wrong.",
+      content =
+          [
+              Content(
+                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                  schema = Schema(implementation = PlantingSiteMapInvalidResponsePayload::class),
+              )
+          ],
+  )
+  @Operation(
+      summary = "Summarizes the changes an edit to a planting site's map would make.",
+      description =
+          "Takes the same map as the edit endpoint, but does not change the site. Use this to " +
+              "show the user the effects of an edit before applying it.",
+  )
+  @PostMapping("/{id}/map/summary")
+  fun summarizePlantingSiteMapEdit(
+      @PathVariable id: PlantingSiteId,
+      @RequestParam
+      @Schema(
+          description = "How much detail to include in the summary.",
+          defaultValue = "Substratum",
+      )
+      depth: PlantingSiteDepth? = null,
+      @RequestBody payload: UpdatePlantingSiteMapRequestPayload,
+  ): SummarizePlantingSiteMapEditResponsePayload {
+    val edit = plantingSiteMapEditService.calculateEdit(id, payload.toModel())
+    val summary =
+        plantingSiteMapEditService.summarizeEdit(edit, depth ?: PlantingSiteDepth.Substratum)
+
+    return SummarizePlantingSiteMapEditResponsePayload(
+        summary.map { PlantingSiteEditSummaryItemPayload.of(it) }
+    )
   }
 
   @ApiResponse200
@@ -1011,7 +1042,7 @@ data class UpdatePlantingSiteMapRequestPayload(
     @Schema(
         description =
             "IDs of edited substrata whose planting completed flags should be cleared. Ignored " +
-                "if dryRun is true."
+                "when summarizing an edit."
     )
     val substratumIdsToMarkIncomplete: Set<SubstratumId>? = null,
 ) {
@@ -1023,6 +1054,15 @@ data class UpdatePlantingSiteMapRequestPayload(
     )
   }
 }
+
+data class SummarizePlantingSiteMapEditResponsePayload(
+    @Schema(
+        description =
+            "Changes the edit would make. Site-wide items come first, followed by each " +
+                "stratum's items."
+    )
+    val summary: List<PlantingSiteEditSummaryItemPayload>,
+) : SuccessResponsePayload
 
 data class ValidatePlantingSiteResponsePayload(
     @Schema(description = "True if the request was valid.") //
