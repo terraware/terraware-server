@@ -1233,6 +1233,9 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
               pointOfMeasurementM = BigDecimal("1.3"),
               heightM = BigDecimal(12),
           )
+      val additionalSpeciesId = insertSpecies()
+      insertObservationBiomassSpecies(speciesId = additionalSpeciesId)
+      insertObservationBiomassAdditionalSpecies()
 
       val expected =
           expectedAdHocResults(
@@ -1246,13 +1249,26 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                           smallTreeCountRange = 5 to 10,
                           soilAssessment = "Moist soil",
                           soilType = SoilType.Loam,
+                          additionalSpecies =
+                              setOf(
+                                  BiomassSpeciesModel(
+                                      speciesId = additionalSpeciesId,
+                                      isInvasive = false,
+                                      isThreatened = false,
+                                  )
+                              ),
                           species =
                               setOf(
                                   BiomassSpeciesModel(
                                       speciesId = speciesId,
                                       isInvasive = false,
                                       isThreatened = true,
-                                  )
+                                  ),
+                                  BiomassSpeciesModel(
+                                      speciesId = additionalSpeciesId,
+                                      isInvasive = false,
+                                      isThreatened = false,
+                                  ),
                               ),
                           quadrats =
                               mapOf(

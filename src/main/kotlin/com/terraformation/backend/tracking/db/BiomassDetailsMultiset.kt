@@ -4,6 +4,7 @@ import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
@@ -14,9 +15,10 @@ import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.RecordedTreeModel
+import org.jooq.Condition
 import org.jooq.impl.DSL
 
-internal val biomassSpeciesMultiset =
+private fun biomassSpeciesMultisetWhere(condition: Condition) =
     with(OBSERVATION_BIOMASS_SPECIES) {
       DSL.multiset(
               DSL.select(
@@ -29,6 +31,7 @@ internal val biomassSpeciesMultiset =
                   .from(this)
                   .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
                   .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+                  .and(condition)
           )
           .convertFrom { result ->
             result
@@ -43,6 +46,21 @@ internal val biomassSpeciesMultiset =
                 }
                 .toSet()
           }
+    }
+
+internal val biomassSpeciesMultiset = biomassSpeciesMultisetWhere(DSL.trueCondition())
+
+internal val biomassAdditionalSpeciesMultiset =
+    with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
+      biomassSpeciesMultisetWhere(
+          DSL.exists(
+              DSL.selectOne()
+                  .from(this)
+                  .where(BIOMASS_SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.ID))
+                  .and(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
+                  .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+          )
+      )
     }
 
 internal val biomassQuadratDetailsMultiset =
@@ -127,6 +145,7 @@ internal val biomassDetailsMultiset =
     with(OBSERVATION_BIOMASS_DETAILS) {
       DSL.multiset(
               DSL.select(
+                      biomassAdditionalSpeciesMultiset,
                       biomassSpeciesMultiset,
                       biomassQuadratDetailsMultiset,
                       biomassQuadratSpeciesMultiset,
@@ -163,6 +182,7 @@ internal val biomassDetailsMultiset =
                   }
 
               ExistingBiomassDetailsModel(
+                  additionalSpecies = record[biomassAdditionalSpeciesMultiset],
                   description = record[DESCRIPTION],
                   forestType = record[FOREST_TYPE_ID]!!,
                   herbaceousCoverPercent = record[HERBACEOUS_COVER_PERCENT]!!,
