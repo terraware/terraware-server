@@ -134,7 +134,8 @@ class AdminPlantingSitesController(
           (observation.state == ObservationState.Upcoming &&
               observation.startDate <= LocalDate.now(clock) &&
               canManageObservations[observation.id] == true &&
-              plantCounts.isNotEmpty())
+              (plantCounts.isNotEmpty() ||
+                  observation.observationType == ObservationType.BiomassMeasurements))
     }
 
     model.addAttribute("allOrganizations", allOrganizations)
