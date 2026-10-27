@@ -791,19 +791,19 @@ class AdminPlantingSitesController(
                 "in $existingOrNew area"
           }
       is PlantingSiteEditSummaryItem.PlotAdopted ->
-          "${substratumPrefix(item.stratumName, item.substratumName)} Adopt plot ID " +
-              "${item.monitoringPlotId} " +
+          "${substratumPrefix(item.stratumName, item.substratumName)} Adopt plot " +
+              "${item.plotNumber} (ID ${item.monitoringPlotId}) " +
               if (item.permanentIndex != null) {
                 "as permanent index ${item.permanentIndex}"
               } else {
                 "without permanent index"
               }
       is PlantingSiteEditSummaryItem.PlotEjected ->
-          "${substratumPrefix(item.stratumName, item.substratumName)} Eject plot ID " +
-              "${item.monitoringPlotId}"
+          "${substratumPrefix(item.stratumName, item.substratumName)} Eject plot " +
+              "${item.plotNumber} (ID ${item.monitoringPlotId})"
       is PlantingSiteEditSummaryItem.PlotAccepted ->
-          "${substratumPrefix(item.stratumName, item.substratumName)} Accept plot ID " +
-              "${item.monitoringPlotId} " +
+          "${substratumPrefix(item.stratumName, item.substratumName)} Accept plot " +
+              "${item.plotNumber} (ID ${item.monitoringPlotId}) " +
               if (item.permanentIndex != null) {
                 "with permanent index ${item.permanentIndex}"
               } else {

@@ -101,6 +101,7 @@ sealed interface PlantingSiteEditSummaryItem {
       val stratumName: String,
       val substratumName: String,
       val monitoringPlotId: MonitoringPlotId,
+      val plotNumber: Long,
       val permanentIndex: Int?,
   ) : PlantingSiteEditSummaryItem {
     override val depth: PlantingSiteDepth
@@ -112,6 +113,7 @@ sealed interface PlantingSiteEditSummaryItem {
       val stratumName: String,
       val substratumName: String,
       val monitoringPlotId: MonitoringPlotId,
+      val plotNumber: Long,
   ) : PlantingSiteEditSummaryItem {
     override val depth: PlantingSiteDepth
       get() = PlantingSiteDepth.Plot
@@ -122,6 +124,7 @@ sealed interface PlantingSiteEditSummaryItem {
       val stratumName: String,
       val substratumName: String,
       val monitoringPlotId: MonitoringPlotId,
+      val plotNumber: Long,
       val permanentIndex: Int?,
   ) : PlantingSiteEditSummaryItem {
     override val depth: PlantingSiteDepth

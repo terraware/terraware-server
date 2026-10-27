@@ -492,6 +492,7 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
                   stratumName = "S1",
                   substratumName = "Sub1",
                   monitoringPlotId = plotId,
+                  plotNumber = monitoringPlotsDao.fetchOneById(plotId)!!.plotNumber!!,
                   permanentIndex = 1,
               )
 
