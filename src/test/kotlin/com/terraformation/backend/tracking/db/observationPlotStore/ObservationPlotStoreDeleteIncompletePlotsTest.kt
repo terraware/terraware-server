@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ObservationStoreDeleteIncompletePlotsTest : BaseObservationStoreTest() {
+class ObservationPlotStoreDeleteIncompletePlotsTest : BaseObservationPlotStoreTest() {
   @Test
   fun `deletes incomplete plots from the observation`() {
     insertUserGlobalRole(role = GlobalRole.SuperAdmin)

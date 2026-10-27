@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.db.ObservationPlotStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
@@ -43,6 +44,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val jobScheduler: JobScheduler = mockk()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
+  private val observationPlotStore: ObservationPlotStore by lazy {
+    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentStore)
+  }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
@@ -88,6 +92,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         monitoringPlotsDao,
         mockk(),
         observationMediaFilesDao,
+        observationPlotStore,
         ObservationResultsInvalidator(dslContext),
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
@@ -155,7 +160,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
     observationService.startObservation(observationId)
 
-    val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
+    val observationPlots = observationPlotStore.fetchObservationPlotDetails(observationId)
 
     assertEquals(7, observationPlots.size, "Total plots in observation")
     assertEquals(
@@ -207,7 +212,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     eventPublisher.assertEventPublished(ObservationNotStartedEvent(observationId, plantingSite.id))
     assertEquals(
         emptyList<Any>(),
-        observationStore.fetchObservationPlotDetails(observationId),
+        observationPlotStore.fetchObservationPlotDetails(observationId),
         "Abandoned observation should have no plots",
     )
   }
@@ -258,7 +263,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     insertObservationRequestedSubstratum(substratumId = substratum1.id)
     observationService.startObservation(observationId)
 
-    val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
+    val observationPlots = observationPlotStore.fetchObservationPlotDetails(observationId)
 
     observationPlots.forEach { plot ->
       assertEquals(substratum1.fullName, plot.substratumName, "Plot in unexpected substratum")

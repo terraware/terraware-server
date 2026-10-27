@@ -1,9 +1,9 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class ObservationStoreFetchObservedPermanentPlotIdsTest : BaseObservationStoreTest() {
+class ObservationPlotStoreFetchObservedPermanentPlotIdsTest : BaseObservationPlotStoreTest() {
   @Test
   fun `returns only plots that were observed as permanent`() {
     insertStratum()

@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ObservationStoreReleasePlotTest : BaseObservationStoreTest() {
+class ObservationPlotStoreReleasePlotTest : BaseObservationPlotStoreTest() {
   private lateinit var observationId: ObservationId
   private lateinit var plotId: MonitoringPlotId
 

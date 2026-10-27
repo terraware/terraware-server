@@ -26,6 +26,7 @@ class ObservationsControllerUpdateCompletedPlotTest {
             biomassStore = biomassStore,
             messages = mockk(relaxed = true),
             observationService = observationService,
+            observationPlotStore = mockk(relaxed = true),
             observationStore = mockk(relaxed = true),
             observationResultsStoreV2 = mockk(relaxed = true),
             plantingSiteStore = mockk(relaxed = true),

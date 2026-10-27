@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import io.mockk.every
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
-class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
+class ObservationPlotStoreAddPlotsToObservationTest : BaseObservationPlotStoreTest() {
   @Test
   fun `honors isPermanent flag`() {
     insertStratum()

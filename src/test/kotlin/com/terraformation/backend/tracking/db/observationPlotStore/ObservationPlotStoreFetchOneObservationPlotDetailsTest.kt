@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreTest() {
+class ObservationPlotStoreFetchOneObservationPlotDetailsTest : BaseObservationPlotStoreTest() {
   @Test
   fun `calculates correct values from related tables`() {
     val userId1 = insertUser(firstName = "First", lastName = "Person")

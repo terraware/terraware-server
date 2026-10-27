@@ -46,6 +46,7 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.BiomassStore
+import com.terraformation.backend.tracking.db.ObservationPlotStore
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -102,6 +103,7 @@ class ObservationsController(
     private val biomassStore: BiomassStore,
     private val messages: Messages,
     private val observationService: ObservationService,
+    private val observationPlotStore: ObservationPlotStore,
     private val observationStore: ObservationStore,
     private val observationResultsStoreV2: ObservationResultsStoreV2,
     private val plantingSiteStore: PlantingSiteStore,
@@ -140,12 +142,12 @@ class ObservationsController(
               plantingSiteId to
                   plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
           )
-      plotCounts = observationStore.countPlots(plantingSiteId, isAdHoc)
+      plotCounts = observationPlotStore.countPlots(plantingSiteId, isAdHoc)
     } else if (organizationId != null) {
       observations = observationStore.fetchObservationsByOrganization(organizationId, isAdHoc)
       plantingSites =
           plantingSiteStore.fetchSitesByOrganizationId(organizationId).associateBy { it.id }
-      plotCounts = observationStore.countPlots(organizationId, isAdHoc)
+      plotCounts = observationPlotStore.countPlots(organizationId, isAdHoc)
     } else {
       throw BadRequestException("Must specify organizationId or plantingSiteId")
     }
@@ -241,7 +243,7 @@ class ObservationsController(
     val observation = observationStore.fetchObservationById(observationId)
     val platingSite =
         plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Site)
-    val plotCounts = observationStore.countPlots(observationId)
+    val plotCounts = observationPlotStore.countPlots(observationId)
 
     return GetObservationResponsePayload(
         ObservationPayload(observation, plotCounts, platingSite.name)
@@ -266,7 +268,9 @@ class ObservationsController(
       @PathVariable observationId: ObservationId
   ): ListAssignedPlotsResponsePayload {
     val payloads =
-        observationStore.fetchObservationPlotDetails(observationId).map { AssignedPlotPayload(it) }
+        observationPlotStore.fetchObservationPlotDetails(observationId).map {
+          AssignedPlotPayload(it)
+        }
 
     return ListAssignedPlotsResponsePayload(payloads)
   }
@@ -285,7 +289,7 @@ class ObservationsController(
   @Operation(summary = "Exports monitoring plots assigned to an observation as a GPX file.")
   fun exportAssignedPlots(@PathVariable observationId: ObservationId): ResponseEntity<ByteArray> {
     val observation = observationStore.fetchObservationById(observationId)
-    val observations = observationStore.fetchObservationPlotDetails(observationId)
+    val observations = observationPlotStore.fetchObservationPlotDetails(observationId)
     val plantingSite =
         plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Site)
     val waypoints = observations.flatMap { it.gpxWaypoints(messages) }
@@ -340,7 +344,7 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
   ): GetOneAssignedPlotResponsePayload {
-    val details = observationStore.fetchOneObservationPlotDetails(observationId, plotId)
+    val details = observationPlotStore.fetchOneObservationPlotDetails(observationId, plotId)
 
     return GetOneAssignedPlotResponsePayload(AssignedPlotPayload(details))
   }
@@ -695,7 +699,7 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
   ): SimpleSuccessResponsePayload {
-    observationStore.claimPlot(observationId, plotId)
+    observationPlotStore.claimPlot(observationId, plotId)
 
     return SimpleSuccessResponsePayload()
   }
@@ -708,7 +712,7 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
   ): SimpleSuccessResponsePayload {
-    observationStore.releasePlot(observationId, plotId)
+    observationPlotStore.releasePlot(observationId, plotId)
 
     return SimpleSuccessResponsePayload()
   }

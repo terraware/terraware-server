@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.observationPlotStore
 
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ObservationStoreHasPlotsTest : BaseObservationStoreTest() {
+class ObservationPlotStoreHasPlotsTest : BaseObservationPlotStoreTest() {
   @Test
   fun `returns false if observation has no plots`() {
     val observationId = insertObservation()

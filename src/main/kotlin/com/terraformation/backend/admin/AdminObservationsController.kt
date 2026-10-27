@@ -8,7 +8,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.ObservationService
-import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.ObservationPlotStore
 import org.jooq.DSLContext
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
@@ -25,7 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminObservationsController(
     private val dslContext: DSLContext,
     private val observationService: ObservationService,
-    private val observationStore: ObservationStore,
+    private val observationPlotStore: ObservationPlotStore,
 ) {
   private val log = perClassLogger()
 
@@ -59,7 +59,7 @@ class AdminObservationsController(
   ): String {
     try {
       val (retainedPlotIds, deletedPlotIds) =
-          observationStore.deleteIncompletePlots(
+          observationPlotStore.deleteIncompletePlots(
               observationId,
               retainObservationIds ?: emptyList(),
               dryRun,

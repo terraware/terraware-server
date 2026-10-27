@@ -34,6 +34,7 @@ import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.BiomassStore
+import com.terraformation.backend.tracking.db.ObservationPlotStore
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -64,6 +65,9 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val jobScheduler: JobScheduler = mockk()
+  private val observationPlotStore: ObservationPlotStore by lazy {
+    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentStore)
+  }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
@@ -111,6 +115,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             monitoringPlotsDao,
             mockk(),
             observationMediaFilesDao,
+            observationPlotStore,
             ObservationResultsInvalidator(dslContext),
             observationStore,
             PlantingSiteNotificationStore(clock, dslContext),

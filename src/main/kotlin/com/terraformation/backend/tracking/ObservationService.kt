@@ -44,6 +44,7 @@ import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
+import com.terraformation.backend.tracking.db.ObservationPlotStore
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -108,6 +109,7 @@ class ObservationService(
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val muxService: MuxService,
     private val observationMediaFilesDao: ObservationMediaFilesDao,
+    private val observationPlotStore: ObservationPlotStore,
     private val observationResultsInvalidator: ObservationResultsInvalidator,
     private val observationStore: ObservationStore,
     private val plantingSiteNotificationStore: PlantingSiteNotificationStore,
@@ -128,7 +130,7 @@ class ObservationService(
           throw ObservationAlreadyStartedException(observationId)
         }
 
-        if (observationStore.hasPlots(observationId)) {
+        if (observationPlotStore.hasPlots(observationId)) {
           log.error("BUG! Observation has plots but state is still ${observation.state}")
           throw ObservationAlreadyStartedException(observationId)
         }
@@ -152,7 +154,7 @@ class ObservationService(
 
         try {
           val observedPermanentPlotIds =
-              observationStore.fetchObservedPermanentPlotIds(observation.plantingSiteId)
+              observationPlotStore.fetchObservedPermanentPlotIds(observation.plantingSiteId)
           val shortfalls = mutableListOf<ObservationPlotsUnderallocatedEvent.Shortfall>()
 
           plantingSite.strata.forEach { stratum ->
@@ -184,12 +186,12 @@ class ObservationService(
                       )
                     }
 
-                observationStore.addPlotsToObservation(
+                observationPlotStore.addPlotsToObservation(
                     observationId,
                     allocation.permanentPlotIds,
                     isPermanent = true,
                 )
-                observationStore.addPlotsToObservation(
+                observationPlotStore.addPlotsToObservation(
                     observationId,
                     temporaryPlotIds,
                     isPermanent = false,
@@ -465,7 +467,7 @@ class ObservationService(
     }
 
     if (observation.state != ObservationState.Upcoming) {
-      val plotCounts = observationStore.countPlots(observationId)
+      val plotCounts = observationPlotStore.countPlots(observationId)
       // check for no observed plots
       if (plotCounts.totalPlots != plotCounts.totalIncomplete) {
         throw ObservationRescheduleStateException(observationId)
@@ -602,7 +604,7 @@ class ObservationService(
       val substratum =
           stratum?.findSubstratumWithMonitoringPlot(monitoringPlotId)
               ?: throw PlotNotFoundException(monitoringPlotId)
-      val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
+      val observationPlots = observationPlotStore.fetchObservationPlotDetails(observationId)
       val observationPlotIds = observationPlots.map { it.model.monitoringPlotId }.toSet()
       val observationPlot =
           observationPlots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
@@ -634,7 +636,7 @@ class ObservationService(
             val replacementResult =
                 plantingSiteStore.replacePermanentIndex(monitoringPlotId, observationId)
 
-            observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+            observationPlotStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
 
             plantingSiteStore.makePlotUnavailable(monitoringPlotId)
 
@@ -655,7 +657,7 @@ class ObservationService(
                     "Replacement permanent plot is in a requested substratum; " +
                         "including it in this observation."
                 )
-                observationStore.addPlotsToObservation(
+                observationPlotStore.addPlotsToObservation(
                     observationId,
                     replacementResult.addedMonitoringPlotIds,
                     isPermanent = true,
@@ -674,7 +676,7 @@ class ObservationService(
                 "Permanent plot being replaced temporarily; assigning a temporary substitute " +
                     "for this observation. The permanent plot remains available for future observations."
             )
-            observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+            observationPlotStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
 
             val replacementPlotBoundary =
                 stratum
@@ -696,7 +698,7 @@ class ObservationService(
                   )
               log.info("Adding temporary replacement plot $replacementPlotId")
               addedPlotIds.add(replacementPlotId)
-              observationStore.addPlotsToObservation(
+              observationPlotStore.addPlotsToObservation(
                   observationId,
                   listOf(replacementPlotId),
                   isPermanent = false,
@@ -707,7 +709,7 @@ class ObservationService(
           }
         }
       } else {
-        observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+        observationPlotStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
 
         if (duration == ReplacementDuration.LongTerm) {
           plantingSiteStore.makePlotUnavailable(monitoringPlotId)
@@ -733,7 +735,7 @@ class ObservationService(
               )
           log.info("Adding replacement plot $replacementPlotId")
           addedPlotIds.add(replacementPlotId)
-          observationStore.addPlotsToObservation(
+          observationPlotStore.addPlotsToObservation(
               observationId,
               listOf(replacementPlotId),
               isPermanent = false,
@@ -810,11 +812,11 @@ class ObservationService(
           )
 
       val plotId = plantingSiteStore.createAdHocMonitoringPlot(plantingSiteId, swCorner)
-      observationStore.addAdHocPlotToObservation(observationId, plotId)
+      observationPlotStore.addAdHocPlotToObservation(observationId, plotId)
 
       systemUser.run { observationStore.recordObservationStart(observationId) }
 
-      observationStore.claimPlot(observationId, plotId)
+      observationPlotStore.claimPlot(observationId, plotId)
 
       biomassDetails?.let { biomassStore.insertBiomassDetails(observationId, plotId, it) }
 
