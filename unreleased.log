@@ -1,3 +1,6 @@
+89a71cbd SW-9153 Read biomass additional species from table (#5253)
+bf9a08ea SW-9153 Remove measured species from additional species (#5252)
+3da5303f SW-9153 Add table for biomass additional species (#5251)
 082968c9 Don't skip Node install if version is wrong (#5259)
 54665ca1 SW-9124 Fix NoSuchElementException when stratum is fully excluded (#5255)
 83c7c0d6 Upgrade to Spring Boot 4 (#5249)
