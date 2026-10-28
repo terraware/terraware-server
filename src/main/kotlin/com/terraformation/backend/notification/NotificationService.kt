@@ -579,6 +579,7 @@ class NotificationService(
           emailContent =
               ObservationScheduled(
                   config,
+                  event.observation.observationType,
                   organization.name,
                   plantingSite.name,
                   event.observation.startDate,
@@ -599,6 +600,7 @@ class NotificationService(
           emailContent =
               ObservationRescheduled(
                   config,
+                  event.rescheduledObservation.observationType,
                   organization.name,
                   plantingSite.name,
                   event.originalObservation.startDate,

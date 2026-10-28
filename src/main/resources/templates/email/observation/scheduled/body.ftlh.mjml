@@ -9,10 +9,10 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                ${strings("notification.observation.scheduled.email.body.1", organizationName, plantingSiteName)}
+                ${strings(stringsPrefix + ".email.body.1", organizationName, plantingSiteName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.scheduled.email.body.2", plantingSiteName, startDateString, endDateString)}
+                ${strings(stringsPrefix + ".email.body.2", plantingSiteName, startDateString, endDateString)}
                 </mj-text>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
 

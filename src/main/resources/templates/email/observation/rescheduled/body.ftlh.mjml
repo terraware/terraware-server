@@ -9,10 +9,10 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                ${strings("notification.observation.rescheduled.email.body.1", organizationName, plantingSiteName)}
+                ${strings(stringsPrefix + ".email.body.1", organizationName, plantingSiteName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.rescheduled.email.body.2", plantingSiteName)}
+                ${strings(stringsPrefix + ".email.body.2", plantingSiteName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
                 ${strings("notification.observation.rescheduled.email.body.3", originalStartDateString, originalEndDateString)}

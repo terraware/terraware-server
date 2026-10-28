@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.EmailNotificationCategory
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.i18n.FormattingResourceBundleModel
@@ -255,6 +256,7 @@ class ObservationUpcoming(
 
 class ObservationScheduled(
     config: TerrawareServerConfig,
+    val observationType: ObservationType,
     val organizationName: String,
     val plantingSiteName: String,
     val startDate: LocalDate,
@@ -262,6 +264,9 @@ class ObservationScheduled(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/scheduled"
+
+  val stringsPrefix: String
+    get() = observationStringsPrefix("notification.observation.scheduled", observationType)
 
   val startDateString: String
     get() = dateString(startDate)
@@ -272,6 +277,7 @@ class ObservationScheduled(
 
 class ObservationRescheduled(
     config: TerrawareServerConfig,
+    val observationType: ObservationType,
     val organizationName: String,
     val plantingSiteName: String,
     val originalStartDate: LocalDate,
@@ -281,6 +287,9 @@ class ObservationRescheduled(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/rescheduled"
+
+  val stringsPrefix: String
+    get() = observationStringsPrefix("notification.observation.rescheduled", observationType)
 
   val originalStartDateString: String
     get() = dateString(originalStartDate)
@@ -678,3 +687,14 @@ class WelcomeToTerraware(
   override val templateDir: String
     get() = "user/welcomeToTerraware"
 }
+
+/**
+ * Returns the prefix of the localizable string keys for a notification about an observation of a
+ * particular type. Each type has its own complete set of strings, rather than inserting the type
+ * name into shared strings, so translations can be grammatically correct.
+ */
+private fun observationStringsPrefix(basePrefix: String, observationType: ObservationType) =
+    when (observationType) {
+      ObservationType.Monitoring -> basePrefix
+      ObservationType.BiomassMeasurements -> "$basePrefix.biomass"
+    }
