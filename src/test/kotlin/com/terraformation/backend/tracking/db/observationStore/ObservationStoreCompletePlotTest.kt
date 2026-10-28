@@ -5,6 +5,7 @@ import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
@@ -58,6 +59,51 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     plotId = insertMonitoringPlot()
     observationId = insertObservation()
     insertObservationRequestedSubstratum()
+  }
+
+  @Test
+  fun `rejects plants for biomass observations before completing plot`() {
+    val biomassObservationId =
+        insertObservation(observationType = ObservationType.BiomassMeasurements)
+    val biomassPlotId = insertMonitoringPlot()
+    insertObservationPlot(
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = biomassPlotId,
+        observationId = biomassObservationId,
+    )
+    val plants =
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Other,
+                gpsCoordinates = point(1),
+                speciesName = "Other",
+                statusId = RecordedPlantStatus.Live,
+            )
+        )
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          store.completePlot(
+              observationId = biomassObservationId,
+              monitoringPlotId = biomassPlotId,
+              conditions = emptySet(),
+              notes = null,
+              observedTime = Instant.EPOCH,
+              plants = plants,
+          )
+        }
+
+    assertEquals("Biomass observations must not contain plants", exception.message)
+    assertTableEmpty(RECORDED_PLANTS)
+    assertEquals(
+        ObservationPlotStatus.Claimed,
+        observationPlotsDao
+            .fetchByObservationPlotId(ObservationPlotId(biomassObservationId, biomassPlotId))
+            .single()
+            .statusId,
+        "Plot status",
+    )
   }
 
   @Test
