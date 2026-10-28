@@ -86,9 +86,6 @@ class ObservationAlreadyEndedException(val observationId: ObservationId) :
 class ObservationAlreadyStartedException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId is already started")
 
-class ObservationHasNoSubstrataException(val observationId: ObservationId) :
-    MismatchedStateException("No substrata were requested for observation $observationId")
-
 class ObservationMergeNotAllowedException(message: String) : MismatchedStateException(message)
 
 class ObservationNotFoundException(val observationId: ObservationId) :

@@ -198,7 +198,6 @@ class ObservationStore(
         listOfNotNull(
             OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming),
             OBSERVATIONS.START_DATE.le(maxStartDate),
-            observationHasRequestedSubstrata,
             plantingSiteId?.let { OBSERVATIONS.PLANTING_SITE_ID.eq(it) },
         )
     ) { todayAtSite, record ->

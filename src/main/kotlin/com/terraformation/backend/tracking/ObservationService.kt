@@ -40,7 +40,6 @@ import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
-import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
@@ -72,6 +71,7 @@ import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -136,7 +136,9 @@ class ObservationService(
         }
 
         if (observation.requestedSubstratumIds.isEmpty()) {
-          throw ObservationHasNoSubstrataException(observationId)
+          log.info("Unable to start observation because none of its requested substrata exist")
+          abandonUnstartableObservation(observation)
+          return@withLockedObservation
         }
 
         plantingSiteStore.ensurePermanentPlotsExist(
@@ -234,16 +236,7 @@ class ObservationService(
           }
         } catch (e: StratumFullException) {
           log.info("Unable to start observation $observationId", e)
-
-          eventPublisher.publishEvent(
-              ObservationNotStartedEvent(
-                  observationId,
-                  observation.observationType,
-                  observation.plantingSiteId,
-              )
-          )
-
-          observationStore.abandonObservation(observationId)
+          abandonUnstartableObservation(observation)
         }
       }
     }
@@ -1023,6 +1016,18 @@ class ObservationService(
     RateLimitedMonitoringSpeciesTotalsEditedEvent.of(event)?.let {
       rateLimitedEventPublisher.publishEvent(it)
     }
+  }
+
+  private fun abandonUnstartableObservation(observation: ExistingObservationModel) {
+    eventPublisher.publishEvent(
+        ObservationNotStartedEvent(
+            observation.id,
+            observation.observationType,
+            observation.plantingSiteId,
+        )
+    )
+
+    observationStore.abandonObservation(observation.id)
   }
 
   /**
