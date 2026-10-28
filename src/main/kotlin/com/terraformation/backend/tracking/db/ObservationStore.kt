@@ -1036,7 +1036,6 @@ class ObservationStore(
     }
   }
 
-  /** Returns true if a site has any assigned Plant Monitoring observations, in any state. */
   fun hasPlantMonitoringObservations(plantingSiteId: PlantingSiteId): Boolean {
     return dslContext.fetchExists(
         OBSERVATIONS,
