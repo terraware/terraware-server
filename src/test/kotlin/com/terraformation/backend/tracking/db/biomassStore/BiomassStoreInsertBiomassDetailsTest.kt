@@ -34,6 +34,7 @@ import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -274,7 +275,6 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             ObservationBiomassSpeciesRecord(
                 id = biomassHerbaceousSpeciesId1,
                 observationId = observationId,
-                monitoringPlotId = plotId,
                 speciesId = herbaceousSpeciesId1,
                 isInvasive = false,
                 isThreatened = false,
@@ -282,7 +282,6 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             ObservationBiomassSpeciesRecord(
                 id = biomassHerbaceousSpeciesId2,
                 observationId = observationId,
-                monitoringPlotId = plotId,
                 speciesId = herbaceousSpeciesId2,
                 isInvasive = false,
                 isThreatened = true,
@@ -290,7 +289,6 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             ObservationBiomassSpeciesRecord(
                 id = biomassHerbaceousSpeciesId3,
                 observationId = observationId,
-                monitoringPlotId = plotId,
                 scientificName = "Other herbaceous species",
                 commonName = "Common herb",
                 isInvasive = true,
@@ -299,7 +297,6 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             ObservationBiomassSpeciesRecord(
                 id = biomassTreeSpeciesId1,
                 observationId = observationId,
-                monitoringPlotId = plotId,
                 speciesId = treeSpeciesId1,
                 isInvasive = false,
                 isThreatened = true,
@@ -307,7 +304,6 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             ObservationBiomassSpeciesRecord(
                 id = biomassTreeSpeciesId2,
                 observationId = observationId,
-                monitoringPlotId = plotId,
                 speciesId = treeSpeciesId2,
                 isInvasive = false,
                 isThreatened = false,
@@ -315,7 +311,6 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             ObservationBiomassSpeciesRecord(
                 id = biomassTreeSpeciesId3,
                 observationId = observationId,
-                monitoringPlotId = plotId,
                 scientificName = "Other tree species",
                 commonName = "Common tree",
                 isInvasive = false,
@@ -615,6 +610,83 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
         ),
         "Additional species",
     )
+  }
+
+  @Test
+  fun `reuses species across plots when inserting biomass details`() {
+    val secondPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot(claimedBy = currentUser().userId, claimedTime = Instant.EPOCH)
+    val firstPlotDetails =
+        NewBiomassDetailsModel(
+            forestType = BiomassForestType.Terrestrial,
+            herbaceousCoverPercent = 0,
+            observationId = null,
+            smallTreeCountRange = 0 to 0,
+            soilAssessment = "Soil",
+            species =
+                setOf(
+                    BiomassSpeciesModel(
+                        commonName = "Original common name",
+                        isInvasive = true,
+                        isThreatened = true,
+                        scientificName = "Shared species",
+                    )
+                ),
+            plotId = null,
+        )
+
+    store.insertBiomassDetails(observationId, plotId, firstPlotDetails)
+
+    val expectedSpecies = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    val biomassSpeciesId = expectedSpecies.single().id!!
+    eventPublisher.clear()
+
+    store.insertBiomassDetails(
+        observationId,
+        secondPlotId,
+        firstPlotDetails.copy(
+            species =
+                setOf(
+                    BiomassSpeciesModel(
+                        commonName = "Changed common name",
+                        isInvasive = false,
+                        isThreatened = false,
+                        scientificName = "Shared species",
+                    )
+                ),
+            trees =
+                listOf(
+                    NewRecordedTreeModel(
+                        id = null,
+                        isDead = false,
+                        gpsCoordinates = null,
+                        diameterAtBreastHeightCm = BigDecimal.ONE,
+                        heightM = BigDecimal.ONE,
+                        pointOfMeasurementM = BigDecimal("1.3"),
+                        speciesName = "Shared species",
+                        treeGrowthForm = TreeGrowthForm.Tree,
+                        treeNumber = 1,
+                        trunkNumber = 1,
+                    )
+                ),
+        ),
+    )
+
+    assertTableEquals(expectedSpecies, "Species rows shared across plots")
+    assertEquals(
+        biomassSpeciesId,
+        dslContext.fetchSingle(RECORDED_TREES).biomassSpeciesId,
+        "Recorded tree should reference the shared biomass species",
+    )
+    assertTableEquals(
+        ObservationBiomassAdditionalSpeciesRecord(
+            biomassSpeciesId = biomassSpeciesId,
+            monitoringPlotId = plotId,
+            observationId = observationId,
+        ),
+        "Additional species",
+    )
+    eventPublisher.assertEventNotPublished<BiomassSpeciesCreatedEvent>()
   }
 
   @Test

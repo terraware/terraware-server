@@ -80,6 +80,27 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
   }
 
   @Test
+  fun `reuses a biomass species from another plot in the observation`() {
+    insertObservationBiomassDetails()
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot(monitoringPlotId = otherMonitoringPlotId, completedBy = user.userId)
+    insertObservationBiomassDetails(monitoringPlotId = otherMonitoringPlotId)
+
+    val expectedSpecies = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+
+    store.createRecordedTree(observationId, otherMonitoringPlotId, newTreeModel())
+
+    assertEquals(
+        biomassSpeciesId,
+        dslContext.fetchSingle(RECORDED_TREES).biomassSpeciesId,
+        "Recorded tree should use the observation's existing biomass species",
+    )
+    assertTableEquals(expectedSpecies, "Biomass species table")
+    eventPublisher.assertEventNotPublished<BiomassSpeciesCreatedEvent>()
+  }
+
+  @Test
   fun `reuses and creates known and Other biomass species for trees`() {
     insertObservationBiomassDetails()
     val existingBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
@@ -151,20 +172,23 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
   @Test
   fun `removes species from additional species of only the tree's plot`() {
     insertObservationBiomassDetails()
-    insertObservationBiomassSpecies(speciesId = speciesId)
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
     insertObservationBiomassAdditionalSpecies()
 
     val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
     insertObservationPlot(monitoringPlotId = otherMonitoringPlotId, completedBy = user.userId)
     insertObservationBiomassDetails(monitoringPlotId = otherMonitoringPlotId)
-    val otherPlotBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
-    insertObservationBiomassAdditionalSpecies()
+    insertObservationBiomassAdditionalSpecies(
+        observationId = observationId,
+        monitoringPlotId = otherMonitoringPlotId,
+        biomassSpeciesId = biomassSpeciesId,
+    )
 
     store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())
 
     assertTableEquals(
         ObservationBiomassAdditionalSpeciesRecord(
-            biomassSpeciesId = otherPlotBiomassSpeciesId,
+            biomassSpeciesId = biomassSpeciesId,
             monitoringPlotId = otherMonitoringPlotId,
             observationId = observationId,
         ),

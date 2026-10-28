@@ -30,7 +30,13 @@ data class BiomassSpeciesModel(
     val isThreatened: Boolean,
     val speciesId: SpeciesId? = null,
     val scientificName: String? = null,
-)
+) {
+  init {
+    require((speciesId == null) xor (scientificName == null)) {
+      "One of species ID or scientific name must be specified"
+    }
+  }
+}
 
 data class BiomassQuadratSpeciesModel(
     val abundanceCount: Int,

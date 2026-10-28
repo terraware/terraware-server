@@ -123,6 +123,9 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
 
   @Test
   fun `rejects missing species and invalid identity`() {
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+
     assertThrows<BiomassSpeciesNotFoundException> { deleteBiomassSpecies(insertSpecies()) }
     assertThrows<IllegalArgumentException> { deleteBiomassSpecies(null) }
   }

@@ -726,7 +726,6 @@ val EMBEDDABLES =
                         "observation_biomass_details",
                         "observation_biomass_quadrat_details",
                         "observation_biomass_quadrat_species",
-                        "observation_biomass_species",
                         "observation_plot_conditions",
                         "observation_plots",
                         "recorded_trees",

@@ -30,7 +30,6 @@ private fun biomassSpeciesMultisetWhere(condition: Condition) =
                   )
                   .from(this)
                   .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
-                  .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
                   .and(condition)
           )
           .convertFrom { result ->
