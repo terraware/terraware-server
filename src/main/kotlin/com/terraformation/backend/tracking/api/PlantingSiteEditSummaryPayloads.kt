@@ -57,15 +57,22 @@ sealed interface PlantingSiteEditSummaryItemPayload {
                 model.stratumName,
                 model.substratumName,
                 model.monitoringPlotId,
+                model.plotNumber,
                 model.permanentIndex,
             )
         is PlantingSiteEditSummaryItem.PlotEjected ->
-            PlotEjectedPayload(model.stratumName, model.substratumName, model.monitoringPlotId)
+            PlotEjectedPayload(
+                model.stratumName,
+                model.substratumName,
+                model.monitoringPlotId,
+                model.plotNumber,
+            )
         is PlantingSiteEditSummaryItem.PlotAccepted ->
             PlotAcceptedPayload(
                 model.stratumName,
                 model.substratumName,
                 model.monitoringPlotId,
+                model.plotNumber,
                 model.permanentIndex,
             )
       }
@@ -160,6 +167,7 @@ data class PlotAdoptedPayload(
     val stratumName: String,
     val substratumName: String,
     val monitoringPlotId: MonitoringPlotId,
+    val plotNumber: Long,
     val permanentIndex: Int?,
 ) : PlantingSiteEditSummaryItemPayload
 
@@ -169,6 +177,7 @@ data class PlotEjectedPayload(
     val stratumName: String,
     val substratumName: String,
     val monitoringPlotId: MonitoringPlotId,
+    val plotNumber: Long,
 ) : PlantingSiteEditSummaryItemPayload
 
 @JsonTypeName("PlotAccepted")
@@ -180,5 +189,6 @@ data class PlotAcceptedPayload(
     val stratumName: String,
     val substratumName: String,
     val monitoringPlotId: MonitoringPlotId,
+    val plotNumber: Long,
     val permanentIndex: Int?,
 ) : PlantingSiteEditSummaryItemPayload

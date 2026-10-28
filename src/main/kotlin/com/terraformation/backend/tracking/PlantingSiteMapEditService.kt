@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -110,6 +111,8 @@ class PlantingSiteMapEditService(
             edit.stratumEdits.filterNot { it.isNoOp() }.mapNotNull { it.existingModel?.id },
         )
 
+    val plotNumbers = fetchPlotNumbers(edit)
+
     val items =
         listOfNotNull(
             if (affectedObservationIds.isNotEmpty()) {
@@ -118,12 +121,30 @@ class PlantingSiteMapEditService(
               null
             },
             PlantingSiteEditSummaryItem.SiteAreaChanged(edit.areaHaDifference),
-        ) + edit.stratumEdits.filterNot { it.isNoOp() }.flatMap { summarizeStratumEdit(it) }
+        ) +
+            edit.stratumEdits
+                .filterNot { it.isNoOp() }
+                .flatMap { summarizeStratumEdit(it, plotNumbers) }
 
     return items.filter { it.depth <= depth }
   }
 
-  private fun summarizeStratumEdit(stratumEdit: StratumEdit): List<PlantingSiteEditSummaryItem> {
+  /** Returns the plot numbers of the existing plots referenced by an edit. */
+  private fun fetchPlotNumbers(edit: PlantingSiteEdit): Map<MonitoringPlotId, Long> {
+    val monitoringPlotIds =
+        edit.stratumEdits.flatMap { stratumEdit ->
+          stratumEdit.substratumEdits.flatMap { substratumEdit ->
+            substratumEdit.monitoringPlotEdits.mapNotNull { it.monitoringPlotId }
+          }
+        }
+
+    return plantingSiteStore.fetchMonitoringPlotNumbers(edit.existingModel.id, monitoringPlotIds)
+  }
+
+  private fun summarizeStratumEdit(
+      stratumEdit: StratumEdit,
+      plotNumbers: Map<MonitoringPlotId, Long>,
+  ): List<PlantingSiteEditSummaryItem> {
     val desiredModel = stratumEdit.desiredModel
     val existingModel = stratumEdit.existingModel
     val existingBoundary = existingModel?.boundary
@@ -169,7 +190,7 @@ class PlantingSiteMapEditService(
     val substratumItems =
         stratumEdit.substratumEdits
             .filterNot { it.isNoOp() }
-            .flatMap { summarizeSubstratumEdit(stratumName, it) }
+            .flatMap { summarizeSubstratumEdit(stratumName, it, plotNumbers) }
 
     return listOf(stratumItem) + monitoringPlotCreations + substratumItems
   }
@@ -177,6 +198,7 @@ class PlantingSiteMapEditService(
   private fun summarizeSubstratumEdit(
       stratumName: String,
       substratumEdit: SubstratumEdit,
+      plotNumbers: Map<MonitoringPlotId, Long>,
   ): List<PlantingSiteEditSummaryItem> {
     val substratumName = substratumEdit.existingModel?.name ?: substratumEdit.desiredModel!!.name
 
@@ -222,6 +244,7 @@ class PlantingSiteMapEditService(
                     stratumName,
                     substratumName,
                     plotEdit.monitoringPlotId,
+                    plotNumbers.getValue(plotEdit.monitoringPlotId),
                     plotEdit.permanentIndex,
                 )
             is MonitoringPlotEdit.Eject ->
@@ -229,12 +252,14 @@ class PlantingSiteMapEditService(
                     stratumName,
                     substratumName,
                     plotEdit.monitoringPlotId,
+                    plotNumbers.getValue(plotEdit.monitoringPlotId),
                 )
             is MonitoringPlotEdit.Accept ->
                 PlantingSiteEditSummaryItem.PlotAccepted(
                     stratumName,
                     substratumName,
                     plotEdit.monitoringPlotId,
+                    plotNumbers.getValue(plotEdit.monitoringPlotId),
                     plotEdit.permanentIndex,
                 )
           }
