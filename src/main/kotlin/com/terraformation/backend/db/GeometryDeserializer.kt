@@ -12,8 +12,15 @@ import tools.jackson.databind.DeserializationContext
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ValueDeserializer
 
-/** Deserializes GeoJSON strings into JTS [Geometry] objects of the appropriate types. */
-class GeometryDeserializer : ValueDeserializer<Geometry>() {
+/**
+ * Deserializes GeoJSON strings into JTS [Geometry] objects of the appropriate types.
+ *
+ * @param validateTopology If false, accept geometries with invalid topology such as
+ *   self-intersecting rings. Geometries with no coordinates are still rejected unless
+ *   [SKIP_VALIDATION] is set.
+ */
+open class GeometryDeserializer(private val validateTopology: Boolean = true) :
+    ValueDeserializer<Geometry>() {
   companion object {
     /**
      * Deserialization context attribute that, when true, accepts geometries with invalid topology
@@ -51,9 +58,11 @@ class GeometryDeserializer : ValueDeserializer<Geometry>() {
         }
 
     if (ctxt.getAttribute(SKIP_VALIDATION) != true) {
-      val error = IsValidOp(geometry).validationError
-      if (error != null) {
-        throw StreamReadException(jp, error.message)
+      if (validateTopology) {
+        val error = IsValidOp(geometry).validationError
+        if (error != null) {
+          throw StreamReadException(jp, error.message)
+        }
       }
 
       if (geometry.isEmpty) {
@@ -91,3 +100,10 @@ class GeometryDeserializer : ValueDeserializer<Geometry>() {
     return SubclassDeserializer(subclass)
   }
 }
+
+/**
+ * Deserializes GeoJSON geometries without checking their topology. For request payload fields whose
+ * geometries are reported as validation problems or stored as works in progress rather than
+ * rejected as malformed. Use with `@JsonDeserialize(using = ...)`.
+ */
+class UnvalidatedGeometryDeserializer : GeometryDeserializer(validateTopology = false)

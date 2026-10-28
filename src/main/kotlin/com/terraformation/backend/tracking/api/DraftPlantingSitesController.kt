@@ -9,6 +9,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.db.UnvalidatedGeometryDeserializer
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -32,9 +33,7 @@ import com.terraformation.backend.util.requirePolygonal
 import com.terraformation.backend.util.toMultiPolygon
 import com.terraformation.backend.util.toValidatedMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
@@ -53,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.multipart.MultipartFile
+import tools.jackson.databind.annotation.JsonDeserialize
 
 @RequestMapping("/api/v1/tracking/draftSites")
 @RestController
@@ -81,45 +81,35 @@ class DraftPlantingSitesController(
   }
 
   @ApiResponse200
-  @ApiResponse(
-      responseCode = "409",
+  @Operation(
+      summary = "Saves a draft of an in-progress planting site.",
       description =
-          "The typed map fields failed validation; nothing was saved. The problems list describes what is wrong.",
-      content =
-          [
-              Content(
-                  mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  schema = Schema(implementation = PlantingSiteMapInvalidResponsePayload::class),
-              )
-          ],
+          "The map is saved even if it has validation problems such as overlapping strata or " +
+              "self-intersecting polygons. Use the planting site validation endpoint to find them.",
   )
-  @Operation(summary = "Saves a draft of an in-progress planting site.")
   @PostMapping
   fun createDraftPlantingSite(
       @RequestBody payload: CreateDraftPlantingSiteRequestPayload
   ): CreateDraftPlantingSiteResponsePayload {
     payload.rejectDataWithTypedFields()
 
-    val dataMap = payload.data?.let { draftPlantingSiteMapConverter.parse(it) }
     val map =
-        dataMap
+        payload.data?.let { draftPlantingSiteMapConverter.parse(it) }
             ?: payload.toMapModel()
             ?: throw IllegalArgumentException("Site type is required when data is not supplied")
 
-    val newModel = payload.toModel(map)
-
-    val model =
-        if (dataMap != null) {
-          draftPlantingSiteStore.create(newModel)
-        } else {
-          draftPlantingSiteService.create(newModel)
-        }
+    val model = draftPlantingSiteStore.create(payload.toModel(map))
 
     return CreateDraftPlantingSiteResponsePayload(model.id!!)
   }
 
   @ApiResponse200
-  @Operation(summary = "Updates an existing draft of an in-progress planting site.")
+  @Operation(
+      summary = "Updates an existing draft of an in-progress planting site.",
+      description =
+          "The map is saved even if it has validation problems such as overlapping strata or " +
+              "self-intersecting polygons. Use the planting site validation endpoint to find them.",
+  )
   @PutMapping("/{id}")
   fun updateDraftPlantingSite(
       @PathVariable id: DraftPlantingSiteId,
@@ -241,7 +231,9 @@ data class DraftPlantingSitePayload(
 
 data class DraftSubstratumPayload(
     val id: DraftSubstratumId?,
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val boundary: Geometry,
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
+    val boundary: Geometry,
     val name: String,
 ) {
   constructor(model: DraftSubstratumModel) : this(model.id, model.boundary, model.name)
@@ -257,7 +249,9 @@ data class DraftSubstratumPayload(
 
 data class DraftStratumPayload(
     val id: DraftStratumId?,
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) val boundary: Geometry,
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
+    val boundary: Geometry,
     val initialPlantingDensity: BigDecimal,
     val name: String,
     val substrata: List<DraftSubstratumPayload>,
@@ -297,6 +291,7 @@ data class CreateDraftPlantingSiteRequestPayload(
             "Boundary of the site. Polygons are stored as MultiPolygons. Not allowed if data is supplied.",
         oneOf = [MultiPolygon::class, Polygon::class],
     )
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
     val boundary: Geometry? = null,
     @Schema(description = "Not allowed if data is supplied.") val boundarySource: String? = null,
     @Schema(deprecated = true, description = DATA_DESCRIPTION)
@@ -306,6 +301,7 @@ data class CreateDraftPlantingSiteRequestPayload(
         description = "Exclusion area. Not allowed if data is supplied.",
         oneOf = [MultiPolygon::class, Polygon::class],
     )
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
     val exclusion: Geometry? = null,
     val name: String,
     @Schema(deprecated = true, description = "Ignored; the server computes this.")
@@ -420,6 +416,7 @@ data class UpdateDraftPlantingSiteRequestPayload(
                 "entirely, so omitted fields are cleared.",
         oneOf = [MultiPolygon::class, Polygon::class],
     )
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
     val boundary: Geometry? = null,
     @Schema(description = "Not allowed if data is supplied.") val boundarySource: String? = null,
     @Schema(deprecated = true, description = DATA_DESCRIPTION)
@@ -429,6 +426,7 @@ data class UpdateDraftPlantingSiteRequestPayload(
         description = "Exclusion area. Not allowed if data is supplied.",
         oneOf = [MultiPolygon::class, Polygon::class],
     )
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
     val exclusion: Geometry? = null,
     val name: String,
     @Schema(deprecated = true, description = "Ignored; the server computes this.")

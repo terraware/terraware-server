@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking
 
-import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.gis.GeometryFileParser
 import com.terraformation.backend.gis.InvalidGeometryException
 import com.terraformation.backend.gis.NoPolygonsException
@@ -9,10 +8,7 @@ import com.terraformation.backend.gis.UnsupportedGeometryFileFormatException
 import com.terraformation.backend.gis.convertToXY
 import com.terraformation.backend.gis.extractPolygons
 import com.terraformation.backend.gis.mergeToMultiPolygon
-import com.terraformation.backend.tracking.db.DraftPlantingSiteStore
-import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.BoundaryFileModel
-import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import kotlinx.coroutines.Dispatchers
@@ -24,33 +20,10 @@ import org.locationtech.jts.geom.TopologyException
 
 @Named
 class DraftPlantingSiteService(
-    private val draftPlantingSiteStore: DraftPlantingSiteStore,
     private val geometryFileParser: GeometryFileParser,
 ) {
   companion object {
     private const val MAX_BOUNDARY_VERTICES = 50000
-  }
-
-  /**
-   * Validates a draft's map and, if it is valid, stores the draft. Permission is checked first so
-   * callers without access get a permission error instead of the results of validation.
-   *
-   * @throws PlantingSiteMapInvalidException The map failed validation. Nothing is stored.
-   * @throws IllegalArgumentException The map's geometries couldn't be compared with one another.
-   */
-  fun create(model: DraftPlantingSiteModel): DraftPlantingSiteModel {
-    requirePermissions { createDraftPlantingSite(model.organizationId) }
-
-    val plantingSiteModel =
-        try {
-          model.toPlantingSiteModel()
-        } catch (e: TopologyException) {
-          throw IllegalArgumentException("Planting site map has invalid geometry", e)
-        }
-
-    plantingSiteModel.requireValid()
-
-    return draftPlantingSiteStore.create(model)
   }
 
   /**
