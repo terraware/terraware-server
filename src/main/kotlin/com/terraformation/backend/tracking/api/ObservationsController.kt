@@ -329,10 +329,11 @@ class ObservationsController(
     observationService.completePlot(
         observationId = observationId,
         monitoringPlotId = plotId,
+        biomassDetails = payload.biomassMeasurements?.toModel(),
         conditions = payload.conditions,
         notes = payload.notes,
         observedTime = payload.observedTime,
-        plants = payload.plants.map { plantPayloadToRow(it, payload.lngFirst ?: false) },
+        plants = payload.plants?.map { plantPayloadToRow(it, payload.lngFirst ?: false) },
     )
 
     return SimpleSuccessResponsePayload()
@@ -1008,13 +1009,22 @@ data class CompleteAdHocObservationResponsePayload(
 ) : SuccessResponsePayload
 
 data class CompletePlotObservationRequestPayload(
+    @Schema(
+        description =
+            "Biomass measurements. Required for biomass observations; omitted for monitoring observations."
+    )
+    val biomassMeasurements: NewBiomassMeasurementPayload? = null,
     val conditions: Set<ObservableCondition>,
     @Schema(description = "Use longitude first in coordinate system. Defaults to false.")
     val lngFirst: Boolean?,
     val notes: String?,
     @Schema(description = "Date and time the observation was performed in the field.")
     val observedTime: Instant,
-    val plants: List<RecordedPlantPayload>,
+    @Schema(
+        description =
+            "Recorded plants. Required for monitoring observations; omitted or empty for biomass observations."
+    )
+    val plants: List<RecordedPlantPayload>?,
 )
 
 data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :

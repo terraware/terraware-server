@@ -762,14 +762,17 @@ class ObservationService(
   fun completePlot(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
+      biomassDetails: NewBiomassDetailsModel? = null,
       conditions: Set<ObservableCondition>,
       notes: String?,
       observedTime: Instant,
-      plants: Collection<RecordedPlantsRow>,
+      plants: Collection<RecordedPlantsRow>? = null,
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    entityLocker.withLockedObservation(observationId) { _ ->
+    entityLocker.withLockedObservation(observationId) { observation ->
+      validateObservationData(observation.observationType, biomassDetails, plants)
+
       val plotStatus =
           dslContext.fetchValue(
               OBSERVATION_PLOTS.STATUS_ID,
@@ -784,13 +787,15 @@ class ObservationService(
         throw PlotAlreadyCompletedException(monitoringPlotId)
       }
 
+      biomassDetails?.let { biomassStore.insertBiomassDetails(observationId, monitoringPlotId, it) }
+
       observationStore.completePlot(
           observationId,
           monitoringPlotId,
           conditions,
           notes,
           observedTime,
-          plants,
+          plants.orEmpty(),
       )
     }
   }
@@ -864,20 +869,23 @@ class ObservationService(
   private fun validateObservationData(
       observationType: ObservationType,
       biomassDetails: NewBiomassDetailsModel?,
-      plants: Collection<RecordedPlantsRow>,
+      plants: Collection<RecordedPlantsRow>?,
   ) {
     when (observationType) {
       ObservationType.BiomassMeasurements -> {
         if (biomassDetails == null) {
           throw IllegalArgumentException("Biomass observations must contain biomass details")
         }
-        if (plants.isNotEmpty()) {
+        if (!plants.isNullOrEmpty()) {
           throw IllegalArgumentException("Biomass observations must not contain plants")
         }
       }
       ObservationType.Monitoring -> {
         if (biomassDetails != null) {
           throw IllegalArgumentException("Monitoring observations must not contain biomass details")
+        }
+        if (plants == null) {
+          throw IllegalArgumentException("Monitoring observations must contain plants")
         }
       }
     }

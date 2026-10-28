@@ -39,6 +39,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
 import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
@@ -50,9 +51,12 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationMediaFil
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -105,12 +109,14 @@ import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
+import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
@@ -2835,6 +2841,48 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `completes biomass plots using the same observation-wide species`() {
+      val (observationId, plotIds) =
+          insertObservationWithPlots(ObservationType.BiomassMeasurements, plotCount = 2)
+      val details = biomassDetails()
+
+      plotIds.forEach { plotId ->
+        service.completePlot(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            biomassDetails = details,
+            conditions = emptySet(),
+            notes = null,
+            observedTime = clock.instant(),
+        )
+      }
+
+      val speciesId = dslContext.fetchSingle(OBSERVATION_BIOMASS_SPECIES).id
+      val recordedTrees = dslContext.fetch(RECORDED_TREES)
+
+      assertEquals(
+          plotIds.sorted(),
+          recordedTrees.map { it.monitoringPlotId }.sorted(),
+          "Monitoring plot IDs",
+      )
+      assertEquals(
+          listOf(speciesId, speciesId),
+          recordedTrees.map { it.biomassSpeciesId },
+          "Biomass species IDs",
+      )
+      assertEquals(
+          setOf(ObservationPlotStatus.Completed),
+          dslContext
+              .fetch(OBSERVATION_PLOTS)
+              .filter { it.observationId == observationId }
+              .map { it.statusId }
+              .toSet(),
+          "Plot statuses",
+      )
+      eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
+    }
+
+    @Test
     fun `records plants for monitoring plots`() {
       val (observationId, plotIds) = insertObservationWithPlots(ObservationType.Monitoring)
       val speciesId = insertSpecies()
@@ -2868,6 +2916,96 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           recordedPlantsDao.findAll().single().copy(id = null),
           "Recorded plants",
       )
+      assertTableEmpty(OBSERVATION_BIOMASS_DETAILS)
+    }
+
+    @Test
+    fun `rejects data that does not match the observation type`() {
+      val (biomassObservationId, biomassPlotIds) =
+          insertObservationWithPlots(ObservationType.BiomassMeasurements)
+      val (monitoringObservationId, monitoringPlotIds) =
+          insertObservationWithPlots(ObservationType.Monitoring, xOffset = 2)
+      val biomassPlotId = biomassPlotIds.single()
+      val monitoringPlotId = monitoringPlotIds.single()
+      val plants =
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = point(1),
+                  speciesName = "Other",
+                  statusId = RecordedPlantStatus.Live,
+              )
+          )
+
+      val missingBiomassDetailsException =
+          assertThrows<IllegalArgumentException> {
+            service.completePlot(
+                observationId = biomassObservationId,
+                monitoringPlotId = biomassPlotId,
+                conditions = emptySet(),
+                notes = null,
+                observedTime = clock.instant(),
+            )
+          }
+
+      assertEquals(
+          "Biomass observations must contain biomass details",
+          missingBiomassDetailsException.message,
+      )
+
+      val plantsForBiomassException =
+          assertThrows<IllegalArgumentException> {
+            service.completePlot(
+                observationId = biomassObservationId,
+                monitoringPlotId = biomassPlotId,
+                biomassDetails = biomassDetails(),
+                conditions = emptySet(),
+                notes = null,
+                observedTime = clock.instant(),
+                plants = plants,
+            )
+          }
+
+      assertEquals(
+          "Biomass observations must not contain plants",
+          plantsForBiomassException.message,
+      )
+
+      val biomassForMonitoringException =
+          assertThrows<IllegalArgumentException> {
+            service.completePlot(
+                observationId = monitoringObservationId,
+                monitoringPlotId = monitoringPlotId,
+                biomassDetails = biomassDetails(),
+                conditions = emptySet(),
+                notes = null,
+                observedTime = clock.instant(),
+                plants = emptyList(),
+            )
+          }
+
+      assertEquals(
+          "Monitoring observations must not contain biomass details",
+          biomassForMonitoringException.message,
+      )
+
+      val missingMonitoringPlantsException =
+          assertThrows<IllegalArgumentException> {
+            service.completePlot(
+                observationId = monitoringObservationId,
+                monitoringPlotId = monitoringPlotId,
+                conditions = emptySet(),
+                notes = null,
+                observedTime = clock.instant(),
+            )
+          }
+
+      assertEquals(
+          "Monitoring observations must contain plants",
+          missingMonitoringPlantsException.message,
+      )
+      assertTableEmpty(OBSERVATION_BIOMASS_DETAILS)
+      assertTableEmpty(RECORDED_PLANTS)
     }
 
     @ParameterizedTest
@@ -2937,11 +3075,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationType: ObservationType,
         plotCount: Int = 1,
         plotStatus: ObservationPlotStatus = ObservationPlotStatus.Claimed,
+        xOffset: Int = 0,
     ): Pair<ObservationId, List<MonitoringPlotId>> {
       val observationId = insertObservation(observationType = observationType)
       val plotIds =
           List(plotCount) { index ->
-            insertMonitoringPlot(x = index * 2).also { plotId ->
+            insertMonitoringPlot(x = xOffset + index * 2).also { plotId ->
               insertObservationPlot(
                   claimedBy = user.userId,
                   claimedTime = Instant.EPOCH,
@@ -2953,6 +3092,44 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           }
 
       return observationId to plotIds
+    }
+
+    private fun biomassDetails(): NewBiomassDetailsModel {
+      val species =
+          setOf(
+              BiomassSpeciesModel(
+                  commonName = "Shared common name",
+                  isInvasive = false,
+                  isThreatened = false,
+                  scientificName = "Shared species",
+              )
+          )
+      val trees =
+          listOf(
+              NewRecordedTreeModel(
+                  id = null,
+                  diameterAtBreastHeightCm = BigDecimal.ONE,
+                  gpsCoordinates = null,
+                  heightM = BigDecimal.ONE,
+                  isDead = false,
+                  pointOfMeasurementM = BigDecimal("1.3"),
+                  speciesName = "Shared species",
+                  treeGrowthForm = TreeGrowthForm.Tree,
+                  treeNumber = 1,
+                  trunkNumber = 1,
+              )
+          )
+
+      return NewBiomassDetailsModel(
+          forestType = BiomassForestType.Terrestrial,
+          herbaceousCoverPercent = 0,
+          observationId = null,
+          smallTreeCountRange = 0 to 0,
+          soilAssessment = "Soil",
+          species = species,
+          plotId = null,
+          trees = trees,
+      )
     }
   }
 
