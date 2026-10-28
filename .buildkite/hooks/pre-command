@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+# Mark this checkout as in use for the upload script's stale-checkout purge.
+touch "$BUILDKITE_BUILD_CHECKOUT_PATH"
+
 # Define tier based on branch/tag
 if [[ "${BUILDKITE_TAG:-}" =~ ^v[0-9]+\.[0-9.]+ ]]; then
     TIER=PROD
