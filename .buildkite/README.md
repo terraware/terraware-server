@@ -79,9 +79,9 @@ would compare main against itself and the promotion steps would never fire.
 ## Checkout directories
 
 Steps that reuse the checkout share a copy dedicated to that build. This prevents another build's
-pipeline upload job from replacing the checkout on the same agent between steps. The final pipeline
-step removes the copy; the upload script also purges copies that haven't been used for six hours as
-a backstop.
+pipeline upload job from replacing the checkout on the same agent between steps. A cleanup step
+removes the copy once all the steps that use it have finished; the upload script also purges copies
+that haven't been used for six hours as a backstop.
 
 ## Build environment
 

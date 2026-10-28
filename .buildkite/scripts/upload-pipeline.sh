@@ -23,5 +23,6 @@ find "$(dirname "$BUILDKITE_BUILD_CHECKOUT_PATH")" -maxdepth 1 -type d \
     -name "$(basename "$BUILDKITE_BUILD_CHECKOUT_PATH")-build-*" -mmin +360 -exec rm -rf {} +
 rm -rf "$PER_BUILD_CHECKOUT_PATH"
 cp -a "$BUILDKITE_BUILD_CHECKOUT_PATH" "$PER_BUILD_CHECKOUT_PATH"
+touch "$PER_BUILD_CHECKOUT_PATH"
 
 buildkite-agent pipeline upload "$pipeline_file"
