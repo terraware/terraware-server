@@ -48,6 +48,8 @@ common:
   - &use-existing-checkout
     checkout:
       skip: true
+    env: &use-existing-checkout-env
+      BUILDKITE_BUILD_CHECKOUT_PATH: "${PER_BUILD_CHECKOUT_PATH?}"
     retry:
       manual:
         allowed: false
@@ -111,6 +113,7 @@ steps:
           s3-upload-acl: "private"
     command: .buildkite/scripts/run-external-tests.sh
     env:
+      <<: *use-existing-checkout-env
       TEST_S3_BUCKET_NAME: "terraformation-buildkite-test"
 
   - <<: *use-existing-checkout
@@ -276,6 +279,14 @@ steps:
     plugins:
       - *load-secrets
     command: .buildkite/scripts/deploy-main-docs.sh
+
+  - wait: ~
+    continue_on_failure: true
+
+  - <<: *use-existing-checkout
+    label: ":broom: Remove build checkout"
+    key: "remove-checkout"
+    command: 'cd / && rm -rf "$$BUILDKITE_BUILD_CHECKOUT_PATH"'
 
 notify:
   - slack:

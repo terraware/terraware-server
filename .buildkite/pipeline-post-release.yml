@@ -25,6 +25,8 @@ common:
   - &use-existing-checkout
     checkout:
       skip: true
+    env: &use-existing-checkout-env
+      BUILDKITE_BUILD_CHECKOUT_PATH: "${PER_BUILD_CHECKOUT_PATH?}"
     retry:
       manual:
         allowed: false
@@ -50,3 +52,11 @@ steps:
       - cache#v1.12.0:
           <<: *cache-gradle-home-args
     command: .buildkite/scripts/deploy-release-docs.sh
+
+  - wait: ~
+    continue_on_failure: true
+
+  - <<: *use-existing-checkout
+    label: ":broom: Remove build checkout"
+    key: "remove-checkout"
+    command: 'cd / && rm -rf "$$BUILDKITE_BUILD_CHECKOUT_PATH"'
