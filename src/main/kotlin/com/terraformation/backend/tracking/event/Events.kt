@@ -472,6 +472,40 @@ typealias ObservationPlotCoordinatesEditedEvent = ObservationPlotCoordinatesEdit
 typealias ObservationPlotCoordinatesEditedEventValues =
     ObservationPlotCoordinatesEditedEventV1.Values
 
+sealed interface BiomassAdditionalSpeciesPersistentEvent : PersistentEvent {
+  val biomassSpeciesId: BiomassSpeciesId
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+  val speciesId: SpeciesId?
+  val speciesName: String
+}
+
+data class BiomassAdditionalSpeciesCreatedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassAdditionalSpeciesPersistentEvent, EntityCreatedPersistentEvent
+
+typealias BiomassAdditionalSpeciesCreatedEvent = BiomassAdditionalSpeciesCreatedEventV1
+
+data class BiomassAdditionalSpeciesDeletedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String,
+) : BiomassAdditionalSpeciesPersistentEvent, EntityDeletedPersistentEvent
+
+typealias BiomassAdditionalSpeciesDeletedEvent = BiomassAdditionalSpeciesDeletedEventV1
+
 sealed interface BiomassDetailsPersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId
   val observationId: ObservationId

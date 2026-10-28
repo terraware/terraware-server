@@ -57,6 +57,8 @@ import com.terraformation.backend.seedbank.event.ViabilityTestDeletedEvent
 import com.terraformation.backend.seedbank.event.ViabilityTestPersistentEvent
 import com.terraformation.backend.seedbank.event.WithdrawalDeletedEvent
 import com.terraformation.backend.seedbank.event.WithdrawalPersistentEvent
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesDeletedEvent
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesCreatedEvent
@@ -179,6 +181,44 @@ data class AccessionPhotoSubjectPayload(
           fileId = event.fileId,
           fullText = context.subjectFullText<AccessionPhotoSubjectPayload>(filename),
           shortText = context.subjectShortText<AccessionPhotoSubjectPayload>(),
+      )
+    }
+  }
+}
+
+@JsonTypeName("BiomassAdditionalSpecies")
+data class BiomassAdditionalSpeciesSubjectPayload(
+    override val deleted: Boolean?,
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val plantingSiteId: PlantingSiteId,
+    val scientificName: String?,
+    override val shortText: String,
+    val speciesId: SpeciesId?,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: BiomassAdditionalSpeciesPersistentEvent,
+        context: EventLogPayloadContext,
+    ): BiomassAdditionalSpeciesSubjectPayload {
+      val latestEvent =
+          context.lastEvent<BiomassAdditionalSpeciesPersistentEvent> {
+            it.biomassSpeciesId == event.biomassSpeciesId &&
+                it.monitoringPlotId == event.monitoringPlotId &&
+                it.observationId == event.observationId
+          }
+
+      return BiomassAdditionalSpeciesSubjectPayload(
+          deleted = if (latestEvent is BiomassAdditionalSpeciesDeletedEvent) true else null,
+          fullText =
+              context.subjectFullText<BiomassAdditionalSpeciesSubjectPayload>(event.speciesName),
+          monitoringPlotId = event.monitoringPlotId,
+          observationId = event.observationId,
+          plantingSiteId = event.plantingSiteId,
+          scientificName = if (event.speciesId == null) event.speciesName else null,
+          shortText = context.subjectShortText<BiomassAdditionalSpeciesSubjectPayload>(),
+          speciesId = event.speciesId,
       )
     }
   }
@@ -1137,6 +1177,7 @@ data class WithdrawalSubjectPayload(
 enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   Accession(AccessionPersistentEvent::class),
   AccessionPhoto(AccessionPhotoPersistentEvent::class),
+  BiomassAdditionalSpecies(BiomassAdditionalSpeciesPersistentEvent::class),
   BiomassDetails(BiomassDetailsPersistentEvent::class),
   BiomassQuadrat(BiomassQuadratPersistentEvent::class),
   BiomassQuadratSpecies(BiomassQuadratSpeciesPersistentEvent::class),

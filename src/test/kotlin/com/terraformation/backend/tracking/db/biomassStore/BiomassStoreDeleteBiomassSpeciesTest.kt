@@ -5,6 +5,7 @@ import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.tracking.db.BiomassSpeciesNotFoundException
+import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesDeletedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesDeletedEvent
 import io.mockk.every
 import java.math.BigDecimal
@@ -53,6 +54,15 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
     )
     eventPublisher.assertExactEventsPublished(
         listOf(
+            BiomassAdditionalSpeciesDeletedEvent(
+                biomassSpeciesId = biomassSpeciesId,
+                monitoringPlotId = inserted.monitoringPlotId,
+                observationId = inserted.observationId,
+                organizationId = inserted.organizationId,
+                plantingSiteId = inserted.plantingSiteId,
+                speciesId = speciesId,
+                speciesName = "Existing species",
+            ),
             BiomassSpeciesDeletedEvent(
                 biomassSpeciesId = biomassSpeciesId,
                 commonName = "Existing common",
@@ -64,9 +74,23 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
                 scientificName = null,
                 speciesId = speciesId,
                 speciesName = "Existing species",
-            )
+            ),
         )
     )
+  }
+
+  @Test
+  fun `does not publish additional species deletion if species was not additional in plot`() {
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+    val speciesId = insertSpecies()
+    insertObservationBiomassSpecies(speciesId = speciesId)
+
+    deleteBiomassSpecies(speciesId)
+
+    assertTableEmpty(OBSERVATION_BIOMASS_SPECIES, "Biomass species after deletion")
+    eventPublisher.assertEventPublished { it is BiomassSpeciesDeletedEvent }
+    eventPublisher.assertEventNotPublished<BiomassAdditionalSpeciesDeletedEvent>()
   }
 
   @Test
@@ -94,6 +118,7 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
         "Biomass species after rejecting deletion of referenced species",
     )
     eventPublisher.assertEventNotPublished<BiomassSpeciesDeletedEvent>()
+    eventPublisher.assertEventNotPublished<BiomassAdditionalSpeciesDeletedEvent>()
   }
 
   @Test
