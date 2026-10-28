@@ -232,7 +232,7 @@ steps:
     command: "true"
 
   - <<: *use-existing-checkout
-    label: ":broom: Remove build checkout"
+    label: ":broom: Clean up build checkout"
     key: "remove-checkout"
     depends_on:
       - "graphite-ci-optimizer"
@@ -248,7 +248,7 @@ steps:
       - "promote-script-cache"
       - "promote-buildx-cache"
     allow_dependency_failure: true
-    command: 'cd / && rm -rf "$$BUILDKITE_BUILD_CHECKOUT_PATH"'
+    command: 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
