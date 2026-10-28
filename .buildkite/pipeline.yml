@@ -248,7 +248,10 @@ steps:
       - "promote-script-cache"
       - "promote-buildx-cache"
     allow_dependency_failure: true
-    command: 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
+    command:
+      - "./gradlew --stop"
+      - 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
+    soft_fail: true
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
