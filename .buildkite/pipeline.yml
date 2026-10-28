@@ -251,7 +251,6 @@ steps:
     command:
       - "./gradlew --stop"
       - 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
-    soft_fail: true
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
@@ -263,6 +262,7 @@ steps:
       - "promote-gradle-cache"
       - "promote-node-cache"
       - "promote-script-cache"
+      - "remove-checkout"
     if: "build.branch == 'main' || build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
       - *load-secrets

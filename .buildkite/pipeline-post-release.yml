@@ -62,4 +62,3 @@ steps:
     command:
       - "./gradlew --stop"
       - 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
-    soft_fail: true
