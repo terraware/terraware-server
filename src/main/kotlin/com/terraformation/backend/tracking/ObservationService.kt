@@ -782,21 +782,7 @@ class ObservationService(
       throw PlantingSiteNotDetailedException(plantingSiteId)
     }
 
-    when (observationType) {
-      ObservationType.BiomassMeasurements -> {
-        if (biomassDetails == null) {
-          throw IllegalArgumentException("Biomass observations must contain biomass details")
-        }
-        if (plants.isNotEmpty()) {
-          throw IllegalArgumentException("Biomass observations must not contain plants")
-        }
-      }
-      ObservationType.Monitoring -> {
-        if (biomassDetails != null) {
-          throw IllegalArgumentException("Monitoring observations must not contain biomass details")
-        }
-      }
-    }
+    validateObservationData(observationType, biomassDetails, plants)
 
     val effectiveTimeZone = parentStore.getEffectiveTimeZone(plantingSiteId)
     val date = LocalDate.ofInstant(observedTime, effectiveTimeZone)
@@ -835,6 +821,28 @@ class ObservationService(
       )
 
       observationId to plotId
+    }
+  }
+
+  private fun validateObservationData(
+      observationType: ObservationType,
+      biomassDetails: NewBiomassDetailsModel?,
+      plants: Collection<RecordedPlantsRow>,
+  ) {
+    when (observationType) {
+      ObservationType.BiomassMeasurements -> {
+        if (biomassDetails == null) {
+          throw IllegalArgumentException("Biomass observations must contain biomass details")
+        }
+        if (plants.isNotEmpty()) {
+          throw IllegalArgumentException("Biomass observations must not contain plants")
+        }
+      }
+      ObservationType.Monitoring -> {
+        if (biomassDetails != null) {
+          throw IllegalArgumentException("Monitoring observations must not contain biomass details")
+        }
+      }
     }
   }
 
