@@ -76,6 +76,14 @@ manifest files changed. Note that `if_changed` needs the `BUILDKITE_GIT_DIFF_BAS
 in the upload step (see above) to work correctly on main; without it, the diff on a main build
 would compare main against itself and the promotion steps would never fire.
 
+## Checkout directories
+
+Steps that reuse the checkout share a copy dedicated to that build. This prevents another build's
+pipeline upload job from replacing the checkout on the same agent between steps. A cleanup step
+deletes the copy's contents once all the steps that use it have finished, leaving the directory
+itself in place because the agent's exit hooks run there. The upload script then purges directories
+that haven't been used for six hours.
+
 ## Build environment
 
 As currently configured, our Buildkite builds run on EC2 instances in a dedicated VPC. The

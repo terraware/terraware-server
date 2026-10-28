@@ -48,6 +48,8 @@ common:
   - &use-existing-checkout
     checkout:
       skip: true
+    env: &use-existing-checkout-env
+      BUILDKITE_BUILD_CHECKOUT_PATH: "${PER_BUILD_CHECKOUT_PATH?}"
     retry:
       manual:
         allowed: false
@@ -111,6 +113,7 @@ steps:
           s3-upload-acl: "private"
     command: .buildkite/scripts/run-external-tests.sh
     env:
+      <<: *use-existing-checkout-env
       TEST_S3_BUCKET_NAME: "terraformation-buildkite-test"
 
   - <<: *use-existing-checkout
@@ -227,6 +230,25 @@ steps:
           save: "pipeline"
           force: true
     command: "true"
+
+  - <<: *use-existing-checkout
+    label: ":broom: Clean up build checkout"
+    key: "remove-checkout"
+    depends_on:
+      - "graphite-ci-optimizer"
+      - "build"
+      - "run-tests"
+      - "external-tests"
+      - "compare-openapi"
+      - "check-scripts"
+      - "junit-annotate"
+      - "docker"
+      - "promote-gradle-cache"
+      - "promote-node-cache"
+      - "promote-script-cache"
+      - "promote-buildx-cache"
+    allow_dependency_failure: true
+    command: 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
