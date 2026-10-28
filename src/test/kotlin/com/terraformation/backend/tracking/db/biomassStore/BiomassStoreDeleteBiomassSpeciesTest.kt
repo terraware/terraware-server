@@ -94,6 +94,53 @@ class BiomassStoreDeleteBiomassSpeciesTest : BaseBiomassStoreTest() {
   }
 
   @Test
+  fun `deletes species only from the current plot while another plot uses it`() {
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+    val speciesId = insertSpecies(scientificName = "Shared additional species")
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    val firstPlotId = inserted.monitoringPlotId
+    val secondPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+    insertObservationBiomassAdditionalSpecies()
+    val expectedBiomassSpecies = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    eventPublisher.clear()
+
+    deleteBiomassSpecies(speciesId)
+
+    assertTableEquals(expectedBiomassSpecies, "Biomass species")
+    val remainingAdditionalSpecies =
+        ObservationBiomassAdditionalSpeciesRecord(
+            biomassSpeciesId = biomassSpeciesId,
+            monitoringPlotId = firstPlotId,
+            observationId = inserted.observationId,
+        )
+    assertTableEquals(remainingAdditionalSpecies, "Additional species")
+    eventPublisher.assertExactEventsPublished(
+        listOf(
+            BiomassAdditionalSpeciesDeletedEvent(
+                biomassSpeciesId = biomassSpeciesId,
+                monitoringPlotId = secondPlotId,
+                observationId = inserted.observationId,
+                organizationId = inserted.organizationId,
+                plantingSiteId = inserted.plantingSiteId,
+                speciesId = speciesId,
+                speciesName = "Shared additional species",
+            )
+        )
+    )
+
+    eventPublisher.clear()
+    assertThrows<BiomassSpeciesNotFoundException> { deleteBiomassSpecies(speciesId) }
+    assertTableEquals(expectedBiomassSpecies, "Biomass species")
+    assertTableEquals(remainingAdditionalSpecies, "Additional species")
+    eventPublisher.assertNoEventsPublished()
+  }
+
+  @Test
   fun `keeps species referenced by trees or quadrat entries`() {
     insertObservationPlot()
     insertObservationBiomassDetails()

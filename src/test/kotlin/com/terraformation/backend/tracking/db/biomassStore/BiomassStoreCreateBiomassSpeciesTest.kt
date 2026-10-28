@@ -4,11 +4,13 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.event.BiomassAdditionalSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import io.mockk.every
+import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -127,6 +129,78 @@ class BiomassStoreCreateBiomassSpeciesTest : BaseBiomassStoreTest() {
                 speciesName = "Other species",
             ),
         )
+    )
+  }
+
+  @Test
+  fun `adds an observation species as additional in another plot without creating it again`() {
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+    val speciesId = insertSpecies(scientificName = "Shared species")
+    val biomassSpeciesId = insertObservationBiomassSpecies(speciesId = speciesId)
+    insertObservationBiomassAdditionalSpecies()
+
+    val secondPlotId = insertMonitoringPlot(isAdHoc = true)
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+    val expectedBiomassSpecies = dslContext.fetch(OBSERVATION_BIOMASS_SPECIES)
+    val expectedAdditionalSpecies = dslContext.fetch(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES)
+    eventPublisher.clear()
+
+    createBiomassSpecies(speciesId)
+
+    assertTableEquals(expectedBiomassSpecies, "Biomass species")
+    assertTableEquals(
+        expectedAdditionalSpecies +
+            ObservationBiomassAdditionalSpeciesRecord(
+                biomassSpeciesId = biomassSpeciesId,
+                monitoringPlotId = secondPlotId,
+                observationId = inserted.observationId,
+            ),
+        "Additional species by plot",
+    )
+    eventPublisher.assertExactEventsPublished(
+        listOf(
+            BiomassAdditionalSpeciesCreatedEvent(
+                biomassSpeciesId = biomassSpeciesId,
+                monitoringPlotId = secondPlotId,
+                observationId = inserted.observationId,
+                organizationId = inserted.organizationId,
+                plantingSiteId = inserted.plantingSiteId,
+                speciesId = speciesId,
+                speciesName = "Shared species",
+            )
+        )
+    )
+  }
+
+  @Test
+  fun `rejects a species already measured in the plot`() {
+    insertObservationPlot()
+    insertObservationBiomassDetails()
+
+    val treeSpeciesId = insertSpecies()
+    val treeBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = treeSpeciesId)
+    insertRecordedTree(
+        biomassSpeciesId = treeBiomassSpeciesId,
+        diameterAtBreastHeightCm = BigDecimal.ONE,
+        pointOfMeasurementM = BigDecimal("1.3"),
+    )
+    val quadratSpeciesId = insertSpecies()
+    val quadratBiomassSpeciesId = insertObservationBiomassSpecies(speciesId = quadratSpeciesId)
+    insertObservationBiomassQuadratDetails()
+    insertObservationBiomassQuadratSpecies(
+        biomassSpeciesId = quadratBiomassSpeciesId,
+        abundanceCount = 1,
+    )
+
+    assertEquals(
+        "Biomass species already exists in observation plot",
+        assertThrows<IllegalArgumentException> { createBiomassSpecies(treeSpeciesId) }.message,
+    )
+    assertEquals(
+        "Biomass species already exists in observation plot",
+        assertThrows<IllegalArgumentException> { createBiomassSpecies(quadratSpeciesId) }.message,
     )
   }
 

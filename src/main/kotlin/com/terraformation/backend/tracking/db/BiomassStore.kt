@@ -860,26 +860,66 @@ class BiomassStore(
       val speciesCondition =
           speciesId?.let { OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(it) }
               ?: OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME.eq(scientificName)
-      val alreadyExists =
-          dslContext.fetchExists(
-              OBSERVATION_BIOMASS_SPECIES,
-              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(observationId).and(speciesCondition),
-          )
-      if (alreadyExists) {
-        throw IllegalArgumentException("Biomass species already exists in observation plot")
-      }
-
+      val existingBiomassSpecies =
+          dslContext
+              .selectFrom(OBSERVATION_BIOMASS_SPECIES)
+              .where(OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(observationId))
+              .and(speciesCondition)
+              .fetchOne()
       val biomassSpeciesId =
-          insertBiomassSpecies(
-              observationId,
-              monitoringPlotId,
-              speciesId,
-              scientificName,
-              commonName,
-              isInvasive,
-              isThreatened,
-              organizationId = organizationId,
-          )
+          if (existingBiomassSpecies == null) {
+            insertBiomassSpecies(
+                observationId,
+                monitoringPlotId,
+                speciesId,
+                scientificName,
+                commonName,
+                isInvasive,
+                isThreatened,
+                organizationId = organizationId,
+            )
+          } else {
+            val existingId = existingBiomassSpecies.id!!
+            val isAdditionalInPlot =
+                dslContext.fetchExists(
+                    OBSERVATION_BIOMASS_ADDITIONAL_SPECIES,
+                    OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.OBSERVATION_ID.eq(observationId)
+                        .and(
+                            OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.MONITORING_PLOT_ID.eq(
+                                monitoringPlotId
+                            )
+                        )
+                        .and(
+                            OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.BIOMASS_SPECIES_ID.eq(existingId)
+                        ),
+                )
+            val isMeasuredInPlot =
+                dslContext.fetchExists(
+                    RECORDED_TREES,
+                    RECORDED_TREES.OBSERVATION_ID.eq(observationId)
+                        .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                        .and(RECORDED_TREES.BIOMASS_SPECIES_ID.eq(existingId)),
+                ) ||
+                    dslContext.fetchExists(
+                        OBSERVATION_BIOMASS_QUADRAT_SPECIES,
+                        OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID.eq(observationId)
+                            .and(
+                                OBSERVATION_BIOMASS_QUADRAT_SPECIES.MONITORING_PLOT_ID.eq(
+                                    monitoringPlotId
+                                )
+                            )
+                            .and(
+                                OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(
+                                    existingId
+                                )
+                            ),
+                    )
+            if (isAdditionalInPlot || isMeasuredInPlot) {
+              throw IllegalArgumentException("Biomass species already exists in observation plot")
+            }
+
+            existingId
+          }
 
       with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
         dslContext
@@ -921,17 +961,21 @@ class BiomassStore(
       validateBiomassSpeciesPlot(observationId, monitoringPlotId)
       val biomassSpecies = fetchBiomassSpecies(speciesId, scientificName, observationId)
       val biomassSpeciesId = biomassSpecies.id!!
-      val hasRecordedTrees =
+      val hasRecordedTreesInPlot =
           dslContext.fetchExists(
               RECORDED_TREES,
-              RECORDED_TREES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+              RECORDED_TREES.OBSERVATION_ID.eq(observationId)
+                  .and(RECORDED_TREES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(RECORDED_TREES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId)),
           )
-      val hasQuadratSpecies =
+      val hasQuadratSpeciesInPlot =
           dslContext.fetchExists(
               OBSERVATION_BIOMASS_QUADRAT_SPECIES,
-              OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId)),
           )
-      if (hasRecordedTrees || hasQuadratSpecies) {
+      if (hasRecordedTreesInPlot || hasQuadratSpeciesInPlot) {
         throw IllegalArgumentException(
             "Biomass species is still referenced by trees or quadrat entries"
         )
@@ -966,7 +1010,26 @@ class BiomassStore(
         )
       }
 
-      deleteBiomassSpeciesRow(biomassSpecies, monitoringPlotId, isImplicit = false)
+      val hasRecordedTrees =
+          dslContext.fetchExists(
+              RECORDED_TREES,
+              RECORDED_TREES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+          )
+      val hasQuadratSpecies =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES,
+              OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+          )
+      val isAdditionalSpecies =
+          dslContext.fetchExists(
+              OBSERVATION_BIOMASS_ADDITIONAL_SPECIES,
+              OBSERVATION_BIOMASS_ADDITIONAL_SPECIES.BIOMASS_SPECIES_ID.eq(biomassSpeciesId),
+          )
+      if (!hasRecordedTrees && !hasQuadratSpecies && !isAdditionalSpecies) {
+        deleteBiomassSpeciesRow(biomassSpecies, monitoringPlotId, isImplicit = false)
+      } else if (additionalSpeciesRowsDeleted == 0) {
+        throw BiomassSpeciesNotFoundException(speciesId, scientificName)
+      }
     }
   }
 
