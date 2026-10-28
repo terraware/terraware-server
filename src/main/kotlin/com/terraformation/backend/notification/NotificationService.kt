@@ -452,7 +452,7 @@ class NotificationService(
 
   @EventListener
   fun on(event: ObservationStartedEvent) {
-    if (event.observation.observationType == ObservationType.BiomassMeasurements) {
+    if (event.observation.observationType != ObservationType.Monitoring) {
       return
     }
 
@@ -634,7 +634,7 @@ class NotificationService(
 
   @EventListener
   fun on(event: ObservationPlotReplacedEvent) {
-    if (event.observation.observationType == ObservationType.BiomassMeasurements) {
+    if (event.observation.observationType != ObservationType.Monitoring) {
       return
     }
 
