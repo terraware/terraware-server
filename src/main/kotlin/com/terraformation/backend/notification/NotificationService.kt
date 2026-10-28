@@ -436,6 +436,7 @@ class NotificationService(
     val emailContent =
         ObservationPlotsUnderallocated(
             config,
+            event.observationType,
             webAppUrls
                 .fullObservation(organizationId, event.plantingSiteId, event.observationId)
                 .toString(),
@@ -634,7 +635,12 @@ class NotificationService(
     sendToOrganization(
         plantingSite.organizationId,
         emailContent =
-            ObservationNotStarted(config, plantingSite.name, webAppUrls.fullContactUs().toString()),
+            ObservationNotStarted(
+                config,
+                event.observationType,
+                plantingSite.name,
+                webAppUrls.fullContactUs().toString(),
+            ),
         roles = setOf(Role.Admin, Role.Owner),
     )
   }

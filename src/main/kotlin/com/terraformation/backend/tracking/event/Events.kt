@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -107,6 +108,7 @@ data class ObservationNotScheduledNotificationEvent(
 /** Published when we're unable to start a scheduled observation. */
 data class ObservationNotStartedEvent(
     val observationId: ObservationId,
+    val observationType: ObservationType,
     val plantingSiteId: PlantingSiteId,
 ) : ObservationSchedulingNotificationEvent
 
@@ -117,6 +119,7 @@ data class ObservationNotStartedEvent(
  */
 data class ObservationPlotsUnderallocatedEvent(
     val observationId: ObservationId,
+    val observationType: ObservationType,
     val plantingSiteId: PlantingSiteId,
     val shortfalls: List<Shortfall>,
 ) {

@@ -226,6 +226,7 @@ class ObservationService(
             eventPublisher.publishEvent(
                 ObservationPlotsUnderallocatedEvent(
                     observationId,
+                    observation.observationType,
                     observation.plantingSiteId,
                     shortfalls,
                 )
@@ -235,7 +236,11 @@ class ObservationService(
           log.info("Unable to start observation $observationId", e)
 
           eventPublisher.publishEvent(
-              ObservationNotStartedEvent(observationId, observation.plantingSiteId)
+              ObservationNotStartedEvent(
+                  observationId,
+                  observation.observationType,
+                  observation.plantingSiteId,
+              )
           )
 
           observationStore.abandonObservation(observationId)

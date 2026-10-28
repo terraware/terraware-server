@@ -172,6 +172,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     eventPublisher.assertEventPublished(
         ObservationPlotsUnderallocatedEvent(
             observationId,
+            ObservationType.Monitoring,
             plantingSite.id,
             listOf(
                 ObservationPlotsUnderallocatedEvent.Shortfall(
@@ -209,7 +210,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
     observationService.startObservation(observationId)
 
-    eventPublisher.assertEventPublished(ObservationNotStartedEvent(observationId, plantingSite.id))
+    eventPublisher.assertEventPublished(
+        ObservationNotStartedEvent(observationId, ObservationType.Monitoring, plantingSite.id)
+    )
     assertEquals(
         emptyList<Any>(),
         observationPlotStore.fetchObservationPlotDetails(observationId),
