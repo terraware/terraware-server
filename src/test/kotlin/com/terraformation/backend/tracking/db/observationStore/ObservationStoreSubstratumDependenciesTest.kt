@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
@@ -163,6 +164,111 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
             ),
         ),
         "Later observation references prior observation for unobserved substratum",
+    )
+  }
+
+  @Test
+  fun `biomass observations do not become substratum dependencies`() {
+    insertStratum()
+    val substratumIdA = insertSubstratum()
+    val substratumHistoryIdA = inserted.substratumHistoryId
+    val plotIdA = insertMonitoringPlot(permanentIndex = 1, substratumId = substratumIdA)
+    val plotHistoryIdA = inserted.monitoringPlotHistoryId
+
+    val substratumIdB = insertSubstratum()
+    val substratumHistoryIdB = inserted.substratumHistoryId
+    val plotIdB = insertMonitoringPlot(permanentIndex = 2, substratumId = substratumIdB)
+    val plotHistoryIdB = inserted.monitoringPlotHistoryId
+
+    clock.instant = Instant.ofEpochSecond(1)
+    val monitoringObservationIdA = insertObservation()
+    insertObservationRequestedSubstratum(
+        observationId = monitoringObservationIdA,
+        substratumId = substratumIdA,
+    )
+    insertObservationPlot(
+        claimedBy = user.userId,
+        isPermanent = true,
+        monitoringPlotId = plotIdA,
+        monitoringPlotHistoryId = plotHistoryIdA,
+        observationId = monitoringObservationIdA,
+    )
+    observationStore.completePlot(
+        monitoringObservationIdA,
+        plotIdA,
+        emptySet(),
+        "Notes",
+        clock.instant,
+        recordedPlants,
+    )
+
+    clock.instant = Instant.ofEpochSecond(2)
+    val biomassObservationId =
+        insertObservation(observationType = ObservationType.BiomassMeasurements)
+    insertObservationRequestedSubstratum(
+        observationId = biomassObservationId,
+        substratumId = substratumIdA,
+    )
+    insertObservationPlot(
+        claimedBy = user.userId,
+        isPermanent = true,
+        monitoringPlotId = plotIdA,
+        monitoringPlotHistoryId = plotHistoryIdA,
+        observationId = biomassObservationId,
+    )
+    observationStore.completePlot(
+        biomassObservationId,
+        plotIdA,
+        emptySet(),
+        "Notes",
+        clock.instant,
+        emptyList(),
+    )
+
+    clock.instant = Instant.ofEpochSecond(3)
+    val monitoringObservationIdC = insertObservation()
+    insertObservationRequestedSubstratum(
+        observationId = monitoringObservationIdC,
+        substratumId = substratumIdB,
+    )
+    insertObservationPlot(
+        claimedBy = user.userId,
+        isPermanent = true,
+        monitoringPlotId = plotIdB,
+        monitoringPlotHistoryId = plotHistoryIdB,
+        observationId = monitoringObservationIdC,
+    )
+    observationStore.completePlot(
+        monitoringObservationIdC,
+        plotIdB,
+        emptySet(),
+        "Notes",
+        clock.instant,
+        recordedPlants,
+    )
+
+    assertTableEquals(
+        listOf(
+            ObservationDependentSubstrataRecord(
+                observationId = monitoringObservationIdA,
+                substratumHistoryId = substratumHistoryIdA,
+                dependsOnObservationId = monitoringObservationIdA,
+                dependsOnSubstratumHistoryId = substratumHistoryIdA,
+            ),
+            ObservationDependentSubstrataRecord(
+                observationId = monitoringObservationIdC,
+                substratumHistoryId = substratumHistoryIdA,
+                dependsOnObservationId = monitoringObservationIdA,
+                dependsOnSubstratumHistoryId = substratumHistoryIdA,
+            ),
+            ObservationDependentSubstrataRecord(
+                observationId = monitoringObservationIdC,
+                substratumHistoryId = substratumHistoryIdB,
+                dependsOnObservationId = monitoringObservationIdC,
+                dependsOnSubstratumHistoryId = substratumHistoryIdB,
+            ),
+        ),
+        "Monitoring observations depend on prior plant results, not biomass observations",
     )
   }
 

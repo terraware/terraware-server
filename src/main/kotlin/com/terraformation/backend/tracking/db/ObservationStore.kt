@@ -1129,6 +1129,7 @@ class ObservationStore(
                 )
             )
             .and(candidateObs.IS_AD_HOC.isFalse)
+            .and(candidateObs.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
             .orderBy(
                 // Prefer results from the same observation as the `observationId` if it exists.
                 candidateObs.ID.eq(observationId).desc(),
@@ -1140,6 +1141,11 @@ class ObservationStore(
   }
 
   private fun recordSubstratumDependencies(observationId: ObservationId) {
+    val observationType = fetchObservationType(observationId)
+    if (observationType != ObservationType.Monitoring) {
+      return
+    }
+
     val consumingSsh = SUBSTRATUM_HISTORIES.`as`("consuming_ssh")
     val consumingSh = STRATUM_HISTORIES.`as`("consuming_sh")
     val srcSsh = SUBSTRATUM_HISTORIES.`as`("src_ssh")
@@ -1552,6 +1558,12 @@ class ObservationStore(
       dependentObservationIds.forEach { recordSubstratumDependencies(it) }
     }
   }
+
+  private fun fetchObservationType(observationId: ObservationId): ObservationType =
+      dslContext.fetchValue(
+          OBSERVATIONS.OBSERVATION_TYPE_ID,
+          OBSERVATIONS.ID.eq(observationId),
+      ) ?: throw ObservationNotFoundException(observationId)
 
   /**
    * Deletes incomplete plots from an observation. Optionally retains permanent plots that weren't
