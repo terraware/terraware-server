@@ -52,6 +52,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -140,6 +141,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
@@ -2821,6 +2823,136 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       confirmVerified(spyStore)
+    }
+  }
+
+  @Nested
+  inner class CompletePlot {
+    @BeforeEach
+    fun setUp() {
+      insertStratum()
+      insertSubstratum()
+    }
+
+    @Test
+    fun `records plants for monitoring plots`() {
+      val (observationId, plotIds) = insertObservationWithPlots(ObservationType.Monitoring)
+      val speciesId = insertSpecies()
+      val plants =
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId,
+                  statusId = RecordedPlantStatus.Live,
+              )
+          )
+
+      service.completePlot(
+          observationId = observationId,
+          monitoringPlotId = plotIds.single(),
+          conditions = emptySet(),
+          notes = null,
+          observedTime = clock.instant(),
+          plants = plants,
+      )
+
+      assertEquals(
+          plants
+              .single()
+              .copy(
+                  id = null,
+                  monitoringPlotId = plotIds.single(),
+                  observationId = observationId,
+              ),
+          recordedPlantsDao.findAll().single().copy(id = null),
+          "Recorded plants",
+      )
+    }
+
+    @ParameterizedTest
+    @EnumSource(ObservationPlotStatus::class, names = ["Completed", "NotObserved"])
+    fun `rejects plots that are already completed`(status: ObservationPlotStatus) {
+      val (observationId, plotIds) =
+          insertObservationWithPlots(ObservationType.Monitoring, plotStatus = status)
+      val plotId = plotIds.single()
+
+      assertThrows<PlotAlreadyCompletedException> {
+        service.completePlot(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            conditions = emptySet(),
+            notes = null,
+            observedTime = clock.instant(),
+            plants =
+                listOf(
+                    RecordedPlantsRow(
+                        certaintyId = Other,
+                        gpsCoordinates = point(1),
+                        speciesName = "Other",
+                        statusId = RecordedPlantStatus.Live,
+                    )
+                ),
+        )
+      }
+
+      assertTableEmpty(RECORDED_PLANTS)
+    }
+
+    @Test
+    fun `rejects plots that are not assigned to the observation`() {
+      val (observationId) = insertObservationWithPlots(ObservationType.Monitoring)
+      val plotId = insertMonitoringPlot(x = 2)
+
+      assertThrows<PlotNotInObservationException> {
+        service.completePlot(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            conditions = emptySet(),
+            notes = null,
+            observedTime = clock.instant(),
+            plants = emptyList(),
+        )
+      }
+    }
+
+    @Test
+    fun `requires update permission`() {
+      val (observationId, plotIds) = insertObservationWithPlots(ObservationType.Monitoring)
+      deleteOrganizationUser()
+
+      assertThrows<ObservationNotFoundException> {
+        service.completePlot(
+            observationId = observationId,
+            monitoringPlotId = plotIds.single(),
+            conditions = emptySet(),
+            notes = null,
+            observedTime = clock.instant(),
+            plants = emptyList(),
+        )
+      }
+    }
+
+    private fun insertObservationWithPlots(
+        observationType: ObservationType,
+        plotCount: Int = 1,
+        plotStatus: ObservationPlotStatus = ObservationPlotStatus.Claimed,
+    ): Pair<ObservationId, List<MonitoringPlotId>> {
+      val observationId = insertObservation(observationType = observationType)
+      val plotIds =
+          List(plotCount) { index ->
+            insertMonitoringPlot(x = index * 2).also { plotId ->
+              insertObservationPlot(
+                  claimedBy = user.userId,
+                  claimedTime = Instant.EPOCH,
+                  monitoringPlotId = plotId,
+                  observationId = observationId,
+                  statusId = plotStatus,
+              )
+            }
+          }
+
+      return observationId to plotIds
     }
   }
 

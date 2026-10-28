@@ -326,13 +326,13 @@ class ObservationsController(
       @PathVariable plotId: MonitoringPlotId,
       @RequestBody payload: CompletePlotObservationRequestPayload,
   ): SimpleSuccessResponsePayload {
-    observationStore.completePlot(
-        observationId,
-        plotId,
-        payload.conditions,
-        payload.notes,
-        payload.observedTime,
-        payload.plants.map { plantPayloadToRow(it, payload.lngFirst ?: false) },
+    observationService.completePlot(
+        observationId = observationId,
+        monitoringPlotId = plotId,
+        conditions = payload.conditions,
+        notes = payload.notes,
+        observedTime = payload.observedTime,
+        plants = payload.plants.map { plantPayloadToRow(it, payload.lngFirst ?: false) },
     )
 
     return SimpleSuccessResponsePayload()
