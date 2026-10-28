@@ -10,6 +10,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.PlantingSiteHasNoBoundaryException
+import com.terraformation.backend.db.UnvalidatedGeometryDeserializer
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -28,6 +29,7 @@ import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.PlantingSiteMapEditService
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
@@ -53,6 +55,7 @@ import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumMapEditModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.GeometrySvgRenderer
+import com.terraformation.backend.util.fixIfNeeded
 import com.terraformation.backend.util.requirePolygonal
 import com.terraformation.backend.util.toMultiPolygon
 import com.terraformation.backend.util.toValidatedMultiPolygon
@@ -82,6 +85,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import tools.jackson.databind.annotation.JsonDeserialize
 
 /** Largest thumbnail canvas the server will render, to keep a single request cheap. */
 private const val MAX_THUMBNAIL_SIZE = 4096
@@ -306,6 +310,11 @@ class PlantingSitesController(
   ): CreatePlantingSiteResponsePayload {
     payload.validate()
 
+    val geometryProblems = payload.findInvalidGeometries()
+    if (geometryProblems.isNotEmpty()) {
+      throw PlantingSiteMapInvalidException(geometryProblems)
+    }
+
     val model = plantingSiteStore.createPlantingSite(payload.toModel())
     return CreatePlantingSiteResponsePayload(model.id)
   }
@@ -317,8 +326,12 @@ class PlantingSitesController(
   ): ValidatePlantingSiteResponsePayload {
     payload.validate()
 
-    val problems = payload.toModel().validate()
-    val problemPayloads = problems?.map { PlantingSiteValidationProblemPayload(it) } ?: emptyList()
+    // Repair invalid geometries so the rest of the map can be checked; the invalid geometries are
+    // still reported as problems.
+    val problems =
+        payload.findInvalidGeometries() +
+            (payload.withFixedGeometries().toModel().validate() ?: emptyList())
+    val problemPayloads = problems.map { PlantingSiteValidationProblemPayload(it) }
 
     return ValidatePlantingSiteResponsePayload(
         isValid = problemPayloads.isEmpty(),
@@ -812,7 +825,8 @@ data class ReportedSpeciesPayload(
 }
 
 data class NewSubstratumPayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val boundary: Geometry,
     @Schema(
         description =
@@ -825,6 +839,16 @@ data class NewSubstratumPayload(
     boundary.requirePolygonal("Substratum boundaries")
   }
 
+  fun findInvalidGeometries(stratumName: String): List<PlantingSiteValidationFailure> {
+    return if (boundary.isValid) {
+      emptyList()
+    } else {
+      listOf(PlantingSiteValidationFailure.substratumBoundaryInvalid(name, stratumName))
+    }
+  }
+
+  fun withFixedGeometries() = copy(boundary = boundary.fixIfNeeded())
+
   fun toModel(stratumName: String, exclusion: MultiPolygon?): NewSubstratumModel {
     return SubstratumModel.create(
         boundary = boundary.toMultiPolygon(),
@@ -836,7 +860,8 @@ data class NewSubstratumPayload(
 }
 
 data class NewStratumPayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val boundary: Geometry,
     val initialPlantingDensity: BigDecimal?,
     @Schema(
@@ -855,6 +880,23 @@ data class NewStratumPayload(
     boundary.requirePolygonal("Stratum boundaries")
     substrata?.forEach { it.validate() }
   }
+
+  fun findInvalidGeometries(): List<PlantingSiteValidationFailure> {
+    val stratumProblems =
+        if (boundary.isValid) {
+          emptyList()
+        } else {
+          listOf(PlantingSiteValidationFailure.stratumBoundaryInvalid(name))
+        }
+
+    return stratumProblems + (substrata?.flatMap { it.findInvalidGeometries(name) } ?: emptyList())
+  }
+
+  fun withFixedGeometries() =
+      copy(
+          boundary = boundary.fixIfNeeded(),
+          substrata = substrata?.map { it.withFixedGeometries() },
+      )
 
   fun toModel(exclusion: MultiPolygon?): NewStratumModel {
     return StratumModel.create(
@@ -897,10 +939,12 @@ data class PlantingSiteValidationProblemPayload(
 }
 
 data class CreatePlantingSiteRequestPayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val boundary: Geometry? = null,
     val description: String? = null,
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val exclusion: Geometry? = null,
     val name: String,
     val organizationId: OrganizationId,
@@ -918,6 +962,35 @@ data class CreatePlantingSiteRequestPayload(
     exclusion?.requirePolygonal("Exclusion area")
     strata?.forEach { it.validate() }
   }
+
+  /**
+   * Returns problems for geometries with invalid topology, such as self-intersecting rings. These
+   * are accepted when the request is parsed so they can be reported along with other problems.
+   */
+  fun findInvalidGeometries(): List<PlantingSiteValidationFailure> {
+    val problems = mutableListOf<PlantingSiteValidationFailure>()
+
+    if (boundary?.isValid == false) {
+      problems.add(PlantingSiteValidationFailure.siteBoundaryInvalid())
+    }
+    if (exclusion?.isValid == false) {
+      problems.add(PlantingSiteValidationFailure.exclusionInvalid())
+    }
+    strata?.forEach { problems.addAll(it.findInvalidGeometries()) }
+
+    return problems
+  }
+
+  /**
+   * Returns a copy of this payload with invalid geometries repaired, so the rest of the map can be
+   * validated. Callers must report [findInvalidGeometries] separately.
+   */
+  fun withFixedGeometries() =
+      copy(
+          boundary = boundary?.fixIfNeeded(),
+          exclusion = exclusion?.fixIfNeeded(),
+          strata = strata?.map { it.withFixedGeometries() },
+      )
 
   fun toModel(): NewPlantingSiteModel {
     val exclusionMultiPolygon = exclusion?.toMultiPolygon()

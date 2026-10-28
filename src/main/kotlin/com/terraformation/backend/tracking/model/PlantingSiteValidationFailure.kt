@@ -20,11 +20,24 @@ data class PlantingSiteValidationFailure(
             stratumName,
         )
 
+    fun exclusionInvalid() =
+        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ExclusionInvalid)
+
     fun exclusionWithoutBoundary() =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ExclusionWithoutBoundary)
 
+    fun siteBoundaryInvalid() =
+        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.SiteBoundaryInvalid)
+
     fun siteTooLarge() =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.SiteTooLarge)
+
+    fun substratumBoundaryInvalid(substratumName: String, stratumName: String) =
+        PlantingSiteValidationFailure(
+            PlantingSiteValidationFailureType.SubstratumBoundaryInvalid,
+            stratumName,
+            substratumName,
+        )
 
     fun substratumBoundaryOverlaps(
         conflictsWith: Set<String>,
@@ -50,6 +63,12 @@ data class PlantingSiteValidationFailure(
             PlantingSiteValidationFailureType.SubstratumNotInStratum,
             stratumName,
             substratumName,
+        )
+
+    fun stratumBoundaryInvalid(stratumName: String) =
+        PlantingSiteValidationFailure(
+            PlantingSiteValidationFailureType.StratumBoundaryInvalid,
+            stratumName,
         )
 
     fun stratumBoundaryOverlaps(conflictsWith: Set<String>, stratumName: String) =
