@@ -54,6 +54,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
@@ -451,6 +452,10 @@ class NotificationService(
 
   @EventListener
   fun on(event: ObservationStartedEvent) {
+    if (event.observation.observationType != ObservationType.Monitoring) {
+      return
+    }
+
     log.info("Creating notifications for observation ${event.observation.id} started.")
     val plantingSite =
         plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
@@ -629,6 +634,10 @@ class NotificationService(
 
   @EventListener
   fun on(event: ObservationPlotReplacedEvent) {
+    if (event.observation.observationType != ObservationType.Monitoring) {
+      return
+    }
+
     val (plantingSite, organization) = fetchSiteAndOrg(event.observation.plantingSiteId)
     sendToOrganizationContact(
         organization,
