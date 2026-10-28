@@ -758,6 +758,43 @@ class ObservationService(
     }
   }
 
+  /** Records the results of a completed plot in a scheduled observation. */
+  fun completePlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      conditions: Set<ObservableCondition>,
+      notes: String?,
+      observedTime: Instant,
+      plants: Collection<RecordedPlantsRow>,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    entityLocker.withLockedObservation(observationId) { _ ->
+      val plotStatus =
+          dslContext.fetchValue(
+              OBSERVATION_PLOTS.STATUS_ID,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId)),
+          ) ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+
+      if (
+          plotStatus == ObservationPlotStatus.Completed ||
+              plotStatus == ObservationPlotStatus.NotObserved
+      ) {
+        throw PlotAlreadyCompletedException(monitoringPlotId)
+      }
+
+      observationStore.completePlot(
+          observationId,
+          monitoringPlotId,
+          conditions,
+          notes,
+          observedTime,
+          plants,
+      )
+    }
+  }
+
   /**
    * Records an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc monitoring
    * plot, adds the plot to the observation, and completes the observation.
