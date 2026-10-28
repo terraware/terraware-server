@@ -519,6 +519,13 @@ class ObservationStore(
         throw PlotAlreadyCompletedException(monitoringPlotId)
       }
 
+      if (
+          plants.isNotEmpty() &&
+              fetchObservationType(observationId) == ObservationType.BiomassMeasurements
+      ) {
+        throw IllegalArgumentException("Biomass observations must not contain plants")
+      }
+
       observationPlotConditionsDao.insert(
           conditions.map { ObservationPlotConditionsRow(observationId, monitoringPlotId, it) }
       )
