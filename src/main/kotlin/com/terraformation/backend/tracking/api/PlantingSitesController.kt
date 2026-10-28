@@ -10,6 +10,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.PlantingSiteHasNoBoundaryException
+import com.terraformation.backend.db.UnvalidatedGeometryDeserializer
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -28,6 +29,7 @@ import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.PlantingSiteMapEditService
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
@@ -53,6 +55,7 @@ import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumMapEditModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.GeometrySvgRenderer
+import com.terraformation.backend.util.fixIfNeeded
 import com.terraformation.backend.util.requirePolygonal
 import com.terraformation.backend.util.toMultiPolygon
 import com.terraformation.backend.util.toValidatedMultiPolygon
@@ -82,9 +85,16 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import tools.jackson.databind.annotation.JsonDeserialize
 
 /** Largest thumbnail canvas the server will render, to keep a single request cheap. */
 private const val MAX_THUMBNAIL_SIZE = 4096
+
+/**
+ * Repairs an invalid geometry, or returns null if nothing is left once it's repaired, e.g., a
+ * polygon whose vertices are all on the same line.
+ */
+private fun Geometry.fixIfNeededOrNull(): Geometry? = fixIfNeeded().takeUnless { it.isEmpty }
 
 @RequestMapping("/api/v1/tracking/sites")
 @RestController
@@ -306,6 +316,11 @@ class PlantingSitesController(
   ): CreatePlantingSiteResponsePayload {
     payload.validate()
 
+    val geometryProblems = payload.findInvalidGeometries()
+    if (geometryProblems.isNotEmpty()) {
+      throw PlantingSiteMapInvalidException(geometryProblems)
+    }
+
     val model = plantingSiteStore.createPlantingSite(payload.toModel())
     return CreatePlantingSiteResponsePayload(model.id)
   }
@@ -317,8 +332,7 @@ class PlantingSitesController(
   ): ValidatePlantingSiteResponsePayload {
     payload.validate()
 
-    val problems = payload.toModel().validate()
-    val problemPayloads = problems?.map { PlantingSiteValidationProblemPayload(it) } ?: emptyList()
+    val problemPayloads = payload.findMapProblems().map { PlantingSiteValidationProblemPayload(it) }
 
     return ValidatePlantingSiteResponsePayload(
         isValid = problemPayloads.isEmpty(),
@@ -812,7 +826,8 @@ data class ReportedSpeciesPayload(
 }
 
 data class NewSubstratumPayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val boundary: Geometry,
     @Schema(
         description =
@@ -825,6 +840,18 @@ data class NewSubstratumPayload(
     boundary.requirePolygonal("Substratum boundaries")
   }
 
+  fun findInvalidGeometries(stratumName: String): List<PlantingSiteValidationFailure> {
+    return if (boundary.isValid) {
+      emptyList()
+    } else {
+      listOf(PlantingSiteValidationFailure.substratumBoundaryInvalid(name, stratumName))
+    }
+  }
+
+  /** Returns a copy with a repaired boundary, or null if the boundary has no area once repaired. */
+  fun withFixedGeometries(): NewSubstratumPayload? =
+      boundary.fixIfNeededOrNull()?.let { copy(boundary = it) }
+
   fun toModel(stratumName: String, exclusion: MultiPolygon?): NewSubstratumModel {
     return SubstratumModel.create(
         boundary = boundary.toMultiPolygon(),
@@ -836,7 +863,8 @@ data class NewSubstratumPayload(
 }
 
 data class NewStratumPayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val boundary: Geometry,
     val initialPlantingDensity: BigDecimal?,
     @Schema(
@@ -855,6 +883,29 @@ data class NewStratumPayload(
     boundary.requirePolygonal("Stratum boundaries")
     substrata?.forEach { it.validate() }
   }
+
+  fun findInvalidGeometries(): List<PlantingSiteValidationFailure> {
+    val stratumProblems =
+        if (boundary.isValid) {
+          emptyList()
+        } else {
+          listOf(PlantingSiteValidationFailure.stratumBoundaryInvalid(name))
+        }
+
+    return stratumProblems + (substrata?.flatMap { it.findInvalidGeometries(name) } ?: emptyList())
+  }
+
+  /**
+   * Returns a copy with repaired boundaries, or null if the stratum boundary has no area once
+   * repaired. Substrata with no area once repaired are omitted.
+   */
+  fun withFixedGeometries(): NewStratumPayload? =
+      boundary.fixIfNeededOrNull()?.let { fixedBoundary ->
+        copy(
+            boundary = fixedBoundary,
+            substrata = substrata?.mapNotNull { it.withFixedGeometries() },
+        )
+      }
 
   fun toModel(exclusion: MultiPolygon?): NewStratumModel {
     return StratumModel.create(
@@ -897,10 +948,12 @@ data class PlantingSiteValidationProblemPayload(
 }
 
 data class CreatePlantingSiteRequestPayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val boundary: Geometry? = null,
     val description: String? = null,
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    @JsonDeserialize(using = UnvalidatedGeometryDeserializer::class)
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class])
     val exclusion: Geometry? = null,
     val name: String,
     val organizationId: OrganizationId,
@@ -917,6 +970,55 @@ data class CreatePlantingSiteRequestPayload(
     boundary?.requirePolygonal("Planting site boundary")
     exclusion?.requirePolygonal("Exclusion area")
     strata?.forEach { it.validate() }
+  }
+
+  /**
+   * Returns problems for geometries with invalid topology, such as self-intersecting rings. These
+   * are accepted when the request is parsed so they can be reported along with other problems.
+   */
+  fun findInvalidGeometries(): List<PlantingSiteValidationFailure> {
+    val problems = mutableListOf<PlantingSiteValidationFailure>()
+
+    if (boundary?.isValid == false) {
+      problems.add(PlantingSiteValidationFailure.siteBoundaryInvalid())
+    }
+    if (exclusion?.isValid == false) {
+      problems.add(PlantingSiteValidationFailure.exclusionInvalid())
+    }
+    strata?.forEach { problems.addAll(it.findInvalidGeometries()) }
+
+    return problems
+  }
+
+  /** Returns all the problems with the map, including invalid geometries. */
+  fun findMapProblems(): List<PlantingSiteValidationFailure> {
+    val geometryProblems = findInvalidGeometries()
+
+    // If the site boundary collapses to nothing when it's repaired, there's no meaningful way to
+    // check the rest of the map against it.
+    val fixedPayload = withFixedGeometries() ?: return geometryProblems
+
+    return geometryProblems + (fixedPayload.toModel().validate() ?: emptyList())
+  }
+
+  /**
+   * Returns a copy of this payload with invalid geometries repaired, or null if the site boundary
+   * has no area once repaired. Exclusions, strata, and substrata with no area once repaired are
+   * omitted. Callers must report [findInvalidGeometries] separately.
+   */
+  private fun withFixedGeometries(): CreatePlantingSiteRequestPayload? {
+    val fixedBoundary =
+        if (boundary != null) {
+          boundary.fixIfNeededOrNull() ?: return null
+        } else {
+          null
+        }
+
+    return copy(
+        boundary = fixedBoundary,
+        exclusion = exclusion?.fixIfNeededOrNull(),
+        strata = strata?.mapNotNull { it.withFixedGeometries() },
+    )
   }
 
   fun toModel(): NewPlantingSiteModel {
