@@ -231,6 +231,25 @@ steps:
           force: true
     command: "true"
 
+  - <<: *use-existing-checkout
+    label: ":broom: Remove build checkout"
+    key: "remove-checkout"
+    depends_on:
+      - "graphite-ci-optimizer"
+      - "build"
+      - "run-tests"
+      - "external-tests"
+      - "compare-openapi"
+      - "check-scripts"
+      - "junit-annotate"
+      - "docker"
+      - "promote-gradle-cache"
+      - "promote-node-cache"
+      - "promote-script-cache"
+      - "promote-buildx-cache"
+    allow_dependency_failure: true
+    command: 'cd / && rm -rf "$$BUILDKITE_BUILD_CHECKOUT_PATH"'
+
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
     concurrency: 1
@@ -279,14 +298,6 @@ steps:
     plugins:
       - *load-secrets
     command: .buildkite/scripts/deploy-main-docs.sh
-
-  - wait: ~
-    continue_on_failure: true
-
-  - <<: *use-existing-checkout
-    label: ":broom: Remove build checkout"
-    key: "remove-checkout"
-    command: 'cd / && rm -rf "$$BUILDKITE_BUILD_CHECKOUT_PATH"'
 
 notify:
   - slack:
