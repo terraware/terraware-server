@@ -724,18 +724,21 @@ class ObservationStore(
   }
 
   /**
-   * Fetches last completed observation for a planting site if there are no other upcoming or in
-   * progress observations, otherwise returns most recently updated observation.
+   * Returns the most recent completion time of an assigned Plant Monitoring observation at a site,
+   * or null if there isn't one or if one is upcoming or in progress. Ad hoc and biomass
+   * observations are ignored.
    */
   fun fetchLastCompletedObservationTime(plantingSiteId: PlantingSiteId): Instant? {
     return dslContext
         .select(DSL.max(OBSERVATIONS.COMPLETED_TIME))
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(isAssignedPlantMonitoringObservationCondition)
         .andNotExists(
             DSL.selectOne()
                 .from(OBSERVATIONS)
                 .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+                .and(isAssignedPlantMonitoringObservationCondition)
                 .and(
                     OBSERVATIONS.STATE_ID.`in`(
                         ObservationState.InProgress,
@@ -1033,9 +1036,17 @@ class ObservationStore(
     }
   }
 
-  fun hasObservations(plantingSiteId: PlantingSiteId): Boolean {
-    return dslContext.fetchExists(OBSERVATIONS, OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+  fun hasPlantMonitoringObservations(plantingSiteId: PlantingSiteId): Boolean {
+    return dslContext.fetchExists(
+        OBSERVATIONS,
+        OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId),
+        isAssignedPlantMonitoringObservationCondition,
+    )
   }
+
+  private val isAssignedPlantMonitoringObservationCondition =
+      OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring)
+          .and(OBSERVATIONS.IS_AD_HOC.isFalse)
 
   /**
    * Deletes the observation if no plot has been observed, or sets the observation status to

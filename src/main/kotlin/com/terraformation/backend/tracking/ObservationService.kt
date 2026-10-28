@@ -993,7 +993,7 @@ class ObservationService(
       source.isBefore(clock.instant().minus(weeks * 7, ChronoUnit.DAYS).plus(1, ChronoUnit.HOURS))
 
   private fun earliestPlantingElapsedWeeks(plantingSiteId: PlantingSiteId, weeks: Long): Boolean =
-      !observationStore.hasObservations(plantingSiteId) &&
+      !observationStore.hasPlantMonitoringObservations(plantingSiteId) &&
           (plantingSiteStore.fetchOldestPlantingTime(plantingSiteId)?.let {
             elapsedWeeks(it, weeks)
           } ?: false)
