@@ -16,6 +16,7 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
@@ -404,16 +405,25 @@ class Messages {
     )
   }
 
-  fun observationUpcoming(plantingSiteName: String, startDate: LocalDate): NotificationMessage {
+  fun observationUpcoming(
+      observationType: ObservationType,
+      plantingSiteName: String,
+      startDate: LocalDate,
+  ): NotificationMessage {
     val startDateString =
         DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
             .withLocale(currentLocale())
             .format(startDate)
+    val prefix =
+        when (observationType) {
+          ObservationType.Monitoring -> "notification.observation.upcoming"
+          ObservationType.BiomassMeasurements -> "notification.observation.upcoming.biomass"
+        }
     return NotificationMessage(
-        title = getMessage("notification.observation.upcoming.app.title"),
+        title = getMessage("$prefix.app.title"),
         body =
             getMessage(
-                "notification.observation.upcoming.app.body",
+                "$prefix.app.body",
                 plantingSiteName,
                 startDateString,
             ),

@@ -769,9 +769,46 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             )
         ),
         type = NotificationType.ObservationUpcoming,
-        title = "Upcoming Observation",
+        title = "Upcoming Plant Monitoring Observation",
         body =
-            "$plantingSiteName has an observation event scheduled for ${
+            "$plantingSiteName has a Plant Monitoring observation event scheduled for ${
+          DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+            .withLocale(currentLocale())
+            .format(startDate)}.",
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+    )
+  }
+
+  @Test
+  fun `should store upcoming biomass observation notification`() {
+    val plantingSiteName = "My Site"
+    val startDate = LocalDate.of(2023, 3, 1)
+    val endDate = startDate.plusDays(1)
+
+    insertPlantingSite(name = plantingSiteName)
+    insertObservation(
+        endDate = endDate,
+        observationType = ObservationType.BiomassMeasurements,
+        startDate = startDate,
+        state = ObservationState.Upcoming,
+    )
+
+    testEventNotification(
+        ObservationUpcomingNotificationDueEvent(
+            ExistingObservationModel(
+                endDate = endDate,
+                id = inserted.observationId,
+                isAdHoc = false,
+                observationType = ObservationType.BiomassMeasurements,
+                plantingSiteId = inserted.plantingSiteId,
+                startDate = startDate,
+                state = ObservationState.Upcoming,
+            )
+        ),
+        type = NotificationType.ObservationUpcoming,
+        title = "Upcoming Biomass Monitoring Observation",
+        body =
+            "$plantingSiteName has a Biomass Monitoring observation event scheduled for ${
           DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
             .withLocale(currentLocale())
             .format(startDate)}.",

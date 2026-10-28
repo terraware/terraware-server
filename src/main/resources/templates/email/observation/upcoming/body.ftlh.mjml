@@ -9,10 +9,10 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                ${strings("notification.observation.upcoming.email.body.1")}
+                ${strings(stringsPrefix + ".email.body.1")}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.observation.upcoming.email.body.2", plantingSiteName, startDateString)}
+                ${strings(stringsPrefix + ".email.body.2", plantingSiteName, startDateString)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
                 ${link("notification.observation.upcoming.email.body.3", appStoreUrl, googlePlayUrl)}
