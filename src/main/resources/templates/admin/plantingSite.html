@@ -410,6 +410,7 @@
     <table border="1">
         <tr>
             <th>ID</th>
+            <th>Type</th>
             <th>Start</th>
             <th>End</th>
             <th>
@@ -425,6 +426,7 @@
 
         <tr th:each="observation : ${observations}">
             <td th:text="${observation.id}">1</td>
+            <td th:text="|${observation.observationType == T(com.terraformation.backend.db.tracking.ObservationType).Monitoring ? 'Plant' : 'Biomass'}|">Plant Monitoring</td>
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
             <td>
@@ -448,6 +450,12 @@
 
         <tr th:if="${canCreateObservation}">
             <td></td>
+            <td>
+                <select form="createObservation" name="observationType">
+                    <option value="Biomass Measurements">Biomass</option>
+                    <option selected value="Monitoring">Plant</option>
+                </select>
+            </td>
             <td>
                 <input type="date" form="createObservation" name="startDate"/>
             </td>
