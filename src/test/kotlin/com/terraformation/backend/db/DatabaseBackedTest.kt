@@ -4040,6 +4040,7 @@ abstract class DatabaseBackedTest {
       permanentLive: Int = row.permanentLive ?: 0,
       survivalRate: Int? = row.survivalRate,
       plantDensity: Int? = row.plantDensity,
+      needsRecalculation: Boolean = row.needsRecalculation ?: false,
   ) {
     observationPlotResultsDao.insert(
         row.copy(
@@ -4052,6 +4053,7 @@ abstract class DatabaseBackedTest {
             permanentLive = permanentLive,
             survivalRate = survivalRate,
             plantDensity = plantDensity,
+            needsRecalculation = needsRecalculation,
         )
     )
   }
@@ -4096,9 +4098,11 @@ abstract class DatabaseBackedTest {
       survivalRateStdDev: Int? = row.survivalRateStdDev,
       plantDensity: Int? = row.plantDensity,
       plantDensityStdDev: Int? = row.plantDensityStdDev,
+      needsRecalculation: Boolean = row.needsRecalculation ?: false,
   ) {
     observationSiteResultsDao.insert(
         row.copy(
+            needsRecalculation = needsRecalculation,
             observationId = observationId,
             permanentLive = permanentLive,
             plantDensity = plantDensity,
@@ -4129,9 +4133,11 @@ abstract class DatabaseBackedTest {
       survivalRateStdDev: Int? = row.survivalRateStdDev,
       plantDensity: Int? = row.plantDensity,
       plantDensityStdDev: Int? = row.plantDensityStdDev,
+      needsRecalculation: Boolean = row.needsRecalculation ?: false,
   ) {
     observationStratumResultsDao.insert(
         row.copy(
+            needsRecalculation = needsRecalculation,
             observationId = observationId,
             permanentLive = permanentLive,
             plantDensity = plantDensity,
@@ -4163,9 +4169,11 @@ abstract class DatabaseBackedTest {
       survivalRateStdDev: Int? = row.survivalRateStdDev,
       plantDensity: Int? = row.plantDensity,
       plantDensityStdDev: Int? = row.plantDensityStdDev,
+      needsRecalculation: Boolean = row.needsRecalculation ?: false,
   ) {
     observationSubstratumResultsDao.insert(
         row.copy(
+            needsRecalculation = needsRecalculation,
             observationId = observationId,
             permanentLive = permanentLive,
             plantDensity = plantDensity,

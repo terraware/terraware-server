@@ -7,10 +7,12 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.StratumHistories
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
@@ -20,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.tracking.util.ObservationResultsPlotRow
@@ -52,8 +55,8 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
   /**
    * Recalculates a planting site's observation results rows that are flagged for recalculation,
    * along with the species totals rows for the same observations and scopes. Plot-level species
-   * totals counts are treated as the source of truth, since edits to species counts are applied to
-   * them directly.
+   * totals are the source of truth for plant monitoring. Scheduled biomass plot totals are rebuilt
+   * from recorded trees before aggregation.
    *
    * Works one level at a time, from plots up to the planting site, so each level only reads levels
    * that have already been recalculated. Each step is a single statement covering every flagged row
@@ -65,10 +68,111 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
   fun recalculateFlaggedResults(plantingSiteId: PlantingSiteId) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
+    rebuildFlaggedBiomassPlotSpeciesTotals(plantingSiteId)
     recalculateFlaggedPlotResults(plantingSiteId)
     recalculateFlaggedSubstratumResults(plantingSiteId)
     recalculateFlaggedStratumResults(plantingSiteId)
     recalculateFlaggedSiteResults(plantingSiteId)
+  }
+
+  private fun rebuildFlaggedBiomassPlotSpeciesTotals(plantingSiteId: PlantingSiteId) {
+    val flaggedPlots =
+        OBSERVATION_PLOT_RESULTS.join(OBSERVATION_PLOTS)
+            .on(
+                OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID),
+                OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
+                    OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
+                ),
+            )
+    val flaggedCondition =
+        DSL.and(
+            OBSERVATION_PLOT_RESULTS.NEEDS_RECALCULATION.isTrue,
+            siteObservationCondition(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID, plantingSiteId),
+            DSL.exists(
+                DSL.selectOne()
+                    .from(OBSERVATIONS)
+                    .where(OBSERVATIONS.ID.eq(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID))
+                    .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BiomassMeasurements))
+                    .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+            ),
+        )
+
+    with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      dslContext
+          .deleteFrom(this)
+          .whereExists(
+              DSL.selectOne()
+                  .from(flaggedPlots)
+                  .where(flaggedCondition)
+                  .and(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATION_ID))
+                  .and(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
+          )
+          .execute()
+
+      val liveCount = DSL.count().filterWhere(RECORDED_TREES.IS_DEAD.isFalse)
+      val deadCount = DSL.count().filterWhere(RECORDED_TREES.IS_DEAD.isTrue)
+      dslContext
+          .insertInto(this)
+          .columns(
+              OBSERVATION_ID,
+              MONITORING_PLOT_ID,
+              MONITORING_PLOT_HISTORY_ID,
+              BIOMASS_SPECIES_ID,
+              CERTAINTY_ID,
+              SPECIES_ID,
+              SPECIES_NAME,
+              TOTAL_LIVE,
+              TOTAL_DEAD,
+              TOTAL_EXISTING,
+              PERMANENT_LIVE,
+          )
+          .select(
+              DSL.select(
+                      OBSERVATION_PLOTS.OBSERVATION_ID,
+                      OBSERVATION_PLOTS.MONITORING_PLOT_ID,
+                      OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID,
+                      OBSERVATION_BIOMASS_SPECIES.ID,
+                      DSL.`when`(
+                              OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.isNotNull,
+                              RecordedSpeciesCertainty.Known,
+                          )
+                          .else_(RecordedSpeciesCertainty.Other),
+                      OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
+                      DSL.`when`(
+                          OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.isNull,
+                          OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
+                      ),
+                      liveCount,
+                      deadCount,
+                      DSL.inline(0),
+                      DSL.`when`(OBSERVATION_PLOTS.IS_PERMANENT.isTrue, liveCount)
+                          .else_(DSL.inline(0)),
+                  )
+                  .from(flaggedPlots)
+                  .join(RECORDED_TREES)
+                  .on(
+                      RECORDED_TREES.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID),
+                      RECORDED_TREES.MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID),
+                  )
+                  .join(OBSERVATION_BIOMASS_SPECIES)
+                  .on(
+                      OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(RECORDED_TREES.OBSERVATION_ID),
+                      OBSERVATION_BIOMASS_SPECIES.ID.eq(RECORDED_TREES.BIOMASS_SPECIES_ID),
+                  )
+                  .where(flaggedCondition)
+                  .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                  .groupBy(
+                      OBSERVATION_PLOTS.OBSERVATION_ID,
+                      OBSERVATION_PLOTS.MONITORING_PLOT_ID,
+                      OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID,
+                      OBSERVATION_PLOTS.IS_PERMANENT,
+                      OBSERVATION_BIOMASS_SPECIES.ID,
+                      OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
+                      OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
+                  )
+          )
+          .execute()
+    }
   }
 
   private fun recalculateFlaggedPlotResults(plantingSiteId: PlantingSiteId) {
