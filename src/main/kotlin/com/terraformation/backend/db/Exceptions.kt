@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SavedTableViewId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
@@ -179,6 +180,9 @@ class ReportNotFoundException(val reportId: ReportId) :
 
 class SavedTableViewNameExistsException(val name: String) :
     DuplicateEntityException("Saved table view $name already exists")
+
+class SavedTableViewNotFoundException(val savedTableViewId: SavedTableViewId) :
+    EntityNotFoundException("Saved table view $savedTableViewId not found")
 
 class ScientificNameExistsException(val name: String?) :
     DuplicateEntityException("Scientific name $name already exists")
