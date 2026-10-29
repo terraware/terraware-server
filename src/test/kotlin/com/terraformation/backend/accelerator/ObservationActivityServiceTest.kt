@@ -106,7 +106,13 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         ObservationResultsStoreV2(dslContext),
         ObservationService(
-            BiomassStore(dslContext, entityLocker, eventPublisher, parentStore),
+            BiomassStore(
+                dslContext,
+                entityLocker,
+                eventPublisher,
+                ObservationResultsInvalidator(dslContext),
+                parentStore,
+            ),
             clock,
             dslContext,
             entityLocker,

@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -26,6 +27,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -71,6 +74,41 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class InvalidateObservationPlots {
+    @Test
+    fun `flags only the changed scheduled biomass observation without following dependencies`() {
+      val monitoring = insertCompletedObservation(1, plotIdA)
+      val biomass = insertObservation(observationType = ObservationType.BiomassMeasurements)
+      insertObservationPlot(monitoringPlotId = plotIdA, completedBy = user.userId)
+      val laterMonitoring = insertCompletedObservation(3, plotIdA)
+      insertAllResults(laterMonitoring, plotIdA)
+      insertObservationDependentSubstrata(
+          laterMonitoring,
+          substratumHistoryIdA,
+          dependsOnObservationId = biomass,
+      )
+      insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
+      insertObservationPlot(monitoringPlotId = plotIdA, completedBy = user.userId)
+      insertObservation(observationType = ObservationType.BiomassMeasurements)
+      insertObservationPlot(monitoringPlotId = plotIdA, completedBy = user.userId)
+
+      invalidator.invalidateObservationPlots(biomass, listOf(plotIdA))
+
+      assertFlagged(
+          plots = setOf(biomass to plotIdA),
+          substrata = setOf(biomass to substratumHistoryIdA),
+          strata = setOf(biomass to stratumHistoryId1),
+          sites = setOf(biomass),
+      )
+      assertEquals(
+          false,
+          dslContext.fetchExists(
+              OBSERVATION_SITE_RESULTS,
+              OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(monitoring),
+          ),
+          "Earlier monitoring is unchanged",
+      )
+    }
+
     @Test
     fun `inserts placeholder rows for every level when no results exist`() {
       val observationId = insertCompletedObservation(1, plotIdA)
@@ -193,15 +231,24 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
       assertFlagged()
     }
 
-    @Test
-    fun `does not flag non-plot rows for ad-hoc observations`() {
+    @ParameterizedTest
+    @EnumSource(ObservationType::class)
+    fun `does not flag non-plot rows for ad-hoc observations`(type: ObservationType) {
       val observationId =
-          insertObservation(completedTime = Instant.ofEpochSecond(1), isAdHoc = true)
+          insertObservation(
+              completedTime = Instant.ofEpochSecond(1),
+              isAdHoc = true,
+              observationType = type,
+          )
       insertObservationPlot(monitoringPlotId = plotIdA, completedBy = user.userId)
 
       invalidator.invalidateObservationPlots(observationId, listOf(plotIdA))
 
-      assertFlagged(plots = setOf(observationId to plotIdA))
+      assertFlagged(
+          plots =
+              if (type == ObservationType.Monitoring) setOf(observationId to plotIdA)
+              else emptySet()
+      )
     }
 
     @Test
@@ -414,6 +461,14 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class EventListeners {
+    @BeforeEach
+    fun insertBiomassObservation() {
+      insertObservation(observationType = ObservationType.BiomassMeasurements)
+      listOf(plotIdA, plotIdB, plotIdC).forEach { plotId ->
+        insertObservationPlot(monitoringPlotId = plotId, completedBy = user.userId)
+      }
+    }
+
     @Test
     fun `t0 plot data assignment flags the plot in every observation`() {
       val observationId1 = insertCompletedObservation(1, plotIdA, plotIdB)
