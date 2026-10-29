@@ -7,6 +7,7 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.SavedTableViewNameExistsException
 import com.terraformation.backend.db.SavedTableViewNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SavedTableViewId
 import com.terraformation.backend.db.default_schema.tables.records.SavedTableViewsRecord
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -288,6 +289,61 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<OrganizationNotFoundException> {
         store.create(organizationId, "species", "My view", settings)
       }
+    }
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `deletes view`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+      val otherId = insertSavedTableView(organizationId, "species", "Other view", settings)
+
+      store.delete(id)
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              id = otherId,
+              name = "Other view",
+              organizationId = organizationId,
+              settings = settings,
+              tableName = "species",
+              userId = user.userId,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if view does not exist`() {
+      assertThrows<SavedTableViewNotFoundException> { store.delete(SavedTableViewId(-1)) }
+    }
+
+    @Test
+    fun `throws exception if view belongs to another user`() {
+      val otherUserId = insertUser()
+      val id = insertSavedTableView(null, "species", "My view", settings, otherUserId)
+
+      assertThrows<SavedTableViewNotFoundException> { store.delete(id) }
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              id = id,
+              name = "My view",
+              organizationId = null,
+              settings = settings,
+              tableName = "species",
+              userId = otherUserId,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to read view's organization`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<SavedTableViewNotFoundException> { store.delete(id) }
     }
   }
 }
