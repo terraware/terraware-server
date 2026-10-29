@@ -6,17 +6,30 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.point
+import java.math.BigDecimal
 import org.jooq.impl.DSL
 
-class ObservationCompletedStep(val scenario: ObservationScenario, val number: Int) :
-    NodeWithChildren<ObservationCompletedStep.Plot>() {
+class ObservationCompletedStep(
+    val scenario: ObservationScenario,
+    val number: Int,
+    val type: ObservationType = ObservationType.Monitoring,
+    val isAdHoc: Boolean = false,
+    val recalculate: Boolean = true,
+    val initialState: ObservationState = ObservationState.InProgress,
+) : NodeWithChildren<ObservationCompletedStep.Plot>() {
   private val test: DatabaseBackedTest
     get() = scenario.test
 
@@ -28,8 +41,30 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
       number: Number,
       isPermanent: Boolean = true,
       conditions: Set<ObservableCondition> = emptySet(),
+      status: ObservationPlotStatus = ObservationPlotStatus.Completed,
       init: Plot.() -> Unit = {},
-  ) = initChild(Plot(number.toLong(), isPermanent, conditions), init)
+  ) = initChild(Plot(number.toLong(), isPermanent, conditions, status), init)
+
+  fun biomassSpecies(
+      number: Int,
+      scientificName: String? = null,
+      commonName: String? = null,
+      isInvasive: Boolean = false,
+      isThreatened: Boolean = false,
+  ) {
+    require(type == ObservationType.BiomassMeasurements) { "Not a biomass observation" }
+    val species =
+        ObservationBiomassSpeciesRow(
+            commonName = commonName,
+            isInvasive = isInvasive,
+            isThreatened = isThreatened,
+            observationId = observationId,
+            scientificName = scientificName,
+            speciesId = if (scientificName == null) scenario.getOrInsertSpecies(number) else null,
+        )
+    val id = test.insertObservationBiomassSpecies(species)
+    scenario.biomassSpecies[observationId to number] = species.copy(id = id)
+  }
 
   override fun prepare() {
     val plantingSiteHistoryId =
@@ -41,9 +76,13 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
             .value1()!!
     observationId =
         test.insertObservation(
+            completedTime =
+                if (initialState == ObservationState.Completed) scenario.clock.instant() else null,
+            isAdHoc = isAdHoc,
             plantingSiteHistoryId = plantingSiteHistoryId,
             plantingSiteId = scenario.plantingSiteId,
-            state = ObservationState.InProgress,
+            state = initialState,
+            observationType = type,
         )
     scenario.observationIds[number] = observationId
   }
@@ -52,14 +91,17 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
     // We need to complete all the plots here, rather than immediately completing them as they're
     // declared. Otherwise the observation would be marked complete after the first plot was
     // finished (since it will look like the last incomplete one).
-    children.forEach { it.completePlot() }
-    scenario.observationResultsRecalculator.recalculateAllSites()
+    children.filter { it.status == ObservationPlotStatus.Completed }.forEach { it.completePlot() }
+    if (recalculate) {
+      scenario.observationResultsRecalculator.recalculateAllSites()
+    }
   }
 
   inner class Plot(
       val number: Long,
       val isPermanent: Boolean,
       val conditions: Set<ObservableCondition>,
+      val status: ObservationPlotStatus,
   ) : NodeWithChildren<Plot.Species>() {
     private lateinit var monitoringPlotId: MonitoringPlotId
 
@@ -70,17 +112,26 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
           conditions = conditions,
           notes = null,
           observedTime = scenario.clock.instant(),
-          plants = children.flatMap { species -> species.toRecordedPlantsRows() },
+          plants =
+              if (type == ObservationType.Monitoring) {
+                children.flatMap { species -> species.toRecordedPlantsRows() }
+              } else {
+                emptyList()
+              },
       )
     }
 
     override fun prepare() {
       monitoringPlotId = scenario.getMonitoringPlotId(number)
       test.insertObservationPlot(
-          claimedBy = currentUser().userId,
+          claimedBy = if (status == ObservationPlotStatus.Unclaimed) null else currentUser().userId,
           isPermanent = isPermanent,
           monitoringPlotId = monitoringPlotId,
           monitoringPlotHistoryId = scenario.monitoringPlotHistoryIds[monitoringPlotId]!!,
+          observationId = observationId,
+          statusId =
+              if (status == ObservationPlotStatus.Completed) ObservationPlotStatus.Claimed
+              else status,
       )
 
       val substratumId = scenario.monitoringPlotSubstratumIds[monitoringPlotId]!!
@@ -96,7 +147,37 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
         live: Int? = null,
         dead: Int? = null,
         init: Species.() -> Unit = {},
-    ) = initChild(Species(number, existing, live, dead), init)
+    ): Species {
+      require(type == ObservationType.Monitoring) { "Not a plant monitoring observation" }
+      return initChild(Species(number, existing, live, dead), init)
+    }
+
+    fun tree(
+        species: Int,
+        treeNumber: Int? = null,
+        trunkNumber: Int? = null,
+        growthForm: TreeGrowthForm = TreeGrowthForm.Tree,
+        isDead: Boolean = false,
+        diameterAtBreastHeightCm: BigDecimal? =
+            if (growthForm == TreeGrowthForm.Shrub) null else BigDecimal.TEN,
+        pointOfMeasurementM: BigDecimal? =
+            if (growthForm == TreeGrowthForm.Shrub) null else BigDecimal("1.3"),
+        shrubDiameterCm: Int? = if (growthForm == TreeGrowthForm.Shrub) 10 else null,
+    ): RecordedTreeId {
+      require(type == ObservationType.BiomassMeasurements) { "Not a biomass observation" }
+      return test.insertRecordedTree(
+          row = RecordedTreesRow(treeNumber = treeNumber, trunkNumber = trunkNumber),
+          biomassSpeciesId =
+              scenario.getBiomassSpeciesId(this@ObservationCompletedStep.number, species),
+          diameterAtBreastHeightCm = diameterAtBreastHeightCm,
+          isDead = isDead,
+          monitoringPlotId = monitoringPlotId,
+          observationId = observationId,
+          pointOfMeasurementM = pointOfMeasurementM,
+          shrubDiameterCm = shrubDiameterCm,
+          treeGrowthForm = growthForm,
+      )
+    }
 
     inner class Species(
         val number: Int,
