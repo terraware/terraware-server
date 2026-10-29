@@ -66,18 +66,19 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
 
   /** Flags results of plots that were in the stratum when observed. */
   fun invalidateStratum(stratumId: StratumId) {
-    invalidate(
-        OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.`in`(
-            DSL.select(MONITORING_PLOT_HISTORIES.ID)
-                .from(MONITORING_PLOT_HISTORIES)
-                .join(SUBSTRATUM_HISTORIES)
-                .on(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID))
-                .join(STRATUM_HISTORIES)
-                .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
-                .where(STRATUM_HISTORIES.STRATUM_ID.eq(stratumId))
-        )
-    )
+    invalidate(stratumPlotsCondition(stratumId))
   }
+
+  private fun stratumPlotsCondition(stratumId: StratumId): Condition =
+      OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.`in`(
+          DSL.select(MONITORING_PLOT_HISTORIES.ID)
+              .from(MONITORING_PLOT_HISTORIES)
+              .join(SUBSTRATUM_HISTORIES)
+              .on(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID))
+              .join(STRATUM_HISTORIES)
+              .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+              .where(STRATUM_HISTORIES.STRATUM_ID.eq(stratumId))
+      )
 
   /** Flags all the results of all the observations of a planting site. */
   fun invalidateSite(plantingSiteId: PlantingSiteId) {
@@ -97,17 +98,26 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
 
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
-    invalidatePlot(event.monitoringPlotId)
+    invalidate(
+        OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(event.monitoringPlotId)
+            .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+    )
   }
 
   @EventListener
   fun on(event: T0StratumDataAssignedEvent) {
-    invalidateStratum(event.stratumId)
+    invalidate(
+        stratumPlotsCondition(event.stratumId)
+            .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+    )
   }
 
   @EventListener
   fun on(event: SurvivalRateIncludesTempPlotsChangedEvent) {
-    invalidateSite(event.plantingSiteId)
+    invalidate(
+        OBSERVATIONS.PLANTING_SITE_ID.eq(event.plantingSiteId)
+            .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+    )
   }
 
   /** Returns true if any of a planting site's results rows are flagged for recalculation. */
@@ -181,14 +191,19 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
 
   /**
    * Flags the results rows affected by a set of observation plots, identified by a condition on
-   * [OBSERVATION_PLOTS]. Only completed plots of monitoring observations are considered.
+   * [OBSERVATION_PLOTS]. Only completed plots of monitoring and scheduled biomass observations are
+   * considered. Only monitoring observations invalidate dependent observations.
    */
   private fun invalidate(observationPlotsCondition: Condition) {
     val changedPlotsCondition =
         DSL.and(
             observationPlotsCondition,
             OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed),
-            OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring),
+            OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring)
+                .or(
+                    OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BiomassMeasurements)
+                        .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+                ),
         )
     val nonAdHocCondition = DSL.and(changedPlotsCondition, OBSERVATIONS.IS_AD_HOC.isFalse)
 
@@ -196,7 +211,9 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
     flagSubstratumResults(nonAdHocCondition)
     flagStratumResults(nonAdHocCondition)
     flagSiteResults(nonAdHocCondition)
-    flagDependentObservations(nonAdHocCondition)
+    flagDependentObservations(
+        nonAdHocCondition.and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+    )
   }
 
   private fun flagPlotResults(changedPlotsCondition: Condition) {
