@@ -212,6 +212,12 @@ COMMENT ON TABLE regions IS '(Enum) Parts of the world where countries are locat
 
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
 
+COMMENT ON TABLE saved_table_views IS 'Named, user-defined configurations of client-side tables (filters, search, sort order, visible columns, column order).';
+COMMENT ON COLUMN saved_table_views.name IS 'User-supplied name for the view. Unique per user, table, and organization.';
+COMMENT ON COLUMN saved_table_views.organization_id IS 'If null, the view is global to the user. Otherwise, it is specific to the user and the organization.';
+COMMENT ON COLUMN saved_table_views.settings IS 'Client-defined JSON describing the view, e.g., filters, search, sort order, visible columns, and column order. Opaque to the server.';
+COMMENT ON COLUMN saved_table_views.table_name IS 'Client-defined identifier of the table the view applies to.';
+
 COMMENT ON TABLE seed_fund_report_files IS 'Linking table between `reports` and `files` for non-photo files.';
 
 COMMENT ON TABLE seed_fund_report_photos IS 'Linking table between `reports` and `files` for photos.';
