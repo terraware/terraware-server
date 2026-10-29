@@ -322,6 +322,8 @@ class ObservationStore(
       if (newModel.isAdHoc) {
         throw IllegalArgumentException("Requested substrata must be empty for ad-hoc observations")
       }
+    } else if (!newModel.isAdHoc) {
+      throw IllegalArgumentException("Must request at least one substratum for observation")
     }
 
     return dslContext.transactionResult { _ ->

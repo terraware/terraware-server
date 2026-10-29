@@ -4,6 +4,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import com.terraformation.backend.tracking.model.NewObservationModel
 import io.mockk.every
@@ -81,6 +82,26 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
           )
       )
     }
+  }
+
+  @Test
+  fun `throws exception if non-ad-hoc observation has no requested substrata`() {
+    assertThrows<IllegalArgumentException> {
+      store.createObservation(
+          NewObservationModel(
+              endDate = LocalDate.EPOCH,
+              id = null,
+              isAdHoc = false,
+              observationType = ObservationType.Monitoring,
+              plantingSiteId = plantingSiteId,
+              requestedSubstratumIds = emptySet(),
+              startDate = LocalDate.EPOCH,
+              state = ObservationState.Upcoming,
+          )
+      )
+    }
+
+    assertTableEmpty(OBSERVATIONS, "Observation should not have been created")
   }
 
   @Test

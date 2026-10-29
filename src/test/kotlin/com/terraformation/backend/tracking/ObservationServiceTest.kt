@@ -1601,6 +1601,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   plantingSiteId = inserted.plantingSiteId,
                   startDate = startDate,
                   endDate = endDate,
+                  requestedSubstratumIds = setOf(inserted.substratumId),
               )
           )
 
@@ -1629,12 +1630,14 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSiteId: PlantingSiteId,
         startDate: LocalDate = LocalDate.EPOCH,
         endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
+        requestedSubstratumIds: Set<SubstratumId> = emptySet(),
     ): NewObservationModel =
         NewObservationModel(
             plantingSiteId = plantingSiteId,
             id = null,
             isAdHoc = false,
             observationType = ObservationType.Monitoring,
+            requestedSubstratumIds = requestedSubstratumIds,
             startDate = startDate,
             endDate = endDate,
             state = ObservationState.Upcoming,
