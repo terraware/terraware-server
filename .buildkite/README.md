@@ -84,6 +84,17 @@ stops the build's Gradle daemons and deletes the copy's contents once all the st
 finished, leaving the directory itself in place because the agent's exit hooks run there. The upload
 script then purges directories that haven't been used for six hours.
 
+## Skipping CI for passing trees
+
+Passing non-main builds save their git tree hash to the branch-level cache. Each branch has one
+cache entry, overwritten by each passing build, so only that branch's most recent passing tree
+counts. The first step of a later build restores the record; if a push build's tree matches, such
+as after squashing a PR's commits without changing its contents, it annotates the build and
+replaces the rest of the pipeline with a cleanup-only step.
+
+Main and tag builds, rebuilds, and manually started builds run in full. Rebasing onto a newer
+main changes the tree hash, so CI runs normally.
+
 ## Build environment
 
 As currently configured, our Buildkite builds run on EC2 instances in a dedicated VPC. The
