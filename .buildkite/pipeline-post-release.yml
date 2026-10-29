@@ -59,4 +59,6 @@ steps:
   - <<: *use-existing-checkout
     label: ":broom: Clean up build checkout"
     key: "remove-checkout"
-    command: 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
+    command:
+      - 'if [[ -d "$$GRADLE_USER_HOME/daemon" ]]; then ./gradlew --stop; fi'
+      - 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'

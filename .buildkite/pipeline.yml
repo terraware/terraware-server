@@ -248,7 +248,9 @@ steps:
       - "promote-script-cache"
       - "promote-buildx-cache"
     allow_dependency_failure: true
-    command: 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
+    command:
+      - 'if [[ -d "$$GRADLE_USER_HOME/daemon" ]]; then ./gradlew --stop; fi'
+      - 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
@@ -260,6 +262,7 @@ steps:
       - "promote-gradle-cache"
       - "promote-node-cache"
       - "promote-script-cache"
+      - "remove-checkout"
     if: "build.branch == 'main' || build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
       - *load-secrets
