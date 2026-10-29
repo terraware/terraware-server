@@ -46,7 +46,8 @@ data class ObservationSpeciesResultsModel(
     /**
      * Number of live plants observed in monitoring plots in the latest observations. If this is for
      * a stratum or site, it may also include past observations (excluding ad-hoc) if the latest
-     * observation doesn't include all subareas.
+     * observation doesn't include all subareas. For scheduled biomass, only this observation's live
+     * plants are included.
      */
     val latestLive: Int,
     /**
@@ -104,9 +105,9 @@ interface BaseMonitoringResult {
    */
   val totalPlants: Int?
   /**
-   * Total number of species observed, not counting dead plants. Includes plants with Known and
-   * Other certainties. In the case of Other, each distinct user-supplied species name is counted as
-   * a separate species for purposes of this total.
+   * Total number of species observed. Plant monitoring excludes dead-only species; scheduled
+   * biomass includes them. Includes Known and Other certainties, with each distinct user-supplied
+   * Other species name counted separately.
    */
   val totalSpecies: Int?
 }
