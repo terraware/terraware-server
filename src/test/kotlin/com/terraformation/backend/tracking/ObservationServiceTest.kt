@@ -73,7 +73,6 @@ import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
-import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotStore
@@ -755,10 +754,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if observation has no requested substrata`() {
+    fun `abandons observation if all its requested substrata have been deleted`() {
       val observationId = insertObservation(state = ObservationState.Upcoming)
 
-      assertThrows<ObservationHasNoSubstrataException> { service.startObservation(observationId) }
+      service.startObservation(observationId)
+
+      eventPublisher.assertEventPublished(
+          ObservationNotStartedEvent(observationId, ObservationType.Monitoring, plantingSiteId)
+      )
+      eventPublisher.assertEventNotPublished<ObservationStartedEvent>()
+
+      assertTableEmpty(OBSERVATIONS, "Observation should have been deleted")
     }
 
     @Test

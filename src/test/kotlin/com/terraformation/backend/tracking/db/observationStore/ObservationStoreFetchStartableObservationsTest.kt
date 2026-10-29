@@ -18,7 +18,7 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
   }
 
   @Test
-  fun `only returns observations with requested substrata`() {
+  fun `includes observations whose requested substrata have all been deleted`() {
     val timeZone = ZoneId.of("America/Denver")
     val startDate = LocalDate.of(2023, 4, 1)
     val endDate = LocalDate.of(2023, 4, 30)
@@ -27,7 +27,7 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
     clock.instant = now
 
     helper.insertPlantedSite(timeZone = timeZone)
-    val startableObservationId =
+    val observationWithSubstratumId =
         insertObservation(
             endDate = endDate,
             startDate = startDate,
@@ -39,12 +39,17 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
     insertPlantingSite(timeZone = timeZone)
     insertStratum()
     insertSubstratum()
-    insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+    val observationWithoutSubstratumId =
+        insertObservation(
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
 
-    val expected = setOf(startableObservationId)
+    val expected = setOf(observationWithSubstratumId, observationWithoutSubstratumId)
     val actual = store.fetchStartableObservations().map { it.id }.toSet()
 
-    assertEquals(expected, actual)
+    assertEquals(expected, actual, "Startable observation IDs")
   }
 
   @Test
