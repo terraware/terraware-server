@@ -1,3 +1,4 @@
+4cefb789 Stop Gradle daemons before cleaning up build checkout (#5289)
 36206606 SW-9160 Accept biomass data when completing assigned plots (#5283)
 0b5831bf SW-9160 Complete assigned plots through ObservationService (#5282)
 82f0e1e5 SW-9160 Extract observation data validation (#5281)
