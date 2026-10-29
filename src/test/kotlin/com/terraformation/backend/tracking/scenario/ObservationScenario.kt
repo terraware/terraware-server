@@ -239,6 +239,12 @@ class ObservationScenario(
   fun t0DensitySet(init: T0DensitySetStep.() -> Unit) =
       initChild(T0DensitySetStep(this), init).andAdvanceClock()
 
+  fun populateStoredResults(
+      observation: Int,
+      pending: Boolean = false,
+      init: PopulateStoredResultsStep.() -> Unit,
+  ) = initChild(PopulateStoredResultsStep(this, observation, pending), init)
+
   fun getOrInsertSpecies(number: Int): SpeciesId {
     return speciesIds.getOrPut(number) { test.insertSpecies("Species $number") }
   }
