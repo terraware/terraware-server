@@ -111,6 +111,9 @@ spring:
 
 server:
   tomcat:
+    # Set the keepalive timeout to longer than the load balancer's idle timeout so we don't
+    # close connections out from under the load balancer.
+    keep-alive-timeout: 310s
     # Tomcat only allows limits up to 2GB, so disable Tomcat's limit and rely on Spring's.
     max-http-form-post-size: -1
 
