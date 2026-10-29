@@ -1097,6 +1097,8 @@ data class ScheduleObservationRequestPayload(
             "The end date for this observation, should be limited to 2 months from the start date."
     )
     val endDate: LocalDate,
+    @Schema(description = "Which type of observation to schedule.", defaultValue = "Monitoring")
+    val observationType: ObservationType? = null,
     @Schema(description = "Which planting site this observation needs to be scheduled for.")
     val plantingSiteId: PlantingSiteId,
     @Schema(description = "Use requestedSubstratumIds instead", deprecated = true)
@@ -1120,7 +1122,7 @@ data class ScheduleObservationRequestPayload(
           endDate = endDate,
           id = null,
           isAdHoc = false,
-          observationType = ObservationType.Monitoring,
+          observationType = observationType ?: ObservationType.Monitoring,
           plantingSiteId = plantingSiteId,
           requestedSubstratumIds =
               requestedSubstratumIds
