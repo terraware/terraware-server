@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Herbaceous and tree species data for a biomass observation.</p>
+                            <p>Herbaceous and tree species data for a biomass observation. Shared by all the monitoring plots in the observation.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -131,13 +131,18 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="observation_biomass_additional_species.biomass_species_id references observation_biomass_species.id via observation_biomass_additional_species_biomass_species_id_fkey"><a href='observation_biomass_additional_species.html'>observation_biomass_additional_species</a><span class='relatedKey'>.biomass_species_id</span></td>
+                                                <td class="constraint detail">observation_biomass_additional_species_biomass_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observation_biomass_quadrat_species.biomass_species_id references observation_biomass_species.id via observation_biomass_quadrat_species_biomass_species_id_fkey"><a href='observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span class='relatedKey'>.biomass_species_id</span></td>
                                                 <td class="constraint detail">observation_biomass_quadrat_species_biomass_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='recorded_trees.html'>recorded_trees</a><span class='relatedKey'>.biomass_species_id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
+                                                <td title="recorded_trees.[observation_id, biomass_species_id] references observation_biomass_species.[observation_id, id] via recorded_trees_observation_id_biomass_species_id_fkey"><a href='recorded_trees.html'>recorded_trees</a><span class='relatedKey'>.biomass_species_id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_biomass_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -158,64 +163,27 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_biomass_quadrat_species.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey"><a href='observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey</td>
+                                                <td title="observation_biomass_additional_species.[observation_id, biomass_species_id] references observation_biomass_species.[observation_id, id] via observation_biomass_additiona_observation_id_biomass_speci_fkey"><a href='observation_biomass_additional_species.html'>observation_biomass_additional_species</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_biomass_additiona_observation_id_biomass_speci_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='recorded_trees.html'>recorded_trees</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
+                                                <td title="observation_biomass_quadrat_species.[observation_id, biomass_species_id] references observation_biomass_species.[observation_id, id] via observation_biomass_quadrat_s_observation_id_biomass_speci_fkey"><a href='observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_biomass_quadrat_s_observation_id_biomass_speci_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="recorded_trees.[observation_id, biomass_species_id] references observation_biomass_species.[observation_id, id] via recorded_trees_observation_id_biomass_species_id_fkey"><a href='recorded_trees.html'>recorded_trees</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_biomass_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="observation_biomass_species.[observation_id, monitoring_plot_id] references observation_biomass_details.[observation_id, monitoring_plot_id] via observation_biomass_species_observation_id_monitoring_plot_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_biomass_species_observation_id_monitoring_plot_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
                                             <tr>
                                                 <td title="observation_biomass_species.observation_id references observations.id via observation_biomass_species_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observation_biomass_species_observation_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="monitoring_plot_id">monitoring_plot_id</span></td>
-                                    <td>int8</td>
-                                    <td>19</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="observation_biomass_quadrat_species.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey"><a href='observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span class='relatedKey'>.monitoring_plot_id</span></td>
-                                                <td class="constraint detail">observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='recorded_trees.html'>recorded_trees</a><span class='relatedKey'>.monitoring_plot_id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="observation_biomass_species.monitoring_plot_id references monitoring_plots.id via observation_biomass_species_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observation_biomass_species_monitoring_plot_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="observation_biomass_species.[observation_id, monitoring_plot_id] references observation_biomass_details.[observation_id, monitoring_plot_id] via observation_biomass_species_observation_id_monitoring_plot_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.monitoring_plot_id</span></td>
-                                                <td class="constraint detail">observation_biomass_species_observation_id_monitoring_plot_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -349,16 +317,10 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observation_biomass_species_id_observation_id_monitoring_pl_key</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observation_biomass_species_id_observation_id_key</td>
                                     <td>Must be unique</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>id + observation_id + monitoring_plot_id</td>
-                                </tr>
-                                <tr>
-                                    <td title='Indexed'>observation_biomass_species_monitoring_plot_id_idx</td>
-                                    <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>monitoring_plot_id</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>id + observation_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>observation_biomass_species_observation_id_idx</td>
@@ -367,16 +329,16 @@
                                     <td>observation_id</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observation_biomass_species_observation_id_monitoring_plot__idx</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observation_biomass_species_observation_id_scientific_name_idx</td>
                                     <td>Must be unique</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>observation_id + monitoring_plot_id + species_id</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>observation_id + scientific_name</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observation_biomass_species_observation_id_monitoring_plot_idx1</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observation_biomass_species_observation_id_species_id_idx</td>
                                     <td>Must be unique</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>observation_id + monitoring_plot_id + scientific_name</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>observation_id + species_id</td>
                                 </tr>
                                 </tbody>
                             </table>

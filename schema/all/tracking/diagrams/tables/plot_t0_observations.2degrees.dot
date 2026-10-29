@@ -22,6 +22,12 @@ digraph "twoDegreesRelationshipsDiagram" {
   "monitoring_plots":"organization_id":w -> "public.organizations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"planting_site_id":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"substratum_id":w -> "substrata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_additional_species":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_additional_species":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_additional_species":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_additional_species":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_additional_species":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_additional_species":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -33,14 +39,10 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observation_biomass_quadrat_species":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"elipses":w -> "observation_biomass_quadrat_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_biomass_quadrat_species":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"elipses":w -> "observation_biomass_quadrat_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"elipses":w -> "observation_biomass_quadrat_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_biomass_species":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_biomass_species":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_biomass_species":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_species":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_dependent_substrata":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_dependent_substrata":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -132,7 +134,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "scheduled_planting_dates":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "scheduled_planting_dates":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -220,7 +221,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16"><B>draft_planting_sites</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/draft_planting_sites.html"
     target="_top"
@@ -259,6 +260,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="monitoring_plots"
   ];
+  "observation_biomass_additional_species" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16"><B>observation_biomass_additional_species</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/observation_biomass_additional_species.html"
+    target="_top"
+    tooltip="observation_biomass_additional_species"
+  ];
   "observation_biomass_details" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -286,7 +298,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="228" HEIGHT="16"><B>observation_biomass_quadrat_species</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 9</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observation_biomass_quadrat_species.html"
     target="_top"
@@ -297,7 +309,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="174" HEIGHT="16"><B>observation_biomass_species</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observation_biomass_species.html"
     target="_top"
@@ -440,7 +452,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="77" HEIGHT="16"><B>observations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">24 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">25 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observations.html"
     target="_top"
@@ -621,7 +633,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16"><B>recorded_trees</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/recorded_trees.html"
     target="_top"

@@ -1,10 +1,10 @@
 plantings
 observation_biomass_quadrat_species
 stratum_species_targets
-recorded_trees
 recorded_plants
 observation_media_files
-draft_planting_sites
+observation_biomass_additional_species
+recorded_trees
 plot_t0_observations
 planting_season_species_targets
 observed_substratum_species_totals
@@ -36,9 +36,12 @@ simplified_stratum_histories
 simplified_strata
 simplified_planting_sites
 simplified_planting_site_histories
+draft_substrata
+draft_strata
 planting_site_species_targets
 observation_biomass_quadrat_details
 observation_biomass_species
+draft_planting_sites
 observation_biomass_details
 observation_plots
 monitoring_plot_histories
@@ -66,6 +69,7 @@ observation_states
 observation_plot_statuses
 observable_conditions
 mangrove_tides
+draft_planting_site_types
 biomass_forest_types
 observation_media_types
 recorded_species_certainties
