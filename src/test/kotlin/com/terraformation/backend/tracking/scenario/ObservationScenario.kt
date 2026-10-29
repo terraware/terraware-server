@@ -179,6 +179,9 @@ class ObservationScenario(
   val substratumIds = mutableMapOf<Int, SubstratumId>()
   lateinit var plantingSiteId: PlantingSiteId
 
+  fun expectStoredResults(observation: Int, init: ExpectedStoredResultsStep.() -> Unit) =
+      initChild(ExpectedStoredResultsStep(this, observation), init)
+
   fun expectResults(
       observation: Int,
       baseline: ExpectedSiteResultStep? = null,
