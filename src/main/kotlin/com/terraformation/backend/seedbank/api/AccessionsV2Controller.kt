@@ -327,7 +327,7 @@ data class AccessionPayloadV2(
 // Mark all fields as write-only in the schema
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayloadV2(
-    val bagNumbers: Set<String>? = null,
+    val bagNumbers: Set<String?>? = null,
     @Schema(description = "Will be derived from collectedTime if present.", deprecated = true)
     val collectedDate: LocalDate? = null,
     @JsonDeserialize(using = UtcDefaultInstantDeserializer::class)
@@ -356,7 +356,7 @@ data class CreateAccessionRequestPayloadV2(
 ) {
   fun toModel(clock: Clock): AccessionModel {
     return AccessionModel(
-        bagNumbers = bagNumbers.orEmpty(),
+        bagNumbers = bagNumbers.orEmpty().filterNotNull().toSet(),
         clock = clock,
         collectedDate = collectedDate,
         collectedTime = collectedTime,
@@ -385,7 +385,7 @@ data class CreateAccessionRequestPayloadV2(
 
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class UpdateAccessionRequestPayloadV2(
-    val bagNumbers: Set<String>? = null,
+    val bagNumbers: Set<String?>? = null,
     @Schema(description = "Will be derived from collectedTime if present.", deprecated = true)
     val collectedDate: LocalDate? = null,
     @Schema(description = "Date and time the seeds were collected.")
@@ -429,7 +429,7 @@ data class UpdateAccessionRequestPayloadV2(
 ) {
   fun applyToModel(model: AccessionModel): AccessionModel =
       model.copy(
-          bagNumbers = bagNumbers.orEmpty(),
+          bagNumbers = bagNumbers.orEmpty().filterNotNull().toSet(),
           collectedDate = collectedDate,
           collectedTime = collectedTime,
           collectionSiteCity = collectionSiteCity,
