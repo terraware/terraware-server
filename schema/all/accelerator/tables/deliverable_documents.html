@@ -157,13 +157,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="deliverable_documents.deliverable_type_id references deliverable_types.id via deliverable_documents_deliverable_type_id_fkey"><a href='deliverable_types.html'>deliverable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">deliverable_documents_deliverable_type_id_fkey</td>
+                                                <td title="deliverable_documents.[deliverable_id, deliverable_type_id] references deliverables.[id, deliverable_type_id] via deliverable_documents_deliverable_id_deliverable_type_id_fkey"><a href='deliverables.html'>deliverables</a><span class='relatedKey'>.deliverable_type_id</span></td>
+                                                <td class="constraint detail">deliverable_documents_deliverable_id_deliverable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="deliverable_documents.[deliverable_id, deliverable_type_id] references deliverables.[id, deliverable_type_id] via deliverable_documents_deliverable_id_deliverable_type_id_fkey"><a href='deliverables.html'>deliverables</a><span class='relatedKey'>.deliverable_type_id</span></td>
-                                                <td class="constraint detail">deliverable_documents_deliverable_id_deliverable_type_id_fkey</td>
+                                                <td title="deliverable_documents.deliverable_type_id references deliverable_types.id via deliverable_documents_deliverable_type_id_fkey"><a href='deliverable_types.html'>deliverable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">deliverable_documents_deliverable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
