@@ -342,6 +342,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "rate_limited_events" to setOf(ALL),
                   "regions" to setOf(ALL, CUSTOMER),
                   "roles" to setOf(ALL, CUSTOMER),
+                  "saved_table_views" to setOf(ALL, CUSTOMER),
                   "seed_fund_report_files" to setOf(ALL, CUSTOMER),
                   "seed_fund_report_photos" to setOf(ALL, CUSTOMER),
                   "seed_fund_report_statuses" to setOf(ALL, CUSTOMER),

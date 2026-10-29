@@ -177,6 +177,9 @@ class ReportConfigNotFoundException(val configId: ProjectReportConfigId) :
 class ReportNotFoundException(val reportId: ReportId) :
     EntityNotFoundException("Report $reportId not found")
 
+class SavedTableViewNameExistsException(val name: String) :
+    DuplicateEntityException("Saved table view $name already exists")
+
 class ScientificNameExistsException(val name: String?) :
     DuplicateEntityException("Scientific name $name already exists")
 

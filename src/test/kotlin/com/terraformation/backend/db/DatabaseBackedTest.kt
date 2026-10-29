@@ -161,6 +161,7 @@ import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SavedTableViewId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
@@ -208,6 +209,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.ProjectInternalU
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectLandUseModelTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SavedTableViewsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportFilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportPhotosDao
 import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportsDao
@@ -242,6 +244,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternal
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseModelTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SavedTableViewsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SplatAnnotationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SplatsRow
@@ -889,6 +892,7 @@ abstract class DatabaseBackedTest {
   protected val reportProjectIndicatorTargetsDao: ReportProjectIndicatorTargetsDao by lazyDao()
   protected val reportProjectIndicatorsDao: ReportProjectIndicatorsDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
+  protected val savedTableViewsDao: SavedTableViewsDao by lazyDao()
   protected val scheduledPlantingDatesDao: ScheduledPlantingDatesDao by lazyDao()
   protected val scheduledPlantingDateSpeciesDao: ScheduledPlantingDateSpeciesDao by lazyDao()
   protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
@@ -2137,6 +2141,31 @@ abstract class DatabaseBackedTest {
           .also { inserted.notificationIds.add(it) }
     }
   }
+
+  fun insertSavedTableView(
+      organizationId: OrganizationId? = null,
+      tableName: String = "species",
+      name: String = "View ${nextSavedTableViewNumber++}",
+      settings: JSONB = JSONB.valueOf("{}"),
+      userId: UserId = inserted.userId,
+      baseView: String? = null,
+  ): SavedTableViewId {
+    val row =
+        SavedTableViewsRow(
+            baseView = baseView,
+            name = name,
+            organizationId = organizationId,
+            settings = settings,
+            tableName = tableName,
+            userId = userId,
+        )
+
+    savedTableViewsDao.insert(row)
+
+    return row.id!!.also { inserted.savedTableViewIds.add(it) }
+  }
+
+  private var nextSavedTableViewNumber = 1
 
   private var nextAccessionNumber = 1
 
