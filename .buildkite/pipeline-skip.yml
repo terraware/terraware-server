@@ -1,0 +1,14 @@
+# Uploaded with --replace when a build is skipped, so the per-build checkout still gets cleaned up.
+steps:
+  - label: ":broom: Clean up build checkout"
+    key: "remove-skipped-checkout"
+    checkout:
+      skip: true
+    env:
+      BUILDKITE_BUILD_CHECKOUT_PATH: "${PER_BUILD_CHECKOUT_PATH?}"
+    retry:
+      manual:
+        allowed: false
+    agents:
+      "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
+    command: 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'

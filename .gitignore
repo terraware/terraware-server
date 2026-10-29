@@ -9,6 +9,7 @@ node_modules
 out
 .idea
 openapi.yaml
+.passed-tree.json
 .env
 .DS_Store
 .run
