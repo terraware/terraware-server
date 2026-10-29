@@ -98,4 +98,29 @@ class SavedTableViewStore(private val dslContext: DSLContext) {
       throw SavedTableViewNameExistsException(name)
     }
   }
+
+  /**
+   * Deletes one of the current user's saved table views.
+   *
+   * @throws SavedTableViewNotFoundException The view doesn't exist, belongs to another user, or is
+   *   specific to an organization the user can no longer read.
+   */
+  fun delete(savedTableViewId: SavedTableViewId) {
+    dslContext.transaction { config ->
+      val deleted =
+          config
+              .dsl()
+              .deleteFrom(SAVED_TABLE_VIEWS)
+              .where(SAVED_TABLE_VIEWS.ID.eq(savedTableViewId))
+              .and(SAVED_TABLE_VIEWS.USER_ID.eq(currentUser().userId))
+              .returning(SAVED_TABLE_VIEWS.ORGANIZATION_ID)
+              .fetchOne() ?: throw SavedTableViewNotFoundException(savedTableViewId)
+
+      // Throwing here rolls back the deletion.
+      val organizationId = deleted.organizationId
+      if (organizationId != null && !currentUser().canReadOrganization(organizationId)) {
+        throw SavedTableViewNotFoundException(savedTableViewId)
+      }
+    }
+  }
 }
