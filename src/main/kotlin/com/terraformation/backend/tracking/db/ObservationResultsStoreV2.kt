@@ -38,6 +38,7 @@ import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResult
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSiteStatsModel
+import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumStatsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
@@ -64,6 +65,13 @@ import org.locationtech.jts.geom.Polygon
  */
 @Named
 class ObservationResultsStoreV2(private val dslContext: DSLContext) {
+  private val scheduledBiomassField =
+      DSL.field(
+              OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BiomassMeasurements)
+                  .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+          )
+          .`as`("scheduled_biomass")
+
   fun fetchOneById(
       observationId: ObservationId,
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
@@ -301,6 +309,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     return DSL.multiset(
             DSL.select(
                     biomassDetailsMultiset,
+                    scheduledBiomassField,
                     USERS.FIRST_NAME,
                     USERS.LAST_NAME,
                     OBSERVATION_PLOTS.CLAIMED_BY,
@@ -371,20 +380,20 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()]
             val sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!
             val species = record[monitoringPlotSpeciesMultiset]
+            val isBiomass = record[scheduledBiomassField] == true
+            val status = record[OBSERVATION_PLOTS.STATUS_ID]!!
             val totalPlants =
-                species.ifEmpty { null }?.sumOf { it.totalLive + it.totalExisting + it.totalDead }
+                totalPlantCount(
+                    species,
+                    isBiomass,
+                    status == ObservationPlotStatus.Completed,
+                    includeExisting = true,
+                )
             val totalLiveSpeciesExceptUnknown =
-                species
-                    .ifEmpty { null }
-                    ?.count {
-                      it.certainty != RecordedSpeciesCertainty.Unknown &&
-                          (it.totalLive + it.totalExisting) > 0
-                    }
+                totalSpeciesCount(species, isBiomass, status == ObservationPlotStatus.Completed)
 
             val survivalRate = record[OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE]
             val plantingDensity = record[OBSERVATION_PLOT_RESULTS.PLANT_DENSITY]
-
-            val status = record[OBSERVATION_PLOTS.STATUS_ID]!!
 
             ObservationMonitoringPlotResultsModel(
                 biomassDetails = record[biomassDetailsMultiset],
@@ -492,6 +501,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     return DSL.multiset(
             DSL.select(
                     SUBSTRATUM_HISTORIES.AREA_HA,
+                    scheduledBiomassField,
                     SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
                     SUBSTRATUM_HISTORIES.NAME,
                     SUBSTRATA.PLANTING_COMPLETED_TIME,
@@ -550,20 +560,15 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             val anyCompleted =
                 completionResults?.let { it.anyPlotsCompleted }
                     ?: monitoringPlots.any { it.completedTime != null }
+            val isBiomass = record[scheduledBiomassField] == true
             val species =
                 if (anyCompleted) {
                   record[substratumSpeciesMultisetField]
                 } else {
                   emptyList()
                 }
-            val totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead }
-            val totalLiveSpeciesExceptUnknown =
-                species
-                    .ifEmpty { null }
-                    ?.count {
-                      it.certainty != RecordedSpeciesCertainty.Unknown &&
-                          (it.totalLive + it.totalExisting) > 0
-                    }
+            val totalPlants = totalPlantCount(species, isBiomass, anyCompleted)
+            val totalLiveSpeciesExceptUnknown = totalSpeciesCount(species, isBiomass, anyCompleted)
 
             val completedTime =
                 completionResults?.areaCompletedTime
@@ -657,6 +662,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     return DSL.multiset(
             DSL.select(
                     STRATUM_HISTORIES.AREA_HA,
+                    scheduledBiomassField,
                     STRATUM_HISTORIES.STRATUM_ID,
                     STRATUM_HISTORIES.NAME,
                     substrataField,
@@ -716,6 +722,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             val completionResults = record[stratumCompletionMultisetField]?.firstOrNull()
             val anyCompleted =
                 completionResults?.anyPlotsCompleted ?: substrata.any { it.anyPlotsCompleted }
+            val isBiomass = record[scheduledBiomassField] == true
             val species =
                 if (anyCompleted) {
                   record[stratumSpeciesMultisetField]
@@ -726,13 +733,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             val identifiedSpecies = species.filter {
               it.certainty != RecordedSpeciesCertainty.Unknown
             }
-            val totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead }
-            val totalLiveSpeciesExceptUnknown =
-                if (species.isNotEmpty()) {
-                  identifiedSpecies.count { (it.totalLive + it.totalExisting) > 0 }
-                } else {
-                  null
-                }
+            val totalPlants = totalPlantCount(species, isBiomass, anyCompleted)
+            val totalLiveSpeciesExceptUnknown = totalSpeciesCount(species, isBiomass, anyCompleted)
 
             val completedTime =
                 completionResults?.areaCompletedTime
@@ -809,6 +811,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 PLANTING_SITE_HISTORIES.AREA_HA,
                 PLANTING_SITE_HISTORIES.ID,
                 plantingSiteSpeciesMultisetField,
+                scheduledBiomassField,
                 strataField,
                 OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
                 OBSERVATION_SITE_RESULTS.NEEDS_RECALCULATION,
@@ -831,6 +834,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
               val strata = record[strataField]
               val anyCompleted = strata.any { stratum -> stratum.anyPlotsCompleted }
+              val isBiomass = record[scheduledBiomassField] == true
               val species =
                   if (anyCompleted) {
                     record[plantingSiteSpeciesMultisetField]
@@ -842,7 +846,6 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                       OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()]
 
               val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
-              val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
 
               val plantingCompleted = strata.isNotEmpty() && strata.all { it.plantingCompleted }
 
@@ -853,8 +856,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     null
                   }
 
-              val totalSpecies = if (species.isNotEmpty()) liveSpecies.size else null
-              val totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead }
+              val totalSpecies = totalSpeciesCount(species, isBiomass, anyCompleted)
+              val totalPlants = totalPlantCount(species, isBiomass, anyCompleted)
 
               val survivalRate = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE]
               val survivalRateStdDev = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_STD_DEV]
@@ -1014,6 +1017,33 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
               )
           )
+
+  private fun totalPlantCount(
+      species: List<ObservationSpeciesResultsModel>,
+      isBiomass: Boolean,
+      anyCompleted: Boolean,
+      includeExisting: Boolean = false,
+  ): Int? =
+      if (species.isNotEmpty() || (isBiomass && anyCompleted)) {
+        species.sumOf { it.totalLive + it.totalDead + if (includeExisting) it.totalExisting else 0 }
+      } else {
+        null
+      }
+
+  private fun totalSpeciesCount(
+      species: List<ObservationSpeciesResultsModel>,
+      isBiomass: Boolean,
+      anyCompleted: Boolean,
+  ): Int? =
+      if (species.isNotEmpty() || (isBiomass && anyCompleted)) {
+        species.count {
+          it.certainty != RecordedSpeciesCertainty.Unknown &&
+              if (isBiomass) it.totalLive + it.totalDead > 0
+              else it.totalLive + it.totalExisting > 0
+        }
+      } else {
+        null
+      }
 
   private fun totalPlantsField(
       speciesTotals: Table<*>,
