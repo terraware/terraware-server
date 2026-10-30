@@ -124,7 +124,12 @@ class ObservationCompletedStep(
     override fun prepare() {
       monitoringPlotId = scenario.getMonitoringPlotId(number)
       test.insertObservationPlot(
-          claimedBy = if (status == ObservationPlotStatus.Unclaimed) null else currentUser().userId,
+          claimedBy =
+              when (status) {
+                ObservationPlotStatus.Claimed,
+                ObservationPlotStatus.Completed -> currentUser().userId
+                else -> null
+              },
           isPermanent = isPermanent,
           monitoringPlotId = monitoringPlotId,
           monitoringPlotHistoryId = scenario.monitoringPlotHistoryIds[monitoringPlotId]!!,
