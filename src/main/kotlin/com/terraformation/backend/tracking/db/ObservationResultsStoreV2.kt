@@ -1038,8 +1038,11 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
       if (species.isNotEmpty() || (isBiomass && anyCompleted)) {
         species.count {
           it.certainty != RecordedSpeciesCertainty.Unknown &&
-              if (isBiomass) it.totalLive + it.totalDead > 0
-              else it.totalLive + it.totalExisting > 0
+              if (isBiomass) {
+                it.totalLive + it.totalDead > 0
+              } else {
+                it.totalLive + it.totalExisting > 0
+              }
         }
       } else {
         null

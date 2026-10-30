@@ -230,8 +230,8 @@ private fun biomassSpeciesTotalsQuery(
           dead,
           DSL.inline(0),
           permanentLive,
-          DSL.inline(null, SQLDataType.INTEGER),
-          DSL.inline(null, SQLDataType.NUMERIC),
+          DSL.castNull(OBSERVED_SITE_SPECIES_TOTALS.SURVIVAL_RATE),
+          DSL.castNull(PLOT_T0_DENSITIES.PLOT_DENSITY),
           live,
       )
       .from(totals)
