@@ -334,12 +334,13 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates name and settings`() {
-      val id = insertSavedTableView(null, "species", "My view", settings)
+      val id = insertSavedTableView(null, "species", "My view", settings, baseView = "preset view")
 
       store.update(id, "New name", newSettings)
 
       assertTableEquals(
           SavedTableViewsRecord(
+              baseView = "preset view",
               id = id,
               name = "New name",
               organizationId = null,
