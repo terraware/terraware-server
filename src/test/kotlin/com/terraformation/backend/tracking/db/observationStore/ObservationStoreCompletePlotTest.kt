@@ -25,6 +25,8 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationSubstrat
 import com.terraformation.backend.db.tracking.tables.records.PlantingSitePopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstratumPopulationsRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
@@ -46,6 +48,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.security.access.AccessDeniedException
 
 class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
@@ -2689,11 +2693,14 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEmpty(OBSERVATION_SITE_RESULTS)
   }
 
-  @Test
-  fun `does not update substratum observed time or aggregates for ad-hoc plots in substrata`() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class)
+  fun `does not update substratum observed time or aggregates for ad-hoc plots in substrata`(
+      type: ObservationType
+  ) {
     val speciesId = insertSpecies()
     val adHocPlotId = insertMonitoringPlot(isAdHoc = true)
-    val adHocObservationId = insertObservation(isAdHoc = true)
+    val adHocObservationId = insertObservation(isAdHoc = true, observationType = type)
     insertObservationPlot(
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
@@ -2707,14 +2714,16 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         emptySet(),
         null,
         Instant.ofEpochSecond(1),
-        listOf(
-            RecordedPlantsRow(
-                certaintyId = RecordedSpeciesCertainty.Known,
-                gpsCoordinates = point(0),
-                speciesId = speciesId,
-                statusId = RecordedPlantStatus.Live,
-            ),
-        ),
+        if (type == ObservationType.Monitoring)
+            listOf(
+                RecordedPlantsRow(
+                    certaintyId = RecordedSpeciesCertainty.Known,
+                    gpsCoordinates = point(0),
+                    speciesId = speciesId,
+                    statusId = RecordedPlantStatus.Live,
+                ),
+            )
+        else emptyList(),
     )
 
     assertEquals(
@@ -2728,6 +2737,11 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEmpty(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
+    if (type == ObservationType.BiomassMeasurements) {
+      assertTableEmpty(OBSERVATION_PLOT_RESULTS)
+      assertTableEmpty(OBSERVED_PLOT_SPECIES_TOTALS)
+      assertTableEmpty(OBSERVATION_DEPENDENT_SUBSTRATA)
+    }
   }
 
   @Test

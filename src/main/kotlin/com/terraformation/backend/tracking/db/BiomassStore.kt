@@ -68,6 +68,7 @@ class BiomassStore(
     private val dslContext: DSLContext,
     private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
+    private val observationResultsInvalidator: ObservationResultsInvalidator,
     private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
@@ -477,6 +478,10 @@ class BiomassStore(
               )
               .attach(dslContext)
       record.insert()
+      observationResultsInvalidator.invalidateObservationPlots(
+          observationId,
+          listOf(monitoringPlotId),
+      )
 
       eventPublisher.publishEvent(
           RecordedTreeCreatedEvent(
@@ -546,6 +551,7 @@ class BiomassStore(
             .execute()
       }
 
+      observationResultsInvalidator.invalidateObservation(observationId)
       return
     }
 
@@ -697,6 +703,7 @@ class BiomassStore(
         .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
         .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherBiomassSpeciesId))
         .execute()
+    observationResultsInvalidator.invalidateObservation(observationId)
   }
 
   fun updateBiomassDetails(
@@ -1407,6 +1414,13 @@ class BiomassStore(
                   .where(ID.eq(recordedTreeId))
                   .fetchSingle()
 
+          if (existing.isDead != updated.isDead) {
+            observationResultsInvalidator.invalidateObservationPlots(
+                observationId,
+                listOf(monitoringPlotId),
+            )
+          }
+
           eventPublisher.publishEvent(
               RecordedTreeUpdatedEvent(
                   changedFrom = changedFrom,
@@ -1511,6 +1525,10 @@ class BiomassStore(
       }
 
       deleteBiomassSpeciesIfUnreferenced(oldBiomassSpeciesId, recordedTree.monitoringPlotId!!)
+      observationResultsInvalidator.invalidateObservationPlots(
+          observationId,
+          listOf(monitoringPlotId),
+      )
     }
   }
 
@@ -1564,6 +1582,10 @@ class BiomassStore(
       )
 
       deleteBiomassSpeciesIfUnreferenced(recordedTree.biomassSpeciesId!!, monitoringPlotId)
+      observationResultsInvalidator.invalidateObservationPlots(
+          observationId,
+          listOf(monitoringPlotId),
+      )
     }
   }
 

@@ -482,11 +482,13 @@ class ObservationStore(
           monitoringPlotHistoryId,
           substratumId,
           plantingSiteId,
+          observationType,
       ) = dslContext
           .select(
               OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.asNonNullable(),
               OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID,
               OBSERVATION_PLOTS.observations.PLANTING_SITE_ID.asNonNullable(),
+              OBSERVATION_PLOTS.observations.OBSERVATION_TYPE_ID.asNonNullable(),
           )
           .from(OBSERVATION_PLOTS)
           .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
@@ -520,10 +522,7 @@ class ObservationStore(
         throw PlotAlreadyCompletedException(monitoringPlotId)
       }
 
-      if (
-          plants.isNotEmpty() &&
-              fetchObservationType(observationId) == ObservationType.BiomassMeasurements
-      ) {
+      if (plants.isNotEmpty() && observationType == ObservationType.BiomassMeasurements) {
         throw IllegalArgumentException("Biomass observations must not contain plants")
       }
 
@@ -564,18 +563,20 @@ class ObservationStore(
           )
       )
 
-      if (!isAdHoc) {
+      if (!isAdHoc && observationType == ObservationType.Monitoring) {
         recordSubstratumDependencies(observationId)
       }
 
-      updateSpeciesTotals(
-          observationId,
-          plantingSite,
-          monitoringPlotId,
-          monitoringPlotHistoryId,
-          observationPlotsRow.isPermanent!!,
-          plantCountsBySpecies,
-      )
+      if (observationType == ObservationType.Monitoring) {
+        updateSpeciesTotals(
+            observationId,
+            plantingSite,
+            monitoringPlotId,
+            monitoringPlotHistoryId,
+            observationPlotsRow.isPermanent!!,
+            plantCountsBySpecies,
+        )
+      }
 
       observationResultsInvalidator.invalidateObservationPlots(
           observationId,

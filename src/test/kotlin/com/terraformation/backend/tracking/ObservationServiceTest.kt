@@ -13,6 +13,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
@@ -49,12 +50,17 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationMediaFilesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationSiteResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.file.FileService
@@ -76,6 +82,7 @@ import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotStore
+import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -150,6 +157,7 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.transaction.TransactionDefinition
 
 class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -165,7 +173,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
   private val thumbnailService: ThumbnailService = mockk()
   private val biomassStore: BiomassStore by lazy {
-    BiomassStore(dslContext, entityLocker, eventPublisher, parentStore)
+    BiomassStore(
+        dslContext,
+        entityLocker,
+        eventPublisher,
+        observationResultsInvalidator,
+        parentStore,
+    )
   }
   private val jobScheduler: JobScheduler = mockk()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
@@ -2850,7 +2864,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `completes biomass plots using the same observation-wide species`() {
+    fun `completes biomass plots with shared species and deferred totals`() {
       val (observationId, plotIds) =
           insertObservationWithPlots(ObservationType.BiomassMeasurements, plotCount = 2)
       val details = biomassDetails()
@@ -2889,6 +2903,52 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           "Plot statuses",
       )
       eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
+      assertTrue(
+          dslContext.fetchSingle(OBSERVATION_SITE_RESULTS).needsRecalculation!!,
+          "Site pending after biomass submission",
+      )
+      assertTableEmpty(OBSERVED_PLOT_SPECIES_TOTALS)
+      assertTableEmpty(OBSERVATION_DEPENDENT_SUBSTRATA)
+
+      val recalculator =
+          ObservationResultsRecalculator(
+                  LockService(dslContext),
+                  observationResultsInvalidator,
+                  ObservationRecalculationStore(dslContext),
+                  systemUser,
+                  transactionManager,
+              )
+              .apply { siteTransactionPropagation = TransactionDefinition.PROPAGATION_REQUIRED }
+      assertTrue(recalculator.recalculateSite(plantingSiteId), "Biomass recalculation succeeded")
+
+      assertTableEquals(
+          ObservationSiteResultsRecord(
+              needsRecalculation = false,
+              observationId = observationId,
+              permanentLive = 0,
+              plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+              plantingSiteId = plantingSiteId,
+              totalDead = 0,
+              totalExisting = 0,
+              totalLive = 2,
+          ),
+          message = "Submitted biomass counts",
+      )
+      assertTableEquals(
+          ObservedSiteSpeciesTotalsRecord(
+              biomassSpeciesId = speciesId,
+              certaintyId = Other,
+              observationId = observationId,
+              permanentLive = 0,
+              plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+              plantingSiteId = plantingSiteId,
+              speciesName = "Shared species",
+              totalDead = 0,
+              totalExisting = 0,
+              totalLive = 2,
+          ),
+          message = "Shared species counted once across both plots",
+      )
     }
 
     @Test

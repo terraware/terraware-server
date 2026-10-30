@@ -112,7 +112,13 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
 
   private val service: ObservationService by lazy {
     ObservationService(
-        BiomassStore(dslContext, entityLocker, eventPublisher, parentStore),
+        BiomassStore(
+            dslContext,
+            entityLocker,
+            eventPublisher,
+            ObservationResultsInvalidator(dslContext),
+            parentStore,
+        ),
         clock,
         dslContext,
         entityLocker,
