@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteIdConverter
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumIdConverter
@@ -117,6 +118,11 @@ internal fun plotHasCompletedObservations(
                             .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
                     )
                     .and(OBSERVATION_PLOTS.COMPLETED_TIME.le(OBSERVATIONS.COMPLETED_TIME))
+                    .and(
+                        OBSERVATION_PLOTS.observations.OBSERVATION_TYPE_ID.eq(
+                            ObservationType.Monitoring
+                        )
+                    )
                     .orderBy(
                         OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
                         OBSERVATION_PLOTS.OBSERVATION_ID.desc(),

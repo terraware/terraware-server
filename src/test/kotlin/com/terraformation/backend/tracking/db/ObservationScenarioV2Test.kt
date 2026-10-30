@@ -635,6 +635,11 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
               )
           ),
       )
+      insertObservation(
+          completedTime = Instant.ofEpochSecond(1),
+          observationType = ObservationType.BiomassMeasurements,
+      )
+      insertObservationPlot(completedTime = Instant.ofEpochSecond(1), isPermanent = false)
       observationResultsRecalculator.recalculateAllSites()
 
       val results = resultsStoreV2.fetchOneById(observationId)
@@ -883,10 +888,21 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
           }
         }
 
+        val completedTime = clock.instant
         observation(1) {
           plot(1) { species(0, live = 5) }
           plot(2, isPermanent = false) { species(0, live = 5) }
         }
+
+        insertObservation(
+            completedTime = completedTime,
+            observationType = ObservationType.BiomassMeasurements,
+        )
+        insertObservationPlot(
+            completedTime = completedTime,
+            isPermanent = false,
+            monitoringPlotId = monitoringPlotIds[1L]!!,
+        )
 
         val unobservedSpeciesId = speciesIds[1]!!
         val expectedT0Density = BigDecimal(20 + 30).toPlantsPerHectare()
@@ -1511,7 +1527,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
   @Nested
   inner class FetchSiteObservationStats {
     @Test
-    fun `only counts completed and abandoned observations of scheduled monitoring`() {
+    fun `only counts completed and abandoned observations of scheduled plant monitoring`() {
       importFromCsvFiles(
           "/tracking/observation/DisjointSubstrata",
           numObservations = 3,
@@ -1557,6 +1573,20 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       insertObservation(state = ObservationState.InProgress)
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(completedTime = Instant.ofEpochSecond(20), isAdHoc = true)
+      insertObservation(
+          completedTime = Instant.ofEpochSecond(20),
+          observationType = ObservationType.BiomassMeasurements,
+      )
+      insertObservationPlot(
+          completedTime = Instant.ofEpochSecond(20),
+          monitoringPlotId = alpha1PlotId,
+      )
+      insertObservationSubstratumResult(
+          substratumId = substratumIds["Alpha-1"]!!,
+          substratumHistoryId = substratumHistoryIds[substratumIds["Alpha-1"]!!]!!,
+      )
+      insertObservationStratumResult()
+      insertObservationSiteResult()
 
       val stats = resultsStoreV2.fetchStatsForSite(plantingSiteId).single()
       val substrataById = stats.strata.single().substrata.associateBy { it.substratumId }

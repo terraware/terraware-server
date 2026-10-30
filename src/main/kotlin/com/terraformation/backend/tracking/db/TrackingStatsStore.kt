@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
@@ -67,6 +68,7 @@ class TrackingStatsStore(
             .join(PLANTING_SITES)
             .on(OBSERVATIONS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
             .where(OBSERVATIONS.COMPLETED_TIME.isNotNull)
+            .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
             .and(OBSERVATION_STRATUM_RESULTS.STRATUM_ID.isNotNull)
             .and(plantingSitesCondition)
 

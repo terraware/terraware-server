@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -144,6 +145,7 @@ fun observationIdForPlot(
                     .and(SUBSTRATUM_ID.`in`(substrataInSite))
                     .and(SUBSTRATUM_ID.notIn(substrataInCurrentObservation))
                     .and(remainingObservations.COMPLETED_TIME.le(observationCompletedTime))
+                    .and(remainingObservations.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
             )
             .where(DSL.field(DSL.name("rn")).eq(1))
       }

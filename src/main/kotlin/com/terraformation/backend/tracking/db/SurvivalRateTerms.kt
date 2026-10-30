@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.ObservationPlots
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
@@ -171,6 +172,11 @@ internal fun plotHasCompletedObservations(
                 DSL.select(OBSERVATION_PLOTS.IS_PERMANENT)
                     .from(OBSERVATION_PLOTS)
                     .where(
+                        OBSERVATION_PLOTS.observations.OBSERVATION_TYPE_ID.eq(
+                            ObservationType.Monitoring
+                        )
+                    )
+                    .and(
                         OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
                             .and(
                                 OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull.or(

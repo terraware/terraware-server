@@ -85,6 +85,7 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
@@ -1963,6 +1964,7 @@ class ReportStore(
           )
           .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
           .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+          .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
           .orderBy(
               OBSERVATIONS.PLANTING_SITE_ID,
               OBSERVATIONS.COMPLETED_TIME.desc(),
