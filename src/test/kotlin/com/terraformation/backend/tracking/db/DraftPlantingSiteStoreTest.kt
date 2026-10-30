@@ -5,6 +5,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
@@ -18,6 +19,7 @@ import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_S
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_STRATA
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_SUBSTRATA
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
 import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
@@ -29,11 +31,15 @@ import java.time.Instant
 import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.CoordinateXY
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.security.access.AccessDeniedException
 
 class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
@@ -124,6 +130,45 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       map.strata
           .flatMap { stratum -> listOfNotNull(stratum.id) + stratum.substrata.mapNotNull { it.id } }
           .toSet()
+
+  /** A square with a zero-width spike sticking out of its left edge, which makes it invalid. */
+  private val spikedSquare: MultiPolygon =
+      GeometryFactory(PrecisionModel(), SRID.LONG_LAT).let { factory ->
+        factory.createMultiPolygon(
+            arrayOf(
+                factory.createPolygon(
+                    arrayOf(
+                        CoordinateXY(0.0, 0.0),
+                        CoordinateXY(1.0, 0.0),
+                        CoordinateXY(1.0, 1.0),
+                        CoordinateXY(0.0, 1.0),
+                        CoordinateXY(0.0, 0.5),
+                        CoordinateXY(-0.5, 0.5),
+                        CoordinateXY(0.0, 0.5),
+                        CoordinateXY(0.0, 0.0),
+                    )
+                )
+            )
+        )
+      }
+
+  /**
+   * Asserts that every stored geometry is [spikedSquare] with its spike removed. The repaired
+   * geometry may keep the vertex where the spike was, so compare shapes rather than vertices.
+   */
+  private fun assertStoredGeometriesRepaired() {
+    val expected = multiPolygon(1)
+    val site = dslContext.fetchSingle(DRAFT_PLANTING_SITES)
+    val stored =
+        mapOf("Site boundary" to site.boundary, "Exclusion" to site.exclusion) +
+            dslContext.fetch(DRAFT_STRATA).associate { "Stratum ${it.name}" to it.boundary } +
+            dslContext.fetch(DRAFT_SUBSTRATA).associate { "Substratum ${it.name}" to it.boundary }
+
+    stored.forEach { (description, geometry) ->
+      assertTrue(geometry!!.isValid, "$description is valid")
+      assertTrue(expected.equalsTopo(geometry), "$description has same shape: $geometry")
+    }
+  }
 
   /** Inserts a draft with two strata, the first of which has two substrata. */
   private fun insertDraftWithStrata(): DraftPlantingSiteId {
@@ -397,6 +442,27 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           )
       )
       assertTableEmpty(DRAFT_STRATA)
+    }
+
+    @Test
+    fun `repairs invalid geometries`() {
+      val model =
+          siteModel(
+              strata =
+                  listOf(
+                      stratumModel(
+                          "S1",
+                          boundary = spikedSquare,
+                          substrata = listOf(substratumModel("S1-A", boundary = spikedSquare)),
+                      )
+                  )
+          )
+
+      store.create(
+          model.copy(map = model.map.copy(boundary = spikedSquare, exclusion = spikedSquare))
+      )
+
+      assertStoredGeometriesRepaired()
     }
 
     @Test
@@ -837,6 +903,31 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
+    }
+
+    @Test
+    fun `repairs invalid geometries`() {
+      val draftId = insertDraftWithStrata()
+
+      store.update(draftId) { model ->
+        model.copy(
+            map =
+                model.map.copy(
+                    boundary = spikedSquare,
+                    exclusion = spikedSquare,
+                    strata =
+                        model.map.strata.map { stratum ->
+                          stratum.copy(
+                              boundary = spikedSquare,
+                              substrata =
+                                  stratum.substrata.map { it.copy(boundary = spikedSquare) },
+                          )
+                        },
+                )
+        )
+      }
+
+      assertStoredGeometriesRepaired()
     }
 
     @Test

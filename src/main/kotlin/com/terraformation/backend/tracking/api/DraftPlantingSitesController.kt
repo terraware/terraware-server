@@ -84,8 +84,9 @@ class DraftPlantingSitesController(
   @Operation(
       summary = "Saves a draft of an in-progress planting site.",
       description =
-          "The map is saved even if it has validation problems such as overlapping strata or " +
-              "self-intersecting polygons. Use the planting site validation endpoint to find them.",
+          "Invalid geometries such as self-intersecting polygons are repaired before saving. " +
+              "The map is saved even if it has other validation problems such as overlapping " +
+              "strata. Use the planting site validation endpoint to find them.",
   )
   @PostMapping
   fun createDraftPlantingSite(
@@ -107,8 +108,9 @@ class DraftPlantingSitesController(
   @Operation(
       summary = "Updates an existing draft of an in-progress planting site.",
       description =
-          "The map is saved even if it has validation problems such as overlapping strata or " +
-              "self-intersecting polygons. Use the planting site validation endpoint to find them.",
+          "Invalid geometries such as self-intersecting polygons are repaired before saving. " +
+              "The map is saved even if it has other validation problems such as overlapping " +
+              "strata. Use the planting site validation endpoint to find them.",
   )
   @PutMapping("/{id}")
   fun updateDraftPlantingSite(

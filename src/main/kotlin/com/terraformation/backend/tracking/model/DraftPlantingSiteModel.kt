@@ -9,6 +9,9 @@ import com.terraformation.backend.db.tracking.DraftStratumId
 import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.tracking.db.DraftStratumNotFoundException
 import com.terraformation.backend.tracking.db.DraftSubstratumNotFoundException
+import com.terraformation.backend.util.fixIfNeeded
+import com.terraformation.backend.util.orEmpty
+import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
@@ -99,6 +102,29 @@ data class DraftPlantingSiteMap(
       stratum.requireValid(existingStratum)
     }
   }
+
+  /**
+   * Returns a copy of the map with invalid geometries repaired. Polygon operations in the map
+   * editor can leave behind problems such as zero-width spikes that aren't visible on the map but
+   * cause the draft to fail validation when the planting site is created.
+   */
+  fun withValidGeometries(): DraftPlantingSiteMap =
+      copy(
+          boundary = boundary?.makeValid(),
+          exclusion = exclusion?.makeValid(),
+          strata =
+              strata.map { stratum ->
+                stratum.copy(
+                    boundary = stratum.boundary.makeValid(),
+                    substrata =
+                        stratum.substrata.map { substratum ->
+                          substratum.copy(boundary = substratum.boundary.makeValid())
+                        },
+                )
+              },
+      )
+
+  private fun MultiPolygon.makeValid(): MultiPolygon = fixIfNeeded().toMultiPolygon().orEmpty()
 }
 
 data class DraftPlantingSiteModel(
