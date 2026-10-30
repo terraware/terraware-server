@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
@@ -1268,4 +1269,5 @@ class T0Store(
   private val completedObservationsCondition =
       OBSERVATIONS.STATE_ID.`in`(listOf(ObservationState.Completed, ObservationState.Abandoned))
           .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+          .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
 }

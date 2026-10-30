@@ -10,6 +10,7 @@ import com.terraformation.backend.db.emptyMultiset
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -1079,6 +1080,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             .join(observations)
             .on(observations.ID.eq(results.OBSERVATION_ID))
             .where(results.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+            .and(observations.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
             .and(observations.COMPLETED_TIME.isNotNull)
             .and(observations.IS_AD_HOC.isFalse)
             .and(
@@ -1104,6 +1106,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             .join(observations)
             .on(observations.ID.eq(results.OBSERVATION_ID))
             .where(results.STRATUM_ID.eq(STRATA.ID))
+            .and(observations.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
             .and(observations.COMPLETED_TIME.isNotNull)
             .and(observations.IS_AD_HOC.isFalse)
             .and(
@@ -1135,6 +1138,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             .join(observations)
             .on(observations.ID.eq(results.OBSERVATION_ID))
             .where(results.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+            .and(observations.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
             .and(observations.COMPLETED_TIME.isNotNull)
             .and(observations.IS_AD_HOC.isFalse)
             .and(anyPlotCompletedCondition(results.OBSERVATION_ID, DSL.trueCondition()))

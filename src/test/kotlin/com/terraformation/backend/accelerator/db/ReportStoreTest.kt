@@ -79,6 +79,7 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.i18n.Messages
@@ -6735,6 +6736,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSiteId = plantingSite3,
         plantingSiteHistoryId = plantingSiteHistory3,
         survivalRate = null,
+    )
+    insertObservation(
+        completedTime = reportEndDate.atStartOfDay().toInstant(ZoneOffset.UTC),
+        observationType = ObservationType.BiomassMeasurements,
+        plantingSiteId = plantingSite1,
+        plantingSiteHistoryId = plantingSiteHistory1,
     )
   }
 

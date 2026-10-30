@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.StratumHistories
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -99,6 +100,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
           )
           .where(flaggedPlotSpecies)
           .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
+          .and(plantMonitoringObservationCondition(OBSERVATION_ID))
           .execute()
     }
 
@@ -138,7 +140,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
           .set(TOTAL_DEAD, sumOfTotals(totals.TOTAL_DEAD))
           .set(TOTAL_EXISTING, sumOfTotals(totals.TOTAL_EXISTING))
           .set(PERMANENT_LIVE, sumOfTotals(totals.PERMANENT_LIVE))
-          .set(PLANT_DENSITY, plantDensity)
+          .set(PLANT_DENSITY, plantMonitoringValue(OBSERVATION_ID, plantDensity))
           .where(NEEDS_RECALCULATION.eq(true))
           .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
           .execute()
@@ -204,8 +206,17 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
           .set(TOTAL_DEAD, sumOfTotals(totals.TOTAL_DEAD))
           .set(TOTAL_EXISTING, sumOfTotals(totals.TOTAL_EXISTING))
           .set(PERMANENT_LIVE, sumOfTotals(totals.PERMANENT_LIVE))
-          .set(PLANT_DENSITY, scope.latestPlantDensityField(OBSERVATION_ID))
-          .set(PLANT_DENSITY_STD_DEV, scope.latestPlantDensityStdDevField(OBSERVATION_ID))
+          .set(
+              PLANT_DENSITY,
+              plantMonitoringValue(OBSERVATION_ID, scope.latestPlantDensityField(OBSERVATION_ID)),
+          )
+          .set(
+              PLANT_DENSITY_STD_DEV,
+              plantMonitoringValue(
+                  OBSERVATION_ID,
+                  scope.latestPlantDensityStdDevField(OBSERVATION_ID),
+              ),
+          )
           .where(NEEDS_RECALCULATION.eq(true))
           .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
           .and(nonAdHocObservationCondition(OBSERVATION_ID))
@@ -304,9 +315,21 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
           .set(TOTAL_DEAD, sumOfTotals(totals.TOTAL_DEAD))
           .set(TOTAL_EXISTING, sumOfTotals(totals.TOTAL_EXISTING))
           .set(PERMANENT_LIVE, sumOfTotals(totals.PERMANENT_LIVE))
-          .set(PLANT_DENSITY, scope.latestPlantDensityField(OBSERVATION_ID))
-          .set(PLANT_DENSITY_STD_DEV, scope.latestPlantDensityStdDevField(OBSERVATION_ID))
-          .set(OBSERVED_DENSITY, scope.observedPlantDensityField(OBSERVATION_ID))
+          .set(
+              PLANT_DENSITY,
+              plantMonitoringValue(OBSERVATION_ID, scope.latestPlantDensityField(OBSERVATION_ID)),
+          )
+          .set(
+              PLANT_DENSITY_STD_DEV,
+              plantMonitoringValue(
+                  OBSERVATION_ID,
+                  scope.latestPlantDensityStdDevField(OBSERVATION_ID),
+              ),
+          )
+          .set(
+              OBSERVED_DENSITY,
+              plantMonitoringValue(OBSERVATION_ID, scope.observedPlantDensityField(OBSERVATION_ID)),
+          )
           .where(NEEDS_RECALCULATION.eq(true))
           .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
           .and(nonAdHocObservationCondition(OBSERVATION_ID))
@@ -406,9 +429,15 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
           .set(TOTAL_DEAD, sumOfTotals(totals.TOTAL_DEAD))
           .set(TOTAL_EXISTING, sumOfTotals(totals.TOTAL_EXISTING))
           .set(PERMANENT_LIVE, sumOfTotals(totals.PERMANENT_LIVE))
-          .set(PLANT_DENSITY, densityField { DSL.avg(it) })
-          .set(PLANT_DENSITY_STD_DEV, densityField { DSL.stddevSamp(it) })
-          .set(OBSERVED_DENSITY, scope.observedPlantDensityField(OBSERVATION_ID))
+          .set(PLANT_DENSITY, plantMonitoringValue(OBSERVATION_ID, densityField { DSL.avg(it) }))
+          .set(
+              PLANT_DENSITY_STD_DEV,
+              plantMonitoringValue(OBSERVATION_ID, densityField { DSL.stddevSamp(it) }),
+          )
+          .set(
+              OBSERVED_DENSITY,
+              plantMonitoringValue(OBSERVATION_ID, scope.observedPlantDensityField(OBSERVATION_ID)),
+          )
           .where(NEEDS_RECALCULATION.eq(true))
           .and(siteObservationCondition(OBSERVATION_ID, plantingSiteId))
           .and(nonAdHocObservationCondition(OBSERVATION_ID))
@@ -567,6 +596,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
             .on(substratumSpecies.SUBSTRATUM_ID.eq(snapshotSubstrata.SUBSTRATUM_ID))
             .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
             .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+            .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
             .and(OBSERVATIONS.STATE_ID.`in`(ObservationState.Completed, ObservationState.Abandoned))
             .and(flaggedCondition(OBSERVATIONS.ID, snapshotStrata))
             .and(
@@ -705,6 +735,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
         )
         .where(flaggedCondition)
         .and(siteObservationCondition(observationIdField, plantingSiteId))
+        .and(plantMonitoringObservationCondition(observationIdField))
         .execute()
   }
 
@@ -730,6 +761,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
             needsRecalculationField.eq(true),
             siteObservationCondition(observationIdField, plantingSiteId),
             nonAdHocObservationCondition(observationIdField),
+            plantMonitoringObservationCondition(observationIdField),
             DSL.notExists(
                 DSL.selectOne()
                     .from(OBSERVATION_PLOTS)
@@ -801,6 +833,21 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
               .from(OBSERVATIONS)
               .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
       )
+
+  private fun plantMonitoringValue(
+      observationIdField: Field<ObservationId?>,
+      value: Field<Int?>,
+  ): Field<Int?> = DSL.`when`(plantMonitoringObservationCondition(observationIdField), value)
+
+  private fun plantMonitoringObservationCondition(
+      observationIdField: Field<ObservationId?>
+  ): Condition =
+      DSL.field(
+              DSL.select(OBSERVATIONS.OBSERVATION_TYPE_ID)
+                  .from(OBSERVATIONS)
+                  .where(OBSERVATIONS.ID.eq(observationIdField))
+          )
+          .eq(ObservationType.Monitoring)
 
   private fun nonAdHocObservationCondition(observationIdField: Field<ObservationId?>): Condition =
       observationIdField.`in`(

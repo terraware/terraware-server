@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.tracking.ObservationType
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -61,6 +62,11 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationStratumResult(survivalRate = 90, survivalRateArea = 5)
       insertObservation(completedTime = Instant.ofEpochSecond(200))
       insertObservationStratumResult(survivalRate = 70, survivalRateArea = 10)
+      insertObservation(
+          completedTime = Instant.ofEpochSecond(201),
+          observationType = ObservationType.BiomassMeasurements,
+      )
+      insertObservationStratumResult()
 
       insertPlantingSite(projectId = projectId1)
       insertStratum()
