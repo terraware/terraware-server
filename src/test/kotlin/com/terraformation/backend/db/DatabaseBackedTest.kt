@@ -4225,10 +4225,12 @@ abstract class DatabaseBackedTest {
       totalExisting: Int = 0,
       permanentLive: Int = 0,
       survivalRate: Int? = null,
+      biomassSpeciesId: BiomassSpeciesId? = null,
   ) {
     with(OBSERVED_PLOT_SPECIES_TOTALS) {
       dslContext
           .insertInto(this)
+          .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
           .set(OBSERVATION_ID, observationId)
           .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
           .set(MONITORING_PLOT_ID, monitoringPlotId)
@@ -4271,10 +4273,12 @@ abstract class DatabaseBackedTest {
       totalDead: Int = row.totalDead ?: 0,
       totalExisting: Int = row.totalExisting ?: 0,
       permanentLive: Int = row.permanentLive ?: 0,
+      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
   ) {
     with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
       dslContext
           .insertInto(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+          .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
           .set(OBSERVATION_ID, observationId)
           .set(SUBSTRATUM_HISTORY_ID, substratumHistoryId)
           .set(SUBSTRATUM_ID, substratumId)
@@ -4316,10 +4320,12 @@ abstract class DatabaseBackedTest {
       totalDead: Int = row.totalDead ?: 0,
       totalExisting: Int = row.totalExisting ?: 0,
       permanentLive: Int = row.permanentLive ?: 0,
+      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
   ) {
     with(OBSERVED_STRATUM_SPECIES_TOTALS) {
       dslContext
           .insertInto(OBSERVED_STRATUM_SPECIES_TOTALS)
+          .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
           .set(OBSERVATION_ID, observationId)
           .set(STRATUM_HISTORY_ID, stratumHistoryId)
           .set(STRATUM_ID, stratumId)
@@ -4361,10 +4367,12 @@ abstract class DatabaseBackedTest {
       totalDead: Int = row.totalDead ?: 0,
       totalExisting: Int = row.totalExisting ?: 0,
       permanentLive: Int = row.permanentLive ?: 0,
+      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
   ) {
     with(OBSERVED_SITE_SPECIES_TOTALS) {
       dslContext
           .insertInto(OBSERVED_SITE_SPECIES_TOTALS)
+          .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
           .set(OBSERVATION_ID, observationId)
           .set(PLANTING_SITE_HISTORY_ID, plantingSiteHistoryId)
           .set(PLANTING_SITE_ID, plantingSiteId)
