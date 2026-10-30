@@ -516,6 +516,7 @@ val ID_WRAPPERS =
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
                 IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
+                IdWrapper("SavedTableViewId", listOf("saved_table_views\\.id")),
                 IdWrapper(
                     "SeedFundReportId",
                     listOf("public\\.seed_fund_reports\\.id", "public\\..*\\.report_id"),

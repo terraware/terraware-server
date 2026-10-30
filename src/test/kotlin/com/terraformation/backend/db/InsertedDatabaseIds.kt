@@ -25,6 +25,7 @@ import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SavedTableViewId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
@@ -120,6 +121,7 @@ class InsertedDatabaseIds {
   val recordedPlantIds = mutableListOf<RecordedPlantId>()
   val recordedTreeIds = mutableListOf<RecordedTreeId>()
   val reportIds = mutableListOf<ReportId>()
+  val savedTableViewIds = mutableListOf<SavedTableViewId>()
   val scheduledPlantingDateIds = mutableListOf<ScheduledPlantingDateId>()
   val seedbankWithdrawalIds = mutableListOf<WithdrawalId>()
   val seedFundReportIds = mutableListOf<SeedFundReportId>()
@@ -283,6 +285,9 @@ class InsertedDatabaseIds {
 
   val reportId
     get() = reportIds.last()
+
+  val savedTableViewId
+    get() = savedTableViewIds.last()
 
   val scheduledPlantingDateId
     get() = scheduledPlantingDateIds.last()
