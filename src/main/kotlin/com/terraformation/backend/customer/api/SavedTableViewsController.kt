@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
@@ -79,11 +80,14 @@ class SavedTableViewsController(private val savedTableViewStore: SavedTableViewS
   }
 
   @ApiResponseSimpleSuccess
+  @ApiResponse400("The request did not include any fields to update.")
   @ApiResponse404
   @ApiResponse409("The current user already has another view with this name for this table.")
   @Operation(
       summary = "Updates one of the current user's saved table views.",
-      description = "Only the fields that are present in the request are changed.",
+      description =
+          "Only the fields that are present in the request are changed. At least one field must " +
+              "be present.",
   )
   @PatchMapping("/{id}")
   fun updateSavedTableView(
