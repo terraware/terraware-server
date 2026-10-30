@@ -11,4 +11,4 @@ steps:
         allowed: false
     agents:
       "aws:instance-id": "$BUILDKITE_AGENT_META_DATA_AWS_INSTANCE_ID"
-    command: 'find "$$BUILDKITE_BUILD_CHECKOUT_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
+    command: ".buildkite/scripts/remove-checkout.sh"
