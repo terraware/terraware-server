@@ -7,6 +7,7 @@ import org.jooq.JSONB
 import org.jooq.Record
 
 data class SavedTableViewModel(
+    val baseView: String?,
     val id: SavedTableViewId,
     val name: String,
     val organizationId: OrganizationId?,
@@ -16,6 +17,7 @@ data class SavedTableViewModel(
   companion object {
     fun of(record: Record): SavedTableViewModel {
       return SavedTableViewModel(
+          baseView = record[SAVED_TABLE_VIEWS.BASE_VIEW],
           id = record[SAVED_TABLE_VIEWS.ID]!!,
           name = record[SAVED_TABLE_VIEWS.NAME]!!,
           organizationId = record[SAVED_TABLE_VIEWS.ORGANIZATION_ID],

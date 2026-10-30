@@ -76,6 +76,8 @@ class SavedTableViewsController(private val savedTableViewStore: SavedTableViewS
 }
 
 data class SavedTableViewPayload(
+    @Schema(description = "Client-defined identifier of the view this view is based on, if any.")
+    val baseView: String?,
     val id: SavedTableViewId,
     val name: String,
     @Schema(
@@ -91,6 +93,7 @@ data class SavedTableViewPayload(
   constructor(
       model: SavedTableViewModel
   ) : this(
+      baseView = model.baseView,
       id = model.id,
       name = model.name,
       organizationId = model.organizationId,

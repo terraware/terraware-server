@@ -37,10 +37,18 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `returns organization-specific view`() {
-      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+      val id =
+          insertSavedTableView(
+              organizationId,
+              "species",
+              "My view",
+              settings,
+              baseView = "preset view",
+          )
 
       assertEquals(
           SavedTableViewModel(
+              baseView = "preset view",
               id = id,
               name = "My view",
               organizationId = organizationId,
@@ -57,6 +65,7 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           SavedTableViewModel(
+              baseView = null,
               id = id,
               name = "My view",
               organizationId = null,
@@ -91,7 +100,14 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
       val otherOrganizationId = insertOrganization()
 
       val viewBId = insertSavedTableView(organizationId, "species", "B view", settings)
-      val viewAId = insertSavedTableView(organizationId, "species", "A view", settings)
+      val viewAId =
+          insertSavedTableView(
+              organizationId,
+              "species",
+              "A view",
+              settings,
+              baseView = "preset view",
+          )
       insertSavedTableView(organizationId, "accessions", "Other table", settings)
       insertSavedTableView(otherOrganizationId, "species", "Other organization", settings)
       insertSavedTableView(null, "species", "Global", settings)
@@ -99,8 +115,15 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              SavedTableViewModel(viewAId, "A view", organizationId, settings, "species"),
-              SavedTableViewModel(viewBId, "B view", organizationId, settings, "species"),
+              SavedTableViewModel(
+                  "preset view",
+                  viewAId,
+                  "A view",
+                  organizationId,
+                  settings,
+                  "species",
+              ),
+              SavedTableViewModel(null, viewBId, "B view", organizationId, settings, "species"),
           ),
           store.fetchByTableName(organizationId, "species"),
       )
@@ -115,8 +138,8 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              SavedTableViewModel(globalId1, "Global1", null, settings, "species"),
-              SavedTableViewModel(globalId2, "Global2", null, settings, "species"),
+              SavedTableViewModel(null, globalId1, "Global1", null, settings, "species"),
+              SavedTableViewModel(null, globalId2, "Global2", null, settings, "species"),
           ),
           store.fetchByTableName(null, "species"),
       )
