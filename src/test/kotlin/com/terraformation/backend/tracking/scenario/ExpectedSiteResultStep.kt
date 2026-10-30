@@ -1,18 +1,24 @@
 package com.terraformation.backend.tracking.scenario
 
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
+import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertNull
 
+/**
+ * Expected results up to [depth]. Initializers for deeper scopes are not run, and their parents'
+ * actual child collections must be empty.
+ */
 class ExpectedSiteResultStep(
     scenario: ObservationScenario,
     val observation: Int,
     actualResult: ObservationResultsModel,
     survivalRate: Int? = null,
     baseline: ExpectedSiteResultStep? = null,
+    val depth: ObservationResultsDepth = ObservationResultsDepth.Plant,
 ) :
     ExpectedAggregatedResult<ObservationResultsModel, ExpectedSiteResultStep>(
         "Site",
@@ -28,20 +34,31 @@ class ExpectedSiteResultStep(
   fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
 
   fun strataExactly(vararg numbers: Int) =
-      expect("strata", numbers.map { "$it" }.sorted()) { result ->
+      expect(
+          "strata",
+          if (depth >= ObservationResultsDepth.Stratum) {
+            numbers.map { "$it" }.sorted()
+          } else {
+            emptyList()
+          },
+      ) { result ->
         result.strata.map { it.name }.sorted()
       }
 
-  fun stratum(number: Int, survivalRate: Int? = null, init: Stratum.() -> Unit) =
-      initAndAppend(
-          Stratum(
-              number,
-              survivalRate,
-              baseline?.strata?.firstOrNull { it.number == number },
-          ),
-          strata,
-          init,
-      )
+  fun stratum(number: Int, survivalRate: Int? = null, init: Stratum.() -> Unit): Stratum? {
+    if (depth < ObservationResultsDepth.Stratum) {
+      return null
+    }
+    return initAndAppend(
+        Stratum(
+            number,
+            survivalRate,
+            baseline?.strata?.firstOrNull { it.number == number },
+        ),
+        strata,
+        init,
+    )
+  }
 
   fun noResultForStratum(number: Int) {
     assertions.add {
@@ -53,6 +70,9 @@ class ExpectedSiteResultStep(
   }
 
   override fun finish() {
+    if (depth < ObservationResultsDepth.Stratum) {
+      strataExactly()
+    }
     super.finish()
     if (baseline != null) {
       val stratumNumbers = strata.map { it.number }.toSet()
@@ -77,20 +97,35 @@ class ExpectedSiteResultStep(
     fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
 
     fun substrataExactly(vararg numbers: Int) =
-        expect("substrata", numbers.map { "$it" }.sorted()) { result ->
+        expect(
+            "substrata",
+            if (depth >= ObservationResultsDepth.Substratum) {
+              numbers.map { "$it" }.sorted()
+            } else {
+              emptyList()
+            },
+        ) { result ->
           result.substrata.map { it.name }.sorted()
         }
 
-    fun substratum(number: Int, survivalRate: Int? = null, init: Substratum.() -> Unit) =
-        initAndAppend(
-            Substratum(
-                number,
-                survivalRate,
-                baseline?.substrata?.firstOrNull { it.number == number },
-            ),
-            substrata,
-            init,
-        )
+    fun substratum(
+        number: Int,
+        survivalRate: Int? = null,
+        init: Substratum.() -> Unit,
+    ): Substratum? {
+      if (depth < ObservationResultsDepth.Substratum) {
+        return null
+      }
+      return initAndAppend(
+          Substratum(
+              number,
+              survivalRate,
+              baseline?.substrata?.firstOrNull { it.number == number },
+          ),
+          substrata,
+          init,
+      )
+    }
 
     fun noResultForSubstratum(number: Int) {
       assertions.add {
@@ -102,6 +137,9 @@ class ExpectedSiteResultStep(
     }
 
     override fun finish() {
+      if (depth < ObservationResultsDepth.Substratum) {
+        substrataExactly()
+      }
       super.finish()
       if (baseline != null) {
         val ourSubstratumNumbers = substrata.map { it.number }.toSet()
@@ -126,23 +164,33 @@ class ExpectedSiteResultStep(
       fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
 
       fun plotsExactly(vararg numbers: Long) =
-          expect("plots", numbers.sorted()) { result ->
+          expect(
+              "plots",
+              if (depth >= ObservationResultsDepth.Plot) numbers.sorted() else emptyList(),
+          ) { result ->
             result.monitoringPlots.map { it.monitoringPlotNumber }.sorted()
           }
 
-      fun plot(number: Long, survivalRate: Int? = null, init: Plot.() -> Unit) =
-          initAndAppend(
-              Plot(
-                  number,
-                  resultForPlot(number),
-                  survivalRate,
-                  baseline?.plots?.firstOrNull { it.number == number },
-              ),
-              plots,
-              init,
-          )
+      fun plot(number: Long, survivalRate: Int? = null, init: Plot.() -> Unit): Plot? {
+        if (depth < ObservationResultsDepth.Plot) {
+          return null
+        }
+        return initAndAppend(
+            Plot(
+                number,
+                resultForPlot(number),
+                survivalRate,
+                baseline?.plots?.firstOrNull { it.number == number },
+            ),
+            plots,
+            init,
+        )
+      }
 
       override fun finish() {
+        if (depth < ObservationResultsDepth.Plot) {
+          plotsExactly()
+        }
         super.finish()
         if (baseline != null) {
           val ourPlotNumbers = plots.map { it.number }.toSet()
