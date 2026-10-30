@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumRes
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import java.math.BigDecimal
@@ -31,6 +32,56 @@ class PopulateStoredResultsStep(
   private val observationRow =
       dslContext.selectFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).fetchSingle()
   private val siteHistoryId = observationRow.plantingSiteHistoryId!!
+
+  internal fun populatePendingResults() {
+    site { counts(totalLive = 0) }
+
+    val substratumHistoryIds = mutableSetOf<SubstratumHistoryId>()
+    val stratumHistoryIds = mutableSetOf<StratumHistoryId>()
+    dslContext
+        .select(
+            OBSERVATION_PLOTS.MONITORING_PLOT_ID,
+            OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID,
+            SUBSTRATUM_HISTORIES.ID,
+            SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+            STRATUM_HISTORIES.ID,
+            STRATUM_HISTORIES.STRATUM_ID,
+        )
+        .from(OBSERVATION_PLOTS)
+        .join(MONITORING_PLOT_HISTORIES)
+        .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
+        .leftJoin(SUBSTRATUM_HISTORIES)
+        .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+        .leftJoin(STRATUM_HISTORIES)
+        .on(STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
+        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .fetch()
+        .forEach { row ->
+          Plot(
+                  plotHistoryId = row[OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID]!!,
+                  plotId = row[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!!,
+              )
+              .counts(totalLive = 0)
+          row[SUBSTRATUM_HISTORIES.ID]?.let { substratumHistoryId ->
+            if (substratumHistoryIds.add(substratumHistoryId)) {
+              Substratum(
+                      substratumHistoryId = substratumHistoryId,
+                      substratumId = row[SUBSTRATUM_HISTORIES.SUBSTRATUM_ID],
+                  )
+                  .counts(totalLive = 0)
+            }
+          }
+          row[STRATUM_HISTORIES.ID]?.let { stratumHistoryId ->
+            if (stratumHistoryIds.add(stratumHistoryId)) {
+              Stratum(
+                      stratumHistoryId = stratumHistoryId,
+                      stratumId = row[STRATUM_HISTORIES.STRATUM_ID],
+                  )
+                  .counts(totalLive = 0)
+            }
+          }
+        }
+  }
 
   fun site(init: Site.() -> Unit) = initChild(Site(), init)
 
