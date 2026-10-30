@@ -1,3 +1,4 @@
+6cd13e7f Update SETUP prerequisite versions (#5306)
 452e4d16 SW-9174 Link observed totals to biomass species (#5298)
 f57594e0 SW-9174 Isolate plant monitoring observation calculations (#5297)
 fad8a3eb Move GbifStatistics migration to 2026/10 subdirectory (#5300)
