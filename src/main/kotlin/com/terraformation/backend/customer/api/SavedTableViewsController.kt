@@ -3,8 +3,10 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.CustomerEndpoint
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.SavedTableViewStore
 import com.terraformation.backend.customer.model.SavedTableViewModel
@@ -13,6 +15,7 @@ import com.terraformation.backend.db.default_schema.SavedTableViewId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -72,6 +75,16 @@ class SavedTableViewsController(private val savedTableViewStore: SavedTableViewS
         )
 
     return CreateSavedTableViewResponsePayload(id)
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @Operation(summary = "Deletes one of the current user's saved table views.")
+  @DeleteMapping("/{id}")
+  fun deleteSavedTableView(@PathVariable id: SavedTableViewId): SimpleSuccessResponsePayload {
+    savedTableViewStore.delete(id)
+
+    return SimpleSuccessResponsePayload()
   }
 }
 
