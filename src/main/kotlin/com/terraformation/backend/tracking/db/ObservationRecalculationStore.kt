@@ -518,6 +518,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
                 table.field("certainty_id")!!,
                 table.field("species_id")!!,
                 table.field("species_name")!!,
+                table.field("biomass_species_id")!!,
                 table.field("total_live")!!,
                 table.field("total_dead")!!,
                 table.field("total_existing")!!,
@@ -532,6 +533,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
                     plotSpecies.CERTAINTY_ID,
                     plotSpecies.SPECIES_ID,
                     plotSpecies.SPECIES_NAME,
+                    plotSpecies.BIOMASS_SPECIES_ID,
                     rollup(plotSpecies.TOTAL_LIVE),
                     rollup(plotSpecies.TOTAL_DEAD),
                     rollup(plotSpecies.TOTAL_EXISTING),
@@ -553,6 +555,7 @@ class ObservationRecalculationStore(private val dslContext: DSLContext) {
                     plotSpecies.CERTAINTY_ID,
                     plotSpecies.SPECIES_ID,
                     plotSpecies.SPECIES_NAME,
+                    plotSpecies.BIOMASS_SPECIES_ID,
                 )
         )
         .execute()
