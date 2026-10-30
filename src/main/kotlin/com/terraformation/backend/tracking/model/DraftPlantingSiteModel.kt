@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.GeometrySerializer
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -9,10 +10,16 @@ import com.terraformation.backend.db.tracking.DraftStratumId
 import com.terraformation.backend.db.tracking.DraftSubstratumId
 import com.terraformation.backend.tracking.db.DraftStratumNotFoundException
 import com.terraformation.backend.tracking.db.DraftSubstratumNotFoundException
+import com.terraformation.backend.util.fixIfNeeded
+import com.terraformation.backend.util.orEmpty
+import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
+import kotlin.math.pow
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 data class DraftSubstratumModel(
     val id: DraftSubstratumId?,
@@ -98,6 +105,54 @@ data class DraftPlantingSiteMap(
 
       stratum.requireValid(existingStratum)
     }
+  }
+
+  /**
+   * Returns a copy of the map with invalid geometries repaired. Polygon operations in the map
+   * editor can leave behind problems such as zero-width spikes that aren't visible on the map but
+   * cause the draft to fail validation when the planting site is created.
+   *
+   * Geometries are also kept valid at the precision of API responses, so the map a client gets back
+   * is valid and doesn't change if the client saves it again.
+   */
+  fun withValidGeometries(): DraftPlantingSiteMap =
+      copy(
+          boundary = boundary?.makeValid(),
+          exclusion = exclusion?.makeValid(),
+          strata =
+              strata.map { stratum ->
+                stratum.copy(
+                    boundary = stratum.boundary.makeValid(),
+                    substrata =
+                        stratum.substrata.map { substratum ->
+                          substratum.copy(boundary = substratum.boundary.makeValid())
+                        },
+                )
+              },
+      )
+
+  /**
+   * Repairs the geometry if it's invalid. If rounding the result to the precision of API responses
+   * would make it invalid again, which can happen when a repair leaves a vertex very close to an
+   * edge, snaps it to that precision instead, which keeps it valid once rounded.
+   */
+  private fun MultiPolygon.makeValid(): MultiPolygon {
+    val fixed = fixIfNeeded()
+    val validWhenRounded =
+        GeometryPrecisionReducer.reducePointwise(fixed, responsePrecisionModel).isValid
+
+    return if (validWhenRounded) {
+          fixed
+        } else {
+          GeometryPrecisionReducer.reduce(fixed, responsePrecisionModel)
+        }
+        .toMultiPolygon()
+        .orEmpty()
+  }
+
+  companion object {
+    private val responsePrecisionModel =
+        PrecisionModel(10.0.pow(GeometrySerializer.COORDINATE_VALUE_SCALE))
   }
 }
 
