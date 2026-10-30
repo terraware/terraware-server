@@ -10,9 +10,12 @@ import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -24,6 +27,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.db.ObservationRecalculationStore
@@ -169,6 +173,7 @@ class ObservationScenario(
   val monitoringPlotIds = mutableMapOf<Long, MonitoringPlotId>()
   val monitoringPlotSubstratumIds = mutableMapOf<MonitoringPlotId, SubstratumId>()
   val observationIds = mutableMapOf<Int, ObservationId>()
+  val biomassSpecies = mutableMapOf<Pair<ObservationId, Int>, ObservationBiomassSpeciesRow>()
   val speciesIds = mutableMapOf<Int, SpeciesId>()
   val stratumIds = mutableMapOf<Int, StratumId>()
   val substratumIds = mutableMapOf<Int, SubstratumId>()
@@ -205,8 +210,17 @@ class ObservationScenario(
 
   fun observation(
       number: Int,
+      type: ObservationType = ObservationType.Monitoring,
+      isAdHoc: Boolean = false,
+      recalculate: Boolean = true,
+      initialState: ObservationState = ObservationState.InProgress,
       init: ObservationCompletedStep.() -> Unit,
-  ) = initChild(ObservationCompletedStep(this, number), init).andAdvanceClock()
+  ) =
+      initChild(
+              ObservationCompletedStep(this, number, type, isAdHoc, recalculate, initialState),
+              init,
+          )
+          .andAdvanceClock()
 
   fun observationEdited(number: Int, init: ObservationEditedStep.() -> Unit) =
       initChild(ObservationEditedStep(this, this, number), init).andAdvanceClock()
@@ -225,6 +239,9 @@ class ObservationScenario(
   fun getOrInsertSpecies(number: Int): SpeciesId {
     return speciesIds.getOrPut(number) { test.insertSpecies("Species $number") }
   }
+
+  fun getBiomassSpeciesId(observation: Int, number: Int): BiomassSpeciesId =
+      biomassSpecies.getValue(observationIds.getValue(observation) to number).id!!
 
   fun getMonitoringPlotId(number: Long): MonitoringPlotId =
       monitoringPlotIds[number]

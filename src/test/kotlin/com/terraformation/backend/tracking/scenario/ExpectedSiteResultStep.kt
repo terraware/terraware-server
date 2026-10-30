@@ -21,6 +21,7 @@ class ExpectedSiteResultStep(
         survivalRate,
         baseline,
         mutableListOf(),
+        observation,
     ) {
   val strata = mutableListOf<Stratum>()
 
@@ -69,6 +70,7 @@ class ExpectedSiteResultStep(
           survivalRate,
           baseline,
           assertions,
+          observation,
       ) {
     val substrata = mutableListOf<Substratum>()
 
@@ -117,6 +119,7 @@ class ExpectedSiteResultStep(
             survivalRate,
             baseline,
             assertions,
+            observation,
         ) {
       val plots = mutableListOf<Plot>()
 
@@ -172,6 +175,7 @@ class ExpectedSiteResultStep(
               survivalRate,
               baseline,
               assertions,
+              observation,
           ) {
         fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
       }
