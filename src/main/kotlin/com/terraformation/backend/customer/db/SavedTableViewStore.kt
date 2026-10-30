@@ -18,6 +18,8 @@ class SavedTableViewStore(private val dslContext: DSLContext) {
    *
    * @param organizationId If non-null, the view is specific to this organization. If null, the view
    *   is global to the user.
+   * @param baseView Client-defined identifier of the view this view is based on, if any. This can't
+   *   be changed once the view is created.
    * @throws SavedTableViewNameExistsException The user already has a view with the same name for
    *   the same table and organization.
    */
@@ -26,12 +28,14 @@ class SavedTableViewStore(private val dslContext: DSLContext) {
       tableName: String,
       name: String,
       settings: JSONB,
+      baseView: String? = null,
   ): SavedTableViewId {
     requirePermissions { organizationId?.let { readOrganization(it) } }
 
     try {
       return dslContext
           .insertInto(SAVED_TABLE_VIEWS)
+          .set(SAVED_TABLE_VIEWS.BASE_VIEW, baseView)
           .set(SAVED_TABLE_VIEWS.NAME, name)
           .set(SAVED_TABLE_VIEWS.ORGANIZATION_ID, organizationId)
           .set(SAVED_TABLE_VIEWS.SETTINGS, settings)

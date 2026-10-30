@@ -6,6 +6,7 @@ CREATE TABLE saved_table_views
   table_name      TEXT   NOT NULL,
   name            TEXT   NOT NULL,
   settings        JSONB  NOT NULL,
+  base_view       TEXT,
 
   UNIQUE NULLS NOT DISTINCT (user_id, table_name, organization_id, name)
 );

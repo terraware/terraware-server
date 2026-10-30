@@ -2148,9 +2148,11 @@ abstract class DatabaseBackedTest {
       name: String = "View ${nextSavedTableViewNumber++}",
       settings: JSONB = JSONB.valueOf("{}"),
       userId: UserId = inserted.userId,
+      baseView: String? = null,
   ): SavedTableViewId {
     val row =
         SavedTableViewsRow(
+            baseView = baseView,
             name = name,
             organizationId = organizationId,
             settings = settings,

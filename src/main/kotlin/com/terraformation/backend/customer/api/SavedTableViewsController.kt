@@ -28,6 +28,7 @@ class SavedTableViewsController(private val savedTableViewStore: SavedTableViewS
   ): CreateSavedTableViewResponsePayload {
     val id =
         savedTableViewStore.create(
+            baseView = payload.baseView,
             name = payload.name,
             organizationId = payload.organizationId,
             settings = payload.settings,
@@ -39,6 +40,12 @@ class SavedTableViewsController(private val savedTableViewStore: SavedTableViewS
 }
 
 data class CreateSavedTableViewRequestPayload(
+    @Schema(
+        description =
+            "Client-defined identifier of the view this view is based on, if any. Can't be " +
+                "changed after the view is created."
+    )
+    val baseView: String?,
     @Schema(
         description = "Name of the view. Must be unique per table and organization (for the user)."
     )

@@ -65,6 +65,23 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates view with base view`() {
+      val id = store.create(organizationId, "species", "My view", settings, "preset view")
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              baseView = "preset view",
+              id = id,
+              name = "My view",
+              organizationId = organizationId,
+              settings = settings,
+              tableName = "species",
+              userId = user.userId,
+          )
+      )
+    }
+
+    @Test
     fun `allows same name for different tables, organizations, and users`() {
       val otherOrganizationId = insertOrganization()
       val otherUserId = insertUser()
