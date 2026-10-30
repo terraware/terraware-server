@@ -293,6 +293,134 @@ class SavedTableViewStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class Update {
+    private val newSettings = JSONB.valueOf("""{"columns":["name"]}""")
+
+    @Test
+    fun `updates name without changing settings`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+
+      store.update(id, "New name", null)
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              id = id,
+              name = "New name",
+              organizationId = organizationId,
+              settings = settings,
+              tableName = "species",
+              userId = user.userId,
+          )
+      )
+    }
+
+    @Test
+    fun `updates settings without changing name`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+
+      store.update(id, null, newSettings)
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              id = id,
+              name = "My view",
+              organizationId = organizationId,
+              settings = newSettings,
+              tableName = "species",
+              userId = user.userId,
+          )
+      )
+    }
+
+    @Test
+    fun `updates name and settings`() {
+      val id = insertSavedTableView(null, "species", "My view", settings, baseView = "preset view")
+
+      store.update(id, "New name", newSettings)
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              baseView = "preset view",
+              id = id,
+              name = "New name",
+              organizationId = null,
+              settings = newSettings,
+              tableName = "species",
+              userId = user.userId,
+          )
+      )
+    }
+
+    @Test
+    fun `allows updating settings when name is unchanged`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+
+      store.update(id, "My view", newSettings)
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              id = id,
+              name = "My view",
+              organizationId = organizationId,
+              settings = newSettings,
+              tableName = "species",
+              userId = user.userId,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if new name already exists`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+      insertSavedTableView(organizationId, "species", "Other view", settings)
+
+      assertThrows<SavedTableViewNameExistsException> { store.update(id, "Other view", null) }
+    }
+
+    @Test
+    fun `throws exception if neither name nor settings is specified`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+
+      assertThrows<IllegalArgumentException> { store.update(id, null, null) }
+    }
+
+    @Test
+    fun `throws exception if view does not exist`() {
+      assertThrows<SavedTableViewNotFoundException> {
+        store.update(SavedTableViewId(-1), "New name", null)
+      }
+    }
+
+    @Test
+    fun `throws exception if view belongs to another user`() {
+      val otherUserId = insertUser()
+      val id = insertSavedTableView(null, "species", "My view", settings, otherUserId)
+
+      assertThrows<SavedTableViewNotFoundException> { store.update(id, "New name", null) }
+
+      assertTableEquals(
+          SavedTableViewsRecord(
+              id = id,
+              name = "My view",
+              organizationId = null,
+              settings = settings,
+              tableName = "species",
+              userId = otherUserId,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to read view's organization`() {
+      val id = insertSavedTableView(organizationId, "species", "My view", settings)
+
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<SavedTableViewNotFoundException> { store.update(id, "New name", null) }
+    }
+  }
+
+  @Nested
   inner class Delete {
     @Test
     fun `deletes view`() {

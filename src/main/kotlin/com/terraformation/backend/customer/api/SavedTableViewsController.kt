@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -75,6 +77,26 @@ class SavedTableViewsController(private val savedTableViewStore: SavedTableViewS
         )
 
     return CreateSavedTableViewResponsePayload(id)
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse400("The request did not include any fields to update.")
+  @ApiResponse404
+  @ApiResponse409("The current user already has another view with this name for this table.")
+  @Operation(
+      summary = "Updates one of the current user's saved table views.",
+      description =
+          "Only the fields that are present in the request are changed. At least one field must " +
+              "be present.",
+  )
+  @PatchMapping("/{id}")
+  fun updateSavedTableView(
+      @PathVariable id: SavedTableViewId,
+      @RequestBody payload: UpdateSavedTableViewRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    savedTableViewStore.update(id, payload.name, payload.settings)
+
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponseSimpleSuccess
@@ -140,6 +162,21 @@ data class CreateSavedTableViewRequestPayload(
     val settings: ArbitraryJsonObject,
     @Schema(description = "Client-defined identifier of the table this view applies to.")
     val tableName: String,
+)
+
+data class UpdateSavedTableViewRequestPayload(
+    @Schema(
+        description =
+            "New name of the view. Must be unique per table and organization (for the user). If " +
+                "not present, the name is not changed."
+    )
+    val name: String?,
+    @Schema(
+        description =
+            "New client-defined view settings, which replace the existing settings. If not " +
+                "present, the settings are not changed."
+    )
+    val settings: ArbitraryJsonObject?,
 )
 
 data class CreateSavedTableViewResponsePayload(val id: SavedTableViewId) : SuccessResponsePayload
