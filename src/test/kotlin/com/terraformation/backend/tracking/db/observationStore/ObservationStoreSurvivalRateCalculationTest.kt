@@ -21,6 +21,8 @@ import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.util.nullSafeMapOf
 import com.terraformation.backend.util.toPlantsPerHectare
@@ -919,7 +921,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           .and(SPECIES_ID.eq(speciesId))
           .execute()
     }
-    observationResultsInvalidator.invalidateStratum(stratumId)
+    observationResultsInvalidator.on(T0StratumDataAssignedEvent(stratumId))
     observationResultsRecalculator.recalculateAllSites()
 
     val actualResults = resultsStoreV2.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)
@@ -1107,7 +1109,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     ) { model ->
       model.copy(totalLive = model.totalLive + 1)
     }
-    observationResultsInvalidator.invalidatePlot(plotId)
+    observationResultsInvalidator.on(T0PlotDataAssignedEvent(plotId))
     observationResultsRecalculator.recalculateAllSites()
 
     val obs1StratumRate =
