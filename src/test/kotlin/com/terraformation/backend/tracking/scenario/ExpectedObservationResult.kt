@@ -36,6 +36,7 @@ abstract class ExpectedObservationResult<
     var survivalRate: Int? = null,
     val baseline: B? = null,
     val assertions: MutableList<() -> Unit>,
+    val observationNumber: Int? = null,
 ) : NodeWithChildren<ExpectedObservationResult.Species>() {
   private val fields = ExpectedFields<T>(name)
 
@@ -92,17 +93,33 @@ abstract class ExpectedObservationResult<
             .sortedBy { it.toString() }
       }
 
-  private fun speciesIdentity(number: Int): SpeciesIdentity =
-      when (number) {
-        ObservationScenario.OTHER -> SpeciesIdentity(RecordedSpeciesCertainty.Other, null, "Other")
-        ObservationScenario.UNKNOWN -> SpeciesIdentity(RecordedSpeciesCertainty.Unknown, null, null)
-        else ->
-            SpeciesIdentity(
-                RecordedSpeciesCertainty.Known,
-                scenario.getOrInsertSpecies(number),
-                null,
-            )
-      }
+  private fun speciesIdentity(number: Int): SpeciesIdentity {
+    val observationId = observationNumber?.let { scenario.observationIds[it] }
+    val biomassSpecies = observationId?.let { scenario.biomassSpecies[it to number] }
+    return if (biomassSpecies != null) {
+      SpeciesIdentity(
+          if (biomassSpecies.speciesId == null) {
+            RecordedSpeciesCertainty.Other
+          } else {
+            RecordedSpeciesCertainty.Known
+          },
+          biomassSpecies.speciesId,
+          biomassSpecies.scientificName,
+      )
+    } else
+        when (number) {
+          ObservationScenario.OTHER ->
+              SpeciesIdentity(RecordedSpeciesCertainty.Other, null, "Other")
+          ObservationScenario.UNKNOWN ->
+              SpeciesIdentity(RecordedSpeciesCertainty.Unknown, null, null)
+          else ->
+              SpeciesIdentity(
+                  RecordedSpeciesCertainty.Known,
+                  scenario.getOrInsertSpecies(number),
+                  null,
+              )
+        }
+  }
 
   /** Returns the ratio between two integers as a percentage value with half-up rounding. */
   fun percent(numerator: Number, denominator: Number): Int {
@@ -217,6 +234,7 @@ abstract class ExpectedAggregatedResult<
     survivalRate: Int?,
     baseline: B?,
     assertions: MutableList<() -> Unit>,
+    observationNumber: Int? = null,
 ) :
     ExpectedObservationResult<T, B>(
         name,
@@ -225,6 +243,7 @@ abstract class ExpectedAggregatedResult<
         survivalRate,
         baseline,
         assertions,
+        observationNumber,
     ) {
   fun anyPlotsCompleted(expected: Boolean) =
       expect("any plots completed", expected) { it.anyPlotsCompleted }
