@@ -36,14 +36,6 @@ import org.springframework.context.event.EventListener
  */
 @Named
 class ObservationResultsInvalidator(private val dslContext: DSLContext) {
-  /**
-   * Flags the results that depend on a monitoring plot in every observation where the plot was
-   * completed.
-   */
-  fun invalidatePlot(monitoringPlotId: MonitoringPlotId) {
-    invalidate(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-  }
-
   /** Flags the results that depend on specific plots in a single observation. */
   fun invalidateObservationPlots(
       observationId: ObservationId,
@@ -64,11 +56,7 @@ class ObservationResultsInvalidator(private val dslContext: DSLContext) {
     invalidate(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
   }
 
-  /** Flags results of plots that were in the stratum when observed. */
-  fun invalidateStratum(stratumId: StratumId) {
-    invalidate(stratumPlotsCondition(stratumId))
-  }
-
+  /** Matches plots that were in the stratum when observed. */
   private fun stratumPlotsCondition(stratumId: StratumId): Condition =
       OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.`in`(
           DSL.select(MONITORING_PLOT_HISTORIES.ID)

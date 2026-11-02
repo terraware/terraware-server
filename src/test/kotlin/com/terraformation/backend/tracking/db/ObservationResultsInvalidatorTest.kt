@@ -347,29 +347,6 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class InvalidatePlot {
-    @Test
-    fun `flags the plot in every observation where it was completed`() {
-      val observationId1 = insertCompletedObservation(1, plotIdA, plotIdB)
-      insertAllResults(observationId1, plotIdA, plotIdB)
-      val observationId2 = insertCompletedObservation(2, plotIdA)
-      insertAllResults(observationId2, plotIdA)
-      val observationId3 = insertCompletedObservation(3, plotIdB)
-      insertAllResults(observationId3, plotIdB)
-
-      invalidator.invalidatePlot(plotIdA)
-
-      assertFlagged(
-          plots = setOf(observationId1 to plotIdA, observationId2 to plotIdA),
-          substrata =
-              setOf(observationId1 to substratumHistoryIdA, observationId2 to substratumHistoryIdA),
-          strata = setOf(observationId1 to stratumHistoryId1, observationId2 to stratumHistoryId1),
-          sites = setOf(observationId1, observationId2),
-      )
-    }
-  }
-
-  @Nested
   inner class InvalidateObservation {
     @Test
     fun `flags every row of the observation`() {
@@ -386,29 +363,6 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
               setOf(observationId1 to substratumHistoryIdA, observationId1 to substratumHistoryIdC),
           strata = setOf(observationId1 to stratumHistoryId1, observationId1 to stratumHistoryId2),
           sites = setOf(observationId1),
-      )
-    }
-  }
-
-  @Nested
-  inner class InvalidateStratum {
-    @Test
-    fun `flags rows for plots in the stratum in every observation`() {
-      val observationId1 = insertCompletedObservation(1, plotIdA, plotIdC)
-      insertAllResults(observationId1, plotIdA, plotIdC)
-      val observationId2 = insertCompletedObservation(2, plotIdC)
-      insertAllResults(observationId2, plotIdC)
-      val observationId3 = insertCompletedObservation(3, plotIdB)
-      insertAllResults(observationId3, plotIdB)
-
-      invalidator.invalidateStratum(stratumId2)
-
-      assertFlagged(
-          plots = setOf(observationId1 to plotIdC, observationId2 to plotIdC),
-          substrata =
-              setOf(observationId1 to substratumHistoryIdC, observationId2 to substratumHistoryIdC),
-          strata = setOf(observationId1 to stratumHistoryId2, observationId2 to stratumHistoryId2),
-          sites = setOf(observationId1, observationId2),
       )
     }
   }
@@ -470,11 +424,13 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `t0 plot data assignment flags the plot in every observation`() {
+    fun `t0 plot data assignment flags the plot in every observation where it was completed`() {
       val observationId1 = insertCompletedObservation(1, plotIdA, plotIdB)
       insertAllResults(observationId1, plotIdA, plotIdB)
       val observationId2 = insertCompletedObservation(2, plotIdA)
       insertAllResults(observationId2, plotIdA)
+      val observationId3 = insertCompletedObservation(3, plotIdB)
+      insertAllResults(observationId3, plotIdB)
 
       invalidator.on(T0PlotDataAssignedEvent(plotIdA))
 
@@ -488,17 +444,22 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `t0 stratum data assignment flags plots in the stratum`() {
-      val observationId = insertCompletedObservation(1, plotIdA, plotIdC)
-      insertAllResults(observationId, plotIdA, plotIdC)
+    fun `t0 stratum data assignment flags plots in the stratum in every observation`() {
+      val observationId1 = insertCompletedObservation(1, plotIdA, plotIdC)
+      insertAllResults(observationId1, plotIdA, plotIdC)
+      val observationId2 = insertCompletedObservation(2, plotIdC)
+      insertAllResults(observationId2, plotIdC)
+      val observationId3 = insertCompletedObservation(3, plotIdB)
+      insertAllResults(observationId3, plotIdB)
 
       invalidator.on(T0StratumDataAssignedEvent(stratumId2))
 
       assertFlagged(
-          plots = setOf(observationId to plotIdC),
-          substrata = setOf(observationId to substratumHistoryIdC),
-          strata = setOf(observationId to stratumHistoryId2),
-          sites = setOf(observationId),
+          plots = setOf(observationId1 to plotIdC, observationId2 to plotIdC),
+          substrata =
+              setOf(observationId1 to substratumHistoryIdC, observationId2 to substratumHistoryIdC),
+          strata = setOf(observationId1 to stratumHistoryId2, observationId2 to stratumHistoryId2),
+          sites = setOf(observationId1, observationId2),
       )
     }
 
@@ -548,7 +509,7 @@ class ObservationResultsInvalidatorTest : DatabaseTest(), RunsAsUser {
           "Before invalidation",
       )
 
-      invalidator.invalidatePlot(plotIdA)
+      invalidator.invalidateObservation(observationId)
 
       assertEquals(
           true to false,

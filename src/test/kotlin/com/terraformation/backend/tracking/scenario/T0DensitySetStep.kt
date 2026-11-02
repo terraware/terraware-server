@@ -3,6 +3,8 @@ package com.terraformation.backend.tracking.scenario
 import com.terraformation.backend.db.DatabaseBackedTest
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.util.toPlantsPerHectare
 
 class T0DensitySetStep(val scenario: ObservationScenario) :
@@ -24,7 +26,7 @@ class T0DensitySetStep(val scenario: ObservationScenario) :
         initChild(Species(speciesId, density), init)
 
     override fun finish() {
-      scenario.observationResultsInvalidator.invalidateStratum(stratumId)
+      scenario.eventPublisher.publishEvent(T0StratumDataAssignedEvent(stratumId))
       scenario.observationResultsRecalculator.recalculateAllSites()
     }
 
@@ -64,7 +66,7 @@ class T0DensitySetStep(val scenario: ObservationScenario) :
         initChild(Species(speciesId, density), init)
 
     override fun finish() {
-      scenario.observationResultsInvalidator.invalidatePlot(monitoringPlotId)
+      scenario.eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId))
       scenario.observationResultsRecalculator.recalculateAllSites()
     }
 
