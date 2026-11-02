@@ -1,3 +1,4 @@
+620d0372 Remove unused invalidator property from ObservationScenario (#5329)
 de265a5f Remove unused plot and stratum invalidation methods (#5328)
 cb3608d2 Add test-engineer.md note about extending DSLs (#5326)
 9b546da9 SW-9174 Invalidate scheduled biomass results as needed (#5315)
