@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
@@ -333,17 +334,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(
-        ascendingExpected,
-        searchAccessions(
-            facilityId,
-            listOf(bagsNumberField),
-            criteria = NoConditionNode(),
-            sortOrder = listOf(SearchSortField(bagsNumberField)),
-        ),
-        "can sort ascending on nested field",
-    )
-
     val descendingExpected =
         SearchResults(
             listOf(
@@ -360,17 +350,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(
-        descendingExpected,
-        searchAccessions(
-            facilityId,
-            listOf(bagsNumberField),
-            criteria = NoConditionNode(),
-            sortOrder = listOf(SearchSortField(bagsNumberField, SearchDirection.Descending)),
-        ),
-        "can sort descending on nested field",
-    )
-
     val unselectedNestedExpected =
         SearchResults(
             listOf(
@@ -378,17 +357,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
             )
         )
-
-    assertEquals(
-        unselectedNestedExpected,
-        searchAccessions(
-            facilityId,
-            emptyList(),
-            NoConditionNode(),
-            listOf(SearchSortField(bagsNumberField, SearchDirection.Descending)),
-        ),
-        "can sort on nested field that is not in list of query fields",
-    )
 
     val unselectedFlattenedExpected =
         SearchResults(
@@ -404,15 +372,55 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(
-        unselectedFlattenedExpected,
-        searchAccessions(
-            facilityId,
-            emptyList(),
-            NoConditionNode(),
-            listOf(SearchSortField(bagNumberFlattenedField, SearchDirection.Descending)),
-        ),
-        "can sort on flattened field that is not in list of query fields",
+    assertAll(
+        {
+          assertEquals(
+              ascendingExpected,
+              searchAccessions(
+                  facilityId,
+                  listOf(bagsNumberField),
+                  criteria = NoConditionNode(),
+                  sortOrder = listOf(SearchSortField(bagsNumberField)),
+              ),
+              "can sort ascending on nested field",
+          )
+        },
+        {
+          assertEquals(
+              descendingExpected,
+              searchAccessions(
+                  facilityId,
+                  listOf(bagsNumberField),
+                  criteria = NoConditionNode(),
+                  sortOrder = listOf(SearchSortField(bagsNumberField, SearchDirection.Descending)),
+              ),
+              "can sort descending on nested field",
+          )
+        },
+        {
+          assertEquals(
+              unselectedNestedExpected,
+              searchAccessions(
+                  facilityId,
+                  emptyList(),
+                  NoConditionNode(),
+                  listOf(SearchSortField(bagsNumberField, SearchDirection.Descending)),
+              ),
+              "can sort on nested field that is not in list of query fields",
+          )
+        },
+        {
+          assertEquals(
+              unselectedFlattenedExpected,
+              searchAccessions(
+                  facilityId,
+                  emptyList(),
+                  NoConditionNode(),
+                  listOf(SearchSortField(bagNumberFlattenedField, SearchDirection.Descending)),
+              ),
+              "can sort on flattened field that is not in list of query fields",
+          )
+        },
     )
   }
 
@@ -438,31 +446,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(
-        grandchildExpected,
-        searchAccessions(
-            facilityId,
-            listOf(seedsGerminatedField),
-            FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
-            listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
-        ),
-        "can sort on grandchild field",
-    )
-
-    assertEquals(
-        grandchildExpected,
-        searchAccessions(
-            facilityId,
-            listOf(seedsGerminatedField),
-            FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
-            listOf(
-                SearchSortField(seedsGerminatedField, SearchDirection.Descending),
-                SearchSortField(seedsGerminatedField, SearchDirection.Ascending),
-            ),
-        ),
-        "can specify duplicate sort fields",
-    )
-
     val unselectedGrandchildExpected =
         SearchResults(
             listOf(
@@ -471,15 +454,46 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(
-        unselectedGrandchildExpected,
-        searchAccessions(
-            facilityId,
-            listOf(accessionNumberField),
-            NoConditionNode(),
-            listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
-        ),
-        "can sort on grandchild field that is not in list of query fields",
+    assertAll(
+        {
+          assertEquals(
+              grandchildExpected,
+              searchAccessions(
+                  facilityId,
+                  listOf(seedsGerminatedField),
+                  FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
+                  listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
+              ),
+              "can sort on grandchild field",
+          )
+        },
+        {
+          assertEquals(
+              grandchildExpected,
+              searchAccessions(
+                  facilityId,
+                  listOf(seedsGerminatedField),
+                  FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
+                  listOf(
+                      SearchSortField(seedsGerminatedField, SearchDirection.Descending),
+                      SearchSortField(seedsGerminatedField, SearchDirection.Ascending),
+                  ),
+              ),
+              "can specify duplicate sort fields",
+          )
+        },
+        {
+          assertEquals(
+              unselectedGrandchildExpected,
+              searchAccessions(
+                  facilityId,
+                  listOf(accessionNumberField),
+                  NoConditionNode(),
+                  listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
+              ),
+              "can sort on grandchild field that is not in list of query fields",
+          )
+        },
     )
   }
 
