@@ -14,7 +14,7 @@ class ExpectedSiteResultStep(
     survivalRate: Int? = null,
     baseline: ExpectedSiteResultStep? = null,
 ) :
-    ExpectedObservationResult<ObservationResultsModel, ExpectedSiteResultStep>(
+    ExpectedAggregatedResult<ObservationResultsModel, ExpectedSiteResultStep>(
         "Site",
         scenario,
         actualResult,
@@ -23,6 +23,13 @@ class ExpectedSiteResultStep(
         mutableListOf(),
     ) {
   val strata = mutableListOf<Stratum>()
+
+  fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
+
+  fun strataExactly(vararg numbers: Int) =
+      expect("strata", numbers.map { "$it" }.sorted()) { result ->
+        result.strata.map { it.name }.sorted()
+      }
 
   fun stratum(number: Int, survivalRate: Int? = null, init: Stratum.() -> Unit) =
       initAndAppend(
@@ -45,9 +52,8 @@ class ExpectedSiteResultStep(
   }
 
   override fun finish() {
+    super.finish()
     if (baseline != null) {
-      mergeBaselineRates()
-
       val stratumNumbers = strata.map { it.number }.toSet()
       baseline.strata.filter { it.number !in stratumNumbers }.forEach { stratum(it.number) {} }
     }
@@ -56,7 +62,7 @@ class ExpectedSiteResultStep(
   }
 
   inner class Stratum(val number: Int, survivalRate: Int? = null, baseline: Stratum?) :
-      ExpectedObservationResult<ObservationStratumResultsModel, Stratum>(
+      ExpectedAggregatedResult<ObservationStratumResultsModel, Stratum>(
           "Stratum $number",
           scenario,
           actualResult.strata.first { it.name == "$number" },
@@ -65,6 +71,13 @@ class ExpectedSiteResultStep(
           assertions,
       ) {
     val substrata = mutableListOf<Substratum>()
+
+    fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
+
+    fun substrataExactly(vararg numbers: Int) =
+        expect("substrata", numbers.map { "$it" }.sorted()) { result ->
+          result.substrata.map { it.name }.sorted()
+        }
 
     fun substratum(number: Int, survivalRate: Int? = null, init: Substratum.() -> Unit) =
         initAndAppend(
@@ -87,9 +100,8 @@ class ExpectedSiteResultStep(
     }
 
     override fun finish() {
+      super.finish()
       if (baseline != null) {
-        mergeBaselineRates()
-
         val ourSubstratumNumbers = substrata.map { it.number }.toSet()
         baseline.substrata
             .filter { it.number !in ourSubstratumNumbers }
@@ -98,7 +110,7 @@ class ExpectedSiteResultStep(
     }
 
     inner class Substratum(val number: Int, survivalRate: Int?, baseline: Substratum?) :
-        ExpectedObservationResult<ObservationSubstratumResultsModel, Substratum>(
+        ExpectedAggregatedResult<ObservationSubstratumResultsModel, Substratum>(
             "$name substratum $number",
             scenario,
             actualResult.substrata.first { it.name == "$number" },
@@ -107,6 +119,13 @@ class ExpectedSiteResultStep(
             assertions,
         ) {
       val plots = mutableListOf<Plot>()
+
+      fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
+
+      fun plotsExactly(vararg numbers: Long) =
+          expect("plots", numbers.sorted()) { result ->
+            result.monitoringPlots.map { it.monitoringPlotNumber }.sorted()
+          }
 
       fun plot(number: Long, survivalRate: Int? = null, init: Plot.() -> Unit) =
           initAndAppend(
@@ -121,9 +140,8 @@ class ExpectedSiteResultStep(
           )
 
       override fun finish() {
+        super.finish()
         if (baseline != null) {
-          mergeBaselineRates()
-
           val ourPlotNumbers = plots.map { it.number }.toSet()
           baseline.plots.filter { it.number !in ourPlotNumbers }.forEach { plot(it.number) {} }
         }
@@ -155,9 +173,7 @@ class ExpectedSiteResultStep(
               baseline,
               assertions,
           ) {
-        override fun finish() {
-          mergeBaselineRates()
-        }
+        fun pending(expected: Boolean) = expect("pending", expected) { it.pending }
       }
     }
   }

@@ -1,11 +1,15 @@
 package com.terraformation.backend.tracking.scenario
 
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.toBigDecimal
+import com.terraformation.backend.tracking.model.BaseAggregatedMonitoringResult
 import com.terraformation.backend.tracking.model.BaseMonitoringResult
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import java.math.BigDecimal
 import java.math.RoundingMode
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.assertAll
 
 /**
@@ -33,13 +37,72 @@ abstract class ExpectedObservationResult<
     val baseline: B? = null,
     val assertions: MutableList<() -> Unit>,
 ) : NodeWithChildren<ExpectedObservationResult.Species>() {
-  private var survivalRateSet: Boolean = survivalRate != null
+  private val fields = ExpectedFields<T>(name)
+
+  private data class SpeciesIdentity(
+      val certainty: RecordedSpeciesCertainty,
+      val speciesId: SpeciesId?,
+      val speciesName: String?,
+  )
+
+  init {
+    if (survivalRate != null) {
+      survivalRate(survivalRate)
+    }
+  }
+
+  protected fun <V> expect(field: String, expected: V, actual: (T) -> V) =
+      fields.expect(field, expected, actual)
+
+  fun emptyBiomassResult(completed: Boolean) {
+    totalPlants(if (completed) 0 else null)
+    totalSpecies(if (completed) 0 else null)
+    speciesExactly()
+    noPlantMonitoringMetrics()
+    if (this is ExpectedAggregatedResult<*, *>) {
+      anyPlotsCompleted(completed)
+    }
+  }
+
+  fun noPlantMonitoringMetrics() {
+    plantingDensity(null)
+    survivalRate(null)
+    if (this is ExpectedAggregatedResult<*, *>) {
+      estimatedPlants(null)
+      plantingDensityStdDev(null)
+      survivalRateStdDev(null)
+    }
+  }
+
+  fun plantingDensity(expected: Int?) = expect("planting density", expected) { it.plantingDensity }
 
   fun survivalRate(expected: Int?) {
     survivalRate = expected
-    survivalRateSet = true
-    assertions.add { assertEquals(expected, actualResult.survivalRate, "$name survival rate") }
+    expect("survival rate", expected) { it.survivalRate }
   }
+
+  fun totalPlants(expected: Int?) = expect("total plants", expected) { it.totalPlants }
+
+  fun totalSpecies(expected: Int?) = expect("total species", expected) { it.totalSpecies }
+
+  fun speciesExactly(vararg numbers: Int) =
+      expect("species", numbers.map { speciesIdentity(it) }.sortedBy { it.toString() }) { result ->
+        result.species
+            .map { SpeciesIdentity(it.certainty, it.speciesId, it.speciesName) }
+            .sortedBy { it.toString() }
+      }
+
+  private fun speciesIdentity(number: Int): SpeciesIdentity =
+      when (number) {
+        ObservationScenario.OTHER -> SpeciesIdentity(RecordedSpeciesCertainty.Other, null, "Other")
+        ObservationScenario.UNKNOWN -> SpeciesIdentity(RecordedSpeciesCertainty.Unknown, null, null)
+        else ->
+            SpeciesIdentity(
+                RecordedSpeciesCertainty.Known,
+                scenario.getOrInsertSpecies(number),
+                null,
+            )
+      }
 
   /** Returns the ratio between two integers as a percentage value with half-up rounding. */
   fun percent(numerator: Number, denominator: Number): Int {
@@ -68,42 +131,30 @@ abstract class ExpectedObservationResult<
       totalLive: Int? = null,
       init: Species.() -> Unit = {},
   ): Species {
-    val speciesId =
-        when (number) {
-          ObservationScenario.OTHER,
-          ObservationScenario.UNKNOWN -> null
-          else -> scenario.getOrInsertSpecies(number)
-        }
-    val speciesName =
-        when (number) {
-          ObservationScenario.OTHER -> "Other"
-          else -> null
-        }
+    val identity = speciesIdentity(number)
 
     return initChild(
         Species(
+            assertions = assertions,
+            baseline = baseline?.children?.firstOrNull { it.number == number },
             parentName = name,
             number = number,
             speciesResult =
                 actualResult.species.firstOrNull {
-                  it.speciesId == speciesId && it.speciesName == speciesName
+                  SpeciesIdentity(it.certainty, it.speciesId, it.speciesName) == identity
                 },
             survivalRate = survivalRate,
             totalDead = totalDead,
             totalExisting = totalExisting,
             totalLive = totalLive,
-            assertions = assertions,
         ),
         init,
     )
   }
 
-  protected fun mergeBaselineRates() {
+  override fun finish() {
+    fields.addAssertions(actualResult, assertions, baseline?.fields)
     if (baseline != null) {
-      if (!survivalRateSet && baseline.survivalRateSet) {
-        survivalRate(baseline.survivalRate)
-      }
-
       val ourSpeciesNumbers = children.map { it.number }.toSet()
       baseline.children
           .filter { it.number !in ourSpeciesNumbers }
@@ -120,28 +171,85 @@ abstract class ExpectedObservationResult<
       val totalExisting: Int?,
       val totalLive: Int?,
       val assertions: MutableList<() -> Unit>,
+      val baseline: Species? = null,
   ) : ScenarioNode {
-    override fun finish() {
-      val prefix = "$parentName species $number"
-      assertions.add {
-        assertEquals(
-            survivalRate,
-            speciesResult?.survivalRate,
-            "$prefix survival rate",
-        )
-      }
+    private val fields =
+        ExpectedFields<ObservationSpeciesResultsModel>("$parentName species $number")
 
+    init {
+      fields.expect("survival rate", survivalRate) { it.survivalRate }
       if (totalDead != null) {
-        assertions.add { assertEquals(totalDead, speciesResult?.totalDead, "$prefix total dead") }
+        fields.expect("total dead", totalDead) { it.totalDead }
       }
       if (totalExisting != null) {
-        assertions.add {
-          assertEquals(totalExisting, speciesResult?.totalExisting, "$prefix total existing")
-        }
+        fields.expect("total existing", totalExisting) { it.totalExisting }
       }
       if (totalLive != null) {
-        assertions.add { assertEquals(totalLive, speciesResult?.totalLive, "$prefix total live") }
+        fields.expect("total live", totalLive) { it.totalLive }
       }
     }
+
+    fun latestLive(expected: Int) = fields.expect("latest live", expected) { it.latestLive }
+
+    fun permanentLive(expected: Int) =
+        fields.expect("permanent live", expected) { it.permanentLive }
+
+    fun t0Density(expected: BigDecimal?) = fields.expect("T0 density", expected) { it.t0Density }
+
+    fun totalPlants(expected: Int) = fields.expect("total plants", expected) { it.totalPlants }
+
+    override fun finish() {
+      assertions.add { assertNotNull(speciesResult, "$parentName species $number result") }
+      if (speciesResult != null) {
+        fields.addAssertions(speciesResult, assertions, baseline?.fields)
+      }
+    }
+  }
+}
+
+abstract class ExpectedAggregatedResult<
+    T : BaseAggregatedMonitoringResult,
+    B : ExpectedAggregatedResult<T, B>,
+>(
+    name: String,
+    scenario: ObservationScenario,
+    actualResult: T,
+    survivalRate: Int?,
+    baseline: B?,
+    assertions: MutableList<() -> Unit>,
+) :
+    ExpectedObservationResult<T, B>(
+        name,
+        scenario,
+        actualResult,
+        survivalRate,
+        baseline,
+        assertions,
+    ) {
+  fun anyPlotsCompleted(expected: Boolean) =
+      expect("any plots completed", expected) { it.anyPlotsCompleted }
+
+  fun estimatedPlants(expected: Int?) = expect("estimated plants", expected) { it.estimatedPlants }
+
+  fun plantingCompleted(expected: Boolean) =
+      expect("planting completed", expected) { it.plantingCompleted }
+
+  fun plantingDensityStdDev(expected: Int?) =
+      expect("planting density standard deviation", expected) { it.plantingDensityStdDev }
+
+  fun survivalRateStdDev(expected: Int?) =
+      expect("survival rate standard deviation", expected) { it.survivalRateStdDev }
+}
+
+private class ExpectedFields<T>(private val name: String) {
+  private val fields = mutableMapOf<String, (T) -> Unit>()
+
+  fun <V> expect(field: String, expected: V, actual: (T) -> V) {
+    fields[field] = { result -> assertEquals(expected, actual(result), "$name $field") }
+  }
+
+  fun addAssertions(actual: T, assertions: MutableList<() -> Unit>, baseline: ExpectedFields<T>?) {
+    baseline?.fields?.forEach { (field, check) -> fields.putIfAbsent(field, check) }
+    fields.values.forEach { check -> assertions.add { check(actual) } }
   }
 }

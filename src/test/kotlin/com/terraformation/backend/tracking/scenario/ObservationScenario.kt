@@ -177,6 +177,7 @@ class ObservationScenario(
   fun expectResults(
       observation: Int,
       baseline: ExpectedSiteResultStep? = null,
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plant,
       init: ExpectedSiteResultStep.() -> Unit,
   ): ExpectedSiteResultStep {
     val observationId =
@@ -188,7 +189,7 @@ class ObservationScenario(
         ExpectedSiteResultStep(
             this,
             observation,
-            observationResultsStoreV2.fetchOneById(observationId, ObservationResultsDepth.Plant),
+            observationResultsStoreV2.fetchOneById(observationId, depth),
             baseline = baseline,
         ),
         init,
