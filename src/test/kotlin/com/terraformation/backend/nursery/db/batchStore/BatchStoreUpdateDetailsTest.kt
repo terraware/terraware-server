@@ -9,7 +9,6 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.references.BATCH_DETAILS_HISTORY
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIONS
 import com.terraformation.backend.nursery.db.BatchStaleException
@@ -30,16 +29,13 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
   fun setUpTestBatch() {
     batchId =
         insertBatch(
-            BatchesRow(
-                notes = "initial notes",
-                projectId = projectId,
-                readyByDate = LocalDate.EPOCH,
-                substrateId = BatchSubstrate.Other,
-                substrateNotes = "My substrate",
-                treatmentId = SeedTreatment.Light,
-            ),
+            notes = "initial notes",
+            projectId = projectId,
+            readyByDate = LocalDate.EPOCH,
             readyQuantity = 1,
-            speciesId = speciesId,
+            substrateId = BatchSubstrate.Other,
+            substrateNotes = "My substrate",
+            treatmentId = SeedTreatment.Light,
         )
     insertBatchSubLocation(subLocationId = subLocationId)
 

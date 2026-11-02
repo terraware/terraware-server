@@ -15,7 +15,6 @@ import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
@@ -219,7 +218,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             startDate = LocalDate.of(2023, 1, 1),
         )
     insertObservationPlot(
-        ObservationPlotsRow(notes = "Plot notes"),
+        notes = "Plot notes",
         claimedTime = Instant.ofEpochSecond(5),
         completedTime = Instant.ofEpochSecond(6),
         monitoringPlotId = monitoringPlotId5,

@@ -10,7 +10,6 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
@@ -2747,14 +2746,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
   @Test
   fun `throws exception if plot was already completed`() {
     insertObservationPlot(
-        ObservationPlotsRow(
-            claimedBy = user.userId,
-            claimedTime = Instant.EPOCH,
-            completedBy = user.userId,
-            completedTime = Instant.EPOCH,
-            observedTime = Instant.EPOCH,
-            statusId = ObservationPlotStatus.Completed,
-        )
+        completedBy = user.userId,
+        observedTime = Instant.EPOCH,
     )
 
     assertThrows<PlotAlreadyCompletedException> {

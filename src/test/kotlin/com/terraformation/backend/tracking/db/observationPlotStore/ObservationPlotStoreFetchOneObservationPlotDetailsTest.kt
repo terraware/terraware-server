@@ -50,15 +50,12 @@ class ObservationPlotStoreFetchOneObservationPlotDetailsTest : BaseObservationPl
     val completedTime21 = Instant.ofEpochSecond(211)
     val observedTime21 = Instant.ofEpochSecond(212)
     insertObservationPlot(
-        ObservationPlotsRow(
-            claimedBy = userId2,
-            claimedTime = claimedTime21,
-            completedBy = userId1,
-            completedTime = completedTime21,
-            notes = "Some notes",
-            observedTime = observedTime21,
-            statusId = ObservationPlotStatus.Completed,
-        )
+        claimedBy = userId2,
+        claimedTime = claimedTime21,
+        completedBy = userId1,
+        completedTime = completedTime21,
+        notes = "Some notes",
+        observedTime = observedTime21,
     )
 
     assertEquals(

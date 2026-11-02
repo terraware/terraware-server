@@ -2,7 +2,6 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,27 +16,27 @@ internal class BatchStoreAccessionSpeciesTest : BatchStoreTest() {
     val newSpeciesId = insertSpecies()
     val batchId1 =
         insertBatch(
-            BatchesRow(accessionId = accessionId, facilityId = facilityId, speciesId = speciesId)
+            accessionId = accessionId,
+            facilityId = facilityId,
+            speciesId = speciesId,
         )
     val batchId2 =
         insertBatch(
-            BatchesRow(accessionId = accessionId, facilityId = facilityId, speciesId = speciesId)
+            accessionId = accessionId,
+            facilityId = facilityId,
+            speciesId = speciesId,
         )
     val otherSpeciesBatchId =
         insertBatch(
-            BatchesRow(
-                accessionId = accessionId,
-                facilityId = facilityId,
-                speciesId = otherSpeciesId,
-            )
+            accessionId = accessionId,
+            facilityId = facilityId,
+            speciesId = otherSpeciesId,
         )
     val otherAccessionBatchId =
         insertBatch(
-            BatchesRow(
-                accessionId = otherAccessionId,
-                facilityId = facilityId,
-                speciesId = speciesId,
-            )
+            accessionId = otherAccessionId,
+            facilityId = facilityId,
+            speciesId = speciesId,
         )
 
     store.on(AccessionSpeciesChangedEvent(accessionId, speciesId, newSpeciesId))
