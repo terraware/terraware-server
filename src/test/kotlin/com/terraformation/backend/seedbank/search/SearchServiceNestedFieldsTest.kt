@@ -205,7 +205,11 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(expected, result)
+    assertEquals(
+        expected,
+        result,
+        "can sort by aliases for flattened sublist fields from within nested sublists",
+    )
   }
 
   @Test
@@ -312,18 +316,8 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
   }
 
   @Test
-  fun `can sort ascending on nested field`() {
-    val fields = listOf(bagsNumberField)
-
-    val result =
-        searchAccessions(
-            facilityId,
-            fields,
-            criteria = NoConditionNode(),
-            sortOrder = listOf(SearchSortField(bagsNumberField)),
-        )
-
-    val expected =
+  fun `sorts nested and flattened bag numbers with and without selecting them`() {
+    val ascendingExpected =
         SearchResults(
             listOf(
                 mapOf(
@@ -339,118 +333,18 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun `can sort on grandchild field`() {
-    val fields = listOf(seedsGerminatedField)
-
-    val result =
+    assertEquals(
+        ascendingExpected,
         searchAccessions(
             facilityId,
-            fields,
-            FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
-            listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
-        )
-
-    val expected =
-        SearchResults(
-            listOf(
-                mapOf(
-                    "id" to "$accessionId1",
-                    "accessionNumber" to "XYZ",
-                    "viabilityTests" to
-                        listOf(
-                            mapOf(
-                                "viabilityTestResults" to
-                                    listOf(
-                                        mapOf("seedsGerminated" to "10"),
-                                        mapOf("seedsGerminated" to "5"),
-                                    )
-                            )
-                        ),
-                )
-            )
-        )
-
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun `can sort on grandchild field that is not in list of query fields`() {
-    val fields = listOf(accessionNumberField)
-
-    val result =
-        searchAccessions(
-            facilityId,
-            fields,
-            NoConditionNode(),
-            listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
-        )
-
-    val expected =
-        SearchResults(
-            listOf(
-                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
-                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
-            )
-        )
-
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun `can specify duplicate sort fields`() {
-    val fields = listOf(seedsGerminatedField)
-
-    val result =
-        searchAccessions(
-            facilityId,
-            fields,
-            FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
-            listOf(
-                SearchSortField(seedsGerminatedField, SearchDirection.Descending),
-                SearchSortField(seedsGerminatedField, SearchDirection.Ascending),
-            ),
-        )
-
-    val expected =
-        SearchResults(
-            listOf(
-                mapOf(
-                    "id" to "$accessionId1",
-                    "accessionNumber" to "XYZ",
-                    "viabilityTests" to
-                        listOf(
-                            mapOf(
-                                "viabilityTestResults" to
-                                    listOf(
-                                        mapOf("seedsGerminated" to "10"),
-                                        mapOf("seedsGerminated" to "5"),
-                                    )
-                            )
-                        ),
-                )
-            )
-        )
-
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun `can sort descending on nested field`() {
-    val fields = listOf(bagsNumberField)
-
-    val result =
-        searchAccessions(
-            facilityId,
-            fields,
+            listOf(bagsNumberField),
             criteria = NoConditionNode(),
-            sortOrder = listOf(SearchSortField(bagsNumberField, SearchDirection.Descending)),
-        )
+            sortOrder = listOf(SearchSortField(bagsNumberField)),
+        ),
+        "can sort ascending on nested field",
+    )
 
-    val expected =
+    val descendingExpected =
         SearchResults(
             listOf(
                 mapOf(
@@ -466,7 +360,127 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(expected, result)
+    assertEquals(
+        descendingExpected,
+        searchAccessions(
+            facilityId,
+            listOf(bagsNumberField),
+            criteria = NoConditionNode(),
+            sortOrder = listOf(SearchSortField(bagsNumberField, SearchDirection.Descending)),
+        ),
+        "can sort descending on nested field",
+    )
+
+    val unselectedNestedExpected =
+        SearchResults(
+            listOf(
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
+            )
+        )
+
+    assertEquals(
+        unselectedNestedExpected,
+        searchAccessions(
+            facilityId,
+            emptyList(),
+            NoConditionNode(),
+            listOf(SearchSortField(bagsNumberField, SearchDirection.Descending)),
+        ),
+        "can sort on nested field that is not in list of query fields",
+    )
+
+    val unselectedFlattenedExpected =
+        SearchResults(
+            listOf(
+                // Bag 6
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
+                // Bag 5
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
+                // Bag 2
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
+                // Bag 1
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
+            )
+        )
+
+    assertEquals(
+        unselectedFlattenedExpected,
+        searchAccessions(
+            facilityId,
+            emptyList(),
+            NoConditionNode(),
+            listOf(SearchSortField(bagNumberFlattenedField, SearchDirection.Descending)),
+        ),
+        "can sort on flattened field that is not in list of query fields",
+    )
+  }
+
+  @Test
+  fun `sorts grandchild fields with duplicate sort keys and without selecting them`() {
+    val grandchildExpected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$accessionId1",
+                    "accessionNumber" to "XYZ",
+                    "viabilityTests" to
+                        listOf(
+                            mapOf(
+                                "viabilityTestResults" to
+                                    listOf(
+                                        mapOf("seedsGerminated" to "10"),
+                                        mapOf("seedsGerminated" to "5"),
+                                    )
+                            )
+                        ),
+                )
+            )
+        )
+
+    assertEquals(
+        grandchildExpected,
+        searchAccessions(
+            facilityId,
+            listOf(seedsGerminatedField),
+            FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
+            listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
+        ),
+        "can sort on grandchild field",
+    )
+
+    assertEquals(
+        grandchildExpected,
+        searchAccessions(
+            facilityId,
+            listOf(seedsGerminatedField),
+            FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
+            listOf(
+                SearchSortField(seedsGerminatedField, SearchDirection.Descending),
+                SearchSortField(seedsGerminatedField, SearchDirection.Ascending),
+            ),
+        ),
+        "can specify duplicate sort fields",
+    )
+
+    val unselectedGrandchildExpected =
+        SearchResults(
+            listOf(
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
+            )
+        )
+
+    assertEquals(
+        unselectedGrandchildExpected,
+        searchAccessions(
+            facilityId,
+            listOf(accessionNumberField),
+            NoConditionNode(),
+            listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)),
+        ),
+        "can sort on grandchild field that is not in list of query fields",
+    )
   }
 
   @Test
@@ -508,7 +522,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(expected, result)
+    assertEquals(expected, result, "can sort on nested enum field")
   }
 
   @Test
@@ -621,23 +635,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
   }
 
   @Test
-  fun `can sort on nested field that is not in list of query fields`() {
-    val sortOrder = listOf(SearchSortField(bagsNumberField, SearchDirection.Descending))
-
-    val result = searchAccessions(facilityId, emptyList(), NoConditionNode(), sortOrder)
-
-    val expected =
-        SearchResults(
-            listOf(
-                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
-                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
-            )
-        )
-
-    assertEquals(expected, result)
-  }
-
-  @Test
   fun `can sort on scalar field that is after nested field in field list`() {
     // We want the surrounding fields to sort in the opposite order of the nested field so we
     // can detect if the ORDER BY clause is using the wrong field.
@@ -692,30 +689,11 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun `can sort on flattened field that is not in list of query fields`() {
-    val sortOrder = listOf(SearchSortField(bagNumberFlattenedField, SearchDirection.Descending))
-
-    val result = searchAccessions(facilityId, emptyList(), NoConditionNode(), sortOrder)
-
-    val expected =
-        SearchResults(
-            listOf(
-                // Bag 6
-                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
-                // Bag 5
-                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
-                // Bag 2
-                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
-                // Bag 1
-                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
-            )
-        )
-
-    assertEquals(expected, result)
+    assertEquals(
+        expected,
+        result,
+        "can sort on scalar field that is after nested field in field list",
+    )
   }
 
   @Test
