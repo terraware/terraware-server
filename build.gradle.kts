@@ -389,6 +389,14 @@ openApi {
   outputFileName = "openapi.yaml"
 }
 
+// The springdoc plugin's tasks hold references to other tasks, which the configuration cache
+// can't serialize.
+tasks
+    .matching {
+      it.name in setOf("generateOpenApiDocs", "forkedSpringBootRun", "forkedSpringBootStop")
+    }
+    .configureEach { notCompatibleWithConfigurationCache("springdoc OpenAPI plugin") }
+
 tasks.register<JavaExec>("generateFrontEndTestSession") {
   group = "Execution"
   description = "Generates a fake login session for the frontend integration test suite."
