@@ -202,6 +202,7 @@ class ObservationScenario(
             observation,
             observationResultsStoreV2.fetchOneById(observationId, depth),
             baseline = baseline,
+            depth = depth,
         ),
         init,
     )
@@ -211,7 +212,7 @@ class ObservationScenario(
       observation: Int,
       baseline: ExpectedSiteResultStep,
   ): ExpectedSiteResultStep {
-    return expectResults(observation, baseline) {}
+    return expectResults(observation, baseline, depth = baseline.depth) {}
   }
 
   fun observation(
