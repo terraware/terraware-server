@@ -1,3 +1,4 @@
+dd4d63eb SW-9124 Repair invalid draft planting site geometries on save (#5318)
 a3d264bb Consolidate nested-field search sorting tests (#5321)
 00aef227 Default to whole site in admin observation creation (#5320)
 ef5a24a8 Update dependencies (#5319)
