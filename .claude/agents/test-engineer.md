@@ -85,6 +85,7 @@ back, explaining what you want to do and why:
   `DatabaseBackedTest`.
 - Deleting or renaming an existing test file or test class.
 - Writing tests that require schema changes or new migrations.
+- Extending or modifying test DSLs.
 
 ## Workflow
 
@@ -136,6 +137,14 @@ and sets the mock's `userId` to it.
 
 `clock` starts at `Instant.EPOCH`. Set `clock.instant = ...` to control "now"; the `insert*`
 helpers use it for timestamps too.
+
+### DSLs
+
+For some parts of the code base, we've defined Kotlin DSLs to help make tests more concise.
+For example, observation-related tests can use the `ObservationScenario` DSL to set up their
+test scenarios and expectations. Make use of these DSLs when possible. If a test you're adding
+needs functionality the DSL doesn't provide, and you believe the functionality would be useful
+across multiple tests, try extending the DSL.
 
 ### Events
 
