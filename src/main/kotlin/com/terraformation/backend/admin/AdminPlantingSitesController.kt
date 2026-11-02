@@ -579,9 +579,16 @@ class AdminPlantingSitesController(
       @RequestParam startDate: String,
       @RequestParam endDate: String,
       @RequestParam observationType: ObservationType,
-      @RequestParam requestedSubstratumIds: Set<SubstratumId>,
+      @RequestParam requestedSubstratumIds: Set<SubstratumId>?,
       redirectAttributes: RedirectAttributes,
   ): String {
+    val substratumIds =
+        requestedSubstratumIds
+            ?: plantingSiteStore
+                .fetchSiteById(plantingSiteId, depth = PlantingSiteDepth.Substratum)
+                .strata
+                .flatMap { stratum -> stratum.substrata.map { it.id } }
+                .toSet()
     try {
       val observationId =
           observationStore.createObservation(
@@ -591,7 +598,7 @@ class AdminPlantingSitesController(
                   isAdHoc = false,
                   observationType = observationType,
                   plantingSiteId = plantingSiteId,
-                  requestedSubstratumIds = requestedSubstratumIds,
+                  requestedSubstratumIds = substratumIds,
                   startDate = LocalDate.parse(startDate),
                   state = ObservationState.Upcoming,
               ),
