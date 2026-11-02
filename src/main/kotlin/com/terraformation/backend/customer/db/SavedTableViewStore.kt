@@ -100,6 +100,35 @@ class SavedTableViewStore(private val dslContext: DSLContext) {
   }
 
   /**
+   * Updates one of the current user's saved table views. Only the non-null arguments are changed.
+   *
+   * @throws IllegalArgumentException Neither a new name nor new settings were specified.
+   * @throws SavedTableViewNotFoundException The view doesn't exist, belongs to another user, or is
+   *   specific to an organization the user can no longer read.
+   * @throws SavedTableViewNameExistsException The user already has another view with the new name
+   *   for the same table and organization.
+   */
+  fun update(savedTableViewId: SavedTableViewId, name: String?, settings: JSONB?) {
+    if (name == null && settings == null) {
+      throw IllegalArgumentException("Must specify a new name or new settings")
+    }
+
+    val existing = fetchOneById(savedTableViewId)
+
+    try {
+      dslContext
+          .update(SAVED_TABLE_VIEWS)
+          .set(SAVED_TABLE_VIEWS.NAME, name ?: existing.name)
+          .set(SAVED_TABLE_VIEWS.SETTINGS, settings ?: existing.settings)
+          .where(SAVED_TABLE_VIEWS.ID.eq(savedTableViewId))
+          .and(SAVED_TABLE_VIEWS.USER_ID.eq(currentUser().userId))
+          .execute()
+    } catch (e: DuplicateKeyException) {
+      throw SavedTableViewNameExistsException(name ?: existing.name)
+    }
+  }
+
+  /**
    * Deletes one of the current user's saved table views.
    *
    * @throws SavedTableViewNotFoundException The view doesn't exist, belongs to another user, or is
