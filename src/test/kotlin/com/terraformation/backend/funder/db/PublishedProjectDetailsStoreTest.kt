@@ -12,7 +12,6 @@ import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.PathGenerator
@@ -125,37 +124,32 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val zoneFigureValueId =
           insertImageValue(variableIdsByStableId[StableIds.projectZoneFigure]!!, zoneFileId)
 
-      val publishedProjectDetailsRow =
-          PublishedProjectDetailsRow(
-              projectId = projectId,
-              accumulationRate = BigDecimal(1),
-              annualCarbon = BigDecimal(2),
-              countryCode = "US",
-              dealDescription = "description",
-              dealName = "name",
-              methodologyNumber = "methodology",
-              minProjectArea = BigDecimal(3),
-              numNativeSpecies = 4,
-              perHectareEstimatedBudget = BigDecimal(5),
-              projectArea = BigDecimal(6),
-              projectHighlightPhotoValueId = highlightValueId.value,
-              projectZoneFigureValueId = zoneFigureValueId.value,
-              standard = "standard",
-              tfReforestableLand = BigDecimal(7),
-              totalExpansionPotential = BigDecimal(8),
-              totalVcu = BigDecimal(9),
-              verraLink = "https://verraLink",
-          )
       val carbonCerts = setOf(CarbonCertification.CcbVerraStandard)
       val sdgList =
           setOf(SustainableDevelopmentGoal.CleanWater, SustainableDevelopmentGoal.ClimateAction)
       val landUsages =
           mapOf(LandUseModelType.Mangroves to BigDecimal(10), LandUseModelType.NativeForest to null)
       insertPublishedProjectDetails(
-          publishedProjectDetailsRow,
+          accumulationRate = BigDecimal(1),
+          annualCarbon = BigDecimal(2),
           carbonCertifications = carbonCerts,
-          sdgList = sdgList,
+          countryCode = "US",
+          dealDescription = "description",
+          dealName = "name",
           landUseModelHectares = landUsages,
+          methodologyNumber = "methodology",
+          minProjectArea = BigDecimal(3),
+          numNativeSpecies = 4,
+          perHectareEstimatedBudget = BigDecimal(5),
+          projectArea = BigDecimal(6),
+          projectHighlightPhotoValueId = highlightValueId,
+          projectZoneFigureValueId = zoneFigureValueId,
+          sdgList = sdgList,
+          standard = "standard",
+          tfReforestableLand = BigDecimal(7),
+          totalExpansionPotential = BigDecimal(8),
+          totalVcu = BigDecimal(9),
+          verraLink = "https://verraLink",
       )
 
       insertProjectReportConfig()
@@ -348,37 +342,32 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val zoneFigureValueId =
           insertImageValue(variableIdsByStableId[StableIds.projectZoneFigure]!!, zoneFileId)
 
-      val publishedProjectDetailsRow =
-          PublishedProjectDetailsRow(
-              projectId = projectId,
-              accumulationRate = BigDecimal(1),
-              annualCarbon = BigDecimal(2),
-              countryCode = "US",
-              dealDescription = "description",
-              dealName = "name",
-              methodologyNumber = "methodology",
-              minProjectArea = BigDecimal(3),
-              numNativeSpecies = 4,
-              perHectareEstimatedBudget = BigDecimal(5),
-              projectArea = BigDecimal(6),
-              projectHighlightPhotoValueId = highlightValueId.value,
-              projectZoneFigureValueId = zoneFigureValueId.value,
-              standard = "standard",
-              tfReforestableLand = BigDecimal(7),
-              totalExpansionPotential = BigDecimal(8),
-              totalVcu = BigDecimal(9),
-              verraLink = "https://verraLink",
-          )
       val carbonCerts = setOf(CarbonCertification.CcbVerraStandard)
       val sdgList =
           setOf(SustainableDevelopmentGoal.CleanWater, SustainableDevelopmentGoal.ClimateAction)
       val landUsages =
           mapOf(LandUseModelType.Mangroves to BigDecimal(10), LandUseModelType.NativeForest to null)
       insertPublishedProjectDetails(
-          publishedProjectDetailsRow,
+          accumulationRate = BigDecimal(1),
+          annualCarbon = BigDecimal(2),
           carbonCertifications = carbonCerts,
-          sdgList = sdgList,
+          countryCode = "US",
+          dealDescription = "description",
+          dealName = "name",
           landUseModelHectares = landUsages,
+          methodologyNumber = "methodology",
+          minProjectArea = BigDecimal(3),
+          numNativeSpecies = 4,
+          perHectareEstimatedBudget = BigDecimal(5),
+          projectArea = BigDecimal(6),
+          projectHighlightPhotoValueId = highlightValueId,
+          projectZoneFigureValueId = zoneFigureValueId,
+          sdgList = sdgList,
+          standard = "standard",
+          tfReforestableLand = BigDecimal(7),
+          totalExpansionPotential = BigDecimal(8),
+          totalVcu = BigDecimal(9),
+          verraLink = "https://verraLink",
       )
 
       val newLandUsages =

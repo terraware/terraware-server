@@ -16,7 +16,6 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.point
 import java.math.BigDecimal
@@ -53,17 +52,26 @@ class ObservationCompletedStep(
       isThreatened: Boolean = false,
   ) {
     require(type == ObservationType.BiomassMeasurements) { "Not a biomass observation" }
-    val species =
-        ObservationBiomassSpeciesRow(
+    val speciesId = if (scientificName == null) scenario.getOrInsertSpecies(number) else null
+    val id =
+        test.insertObservationBiomassSpecies(
             commonName = commonName,
             isInvasive = isInvasive,
             isThreatened = isThreatened,
             observationId = observationId,
             scientificName = scientificName,
-            speciesId = if (scientificName == null) scenario.getOrInsertSpecies(number) else null,
+            speciesId = speciesId,
         )
-    val id = test.insertObservationBiomassSpecies(species)
-    scenario.biomassSpecies[observationId to number] = species.copy(id = id)
+    scenario.biomassSpecies[observationId to number] =
+        ObservationBiomassSpeciesRow(
+            commonName = commonName,
+            id = id,
+            isInvasive = isInvasive,
+            isThreatened = isThreatened,
+            observationId = observationId,
+            scientificName = scientificName,
+            speciesId = speciesId,
+        )
   }
 
   override fun prepare() {
@@ -171,7 +179,6 @@ class ObservationCompletedStep(
     ): RecordedTreeId {
       require(type == ObservationType.BiomassMeasurements) { "Not a biomass observation" }
       return test.insertRecordedTree(
-          row = RecordedTreesRow(treeNumber = treeNumber, trunkNumber = trunkNumber),
           biomassSpeciesId =
               scenario.getBiomassSpeciesId(this@ObservationCompletedStep.number, species),
           diameterAtBreastHeightCm = diameterAtBreastHeightCm,
@@ -181,6 +188,8 @@ class ObservationCompletedStep(
           pointOfMeasurementM = pointOfMeasurementM,
           shrubDiameterCm = shrubDiameterCm,
           treeGrowthForm = growthForm,
+          treeNumber = treeNumber,
+          trunkNumber = trunkNumber,
       )
     }
 

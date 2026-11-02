@@ -3,7 +3,6 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.LockType
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
@@ -121,7 +120,7 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
     fun `skips a site whose results are being recalculated elsewhere`() {
       // Set up flagged results directly to prevent locking.
       insertObservation(completedTime = Instant.EPOCH)
-      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+      insertObservationSiteResult(needsRecalculation = true)
 
       dataSource.connection.use { otherSession ->
         lockInSession(otherSession, LockType.OBSERVATION_RESULTS_RECALCULATION)
@@ -155,7 +154,7 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
     @Test
     fun `waits for a recalculation that is already running`() {
       insertObservation(completedTime = Instant.EPOCH)
-      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+      insertObservationSiteResult(needsRecalculation = true)
 
       withSiteLockedByOtherSession(releaseAfter = Duration.ofMillis(1500)) {
         assertTrue(recalculator.completeSiteRecalculation(plantingSiteId), "Completed")
@@ -167,7 +166,7 @@ class ObservationResultsRecalculatorTest : ObservationScenarioTest() {
     @Test
     fun `gives up if a running recalculation takes too long`() {
       insertObservation(completedTime = Instant.EPOCH)
-      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+      insertObservationSiteResult(needsRecalculation = true)
 
       withSiteLockedByOtherSession(releaseAfter = null) {
         assertFalse(

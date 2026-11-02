@@ -13,7 +13,6 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingType
-import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.search.AndNode
@@ -988,12 +987,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       val originPlantingSiteId = insertPlantingSite()
       val deliveryId =
           insertDelivery(plantingSiteId = originPlantingSiteId, withdrawalId = withdrawalId)
-      val otherPlantingSiteId = insertPlantingSite()
-      insertDelivery(
-          row = DeliveriesRow(reassignedFromDeliveryId = deliveryId),
-          plantingSiteId = otherPlantingSiteId,
-          withdrawalId = withdrawalId,
-      )
+      insertPlantingSite()
+      insertDelivery(reassignedFromDeliveryId = deliveryId)
 
       val prefix = SearchFieldPrefix(searchTables.nurseryWithdrawals)
       val fields = listOf("id", "delivery_id").map { prefix.resolve(it) }

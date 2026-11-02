@@ -719,9 +719,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       insertPlanting(substratumId = substratumId, speciesId = speciesId1)
       val reassignmentDeliveryId =
           insertDelivery(
-              row = DeliveriesRow(reassignedFromDeliveryId = originalDeliveryId),
               plantingSiteId = otherPlantingSiteId,
-              withdrawalId = withdrawalId,
+              reassignedFromDeliveryId = originalDeliveryId,
           )
 
       assertEquals(
@@ -742,9 +741,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       val originalDeliveryId =
           insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
       insertDelivery(
-          row = DeliveriesRow(reassignedFromDeliveryId = originalDeliveryId),
           plantingSiteId = otherPlantingSiteId,
-          withdrawalId = withdrawalId,
+          reassignedFromDeliveryId = originalDeliveryId,
       )
 
       assertEquals(originalDeliveryId, store.fetchOneByWithdrawalId(withdrawalId)?.id)

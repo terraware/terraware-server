@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.tracking.ObservationState
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -53,12 +52,7 @@ class ObservationStoreFetchObservationsPastEndDateTest : BaseObservationStoreTes
 
     // Observation already completed; shouldn't be marked as overdue
     insertPlantingSite(timeZone = zone3)
-    insertObservation(
-        ObservationsRow(completedTime = Instant.EPOCH),
-        endDate = endDate,
-        startDate = startDate,
-        state = ObservationState.Completed,
-    )
+    insertObservation(completedTime = Instant.EPOCH, endDate = endDate, startDate = startDate)
 
     // End date is still in the future.
     insertPlantingSite(timeZone = zone3)

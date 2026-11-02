@@ -26,28 +26,19 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val createdBy = insertUser()
       val plantingSiteId = insertPlantingSite()
 
-      val initialRow =
-          StrataRow(
+      val stratumId =
+          insertStratum(
               areaHa = BigDecimal.ONE,
-              boundaryModifiedBy = createdBy,
-              boundaryModifiedTime = createdTime,
               boundary = multiPolygon(1),
-              createdBy = createdBy,
               createdTime = createdTime,
               initialPlantingDensity = BigDecimal.ONE,
-              plantingSiteId = plantingSiteId,
-              modifiedBy = createdBy,
-              modifiedTime = createdTime,
               name = "initial",
               plantErrorMargin = BigDecimal.TWO,
               plantNumPermanentPlots = 1,
               plantNumTemporaryPlots = 2,
               plantStudentsT = BigDecimal.ONE,
               plantVariance = BigDecimal.ZERO,
-              stableId = StableId("initial"),
           )
-
-      val stratumId = insertStratum(initialRow)
 
       val newName = "renamed"
       val newBiomassErrorMargin = BigDecimal(5)
@@ -64,12 +55,18 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val newTargetPlantDensity = BigDecimal(15)
 
       val expected =
-          initialRow.copy(
+          StrataRow(
+              areaHa = BigDecimal.ONE,
               biomassErrorMargin = newBiomassErrorMargin,
               biomassNumPermanentPlots = newBiomassNumPermanentPlots,
               biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,
               biomassStudentsT = newBiomassStudentsT,
               biomassVariance = newBiomassVariance,
+              boundary = multiPolygon(1),
+              boundaryModifiedBy = createdBy,
+              boundaryModifiedTime = createdTime,
+              createdBy = createdBy,
+              createdTime = createdTime,
               id = stratumId,
               initialPlantingDensity = newInitialPlantingDensity,
               modifiedBy = user.userId,
@@ -80,6 +77,8 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
               plantNumTemporaryPlots = newPlantNumTemporaryPlots,
               plantStudentsT = newPlantStudentsT,
               plantVariance = newPlantVariance,
+              plantingSiteId = plantingSiteId,
+              stableId = StableId("initial"),
               targetPlantDensity = newTargetPlantDensity,
           )
 

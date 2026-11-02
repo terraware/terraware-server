@@ -27,7 +27,6 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITI
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
 import com.terraformation.backend.funder.model.PublishedActivityModel
@@ -395,7 +394,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertMonitoringPlot()
       insertObservation()
       insertObservationPlot(completedBy = user.userId)
-      insertObservationSiteResult(ObservationSiteResultsRow(needsRecalculation = true))
+      insertObservationSiteResult(needsRecalculation = true)
       insertActivityObservation()
 
       assertThrows<ObservationResultsPendingException> { store.publish(activityId) }

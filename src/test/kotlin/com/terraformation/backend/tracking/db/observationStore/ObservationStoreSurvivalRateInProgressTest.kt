@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.db.observationStore
 
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import io.mockk.every
 import java.time.Instant
@@ -41,7 +40,7 @@ class ObservationStoreSurvivalRateInProgressTest : BaseObservationStoreTest() {
       insertStratum()
       insertSubstratum()
       insertObservation(completedTime = Instant.EPOCH)
-      insertObservationSubstratumResult(ObservationSubstratumResultsRow(needsRecalculation = true))
+      insertObservationSubstratumResult(needsRecalculation = true)
 
       assertTrue(
           store.fetchSurvivalRateCalculationInProgress(plantingSiteId),

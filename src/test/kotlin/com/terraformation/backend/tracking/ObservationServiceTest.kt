@@ -1882,10 +1882,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns empty results with observations completed more recent than two weeks`() {
       helper.insertPlantedSite()
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1895,10 +1892,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       helper.insertPlantedSite()
 
       insertObservation(state = ObservationState.Upcoming)
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS))
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1934,24 +1928,15 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns sites with observations completed earlier than two weeks or have substratum plantings`() {
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS))
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS))
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       val plantingSiteIdWithPlantings = helper.insertPlantedSite()
 
@@ -1998,10 +1983,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -2012,10 +1994,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
       insertObservation(state = ObservationState.Upcoming)
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS))
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -2025,27 +2004,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS))
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS))
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       val plantingSiteIdWithPlantings =
           helper.insertPlantedSite(
@@ -2087,10 +2057,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns empty results with observations completed more recent than eight weeks`() {
       helper.insertPlantedSite()
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -2100,10 +2067,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       helper.insertPlantedSite()
 
       insertObservation(state = ObservationState.Upcoming)
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS))
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -2113,10 +2077,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS))
 
       assertEquals(
           emptyList<Any>(),
@@ -2131,25 +2092,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS))
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS))
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       val plantingSiteIdWithPlantings =
           helper.insertPlantedSite(
@@ -2199,10 +2151,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -2213,10 +2162,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
       insertObservation(state = ObservationState.Upcoming)
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -2229,10 +2175,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           number = 2,
       )
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
 
       assertEquals(
           emptyList<Any>(),
@@ -2245,27 +2188,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
-      insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH),
-          state = ObservationState.Completed,
-      )
+      insertObservation(completedTime = Instant.EPOCH)
 
       val plantingSiteIdWithPlantings =
           helper.insertPlantedSite(

@@ -4496,9 +4496,8 @@ abstract class DatabaseBackedTest {
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId ?: inserted.biomassSpeciesId,
-      treeNumber: Int = row.treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1),
-      trunkNumber: Int =
-          row.trunkNumber ?: nextTrunkNumber.getOrDefault(observationId to treeNumber, 1),
+      treeNumber: Int? = row.treeNumber,
+      trunkNumber: Int? = row.trunkNumber,
       treeGrowthForm: TreeGrowthForm = row.treeGrowthFormId ?: TreeGrowthForm.Tree,
       isDead: Boolean = row.isDead ?: false,
       boleHeightM: BigDecimal? = row.boleHeightM,
@@ -4509,6 +4508,9 @@ abstract class DatabaseBackedTest {
       treeCrownDiameterCm: Int? = row.treeCrownDiameterCm,
       description: String? = row.description,
   ): RecordedTreeId {
+    val effectiveTreeNumber = treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1)
+    val effectiveTrunkNumber =
+        trunkNumber ?: nextTrunkNumber.getOrDefault(observationId to effectiveTreeNumber, 1)
     val rowWithDefaults =
         row.copy(
             biomassSpeciesId = biomassSpeciesId,
@@ -4523,13 +4525,13 @@ abstract class DatabaseBackedTest {
             shrubDiameterCm = shrubDiameterCm,
             treeCrownDiameterCm = treeCrownDiameterCm,
             treeGrowthFormId = treeGrowthForm,
-            treeNumber = treeNumber,
-            trunkNumber = trunkNumber,
+            treeNumber = effectiveTreeNumber,
+            trunkNumber = effectiveTrunkNumber,
         )
 
     recordedTreesDao.insert(rowWithDefaults)
-    nextTreeNumber[observationId] = treeNumber + 1
-    nextTrunkNumber[observationId to treeNumber] = trunkNumber + 1
+    nextTreeNumber[observationId] = effectiveTreeNumber + 1
+    nextTrunkNumber[observationId to effectiveTreeNumber] = effectiveTrunkNumber + 1
 
     return rowWithDefaults.id!!.also { inserted.recordedTreeIds.add(it) }
   }
