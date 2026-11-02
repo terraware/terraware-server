@@ -769,7 +769,7 @@ class T0Store(
   fun on(event: ObservationStateUpdatedEvent) {
     if (
         event.newState in listOf(ObservationState.Completed, ObservationState.Abandoned) &&
-            !isAdHocObservation(event.observationId)
+            isScheduledPlantMonitoringObservation(event.observationId)
     ) {
       assignNewObservationSpeciesZero(event.observationId)
     }
@@ -1054,6 +1054,14 @@ class T0Store(
       dslContext.fetchExists(
           OBSERVATIONS,
           OBSERVATIONS.ID.eq(observationId).and(OBSERVATIONS.IS_AD_HOC.isTrue),
+      )
+
+  private fun isScheduledPlantMonitoringObservation(observationId: ObservationId): Boolean =
+      dslContext.fetchExists(
+          OBSERVATIONS,
+          OBSERVATIONS.ID.eq(observationId)
+              .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+              .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring)),
       )
 
   private fun wasMonitoringPlotInObservation(
