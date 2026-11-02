@@ -653,8 +653,9 @@ import org.testcontainers.junit.jupiter.Testcontainers
  *
  * Base class for database-backed tests. Subclass this to get a fully-configured database with a
  * [DSLContext] and a set of jOOQ DAO objects ready to use. The database is run in a Docker
- * container which is torn down after all tests have finished. This cuts down on the chance that
- * tests will behave differently from one development environment to the next.
+ * container, which cuts down on the chance that tests will behave differently from one development
+ * environment to the next. On developer machines, the container is kept running between test runs
+ * to avoid the cost of starting it and applying migrations each time; see [TestDatabaseContainer].
  *
  * In general, you should only use this for testing database-centric code! Do not put SQL queries in
  * the middle of business logic. If you want to test code that _uses_ data from the database, pull

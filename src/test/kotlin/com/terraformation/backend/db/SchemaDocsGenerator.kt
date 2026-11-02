@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.github.dockerjava.api.model.ContainerNetwork
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ACCELERATOR
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
@@ -26,8 +27,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.opentest4j.TestAbortedException
+import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.Network
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy
 import org.testcontainers.postgresql.PostgreSQLContainer
@@ -535,6 +538,18 @@ class SchemaDocsGenerator : DatabaseTest() {
     Files.createDirectories(sliceDir)
     Files.setPosixFilePermissions(sliceDir, PosixFilePermissions.fromString("rwxrwxrwx"))
 
+    // The database container isn't attached to a network by default, so that its configuration is
+    // the same across test runs and it can be reused. Attach it to a network for the duration of
+    // this test so the SchemaSpy container can reach it.
+    val network = Network.newNetwork()
+    val dockerClient = DockerClientFactory.lazyClient()
+    dockerClient
+        .connectToNetworkCmd()
+        .withNetworkId(network.id)
+        .withContainerId(TestDatabaseContainer.container.containerId)
+        .withContainerNetwork(ContainerNetwork().withAliases(POSTGRES_NETWORK_ALIAS))
+        .exec()
+
     try {
       log.info("Writing output to $sliceDir")
 
@@ -545,7 +560,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "-t",
                   "pgsql11",
                   "-host",
-                  TestDatabaseContainer.container.networkAliases.first(),
+                  POSTGRES_NETWORK_ALIAS,
                   "-port",
                   PostgreSQLContainer.POSTGRESQL_PORT.toString(),
                   "-u",
@@ -553,7 +568,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "-p",
                   TestDatabaseContainer.container.password,
                   "-db",
-                  TestDatabaseContainer.container.databaseName,
+                  TestDatabaseContainer.databaseName,
                   // Output all diagrams as SVG (default is PNG which generates huge image files)
                   "-imageformat",
                   "svg",
@@ -568,7 +583,7 @@ class SchemaDocsGenerator : DatabaseTest() {
               .withFileSystemBind(sliceDir.toString(), "/output", BindMode.READ_WRITE)
               // Log stdout as INFO and stderr as ERROR
               .withLogConsumer(Slf4jLogConsumer(log).withSeparateOutputStreams())
-              .withNetwork(TestDatabaseContainer.container.network)
+              .withNetwork(network)
               // Wait for the container to exit with exit code 0 when it's started
               .withStartupCheckStrategy(OneShotStartupCheckStrategy().withTimeout(timeout))
 
@@ -578,6 +593,13 @@ class SchemaDocsGenerator : DatabaseTest() {
     } finally {
       // Don't leave a world-writable directory sitting around.
       Files.setPosixFilePermissions(sliceDir, PosixFilePermissions.fromString("rwxr-xr-x"))
+
+      dockerClient
+          .disconnectFromNetworkCmd()
+          .withNetworkId(network.id)
+          .withContainerId(TestDatabaseContainer.container.containerId)
+          .exec()
+      network.close()
     }
   }
 
@@ -653,5 +675,8 @@ class SchemaDocsGenerator : DatabaseTest() {
 
     /** Name of JDBC table metadata column that holds the table comment. */
     private const val TABLE_COMMENT = "REMARKS"
+
+    /** Hostname the SchemaSpy container uses to connect to the database container. */
+    private const val POSTGRES_NETWORK_ALIAS = "postgres"
   }
 }

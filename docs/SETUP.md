@@ -59,6 +59,14 @@ Windows: `gradlew.bat check`
 
 The `check` target will run the linter as well as the actual tests; to run just the tests themselves, use `test` instead.
 
+### Reusing the test database container
+
+Starting a new PostgreSQL container and applying all the database migrations to it takes several seconds, so when you run tests with Gradle, the container is kept running between test runs. (CI builds always use a new container.)
+
+The first test run will start the container, and later runs will connect to the existing one. Each checkout of the code gets its own database in the container, and a new database is created when the set of migrations changes, so it's safe to switch branches and to run tests in multiple checkouts at the same time.
+
+The container shuts down and is removed after 30 minutes without any database connections, or whenever Docker restarts; the next test run will start a new one. To reset to a clean state, remove it with `docker rm -f $(docker ps -q --filter label=com.terraformation.test-database)`. To use a new container for every test run, set `TESTCONTAINERS_REUSE_ENABLE=false` in your environment. Test runs that don't go through Gradle, such as IntelliJ's built-in test runner, only reuse the container if you add `testcontainers.reuse.enable=true` to `~/.testcontainers.properties`.
+
 # Using the front end
 
 To use the web front end, you'll need access to a Keycloak instance, either an existing one or a local one. See [KEYCLOAK.md](KEYCLOAK.md) for setup instructions.
