@@ -182,6 +182,9 @@ class ObservationScenario(
   fun expectStoredResults(observation: Int, init: ExpectedStoredResultsStep.() -> Unit) =
       initChild(ExpectedStoredResultsStep(this, observation), init)
 
+  fun populatePendingResults(observation: Int) =
+      populateStoredResults(observation, pending = true) { populatePendingResults() }
+
   fun expectResults(
       observation: Int,
       baseline: ExpectedSiteResultStep? = null,
