@@ -1,5 +1,7 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteType
 import com.terraformation.backend.db.tracking.DraftStratumId
@@ -10,10 +12,16 @@ import com.terraformation.backend.tracking.db.DraftSubstratumNotFoundException
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.CoordinateXY
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.PrecisionModel
 
 class DraftPlantingSiteModelTest {
   @Test
@@ -179,6 +187,96 @@ class DraftPlantingSiteModelTest {
             )
             .requireValid(existing)
       }
+    }
+  }
+
+  @Nested
+  inner class WithValidGeometries {
+    private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+
+    private fun multiPolygonOf(vararg coordinates: Pair<Double, Double>): MultiPolygon =
+        geometryFactory.createMultiPolygon(
+            arrayOf(
+                geometryFactory.createPolygon(
+                    coordinates.map { (x, y) -> CoordinateXY(x, y) }.toTypedArray()
+                )
+            )
+        )
+
+    // From a stratum cut in the map editor; the last vertex lies on the first edge, so the closing
+    // edge doubles back along it.
+    private val spiked =
+        multiPolygonOf(
+            -121.29912157 to 44.07919529,
+            -121.29084421 to 44.07872808,
+            -121.28822727 to 44.08491347,
+            -121.29385559704333 to 44.08491347,
+            -121.29479011884658 to 44.07895080416232,
+            -121.29912157 to 44.07919529,
+        )
+
+    private val withoutSpike =
+        multiPolygonOf(
+            -121.29084421 to 44.07872808,
+            -121.28822727 to 44.08491347,
+            -121.29385559704333 to 44.08491347,
+            -121.29479011884658 to 44.07895080416232,
+            -121.29084421 to 44.07872808,
+        )
+
+    @Test
+    fun `repairs invalid geometries`() {
+      val bowtie = multiPolygonOf(0.0 to 0.0, 2.0 to 2.0, 2.0 to 0.0, 0.0 to 2.0, 0.0 to 0.0)
+      val line = multiPolygonOf(0.0 to 0.0, 1.0 to 0.0, 2.0 to 0.0, 0.0 to 0.0)
+      val map =
+          draftMap(
+                  listOf(
+                      draftStratum("A", 250)
+                          .copy(
+                              boundary = line,
+                              substrata = listOf(draftSubstratum("1", 250).copy(boundary = spiked)),
+                          )
+                  )
+              )
+              .copy(boundary = spiked, exclusion = bowtie)
+
+      val repaired = map.withValidGeometries()
+
+      assertAll(
+          {
+            assertGeometryEquals(
+                withoutSpike.norm(),
+                repaired.boundary?.norm(),
+                "Boundary has spike removed",
+            )
+          },
+          { assertTrue(repaired.exclusion!!.isValid, "Exclusion is valid") },
+          {
+            assertEquals(
+                2,
+                repaired.exclusion!!.numGeometries,
+                "Exclusion keeps both halves of bowtie",
+            )
+          },
+          { assertEquals(2.0, repaired.exclusion!!.area, 0.000001, "Exclusion area") },
+          { assertTrue(repaired.strata[0].boundary.isEmpty, "Zero-area stratum becomes empty") },
+          {
+            assertGeometryEquals(
+                withoutSpike.norm(),
+                repaired.strata[0].substrata[0].boundary.norm(),
+                "Substratum has spike removed",
+            )
+          },
+      )
+    }
+
+    @Test
+    fun `leaves valid geometries unchanged`() {
+      val map =
+          draftMap(listOf(draftStratum("A", 250), draftStratum("B", 250, x = 250)))
+              .copy(exclusion = rectangle(10))
+
+      assertEquals(map, map.withValidGeometries())
     }
   }
 

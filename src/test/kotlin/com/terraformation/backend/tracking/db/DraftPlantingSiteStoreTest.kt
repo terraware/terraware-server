@@ -4,7 +4,10 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.GeometryDeserializer
+import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
@@ -23,6 +26,7 @@ import com.terraformation.backend.tracking.model.DraftPlantingSiteMap
 import com.terraformation.backend.tracking.model.DraftPlantingSiteModel
 import com.terraformation.backend.tracking.model.DraftStratumModel
 import com.terraformation.backend.tracking.model.DraftSubstratumModel
+import com.terraformation.backend.util.toMultiPolygon
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
@@ -33,8 +37,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.CoordinateXY
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.operation.valid.IsValidOp
 import org.springframework.security.access.AccessDeniedException
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -124,6 +134,75 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       map.strata
           .flatMap { stratum -> listOfNotNull(stratum.id) + stratum.substrata.mapNotNull { it.id } }
           .toSet()
+
+  /**
+   * A square with a zero-width spike sticking out of its west edge, which makes it invalid, and a
+   * notch from its north edge whose tip is just above its south edge. Once the spike is removed,
+   * rounding the result to the precision of API responses puts the tip on the south edge, which
+   * makes it invalid again.
+   */
+  private val spikedSquare: MultiPolygon =
+      GeometryFactory(PrecisionModel(), SRID.LONG_LAT).let { factory ->
+        factory.createMultiPolygon(
+            arrayOf(
+                factory.createPolygon(
+                    arrayOf(
+                        CoordinateXY(10.0, 10.0),
+                        CoordinateXY(11.0, 10.0),
+                        CoordinateXY(11.0, 11.0),
+                        CoordinateXY(10.6, 11.0),
+                        CoordinateXY(10.5, 10.000000004),
+                        CoordinateXY(10.4, 11.0),
+                        CoordinateXY(10.0, 11.0),
+                        CoordinateXY(10.0, 10.5),
+                        CoordinateXY(9.5, 10.5),
+                        CoordinateXY(10.0, 10.5),
+                        CoordinateXY(10.0, 10.0),
+                    )
+                )
+            )
+        )
+      }
+
+  private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
+
+  /**
+   * Returns the map's geometries as a client would see them: serialized to GeoJSON as in API
+   * responses, then parsed back without topology validation, as draft payloads are.
+   */
+  private fun DraftPlantingSiteMap.asSeenByClient(): DraftPlantingSiteMap {
+    fun MultiPolygon.roundTrip(): MultiPolygon =
+        objectMapper
+            .readerFor(Geometry::class.java)
+            .withAttribute(GeometryDeserializer.SKIP_VALIDATION, true)
+            .readValue<Geometry>(objectMapper.writeValueAsString(this))
+            .toMultiPolygon()
+
+    return copy(
+        boundary = boundary?.roundTrip(),
+        exclusion = exclusion?.roundTrip(),
+        strata =
+            strata.map { stratum ->
+              stratum.copy(
+                  boundary = stratum.boundary.roundTrip(),
+                  substrata = stratum.substrata.map { it.copy(boundary = it.boundary.roundTrip()) },
+              )
+            },
+    )
+  }
+
+  private fun assertGeometriesValid(map: DraftPlantingSiteMap, message: String) {
+    val geometries =
+        mapOf("Site boundary" to map.boundary, "Exclusion" to map.exclusion) +
+            map.strata.associate { "Stratum ${it.name}" to it.boundary } +
+            map.strata.flatMap { stratum ->
+              stratum.substrata.map { "Substratum ${stratum.name}-${it.name}" to it.boundary }
+            }
+
+    geometries.forEach { (description, geometry) ->
+      assertEquals(null, IsValidOp(geometry).validationError, "$message: $description")
+    }
+  }
 
   /** Inserts a draft with two strata, the first of which has two substrata. */
   private fun insertDraftWithStrata(): DraftPlantingSiteId {
@@ -397,6 +476,37 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           )
       )
       assertTableEmpty(DRAFT_STRATA)
+    }
+
+    @Test
+    fun `repairs invalid geometries so they stay valid and unchanged when saved again`() {
+      val model =
+          siteModel(
+              strata =
+                  listOf(
+                      stratumModel(
+                          "S1",
+                          boundary = spikedSquare,
+                          substrata = listOf(substratumModel("S1-A", boundary = spikedSquare)),
+                      )
+                  )
+          )
+      val draftId =
+          store
+              .create(
+                  model.copy(
+                      map = model.map.copy(boundary = spikedSquare, exclusion = spikedSquare)
+                  )
+              )
+              .id!!
+
+      val afterFirstSave = store.fetchOneById(draftId).map.asSeenByClient()
+      assertGeometriesValid(afterFirstSave, "After first save")
+
+      store.update(draftId) { it.copy(map = afterFirstSave) }
+
+      val afterSecondSave = store.fetchOneById(draftId).map.asSeenByClient()
+      assertEquals(afterFirstSave, afterSecondSave, "Map after second save")
     }
 
     @Test
@@ -837,6 +947,31 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       assertEquals(before, store.fetchOneById(draftId), "Draft should be unchanged")
+    }
+
+    @Test
+    fun `repairs invalid geometries`() {
+      val draftId = insertDraftWithStrata()
+
+      store.update(draftId) { model ->
+        model.copy(
+            map =
+                model.map.copy(
+                    boundary = spikedSquare,
+                    exclusion = spikedSquare,
+                    strata =
+                        model.map.strata.map { stratum ->
+                          stratum.copy(
+                              boundary = spikedSquare,
+                              substrata =
+                                  stratum.substrata.map { it.copy(boundary = spikedSquare) },
+                          )
+                        },
+                )
+        )
+      }
+
+      assertGeometriesValid(store.fetchOneById(draftId).map.asSeenByClient(), "After update")
     }
 
     @Test

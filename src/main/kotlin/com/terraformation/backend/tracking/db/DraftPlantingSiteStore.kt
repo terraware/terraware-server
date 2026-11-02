@@ -96,6 +96,7 @@ class DraftPlantingSiteStore(
     requireProjectInOrganization(model.projectId, model.organizationId)
     model.map.requireValid(null)
 
+    val map = model.map.withValidGeometries()
     val now = clock.instant()
     val userId = currentUser().userId
 
@@ -104,25 +105,25 @@ class DraftPlantingSiteStore(
           with(DRAFT_PLANTING_SITES) {
             dslContext
                 .insertInto(DRAFT_PLANTING_SITES)
-                .set(BOUNDARY, model.map.boundary)
-                .set(BOUNDARY_SOURCE, model.map.boundarySource)
+                .set(BOUNDARY, map.boundary)
+                .set(BOUNDARY_SOURCE, map.boundarySource)
                 .set(CREATED_BY, userId)
                 .set(CREATED_TIME, now)
                 .set(DESCRIPTION, model.description)
-                .set(EXCLUSION, model.map.exclusion)
+                .set(EXCLUSION, map.exclusion)
                 .set(MODIFIED_BY, userId)
                 .set(MODIFIED_TIME, now)
                 .set(NAME, model.name)
                 .set(ORGANIZATION_ID, model.organizationId)
                 .set(PROJECT_ID, model.projectId)
-                .set(SITE_EDIT_STEP, model.map.siteEditStep)
-                .set(SITE_TYPE_ID, model.map.siteType)
+                .set(SITE_EDIT_STEP, map.siteEditStep)
+                .set(SITE_TYPE_ID, map.siteType)
                 .set(TIME_ZONE, model.timeZone)
                 .returning(ID)
                 .fetchOne(ID)!!
           }
 
-      updateStrata(id, emptyList(), model.map.strata)
+      updateStrata(id, emptyList(), map.strata)
 
       fetchOneById(id)
     }
@@ -163,24 +164,26 @@ class DraftPlantingSiteStore(
       requireProjectInOrganization(updated.projectId, existing.organizationId)
       updated.map.requireValid(existing.map)
 
+      val map = updated.map.withValidGeometries()
+
       with(DRAFT_PLANTING_SITES) {
         dslContext
             .update(DRAFT_PLANTING_SITES)
-            .set(BOUNDARY, updated.map.boundary)
-            .set(BOUNDARY_SOURCE, updated.map.boundarySource)
+            .set(BOUNDARY, map.boundary)
+            .set(BOUNDARY_SOURCE, map.boundarySource)
             .set(DESCRIPTION, updated.description)
-            .set(EXCLUSION, updated.map.exclusion)
+            .set(EXCLUSION, map.exclusion)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, updated.name)
             .set(PROJECT_ID, updated.projectId)
-            .set(SITE_EDIT_STEP, updated.map.siteEditStep)
+            .set(SITE_EDIT_STEP, map.siteEditStep)
             .set(TIME_ZONE, updated.timeZone)
             .where(ID.eq(id))
             .execute()
       }
 
-      updateStrata(id, existing.map.strata, updated.map.strata)
+      updateStrata(id, existing.map.strata, map.strata)
     }
   }
 
