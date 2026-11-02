@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteIdConverter
@@ -38,11 +39,27 @@ import com.terraformation.backend.tracking.model.RecordedPlantModel
 import java.math.BigDecimal
 import org.jooq.Condition
 import org.jooq.Field
+import org.jooq.Record
 import org.jooq.Record10
 import org.jooq.Select
+import org.jooq.Table
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Point
+
+private typealias SpeciesTotalsRecord =
+    Record10<
+        RecordedSpeciesCertainty?,
+        SpeciesId?,
+        String?,
+        Int?,
+        Int?,
+        Int?,
+        Int?,
+        Int?,
+        BigDecimal?,
+        Int?,
+    >
 
 internal val observationPlotCoordinatesGpsField =
     OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()
@@ -151,50 +168,82 @@ internal fun plotHasCompletedObservations(
  *         are in the latest observation) (non-nullable)
  */
 internal fun observationSpeciesTotalsMultiset(
-    query:
-        Select<
-            Record10<
-                RecordedSpeciesCertainty?,
-                SpeciesId?,
-                String?,
-                Int?,
-                Int?,
-                Int?,
-                Int?,
-                Int?,
-                BigDecimal?,
-                Int?,
-            >
-        >
+    query: Select<SpeciesTotalsRecord>,
+    totals: Table<out Record>,
+    scopeCondition: Condition,
 ): Field<List<ObservationSpeciesResultsModel>> {
-  return DSL.multiset(query).convertFrom { results ->
-    results.map { record ->
-      val certainty = record.value1()!!
-      val speciesId = record.value2()
-      val speciesName = record.value3()
-      val totalLive = record.value4()!!
-      val totalDead = record.value5()!!
-      val totalExisting = record.value6()!!
-      val permanentLive = record.value7()!!
-      val survivalRate = record.value8()
-      val t0Density = record.value9()
-      val latestLive = record.value10()!!
-
-      ObservationSpeciesResultsModel(
-          certainty = certainty,
-          latestLive = latestLive,
-          permanentLive = permanentLive,
-          speciesId = speciesId,
-          speciesName = speciesName,
-          survivalRate = survivalRate,
-          t0Density = t0Density,
-          totalDead = totalDead,
-          totalExisting = totalExisting,
-          totalLive = totalLive,
-          totalPlants = totalLive + totalExisting + totalDead,
+  return DSL.`when`(
+          OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BiomassMeasurements)
+              .and(OBSERVATIONS.IS_AD_HOC.isFalse),
+          DSL.multiset(biomassSpeciesTotalsQuery(totals, OBSERVATIONS.ID, scopeCondition)),
       )
-    }
-  }
+      .otherwise(DSL.multiset(query))
+      .convertFrom { results ->
+        results.map { record ->
+          val certainty = record.value1()!!
+          val speciesId = record.value2()
+          val speciesName = record.value3()
+          val totalLive = record.value4()!!
+          val totalDead = record.value5()!!
+          val totalExisting = record.value6()!!
+          val permanentLive = record.value7()!!
+          val survivalRate = record.value8()
+          val t0Density = record.value9()
+          val latestLive = record.value10()!!
+
+          ObservationSpeciesResultsModel(
+              certainty = certainty,
+              latestLive = latestLive,
+              permanentLive = permanentLive,
+              speciesId = speciesId,
+              speciesName = speciesName,
+              survivalRate = survivalRate,
+              t0Density = t0Density,
+              totalDead = totalDead,
+              totalExisting = totalExisting,
+              totalLive = totalLive,
+              totalPlants = totalLive + totalExisting + totalDead,
+          )
+        }
+      }
+}
+
+private fun biomassSpeciesTotalsQuery(
+    totals: Table<out Record>,
+    observationIdField: Field<ObservationId?>,
+    scopeCondition: Condition,
+): Select<SpeciesTotalsRecord> {
+  val certainty = totals.field("certainty_id", OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.dataType)!!
+  val speciesId = totals.field("species_id", OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.dataType)!!
+  val speciesName =
+      totals.field("species_name", OBSERVED_SITE_SPECIES_TOTALS.SPECIES_NAME.dataType)!!
+  val live = totals.field("total_live", OBSERVED_SITE_SPECIES_TOTALS.TOTAL_LIVE.dataType)!!
+  val dead = totals.field("total_dead", OBSERVED_SITE_SPECIES_TOTALS.TOTAL_DEAD.dataType)!!
+  val permanentLive =
+      totals.field("permanent_live", OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE.dataType)!!
+
+  return DSL.select(
+          certainty,
+          speciesId,
+          speciesName,
+          live,
+          dead,
+          DSL.inline(0),
+          permanentLive,
+          DSL.castNull(OBSERVED_SITE_SPECIES_TOTALS.SURVIVAL_RATE),
+          DSL.castNull(PLOT_T0_DENSITIES.PLOT_DENSITY),
+          live,
+      )
+      .from(totals)
+      .where(
+          totals
+              .field("observation_id", OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.dataType)!!
+              .eq(observationIdField)
+      )
+      .and(scopeCondition)
+      .and(totals.field("biomass_species_id")!!.isNotNull)
+      .and(live.plus(dead).gt(0))
+      .orderBy(speciesId, speciesName)
 }
 
 internal val monitoringPlotConditionsMultiset =
@@ -320,7 +369,10 @@ internal val monitoringPlotSpeciesMultiset = run {
                     )
             )
             .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
-            .orderBy(SPECIES_ID, SPECIES_NAME)
+            .orderBy(SPECIES_ID, SPECIES_NAME),
+        plotTotals,
+        MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
+            .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed)),
     )
   }
 }
@@ -461,7 +513,9 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
                     .or(permSubstratumCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
                     .or(tempSubstratumCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
             )
-            .orderBy(SPECIES_ID, SPECIES_NAME)
+            .orderBy(SPECIES_ID, SPECIES_NAME),
+        substratumTotals,
+        SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID),
     )
   }
 }
@@ -602,7 +656,9 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
                     .or(permStratumCol.eq(STRATUM_HISTORIES.STRATUM_ID))
                     .or(tempStratumCol.eq(STRATUM_HISTORIES.STRATUM_ID))
             )
-            .orderBy(SPECIES_ID, SPECIES_NAME)
+            .orderBy(SPECIES_ID, SPECIES_NAME),
+        stratumTotals,
+        STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID),
     )
   }
 }
@@ -763,7 +819,9 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
                     .or(permSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
                     .or(tempSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
             )
-            .orderBy(SPECIES_ID, SPECIES_NAME)
+            .orderBy(SPECIES_ID, SPECIES_NAME),
+        siteTotals,
+        PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID),
     )
   }
 }
