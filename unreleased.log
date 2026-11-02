@@ -1,3 +1,7 @@
+b59f39ca SW-9177 Add update endpoint for saved table views (#5304)
+2250164c SW-9171 Add delete endpoint for saved table views (#5303)
+4c3cf21d SW-9172 Add read endpoints for saved table views (#5302)
+0544c261 SW-9170 Add Table Views table and create endpoint (#5301)
 620d0372 Remove unused invalidator property from ObservationScenario (#5329)
 de265a5f Remove unused plot and stratum invalidation methods (#5328)
 cb3608d2 Add test-engineer.md note about extending DSLs (#5326)
