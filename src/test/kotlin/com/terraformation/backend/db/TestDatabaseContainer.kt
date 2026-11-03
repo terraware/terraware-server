@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.test.context.support.TestPropertySourceUtils
+import org.testcontainers.DockerClientFactory
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
@@ -75,17 +76,33 @@ object TestDatabaseContainer {
    * database shuts itself down after [POSTGRES_IDLE_TIMEOUT_MINUTES] minutes with no client
    * connections (a feature of the `terraware/postgres` image), and Docker removes the container,
    * along with its data volume, once it stops for any reason.
+   *
+   * @param reuse If false, always create a new container that's removed at the end of the test run,
+   *   even if container reuse is enabled.
    */
-  private fun newPostgresContainer(): PostgreSQLContainer =
+  private fun newPostgresContainer(reuse: Boolean): PostgreSQLContainer =
       PostgreSQLContainer(imageName)
           .withDatabaseName("terraware")
           .withExposedPorts(PostgreSQLContainer.POSTGRESQL_PORT)
-          .withLabel("com.terraformation.test-database", "true")
+          .withLabel(TEST_DATABASE_LABEL, "true")
           .withEnv("IDLE_SHUTDOWN_MINUTES", "$POSTGRES_IDLE_TIMEOUT_MINUTES")
-          .withReuse(true)
+          .withReuse(reuse)
           .withCreateContainerCmdModifier { it.hostConfig?.withAutoRemove(true) }
 
   private const val POSTGRES_IDLE_TIMEOUT_MINUTES = 30
+
+  /** Docker label that identifies test database containers. */
+  private const val TEST_DATABASE_LABEL = "com.terraformation.test-database"
+
+  /** Returns the IDs of all the running test database containers on the Docker host. */
+  private fun runningTestDatabaseContainerIds(): Set<String> =
+      DockerClientFactory.lazyClient()
+          .listContainersCmd()
+          .withLabelFilter(mapOf(TEST_DATABASE_LABEL to "true"))
+          .withStatusFilter(listOf("running"))
+          .exec()
+          .map { it.id }
+          .toSet()
 
   /**
    * Creates the database the tests run against, if it doesn't already exist.
@@ -182,7 +199,12 @@ object TestDatabaseContainer {
    *
    * Testcontainers can occasionally get stuck while starting a container. If startup doesn't finish
    * within [postgresStartupTimeout], writes a diagnostic report, abandons the container, and tries
-   * again with a new one.
+   * again with a new one. Retries don't reuse existing containers, since they could otherwise pick
+   * up the abandoned container while it's being stopped.
+   *
+   * An abandoned container is only stopped if the failed attempt created it. If the attempt was
+   * reusing a container that was already running, other test runs might be using that container, so
+   * it's left alone.
    */
   @Synchronized
   fun start() {
@@ -193,7 +215,9 @@ object TestDatabaseContainer {
     val reportPaths = mutableListOf<Path>()
 
     for (attempt in 1..POSTGRES_START_ATTEMPTS) {
-      val container = newPostgresContainer()
+      val reuse = attempt == 1
+      val preexistingContainerIds = if (reuse) runningTestDatabaseContainerIds() else emptySet()
+      val container = newPostgresContainer(reuse)
       val startResult = CompletableFuture<Unit>()
       thread(isDaemon = true, name = "postgres-container-start-$attempt") {
         try {
@@ -225,11 +249,18 @@ object TestDatabaseContainer {
         reportPaths.add(path)
         log.error("Database container startup timed out; diagnostics written to $path")
 
-        thread(isDaemon = true, name = "postgres-container-stop-$attempt") {
-          try {
-            container.stop()
-          } catch (e: Exception) {
-            log.warn("Unable to stop abandoned database container", e)
+        if (container.containerId in preexistingContainerIds) {
+          log.warn(
+              "Not stopping abandoned database container ${container.containerId}: it was " +
+                  "already running, so other test runs might be using it"
+          )
+        } else {
+          thread(isDaemon = true, name = "postgres-container-stop-$attempt") {
+            try {
+              container.stop()
+            } catch (e: Exception) {
+              log.warn("Unable to stop abandoned database container", e)
+            }
           }
         }
       }
