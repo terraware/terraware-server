@@ -1057,15 +1057,10 @@ internal class NotificationServiceEmailTest {
 
     service.on(event)
 
-    assertSentNoContactNotification()
-
-    val message = sentMessageWithSubject("has not scheduled an observation")
-
-    assertSubjectContains("Test Organization", message)
-    assertSubjectContains("My Site", message)
-    assertBodyContains("but the organization has not scheduled one", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertMissingContactEvent(
+        "has not scheduled an observation",
+        "but the organization has not scheduled one",
+    )
   }
 
   @Test
@@ -1186,14 +1181,11 @@ internal class NotificationServiceEmailTest {
 
     service.on(event)
 
-    assertSentNoContactNotification()
-
-    val message = sentMessageWithSubject("has requested an observation plot change")
-    assertSubjectContains("Test Organization", message)
-    assertBodyContains("justification given is: Just because", message = message)
-    assertBodyContains("duration for the change is: Long-Term/Permanent", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertMissingContactEvent(
+        "has requested an observation plot change",
+        "justification given is: Just because",
+        "duration for the change is: Long-Term/Permanent",
+    )
   }
 
   @Test
@@ -1427,15 +1419,10 @@ internal class NotificationServiceEmailTest {
 
     service.on(event)
 
-    assertSentNoContactNotification()
-
-    val message = sentMessageWithSubject("has not scheduled a planting season for planting site")
-    assertSubjectContains("Test Organization", message = message)
-    assertSubjectContains("My Site", message = message)
-    assertSubjectContains("not scheduled", message = message)
-    assertBodyContains("My Site", message = message)
-    assertBodyContains("missing a planting season", message = message)
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertMissingContactEvent(
+        "has not scheduled a planting season for planting site",
+        "missing a planting season",
+    )
     assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
   }
 
@@ -2029,15 +2016,10 @@ internal class NotificationServiceEmailTest {
 
     service.on(event)
 
-    assertSentNoContactNotification()
-
-    val message = sentMessageWithSubject("has had a change to planting site")
-    assertSubjectContains(organization.name, message = message)
-    assertSubjectContains(siteName, message = message)
-    assertBodyContains("there was no resulting change to the total area", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
-
+    assertMissingContactEvent(
+        "has had a change to planting site",
+        "there was no resulting change to the total area",
+    )
     assertIsEventListener<PlantingSiteMapEditedEvent>(service)
   }
 
@@ -2511,19 +2493,15 @@ internal class NotificationServiceEmailTest {
     }
   }
 
-  private fun assertSentNoContactNotification() {
-    val message = sentMessageWithSubject("has no primary project contact")
-
-    assertSubjectContains("Test Organization", message)
-    assertBodyContains("Test Organization (${organization.id})", message = message)
-    assertBodyContains("no assigned Terraformation primary project", message = message)
+  private fun assertMissingContactEvent(subjectSubstring: String, vararg bodySubstrings: String) {
     eventPublisher.assertEventPublished {
       it is TerraformationContactMissingEvent &&
           it.organizationId == organization.id &&
           it.organizationName == organization.name &&
-          it.subject.isNotBlank() &&
-          it.body.isNotBlank()
+          it.subject.contains(subjectSubstring) &&
+          bodySubstrings.all { substring -> it.body.contains(substring) }
     }
+    assertRecipientsEqual(emptySet())
   }
 
   /** Walks a MIME message of arbitrary structure and returns the text parts. */
