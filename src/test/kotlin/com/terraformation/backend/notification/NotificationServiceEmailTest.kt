@@ -1102,6 +1102,30 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
+  fun `observation not scheduled does not submit support request when Atlassian is disabled`() {
+    every { config.atlassian.enabled } returns false
+
+    service.on(ObservationNotScheduledNotificationEvent(PlantingSiteId(1)))
+
+    assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
+  }
+
+  @Test
+  fun `missing contact support request is in English regardless of current locale`() {
+    Locales.GIBBERISH.use {
+      service.on(ObservationNotScheduledNotificationEvent(PlantingSiteId(1)))
+    }
+
+    assertSentNoContactNotification()
+    assertContains(
+        "has not scheduled an observation",
+        supportDescription.captured,
+        "English notification title",
+    )
+  }
+
+  @Test
   fun observationNotStarted() {
     val event =
         ObservationNotStartedEvent(ObservationId(1), ObservationType.Monitoring, PlantingSiteId(1))

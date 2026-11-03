@@ -76,6 +76,7 @@ import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.WebAppUrls
+import com.terraformation.backend.email.model.ObservationPlotReplaced
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
@@ -95,19 +96,29 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
+import com.terraformation.backend.support.SupportService
+import com.terraformation.backend.support.atlassian.AtlassianHttpClient
+import com.terraformation.backend.support.atlassian.model.SupportRequestType
+import com.terraformation.backend.support.atlassian.request.PostServiceDeskRequestResponse
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.mockDeliverable
+import com.terraformation.backend.util.processToString
 import freemarker.template.Configuration
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verify
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -119,6 +130,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 
 internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
@@ -154,6 +167,16 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var variableStore: VariableStore
   private lateinit var webAppUrls: WebAppUrls
   private val emailService: EmailService = mockk(relaxed = true)
+  private val atlassianHttpClient: AtlassianHttpClient = mockk()
+  private val notificationConfig by lazy { spyk(config) }
+  private val freeMarkerConfig by lazy {
+    Configuration(Configuration.VERSION_2_3_31).apply {
+      setClassLoaderForTemplateLoading(javaClass.classLoader, "templates")
+    }
+  }
+  private val supportService by lazy {
+    SupportService(atlassianHttpClient, config, emailService, messages, userStore)
+  }
   private val fundingEntityStore: FundingEntityStore = mockk(relaxed = true)
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val observationStore: ObservationStore = mockk(relaxed = true)
@@ -303,16 +326,14 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
         NotificationService(
             activityStore,
             clock,
-            config,
+            notificationConfig,
             deliverableStore,
             documentStore,
             dslContext,
             emailService,
             publisher,
             facilityStore,
-            Configuration(Configuration.VERSION_2_3_31).apply {
-              setClassLoaderForTemplateLoading(javaClass.classLoader, "templates")
-            },
+            freeMarkerConfig,
             fundingEntityStore,
             messages,
             moduleEventStore,
@@ -1362,6 +1383,86 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(expectedWithDefaults.toSet(), actual.toSet())
     assertEquals(expected.size, actual.size, "Number of notifications")
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = [-1, 0, 1])
+  fun `missing contact TF contact notifications respect Jira field limits`(lengthOffset: Int) {
+    val organizationName =
+        "x".repeat(255 + lengthOffset - messages.missingContact("", organizationId).title.length)
+    organizationsDao.update(
+        organizationsDao.fetchOneById(organizationId)!!.copy(name = organizationName)
+    )
+    insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
+    insertPlantingSite()
+
+    insertStratum()
+    insertSubstratum()
+    insertMonitoringPlot()
+    val observationId = insertObservation(state = ObservationState.Upcoming)
+    val observation =
+        ExistingObservationModel(
+            id = observationId,
+            plantingSiteId = inserted.plantingSiteId,
+            isAdHoc = false,
+            observationType = ObservationType.Monitoring,
+            startDate = LocalDate.of(2023, 1, 1),
+            endDate = LocalDate.of(2023, 1, 31),
+            state = ObservationState.Upcoming,
+        )
+    val siteName = plantingSitesDao.fetchOneById(inserted.plantingSiteId)!!.name!!
+    val missingContact = messages.missingContact(organizationName, organizationId)
+    val templateModel =
+        ObservationPlotReplaced(
+            config,
+            organizationName,
+            siteName,
+            "[justification]",
+            ReplacementDuration.LongTerm,
+        )
+    val descriptionTemplate =
+        "${missingContact.body}\n\n" +
+            listOf("subject.ftl", "body.ftl").joinToString("\n\n") { filename ->
+              freeMarkerConfig
+                  .getTemplate("email/observation/plotReplaced/$filename")
+                  .processToString(templateModel)
+                  .trim()
+            }
+    val (descriptionPrefix, descriptionSuffix) = descriptionTemplate.split("[justification]")
+    val justification =
+        "x".repeat(32767 + lengthOffset - descriptionPrefix.length - descriptionSuffix.length)
+    val fullDescription = "$descriptionPrefix$justification$descriptionSuffix"
+
+    every { notificationConfig.atlassian } returns mockk { every { enabled } returns true }
+    val summary = slot<String>()
+    val description = slot<String>()
+    every {
+      atlassianHttpClient.createServiceDeskRequest(
+          capture(description),
+          capture(summary),
+          SupportRequestType.MissingContact,
+          any(),
+      )
+    } returns PostServiceDeskRequestResponse("1", "TWS-1")
+
+    service.on(
+        ObservationPlotReplacedEvent(
+            ReplacementDuration.LongTerm,
+            justification,
+            observation,
+            inserted.monitoringPlotId,
+        )
+    )
+
+    val expectedSummary =
+        if (lengthOffset > 0) missingContact.title.take(252) + "..." else missingContact.title
+    val expectedDescription =
+        if (lengthOffset > 0) fullDescription.take(32764) + "..." else fullDescription
+    assertEquals(expectedSummary, summary.captured, "Jira summary")
+    assertEquals(expectedDescription, description.captured, "Jira description")
+    verify(exactly = 1) {
+      atlassianHttpClient.createServiceDeskRequest(any(), any(), any(), any())
+    }
   }
 
   /** Asserts that only a single notification exists. */
