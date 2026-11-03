@@ -17,9 +17,9 @@ import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.test.context.support.TestPropertySourceUtils
-import org.testcontainers.DockerClientFactory
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
+import org.testcontainers.utility.TestcontainersConfiguration
 
 /**
  * The PostgreSQL Docker container that database-backed tests run against. All the tests in a test
@@ -84,25 +84,12 @@ object TestDatabaseContainer {
       PostgreSQLContainer(imageName)
           .withDatabaseName("terraware")
           .withExposedPorts(PostgreSQLContainer.POSTGRESQL_PORT)
-          .withLabel(TEST_DATABASE_LABEL, "true")
+          .withLabel("com.terraformation.test-database", "true")
           .withEnv("IDLE_SHUTDOWN_MINUTES", "$POSTGRES_IDLE_TIMEOUT_MINUTES")
           .withReuse(reuse)
           .withCreateContainerCmdModifier { it.hostConfig?.withAutoRemove(true) }
 
   private const val POSTGRES_IDLE_TIMEOUT_MINUTES = 30
-
-  /** Docker label that identifies test database containers. */
-  private const val TEST_DATABASE_LABEL = "com.terraformation.test-database"
-
-  /** Returns the IDs of all the running test database containers on the Docker host. */
-  private fun runningTestDatabaseContainerIds(): Set<String> =
-      DockerClientFactory.lazyClient()
-          .listContainersCmd()
-          .withLabelFilter(mapOf(TEST_DATABASE_LABEL to "true"))
-          .withStatusFilter(listOf("running"))
-          .exec()
-          .map { it.id }
-          .toSet()
 
   /**
    * Creates the database the tests run against, if it doesn't already exist.
@@ -200,11 +187,11 @@ object TestDatabaseContainer {
    * Testcontainers can occasionally get stuck while starting a container. If startup doesn't finish
    * within [postgresStartupTimeout], writes a diagnostic report, abandons the container, and tries
    * again with a new one. Retries don't reuse existing containers, since they could otherwise pick
-   * up the abandoned container while it's being stopped.
+   * up the abandoned container.
    *
-   * An abandoned container is only stopped if the failed attempt created it. If the attempt was
-   * reusing a container that was already running, other test runs might be using that container, so
-   * it's left alone.
+   * If container reuse is enabled, an abandoned container is left running, since other test runs
+   * might have found and started using it, even if this run created it. If it's healthy, it will
+   * shut down once it's idle. Otherwise, it needs to be removed by hand.
    */
   @Synchronized
   fun start() {
@@ -215,8 +202,8 @@ object TestDatabaseContainer {
     val reportPaths = mutableListOf<Path>()
 
     for (attempt in 1..POSTGRES_START_ATTEMPTS) {
-      val reuse = attempt == 1
-      val preexistingContainerIds = if (reuse) runningTestDatabaseContainerIds() else emptySet()
+      val reuse =
+          attempt == 1 && TestcontainersConfiguration.getInstance().environmentSupportsReuse()
       val container = newPostgresContainer(reuse)
       val startResult = CompletableFuture<Unit>()
       thread(isDaemon = true, name = "postgres-container-start-$attempt") {
@@ -249,10 +236,10 @@ object TestDatabaseContainer {
         reportPaths.add(path)
         log.error("Database container startup timed out; diagnostics written to $path")
 
-        if (container.containerId in preexistingContainerIds) {
+        if (reuse) {
           log.warn(
-              "Not stopping abandoned database container ${container.containerId}: it was " +
-                  "already running, so other test runs might be using it"
+              "Not stopping abandoned database container ${container.containerId}: other test " +
+                  "runs might be using it"
           )
         } else {
           thread(isDaemon = true, name = "postgres-container-stop-$attempt") {
