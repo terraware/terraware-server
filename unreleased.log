@@ -1,3 +1,6 @@
+1b0d13f0 Remove row parameters from non-accession insert helpers (#5332)
+a7ddc5a7 Replace insert-helper POJO arguments with named parameters (#5331)
+efeb9c34 Add explicit parameters for insert-helper row overrides (#5330)
 6d872ef7 SW-9174 Skip T0 zero densities for biomass observations (#5327)
 1c563a65 Enable the Gradle configuration cache (#5324)
 2abab5e0 Compute the git-based version number in a ValueSource (#5323)
