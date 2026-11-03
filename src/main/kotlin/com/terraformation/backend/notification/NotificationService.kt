@@ -1731,21 +1731,25 @@ class NotificationService(
   }
 
   /**
-   * Sends an email to the organization's Terraformation Contact. If there is none and the
-   * organization has any accelerator or application projects, publishes a missing-contact event.
-   * Does not create app notifications.
+   * Sends an email to the Terraformation contacts of organizations with accelerator or application
+   * projects. If there are no contacts, publishes a missing-contact event when [fallBackToSupport]
+   * is true. Does not create app notifications.
    */
   private fun sendToOrganizationContact(
       organization: OrganizationModel,
       emailContent: EmailTemplateModel,
       fallBackToSupport: Boolean = true,
   ) {
+    if (!parentStore.hasAcceleratorOrApplicationProjects(organization.id)) {
+      log.info(
+          "Organization ${organization.id} has no accelerator or application projects, so not sending TF contact notification"
+      )
+      return
+    }
     val users = userStore.getTerraformationContactUsers(organization.id)
     if (users.isNotEmpty()) {
       users.forEach { emailService.sendUserNotification(it, emailContent, requireOptIn = false) }
-    } else if (
-        fallBackToSupport && parentStore.hasAcceleratorOrApplicationProjects(organization.id)
-    ) {
+    } else if (fallBackToSupport) {
       Locale.ENGLISH.use {
         eventPublisher.publishEvent(
             TerraformationContactMissingEvent(

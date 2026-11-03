@@ -34,6 +34,7 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
+import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.SystemUser
@@ -63,6 +64,7 @@ import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
+import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
@@ -97,6 +99,7 @@ import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
@@ -106,8 +109,10 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.mockDeliverable
 import freemarker.template.Configuration
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -119,6 +124,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 
 internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
@@ -132,6 +139,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var otherUserId: UserId
 
   private val messages: Messages = Messages()
+  private val publisher = TestEventPublisher()
 
   private lateinit var accessionStore: AccessionStore
   private lateinit var activityStore: ActivityStore
@@ -162,8 +170,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
-
-    val publisher = TestEventPublisher()
 
     organizationId = insertOrganization()
     facilityId = insertFacility()
@@ -1385,6 +1391,22 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             )
         )
     )
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [false, true])
+  fun `non-accelerator organizations do not send TF contact notifications`(hasContact: Boolean) {
+    insertPlantingSite()
+    insertStratum()
+    if (hasContact) {
+      insertOrganizationUser(role = Role.TerraformationContact)
+    }
+
+    service.on(ObservationNotScheduledNotificationEvent(inserted.plantingSiteId))
+
+    verify { emailService wasNot Called }
+    publisher.assertEventNotPublished<TerraformationContactMissingEvent>()
+    assertTableEmpty(NOTIFICATIONS)
   }
 
   private inline fun <reified T> testEventNotification(
