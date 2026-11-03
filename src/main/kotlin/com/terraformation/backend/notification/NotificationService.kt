@@ -77,7 +77,6 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.FunderAddedToFundingEntity
-import com.terraformation.backend.email.model.MissingContact
 import com.terraformation.backend.email.model.MonitoringSpeciesTotalsEdited
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
@@ -120,6 +119,8 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
+import com.terraformation.backend.support.SupportService
+import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
@@ -143,6 +144,8 @@ import com.terraformation.backend.tracking.event.ScheduleObservationReminderNoti
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.util.processToString
+import freemarker.template.Configuration
 import jakarta.inject.Named
 import java.net.URI
 import java.time.Instant
@@ -172,6 +175,7 @@ class NotificationService(
     private val dslContext: DSLContext,
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
+    private val freeMarkerConfig: Configuration,
     private val fundingEntityStore: FundingEntityStore,
     private val messages: Messages,
     private val moduleEventStore: ModuleEventStore,
@@ -185,6 +189,7 @@ class NotificationService(
     private val projectStore: ProjectStore,
     private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
+    private val supportService: SupportService,
     private val systemUser: SystemUser,
     private val userInternalInterestsStore: UserInternalInterestsStore,
     private val userStore: UserStore,
@@ -1727,8 +1732,8 @@ class NotificationService(
 
   /**
    * Sends an email to the organization's Terraformation Contact. If there is none and the
-   * organization has any accelerator or application projects, falls back to the support address and
-   * also sends a [MissingContact] alert. Email-only.
+   * organization has any accelerator or application projects, files a support request with the
+   * notification and missing-contact details. Does not create app notifications.
    */
   private fun sendToOrganizationContact(
       organization: OrganizationModel,
@@ -1741,14 +1746,32 @@ class NotificationService(
     } else if (
         fallBackToSupport && parentStore.hasAcceleratorOrApplicationProjects(organization.id)
     ) {
-      emailService.sendSupportNotification(emailContent)
-      emailService.sendSupportNotification(
-          MissingContact(config, organization.id, organization.name)
-      )
+      if (config.atlassian.enabled) {
+        Locale.ENGLISH.use {
+          val missingContact = messages.missingContact(organization.name, organization.id)
+          val subject = renderSupportTemplate(emailContent, "subject.ftl")
+          val body = renderSupportTemplate(emailContent, "body.ftl")
+          supportService.submitServiceRequest(
+              requestType = SupportRequestType.MissingContact,
+              summary = missingContact.title,
+              description = "${missingContact.body}\n\n$subject\n\n$body",
+              skipReceiptEmail = true,
+              userId = systemUser.userId,
+          )
+        }
+      } else {
+        log.info("Atlassian integration disabled; not filing missing-contact support request")
+      }
     } else {
       log.info("Organization ${organization.id} has no contact, so not sending notification")
     }
   }
+
+  private fun renderSupportTemplate(model: EmailTemplateModel, filename: String): String =
+      freeMarkerConfig
+          .getTemplate("email/${model.templateDir}/$filename")
+          .processToString(model)
+          .trim()
 
   private fun insertAppNotification(
       appContent: AppContent,

@@ -118,6 +118,7 @@ import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
@@ -128,6 +129,10 @@ import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
+import com.terraformation.backend.support.SupportService
+import com.terraformation.backend.support.atlassian.AtlassianHttpClient
+import com.terraformation.backend.support.atlassian.model.SupportRequestType
+import com.terraformation.backend.support.atlassian.request.PostServiceDeskRequestResponse
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -163,6 +168,7 @@ import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import freemarker.template.Configuration
+import io.mockk.Called
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk
@@ -215,7 +221,9 @@ internal class NotificationServiceEmailTest {
   private val reportStore: ReportStore = mockk()
   private val sender: EmailSender = mockk()
   private val speciesStore: SpeciesStore = mockk()
-  private val systemUser: SystemUser = SystemUser(mockk())
+  private val systemUser: SystemUser = spyk(SystemUser(mockk()))
+  private val atlassianHttpClient: AtlassianHttpClient = mockk()
+  private val supportDescription = CapturingSlot<String>()
   private val user: IndividualUser = mockk()
   private val userInternalInterestsStore: UserInternalInterestsStore = mockk()
   private val userStore: UserStore = mockk()
@@ -258,36 +266,43 @@ internal class NotificationServiceEmailTest {
           )
       )
 
-  private val service =
-      NotificationService(
-          activityStore,
-          clock,
-          config,
-          deliverableStore,
-          documentStore,
-          dslContext,
-          emailService,
-          facilityStore,
-          fundingEntityStore,
-          messages,
-          moduleEventStore,
-          moduleStore,
-          notificationStore,
-          observationStore,
-          organizationStore,
-          parentStore,
-          plantingSiteStore,
-          projectAcceleratorDetailsService,
-          projectStore,
-          reportStore,
-          speciesStore,
-          systemUser,
-          userInternalInterestsStore,
-          userStore,
-          variableOwnerStore,
-          variableStore,
-          webAppUrls,
-      )
+  private val supportService by lazy {
+    SupportService(atlassianHttpClient, config, emailService, messages, userStore)
+  }
+
+  private val service by lazy {
+    NotificationService(
+        activityStore,
+        clock,
+        config,
+        deliverableStore,
+        documentStore,
+        dslContext,
+        emailService,
+        facilityStore,
+        freeMarkerConfig,
+        fundingEntityStore,
+        messages,
+        moduleEventStore,
+        moduleStore,
+        notificationStore,
+        observationStore,
+        organizationStore,
+        parentStore,
+        plantingSiteStore,
+        projectAcceleratorDetailsService,
+        projectStore,
+        reportStore,
+        speciesStore,
+        supportService,
+        systemUser,
+        userInternalInterestsStore,
+        userStore,
+        variableOwnerStore,
+        variableStore,
+        webAppUrls,
+    )
+  }
 
   private val organization =
       OrganizationModel(
@@ -556,8 +571,6 @@ internal class NotificationServiceEmailTest {
   private val funderEmail = "funder@terraformation.com"
   private val funderUser = funderUserForEmail(funderEmail)
 
-  private val supportContactEmail = "support@terraformation.com"
-
   private val mimeMessageSlot = slot<MimeMessage>()
   private val sentMessages = mutableMapOf<String, MutableList<MimeMessage>>()
 
@@ -567,7 +580,12 @@ internal class NotificationServiceEmailTest {
 
     every { clock.instant() } returns Instant.EPOCH
     every { config.email } returns emailConfig
-    every { config.support.email } returns supportContactEmail
+    every { config.atlassian.enabled } returns true
+    every { systemUser.userId } returns UserId(1000)
+    every { userStore.fetchOneById(systemUser.userId) } returns systemUser
+    every {
+      atlassianHttpClient.createServiceDeskRequest(capture(supportDescription), any(), any(), any())
+    } returns PostServiceDeskRequestResponse("123", "SUP-123")
     every { config.webAppUrl } returns URI("https://test.terraware.io")
     every { emailConfig.enabled } returns true
     every { emailConfig.senderAddress } returns "testsender@terraware.io"
@@ -1042,6 +1060,7 @@ internal class NotificationServiceEmailTest {
     assertBodyContains("but the organization has not scheduled one")
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
+    verify { atlassianHttpClient wasNot Called }
   }
 
   @Test
@@ -1052,25 +1071,52 @@ internal class NotificationServiceEmailTest {
 
     assertSentNoContactNotification()
 
-    val message = sentMessageWithSubject("has not scheduled an observation")
-
-    assertSubjectContains("Test Organization", message)
-    assertSubjectContains("My Site", message)
-    assertBodyContains("but the organization has not scheduled one", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertContains(
+        "Organization Test Organization has not scheduled an observation of planting site My Site",
+        supportDescription.captured,
+        "Original notification title",
+    )
+    assertContains(
+        "but the organization has not scheduled one",
+        supportDescription.captured,
+        "Original notification message",
+    )
   }
 
   @Test
   fun `observationNotScheduledNotification without TFContact for non-accelerator organization`() {
-    every { config.support.email } returns null
-
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
-    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns nonAcceleratorOrganization.id
+    every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns
+        plantingSite.copy(organizationId = nonAcceleratorOrganization.id)
 
     service.on(event)
 
     assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
+  }
+
+  @Test
+  fun `observation not scheduled does not submit support request when Atlassian is disabled`() {
+    every { config.atlassian.enabled } returns false
+
+    service.on(ObservationNotScheduledNotificationEvent(PlantingSiteId(1)))
+
+    assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
+  }
+
+  @Test
+  fun `missing contact support request is in English regardless of current locale`() {
+    Locales.GIBBERISH.use {
+      service.on(ObservationNotScheduledNotificationEvent(PlantingSiteId(1)))
+    }
+
+    assertSentNoContactNotification()
+    assertContains(
+        "has not scheduled an observation",
+        supportDescription.captured,
+        "English notification title",
+    )
   }
 
   @Test
@@ -1151,7 +1197,7 @@ internal class NotificationServiceEmailTest {
     val event =
         ObservationPlotReplacedEvent(
             ReplacementDuration.LongTerm,
-            "Just because",
+            "Just because & <another reason>",
             upcomingObservation,
             MonitoringPlotId(1),
         )
@@ -1160,18 +1206,25 @@ internal class NotificationServiceEmailTest {
 
     assertSentNoContactNotification()
 
-    val message = sentMessageWithSubject("has requested an observation plot change")
-    assertSubjectContains("Test Organization", message)
-    assertBodyContains("justification given is: Just because", message = message)
-    assertBodyContains("duration for the change is: Long-Term/Permanent", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertContains(
+        "Test Organization has requested an observation plot change",
+        supportDescription.captured,
+        "Original notification title",
+    )
+    assertContains(
+        "justification given is: Just because & <another reason>",
+        supportDescription.captured,
+        "Plot replacement justification",
+    )
+    assertContains(
+        "duration for the change is: Long-Term/Permanent",
+        supportDescription.captured,
+        "Plot replacement duration",
+    )
   }
 
   @Test
   fun `observationMonitoringPlotReplaced without Terraformation contact for non-accelerator organization`() {
-    every { config.support.email } returns null
-
     val event =
         ObservationPlotReplacedEvent(
             ReplacementDuration.LongTerm,
@@ -1180,12 +1233,13 @@ internal class NotificationServiceEmailTest {
             MonitoringPlotId(1),
         )
 
-    every { parentStore.getOrganizationId(MonitoringPlotId(1)) } returns
-        nonAcceleratorOrganization.id
+    every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns
+        plantingSite.copy(organizationId = nonAcceleratorOrganization.id)
 
     service.on(event)
 
     assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
   }
 
   @Test
@@ -1287,6 +1341,7 @@ internal class NotificationServiceEmailTest {
     service.on(event)
 
     assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
   }
 
   @Test
@@ -1331,6 +1386,7 @@ internal class NotificationServiceEmailTest {
     service.on(event)
 
     assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
   }
 
   @Test
@@ -1401,13 +1457,16 @@ internal class NotificationServiceEmailTest {
 
     assertSentNoContactNotification()
 
-    val message = sentMessageWithSubject("has not scheduled a planting season for planting site")
-    assertSubjectContains("Test Organization", message = message)
-    assertSubjectContains("My Site", message = message)
-    assertSubjectContains("not scheduled", message = message)
-    assertBodyContains("My Site", message = message)
-    assertBodyContains("missing a planting season", message = message)
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertContains(
+        "Organization Test Organization has not scheduled a planting season for planting site My Site",
+        supportDescription.captured,
+        "Original notification title",
+    )
+    assertContains(
+        "Planting site My Site is missing a planting season",
+        supportDescription.captured,
+        "Original notification message",
+    )
     assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
   }
 
@@ -1421,6 +1480,7 @@ internal class NotificationServiceEmailTest {
     service.on(event)
 
     assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
     assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
   }
 
@@ -2003,18 +2063,27 @@ internal class NotificationServiceEmailTest {
 
     assertSentNoContactNotification()
 
-    val message = sentMessageWithSubject("has had a change to planting site")
-    assertSubjectContains(organization.name, message = message)
-    assertSubjectContains(siteName, message = message)
-    assertBodyContains("there was no resulting change to the total area", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertContains(
+        "Organization ${organization.name} has had a change to planting site $siteName",
+        supportDescription.captured,
+        "Original notification title",
+    )
+    assertContains(
+        "there was no resulting change to the total area",
+        supportDescription.captured,
+        "Original notification message",
+    )
+    assertContains(
+        webAppUrls.fullPlantingSite(organization.id, existingModel.id).toString(),
+        supportDescription.captured,
+        "Planting site URL",
+    )
 
     assertIsEventListener<PlantingSiteMapEditedEvent>(service)
   }
 
   @Test
-  fun `plantingSiteMapEdited without Terraformation Contact for non-accelerator org`() {
+  fun `plantingSiteMapEdited without Terraformation Contact includes added area`() {
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
 
     val siteName = "Test Site"
@@ -2023,7 +2092,6 @@ internal class NotificationServiceEmailTest {
       organizationId = organization.id
     }
 
-    every { parentStore.getOrganizationId(existingModel.id) } returns nonAcceleratorOrganization.id
     val event =
         PlantingSiteMapEditedEvent(
             existingModel,
@@ -2040,14 +2108,41 @@ internal class NotificationServiceEmailTest {
 
     assertSentNoContactNotification()
 
-    val message = sentMessageWithSubject("has had a change to planting site")
-    assertSubjectContains(organization.name, message = message)
-    assertSubjectContains(siteName, message = message)
-    assertBodyContains("Area added to site: 13.2 hectares", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertContains(
+        "Organization ${organization.name} has had a change to planting site $siteName",
+        supportDescription.captured,
+        "Original notification title",
+    )
+    assertContains(
+        "Area added to site: 13.2 hectares",
+        supportDescription.captured,
+        "Original notification message",
+    )
 
     assertIsEventListener<PlantingSiteMapEditedEvent>(service)
+  }
+
+  @Test
+  fun `plantingSiteMapEdited without Terraformation Contact for non-accelerator organization`() {
+    val existingModel = PlantingSiteBuilder.existingSite {
+      organizationId = nonAcceleratorOrganization.id
+    }
+    val event =
+        PlantingSiteMapEditedEvent(
+            existingModel,
+            PlantingSiteEdit(
+                areaHaDifference = BigDecimal("13.2"),
+                desiredModel = PlantingSiteBuilder.newSite {},
+                existingModel = existingModel,
+                stratumEdits = emptyList(),
+            ),
+            ReplacementResult(emptySet(), emptySet()),
+        )
+
+    service.on(event)
+
+    assertNoMessageSent()
+    verify { atlassianHttpClient wasNot Called }
   }
 
   @Test
@@ -2490,11 +2585,26 @@ internal class NotificationServiceEmailTest {
   }
 
   private fun assertSentNoContactNotification() {
-    val message = sentMessageWithSubject("has no primary project contact")
-
-    assertSubjectContains("Test Organization", message)
-    assertBodyContains("Test Organization (${organization.id})", message = message)
-    assertBodyContains("no assigned Terraformation primary project", message = message)
+    val reporter = systemUser.email
+    verify(exactly = 1) {
+      atlassianHttpClient.createServiceDeskRequest(
+          any(),
+          "Organization Test Organization has no primary project contact",
+          SupportRequestType.MissingContact,
+          reporter,
+      )
+    }
+    assertContains(
+        "Test Organization (${organization.id})",
+        supportDescription.captured,
+        "Organization in support request",
+    )
+    assertContains(
+        "no assigned Terraformation primary project",
+        supportDescription.captured,
+        "Missing contact in support request",
+    )
+    assertNoMessageSent()
   }
 
   /** Walks a MIME message of arbitrary structure and returns the text parts. */

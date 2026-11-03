@@ -95,6 +95,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
+import com.terraformation.backend.support.SupportService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -153,6 +154,9 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var variableStore: VariableStore
   private lateinit var webAppUrls: WebAppUrls
   private val emailService: EmailService = mockk(relaxed = true)
+  private val supportService by lazy {
+    SupportService(mockk(), config, emailService, messages, userStore)
+  }
   private val fundingEntityStore: FundingEntityStore = mockk(relaxed = true)
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val observationStore: ObservationStore = mockk(relaxed = true)
@@ -308,6 +312,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             dslContext,
             emailService,
             facilityStore,
+            mockk(),
             fundingEntityStore,
             messages,
             moduleEventStore,
@@ -321,6 +326,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             projectStore,
             reportStore,
             speciesStore,
+            supportService,
             SystemUser(usersDao),
             userInternalInterestsStore,
             userStore,
