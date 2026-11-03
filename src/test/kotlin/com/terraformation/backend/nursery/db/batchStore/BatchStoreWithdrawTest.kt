@@ -5,13 +5,18 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchStageDetailsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.db.nursery.tables.records.WithdrawalsRecord
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
@@ -84,6 +89,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `can withdraw from multiple batches`() {
+    val expectedQuantity = expectedQuantitiesFunc()
+
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
     val species1Batch2 = batchesDao.fetchOneById(species1Batch2Id)!!
     val species2Batch1 = batchesDao.fetchOneById(species2Batch1Id)!!
@@ -128,6 +135,24 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
     assertAll(
         {
+          assertTableEquals(
+              listOf(
+                  expectedQuantity(species1Batch1, BatchStage.Germinating, 10 - 1),
+                  expectedQuantity(species1Batch1, BatchStage.ActiveGrowth, 20 - 2),
+                  expectedQuantity(species1Batch1, BatchStage.HardeningOff, 40 - 4),
+                  expectedQuantity(species1Batch1, BatchStage.Ready, 30 - 3),
+                  expectedQuantity(species1Batch2, BatchStage.Germinating, 40 - 4),
+                  expectedQuantity(species1Batch2, BatchStage.ActiveGrowth, 50 - 5),
+                  expectedQuantity(species1Batch2, BatchStage.HardeningOff, 70 - 7),
+                  expectedQuantity(species1Batch2, BatchStage.Ready, 60 - 6),
+                  expectedQuantity(species2Batch1, BatchStage.Germinating, 70 - 7),
+                  expectedQuantity(species2Batch1, BatchStage.ActiveGrowth, 80 - 8),
+                  expectedQuantity(species2Batch1, BatchStage.HardeningOff, 100 - 10),
+                  expectedQuantity(species2Batch1, BatchStage.Ready, 90 - 9),
+              )
+          )
+        },
+        {
           assertEquals(
               listOf(
                   species1Batch1.copy(
@@ -158,7 +183,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       version = 2,
                   ),
               ),
-              batchesDao.findAll().sortedBy { it.germinatingQuantity!! },
+              batchesDao.findAll().sortedBy { it.id },
               "Should have deducted withdrawn quantities from batches",
           )
         },
@@ -307,6 +332,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `uses nursery time zone to determine date of last observation`() {
+    val expectedQuantity = expectedQuantitiesFunc()
+
     // Last observation is 2023-01-02 02:00 UTC, which is January 1 in New York; a withdrawal
     // with a date of January 1 should not count as happening before the observation.
     val latestObservedTime = ZonedDateTime.of(2023, 1, 2, 2, 0, 0, 0, ZoneOffset.UTC).toInstant()
@@ -357,6 +384,15 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               ),
               batchesDao.fetchOneById(species1Batch1Id),
               "Should have deducted withdrawn quantities from batch",
+          )
+          assertTableEquals(
+              listOf(
+                  expectedQuantity(species1Batch1, BatchStage.Germinating, 10 - 1),
+                  expectedQuantity(species1Batch1, BatchStage.ActiveGrowth, 20 - 2),
+                  expectedQuantity(species1Batch1, BatchStage.HardeningOff, 40 - 4),
+                  expectedQuantity(species1Batch1, BatchStage.Ready, 30 - 3),
+              ),
+              where = BATCH_STAGE_DETAILS.BATCH_ID.eq(species1Batch1.id!!),
           )
         },
         {
@@ -596,6 +632,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `nursery transfer retains year and last part of original batch number`() {
+    val expectedQuantity = expectedQuantitiesFunc()
+
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
     val species1Batch2 = batchesDao.fetchOneById(species1Batch2Id)!!
     val species2Batch1 = batchesDao.fetchOneById(species2Batch1Id)!!
@@ -656,6 +694,81 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
     assertAll(
         {
+          assertTableEquals(
+              listOf(
+                  expectedQuantity(species1Batch1, BatchStage.Germinating, 10 - 1),
+                  expectedQuantity(species1Batch1, BatchStage.ActiveGrowth, 20 - 2),
+                  expectedQuantity(species1Batch1, BatchStage.HardeningOff, 40 - 4),
+                  expectedQuantity(species1Batch1, BatchStage.Ready, 30 - 3),
+                  expectedQuantity(species1Batch2, BatchStage.Germinating, 40 - 4),
+                  expectedQuantity(species1Batch2, BatchStage.ActiveGrowth, 50 - 5),
+                  expectedQuantity(species1Batch2, BatchStage.HardeningOff, 70 - 7),
+                  expectedQuantity(species1Batch2, BatchStage.Ready, 60 - 6),
+                  expectedQuantity(species2Batch1, BatchStage.Germinating, 70 - 10),
+                  expectedQuantity(species2Batch1, BatchStage.ActiveGrowth, 80 - 11),
+                  expectedQuantity(species2Batch1, BatchStage.HardeningOff, 100 - 13),
+                  expectedQuantity(species2Batch1, BatchStage.Ready, 90 - 12),
+                  BatchStageDetailsRecord(
+                      newSpecies1Batch1.id!!,
+                      BatchStage.Germinating,
+                      1,
+                      1,
+                  ),
+                  BatchStageDetailsRecord(
+                      newSpecies1Batch1.id!!,
+                      BatchStage.ActiveGrowth,
+                      2,
+                      2,
+                  ),
+                  BatchStageDetailsRecord(
+                      newSpecies1Batch1.id!!,
+                      BatchStage.HardeningOff,
+                      4,
+                      4,
+                  ),
+                  BatchStageDetailsRecord(newSpecies1Batch1.id!!, BatchStage.Ready, 3, 3),
+                  BatchStageDetailsRecord(
+                      newSpecies1Batch2.id!!,
+                      BatchStage.Germinating,
+                      4,
+                      4,
+                  ),
+                  BatchStageDetailsRecord(
+                      newSpecies1Batch2.id!!,
+                      BatchStage.ActiveGrowth,
+                      5,
+                      5,
+                  ),
+                  BatchStageDetailsRecord(
+                      newSpecies1Batch2.id!!,
+                      BatchStage.HardeningOff,
+                      7,
+                      7,
+                  ),
+                  BatchStageDetailsRecord(newSpecies1Batch2.id!!, BatchStage.Ready, 6, 6),
+                  BatchStageDetailsRecord(
+                      newSpecies2Batch.id!!,
+                      BatchStage.Germinating,
+                      10,
+                      10,
+                  ),
+                  BatchStageDetailsRecord(
+                      newSpecies2Batch.id!!,
+                      BatchStage.ActiveGrowth,
+                      11,
+                      11,
+                  ),
+                  BatchStageDetailsRecord(
+                      newSpecies2Batch.id!!,
+                      BatchStage.HardeningOff,
+                      13,
+                      13,
+                  ),
+                  BatchStageDetailsRecord(newSpecies2Batch.id!!, BatchStage.Ready, 12, 12),
+              )
+          )
+        },
+        {
           assertEquals(
               listOf(
                   species1Batch1.copy(
@@ -686,7 +799,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       version = 2,
                   ),
               ),
-              batchesDao.fetchByFacilityId(facilityId).sortedBy { it.germinatingQuantity!! },
+              batchesDao.fetchByFacilityId(facilityId).sortedBy { it.id },
               "Should have deducted withdrawn quantities from batches",
           )
         },
@@ -752,9 +865,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       speciesId = speciesId2,
                   ),
               ),
-              batchesDao.fetchByFacilityId(destinationFacilityId).sortedBy {
-                it.germinatingQuantity
-              },
+              batchesDao.fetchByFacilityId(destinationFacilityId).sortedBy { it.batchNumber },
               "Should have created new batches",
           )
         },
@@ -933,9 +1044,16 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     )
 
     val newBatches =
-        batchesDao.fetchByFacilityId(destinationFacilityId).associate {
-          it.accessionId to it.readyQuantity
-        }
+        dslContext
+            .select(BATCHES.ACCESSION_ID, BATCH_STAGE_DETAILS.QUANTITY)
+            .from(BATCHES)
+            .join(BATCH_STAGE_DETAILS)
+            .on(
+                BATCH_STAGE_DETAILS.BATCH_ID.eq(BATCHES.ID)
+                    .and(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.Ready))
+            )
+            .where(BATCHES.FACILITY_ID.eq(destinationFacilityId))
+            .fetchMap(BATCHES.ACCESSION_ID, BATCH_STAGE_DETAILS.QUANTITY)
 
     assertEquals(
         mapOf(accessionId1 to 1, accessionId2 to 2),
@@ -987,9 +1105,16 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     )
 
     val newBatches =
-        batchesDao.fetchByFacilityId(destinationFacilityId).associate {
-          it.projectId to it.readyQuantity
-        }
+        dslContext
+            .select(BATCHES.PROJECT_ID, BATCH_STAGE_DETAILS.QUANTITY)
+            .from(BATCHES)
+            .join(BATCH_STAGE_DETAILS)
+            .on(
+                BATCH_STAGE_DETAILS.BATCH_ID.eq(BATCHES.ID)
+                    .and(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.Ready))
+            )
+            .where(BATCHES.FACILITY_ID.eq(destinationFacilityId))
+            .fetchMap(BATCHES.PROJECT_ID, BATCH_STAGE_DETAILS.QUANTITY)
 
     assertEquals(
         mapOf(projectId1 to 1, projectId2 to 2),
@@ -1000,6 +1125,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `nursery transfer adds to existing batch if batch number already exists`() {
+    val expectedQuantity = expectedQuantitiesFunc()
+
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
 
     val destinationTimeZone = ZoneId.of("Asia/Tokyo")
@@ -1064,6 +1191,21 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val newBatch = batchesDao.fetchByFacilityId(destinationFacilityId).first()
 
     assertAll(
+        {
+          assertTableEquals(
+              listOf(
+                  expectedQuantity(species1Batch1, BatchStage.Germinating, 10 - 1 - 4),
+                  expectedQuantity(species1Batch1, BatchStage.ActiveGrowth, 20 - 2 - 5),
+                  expectedQuantity(species1Batch1, BatchStage.HardeningOff, 40 - 4 - 7),
+                  expectedQuantity(species1Batch1, BatchStage.Ready, 30 - 3 - 6),
+                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.Germinating, 1 + 4, 1),
+                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.ActiveGrowth, 2 + 5, 2),
+                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.HardeningOff, 4 + 7, 4),
+                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.Ready, 3 + 6, 3),
+              ),
+              where = BATCH_STAGE_DETAILS.BATCH_ID.`in`(species1Batch1Id, newBatch.id!!),
+          )
+        },
         {
           assertEquals(
               species1Batch1.copy(
@@ -1550,6 +1692,20 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               purpose = WithdrawalPurpose.OutPlant,
               withdrawnDate = LocalDate.EPOCH,
           )
+      )
+    }
+  }
+
+  private fun expectedQuantitiesFunc(): (BatchesRow, BatchStage, Int) -> BatchStageDetailsRecord {
+    val initialQuantities =
+        dslContext
+            .selectFrom(BATCH_STAGE_DETAILS)
+            .fetchInto(BatchStageDetailsRow::class.java)
+            .associateBy { it.batchId to it.stageId }
+
+    return { batch, stage, quantity ->
+      BatchStageDetailsRecord(
+          initialQuantities.getValue(batch.id to stage).copy(quantity = quantity)
       )
     }
   }
