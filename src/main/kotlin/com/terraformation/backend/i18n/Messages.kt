@@ -8,6 +8,7 @@ import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
@@ -630,11 +631,21 @@ class Messages {
 
   fun refrigeratorName(number: Int) = getMessage("seedBankRefrigeratorName", number)
 
+  fun missingContact(
+      organizationName: String,
+      organizationId: OrganizationId,
+  ): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("support.missingContact.title", organizationName),
+          body = getMessage("support.missingContact.body", organizationName, organizationId),
+      )
+
   fun supportRequestTypeName(type: SupportRequestType) =
       when (type) {
         SupportRequestType.BugReport -> getMessage("support.requestType.bugReport")
         SupportRequestType.ContactUs -> getMessage("support.requestType.contactUs")
         SupportRequestType.FeatureRequest -> getMessage("support.requestType.featureRequest")
+        SupportRequestType.MissingContact -> type.jsonValue
       }
 
   fun <T : LocalizableEnum<*>> sortedEnumList(values: Collection<T>): String {

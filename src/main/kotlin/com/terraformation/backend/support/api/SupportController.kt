@@ -1,5 +1,7 @@
 package com.terraformation.backend.support.api
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ApiResponse415
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -37,7 +39,11 @@ class SupportController(private val service: SupportService) {
   @GetMapping
   @Operation(summary = "Lists support request types.")
   fun listRequestTypes(): ListSupportRequestTypesResponsePayload {
-    return ListSupportRequestTypesResponsePayload(service.listSupportRequestTypes())
+    return ListSupportRequestTypesResponsePayload(
+        service.listSupportRequestTypes().mapNotNull { type ->
+          ApiSupportRequestType.entries.firstOrNull { it.supportRequestType == type }
+        }
+    )
   }
 
   @ApiResponse(responseCode = "200")
@@ -48,7 +54,7 @@ class SupportController(private val service: SupportService) {
   ): SubmitSupportRequestResponsePayload {
     val issueKey =
         service.submitServiceRequest(
-            requestType = payload.requestType,
+            requestType = payload.requestType.supportRequestType,
             summary = payload.summary,
             description = payload.description,
             attachmentIds = payload.attachmentIds ?: emptyList(),
@@ -98,11 +104,29 @@ class SupportController(private val service: SupportService) {
   }
 }
 
-data class ListSupportRequestTypesResponsePayload(val types: List<SupportRequestType>) :
+enum class ApiSupportRequestType(val supportRequestType: SupportRequestType) {
+  BugReport(SupportRequestType.BugReport),
+  FeatureRequest(SupportRequestType.FeatureRequest),
+  ContactUs(SupportRequestType.ContactUs);
+
+  @get:JsonValue
+  val jsonValue: String
+    get() = supportRequestType.jsonValue
+
+  companion object {
+    @JsonCreator
+    @JvmStatic
+    fun forJsonValue(jsonValue: String): ApiSupportRequestType? = entries.firstOrNull {
+      it.jsonValue == jsonValue
+    }
+  }
+}
+
+data class ListSupportRequestTypesResponsePayload(val types: List<ApiSupportRequestType>) :
     SuccessResponsePayload
 
 data class SubmitSupportRequestPayload(
-    val requestType: SupportRequestType,
+    val requestType: ApiSupportRequestType,
     val description: String,
     val summary: String,
     val attachmentIds: List<String>?,

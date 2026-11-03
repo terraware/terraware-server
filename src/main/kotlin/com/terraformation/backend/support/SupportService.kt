@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.SupportRequestSubmitted
@@ -16,6 +17,7 @@ import jakarta.inject.Named
 import jakarta.ws.rs.NotSupportedException
 import org.apache.tika.Tika
 import org.springframework.http.MediaType
+import org.springframework.security.access.AccessDeniedException
 
 @Named
 class SupportService(
@@ -34,7 +36,10 @@ class SupportService(
       skipReceiptEmail: Boolean = false,
       userId: UserId = currentUser().userId,
   ): String {
-    val user = userStore.fetchOneById(userId) as IndividualUser
+    val user = userStore.fetchOneById(userId)
+    if (user !is IndividualUser && user !is SystemUser) {
+      throw AccessDeniedException("Only individual and system users may submit support requests")
+    }
     val response =
         atlassianHttpClient.createServiceDeskRequest(description, summary, requestType, user.email)
 
@@ -60,7 +65,7 @@ class SupportService(
   }
 
   fun listSupportRequestTypes(): List<SupportRequestType> {
-    return atlassianHttpClient.requestTypeIds.keys.toList()
+    return atlassianHttpClient.requestTypeIds.keys.filter { !it.isInternal }
   }
 
   fun attachTemporaryFile(
