@@ -1740,12 +1740,16 @@ class NotificationService(
       emailContent: EmailTemplateModel,
       fallBackToSupport: Boolean = true,
   ) {
+    if (!parentStore.hasAcceleratorOrApplicationProjects(organization.id)) {
+      log.info(
+          "Organization ${organization.id} has no accelerator or application projects, so not sending TF contact notification"
+      )
+      return
+    }
     val users = userStore.getTerraformationContactUsers(organization.id)
     if (users.isNotEmpty()) {
       users.forEach { emailService.sendUserNotification(it, emailContent, requireOptIn = false) }
-    } else if (
-        fallBackToSupport && parentStore.hasAcceleratorOrApplicationProjects(organization.id)
-    ) {
+    } else if (fallBackToSupport) {
       Locale.ENGLISH.use {
         eventPublisher.publishEvent(
             TerraformationContactMissingEvent(

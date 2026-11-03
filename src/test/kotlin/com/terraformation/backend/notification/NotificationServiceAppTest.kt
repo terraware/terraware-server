@@ -63,6 +63,7 @@ import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
+import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
@@ -97,6 +98,7 @@ import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
@@ -106,6 +108,7 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.mockDeliverable
 import freemarker.template.Configuration
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import java.net.URI
@@ -1385,6 +1388,21 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             )
         )
     )
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [false, true])
+  fun `non-accelerator organizations do not send contact notifications`(hasContact: Boolean) {
+    insertPlantingSite()
+    insertStratum()
+    if (hasContact) {
+      insertOrganizationUser(role = Role.TerraformationContact)
+    }
+
+    service.on(ObservationNotScheduledNotificationEvent(inserted.plantingSiteId))
+
+    verify { emailService wasNot Called }
+    assertTableEmpty(NOTIFICATIONS)
   }
 
   private inline fun <reified T> testEventNotification(
