@@ -1,7 +1,5 @@
 package com.terraformation.backend.tracking.db.observationPlotStore
 
-import com.terraformation.backend.db.tracking.ObservationPlotStatus
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
@@ -34,13 +32,7 @@ class ObservationPlotStoreFetchOneObservationPlotDetailsTest : BaseObservationPl
     // This plot is claimed
     val monitoringPlotId12 = insertMonitoringPlot(boundary = polygon(2))
     val claimedTime12 = Instant.ofEpochSecond(12)
-    insertObservationPlot(
-        ObservationPlotsRow(
-            claimedBy = userId1,
-            claimedTime = claimedTime12,
-            statusId = ObservationPlotStatus.Claimed,
-        )
-    )
+    insertObservationPlot(claimedBy = userId1, claimedTime = claimedTime12)
 
     val substratumId2 = insertSubstratum(fullName = "S1-Sub2", name = "Sub2")
 

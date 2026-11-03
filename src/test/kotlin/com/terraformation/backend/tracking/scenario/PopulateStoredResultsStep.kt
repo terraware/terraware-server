@@ -10,10 +10,6 @@ import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotResultsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumResultsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -158,11 +154,11 @@ class PopulateStoredResultsStep(
         pending: Boolean,
     ) {
       test.insertObservationSiteResult(
+          needsRecalculation = pending,
           observationId = observationId,
           permanentLive = permanentLive,
           plantingSiteHistoryId = siteHistoryId,
           plantingSiteId = scenario.plantingSiteId,
-          row = ObservationSiteResultsRow(needsRecalculation = pending),
           totalDead = totalDead,
           totalExisting = totalExisting,
           totalLive = totalLive,
@@ -219,9 +215,9 @@ class PopulateStoredResultsStep(
         pending: Boolean,
     ) {
       test.insertObservationStratumResult(
+          needsRecalculation = pending,
           observationId = observationId,
           permanentLive = permanentLive,
-          row = ObservationStratumResultsRow(needsRecalculation = pending),
           stratumHistoryId = stratumHistoryId,
           stratumId = stratumId,
           totalDead = totalDead,
@@ -285,9 +281,9 @@ class PopulateStoredResultsStep(
         pending: Boolean,
     ) {
       test.insertObservationSubstratumResult(
+          needsRecalculation = pending,
           observationId = observationId,
           permanentLive = permanentLive,
-          row = ObservationSubstratumResultsRow(needsRecalculation = pending),
           substratumHistoryId = substratumHistoryId,
           substratumId = substratumId,
           totalDead = totalDead,
@@ -356,9 +352,9 @@ class PopulateStoredResultsStep(
       test.insertObservationPlotResult(
           monitoringPlotHistoryId = plotHistoryId,
           monitoringPlotId = plotId,
+          needsRecalculation = pending,
           observationId = observationId,
           permanentLive = permanentLive,
-          row = ObservationPlotResultsRow(needsRecalculation = pending),
           totalDead = totalDead,
           totalExisting = totalExisting,
           totalLive = totalLive,

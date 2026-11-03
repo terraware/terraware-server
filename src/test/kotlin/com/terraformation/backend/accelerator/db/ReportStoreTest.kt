@@ -74,7 +74,6 @@ import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotos
 import com.terraformation.backend.db.funder.tables.records.PublishedReportProjectIndicatorsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportsRecord
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -5535,64 +5534,53 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     val batchId1 =
         insertBatch(
-            BatchesRow(
-                facilityId = facilityId1,
-                projectId = projectId,
-                addedDate = getRandomDate(reportStartDate, reportEndDate),
-                activeGrowthQuantity = 15,
-                germinatingQuantity = 7,
-                hardeningOffQuantity = 4,
-                readyQuantity = 3,
-                totalLost = 100,
-                speciesId = speciesId,
-            ),
+            activeGrowthQuantity = 15,
+            addedDate = getRandomDate(reportStartDate, reportEndDate),
+            facilityId = facilityId1,
+            germinatingQuantity = 7,
+            hardeningOffQuantity = 4,
+            projectId = projectId,
+            readyQuantity = 3,
+            speciesId = speciesId,
+            totalLost = 100,
         )
 
     val batchId2 =
         insertBatch(
-            BatchesRow(
-                facilityId = facilityId2,
-                projectId = projectId,
-                addedDate = getRandomDate(reportStartDate, reportEndDate),
-                activeGrowthQuantity = 4,
-                germinatingQuantity = 3,
-                hardeningOffQuantity = 1,
-                readyQuantity = 2,
-                totalLost = 100,
-                speciesId = otherSpeciesId,
-            ),
+            activeGrowthQuantity = 4,
+            addedDate = getRandomDate(reportStartDate, reportEndDate),
+            germinatingQuantity = 3,
+            hardeningOffQuantity = 1,
+            projectId = projectId,
+            readyQuantity = 2,
+            totalLost = 100,
         )
 
     // Other project
     val otherBatchId =
         insertBatch(
-            BatchesRow(
-                facilityId = facilityId1,
-                projectId = otherProjectId,
-                addedDate = getRandomDate(reportStartDate, reportEndDate),
-                activeGrowthQuantity = 100,
-                germinatingQuantity = 100,
-                hardeningOffQuantity = 100,
-                readyQuantity = 100,
-                totalLost = 100,
-                speciesId = speciesId,
-            ),
+            activeGrowthQuantity = 100,
+            addedDate = getRandomDate(reportStartDate, reportEndDate),
+            facilityId = facilityId1,
+            germinatingQuantity = 100,
+            hardeningOffQuantity = 100,
+            projectId = otherProjectId,
+            readyQuantity = 100,
+            speciesId = speciesId,
+            totalLost = 100,
         )
 
     // Outside of date range
     val outdatedBatchId =
         insertBatch(
-            BatchesRow(
-                facilityId = facilityId2,
-                projectId = projectId,
-                addedDate = reportStartDate.minusDays(1),
-                activeGrowthQuantity = 100,
-                germinatingQuantity = 100,
-                hardeningOffQuantity = 100,
-                readyQuantity = 100,
-                totalLost = 100,
-                speciesId = speciesId,
-            ),
+            activeGrowthQuantity = 100,
+            addedDate = reportStartDate.minusDays(1),
+            germinatingQuantity = 100,
+            hardeningOffQuantity = 100,
+            projectId = projectId,
+            readyQuantity = 100,
+            speciesId = speciesId,
+            totalLost = 100,
         )
 
     val outplantWithdrawalId1 =
