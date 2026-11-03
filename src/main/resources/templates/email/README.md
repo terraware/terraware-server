@@ -9,6 +9,8 @@ Each subdirectory contains two template files:
 
 The MJML-to-HTML conversion happens as part of the build process; if you look in `build/resources/main/templates/email` after building the code, you'll see the HTML versions.
 
+Some subdirectories also contain `supportBody.ftl`, the plaintext notification body included in missing-contact support requests. Edit it when changing the support-request text; `body.ftlh.mjml` controls the email body.
+
 The MJML files may include placeholders that get replaced with real values at runtime. The placeholders use [FreeMarker](https://freemarker.apache.org/) expression syntax, like `${variable.name}`.
 
 ## Specifying model classes

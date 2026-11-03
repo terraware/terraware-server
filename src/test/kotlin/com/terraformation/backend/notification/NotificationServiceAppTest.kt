@@ -105,6 +105,7 @@ import com.terraformation.backend.tracking.event.ScheduleObservationReminderNoti
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.mockDeliverable
+import freemarker.template.Configuration
 import io.mockk.every
 import io.mockk.mockk
 import java.net.URI
@@ -307,7 +308,11 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             documentStore,
             dslContext,
             emailService,
+            publisher,
             facilityStore,
+            Configuration(Configuration.VERSION_2_3_31).apply {
+              setClassLoaderForTemplateLoading(javaClass.classLoader, "templates")
+            },
             fundingEntityStore,
             messages,
             moduleEventStore,

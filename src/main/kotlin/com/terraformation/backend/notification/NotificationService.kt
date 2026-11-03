@@ -27,6 +27,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.AcceleratorAdminInvitedEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
+import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserRegisteredEvent
@@ -143,6 +144,8 @@ import com.terraformation.backend.tracking.event.ScheduleObservationReminderNoti
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.util.processToString
+import freemarker.template.Configuration
 import jakarta.inject.Named
 import java.net.URI
 import java.time.Instant
@@ -153,6 +156,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
 import java.util.Locale
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 /**
@@ -171,7 +175,9 @@ class NotificationService(
     private val documentStore: DocumentStore,
     private val dslContext: DSLContext,
     private val emailService: EmailService,
+    private val eventPublisher: ApplicationEventPublisher,
     private val facilityStore: FacilityStore,
+    private val freeMarkerConfig: Configuration,
     private val fundingEntityStore: FundingEntityStore,
     private val messages: Messages,
     private val moduleEventStore: ModuleEventStore,
@@ -1727,8 +1733,8 @@ class NotificationService(
 
   /**
    * Sends an email to the organization's Terraformation Contact. If there is none and the
-   * organization has any accelerator or application projects, falls back to the support address and
-   * also sends a [MissingContact] alert. Email-only.
+   * organization has any accelerator or application projects, publishes a missing-contact event and
+   * falls back to support emails. Does not create app notifications.
    */
   private fun sendToOrganizationContact(
       organization: OrganizationModel,
@@ -1741,6 +1747,16 @@ class NotificationService(
     } else if (
         fallBackToSupport && parentStore.hasAcceleratorOrApplicationProjects(organization.id)
     ) {
+      Locale.ENGLISH.use {
+        eventPublisher.publishEvent(
+            TerraformationContactMissingEvent(
+                organization.id,
+                organization.name,
+                renderSupportTemplate(emailContent, "subject.ftl"),
+                renderSupportTemplate(emailContent, "supportBody.ftl"),
+            )
+        )
+      }
       emailService.sendSupportNotification(emailContent)
       emailService.sendSupportNotification(
           MissingContact(config, organization.id, organization.name)
@@ -1749,6 +1765,12 @@ class NotificationService(
       log.info("Organization ${organization.id} has no contact, so not sending notification")
     }
   }
+
+  private fun renderSupportTemplate(model: EmailTemplateModel, filename: String): String =
+      freeMarkerConfig
+          .getTemplate("email/${model.templateDir}/$filename")
+          .processToString(model)
+          .trim()
 
   private fun insertAppNotification(
       appContent: AppContent,

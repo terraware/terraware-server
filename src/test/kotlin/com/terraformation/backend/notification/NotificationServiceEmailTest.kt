@@ -1,5 +1,6 @@
 package com.terraformation.backend.notification
 
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
@@ -33,6 +34,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.AcceleratorAdminInvitedEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
+import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserRegisteredEvent
@@ -118,6 +120,7 @@ import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
@@ -246,6 +249,8 @@ internal class NotificationServiceEmailTest {
         )
       }
 
+  private val eventPublisher = TestEventPublisher()
+
   private val emailService =
       spyk(
           EmailService(
@@ -267,7 +272,9 @@ internal class NotificationServiceEmailTest {
           documentStore,
           dslContext,
           emailService,
+          eventPublisher,
           facilityStore,
+          freeMarkerConfig,
           fundingEntityStore,
           messages,
           moduleEventStore,
@@ -1066,11 +1073,32 @@ internal class NotificationServiceEmailTest {
     every { config.support.email } returns null
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
-    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns nonAcceleratorOrganization.id
+    every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns
+        plantingSite.copy(organizationId = nonAcceleratorOrganization.id)
 
     service.on(event)
 
     assertNoMessageSent()
+  }
+
+  @Test
+  fun `missing contact event includes the original notification in English without support email`() {
+    every { config.support.email } returns null
+
+    Locales.GIBBERISH.use {
+      service.on(ObservationNotScheduledNotificationEvent(PlantingSiteId(1)))
+    }
+
+    eventPublisher.assertEventPublished(
+        TerraformationContactMissingEvent(
+            organization.id,
+            organization.name,
+            "Organization Test Organization has not scheduled an observation of planting site My Site",
+            "Organization Test Organization has not scheduled an observation of planting site My Site\n\n" +
+                "Planting site My Site is ready to have its next observation scheduled, but the organization has not scheduled one.",
+        )
+    )
+    assertRecipientsEqual(emptySet())
   }
 
   @Test
@@ -1180,8 +1208,8 @@ internal class NotificationServiceEmailTest {
             MonitoringPlotId(1),
         )
 
-    every { parentStore.getOrganizationId(MonitoringPlotId(1)) } returns
-        nonAcceleratorOrganization.id
+    every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns
+        plantingSite.copy(organizationId = nonAcceleratorOrganization.id)
 
     service.on(event)
 
@@ -2023,7 +2051,7 @@ internal class NotificationServiceEmailTest {
       organizationId = organization.id
     }
 
-    every { parentStore.getOrganizationId(existingModel.id) } returns nonAcceleratorOrganization.id
+    every { organizationStore.fetchOneById(organization.id) } returns nonAcceleratorOrganization
     val event =
         PlantingSiteMapEditedEvent(
             existingModel,
@@ -2038,14 +2066,7 @@ internal class NotificationServiceEmailTest {
 
     service.on(event)
 
-    assertSentNoContactNotification()
-
-    val message = sentMessageWithSubject("has had a change to planting site")
-    assertSubjectContains(organization.name, message = message)
-    assertSubjectContains(siteName, message = message)
-    assertBodyContains("Area added to site: 13.2 hectares", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
+    assertNoMessageSent()
 
     assertIsEventListener<PlantingSiteMapEditedEvent>(service)
   }
@@ -2465,6 +2486,7 @@ internal class NotificationServiceEmailTest {
   }
 
   private fun assertNoMessageSent() {
+    eventPublisher.assertEventNotPublished<TerraformationContactMissingEvent>()
     if (sentMessages.isNotEmpty()) {
       fail<String> {
         val header = "Should not have sent any message. But received the following messages:\n"
@@ -2495,6 +2517,13 @@ internal class NotificationServiceEmailTest {
     assertSubjectContains("Test Organization", message)
     assertBodyContains("Test Organization (${organization.id})", message = message)
     assertBodyContains("no assigned Terraformation primary project", message = message)
+    eventPublisher.assertEventPublished {
+      it is TerraformationContactMissingEvent &&
+          it.organizationId == organization.id &&
+          it.organizationName == organization.name &&
+          it.subject.isNotBlank() &&
+          it.body.isNotBlank()
+    }
   }
 
   /** Walks a MIME message of arbitrary structure and returns the text parts. */
