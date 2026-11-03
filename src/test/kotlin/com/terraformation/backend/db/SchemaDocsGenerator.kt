@@ -545,15 +545,15 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "-t",
                   "pgsql11",
                   "-host",
-                  postgresContainer.networkAliases.first(),
+                  TestDatabaseContainer.container.networkAliases.first(),
                   "-port",
                   PostgreSQLContainer.POSTGRESQL_PORT.toString(),
                   "-u",
-                  postgresContainer.username,
+                  TestDatabaseContainer.container.username,
                   "-p",
-                  postgresContainer.password,
+                  TestDatabaseContainer.container.password,
                   "-db",
-                  postgresContainer.databaseName,
+                  TestDatabaseContainer.container.databaseName,
                   // Output all diagrams as SVG (default is PNG which generates huge image files)
                   "-imageformat",
                   "svg",
@@ -568,7 +568,7 @@ class SchemaDocsGenerator : DatabaseTest() {
               .withFileSystemBind(sliceDir.toString(), "/output", BindMode.READ_WRITE)
               // Log stdout as INFO and stderr as ERROR
               .withLogConsumer(Slf4jLogConsumer(log).withSeparateOutputStreams())
-              .withNetwork(postgresContainer.network)
+              .withNetwork(TestDatabaseContainer.container.network)
               // Wait for the container to exit with exit code 0 when it's started
               .withStartupCheckStrategy(OneShotStartupCheckStrategy().withTimeout(timeout))
 
