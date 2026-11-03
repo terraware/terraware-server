@@ -27,6 +27,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.AcceleratorAdminInvitedEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
+import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserRegisteredEvent
@@ -77,6 +78,7 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.FunderAddedToFundingEntity
+import com.terraformation.backend.email.model.MissingContact
 import com.terraformation.backend.email.model.MonitoringSpeciesTotalsEdited
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
@@ -119,10 +121,6 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
-import com.terraformation.backend.support.SupportService
-import com.terraformation.backend.support.atlassian.MAX_JIRA_DESCRIPTION_LENGTH
-import com.terraformation.backend.support.atlassian.MAX_JIRA_SUMMARY_LENGTH
-import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
@@ -158,6 +156,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
 import java.util.Locale
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 /**
@@ -176,6 +175,7 @@ class NotificationService(
     private val documentStore: DocumentStore,
     private val dslContext: DSLContext,
     private val emailService: EmailService,
+    private val eventPublisher: ApplicationEventPublisher,
     private val facilityStore: FacilityStore,
     private val freeMarkerConfig: Configuration,
     private val fundingEntityStore: FundingEntityStore,
@@ -191,7 +191,6 @@ class NotificationService(
     private val projectStore: ProjectStore,
     private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
-    private val supportService: SupportService,
     private val systemUser: SystemUser,
     private val userInternalInterestsStore: UserInternalInterestsStore,
     private val userStore: UserStore,
@@ -1734,8 +1733,8 @@ class NotificationService(
 
   /**
    * Sends an email to the organization's Terraformation Contact. If there is none and the
-   * organization has any accelerator or application projects, files a support request with the
-   * notification and missing-contact details. Does not create app notifications.
+   * organization has any accelerator or application projects, publishes a missing-contact event and
+   * falls back to support emails. Does not create app notifications.
    */
   private fun sendToOrganizationContact(
       organization: OrganizationModel,
@@ -1748,32 +1747,24 @@ class NotificationService(
     } else if (
         fallBackToSupport && parentStore.hasAcceleratorOrApplicationProjects(organization.id)
     ) {
-      if (config.atlassian.enabled) {
-        Locale.ENGLISH.use {
-          val missingContact = messages.missingContact(organization.name, organization.id)
-          val subject = renderSupportTemplate(emailContent, "subject.ftl")
-          val body = renderSupportTemplate(emailContent, "body.ftl")
-          supportService.submitServiceRequest(
-              requestType = SupportRequestType.MissingContact,
-              summary = missingContact.title.truncateForJira(MAX_JIRA_SUMMARY_LENGTH),
-              description =
-                  "${missingContact.body}\n\n$subject\n\n$body"
-                      .truncateForJira(MAX_JIRA_DESCRIPTION_LENGTH),
-              skipReceiptEmail = true,
-              userId = systemUser.userId,
-          )
-        }
-      } else {
-        log.info("Atlassian integration disabled; not filing missing-contact support request")
+      Locale.ENGLISH.use {
+        eventPublisher.publishEvent(
+            TerraformationContactMissingEvent(
+                organization.id,
+                organization.name,
+                renderSupportTemplate(emailContent, "subject.ftl"),
+                renderSupportTemplate(emailContent, "body.ftl"),
+            )
+        )
       }
+      emailService.sendSupportNotification(emailContent)
+      emailService.sendSupportNotification(
+          MissingContact(config, organization.id, organization.name)
+      )
     } else {
       log.info("Organization ${organization.id} has no contact, so not sending notification")
     }
   }
-
-  private fun String.truncateForJira(maxLength: Int): String =
-      if (length <= maxLength) this
-      else take(maxLength - 3).trimEnd { it.isHighSurrogate() } + "..."
 
   private fun renderSupportTemplate(model: EmailTemplateModel, filename: String): String =
       freeMarkerConfig

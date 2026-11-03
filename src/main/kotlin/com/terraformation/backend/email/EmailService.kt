@@ -168,6 +168,15 @@ class EmailService(
   }
 
   /**
+   * Sends an email notification to a support email if configured.
+   *
+   * @param [model] Model object containing values that can be referenced by the template.
+   */
+  fun sendSupportNotification(model: EmailTemplateModel) {
+    config.support.email?.let { supportEmail -> sendLocaleEmails(model, listOf(supportEmail)) }
+  }
+
+  /**
    * Sends an email notification to a specific list of emails, using the specified Locale.
    *
    * @param [recipients] Email addresses to send the message to.
