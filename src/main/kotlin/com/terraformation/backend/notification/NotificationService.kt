@@ -78,7 +78,6 @@ import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.FunderAddedToFundingEntity
-import com.terraformation.backend.email.model.MissingContact
 import com.terraformation.backend.email.model.MonitoringSpeciesTotalsEdited
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
@@ -1733,8 +1732,8 @@ class NotificationService(
 
   /**
    * Sends an email to the organization's Terraformation Contact. If there is none and the
-   * organization has any accelerator or application projects, publishes a missing-contact event and
-   * falls back to support emails. Does not create app notifications.
+   * organization has any accelerator or application projects, publishes a missing-contact event.
+   * Does not create app notifications.
    */
   private fun sendToOrganizationContact(
       organization: OrganizationModel,
@@ -1757,10 +1756,6 @@ class NotificationService(
             )
         )
       }
-      emailService.sendSupportNotification(emailContent)
-      emailService.sendSupportNotification(
-          MissingContact(config, organization.id, organization.name)
-      )
     } else {
       log.info("Organization ${organization.id} has no contact, so not sending notification")
     }
