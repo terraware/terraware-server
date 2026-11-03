@@ -8,13 +8,16 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.nursery.api.CreateBatchRequestPayload
+import com.terraformation.backend.nursery.model.BatchStageDetailsModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import java.time.LocalDate
 import java.time.ZoneId
@@ -86,7 +89,40 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             treatmentId = SeedTreatment.Chemical,
             version = 1,
         )
-    val expectedModel = ExistingBatchModel(expectedRow, setOf(subLocationId1, subLocationId2), 0)
+    val expectedQuantities =
+        listOf(
+            BatchStageDetailsModel(
+                batchId = returnedModel.id,
+                latestObservedQuantity = 0,
+                quantity = 0,
+                stage = BatchStage.Germinating,
+            ),
+            BatchStageDetailsModel(
+                batchId = returnedModel.id,
+                latestObservedQuantity = 1,
+                quantity = 1,
+                stage = BatchStage.ActiveGrowth,
+            ),
+            BatchStageDetailsModel(
+                batchId = returnedModel.id,
+                latestObservedQuantity = 4,
+                quantity = 4,
+                stage = BatchStage.HardeningOff,
+            ),
+            BatchStageDetailsModel(
+                batchId = returnedModel.id,
+                latestObservedQuantity = 2,
+                quantity = 2,
+                stage = BatchStage.Ready,
+            ),
+        )
+    val expectedModel =
+        ExistingBatchModel(
+            expectedRow,
+            setOf(subLocationId1, subLocationId2),
+            0,
+            quantities = expectedQuantities.associateBy { it.stage },
+        )
 
     val expectedQuantityHistory =
         listOf(
@@ -144,6 +180,17 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             ),
         )
 
+    assertTableEquals(
+        expectedQuantities.map {
+          BatchStageDetailsRecord(
+              batchId = it.batchId,
+              latestObservedQuantity = it.latestObservedQuantity,
+              quantity = it.quantity,
+              stageId = it.stage,
+          )
+        },
+        message = "Stage quantities",
+    )
     val writtenBatch = batchesDao.fetchOneById(returnedModel.id)
     val writtenDetailsHistory = batchDetailsHistoryDao.findAll().map { it.copy(id = null) }
     val writtenDetailsHistorySubLocations =

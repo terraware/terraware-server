@@ -28,6 +28,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.Batches
@@ -40,6 +41,7 @@ import com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchStageDetailsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.InventoriesRow
@@ -47,6 +49,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
@@ -60,6 +63,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
+import com.terraformation.backend.nursery.model.BatchStageDetailsModel
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
@@ -132,15 +136,29 @@ class BatchStore(
           .div(DSL.sum(BATCHES.TOTAL_LOSS_CANDIDATES))
           .cast(Double::class.java)
 
+  private fun fetchQuantities(batchId: BatchId): Map<BatchStage, BatchStageDetailsModel> =
+      dslContext
+          .selectFrom(BATCH_STAGE_DETAILS)
+          .where(BATCH_STAGE_DETAILS.BATCH_ID.eq(batchId))
+          .fetch { it.into(BatchStageDetailsRow::class.java).toModel() }
+          .associateBy { it.stage }
+
   fun fetchOneById(batchId: BatchId): ExistingBatchModel {
     requirePermissions { readBatch(batchId) }
 
     val batchesRow = batchesDao.fetchOneById(batchId) ?: throw BatchNotFoundException(batchId)
+    val quantities = fetchQuantities(batchId)
     val accessionNumbers = fetchAccessionNumbers(batchId)
     val subLocationIds = fetchSubLocationIds(batchId)
     val totalWithdrawn = getTotalWithdrawn(batchId)
 
-    return ExistingBatchModel(batchesRow, subLocationIds, totalWithdrawn, accessionNumbers)
+    return ExistingBatchModel(
+        batchesRow,
+        subLocationIds,
+        totalWithdrawn,
+        accessionNumbers,
+        quantities,
+    )
   }
 
   fun fetchWithdrawalById(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
@@ -259,12 +277,12 @@ class BatchStore(
 
       insertQuantityHistoryRow(
           accessionId = newModel.accessionId,
-          activeGrowthQuantity = rowWithDefaults.activeGrowthQuantity!!,
+          activeGrowthQuantity = newModel.activeGrowthQuantity,
           batchId = rowWithDefaults.id!!,
-          germinatingQuantity = rowWithDefaults.germinatingQuantity!!,
-          hardeningOffQuantity = rowWithDefaults.hardeningOffQuantity!!,
+          germinatingQuantity = newModel.germinatingQuantity,
+          hardeningOffQuantity = newModel.hardeningOffQuantity,
           historyType = BatchQuantityHistoryType.Observed,
-          readyQuantity = rowWithDefaults.readyQuantity!!,
+          readyQuantity = newModel.readyQuantity,
           version = 1,
           withdrawalId = withdrawalId,
       )
@@ -306,6 +324,7 @@ class BatchStore(
 
     return ExistingBatchModel(
         row = rowWithDefaults,
+        quantities = fetchQuantities(rowWithDefaults.id!!),
         subLocationIds = newModel.subLocationIds,
         totalWithdrawn = 0,
         accessionNumbers = fetchAccessionNumbers(rowWithDefaults.id!!),
@@ -1033,13 +1052,18 @@ class BatchStore(
       val destinationBatch = existingDestinationBatchesByNumber[destinationBatchNumber]
 
       if (destinationBatch != null) {
+        val destinationQuantities = fetchQuantities(destinationBatch.id!!)
         updateQuantities(
             destinationBatch.id!!,
             destinationBatch.version!!,
-            destinationBatch.germinatingQuantity!! + batchWithdrawal.germinatingQuantityWithdrawn,
-            destinationBatch.activeGrowthQuantity!! + batchWithdrawal.activeGrowthQuantityWithdrawn,
-            destinationBatch.hardeningOffQuantity!! + batchWithdrawal.hardeningOffQuantityWithdrawn,
-            destinationBatch.readyQuantity!! + batchWithdrawal.readyQuantityWithdrawn,
+            destinationQuantities.getValue(BatchStage.Germinating).quantity +
+                batchWithdrawal.germinatingQuantityWithdrawn,
+            destinationQuantities.getValue(BatchStage.ActiveGrowth).quantity +
+                batchWithdrawal.activeGrowthQuantityWithdrawn,
+            destinationQuantities.getValue(BatchStage.HardeningOff).quantity +
+                batchWithdrawal.hardeningOffQuantityWithdrawn,
+            destinationQuantities.getValue(BatchStage.Ready).quantity +
+                batchWithdrawal.readyQuantityWithdrawn,
             BatchQuantityHistoryType.Computed,
             withdrawalId = withdrawalId,
         )
@@ -1209,13 +1233,11 @@ class BatchStore(
                 DSL.select(BATCHES.SPECIES_ID)
                     .from(BATCHES)
                     .where(BATCHES.FACILITY_ID.eq(facilityId))
-                    .and(
-                        DSL.or(
-                            BATCHES.GERMINATING_QUANTITY.gt(0),
-                            BATCHES.ACTIVE_GROWTH_QUANTITY.gt(0),
-                            BATCHES.HARDENING_OFF_QUANTITY.gt(0),
-                            BATCHES.READY_QUANTITY.gt(0),
-                        )
+                    .andExists(
+                        DSL.selectOne()
+                            .from(BATCH_STAGE_DETAILS)
+                            .where(BATCH_STAGE_DETAILS.BATCH_ID.eq(BATCHES.ID))
+                            .and(BATCH_STAGE_DETAILS.QUANTITY.gt(0))
                     )
             )
         )
@@ -1280,20 +1302,15 @@ class BatchStore(
             .associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
 
     val hasInventory =
-        DSL.or(
-            BATCHES.GERMINATING_QUANTITY.gt(0),
-            BATCHES.ACTIVE_GROWTH_QUANTITY.gt(0),
-            BATCHES.HARDENING_OFF_QUANTITY.gt(0),
-            BATCHES.READY_QUANTITY.gt(0),
+        DSL.exists(
+            DSL.selectOne()
+                .from(BATCH_STAGE_DETAILS)
+                .where(BATCH_STAGE_DETAILS.BATCH_ID.eq(BATCHES.ID))
+                .and(BATCH_STAGE_DETAILS.QUANTITY.gt(0))
         )
-
-    val inventoryTotals =
+    val batchTotals =
         dslContext
             .select(
-                DSL.sum(BATCHES.GERMINATING_QUANTITY),
-                DSL.sum(BATCHES.ACTIVE_GROWTH_QUANTITY),
-                DSL.sum(BATCHES.HARDENING_OFF_QUANTITY),
-                DSL.sum(BATCHES.READY_QUANTITY),
                 aggregateGerminationRateField,
                 aggregateLossRateField,
                 DSL.count().filterWhere(hasInventory),
@@ -1301,18 +1318,35 @@ class BatchStore(
             )
             .from(BATCHES)
             .where(conditions)
-            .fetchOne()
+            .fetchSingle()
+    val inventoryTotals =
+        dslContext
+            .select(
+                DSL.sum(BATCH_STAGE_DETAILS.QUANTITY)
+                    .filterWhere(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.Germinating)),
+                DSL.sum(BATCH_STAGE_DETAILS.QUANTITY)
+                    .filterWhere(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.ActiveGrowth)),
+                DSL.sum(BATCH_STAGE_DETAILS.QUANTITY)
+                    .filterWhere(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.HardeningOff)),
+                DSL.sum(BATCH_STAGE_DETAILS.QUANTITY)
+                    .filterWhere(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.Ready)),
+            )
+            .from(BATCH_STAGE_DETAILS)
+            .join(BATCHES)
+            .on(BATCHES.ID.eq(BATCH_STAGE_DETAILS.BATCH_ID))
+            .where(conditions)
+            .fetchSingle()
 
     return NurseryStats(
         facilityId = facilityId,
-        germinationRate = inventoryTotals?.value5()?.roundToInt(),
-        lossRate = inventoryTotals?.value6()?.roundToInt(),
-        batchesWithInventory = inventoryTotals?.value7() ?: 0,
-        speciesWithInventory = inventoryTotals?.value8() ?: 0,
-        totalGerminating = inventoryTotals?.value1()?.toLong() ?: 0L,
-        totalActiveGrowth = inventoryTotals?.value2()?.toLong() ?: 0L,
-        totalHardeningOff = inventoryTotals?.value3()?.toLong() ?: 0L,
-        totalReady = inventoryTotals?.value4()?.toLong() ?: 0L,
+        germinationRate = batchTotals.value1()?.roundToInt(),
+        lossRate = batchTotals.value2()?.roundToInt(),
+        batchesWithInventory = batchTotals.value3() ?: 0,
+        speciesWithInventory = batchTotals.value4() ?: 0,
+        totalGerminating = inventoryTotals.value1()?.toLong() ?: 0L,
+        totalActiveGrowth = inventoryTotals.value2()?.toLong() ?: 0L,
+        totalHardeningOff = inventoryTotals.value3()?.toLong() ?: 0L,
+        totalReady = inventoryTotals.value4()?.toLong() ?: 0L,
         totalWithdrawnByPurpose = withdrawnForAllPurposes,
     )
   }

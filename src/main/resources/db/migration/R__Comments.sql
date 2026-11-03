@@ -386,6 +386,12 @@ COMMENT ON COLUMN nursery.batch_quantity_history.withdrawal_id IS 'If this chang
 
 COMMENT ON TABLE nursery.batch_quantity_history_types IS '(Enum) Types of operations that can result in changes to remaining quantities of seedling batches.';
 
+COMMENT ON VIEW nursery.batch_stage_details IS 'Current inventory and latest observed quantities for each stage of a nursery batch.';
+COMMENT ON COLUMN nursery.batch_stage_details.latest_observed_quantity IS 'Latest user-observed number of seedlings in this stage. Withdrawals do not cause this to decrease.';
+COMMENT ON COLUMN nursery.batch_stage_details.quantity IS 'Number of seedlings currently available in this stage. Withdrawals cause this to decrease.';
+
+COMMENT ON TABLE nursery.batch_stages IS '(Enum) Growth stages of nursery seedlings.';
+
 COMMENT ON TABLE nursery.batch_sub_locations IS 'Which batches are stored in which sub-locations.';
 
 COMMENT ON TABLE nursery.batch_substrates IS '(Enum) Substrates in which seedlings can be planted in a nursery.';
@@ -406,22 +412,14 @@ COMMENT ON COLUMN nursery.batches.batch_number IS 'User-friendly unique (per org
 COMMENT ON COLUMN nursery.batches.created_by IS 'Which user initially created the batch.';
 COMMENT ON COLUMN nursery.batches.created_time IS 'When the batch was initially created.';
 COMMENT ON COLUMN nursery.batches.facility_id IS 'Which nursery contains the batch. Facility must be of type "Nursery" and under the same organization as the species ID (enforced in application code).';
-COMMENT ON COLUMN nursery.batches.germinating_quantity IS 'Number of germinating seedlings currently available in inventory. Withdrawals cause this to decrease.';
 COMMENT ON COLUMN nursery.batches.germination_started_date IS 'Date when sown seeds first started germinating.';
-COMMENT ON COLUMN nursery.batches.hardening_off_quantity IS 'Number of hardening-off seedlings currently available in inventory. Withdrawals cause this to decrease.';
 COMMENT ON COLUMN nursery.batches.id IS 'Globally-unique internal identifier for the batch. Not typically presented to end users; "batch_number" is the user-facing identifier.';
-COMMENT ON COLUMN nursery.batches.latest_observed_germinating_quantity IS 'Latest user-observed number of germinating seedlings currently available in inventory. Withdrawals do not cause this to decrease.';
-COMMENT ON COLUMN nursery.batches.latest_observed_hardening_off_quantity IS 'Latest user-observed number of hardening-off seedlings currently available in inventory. Withdrawals do not cause this to decrease.';
-COMMENT ON COLUMN nursery.batches.latest_observed_active_growth_quantity IS 'Latest user-observed number of active-growth-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.';
-COMMENT ON COLUMN nursery.batches.latest_observed_ready_quantity IS 'Latest user-observed number of ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.';
 COMMENT ON COLUMN nursery.batches.latest_observed_time IS 'When the latest user observation of seedling quantities took place.';
 COMMENT ON COLUMN nursery.batches.modified_by IS 'Which user most recently modified the batch, either directly or by creating a withdrawal.';
 COMMENT ON COLUMN nursery.batches.modified_time IS 'When the batch was most recently modified, either directly or by creating a withdrawal.';
 COMMENT ON COLUMN nursery.batches.notes IS 'User-supplied freeform notes about batch.';
-COMMENT ON COLUMN nursery.batches.active_growth_quantity IS 'Number of active-growth-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.';
 COMMENT ON COLUMN nursery.batches.organization_id IS 'Which organization owns the nursery where this batch is located.';
 COMMENT ON COLUMN nursery.batches.ready_by_date IS 'User-supplied estimate of when the batch will be ready for planting.';
-COMMENT ON COLUMN nursery.batches.ready_quantity IS 'Number of ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.';
 COMMENT ON COLUMN nursery.batches.seeds_sown_date IS 'Date when newly-arrived seeds were first sown.';
 COMMENT ON COLUMN nursery.batches.species_id IS 'Species of the batch''s plants. Must be under the same organization as the facility ID (enforced in application code).';
 COMMENT ON COLUMN nursery.batches.total_germinated IS 'Total number of seedlings that have moved from Germinating to Active Growth status over the lifetime of the batch. This is the numerator for the germination rate calculation.';

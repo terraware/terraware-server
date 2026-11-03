@@ -667,7 +667,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator = AutoCalculatedIndicator.Seedlings,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
-                          systemValue = BigDecimal(83),
+                          systemValue = BigDecimal(93),
                       ),
                   currentYearProgress = emptyList(),
               ),
@@ -3640,7 +3640,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
-                  systemValue = BigDecimal(83),
+                  systemValue = BigDecimal(93),
                   systemTime = clock.instant,
                   // Refreshing the system value preserves the supporting document URL even though
                   // it clears the override value.
@@ -3762,7 +3762,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
-                  systemValue = BigDecimal(83),
+                  systemValue = BigDecimal(93),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
