@@ -3,7 +3,6 @@ package com.terraformation.backend.support
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.SupportRequestSubmitted
@@ -34,7 +33,7 @@ class SupportService(
       skipReceiptEmail: Boolean = false,
       userId: UserId = currentUser().userId,
   ): String {
-    val user = userStore.fetchOneById(userId) as IndividualUser
+    val user = userStore.fetchOneById(userId)
     val response =
         atlassianHttpClient.createServiceDeskRequest(description, summary, requestType, user.email)
 
@@ -60,7 +59,7 @@ class SupportService(
   }
 
   fun listSupportRequestTypes(): List<SupportRequestType> {
-    return atlassianHttpClient.requestTypeIds.keys.toList()
+    return atlassianHttpClient.requestTypeIds.keys.filter { !it.isInternal }
   }
 
   fun attachTemporaryFile(
