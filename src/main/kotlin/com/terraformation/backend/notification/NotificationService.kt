@@ -1753,7 +1753,7 @@ class NotificationService(
                 organization.id,
                 organization.name,
                 renderSupportTemplate(emailContent, "subject.ftl"),
-                renderSupportTemplate(emailContent, "body.ftl"),
+                renderSupportTemplate(emailContent, "supportBody.ftl"),
             )
         )
       }
