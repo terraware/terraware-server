@@ -87,7 +87,6 @@ import java.time.ZonedDateTime
 import kotlin.math.roundToInt
 import org.jooq.DSLContext
 import org.jooq.Field
-import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
@@ -274,6 +273,14 @@ class BatchStore(
 
     dslContext.transaction { _ ->
       batchesDao.insert(rowWithDefaults)
+      writeStageQuantities(
+          rowWithDefaults.id!!,
+          newModel.germinatingQuantity,
+          newModel.activeGrowthQuantity,
+          newModel.hardeningOffQuantity,
+          newModel.readyQuantity,
+          observed = true,
+      )
 
       insertQuantityHistoryRow(
           accessionId = newModel.accessionId,
@@ -516,6 +523,14 @@ class BatchStore(
 
     dslContext.transaction { _ ->
       val successFunc = { newVersion: Int ->
+        writeStageQuantities(
+            batchId,
+            germinating,
+            activeGrowth,
+            hardeningOff,
+            ready,
+            observed = historyType == BatchQuantityHistoryType.Observed,
+        )
         insertQuantityHistoryRow(
             batchId,
             germinating,
@@ -532,22 +547,9 @@ class BatchStore(
       }
 
       updateVersionedBatch(batchId, version, successFunc) { update ->
-        update
-            .set(GERMINATING_QUANTITY, germinating)
-            .set(ACTIVE_GROWTH_QUANTITY, activeGrowth)
-            .set(HARDENING_OFF_QUANTITY, hardeningOff)
-            .set(READY_QUANTITY, ready)
-            .let {
-              if (historyType == BatchQuantityHistoryType.Observed) {
-                it.set(LATEST_OBSERVED_GERMINATING_QUANTITY, germinating)
-                    .set(LATEST_OBSERVED_ACTIVE_GROWTH_QUANTITY, activeGrowth)
-                    .set(LATEST_OBSERVED_HARDENING_OFF_QUANTITY, hardeningOff)
-                    .set(LATEST_OBSERVED_READY_QUANTITY, ready)
-                    .set(LATEST_OBSERVED_TIME, clock.instant())
-              } else {
-                it
-              }
-            }
+        if (historyType == BatchQuantityHistoryType.Observed) {
+          update.set(LATEST_OBSERVED_TIME, clock.instant())
+        }
       }
     }
   }
@@ -881,11 +883,7 @@ class BatchStore(
                         withdrawalId,
                     )
                   } else {
-                    updateVersionedBatch(batchId, batch.version) {
-                      // Just update the version and modified user/timestamp (need a set() call
-                      // here so the query object is of the correct jOOQ type)
-                      it.set(emptyMap<Any, Any>())
-                    }
+                    updateVersionedBatch(batchId, batch.version) {}
                   }
                 }
 
@@ -1111,16 +1109,16 @@ class BatchStore(
       batchId: BatchId,
       version: Int,
       successFunc: ((Int) -> Unit)? = null,
-      setFunc: Batches.(UpdateSetFirstStep<BatchesRecord>) -> UpdateSetMoreStep<BatchesRecord>,
+      setFunc: Batches.(UpdateSetMoreStep<BatchesRecord>) -> Unit,
   ) {
     dslContext.transaction { _ ->
       val rowsUpdated =
           dslContext
               .update(BATCHES)
-              .let { BATCHES.setFunc(it) }
               .set(BATCHES.MODIFIED_BY, currentUser().userId)
               .set(BATCHES.MODIFIED_TIME, clock.instant())
               .set(BATCHES.VERSION, version + 1)
+              .apply { BATCHES.setFunc(this) }
               .where(BATCHES.ID.eq(batchId))
               .and(BATCHES.VERSION.eq(version))
               .execute()
@@ -1605,5 +1603,40 @@ class BatchStore(
         .set(BATCHES.TOTAL_LOSS_CANDIDATES, lossRate?.let { totalLossCandidates })
         .where(BATCHES.ID.eq(batchId))
         .execute()
+  }
+
+  private fun writeStageQuantities(
+      batchId: BatchId,
+      germinating: Int,
+      activeGrowth: Int,
+      hardeningOff: Int,
+      ready: Int,
+      observed: Boolean,
+  ) {
+    mapOf(
+            BatchStage.Germinating to germinating,
+            BatchStage.ActiveGrowth to activeGrowth,
+            BatchStage.HardeningOff to hardeningOff,
+            BatchStage.Ready to ready,
+        )
+        .forEach { (stage, quantity) ->
+          with(BATCH_STAGE_DETAILS) {
+            dslContext
+                .insertInto(this)
+                .set(BATCH_ID, batchId)
+                .set(STAGE_ID, stage)
+                .set(QUANTITY, quantity)
+                .set(LATEST_OBSERVED_QUANTITY, quantity)
+                .onConflict(BATCH_ID, STAGE_ID)
+                .doUpdate()
+                .set(QUANTITY, quantity)
+                .apply {
+                  if (observed) {
+                    set(LATEST_OBSERVED_QUANTITY, quantity)
+                  }
+                }
+                .execute()
+          }
+        }
   }
 }
