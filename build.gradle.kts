@@ -5,7 +5,6 @@ import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
 import org.apache.tools.ant.filters.FixCrLfFilter
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
@@ -181,16 +180,15 @@ configurations.configureEach {
 }
 
 tasks.register("downloadDependencies") {
-  fun ConfigurationContainer.resolveAll() =
-      this.filter {
-            it.isCanBeResolved && it !is DeprecatableConfiguration && !it.name.contains("Metadata")
-          }
-          .forEach { it.resolve() }
-
-  doLast {
-    configurations.resolveAll()
-    buildscript.configurations.resolveAll()
+  fun ConfigurationContainer.resolvableFiles() = filter {
+    it.isCanBeResolved && !it.name.contains("Metadata")
   }
+      .map { it.incoming.files }
+
+  val dependencyFiles =
+      files(configurations.resolvableFiles(), buildscript.configurations.resolvableFiles())
+  inputs.files(dependencyFiles).withPropertyName("dependencyFiles")
+  doLast {}
 }
 
 testing {
