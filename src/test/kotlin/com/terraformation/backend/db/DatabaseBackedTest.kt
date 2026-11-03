@@ -246,8 +246,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSe
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SavedTableViewsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.SplatAnnotationsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.SplatsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimersRow
@@ -545,7 +543,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlap
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDetailsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratDetailsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationDependentSubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
@@ -558,9 +555,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumRes
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingDateRequestSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingDateRequestsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonAllocatedSpeciesRow
@@ -573,8 +567,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulatio
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteSpeciesTargetsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ScheduledPlantingDateSpeciesRow
@@ -589,7 +581,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumSpeciesTargetsRow
-import com.terraformation.backend.db.tracking.tables.pojos.StratumT0TempDensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
@@ -1079,35 +1070,34 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertProjectAcceleratorDetails(
-      row: ProjectAcceleratorDetailsRow = ProjectAcceleratorDetailsRow(),
-      annualCarbon: Number? = row.annualCarbon,
-      applicationReforestableLand: Number? = row.applicationReforestableLand,
-      carbonCapacity: Number? = row.carbonCapacity,
-      confirmedReforestableLand: Number? = row.confirmedReforestableLand,
-      dealDescription: String? = row.dealDescription,
-      dealName: String? = row.dealName,
-      dealStage: DealStage? = row.dealStageId,
-      dropboxFolderPath: String? = row.dropboxFolderPath,
-      failureRisk: String? = row.failureRisk,
-      fileNaming: String? = row.fileNaming,
-      googleFolderUrl: Any? = row.googleFolderUrl,
-      hubSpotUrl: Any? = row.hubspotUrl,
-      investmentThesis: String? = row.investmentThesis,
-      logframeUrl: Any? = row.logframeUrl,
-      maxCarbonAccumulation: Number? = row.maxCarbonAccumulation,
-      minCarbonAccumulation: Number? = row.minCarbonAccumulation,
-      numCommunities: Int? = row.numCommunities,
-      numNativeSpecies: Int? = row.numNativeSpecies,
-      perHectareBudget: Number? = row.perHectareBudget,
-      pipeline: Pipeline? = row.pipelineId,
-      plantingSitesCql: String? = row.plantingSitesCql,
-      projectBoundariesCql: String? = row.projectBoundariesCql,
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      totalCarbon: Number? = row.totalCarbon,
-      totalExpansionPotential: Number? = row.totalExpansionPotential,
-      whatNeedsToBeTrue: String? = row.whatNeedsToBeTrue,
+      annualCarbon: Number? = null,
+      applicationReforestableLand: Number? = null,
+      carbonCapacity: Number? = null,
+      confirmedReforestableLand: Number? = null,
+      dealDescription: String? = null,
+      dealName: String? = null,
+      dealStage: DealStage? = null,
+      dropboxFolderPath: String? = null,
+      failureRisk: String? = null,
+      fileNaming: String? = null,
+      googleFolderUrl: Any? = null,
+      hubSpotUrl: Any? = null,
+      investmentThesis: String? = null,
+      logframeUrl: Any? = null,
+      maxCarbonAccumulation: Number? = null,
+      minCarbonAccumulation: Number? = null,
+      numCommunities: Int? = null,
+      numNativeSpecies: Int? = null,
+      perHectareBudget: Number? = null,
+      pipeline: Pipeline? = null,
+      plantingSitesCql: String? = null,
+      projectBoundariesCql: String? = null,
+      projectId: ProjectId = inserted.projectId,
+      totalCarbon: Number? = null,
+      totalExpansionPotential: Number? = null,
+      whatNeedsToBeTrue: String? = null,
   ): ProjectAcceleratorDetailsRow {
-    val rowWithDefaults =
+    val row =
         ProjectAcceleratorDetailsRow(
             annualCarbon = annualCarbon?.toBigDecimal(),
             applicationReforestableLand = applicationReforestableLand?.toBigDecimal(),
@@ -1137,23 +1127,22 @@ abstract class DatabaseBackedTest {
             whatNeedsToBeTrue = whatNeedsToBeTrue,
         )
 
-    projectAcceleratorDetailsDao.insert(rowWithDefaults)
+    projectAcceleratorDetailsDao.insert(row)
 
-    return rowWithDefaults
+    return row
   }
 
   protected fun insertProjectInternalUser(
-      row: ProjectInternalUsersRow = ProjectInternalUsersRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      userId: UserId = row.userId ?: inserted.userId,
-      role: ProjectInternalRole? = row.projectInternalRoleId,
-      roleName: String? = row.roleName,
+      projectId: ProjectId = inserted.projectId,
+      userId: UserId = inserted.userId,
+      role: ProjectInternalRole? = null,
+      roleName: String? = null,
       createdBy: UserId = inserted.userId,
       createdTime: Instant = clock.instant(),
       modifiedBy: UserId = inserted.userId,
       modifiedTime: Instant = clock.instant(),
   ): ProjectInternalUsersRow {
-    val rowWithDefaults =
+    val row =
         ProjectInternalUsersRow(
             createdBy = createdBy,
             createdTime = createdTime,
@@ -1165,40 +1154,37 @@ abstract class DatabaseBackedTest {
             userId = userId,
         )
 
-    projectInternalUsersDao.insert(rowWithDefaults)
+    projectInternalUsersDao.insert(row)
 
-    return rowWithDefaults
+    return row
   }
 
   protected fun insertPublishedProjectDetails(
-      row: PublishedProjectDetailsRow = PublishedProjectDetailsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      accumulationRate: Number? = row.accumulationRate,
-      annualCarbon: Number? = row.annualCarbon,
-      countryCode: String? = row.countryCode,
-      dealDescription: String? = row.dealDescription,
-      dealName: String? = row.dealName,
-      methodologyNumber: String? = row.methodologyNumber,
-      minProjectArea: Number? = row.minProjectArea,
-      numNativeSpecies: Int? = row.numNativeSpecies,
-      perHectareEstimatedBudget: Number? = row.perHectareEstimatedBudget,
-      projectArea: Number? = row.projectArea,
-      projectHighlightPhotoValueId: VariableValueId? =
-          row.projectHighlightPhotoValueId?.let { VariableValueId(it) },
-      projectZoneFigureValueId: VariableValueId? =
-          row.projectZoneFigureValueId?.let { VariableValueId(it) },
-      standard: String? = row.standard,
-      tfReforestableLand: Number? = row.tfReforestableLand,
-      totalExpansionPotential: Number? = row.totalExpansionPotential,
-      totalVcu: Number? = row.totalVcu,
-      verraLink: String? = row.verraLink,
+      projectId: ProjectId = inserted.projectId,
+      accumulationRate: Number? = null,
+      annualCarbon: Number? = null,
+      countryCode: String? = null,
+      dealDescription: String? = null,
+      dealName: String? = null,
+      methodologyNumber: String? = null,
+      minProjectArea: Number? = null,
+      numNativeSpecies: Int? = null,
+      perHectareEstimatedBudget: Number? = null,
+      projectArea: Number? = null,
+      projectHighlightPhotoValueId: VariableValueId? = null,
+      projectZoneFigureValueId: VariableValueId? = null,
+      standard: String? = null,
+      tfReforestableLand: Number? = null,
+      totalExpansionPotential: Number? = null,
+      totalVcu: Number? = null,
+      verraLink: String? = null,
       sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
       carbonCertifications: Set<CarbonCertification> = emptySet(),
       landUseModelHectares: Map<LandUseModelType, Number?> = emptyMap(),
       publishedBy: UserId = inserted.userId,
       publishedTime: Instant = clock.instant(),
   ): PublishedProjectDetailsRow {
-    val rowWithDefaults =
+    val row =
         PublishedProjectDetailsRow(
             projectId = projectId,
             accumulationRate = accumulationRate?.toBigDecimal(),
@@ -1222,7 +1208,7 @@ abstract class DatabaseBackedTest {
             publishedTime = publishedTime,
         )
 
-    publishedProjectDetailsDao.insert(rowWithDefaults)
+    publishedProjectDetailsDao.insert(row)
     sdgList.forEach { insertPublishedProjectSdg(projectId = projectId, sdgNumber = it.sdgNumber) }
     carbonCertifications.forEach {
       insertPublishedProjectCarbonCert(projectId = projectId, carbonCertification = it.displayName)
@@ -1235,48 +1221,45 @@ abstract class DatabaseBackedTest {
       )
     }
 
-    return rowWithDefaults
+    return row
   }
 
   protected fun insertPublishedProjectSdg(
-      row: PublishedProjectSdgRow = PublishedProjectSdgRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      sdgNumber: Int = row.sdgNumber!!,
+      projectId: ProjectId = inserted.projectId,
+      sdgNumber: Int,
   ) {
-    val rowWithDefaults =
+    val row =
         PublishedProjectSdgRow(
             projectId = projectId,
             sdgNumber = sdgNumber,
         )
-    publishedProjectSdgDao.insert(rowWithDefaults)
+    publishedProjectSdgDao.insert(row)
   }
 
   protected fun insertPublishedProjectCarbonCert(
-      row: PublishedProjectCarbonCertsRow = PublishedProjectCarbonCertsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      carbonCertification: String = row.carbonCertification!!,
+      projectId: ProjectId = inserted.projectId,
+      carbonCertification: String,
   ) {
-    val rowWithDefaults =
+    val row =
         PublishedProjectCarbonCertsRow(
             projectId = projectId,
             carbonCertification = carbonCertification,
         )
-    publishedProjectCarbonCertsDao.insert(rowWithDefaults)
+    publishedProjectCarbonCertsDao.insert(row)
   }
 
   protected fun insertPublishedProjectLandHectare(
-      row: PublishedProjectLandUseRow = PublishedProjectLandUseRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      landUseModelType: LandUseModelType = row.landUseModelTypeId!!,
-      landUseHectares: Number? = row.landUseModelHectares,
+      projectId: ProjectId = inserted.projectId,
+      landUseModelType: LandUseModelType,
+      landUseHectares: Number? = null,
   ) {
-    val rowWithDefaults =
+    val row =
         PublishedProjectLandUseRow(
             projectId = projectId,
             landUseModelTypeId = landUseModelType,
             landUseModelHectares = landUseHectares?.toBigDecimal(),
         )
-    publishedProjectLandUseDao.insert(rowWithDefaults)
+    publishedProjectLandUseDao.insert(row)
   }
 
   protected fun deleteProjectAcceleratorDetails(projectId: ProjectId = inserted.projectId) {
@@ -1293,25 +1276,24 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertProjectIndicator(
-      row: ProjectIndicatorsRow = ProjectIndicatorsRow(),
-      active: Boolean = row.active ?: true,
-      category: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
-      classId: IndicatorClass = row.classId ?: IndicatorClass.NotCumulative,
-      description: String? = row.description,
-      frequency: IndicatorFrequency? = row.frequencyId,
-      isPublishable: Boolean = row.isPublishable ?: true,
-      level: IndicatorLevel = row.levelId ?: IndicatorLevel.Goal,
-      name: String = row.name ?: "Indicator name",
-      notes: String? = row.notes,
-      precision: Int = row.precision ?: 0,
-      primaryDataSource: String? = row.primaryDataSource,
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      refId: String = row.refId ?: "1.1",
-      tfOwner: String? = row.tfOwner ?: "Carbon",
-      unit: String? = row.unit,
+      active: Boolean = true,
+      category: IndicatorCategory = IndicatorCategory.ProjectObjectives,
+      classId: IndicatorClass = IndicatorClass.NotCumulative,
+      description: String? = null,
+      frequency: IndicatorFrequency? = null,
+      isPublishable: Boolean = true,
+      level: IndicatorLevel = IndicatorLevel.Goal,
+      name: String = "Indicator name",
+      notes: String? = null,
+      precision: Int = 0,
+      primaryDataSource: String? = null,
+      projectId: ProjectId = inserted.projectId,
+      refId: String = "1.1",
+      tfOwner: String? = "Carbon",
+      unit: String? = null,
   ): ProjectIndicatorId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ProjectIndicatorsRow(
             active = active,
             categoryId = category,
             classId = classId,
@@ -1329,9 +1311,9 @@ abstract class DatabaseBackedTest {
             unit = unit,
         )
 
-    projectIndicatorsDao.insert(rowWithDefaults)
+    projectIndicatorsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.projectIndicatorIds.add(it) }
+    return row.id!!.also { inserted.projectIndicatorIds.add(it) }
   }
 
   protected fun insertProjectOverallScore(
@@ -2028,21 +2010,20 @@ abstract class DatabaseBackedTest {
   private var nextStorageUrlNumber = 1
 
   fun insertFile(
-      row: FilesRow = FilesRow(),
-      fileName: String = row.fileName ?: "fileName",
-      contentType: String = row.contentType ?: "image/jpeg",
-      size: Long = row.size ?: 1,
-      capturedLocalTime: LocalDateTime? = row.capturedLocalTime,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      fileBatchId: FileBatchId? = row.fileBatchId,
-      geolocation: Point? = row.geolocation?.centroid,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      storageUrl: Any = row.storageUrl ?: "http://dummy/${nextStorageUrlNumber++}",
+      fileName: String = "fileName",
+      contentType: String = "image/jpeg",
+      size: Long = 1,
+      capturedLocalTime: LocalDateTime? = null,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      fileBatchId: FileBatchId? = null,
+      geolocation: Point? = null,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      storageUrl: Any = "http://dummy/${nextStorageUrlNumber++}",
   ): FileId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        FilesRow(
             capturedLocalTime = capturedLocalTime,
             contentType = contentType,
             createdBy = createdBy,
@@ -2056,29 +2037,28 @@ abstract class DatabaseBackedTest {
             storageUrl = URI("$storageUrl"),
         )
 
-    filesDao.insert(rowWithDefaults)
+    filesDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.fileIds.add(it) }
+    return row.id!!.also { inserted.fileIds.add(it) }
   }
 
   fun insertFileBatch(
-      row: FileBatchesRow = FileBatchesRow(),
-      batchStatus: FileBatchStatus = row.batchStatusId ?: FileBatchStatus.Uploading,
-      batchType: FileBatchType = row.batchTypeId ?: FileBatchType.Splat,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
+      batchStatus: FileBatchStatus = FileBatchStatus.Uploading,
+      batchType: FileBatchType = FileBatchType.Splat,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
   ): FileBatchId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        FileBatchesRow(
             batchStatusId = batchStatus,
             batchTypeId = batchType,
             createdBy = createdBy,
             createdTime = createdTime,
         )
 
-    fileBatchesDao.insert(rowWithDefaults)
+    fileBatchesDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.fileBatchIds.add(it) }
+    return row.id!!.also { inserted.fileBatchIds.add(it) }
   }
 
   private var nextUploadNumber = 1
@@ -2236,37 +2216,35 @@ abstract class DatabaseBackedTest {
   private var nextBagNumber = 1
 
   fun insertBag(
-      row: BagsRow = BagsRow(),
-      accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
-      bagNumber: String = row.bagNumber ?: "${nextBagNumber++}",
+      accessionId: AccessionId = inserted.accessionId,
+      bagNumber: String = "${nextBagNumber++}",
   ): BagId {
-    val rowWithDefaults = row.copy(bagNumber = bagNumber, accessionId = accessionId)
+    val row = BagsRow(bagNumber = bagNumber, accessionId = accessionId)
 
-    bagsDao.insert(rowWithDefaults)
+    bagsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.bagsIds.add(it) }
+    return row.id!!.also { inserted.bagsIds.add(it) }
   }
 
   fun insertViabilityTest(
-      row: ViabilityTestsRow = ViabilityTestsRow(),
-      accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
-      testType: ViabilityTestType? = row.testType ?: ViabilityTestType.Lab,
-      seedTypeId: ViabilityTestSeedType? = row.seedTypeId,
-      substrateId: ViabilityTestSubstrate? = row.substrateId,
-      treatmentId: SeedTreatment? = row.treatmentId,
-      seedsSown: Int? = row.seedsSown,
-      notes: String? = row.notes,
-      staffResponsible: String? = row.staffResponsible,
-      totalSeedsGerminated: Int? = row.totalSeedsGerminated,
-      totalPercentGerminated: Int? = row.totalPercentGerminated,
-      startDate: LocalDate? = row.startDate,
-      endDate: LocalDate? = row.endDate,
-      seedsCompromised: Int? = row.seedsCompromised,
-      seedsEmpty: Int? = row.seedsEmpty,
-      seedsFilled: Int? = row.seedsFilled,
+      accessionId: AccessionId = inserted.accessionId,
+      testType: ViabilityTestType? = ViabilityTestType.Lab,
+      seedTypeId: ViabilityTestSeedType? = null,
+      substrateId: ViabilityTestSubstrate? = null,
+      treatmentId: SeedTreatment? = null,
+      seedsSown: Int? = null,
+      notes: String? = null,
+      staffResponsible: String? = null,
+      totalSeedsGerminated: Int? = null,
+      totalPercentGerminated: Int? = null,
+      startDate: LocalDate? = null,
+      endDate: LocalDate? = null,
+      seedsCompromised: Int? = null,
+      seedsEmpty: Int? = null,
+      seedsFilled: Int? = null,
   ): ViabilityTestId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ViabilityTestsRow(
             accessionId = accessionId,
             testType = testType,
             seedTypeId = seedTypeId,
@@ -2284,73 +2262,68 @@ abstract class DatabaseBackedTest {
             seedsFilled = seedsFilled,
         )
 
-    viabilityTestsDao.insert(rowWithDefaults)
+    viabilityTestsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.viabilityTestIds.add(it) }
+    return row.id!!.also { inserted.viabilityTestIds.add(it) }
   }
 
   private var nextViabilityTestResultsNumber: Int = 1
 
   fun insertViabilityTestResult(
-      row: ViabilityTestResultsRow = ViabilityTestResultsRow(),
-      viabilityTestId: ViabilityTestId = row.testId ?: inserted.viabilityTestId,
-      recordingDate: LocalDate = row.recordingDate ?: LocalDate.EPOCH,
-      seedsGerminated: Int = row.seedsGerminated ?: nextViabilityTestResultsNumber++,
+      viabilityTestId: ViabilityTestId = inserted.viabilityTestId,
+      recordingDate: LocalDate = LocalDate.EPOCH,
+      seedsGerminated: Int = nextViabilityTestResultsNumber++,
   ): ViabilityTestResultId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ViabilityTestResultsRow(
             testId = viabilityTestId,
             recordingDate = recordingDate,
             seedsGerminated = seedsGerminated,
         )
 
-    viabilityTestResultsDao.insert(rowWithDefaults)
+    viabilityTestResultsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.viabilityTestResultIds.add(it) }
+    return row.id!!.also { inserted.viabilityTestResultIds.add(it) }
   }
 
   private var nextBatchNumber: Int = 1
 
   fun insertBatch(
-      row: BatchesRow = BatchesRow(),
-      accessionId: AccessionId? = row.accessionId,
-      activeGrowthQuantity: Int = row.activeGrowthQuantity ?: 0,
-      addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
-      germinatingQuantity: Int = row.germinatingQuantity ?: 0,
-      germinationStartedDate: LocalDate? = row.germinationStartedDate,
-      hardeningOffQuantity: Int = row.hardeningOffQuantity ?: 0,
-      notes: String? = row.notes,
-      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      projectId: ProjectId? = row.projectId,
-      readyQuantity: Int = row.readyQuantity ?: 0,
-      readyByDate: LocalDate? = row.readyByDate,
-      seedsSownDate: LocalDate? = row.seedsSownDate,
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      substrateId: BatchSubstrate? = row.substrateId,
-      substrateNotes: String? = row.substrateNotes,
-      treatmentId: SeedTreatment? = row.treatmentId,
-      treatmentNotes: String? = row.treatmentNotes,
-      version: Int = row.version ?: 1,
-      batchNumber: String = row.batchNumber ?: "${nextBatchNumber++}",
-      germinationRate: Int? = row.germinationRate,
-      totalGerminated: Int? = row.totalGerminated,
-      totalGerminationCandidates: Int? = row.totalGerminationCandidates,
+      accessionId: AccessionId? = null,
+      activeGrowthQuantity: Int = 0,
+      addedDate: LocalDate = LocalDate.EPOCH,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      facilityId: FacilityId = inserted.facilityId,
+      germinatingQuantity: Int = 0,
+      germinationStartedDate: LocalDate? = null,
+      hardeningOffQuantity: Int = 0,
+      notes: String? = null,
+      organizationId: OrganizationId = inserted.organizationId,
+      projectId: ProjectId? = null,
+      readyQuantity: Int = 0,
+      readyByDate: LocalDate? = null,
+      seedsSownDate: LocalDate? = null,
+      speciesId: SpeciesId = inserted.speciesId,
+      substrateId: BatchSubstrate? = null,
+      substrateNotes: String? = null,
+      treatmentId: SeedTreatment? = null,
+      treatmentNotes: String? = null,
+      version: Int = 1,
+      batchNumber: String = "${nextBatchNumber++}",
+      germinationRate: Int? = null,
+      totalGerminated: Int? = null,
+      totalGerminationCandidates: Int? = null,
       lossRate: Int? =
-          row.lossRate
-              ?: if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
-              else null,
+          if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
+          else null,
       totalLost: Int? =
-          row.totalLost
-              ?: if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
-              else null,
+          if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
+          else null,
       totalLossCandidates: Int? =
-          row.totalLossCandidates
-              ?: if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0)
-                  activeGrowthQuantity + hardeningOffQuantity + readyQuantity
-              else null,
+          if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0)
+              activeGrowthQuantity + hardeningOffQuantity + readyQuantity
+          else null,
   ): BatchId {
     val effectiveGerminationRate =
         germinationRate
@@ -2367,8 +2340,8 @@ abstract class DatabaseBackedTest {
               null
             }
 
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        BatchesRow(
             accessionId = accessionId,
             activeGrowthQuantity = activeGrowthQuantity,
             addedDate = addedDate,
@@ -2406,9 +2379,9 @@ abstract class DatabaseBackedTest {
             version = version,
         )
 
-    batchesDao.insert(rowWithDefaults)
+    batchesDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.batchIds.add(it) }
+    return row.id!!.also { inserted.batchIds.add(it) }
   }
 
   fun insertBatchSubLocation(
@@ -2466,21 +2439,20 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertNurseryWithdrawal(
-      row: WithdrawalsRow = WithdrawalsRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      destinationFacilityId: FacilityId? = row.destinationFacilityId,
-      facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      plantingSeasonId: PlantingSeasonId? = row.plantingSeasonId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      destinationFacilityId: FacilityId? = null,
+      facilityId: FacilityId = inserted.facilityId,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      plantingSeasonId: PlantingSeasonId? = null,
       purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
-      scheduledPlantingDateRequestId: ScheduledPlantingDateId? = row.scheduledPlantingDateRequestId,
-      undoesWithdrawalId: WithdrawalId? = row.undoesWithdrawalId,
-      withdrawnDate: LocalDate = row.withdrawnDate ?: LocalDate.EPOCH,
+      scheduledPlantingDateRequestId: ScheduledPlantingDateId? = null,
+      undoesWithdrawalId: WithdrawalId? = null,
+      withdrawnDate: LocalDate = LocalDate.EPOCH,
   ): WithdrawalId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        WithdrawalsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             destinationFacilityId = destinationFacilityId,
@@ -2494,48 +2466,46 @@ abstract class DatabaseBackedTest {
             withdrawnDate = withdrawnDate,
         )
 
-    nurseryWithdrawalsDao.insert(rowWithDefaults)
+    nurseryWithdrawalsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.withdrawalIds.add(it) }
+    return row.id!!.also { inserted.withdrawalIds.add(it) }
   }
 
   fun insertNurseryWithdrawalPhoto(
-      row: WithdrawalPhotosRow = WithdrawalPhotosRow(),
       fileId: FileId = inserted.fileId,
       withdrawalId: WithdrawalId = inserted.withdrawalId,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        WithdrawalPhotosRow(
             fileId = fileId,
             withdrawalId = withdrawalId,
         )
 
-    withdrawalPhotosDao.insert(rowWithDefaults)
+    withdrawalPhotosDao.insert(row)
   }
 
   fun insertSeedbankWithdrawal(
-      row: SeedbankWithdrawalsRow = SeedbankWithdrawalsRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      updatedTime: Instant = row.createdTime ?: clock.instant(),
-      withdrawnBy: UserId = row.withdrawnBy ?: inserted.userId,
-      date: LocalDate = row.date ?: LocalDate.EPOCH,
-      accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
-      purpose: SeedbankWithdrawalPurpose? = row.purposeId,
-      destination: String? = row.destination,
-      staffResponsible: String? = row.staffResponsible,
-      notes: String? = row.notes,
-      viabilityTestId: ViabilityTestId? = row.viabilityTestId,
-      withdrawnGrams: BigDecimal? = row.withdrawnGrams,
-      withdrawnQuantity: BigDecimal? = row.withdrawnQuantity,
-      withdrawnUnitsId: SeedQuantityUnits = row.withdrawnUnitsId ?: SeedQuantityUnits.Grams,
-      estimatedCount: Long? = row.estimatedCount,
-      estimatedWeightQuantity: BigDecimal? = row.estimatedWeightQuantity,
-      estimatedWeightUnitsId: SeedQuantityUnits? = row.estimatedWeightUnitsId,
-      batchId: BatchId? = row.batchId ?: inserted.batchId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      updatedTime: Instant = clock.instant(),
+      withdrawnBy: UserId = inserted.userId,
+      date: LocalDate = LocalDate.EPOCH,
+      accessionId: AccessionId = inserted.accessionId,
+      purpose: SeedbankWithdrawalPurpose? = null,
+      destination: String? = null,
+      staffResponsible: String? = null,
+      notes: String? = null,
+      viabilityTestId: ViabilityTestId? = null,
+      withdrawnGrams: BigDecimal? = null,
+      withdrawnQuantity: BigDecimal? = null,
+      withdrawnUnitsId: SeedQuantityUnits = SeedQuantityUnits.Grams,
+      estimatedCount: Long? = null,
+      estimatedWeightQuantity: BigDecimal? = null,
+      estimatedWeightUnitsId: SeedQuantityUnits? = null,
+      batchId: BatchId? = inserted.batchId,
   ): SeedbankWithdrawalId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SeedbankWithdrawalsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             updatedTime = updatedTime,
@@ -2556,23 +2526,22 @@ abstract class DatabaseBackedTest {
             batchId = batchId,
         )
 
-    withdrawalsDao.insert(rowWithDefaults)
+    withdrawalsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.seedbankWithdrawalIds.add(it) }
+    return row.id!!.also { inserted.seedbankWithdrawalIds.add(it) }
   }
 
   fun insertBatchWithdrawal(
-      row: BatchWithdrawalsRow = BatchWithdrawalsRow(),
-      activeGrowthQuantityWithdrawn: Int = row.activeGrowthQuantityWithdrawn ?: 0,
-      batchId: BatchId = row.batchId ?: inserted.batchId,
-      destinationBatchId: BatchId? = row.destinationBatchId,
-      germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
-      hardeningOffQuantityWithdrawn: Int = row.hardeningOffQuantityWithdrawn ?: 0,
-      readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
-      withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId,
+      activeGrowthQuantityWithdrawn: Int = 0,
+      batchId: BatchId = inserted.batchId,
+      destinationBatchId: BatchId? = null,
+      germinatingQuantityWithdrawn: Int = 0,
+      hardeningOffQuantityWithdrawn: Int = 0,
+      readyQuantityWithdrawn: Int = 0,
+      withdrawalId: WithdrawalId = inserted.withdrawalId,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        BatchWithdrawalsRow(
             activeGrowthQuantityWithdrawn = activeGrowthQuantityWithdrawn,
             batchId = batchId,
             destinationBatchId = destinationBatchId,
@@ -2582,25 +2551,24 @@ abstract class DatabaseBackedTest {
             withdrawalId = withdrawalId,
         )
 
-    batchWithdrawalsDao.insert(rowWithDefaults)
+    batchWithdrawalsDao.insert(row)
   }
 
   var nextPlantingSeasonNumber: Int = 1
 
   fun insertPlantingSeason(
-      row: PlantingSeasonsRow = PlantingSeasonsRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
       endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: "Season ${nextPlantingSeasonNumber++}",
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      name: String = "Season ${nextPlantingSeasonNumber++}",
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       startDate: LocalDate = LocalDate.EPOCH,
       status: PlantingSeasonStatus = PlantingSeasonStatus.Upcoming,
   ): PlantingSeasonId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingSeasonsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             endDate = endDate,
@@ -2612,23 +2580,22 @@ abstract class DatabaseBackedTest {
             statusId = status,
         )
 
-    plantingSeasonsDao.insert(rowWithDefaults)
+    plantingSeasonsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.plantingSeasonIds.add(it) }
+    return row.id!!.also { inserted.plantingSeasonIds.add(it) }
   }
 
   fun insertPlantingSeasonAllocatedSpecies(
-      row: PlantingSeasonAllocatedSpeciesRow = PlantingSeasonAllocatedSpeciesRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
-      quantity: Int = row.quantity ?: 1,
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      plantingSeasonId: PlantingSeasonId = inserted.plantingSeasonId,
+      quantity: Int = 1,
+      speciesId: SpeciesId = inserted.speciesId,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingSeasonAllocatedSpeciesRow(
             createdBy = createdBy,
             createdTime = createdTime,
             modifiedBy = modifiedBy,
@@ -2638,39 +2605,36 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId,
         )
 
-    plantingSeasonAllocatedSpeciesDao.insert(rowWithDefaults)
+    plantingSeasonAllocatedSpeciesDao.insert(row)
   }
 
   fun insertPlantingSeasonNotification(
-      row: PlantingSeasonNotificationsRow = PlantingSeasonNotificationsRow(),
-      plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
-      pageId: PlantingSeasonNotificationPage =
-          row.pageId ?: PlantingSeasonNotificationPage.InventoryPlanning,
+      plantingSeasonId: PlantingSeasonId = inserted.plantingSeasonId,
+      pageId: PlantingSeasonNotificationPage = PlantingSeasonNotificationPage.InventoryPlanning,
       lastDismissedEventLogId: EventLogId,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingSeasonNotificationsRow(
             plantingSeasonId = plantingSeasonId,
             pageId = pageId,
             lastDismissedEventLogId = lastDismissedEventLogId,
         )
 
-    plantingSeasonNotificationsDao.insert(rowWithDefaults)
+    plantingSeasonNotificationsDao.insert(row)
   }
 
   fun insertPlantingSeasonSpeciesTarget(
-      row: PlantingSeasonSpeciesTargetsRow = PlantingSeasonSpeciesTargetsRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
-      quantity: Int = row.quantity ?: 1,
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      plantingSeasonId: PlantingSeasonId = inserted.plantingSeasonId,
+      quantity: Int = 1,
+      speciesId: SpeciesId = inserted.speciesId,
+      substratumId: SubstratumId = inserted.substratumId,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingSeasonSpeciesTargetsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             modifiedBy = modifiedBy,
@@ -2681,20 +2645,19 @@ abstract class DatabaseBackedTest {
             substratumId = substratumId,
         )
 
-    plantingSeasonSpeciesTargetsDao.insert(rowWithDefaults)
+    plantingSeasonSpeciesTargetsDao.insert(row)
   }
 
   fun insertPlantingSeasonScheduledDate(
-      row: ScheduledPlantingDatesRow = ScheduledPlantingDatesRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
       date: LocalDate = LocalDate.EPOCH,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      plantingSeasonId: PlantingSeasonId = inserted.plantingSeasonId,
   ): ScheduledPlantingDateId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ScheduledPlantingDatesRow(
             createdBy = createdBy,
             createdTime = createdTime,
             date = date,
@@ -2703,45 +2666,41 @@ abstract class DatabaseBackedTest {
             plantingSeasonId = plantingSeasonId,
         )
 
-    scheduledPlantingDatesDao.insert(rowWithDefaults)
+    scheduledPlantingDatesDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.scheduledPlantingDateIds.add(it) }
+    return row.id!!.also { inserted.scheduledPlantingDateIds.add(it) }
   }
 
   fun insertScheduledPlantingDateSpecies(
-      row: ScheduledPlantingDateSpeciesRow = ScheduledPlantingDateSpeciesRow(),
-      scheduledPlantingDateId: ScheduledPlantingDateId =
-          row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
-      quantity: Int = row.quantity ?: 1,
+      scheduledPlantingDateId: ScheduledPlantingDateId = inserted.scheduledPlantingDateId,
+      speciesId: SpeciesId = inserted.speciesId,
+      substratumId: SubstratumId = inserted.substratumId,
+      quantity: Int = 1,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ScheduledPlantingDateSpeciesRow(
             scheduledPlantingDateId = scheduledPlantingDateId,
             speciesId = speciesId,
             substratumId = substratumId,
             quantity = quantity,
         )
 
-    scheduledPlantingDateSpeciesDao.insert(rowWithDefaults)
+    scheduledPlantingDateSpeciesDao.insert(row)
   }
 
   fun insertPlantingDateRequest(
-      row: PlantingDateRequestsRow = PlantingDateRequestsRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
       date: LocalDate = LocalDate.EPOCH,
-      manuallyFulfilled: Boolean = row.manuallyFulfilled ?: false,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      manuallyFulfilled: Boolean = false,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
       notes: String? = null,
-      scheduledPlantingDateId: ScheduledPlantingDateId =
-          row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
+      scheduledPlantingDateId: ScheduledPlantingDateId = inserted.scheduledPlantingDateId,
       status: PlantingDateRequestStatus = PlantingDateRequestStatus.Pending,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingDateRequestsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             date = date,
@@ -2753,50 +2712,47 @@ abstract class DatabaseBackedTest {
             statusId = status,
         )
 
-    plantingDateRequestsDao.insert(rowWithDefaults)
+    plantingDateRequestsDao.insert(row)
   }
 
   fun insertPlantingDateRequestSpecies(
-      row: PlantingDateRequestSpeciesRow = PlantingDateRequestSpeciesRow(),
-      scheduledPlantingDateId: ScheduledPlantingDateId =
-          row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
-      quantity: Int = row.quantity ?: 1,
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
+      scheduledPlantingDateId: ScheduledPlantingDateId = inserted.scheduledPlantingDateId,
+      quantity: Int = 1,
+      speciesId: SpeciesId = inserted.speciesId,
+      substratumId: SubstratumId = inserted.substratumId,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingDateRequestSpeciesRow(
             scheduledPlantingDateId = scheduledPlantingDateId,
             quantity = quantity,
             speciesId = speciesId,
             substratumId = substratumId,
         )
 
-    plantingDateRequestSpeciesDao.insert(rowWithDefaults)
+    plantingDateRequestSpeciesDao.insert(row)
   }
 
   var nextPlantingSiteNumber: Int = 1
   private lateinit var lastPlantingSitesRow: PlantingSitesRow
 
   fun insertPlantingSite(
-      row: PlantingSitesRow = PlantingSitesRow(),
-      areaHa: BigDecimal? = row.areaHa,
+      areaHa: BigDecimal? = null,
       x: Number? = 0,
       y: Number? = if (x != null) 0 else null,
       width: Number = 3,
       height: Number = 2,
-      boundary: Geometry? = row.boundary,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      exclusion: Geometry? = row.exclusion,
-      gridOrigin: Geometry? = row.gridOrigin,
-      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: "Site ${nextPlantingSiteNumber++}",
-      timeZone: ZoneId? = row.timeZone,
-      projectId: ProjectId? = row.projectId,
-      countryCode: String? = row.countryCode,
+      boundary: Geometry? = null,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      exclusion: Geometry? = null,
+      gridOrigin: Geometry? = null,
+      organizationId: OrganizationId = inserted.organizationId,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      name: String = "Site ${nextPlantingSiteNumber++}",
+      timeZone: ZoneId? = null,
+      projectId: ProjectId? = null,
+      countryCode: String? = null,
       insertHistory: Boolean = true,
       survivalRateIncludesTempPlots: Boolean = false,
   ): PlantingSiteId {
@@ -2813,8 +2769,8 @@ abstract class DatabaseBackedTest {
           else -> null
         }
 
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingSitesRow(
             areaHa = areaHa,
             boundary = effectiveBoundary,
             countryCode = countryCode,
@@ -2831,10 +2787,10 @@ abstract class DatabaseBackedTest {
             survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
         )
 
-    plantingSitesDao.insert(rowWithDefaults)
-    lastPlantingSitesRow = rowWithDefaults
+    plantingSitesDao.insert(row)
+    lastPlantingSitesRow = row
 
-    val plantingSiteId = rowWithDefaults.id!!
+    val plantingSiteId = row.id!!
     inserted.plantingSiteIds.add(plantingSiteId)
 
     if (insertHistory && effectiveBoundary != null) {
@@ -2875,160 +2831,147 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingSiteNotification(
-      row: PlantingSiteNotificationsRow = PlantingSiteNotificationsRow(),
-      number: Int = row.notificationNumber ?: 1,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      sentTime: Instant = row.sentTime ?: clock.instant(),
+      number: Int = 1,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      sentTime: Instant = clock.instant(),
       type: NotificationType,
   ): PlantingSiteNotificationId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingSiteNotificationsRow(
             notificationNumber = number,
             notificationTypeId = type,
             plantingSiteId = plantingSiteId,
             sentTime = sentTime,
         )
 
-    plantingSiteNotificationsDao.insert(rowWithDefaults)
+    plantingSiteNotificationsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.plantingSiteNotificationIds.add(it) }
+    return row.id!!.also { inserted.plantingSiteNotificationIds.add(it) }
   }
 
   fun insertSimplifiedPlantingSite(
-      row: SimplifiedPlantingSitesRow = SimplifiedPlantingSitesRow(),
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      boundary: Geometry = row.boundary ?: lastPlantingSitesRow.boundary ?: point(1),
-      exclusion: Geometry? = row.exclusion ?: lastPlantingSitesRow.exclusion,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      boundary: Geometry = lastPlantingSitesRow.boundary ?: point(1),
+      exclusion: Geometry? = lastPlantingSitesRow.exclusion,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SimplifiedPlantingSitesRow(
             plantingSiteId = plantingSiteId,
             boundary = boundary,
             exclusion = exclusion,
         )
 
-    simplifiedPlantingSitesDao.insert(rowWithDefaults)
+    simplifiedPlantingSitesDao.insert(row)
   }
 
   fun insertSimplifiedPlantingSiteHistory(
-      row: SimplifiedPlantingSiteHistoriesRow = SimplifiedPlantingSiteHistoriesRow(),
-      plantingSiteHistoryId: PlantingSiteHistoryId =
-          row.plantingSiteHistoryId ?: inserted.plantingSiteHistoryId,
-      boundary: Geometry = row.boundary ?: lastPlantingSitesRow.boundary ?: point(1),
-      exclusion: Geometry? = row.exclusion ?: lastPlantingSitesRow.exclusion,
+      plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
+      boundary: Geometry = lastPlantingSitesRow.boundary ?: point(1),
+      exclusion: Geometry? = lastPlantingSitesRow.exclusion,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SimplifiedPlantingSiteHistoriesRow(
             plantingSiteHistoryId = plantingSiteHistoryId,
             boundary = boundary,
             exclusion = exclusion,
         )
 
-    simplifiedPlantingSiteHistoriesDao.insert(rowWithDefaults)
+    simplifiedPlantingSiteHistoriesDao.insert(row)
   }
 
   fun insertSimplifiedStratum(
-      row: SimplifiedStrataRow = SimplifiedStrataRow(),
-      stratumId: StratumId = row.stratumId ?: inserted.stratumId,
-      boundary: Geometry = row.boundary ?: lastStrataRow.boundary ?: point(1),
+      stratumId: StratumId = inserted.stratumId,
+      boundary: Geometry = lastStrataRow.boundary ?: point(1),
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SimplifiedStrataRow(
             stratumId = stratumId,
             boundary = boundary,
         )
 
-    simplifiedStrataDao.insert(rowWithDefaults)
+    simplifiedStrataDao.insert(row)
   }
 
   fun insertSimplifiedStratumHistory(
-      row: SimplifiedStratumHistoriesRow = SimplifiedStratumHistoriesRow(),
-      stratumHistoryId: StratumHistoryId = row.stratumHistoryId ?: inserted.stratumHistoryId,
-      boundary: Geometry = row.boundary ?: lastStrataRow.boundary ?: point(1),
+      stratumHistoryId: StratumHistoryId = inserted.stratumHistoryId,
+      boundary: Geometry = lastStrataRow.boundary ?: point(1),
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SimplifiedStratumHistoriesRow(
             stratumHistoryId = stratumHistoryId,
             boundary = boundary,
         )
 
-    simplifiedStratumHistoriesDao.insert(rowWithDefaults)
+    simplifiedStratumHistoriesDao.insert(row)
   }
 
   fun insertSimplifiedSubstratum(
-      row: SimplifiedSubstrataRow = SimplifiedSubstrataRow(),
-      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
-      boundary: Geometry = row.boundary ?: lastSubstrataRow.boundary ?: point(1),
+      substratumId: SubstratumId = inserted.substratumId,
+      boundary: Geometry = lastSubstrataRow.boundary ?: point(1),
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SimplifiedSubstrataRow(
             substratumId = substratumId,
             boundary = boundary,
         )
 
-    simplifiedSubstrataDao.insert(rowWithDefaults)
+    simplifiedSubstrataDao.insert(row)
   }
 
   fun insertSimplifiedSubstratumHistory(
-      row: SimplifiedSubstratumHistoriesRow = SimplifiedSubstratumHistoriesRow(),
-      substratumHistoryId: SubstratumHistoryId =
-          row.substratumHistoryId ?: inserted.substratumHistoryId,
-      boundary: Geometry = row.boundary ?: lastSubstrataRow.boundary ?: point(1),
+      substratumHistoryId: SubstratumHistoryId = inserted.substratumHistoryId,
+      boundary: Geometry = lastSubstrataRow.boundary ?: point(1),
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SimplifiedSubstratumHistoriesRow(
             substratumHistoryId = substratumHistoryId,
             boundary = boundary,
         )
 
-    simplifiedSubstratumHistoriesDao.insert(rowWithDefaults)
+    simplifiedSubstratumHistoriesDao.insert(row)
   }
 
   private var nextStratumNumber: Int = 1
   private lateinit var lastStrataRow: StrataRow
 
   fun insertStratum(
-      row: StrataRow = StrataRow(),
-      areaHa: BigDecimal = row.areaHa ?: BigDecimal.TEN,
+      areaHa: BigDecimal = BigDecimal.TEN,
       x: Number = 0,
       y: Number = 0,
       width: Number = 3,
       height: Number = 2,
       boundary: Geometry =
-          row.boundary
-              ?: rectangle(
-                  width.toDouble() * MONITORING_PLOT_SIZE,
-                  height.toDouble() * MONITORING_PLOT_SIZE,
-                  x.toDouble() * MONITORING_PLOT_SIZE,
-                  y.toDouble() * MONITORING_PLOT_SIZE,
-              ),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      initialPlantingDensity: BigDecimal? = row.initialPlantingDensity,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: "S${nextStratumNumber++}",
-      plantErrorMargin: BigDecimal = row.plantErrorMargin ?: StratumModel.DEFAULT_ERROR_MARGIN,
-      plantNumPermanentPlots: Int =
-          row.plantNumPermanentPlots ?: StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
-      plantNumTemporaryPlots: Int =
-          row.plantNumTemporaryPlots ?: StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
-      plantStudentsT: BigDecimal = row.plantStudentsT ?: StratumModel.DEFAULT_STUDENTS_T,
-      plantVariance: BigDecimal = row.plantVariance ?: StratumModel.DEFAULT_VARIANCE,
-      biomassErrorMargin: BigDecimal = row.biomassErrorMargin ?: plantErrorMargin,
-      biomassNumPermanentPlots: Int = row.biomassNumPermanentPlots ?: plantNumPermanentPlots,
-      biomassNumTemporaryPlots: Int = row.biomassNumTemporaryPlots ?: plantNumTemporaryPlots,
-      biomassStudentsT: BigDecimal = row.biomassStudentsT ?: plantStudentsT,
-      biomassVariance: BigDecimal = row.biomassVariance ?: plantVariance,
-      stableId: Any = row.name ?: name,
-      targetPlantDensity: BigDecimal? = row.targetPlantDensity,
+          rectangle(
+              width.toDouble() * MONITORING_PLOT_SIZE,
+              height.toDouble() * MONITORING_PLOT_SIZE,
+              x.toDouble() * MONITORING_PLOT_SIZE,
+              y.toDouble() * MONITORING_PLOT_SIZE,
+          ),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      initialPlantingDensity: BigDecimal? = null,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      name: String = "S${nextStratumNumber++}",
+      plantErrorMargin: BigDecimal = StratumModel.DEFAULT_ERROR_MARGIN,
+      plantNumPermanentPlots: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+      plantNumTemporaryPlots: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      plantStudentsT: BigDecimal = StratumModel.DEFAULT_STUDENTS_T,
+      plantVariance: BigDecimal = StratumModel.DEFAULT_VARIANCE,
+      biomassErrorMargin: BigDecimal = plantErrorMargin,
+      biomassNumPermanentPlots: Int = plantNumPermanentPlots,
+      biomassNumTemporaryPlots: Int = plantNumTemporaryPlots,
+      biomassStudentsT: BigDecimal = plantStudentsT,
+      biomassVariance: BigDecimal = plantVariance,
+      stableId: Any = name,
+      targetPlantDensity: BigDecimal? = null,
       insertHistory: Boolean = true,
-      boundaryModifiedBy: UserId = row.boundaryModifiedBy ?: modifiedBy,
-      boundaryModifiedTime: Instant = row.boundaryModifiedTime ?: modifiedTime,
+      boundaryModifiedBy: UserId = modifiedBy,
+      boundaryModifiedTime: Instant = modifiedTime,
   ): StratumId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        StrataRow(
             areaHa = areaHa,
             biomassErrorMargin = biomassErrorMargin,
             biomassNumPermanentPlots = biomassNumPermanentPlots,
@@ -3054,10 +2997,10 @@ abstract class DatabaseBackedTest {
             targetPlantDensity = targetPlantDensity,
         )
 
-    strataDao.insert(rowWithDefaults)
-    lastStrataRow = rowWithDefaults
+    strataDao.insert(row)
+    lastStrataRow = row
 
-    val stratumId = rowWithDefaults.id!!
+    val stratumId = row.id!!
     inserted.stratumIds.add(stratumId)
 
     if (insertHistory && inserted.plantingSiteHistoryIds.isNotEmpty()) {
@@ -3097,35 +3040,33 @@ abstract class DatabaseBackedTest {
   private lateinit var lastSubstrataRow: SubstrataRow
 
   fun insertSubstratum(
-      row: SubstrataRow = SubstrataRow(),
-      areaHa: BigDecimal = row.areaHa ?: BigDecimal.ONE,
+      areaHa: BigDecimal = BigDecimal.ONE,
       x: Number = 0,
       y: Number = 0,
       width: Number = 3,
       height: Number = 2,
       boundary: Geometry =
-          row.boundary
-              ?: rectangle(
-                  width.toDouble() * MONITORING_PLOT_SIZE,
-                  height.toDouble() * MONITORING_PLOT_SIZE,
-                  x.toDouble() * MONITORING_PLOT_SIZE,
-                  y.toDouble() * MONITORING_PLOT_SIZE,
-              ),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      observedTime: Instant? = row.observedTime,
-      plantingCompletedTime: Instant? = row.plantingCompletedTime,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      stratumId: StratumId = row.stratumId ?: inserted.stratumId,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: "${nextSubstratumNumber++}",
+          rectangle(
+              width.toDouble() * MONITORING_PLOT_SIZE,
+              height.toDouble() * MONITORING_PLOT_SIZE,
+              x.toDouble() * MONITORING_PLOT_SIZE,
+              y.toDouble() * MONITORING_PLOT_SIZE,
+          ),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      observedTime: Instant? = null,
+      plantingCompletedTime: Instant? = null,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      stratumId: StratumId = inserted.stratumId,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      name: String = "${nextSubstratumNumber++}",
       fullName: String = "${lastStrataRow.name}-$name",
-      stableId: Any = row.fullName ?: fullName,
+      stableId: Any = fullName,
       insertHistory: Boolean = true,
   ): SubstratumId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SubstrataRow(
             areaHa = areaHa,
             boundary = boundary,
             createdBy = createdBy,
@@ -3141,10 +3082,10 @@ abstract class DatabaseBackedTest {
             stableId = StableId("$stableId"),
         )
 
-    substrataDao.insert(rowWithDefaults)
-    lastSubstrataRow = rowWithDefaults
+    substrataDao.insert(row)
+    lastSubstrataRow = row
 
-    val substratumId = rowWithDefaults.id!!
+    val substratumId = row.id!!
     inserted.substratumIds.add(substratumId)
 
     if (insertHistory && inserted.stratumHistoryIds.isNotEmpty()) {
@@ -3229,37 +3170,34 @@ abstract class DatabaseBackedTest {
   private lateinit var lastMonitoringPlotsRow: MonitoringPlotsRow
 
   fun insertMonitoringPlot(
-      row: MonitoringPlotsRow = MonitoringPlotsRow(),
       x: Number = 0,
       y: Number = 0,
-      elevationMeters: BigDecimal? = row.elevationMeters,
-      sizeMeters: Int = row.sizeMeters ?: MONITORING_PLOT_SIZE_INT,
+      elevationMeters: BigDecimal? = null,
+      sizeMeters: Int = MONITORING_PLOT_SIZE_INT,
       boundary: Polygon =
-          (row.boundary as? Polygon)
-              ?: rectanglePolygon(
-                  sizeMeters,
-                  sizeMeters,
-                  x.toDouble() * sizeMeters.toDouble(),
-                  y.toDouble() * sizeMeters.toDouble(),
-              ),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      isAdHoc: Boolean = row.isAdHoc ?: false,
-      isAvailable: Boolean = row.isAvailable ?: true,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      permanentIndex: Int? = row.permanentIndex,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      substratumId: SubstratumId? = row.substratumId ?: inserted.substratumIds.lastOrNull(),
+          rectanglePolygon(
+              sizeMeters,
+              sizeMeters,
+              x.toDouble() * sizeMeters.toDouble(),
+              y.toDouble() * sizeMeters.toDouble(),
+          ),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      isAdHoc: Boolean = false,
+      isAvailable: Boolean = true,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      organizationId: OrganizationId = inserted.organizationId,
+      permanentIndex: Int? = null,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      substratumId: SubstratumId? = inserted.substratumIds.lastOrNull(),
       plotNumber: Long =
-          row.plotNumber
-              ?: IdentifierGenerator(clock, dslContext)
-                  .generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
+          IdentifierGenerator(clock, dslContext)
+              .generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
       insertHistory: Boolean = true,
   ): MonitoringPlotId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        MonitoringPlotsRow(
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
@@ -3276,10 +3214,10 @@ abstract class DatabaseBackedTest {
             sizeMeters = sizeMeters,
         )
 
-    monitoringPlotsDao.insert(rowWithDefaults)
-    lastMonitoringPlotsRow = rowWithDefaults
+    monitoringPlotsDao.insert(row)
+    lastMonitoringPlotsRow = row
 
-    val monitoringPlotId = rowWithDefaults.id!!
+    val monitoringPlotId = row.id!!
     inserted.monitoringPlotIds.add(monitoringPlotId)
 
     if (insertHistory && inserted.plantingSiteHistoryIds.isNotEmpty()) {
@@ -3329,42 +3267,40 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertDisclaimer(
-      row: DisclaimersRow = DisclaimersRow(),
-      content: String = row.content ?: "Disclaimer",
-      effectiveOn: Instant = row.effectiveOn ?: clock.instant(),
+      content: String = "Disclaimer",
+      effectiveOn: Instant = clock.instant(),
   ): DisclaimerId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        DisclaimersRow(
             content = content,
             effectiveOn = effectiveOn,
         )
 
-    disclaimersDao.insert(rowWithDefaults)
+    disclaimersDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.disclaimerIds.add(it) }
+    return row.id!!.also { inserted.disclaimerIds.add(it) }
   }
 
   private var nextDraftPlantingSiteNumber = 1
 
   fun insertDraftPlantingSite(
-      row: DraftPlantingSitesRow = DraftPlantingSitesRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      boundary: Geometry? = row.boundary,
-      boundarySource: String? = row.boundarySource,
-      description: String? = row.description,
-      exclusion: Geometry? = row.exclusion,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: "Draft site ${nextDraftPlantingSiteNumber++}",
-      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      projectId: ProjectId? = row.projectId,
-      siteEditStep: String? = row.siteEditStep,
-      siteType: DraftPlantingSiteType = row.siteTypeId ?: DraftPlantingSiteType.Detailed,
-      timeZone: ZoneId? = row.timeZone,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      boundary: Geometry? = null,
+      boundarySource: String? = null,
+      description: String? = null,
+      exclusion: Geometry? = null,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      name: String = "Draft site ${nextDraftPlantingSiteNumber++}",
+      organizationId: OrganizationId = inserted.organizationId,
+      projectId: ProjectId? = null,
+      siteEditStep: String? = null,
+      siteType: DraftPlantingSiteType = DraftPlantingSiteType.Detailed,
+      timeZone: ZoneId? = null,
   ): DraftPlantingSiteId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        DraftPlantingSitesRow(
             createdBy = createdBy,
             createdTime = createdTime,
             boundary = boundary,
@@ -3381,66 +3317,62 @@ abstract class DatabaseBackedTest {
             timeZone = timeZone,
         )
 
-    draftPlantingSitesDao.insert(rowWithDefaults)
+    draftPlantingSitesDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.draftPlantingSiteIds.add(it) }
+    return row.id!!.also { inserted.draftPlantingSiteIds.add(it) }
   }
 
   private var nextDraftStratumNumber = 1
 
   fun insertDraftStratum(
-      row: DraftStrataRow = DraftStrataRow(),
-      draftPlantingSiteId: DraftPlantingSiteId =
-          row.draftPlantingSiteId ?: inserted.draftPlantingSiteId,
-      name: String = row.name ?: "Stratum ${nextDraftStratumNumber++}",
-      boundary: Geometry = row.boundary ?: rectangle(100),
-      initialPlantingDensity: BigDecimal = row.initialPlantingDensity ?: BigDecimal(1500),
+      draftPlantingSiteId: DraftPlantingSiteId = inserted.draftPlantingSiteId,
+      name: String = "Stratum ${nextDraftStratumNumber++}",
+      boundary: Geometry = rectangle(100),
+      initialPlantingDensity: BigDecimal = BigDecimal(1500),
   ): DraftStratumId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        DraftStrataRow(
             boundary = boundary,
             draftPlantingSiteId = draftPlantingSiteId,
             initialPlantingDensity = initialPlantingDensity,
             name = name,
         )
 
-    draftStrataDao.insert(rowWithDefaults)
+    draftStrataDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.draftStratumIds.add(it) }
+    return row.id!!.also { inserted.draftStratumIds.add(it) }
   }
 
   private var nextDraftSubstratumNumber = 1
 
   fun insertDraftSubstratum(
-      row: DraftSubstrataRow = DraftSubstrataRow(),
-      draftStratumId: DraftStratumId = row.draftStratumId ?: inserted.draftStratumId,
-      name: String = row.name ?: "Substratum ${nextDraftSubstratumNumber++}",
-      boundary: Geometry = row.boundary ?: rectangle(100),
+      draftStratumId: DraftStratumId = inserted.draftStratumId,
+      name: String = "Substratum ${nextDraftSubstratumNumber++}",
+      boundary: Geometry = rectangle(100),
   ): DraftSubstratumId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        DraftSubstrataRow(
             boundary = boundary,
             draftStratumId = draftStratumId,
             name = name,
         )
 
-    draftSubstrataDao.insert(rowWithDefaults)
+    draftSubstrataDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.draftSubstratumIds.add(it) }
+    return row.id!!.also { inserted.draftSubstratumIds.add(it) }
   }
 
   fun insertDelivery(
-      row: DeliveriesRow = DeliveriesRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      reassignedFromDeliveryId: DeliveryId? = row.reassignedFromDeliveryId,
-      withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      reassignedFromDeliveryId: DeliveryId? = null,
+      withdrawalId: WithdrawalId = inserted.withdrawalId,
   ): DeliveryId {
     val rowWithDetails =
-        row.copy(
+        DeliveriesRow(
             createdBy = createdBy,
             createdTime = createdTime,
             modifiedBy = modifiedBy,
@@ -3456,18 +3388,17 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlanting(
-      row: PlantingsRow = PlantingsRow(),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      deliveryId: DeliveryId = row.deliveryId ?: inserted.deliveryId,
-      numPlants: Int = row.numPlants ?: 1,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
-      substratumId: SubstratumId? = row.substratumId ?: inserted.substratumIds.lastOrNull(),
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      deliveryId: DeliveryId = inserted.deliveryId,
+      numPlants: Int = 1,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      plantingTypeId: PlantingType = PlantingType.Delivery,
+      substratumId: SubstratumId? = inserted.substratumIds.lastOrNull(),
+      speciesId: SpeciesId = inserted.speciesId,
   ): PlantingId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PlantingsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             deliveryId = deliveryId,
@@ -3478,9 +3409,9 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId,
         )
 
-    plantingsDao.insert(rowWithDefaults)
+    plantingsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.plantingIds.add(it) }
+    return row.id!!.also { inserted.plantingIds.add(it) }
   }
 
   fun insertPlantingSitePopulation(
@@ -3554,30 +3485,28 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertSeedFundReport(
-      row: SeedFundReportsRow = SeedFundReportsRow(),
-      body: String = row.body?.data() ?: """{"version":"1","organizationName":"org"}""",
-      lockedBy: UserId? = row.lockedBy,
-      lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { clock.instant() },
-      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      projectId: ProjectId? = row.projectId,
-      projectName: String? = row.projectName,
-      quarter: Int = row.quarter ?: 1,
-      submittedBy: UserId? = row.submittedBy,
-      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { clock.instant() },
+      body: String = """{"version":"1","organizationName":"org"}""",
+      lockedBy: UserId? = null,
+      lockedTime: Instant? = lockedBy?.let { clock.instant() },
+      organizationId: OrganizationId = inserted.organizationId,
+      projectId: ProjectId? = null,
+      projectName: String? = null,
+      quarter: Int = 1,
+      submittedBy: UserId? = null,
+      submittedTime: Instant? = submittedBy?.let { clock.instant() },
       status: SeedFundReportStatus =
-          row.statusId
-              ?: when {
-                lockedBy != null -> SeedFundReportStatus.Locked
-                submittedBy != null -> SeedFundReportStatus.Submitted
-                else -> SeedFundReportStatus.New
-              },
-      year: Int = row.year ?: 1970,
+          when {
+            lockedBy != null -> SeedFundReportStatus.Locked
+            submittedBy != null -> SeedFundReportStatus.Submitted
+            else -> SeedFundReportStatus.New
+          },
+      year: Int = 1970,
   ): SeedFundReportId {
     val projectNameWithDefault =
         projectName ?: projectId?.let { projectsDao.fetchOneById(it)?.name }
 
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        SeedFundReportsRow(
             body = JSONB.jsonb(body),
             lockedBy = lockedBy,
             lockedTime = lockedTime,
@@ -3591,30 +3520,29 @@ abstract class DatabaseBackedTest {
             year = year,
         )
 
-    seedFundReportsDao.insert(rowWithDefaults)
+    seedFundReportsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.seedFundReportIds.add(it) }
+    return row.id!!.also { inserted.seedFundReportIds.add(it) }
   }
 
   fun insertCommonIndicator(
-      row: CommonIndicatorsRow = CommonIndicatorsRow(),
-      active: Boolean = row.active ?: true,
-      category: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
-      classId: IndicatorClass = row.classId ?: IndicatorClass.NotCumulative,
-      description: String? = row.description,
-      frequency: IndicatorFrequency? = row.frequencyId,
-      isPublishable: Boolean = row.isPublishable ?: true,
-      level: IndicatorLevel = row.levelId ?: IndicatorLevel.Goal,
-      name: String = row.name ?: "Indicator name",
-      notes: String? = row.notes,
-      precision: Int = row.precision ?: 0,
-      primaryDataSource: String? = row.primaryDataSource,
-      refId: String = row.refId ?: "1.1",
-      tfOwner: String? = row.tfOwner ?: "Carbon",
-      unit: String? = row.unit,
+      active: Boolean = true,
+      category: IndicatorCategory = IndicatorCategory.ProjectObjectives,
+      classId: IndicatorClass = IndicatorClass.NotCumulative,
+      description: String? = null,
+      frequency: IndicatorFrequency? = null,
+      isPublishable: Boolean = true,
+      level: IndicatorLevel = IndicatorLevel.Goal,
+      name: String = "Indicator name",
+      notes: String? = null,
+      precision: Int = 0,
+      primaryDataSource: String? = null,
+      refId: String = "1.1",
+      tfOwner: String? = "Carbon",
+      unit: String? = null,
   ): CommonIndicatorId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        CommonIndicatorsRow(
             active = active,
             categoryId = category,
             classId = classId,
@@ -3631,9 +3559,9 @@ abstract class DatabaseBackedTest {
             unit = unit,
         )
 
-    commonIndicatorsDao.insert(rowWithDefaults)
+    commonIndicatorsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.commonIndicatorIds.add(it) }
+    return row.id!!.also { inserted.commonIndicatorIds.add(it) }
   }
 
   fun insertOrganizationReportSettings(
@@ -3650,20 +3578,19 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertProjectReportConfig(
-      row: ProjectReportConfigsRow = ProjectReportConfigsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      reportingStartDate: LocalDate = row.reportingStartDate ?: LocalDate.EPOCH,
-      reportingEndDate: LocalDate = row.reportingEndDate ?: reportingStartDate.plusDays(1),
+      projectId: ProjectId = inserted.projectId,
+      reportingStartDate: LocalDate = LocalDate.EPOCH,
+      reportingEndDate: LocalDate = reportingStartDate.plusDays(1),
   ): ProjectReportConfigId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ProjectReportConfigsRow(
             projectId = projectId,
             reportingStartDate = reportingStartDate,
             reportingEndDate = reportingEndDate,
         )
-    projectReportConfigsDao.insert(rowWithDefaults)
+    projectReportConfigsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.projectReportConfigIds.add(it) }
+    return row.id!!.also { inserted.projectReportConfigIds.add(it) }
   }
 
   fun insertProjectReportSettings(
@@ -3680,32 +3607,29 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservation(
-      row: ObservationsRow = ObservationsRow(),
       createdTime: Instant = clock.instant(),
-      endDate: LocalDate = row.endDate ?: LocalDate.of(2023, 1, 31),
-      isAdHoc: Boolean = row.isAdHoc ?: false,
-      observationType: ObservationType = row.observationTypeId ?: ObservationType.Monitoring,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      startDate: LocalDate = row.startDate ?: LocalDate.of(2023, 1, 1),
-      completedTime: Instant? = row.completedTime,
+      endDate: LocalDate = LocalDate.of(2023, 1, 31),
+      isAdHoc: Boolean = false,
+      observationType: ObservationType = ObservationType.Monitoring,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      startDate: LocalDate = LocalDate.of(2023, 1, 1),
+      completedTime: Instant? = null,
       state: ObservationState =
-          row.stateId
-              ?: if (completedTime != null) {
-                ObservationState.Completed
-              } else {
-                ObservationState.InProgress
-              },
+          if (completedTime != null) {
+            ObservationState.Completed
+          } else {
+            ObservationState.InProgress
+          },
       plantingSiteHistoryId: PlantingSiteHistoryId? =
-          row.plantingSiteHistoryId
-              ?: if (state != ObservationState.Upcoming) {
-                inserted.plantingSiteHistoryId
-              } else {
-                null
-              },
-      upcomingNotificationSentTime: Instant? = row.upcomingNotificationSentTime,
+          if (state != ObservationState.Upcoming) {
+            inserted.plantingSiteHistoryId
+          } else {
+            null
+          },
+      upcomingNotificationSentTime: Instant? = null,
   ): ObservationId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservationsRow(
             completedTime = completedTime,
             createdTime = createdTime,
             endDate = endDate,
@@ -3718,31 +3642,30 @@ abstract class DatabaseBackedTest {
             upcomingNotificationSentTime = upcomingNotificationSentTime,
         )
 
-    observationsDao.insert(rowWithDefaults)
+    observationsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.observationIds.add(it) }
+    return row.id!!.also { inserted.observationIds.add(it) }
   }
 
   fun insertObservationBiomassDetails(
-      row: ObservationBiomassDetailsRow = ObservationBiomassDetailsRow(),
       observationId: ObservationId = inserted.observationId,
       monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
-      description: String? = row.description,
-      forestType: BiomassForestType = row.forestTypeId ?: BiomassForestType.Terrestrial,
-      smallTreesCountLow: Int = row.smallTreesCountLow ?: 0,
-      smallTreesCountHigh: Int = row.smallTreesCountHigh ?: 0,
-      herbaceousCoverPercent: Int = row.herbaceousCoverPercent ?: 0,
-      soilAssessment: String = row.soilAssessment ?: "Soil Assessment",
-      soilType: SoilType? = row.soilTypeId,
-      waterDepthCm: Int? = row.waterDepthCm,
-      salinityPpt: BigDecimal? = row.salinityPpt,
-      ph: BigDecimal? = row.ph,
-      tideId: MangroveTide? = row.tideId,
-      tideTime: Instant? = row.tideTime,
-      nextTreeNumber: Int = row.nextTreeNumber ?: 1,
+      description: String? = null,
+      forestType: BiomassForestType = BiomassForestType.Terrestrial,
+      smallTreesCountLow: Int = 0,
+      smallTreesCountHigh: Int = 0,
+      herbaceousCoverPercent: Int = 0,
+      soilAssessment: String = "Soil Assessment",
+      soilType: SoilType? = null,
+      waterDepthCm: Int? = null,
+      salinityPpt: BigDecimal? = null,
+      ph: BigDecimal? = null,
+      tideId: MangroveTide? = null,
+      tideTime: Instant? = null,
+      nextTreeNumber: Int = 1,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservationBiomassDetailsRow(
             description = description,
             forestTypeId = forestType,
             herbaceousCoverPercent = herbaceousCoverPercent,
@@ -3760,20 +3683,19 @@ abstract class DatabaseBackedTest {
             waterDepthCm = waterDepthCm,
         )
 
-    observationBiomassDetailsDao.insert(rowWithDefaults)
+    observationBiomassDetailsDao.insert(row)
   }
 
   fun insertObservationBiomassSpecies(
-      row: ObservationBiomassSpeciesRow = ObservationBiomassSpeciesRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      speciesId: SpeciesId? = row.speciesId,
-      scientificName: String? = row.scientificName,
-      commonName: String? = row.commonName,
-      isInvasive: Boolean = row.isInvasive ?: false,
-      isThreatened: Boolean = row.isThreatened ?: false,
+      observationId: ObservationId = inserted.observationId,
+      speciesId: SpeciesId? = null,
+      scientificName: String? = null,
+      commonName: String? = null,
+      isInvasive: Boolean = false,
+      isThreatened: Boolean = false,
   ): BiomassSpeciesId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservationBiomassSpeciesRow(
             observationId = observationId,
             speciesId = speciesId,
             scientificName = scientificName,
@@ -3782,9 +3704,9 @@ abstract class DatabaseBackedTest {
             isThreatened = isThreatened,
         )
 
-    observationBiomassSpeciesDao.insert(rowWithDefaults)
+    observationBiomassSpeciesDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.biomassSpeciesIds.add(it) }
+    return row.id!!.also { inserted.biomassSpeciesIds.add(it) }
   }
 
   fun insertObservationBiomassAdditionalSpecies(
@@ -3803,30 +3725,28 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservationBiomassQuadratDetails(
-      row: ObservationBiomassQuadratDetailsRow = ObservationBiomassQuadratDetailsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
-      description: String? = row.description,
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      position: ObservationPlotPosition = ObservationPlotPosition.SouthwestCorner,
+      description: String? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservationBiomassQuadratDetailsRow(
             observationId = observationId,
             monitoringPlotId = monitoringPlotId,
             positionId = position,
             description = description,
         )
 
-    observationBiomassQuadratDetailsDao.insert(rowWithDefaults)
+    observationBiomassQuadratDetailsDao.insert(row)
   }
 
   fun insertObservationBiomassQuadratSpecies(
-      row: ObservationBiomassQuadratSpeciesRow = ObservationBiomassQuadratSpeciesRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
-      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId ?: inserted.biomassSpeciesId,
-      abundanceCount: Int = row.abundanceCount ?: 0,
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      position: ObservationPlotPosition = ObservationPlotPosition.SouthwestCorner,
+      biomassSpeciesId: BiomassSpeciesId? = inserted.biomassSpeciesId,
+      abundanceCount: Int = 0,
   ) {
     with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
       dslContext
@@ -3841,18 +3761,16 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservationMediaFile(
-      row: ObservationMediaFilesRow = ObservationMediaFilesRow(),
-      caption: String? = row.caption,
-      fileId: FileId = row.fileId ?: inserted.fileId,
-      isOriginal: Boolean = row.isOriginal ?: true,
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      position: ObservationPlotPosition? =
-          row.positionId ?: ObservationPlotPosition.SouthwestCorner,
-      type: ObservationMediaType = row.typeId ?: ObservationMediaType.Plot,
+      caption: String? = null,
+      fileId: FileId = inserted.fileId,
+      isOriginal: Boolean = true,
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      position: ObservationPlotPosition? = ObservationPlotPosition.SouthwestCorner,
+      type: ObservationMediaType = ObservationMediaType.Plot,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservationMediaFilesRow(
             caption = caption,
             fileId = fileId,
             isOriginal = isOriginal,
@@ -3862,7 +3780,7 @@ abstract class DatabaseBackedTest {
             typeId = type,
         )
 
-    observationMediaFilesDao.insert(rowWithDefaults)
+    observationMediaFilesDao.insert(row)
   }
 
   fun insertOrganizationMediaFile(
@@ -3880,16 +3798,15 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertSplat(
-      row: SplatsRow = SplatsRow(),
-      fileId: FileId = row.fileId ?: inserted.fileId,
-      assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
+      fileId: FileId = inserted.fileId,
+      assetStatus: AssetStatus = AssetStatus.Ready,
       originPosition: CoordinateModel? = null,
       cameraPosition: CoordinateModel? = null,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
-      needsAttention: Boolean = row.needsAttention ?: false,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      organizationId: OrganizationId = inserted.organizationId,
+      splatStorageUrl: URI = URI("s3://bucket/splat"),
+      needsAttention: Boolean = false,
       groundColor: String? = null,
       groundPlane: List<CoordinateModel>? = null,
       sceneBounds: CoordinateModel? = null,
@@ -3901,10 +3818,8 @@ abstract class DatabaseBackedTest {
           .insertInto(SPLATS)
           .set(ASSET_STATUS_ID, assetStatus)
           .set(CAMERA_POSITION, cameraPosition.toPointField())
-          .set(COMPLETED_TIME, row.completedTime)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
-          .set(ERROR_MESSAGE, row.errorMessage)
           .set(FILE_ID, fileId)
           .set(GROUND_COLOR, groundColor)
           .set(GROUND_PLANE, groundPlane.toMultiPointField())
@@ -3935,17 +3850,16 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertBirdnetResult(
-      row: BirdnetResultsRow = BirdnetResultsRow(),
-      fileId: FileId = row.fileId ?: inserted.fileId,
-      assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      resultsStorageUrl: URI? = row.resultsStorageUrl,
-      errorMessage: String? = row.errorMessage,
-      completedTime: Instant? = row.completedTime,
+      fileId: FileId = inserted.fileId,
+      assetStatus: AssetStatus = AssetStatus.Ready,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      resultsStorageUrl: URI? = null,
+      errorMessage: String? = null,
+      completedTime: Instant? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        BirdnetResultsRow(
             fileId = fileId,
             assetStatusId = assetStatus,
             createdBy = createdBy,
@@ -3955,23 +3869,22 @@ abstract class DatabaseBackedTest {
             completedTime = completedTime,
         )
 
-    birdnetResultsDao.insert(rowWithDefaults)
+    birdnetResultsDao.insert(row)
   }
 
   private val nextAnnotationNumber = mutableMapOf<FileId, Int>()
 
   fun insertSplatAnnotation(
-      row: SplatAnnotationsRow = SplatAnnotationsRow(),
-      fileId: FileId = row.fileId ?: inserted.fileId,
-      title: String = row.title ?: "Annotation ${nextAnnotationNumber.getOrDefault(fileId, 1)}",
-      bodyText: String? = row.bodyText,
-      label: String? = row.label,
+      fileId: FileId = inserted.fileId,
+      title: String = "Annotation ${nextAnnotationNumber.getOrDefault(fileId, 1)}",
+      bodyText: String? = null,
+      label: String? = null,
       position: CoordinateModel = CoordinateModel(1.0, 2.0, 3.0),
       cameraPosition: CoordinateModel? = null,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
   ): SplatAnnotationId {
     val id =
         with(SPLAT_ANNOTATIONS) {
@@ -4016,33 +3929,29 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservationPlot(
-      row: ObservationPlotsRow = ObservationPlotsRow(),
-      completedBy: UserId? = row.completedBy,
-      completedTime: Instant? =
-          row.completedTime ?: if (completedBy != null) clock.instant() else null,
-      claimedBy: UserId? = row.claimedBy ?: completedBy,
-      claimedTime: Instant? = row.claimedTime ?: if (claimedBy != null) clock.instant() else null,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      isPermanent: Boolean = row.isPermanent ?: false,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      completedBy: UserId? = null,
+      completedTime: Instant? = if (completedBy != null) clock.instant() else null,
+      claimedBy: UserId? = completedBy,
+      claimedTime: Instant? = if (claimedBy != null) clock.instant() else null,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      isPermanent: Boolean = false,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
       monitoringPlotHistoryId: MonitoringPlotHistoryId =
-          row.monitoringPlotHistoryId
-              ?: inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]?.last()
+          inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]?.last()
               ?: inserted.monitoringPlotHistoryId,
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      notes: String? = row.notes,
-      observedTime: Instant? = row.observedTime,
+      observationId: ObservationId = inserted.observationId,
+      notes: String? = null,
+      observedTime: Instant? = null,
       statusId: ObservationPlotStatus =
-          row.statusId
-              ?: when {
-                completedTime != null -> ObservationPlotStatus.Completed
-                claimedTime != null -> ObservationPlotStatus.Claimed
-                else -> ObservationPlotStatus.Unclaimed
-              },
+          when {
+            completedTime != null -> ObservationPlotStatus.Completed
+            claimedTime != null -> ObservationPlotStatus.Claimed
+            else -> ObservationPlotStatus.Unclaimed
+          },
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservationPlotsRow(
             claimedBy = claimedBy,
             claimedTime = claimedTime,
             completedBy = completedBy,
@@ -4060,42 +3969,39 @@ abstract class DatabaseBackedTest {
             statusId = statusId,
         )
 
-    observationPlotsDao.insert(rowWithDefaults)
+    observationPlotsDao.insert(row)
   }
 
   fun insertObservationPlotCondition(
-      row: ObservationPlotConditionsRow = ObservationPlotConditionsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      condition: ObservableCondition = row.conditionId ?: ObservableCondition.AnimalDamage,
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      condition: ObservableCondition = ObservableCondition.AnimalDamage,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservationPlotConditionsRow(
             observationId = observationId,
             monitoringPlotId = monitoringPlotId,
             conditionId = condition,
         )
 
-    observationPlotConditionsDao.insert(rowWithDefaults)
+    observationPlotConditionsDao.insert(row)
   }
 
   fun insertObservationPlotResult(
-      row: ObservationPlotResultsRow = ObservationPlotResultsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
       monitoringPlotHistoryId: MonitoringPlotHistoryId =
-          row.monitoringPlotHistoryId
-              ?: inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]!!.last(),
-      totalLive: Int = row.totalLive ?: 0,
-      totalDead: Int = row.totalDead ?: 0,
-      totalExisting: Int = row.totalExisting ?: 0,
-      permanentLive: Int = row.permanentLive ?: 0,
-      survivalRate: Int? = row.survivalRate,
-      plantDensity: Int? = row.plantDensity,
-      needsRecalculation: Boolean = row.needsRecalculation ?: false,
+          inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]!!.last(),
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      permanentLive: Int = 0,
+      survivalRate: Int? = null,
+      plantDensity: Int? = null,
+      needsRecalculation: Boolean = false,
   ) {
     observationPlotResultsDao.insert(
-        row.copy(
+        ObservationPlotResultsRow(
             observationId = observationId,
             monitoringPlotId = monitoringPlotId,
             monitoringPlotHistoryId = monitoringPlotHistoryId,
@@ -4136,24 +4042,22 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservationSiteResult(
-      row: ObservationSiteResultsRow = ObservationSiteResultsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      plantingSiteHistoryId: PlantingSiteHistoryId =
-          row.plantingSiteHistoryId ?: inserted.plantingSiteHistoryId,
-      totalLive: Int = row.totalLive ?: 0,
-      totalDead: Int = row.totalDead ?: 0,
-      totalExisting: Int = row.totalExisting ?: 0,
-      permanentLive: Int = row.permanentLive ?: 0,
-      survivalRate: Int? = row.survivalRate,
-      survivalRateArea: Number? = row.survivalRateArea,
-      survivalRateStdDev: Int? = row.survivalRateStdDev,
-      plantDensity: Int? = row.plantDensity,
-      plantDensityStdDev: Int? = row.plantDensityStdDev,
-      needsRecalculation: Boolean = row.needsRecalculation ?: false,
+      observationId: ObservationId = inserted.observationId,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      permanentLive: Int = 0,
+      survivalRate: Int? = null,
+      survivalRateArea: Number? = null,
+      survivalRateStdDev: Int? = null,
+      plantDensity: Int? = null,
+      plantDensityStdDev: Int? = null,
+      needsRecalculation: Boolean = false,
   ) {
     observationSiteResultsDao.insert(
-        row.copy(
+        ObservationSiteResultsRow(
             needsRecalculation = needsRecalculation,
             observationId = observationId,
             permanentLive = permanentLive,
@@ -4172,23 +4076,22 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservationStratumResult(
-      row: ObservationStratumResultsRow = ObservationStratumResultsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      stratumId: StratumId? = row.stratumId ?: inserted.stratumId,
-      stratumHistoryId: StratumHistoryId = row.stratumHistoryId ?: inserted.stratumHistoryId,
-      totalLive: Int = row.totalLive ?: 0,
-      totalDead: Int = row.totalDead ?: 0,
-      totalExisting: Int = row.totalExisting ?: 0,
-      permanentLive: Int = row.permanentLive ?: 0,
-      survivalRate: Int? = row.survivalRate,
-      survivalRateArea: Number? = row.survivalRateArea,
-      survivalRateStdDev: Int? = row.survivalRateStdDev,
-      plantDensity: Int? = row.plantDensity,
-      plantDensityStdDev: Int? = row.plantDensityStdDev,
-      needsRecalculation: Boolean = row.needsRecalculation ?: false,
+      observationId: ObservationId = inserted.observationId,
+      stratumId: StratumId? = inserted.stratumId,
+      stratumHistoryId: StratumHistoryId = inserted.stratumHistoryId,
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      permanentLive: Int = 0,
+      survivalRate: Int? = null,
+      survivalRateArea: Number? = null,
+      survivalRateStdDev: Int? = null,
+      plantDensity: Int? = null,
+      plantDensityStdDev: Int? = null,
+      needsRecalculation: Boolean = false,
   ) {
     observationStratumResultsDao.insert(
-        row.copy(
+        ObservationStratumResultsRow(
             needsRecalculation = needsRecalculation,
             observationId = observationId,
             permanentLive = permanentLive,
@@ -4207,24 +4110,22 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservationSubstratumResult(
-      row: ObservationSubstratumResultsRow = ObservationSubstratumResultsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      substratumId: SubstratumId? = row.substratumId ?: inserted.substratumId,
-      substratumHistoryId: SubstratumHistoryId =
-          row.substratumHistoryId ?: inserted.substratumHistoryId,
-      totalLive: Int = row.totalLive ?: 0,
-      totalDead: Int = row.totalDead ?: 0,
-      totalExisting: Int = row.totalExisting ?: 0,
-      permanentLive: Int = row.permanentLive ?: 0,
-      survivalRate: Int? = row.survivalRate,
-      survivalRateArea: Number? = row.survivalRateArea,
-      survivalRateStdDev: Int? = row.survivalRateStdDev,
-      plantDensity: Int? = row.plantDensity,
-      plantDensityStdDev: Int? = row.plantDensityStdDev,
-      needsRecalculation: Boolean = row.needsRecalculation ?: false,
+      observationId: ObservationId = inserted.observationId,
+      substratumId: SubstratumId? = inserted.substratumId,
+      substratumHistoryId: SubstratumHistoryId = inserted.substratumHistoryId,
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      permanentLive: Int = 0,
+      survivalRate: Int? = null,
+      survivalRateArea: Number? = null,
+      survivalRateStdDev: Int? = null,
+      plantDensity: Int? = null,
+      plantDensityStdDev: Int? = null,
+      needsRecalculation: Boolean = false,
   ) {
     observationSubstratumResultsDao.insert(
-        row.copy(
+        ObservationSubstratumResultsRow(
             needsRecalculation = needsRecalculation,
             observationId = observationId,
             permanentLive = permanentLive,
@@ -4243,23 +4144,22 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservedCoordinates(
-      row: ObservedPlotCoordinatesRow = ObservedPlotCoordinatesRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
-      position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.NortheastCorner,
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      gpsCoordinates: Point = point(1),
+      position: ObservationPlotPosition = ObservationPlotPosition.NortheastCorner,
   ): ObservedPlotCoordinatesId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ObservedPlotCoordinatesRow(
             gpsCoordinates = gpsCoordinates,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             positionId = position,
         )
 
-    observedPlotCoordinatesDao.insert(rowWithDefaults)
+    observedPlotCoordinatesDao.insert(row)
 
-    return rowWithDefaults.id!!
+    return row.id!!
   }
 
   fun insertObservedPlotSpeciesTotals(
@@ -4307,33 +4207,29 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservedSubstratumSpeciesTotals(
-      row: ObservedSubstratumSpeciesTotalsRow = ObservedSubstratumSpeciesTotalsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      substratumId: SubstratumId? = row.substratumId ?: inserted.substratumId,
+      observationId: ObservationId = inserted.observationId,
+      substratumId: SubstratumId? = inserted.substratumId,
       substratumHistoryId: SubstratumHistoryId =
-          row.substratumHistoryId
-              ?: substratumId?.let { inserted.substratumHistoryIdsBySubstratumId[it]?.last() }
+          substratumId?.let { inserted.substratumHistoryIdsBySubstratumId[it]?.last() }
               ?: inserted.substratumHistoryId,
-      certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
+      certainty: RecordedSpeciesCertainty = RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
-          row.speciesId
-              ?: if (certainty == RecordedSpeciesCertainty.Known) {
-                inserted.speciesId
-              } else {
-                null
-              },
+          if (certainty == RecordedSpeciesCertainty.Known) {
+            inserted.speciesId
+          } else {
+            null
+          },
       speciesName: String? =
-          row.speciesName
-              ?: if (certainty == RecordedSpeciesCertainty.Other) {
-                "Other species"
-              } else {
-                null
-              },
-      totalLive: Int = row.totalLive ?: 0,
-      totalDead: Int = row.totalDead ?: 0,
-      totalExisting: Int = row.totalExisting ?: 0,
-      permanentLive: Int = row.permanentLive ?: 0,
-      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
+          if (certainty == RecordedSpeciesCertainty.Other) {
+            "Other species"
+          } else {
+            null
+          },
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      permanentLive: Int = 0,
+      biomassSpeciesId: BiomassSpeciesId? = null,
   ) {
     with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
       dslContext
@@ -4354,33 +4250,29 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservedStratumSpeciesTotals(
-      row: ObservedStratumSpeciesTotalsRow = ObservedStratumSpeciesTotalsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      stratumId: StratumId? = row.stratumId ?: inserted.stratumId,
+      observationId: ObservationId = inserted.observationId,
+      stratumId: StratumId? = inserted.stratumId,
       stratumHistoryId: StratumHistoryId =
-          row.stratumHistoryId
-              ?: stratumId?.let { inserted.stratumHistoryIdsByStratumId[it]?.last() }
+          stratumId?.let { inserted.stratumHistoryIdsByStratumId[it]?.last() }
               ?: inserted.stratumHistoryId,
-      certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
+      certainty: RecordedSpeciesCertainty = RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
-          row.speciesId
-              ?: if (certainty == RecordedSpeciesCertainty.Known) {
-                inserted.speciesId
-              } else {
-                null
-              },
+          if (certainty == RecordedSpeciesCertainty.Known) {
+            inserted.speciesId
+          } else {
+            null
+          },
       speciesName: String? =
-          row.speciesName
-              ?: if (certainty == RecordedSpeciesCertainty.Other) {
-                "Other species"
-              } else {
-                null
-              },
-      totalLive: Int = row.totalLive ?: 0,
-      totalDead: Int = row.totalDead ?: 0,
-      totalExisting: Int = row.totalExisting ?: 0,
-      permanentLive: Int = row.permanentLive ?: 0,
-      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
+          if (certainty == RecordedSpeciesCertainty.Other) {
+            "Other species"
+          } else {
+            null
+          },
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      permanentLive: Int = 0,
+      biomassSpeciesId: BiomassSpeciesId? = null,
   ) {
     with(OBSERVED_STRATUM_SPECIES_TOTALS) {
       dslContext
@@ -4401,33 +4293,29 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservedSiteSpeciesTotals(
-      row: ObservedSiteSpeciesTotalsRow = ObservedSiteSpeciesTotalsRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      observationId: ObservationId = inserted.observationId,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId =
-          row.plantingSiteHistoryId
-              ?: inserted.plantingSiteHistoryIdsByPlantingSiteId[plantingSiteId]?.last()
+          inserted.plantingSiteHistoryIdsByPlantingSiteId[plantingSiteId]?.last()
               ?: inserted.plantingSiteHistoryId,
-      certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
+      certainty: RecordedSpeciesCertainty = RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
-          row.speciesId
-              ?: if (certainty == RecordedSpeciesCertainty.Known) {
-                inserted.speciesId
-              } else {
-                null
-              },
+          if (certainty == RecordedSpeciesCertainty.Known) {
+            inserted.speciesId
+          } else {
+            null
+          },
       speciesName: String? =
-          row.speciesName
-              ?: if (certainty == RecordedSpeciesCertainty.Other) {
-                "Other species"
-              } else {
-                null
-              },
-      totalLive: Int = row.totalLive ?: 0,
-      totalDead: Int = row.totalDead ?: 0,
-      totalExisting: Int = row.totalExisting ?: 0,
-      permanentLive: Int = row.permanentLive ?: 0,
-      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
+          if (certainty == RecordedSpeciesCertainty.Other) {
+            "Other species"
+          } else {
+            null
+          },
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      permanentLive: Int = 0,
+      biomassSpeciesId: BiomassSpeciesId? = null,
   ) {
     with(OBSERVED_SITE_SPECIES_TOTALS) {
       dslContext
@@ -4448,14 +4336,13 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertStratumT0TempDensity(
-      row: StratumT0TempDensitiesRow = StratumT0TempDensitiesRow(),
-      stratumId: StratumId = row.stratumId ?: inserted.stratumId,
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      stratumDensity: BigDecimal = row.stratumDensity ?: BigDecimal.valueOf(10),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
+      stratumId: StratumId = inserted.stratumId,
+      speciesId: SpeciesId = inserted.speciesId,
+      stratumDensity: BigDecimal = BigDecimal.valueOf(10),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = inserted.userId,
+      modifiedTime: Instant = clock.instant(),
   ) {
     with(STRATUM_T0_TEMP_DENSITIES) {
       dslContext
@@ -4472,14 +4359,13 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlotT0Density(
-      row: PlotT0DensitiesRow = PlotT0DensitiesRow(),
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      plotDensity: BigDecimal = row.plotDensity ?: BigDecimal.valueOf(10),
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      speciesId: SpeciesId = inserted.speciesId,
+      plotDensity: BigDecimal = BigDecimal.valueOf(10),
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = inserted.userId,
+      modifiedTime: Instant = clock.instant(),
   ) {
     with(PLOT_T0_DENSITIES) {
       dslContext
@@ -4496,13 +4382,12 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlotT0Observation(
-      row: PlotT0ObservationsRow = PlotT0ObservationsRow(),
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      observationId: ObservationId = inserted.observationId,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = inserted.userId,
+      modifiedTime: Instant = clock.instant(),
   ) {
     with(PLOT_T0_OBSERVATIONS) {
       dslContext
@@ -4521,27 +4406,26 @@ abstract class DatabaseBackedTest {
   private val nextTrunkNumber = mutableMapOf<Pair<ObservationId, Int>, Int>()
 
   fun insertRecordedTree(
-      row: RecordedTreesRow = RecordedTreesRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId ?: inserted.biomassSpeciesId,
-      treeNumber: Int? = row.treeNumber,
-      trunkNumber: Int? = row.trunkNumber,
-      treeGrowthForm: TreeGrowthForm = row.treeGrowthFormId ?: TreeGrowthForm.Tree,
-      isDead: Boolean = row.isDead ?: false,
-      boleHeightM: BigDecimal? = row.boleHeightM,
-      diameterAtBreastHeightCm: BigDecimal? = row.diameterAtBreastHeightCm,
-      pointOfMeasurementM: BigDecimal? = row.pointOfMeasurementM,
-      heightM: BigDecimal? = row.heightM,
-      shrubDiameterCm: Int? = row.shrubDiameterCm,
-      treeCrownDiameterCm: Int? = row.treeCrownDiameterCm,
-      description: String? = row.description,
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      biomassSpeciesId: BiomassSpeciesId? = inserted.biomassSpeciesId,
+      treeNumber: Int? = null,
+      trunkNumber: Int? = null,
+      treeGrowthForm: TreeGrowthForm = TreeGrowthForm.Tree,
+      isDead: Boolean = false,
+      boleHeightM: BigDecimal? = null,
+      diameterAtBreastHeightCm: BigDecimal? = null,
+      pointOfMeasurementM: BigDecimal? = null,
+      heightM: BigDecimal? = null,
+      shrubDiameterCm: Int? = null,
+      treeCrownDiameterCm: Int? = null,
+      description: String? = null,
   ): RecordedTreeId {
     val effectiveTreeNumber = treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1)
     val effectiveTrunkNumber =
         trunkNumber ?: nextTrunkNumber.getOrDefault(observationId to effectiveTreeNumber, 1)
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        RecordedTreesRow(
             biomassSpeciesId = biomassSpeciesId,
             boleHeightM = boleHeightM,
             description = description,
@@ -4558,31 +4442,29 @@ abstract class DatabaseBackedTest {
             trunkNumber = effectiveTrunkNumber,
         )
 
-    recordedTreesDao.insert(rowWithDefaults)
+    recordedTreesDao.insert(row)
     nextTreeNumber[observationId] = effectiveTreeNumber + 1
     nextTrunkNumber[observationId to effectiveTreeNumber] = effectiveTrunkNumber + 1
 
-    return rowWithDefaults.id!!.also { inserted.recordedTreeIds.add(it) }
+    return row.id!!.also { inserted.recordedTreeIds.add(it) }
   }
 
   fun insertRecordedPlant(
-      row: RecordedPlantsRow = RecordedPlantsRow(),
-      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      speciesId: SpeciesId? = row.speciesId,
-      speciesName: String? = row.speciesName,
+      gpsCoordinates: Point = point(1),
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      observationId: ObservationId = inserted.observationId,
+      speciesId: SpeciesId? = null,
+      speciesName: String? = null,
       certainty: RecordedSpeciesCertainty =
-          row.certaintyId
-              ?: when {
-                speciesId != null -> RecordedSpeciesCertainty.Known
-                speciesName != null -> RecordedSpeciesCertainty.Other
-                else -> RecordedSpeciesCertainty.Unknown
-              },
-      status: RecordedPlantStatus = row.statusId ?: RecordedPlantStatus.Live,
+          when {
+            speciesId != null -> RecordedSpeciesCertainty.Known
+            speciesName != null -> RecordedSpeciesCertainty.Other
+            else -> RecordedSpeciesCertainty.Unknown
+          },
+      status: RecordedPlantStatus = RecordedPlantStatus.Live,
   ): RecordedPlantId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        RecordedPlantsRow(
             certaintyId = certainty,
             gpsCoordinates = gpsCoordinates,
             monitoringPlotId = monitoringPlotId,
@@ -4592,40 +4474,38 @@ abstract class DatabaseBackedTest {
             statusId = status,
         )
 
-    recordedPlantsDao.insert(rowWithDefaults)
+    recordedPlantsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.recordedPlantIds.add(it) }
+    return row.id!!.also { inserted.recordedPlantIds.add(it) }
   }
 
   protected fun insertReport(
-      row: ReportsRow = ReportsRow(),
-      configId: ProjectReportConfigId = row.configId ?: inserted.projectReportConfigId,
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      quarter: ReportQuarter? = row.reportQuarterId ?: ReportQuarter.Q1,
-      status: ReportStatus = row.statusId ?: ReportStatus.NotSubmitted,
-      startDate: LocalDate = row.startDate ?: LocalDate.EPOCH,
-      endDate: LocalDate = row.endDate ?: LocalDate.EPOCH.plusDays(1),
-      highlights: String? = row.highlights,
-      internalComment: String? = row.internalComment,
-      feedback: String? = row.feedback,
-      additionalComments: String? = row.additionalComments,
-      financialSummaries: String? = row.financialSummaries,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: clock.instant(),
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
+      configId: ProjectReportConfigId = inserted.projectReportConfigId,
+      projectId: ProjectId = inserted.projectId,
+      quarter: ReportQuarter? = ReportQuarter.Q1,
+      status: ReportStatus = ReportStatus.NotSubmitted,
+      startDate: LocalDate = LocalDate.EPOCH,
+      endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
+      highlights: String? = null,
+      internalComment: String? = null,
+      feedback: String? = null,
+      additionalComments: String? = null,
+      financialSummaries: String? = null,
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      modifiedBy: UserId = inserted.userId,
+      modifiedTime: Instant = clock.instant(),
       submittedBy: UserId? =
-          row.submittedBy
-              ?: if (status != ReportStatus.NotSubmitted && status != ReportStatus.NotNeeded) {
-                inserted.userId
-              } else {
-                null
-              },
-      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { clock.instant() },
-      upcomingNotificationSentTime: Instant? = row.upcomingNotificationSentTime,
+          if (status != ReportStatus.NotSubmitted && status != ReportStatus.NotNeeded) {
+            inserted.userId
+          } else {
+            null
+          },
+      submittedTime: Instant? = submittedBy?.let { clock.instant() },
+      upcomingNotificationSentTime: Instant? = null,
   ): ReportId {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportsRow(
             configId = configId,
             projectId = projectId,
             reportQuarterId = quarter,
@@ -4646,27 +4526,26 @@ abstract class DatabaseBackedTest {
             financialSummaries = financialSummaries,
         )
 
-    reportsDao.insert(rowWithDefaults)
+    reportsDao.insert(row)
 
-    return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
+    return row.id!!.also { inserted.reportIds.add(it) }
   }
 
   private val nextReportAchievementPosition = mutableMapOf<ReportId, Int>()
 
   protected fun insertReportAchievement(
-      row: ReportAchievementsRow = ReportAchievementsRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      position: Int = row.position ?: nextReportAchievementPosition.getOrDefault(reportId, 0),
-      achievement: String = row.achievement ?: "Achievement $position",
+      reportId: ReportId = inserted.reportId,
+      position: Int = nextReportAchievementPosition.getOrDefault(reportId, 0),
+      achievement: String = "Achievement $position",
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportAchievementsRow(
             reportId = reportId,
             position = position,
             achievement = achievement,
         )
 
-    reportAchievementsDao.insert(rowWithDefaults)
+    reportAchievementsDao.insert(row)
 
     nextReportAchievementPosition[reportId] = position + 1
   }
@@ -4674,57 +4553,54 @@ abstract class DatabaseBackedTest {
   private val nextReportChallengePosition = mutableMapOf<ReportId, Int>()
 
   protected fun insertReportChallenge(
-      row: ReportChallengesRow = ReportChallengesRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      position: Int = row.position ?: nextReportChallengePosition.getOrDefault(reportId, 0),
-      challenge: String = row.challenge ?: "Challenge $position",
-      mitigationPlan: String = row.mitigationPlan ?: "Mitigation Plan $position",
+      reportId: ReportId = inserted.reportId,
+      position: Int = nextReportChallengePosition.getOrDefault(reportId, 0),
+      challenge: String = "Challenge $position",
+      mitigationPlan: String = "Mitigation Plan $position",
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportChallengesRow(
             reportId = reportId,
             position = position,
             challenge = challenge,
             mitigationPlan = mitigationPlan,
         )
 
-    reportChallengesDao.insert(rowWithDefaults)
+    reportChallengesDao.insert(row)
 
     nextReportChallengePosition[reportId] = position + 1
   }
 
   protected fun insertReportPhoto(
-      row: ReportPhotosRow = ReportPhotosRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      fileId: FileId = row.fileId ?: inserted.fileId,
-      caption: String? = row.caption,
-      deleted: Boolean = row.deleted ?: false,
+      reportId: ReportId = inserted.reportId,
+      fileId: FileId = inserted.fileId,
+      caption: String? = null,
+      deleted: Boolean = false,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportPhotosRow(
             reportId = reportId,
             fileId = fileId,
             caption = caption,
             deleted = deleted,
         )
 
-    reportPhotosDao.insert(rowWithDefaults)
+    reportPhotosDao.insert(row)
   }
 
   protected fun insertReportProjectIndicator(
-      row: ReportProjectIndicatorsRow = ReportProjectIndicatorsRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      indicatorId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectIndicatorId,
-      value: Number? = row.value,
-      projectsComments: String? = row.projectsComments,
-      progressNotes: String? = row.progressNotes,
-      status: ReportIndicatorStatus? = row.statusId,
-      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
+      reportId: ReportId = inserted.reportId,
+      indicatorId: ProjectIndicatorId = inserted.projectIndicatorId,
+      value: Number? = null,
+      projectsComments: String? = null,
+      progressNotes: String? = null,
+      status: ReportIndicatorStatus? = null,
+      supportingDocumentUrl: URI? = null,
+      modifiedBy: UserId = inserted.userId,
+      modifiedTime: Instant = clock.instant(),
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportProjectIndicatorsRow(
             reportId = reportId,
             projectIndicatorId = indicatorId,
             value = value?.toBigDecimal(),
@@ -4736,23 +4612,22 @@ abstract class DatabaseBackedTest {
             modifiedTime = modifiedTime,
         )
 
-    reportProjectIndicatorsDao.insert(rowWithDefaults)
+    reportProjectIndicatorsDao.insert(row)
   }
 
   protected fun insertReportCommonIndicator(
-      row: ReportCommonIndicatorsRow = ReportCommonIndicatorsRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      indicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      value: Number? = row.value,
-      projectsComments: String? = row.projectsComments,
-      progressNotes: String? = row.progressNotes,
-      status: ReportIndicatorStatus? = row.statusId,
-      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
+      reportId: ReportId = inserted.reportId,
+      indicatorId: CommonIndicatorId = inserted.commonIndicatorId,
+      value: Number? = null,
+      projectsComments: String? = null,
+      progressNotes: String? = null,
+      status: ReportIndicatorStatus? = null,
+      supportingDocumentUrl: URI? = null,
+      modifiedBy: UserId = inserted.userId,
+      modifiedTime: Instant = clock.instant(),
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportCommonIndicatorsRow(
             reportId = reportId,
             commonIndicatorId = indicatorId,
             value = value?.toBigDecimal(),
@@ -4764,26 +4639,24 @@ abstract class DatabaseBackedTest {
             modifiedTime = modifiedTime,
         )
 
-    reportCommonIndicatorsDao.insert(rowWithDefaults)
+    reportCommonIndicatorsDao.insert(row)
   }
 
   protected fun insertReportAutoCalculatedIndicator(
-      row: ReportAutoCalculatedIndicatorsRow = ReportAutoCalculatedIndicatorsRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      indicator: AutoCalculatedIndicator =
-          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
-      systemValue: Number? = row.systemValue,
-      systemTime: Instant? = row.systemTime ?: systemValue?.let { clock.instant() },
-      overrideValue: Number? = row.overrideValue,
-      projectsComments: String? = row.projectsComments,
-      progressNotes: String? = row.progressNotes,
-      status: ReportIndicatorStatus? = row.statusId,
-      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: clock.instant(),
+      reportId: ReportId = inserted.reportId,
+      indicator: AutoCalculatedIndicator = AutoCalculatedIndicator.SeedsCollected,
+      systemValue: Number? = null,
+      systemTime: Instant? = systemValue?.let { clock.instant() },
+      overrideValue: Number? = null,
+      projectsComments: String? = null,
+      progressNotes: String? = null,
+      status: ReportIndicatorStatus? = null,
+      supportingDocumentUrl: URI? = null,
+      modifiedBy: UserId = inserted.userId,
+      modifiedTime: Instant = clock.instant(),
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportAutoCalculatedIndicatorsRow(
             reportId = reportId,
             autoCalculatedIndicatorId = indicator,
             systemValue = systemValue?.toBigDecimal(),
@@ -4797,233 +4670,211 @@ abstract class DatabaseBackedTest {
             modifiedTime = modifiedTime,
         )
 
-    reportAutoCalculatedIndicatorsDao.insert(rowWithDefaults)
+    reportAutoCalculatedIndicatorsDao.insert(row)
   }
 
   protected fun insertReportProjectIndicatorTarget(
-      row: ReportProjectIndicatorTargetsRow = ReportProjectIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      projectIndicatorId: ProjectIndicatorId =
-          row.projectIndicatorId ?: inserted.projectIndicatorId,
-      year: Int = row.year ?: 1970,
-      target: Number? = row.target,
+      projectId: ProjectId = inserted.projectId,
+      projectIndicatorId: ProjectIndicatorId = inserted.projectIndicatorId,
+      year: Int = 1970,
+      target: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportProjectIndicatorTargetsRow(
             projectId = projectId,
             projectIndicatorId = projectIndicatorId,
             year = year,
             target = target?.toBigDecimal(),
         )
 
-    reportProjectIndicatorTargetsDao.insert(rowWithDefaults)
+    reportProjectIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertReportCommonIndicatorTarget(
-      row: ReportCommonIndicatorTargetsRow = ReportCommonIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      year: Int = row.year ?: 1970,
-      target: Number? = row.target,
+      projectId: ProjectId = inserted.projectId,
+      commonIndicatorId: CommonIndicatorId = inserted.commonIndicatorId,
+      year: Int = 1970,
+      target: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportCommonIndicatorTargetsRow(
             projectId = projectId,
             commonIndicatorId = commonIndicatorId,
             year = year,
             target = target?.toBigDecimal(),
         )
 
-    reportCommonIndicatorTargetsDao.insert(rowWithDefaults)
+    reportCommonIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertReportAutoCalculatedIndicatorTarget(
-      row: ReportAutoCalculatedIndicatorTargetsRow = ReportAutoCalculatedIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      indicator: AutoCalculatedIndicator =
-          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
-      year: Int = row.year ?: 1970,
-      target: Number? = row.target,
+      projectId: ProjectId = inserted.projectId,
+      indicator: AutoCalculatedIndicator = AutoCalculatedIndicator.SeedsCollected,
+      year: Int = 1970,
+      target: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ReportAutoCalculatedIndicatorTargetsRow(
             projectId = projectId,
             autoCalculatedIndicatorId = indicator,
             year = year,
             target = target?.toBigDecimal(),
         )
 
-    reportAutoCalculatedIndicatorTargetsDao.insert(rowWithDefaults)
+    reportAutoCalculatedIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertPublishedProjectIndicatorTarget(
-      row: PublishedProjectIndicatorTargetsRow = PublishedProjectIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      projectIndicatorId: ProjectIndicatorId =
-          row.projectIndicatorId ?: inserted.projectIndicatorId,
-      year: Int = row.year ?: 2025,
-      target: Number? = row.target,
+      projectId: ProjectId = inserted.projectId,
+      projectIndicatorId: ProjectIndicatorId = inserted.projectIndicatorId,
+      year: Int = 2025,
+      target: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedProjectIndicatorTargetsRow(
             projectId = projectId,
             projectIndicatorId = projectIndicatorId,
             year = year,
             target = target?.toBigDecimal(),
         )
 
-    publishedProjectIndicatorTargetsDao.insert(rowWithDefaults)
+    publishedProjectIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertPublishedCommonIndicatorTarget(
-      row: PublishedCommonIndicatorTargetsRow = PublishedCommonIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      year: Int = row.year ?: 2025,
-      target: Number? = row.target,
+      projectId: ProjectId = inserted.projectId,
+      commonIndicatorId: CommonIndicatorId = inserted.commonIndicatorId,
+      year: Int = 2025,
+      target: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedCommonIndicatorTargetsRow(
             projectId = projectId,
             commonIndicatorId = commonIndicatorId,
             year = year,
             target = target?.toBigDecimal(),
         )
 
-    publishedCommonIndicatorTargetsDao.insert(rowWithDefaults)
+    publishedCommonIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertPublishedAutoCalculatedIndicatorTarget(
-      row: PublishedAutoCalculatedIndicatorTargetsRow =
-          PublishedAutoCalculatedIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      indicator: AutoCalculatedIndicator =
-          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
-      year: Int = row.year ?: 2025,
-      target: Number? = row.target,
+      projectId: ProjectId = inserted.projectId,
+      indicator: AutoCalculatedIndicator = AutoCalculatedIndicator.SeedsCollected,
+      year: Int = 2025,
+      target: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedAutoCalculatedIndicatorTargetsRow(
             projectId = projectId,
             autoCalculatedIndicatorId = indicator,
             year = year,
             target = target?.toBigDecimal(),
         )
 
-    publishedAutoCalculatedIndicatorTargetsDao.insert(rowWithDefaults)
+    publishedAutoCalculatedIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertProjectIndicatorBaselineTarget(
-      row: ProjectIndicatorTargetsRow = ProjectIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      projectIndicatorId: ProjectIndicatorId =
-          row.projectIndicatorId ?: inserted.projectIndicatorId,
-      baseline: Number? = row.baseline,
-      endTarget: Number? = row.endTarget,
+      projectId: ProjectId = inserted.projectId,
+      projectIndicatorId: ProjectIndicatorId = inserted.projectIndicatorId,
+      baseline: Number? = null,
+      endTarget: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        ProjectIndicatorTargetsRow(
             projectId = projectId,
             projectIndicatorId = projectIndicatorId,
             baseline = baseline?.toBigDecimal(),
             endTarget = endTarget?.toBigDecimal(),
         )
 
-    projectIndicatorTargetsDao.insert(rowWithDefaults)
+    projectIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertCommonIndicatorBaselineTarget(
-      row: CommonIndicatorTargetsRow = CommonIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      baseline: Number? = row.baseline,
-      endTarget: Number? = row.endTarget,
+      projectId: ProjectId = inserted.projectId,
+      commonIndicatorId: CommonIndicatorId = inserted.commonIndicatorId,
+      baseline: Number? = null,
+      endTarget: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        CommonIndicatorTargetsRow(
             projectId = projectId,
             commonIndicatorId = commonIndicatorId,
             baseline = baseline?.toBigDecimal(),
             endTarget = endTarget?.toBigDecimal(),
         )
 
-    commonIndicatorTargetsDao.insert(rowWithDefaults)
+    commonIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertAutoCalculatedIndicatorBaselineTarget(
-      row: AutoCalculatedIndicatorTargetsRow = AutoCalculatedIndicatorTargetsRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      indicator: AutoCalculatedIndicator =
-          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
-      baseline: Number? = row.baseline,
-      endTarget: Number? = row.endTarget,
+      projectId: ProjectId = inserted.projectId,
+      indicator: AutoCalculatedIndicator = AutoCalculatedIndicator.SeedsCollected,
+      baseline: Number? = null,
+      endTarget: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        AutoCalculatedIndicatorTargetsRow(
             projectId = projectId,
             autoCalculatedIndicatorId = indicator,
             baseline = baseline?.toBigDecimal(),
             endTarget = endTarget?.toBigDecimal(),
         )
 
-    autoCalculatedIndicatorTargetsDao.insert(rowWithDefaults)
+    autoCalculatedIndicatorTargetsDao.insert(row)
   }
 
   protected fun insertPublishedProjectIndicatorBaseline(
-      row: PublishedProjectIndicatorBaselinesRow = PublishedProjectIndicatorBaselinesRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      projectIndicatorId: ProjectIndicatorId =
-          row.projectIndicatorId ?: inserted.projectIndicatorId,
-      baseline: Number? = row.baseline,
-      endTarget: Number? = row.endTarget,
+      projectId: ProjectId = inserted.projectId,
+      projectIndicatorId: ProjectIndicatorId = inserted.projectIndicatorId,
+      baseline: Number? = null,
+      endTarget: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedProjectIndicatorBaselinesRow(
             projectId = projectId,
             projectIndicatorId = projectIndicatorId,
             baseline = baseline?.toBigDecimal(),
             endTarget = endTarget?.toBigDecimal(),
         )
 
-    publishedProjectIndicatorBaselinesDao.insert(rowWithDefaults)
+    publishedProjectIndicatorBaselinesDao.insert(row)
   }
 
   protected fun insertPublishedCommonIndicatorBaseline(
-      row: PublishedCommonIndicatorBaselinesRow = PublishedCommonIndicatorBaselinesRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      baseline: Number? = row.baseline,
-      endTarget: Number? = row.endTarget,
+      projectId: ProjectId = inserted.projectId,
+      commonIndicatorId: CommonIndicatorId = inserted.commonIndicatorId,
+      baseline: Number? = null,
+      endTarget: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedCommonIndicatorBaselinesRow(
             projectId = projectId,
             commonIndicatorId = commonIndicatorId,
             baseline = baseline?.toBigDecimal(),
             endTarget = endTarget?.toBigDecimal(),
         )
 
-    publishedCommonIndicatorBaselinesDao.insert(rowWithDefaults)
+    publishedCommonIndicatorBaselinesDao.insert(row)
   }
 
   protected fun insertPublishedAutoCalculatedIndicatorBaseline(
-      row: PublishedAutoCalculatedIndicatorBaselinesRow =
-          PublishedAutoCalculatedIndicatorBaselinesRow(),
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      indicator: AutoCalculatedIndicator =
-          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
-      baseline: Number? = row.baseline,
-      endTarget: Number? = row.endTarget,
+      projectId: ProjectId = inserted.projectId,
+      indicator: AutoCalculatedIndicator = AutoCalculatedIndicator.SeedsCollected,
+      baseline: Number? = null,
+      endTarget: Number? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedAutoCalculatedIndicatorBaselinesRow(
             projectId = projectId,
             autoCalculatedIndicatorId = indicator,
             baseline = baseline?.toBigDecimal(),
             endTarget = endTarget?.toBigDecimal(),
         )
 
-    publishedAutoCalculatedIndicatorBaselinesDao.insert(rowWithDefaults)
+    publishedAutoCalculatedIndicatorBaselinesDao.insert(row)
   }
 
   protected fun insertPublishedReport(
@@ -5088,33 +4939,31 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertPublishedReportPhoto(
-      row: PublishedReportPhotosRow = PublishedReportPhotosRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      fileId: FileId = row.fileId ?: inserted.fileId,
-      caption: String? = row.caption,
+      reportId: ReportId = inserted.reportId,
+      fileId: FileId = inserted.fileId,
+      caption: String? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedReportPhotosRow(
             reportId = reportId,
             fileId = fileId,
             caption = caption,
         )
 
-    publishedReportPhotosDao.insert(rowWithDefaults)
+    publishedReportPhotosDao.insert(row)
   }
 
   protected fun insertPublishedReportProjectIndicator(
-      row: PublishedReportProjectIndicatorsRow = PublishedReportProjectIndicatorsRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      indicatorId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectIndicatorId,
-      value: Number? = row.value,
-      projectsComments: String? = row.projectsComments,
-      progressNotes: String? = row.progressNotes,
-      status: ReportIndicatorStatus? = row.statusId,
-      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
+      reportId: ReportId = inserted.reportId,
+      indicatorId: ProjectIndicatorId = inserted.projectIndicatorId,
+      value: Number? = null,
+      projectsComments: String? = null,
+      progressNotes: String? = null,
+      status: ReportIndicatorStatus? = null,
+      supportingDocumentUrl: URI? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedReportProjectIndicatorsRow(
             reportId = reportId,
             projectIndicatorId = indicatorId,
             value = value?.toBigDecimal(),
@@ -5124,21 +4973,20 @@ abstract class DatabaseBackedTest {
             supportingDocumentUrl = supportingDocumentUrl,
         )
 
-    publishedReportProjectIndicatorsDao.insert(rowWithDefaults)
+    publishedReportProjectIndicatorsDao.insert(row)
   }
 
   protected fun insertPublishedReportCommonIndicator(
-      row: PublishedReportCommonIndicatorsRow = PublishedReportCommonIndicatorsRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      indicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      value: Number? = row.value,
-      projectsComments: String? = row.projectsComments,
-      progressNotes: String? = row.progressNotes,
-      status: ReportIndicatorStatus? = row.statusId,
-      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
+      reportId: ReportId = inserted.reportId,
+      indicatorId: CommonIndicatorId = inserted.commonIndicatorId,
+      value: Number? = null,
+      projectsComments: String? = null,
+      progressNotes: String? = null,
+      status: ReportIndicatorStatus? = null,
+      supportingDocumentUrl: URI? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedReportCommonIndicatorsRow(
             reportId = reportId,
             commonIndicatorId = indicatorId,
             value = value?.toBigDecimal(),
@@ -5148,23 +4996,20 @@ abstract class DatabaseBackedTest {
             supportingDocumentUrl = supportingDocumentUrl,
         )
 
-    publishedReportCommonIndicatorsDao.insert(rowWithDefaults)
+    publishedReportCommonIndicatorsDao.insert(row)
   }
 
   protected fun insertPublishedReportAutoCalculatedIndicator(
-      row: PublishedReportAutoCalculatedIndicatorsRow =
-          PublishedReportAutoCalculatedIndicatorsRow(),
-      reportId: ReportId = row.reportId ?: inserted.reportId,
-      indicator: AutoCalculatedIndicator =
-          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.Seedlings,
-      value: Number? = row.value,
-      projectsComments: String? = row.projectsComments,
-      progressNotes: String? = row.progressNotes,
-      status: ReportIndicatorStatus? = row.statusId,
-      supportingDocumentUrl: URI? = row.supportingDocumentUrl,
+      reportId: ReportId = inserted.reportId,
+      indicator: AutoCalculatedIndicator = AutoCalculatedIndicator.Seedlings,
+      value: Number? = null,
+      projectsComments: String? = null,
+      progressNotes: String? = null,
+      status: ReportIndicatorStatus? = null,
+      supportingDocumentUrl: URI? = null,
   ) {
-    val rowWithDefaults =
-        row.copy(
+    val row =
+        PublishedReportAutoCalculatedIndicatorsRow(
             reportId = reportId,
             autoCalculatedIndicatorId = indicator,
             value = value?.toBigDecimal(),
@@ -5174,7 +5019,7 @@ abstract class DatabaseBackedTest {
             supportingDocumentUrl = supportingDocumentUrl,
         )
 
-    publishedReportAutoCalculatedIndicatorsDao.insert(rowWithDefaults)
+    publishedReportAutoCalculatedIndicatorsDao.insert(row)
   }
 
   protected fun insertActivity(
