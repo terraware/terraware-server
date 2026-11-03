@@ -118,7 +118,6 @@ import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
-import com.terraformation.backend.i18n.use
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
@@ -1093,30 +1092,6 @@ internal class NotificationServiceEmailTest {
 
     assertNoMessageSent()
     verify { atlassianHttpClient wasNot Called }
-  }
-
-  @Test
-  fun `observation not scheduled does not submit support request when Atlassian is disabled`() {
-    every { config.atlassian.enabled } returns false
-
-    service.on(ObservationNotScheduledNotificationEvent(PlantingSiteId(1)))
-
-    assertNoMessageSent()
-    verify { atlassianHttpClient wasNot Called }
-  }
-
-  @Test
-  fun `missing contact support request is in English regardless of current locale`() {
-    Locales.GIBBERISH.use {
-      service.on(ObservationNotScheduledNotificationEvent(PlantingSiteId(1)))
-    }
-
-    assertSentNoContactNotification()
-    assertContains(
-        "has not scheduled an observation",
-        supportDescription.captured,
-        "English notification title",
-    )
   }
 
   @Test

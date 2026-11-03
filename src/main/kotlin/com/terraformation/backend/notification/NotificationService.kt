@@ -120,6 +120,8 @@ import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.support.SupportService
+import com.terraformation.backend.support.atlassian.MAX_JIRA_DESCRIPTION_LENGTH
+import com.terraformation.backend.support.atlassian.MAX_JIRA_SUMMARY_LENGTH
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -1753,8 +1755,10 @@ class NotificationService(
           val body = renderSupportTemplate(emailContent, "body.ftl")
           supportService.submitServiceRequest(
               requestType = SupportRequestType.MissingContact,
-              summary = missingContact.title,
-              description = "${missingContact.body}\n\n$subject\n\n$body",
+              summary = missingContact.title.truncateForJira(MAX_JIRA_SUMMARY_LENGTH),
+              description =
+                  "${missingContact.body}\n\n$subject\n\n$body"
+                      .truncateForJira(MAX_JIRA_DESCRIPTION_LENGTH),
               skipReceiptEmail = true,
               userId = systemUser.userId,
           )
@@ -1766,6 +1770,10 @@ class NotificationService(
       log.info("Organization ${organization.id} has no contact, so not sending notification")
     }
   }
+
+  private fun String.truncateForJira(maxLength: Int): String =
+      if (length <= maxLength) this
+      else take(maxLength - 3).trimEnd { it.isHighSurrogate() } + "..."
 
   private fun renderSupportTemplate(model: EmailTemplateModel, filename: String): String =
       freeMarkerConfig
