@@ -3,7 +3,6 @@ package com.terraformation.backend.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.SpringShutdownListener
 import com.terraformation.backend.TestClock
-import com.terraformation.backend.TestDiagnostics
 import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.ControllerIntegrationTest
@@ -612,20 +611,13 @@ import com.terraformation.backend.util.removeDiacritics
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
 import java.net.URI
-import java.nio.file.Path
-import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Locale
 import java.util.UUID
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
@@ -641,26 +633,19 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextInitializer
-import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestExecutionListeners
-import org.springframework.test.context.support.TestPropertySourceUtils
 import org.springframework.test.context.transaction.InheritedTransactionRemover
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
-import org.testcontainers.containers.Network
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.postgresql.PostgreSQLContainer
-import org.testcontainers.utility.DockerImageName
 
 /**
  * Superclass for tests that make use of a database. You will usually want to subclass
@@ -687,9 +672,7 @@ import org.testcontainers.utility.DockerImageName
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ComponentScan(basePackageClasses = [UsersDao::class])
-@ContextConfiguration(
-    initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class]
-)
+@ContextConfiguration(initializers = [TestDatabaseContainer.DataSourceInitializer::class])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @Suppress("MemberVisibilityCanBePrivate") // Some DAOs are not used in tests yet
 @Testcontainers
@@ -6540,25 +6523,6 @@ abstract class DatabaseBackedTest {
     assertTableEquals(table = table, expected = emptySet(), message = message, where = where)
   }
 
-  class DockerPostgresDataSourceInitializer :
-      ApplicationContextInitializer<ConfigurableApplicationContext> {
-    override fun initialize(applicationContext: ConfigurableApplicationContext) {
-      startPostgresContainer()
-
-      // Run tests using the AWS JDBC wrapper since we'll be using the wrapper in production.
-      // The wrapper requires an extra element in the JDBC URL.
-      val awsWrapperJdbcUrl =
-          postgresContainer.jdbcUrl.replace(Regex("^jdbc:"), "jdbc:aws-wrapper:")
-
-      TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
-          applicationContext,
-          "spring.datasource.url=$awsWrapperJdbcUrl",
-          "spring.datasource.username=${postgresContainer.username}",
-          "spring.datasource.password=${postgresContainer.password}",
-      )
-    }
-  }
-
   companion object {
     init {
       // Work around non-thread-safe initialization of jOOQ constants by evaluating one symbol
@@ -6586,97 +6550,5 @@ abstract class DatabaseBackedTest {
      * This starts at a high number to avoid colliding with the taxon IDs in [GbifImporterTest].
      */
     val nextGbifTaxonId = AtomicLong(1000000)
-
-    private val imageName: DockerImageName =
-        DockerImageName.parse("$POSTGRES_DOCKER_REPOSITORY:$POSTGRES_DOCKER_TAG")
-            .asCompatibleSubstituteFor("postgres")
-
-    /**
-     * How long to wait for the database container to start. Startup normally takes a few seconds;
-     * this is long enough to accommodate a slow Docker host while still failing well before a CI
-     * job would time out.
-     */
-    private val postgresStartupTimeout: Duration =
-        System.getProperty("terraware.test.postgresStartupTimeout")?.let { Duration.parse(it) }
-            ?: Duration.ofMinutes(2)
-    private const val POSTGRES_START_ATTEMPTS = 2
-
-    private val log = LoggerFactory.getLogger(DatabaseBackedTest::class.java)
-
-    @Volatile
-    lateinit var postgresContainer: PostgreSQLContainer
-      private set
-
-    private fun newPostgresContainer(): PostgreSQLContainer =
-        PostgreSQLContainer(imageName)
-            .withDatabaseName("terraware")
-            .withExposedPorts(PostgreSQLContainer.POSTGRESQL_PORT)
-            .withNetwork(Network.newNetwork())
-            .withNetworkAliases("postgres")
-
-    /**
-     * Starts the database container if it isn't already running. Tests run in parallel, so this may
-     * be called concurrently by multiple threads.
-     *
-     * Testcontainers can occasionally get stuck while starting a container. If startup doesn't
-     * finish within [postgresStartupTimeout], writes a diagnostic report, abandons the container,
-     * and tries again with a new one.
-     */
-    @Synchronized
-    fun startPostgresContainer() {
-      if (::postgresContainer.isInitialized) {
-        return
-      }
-
-      val reportPaths = mutableListOf<Path>()
-
-      for (attempt in 1..POSTGRES_START_ATTEMPTS) {
-        val container = newPostgresContainer()
-        val startResult = CompletableFuture<Unit>()
-        thread(isDaemon = true, name = "postgres-container-start-$attempt") {
-          try {
-            container.start()
-            startResult.complete(Unit)
-          } catch (e: Throwable) {
-            startResult.completeExceptionally(e)
-          }
-        }
-
-        try {
-          startResult.get(postgresStartupTimeout.toMillis(), TimeUnit.MILLISECONDS)
-          postgresContainer = container
-          return
-        } catch (e: ExecutionException) {
-          throw e.cause ?: e
-        } catch (_: TimeoutException) {
-          val path =
-              TestDiagnostics.writeReport(
-                  "postgres-startup",
-                  "Database container startup attempt $attempt of $POSTGRES_START_ATTEMPTS " +
-                      "did not finish within $postgresStartupTimeout\n" +
-                      "Container ID: ${container.containerId}\n\n" +
-                      TestDiagnostics.dockerDiagnostics(container.containerId) +
-                      "\n" +
-                      TestDiagnostics.threadDump(),
-              )
-          reportPaths.add(path)
-          log.error("Database container startup timed out; diagnostics written to $path")
-
-          thread(isDaemon = true, name = "postgres-container-stop-$attempt") {
-            try {
-              container.stop()
-              container.network?.close()
-            } catch (e: Exception) {
-              log.warn("Unable to stop abandoned database container", e)
-            }
-          }
-        }
-      }
-
-      throw IllegalStateException(
-          "Database container did not start after $POSTGRES_START_ATTEMPTS attempts; " +
-              "diagnostics are in ${reportPaths.joinToString()}"
-      )
-    }
   }
 }
