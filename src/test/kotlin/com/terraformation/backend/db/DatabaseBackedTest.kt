@@ -401,6 +401,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_C
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.keys.BATCHES_PKEY
@@ -2312,18 +2313,26 @@ abstract class DatabaseBackedTest {
 
   fun insertBatch(
       row: BatchesRow = BatchesRow(),
+      accessionId: AccessionId? = row.accessionId,
       activeGrowthQuantity: Int = row.activeGrowthQuantity ?: 0,
       addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: clock.instant(),
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
+      germinationStartedDate: LocalDate? = row.germinationStartedDate,
       hardeningOffQuantity: Int = row.hardeningOffQuantity ?: 0,
+      notes: String? = row.notes,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: ProjectId? = row.projectId,
       readyQuantity: Int = row.readyQuantity ?: 0,
       readyByDate: LocalDate? = row.readyByDate,
+      seedsSownDate: LocalDate? = row.seedsSownDate,
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+      substrateId: BatchSubstrate? = row.substrateId,
+      substrateNotes: String? = row.substrateNotes,
+      treatmentId: SeedTreatment? = row.treatmentId,
+      treatmentNotes: String? = row.treatmentNotes,
       version: Int = row.version ?: 1,
       batchNumber: String = row.batchNumber ?: "${nextBatchNumber++}",
       germinationRate: Int? = row.germinationRate,
@@ -2360,6 +2369,7 @@ abstract class DatabaseBackedTest {
 
     val rowWithDefaults =
         row.copy(
+            accessionId = accessionId,
             activeGrowthQuantity = activeGrowthQuantity,
             addedDate = addedDate,
             batchNumber = batchNumber,
@@ -2367,6 +2377,7 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             facilityId = facilityId,
             germinatingQuantity = germinatingQuantity,
+            germinationStartedDate = germinationStartedDate,
             germinationRate = effectiveGerminationRate,
             hardeningOffQuantity = hardeningOffQuantity,
             totalGerminated = totalGerminated,
@@ -2381,11 +2392,17 @@ abstract class DatabaseBackedTest {
             totalLossCandidates = totalLossCandidates,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
+            notes = notes,
             organizationId = organizationId,
             projectId = projectId,
             readyQuantity = readyQuantity,
             readyByDate = readyByDate,
+            seedsSownDate = seedsSownDate,
             speciesId = speciesId,
+            substrateId = substrateId,
+            substrateNotes = substrateNotes,
+            treatmentId = treatmentId,
+            treatmentNotes = treatmentNotes,
             version = version,
         )
 
@@ -3722,23 +3739,25 @@ abstract class DatabaseBackedTest {
       ph: BigDecimal? = row.ph,
       tideId: MangroveTide? = row.tideId,
       tideTime: Instant? = row.tideTime,
+      nextTreeNumber: Int = row.nextTreeNumber ?: 1,
   ) {
     val rowWithDefaults =
         row.copy(
-            observationId = observationId,
-            monitoringPlotId = monitoringPlotId,
             description = description,
             forestTypeId = forestType,
-            smallTreesCountLow = smallTreesCountLow,
-            smallTreesCountHigh = smallTreesCountHigh,
             herbaceousCoverPercent = herbaceousCoverPercent,
+            monitoringPlotId = monitoringPlotId,
+            nextTreeNumber = nextTreeNumber,
+            observationId = observationId,
+            ph = ph,
+            salinityPpt = salinityPpt,
+            smallTreesCountHigh = smallTreesCountHigh,
+            smallTreesCountLow = smallTreesCountLow,
             soilAssessment = soilAssessment,
             soilTypeId = soilType,
-            waterDepthCm = waterDepthCm,
-            salinityPpt = salinityPpt,
-            ph = ph,
             tideId = tideId,
             tideTime = tideTime,
+            waterDepthCm = waterDepthCm,
         )
 
     observationBiomassDetailsDao.insert(rowWithDefaults)
@@ -4012,6 +4031,8 @@ abstract class DatabaseBackedTest {
               ?: inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]?.last()
               ?: inserted.monitoringPlotHistoryId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
+      notes: String? = row.notes,
+      observedTime: Instant? = row.observedTime,
       statusId: ObservationPlotStatus =
           row.statusId
               ?: when {
@@ -4030,6 +4051,8 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             isPermanent = isPermanent,
             observationId = observationId,
+            notes = notes,
+            observedTime = observedTime,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             monitoringPlotHistoryId = monitoringPlotHistoryId,

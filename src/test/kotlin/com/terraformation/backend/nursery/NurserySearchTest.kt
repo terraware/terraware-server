@@ -12,7 +12,6 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.mockUser
@@ -119,11 +118,9 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           )
       batchId3 =
           insertBatch(
-              BatchesRow(
-                  germinationStartedDate = LocalDate.of(2022, 9, 15),
-                  readyByDate = LocalDate.of(2022, 10, 2),
-                  seedsSownDate = LocalDate.of(2022, 9, 10),
-              ),
+              germinationStartedDate = LocalDate.of(2022, 9, 15),
+              readyByDate = LocalDate.of(2022, 10, 2),
+              seedsSownDate = LocalDate.of(2022, 9, 10),
               addedDate = LocalDate.of(2022, 9, 3),
               organizationId = organizationId,
               facilityId = facilityId2,

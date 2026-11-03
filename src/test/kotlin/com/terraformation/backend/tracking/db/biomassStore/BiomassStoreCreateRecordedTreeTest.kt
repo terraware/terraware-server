@@ -6,7 +6,6 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDetailsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
@@ -45,15 +44,14 @@ class BiomassStoreCreateRecordedTreeTest : BaseBiomassStoreTest() {
   @Test
   fun `numbers trees using the stored counter and only trees in the plot`() {
     insertObservationBiomassDetails(
-        row = ObservationBiomassDetailsRow(nextTreeNumber = 6),
+        nextTreeNumber = 6,
     )
     insertObservationBiomassSpecies(speciesId = speciesId)
 
     val otherMonitoringPlotId = insertMonitoringPlot(isAdHoc = true)
     insertObservationPlot(monitoringPlotId = otherMonitoringPlotId, completedBy = user.userId)
     insertObservationBiomassDetails(
-        monitoringPlotId = otherMonitoringPlotId,
-        row = ObservationBiomassDetailsRow(nextTreeNumber = 8),
+        nextTreeNumber = 8,
     )
 
     store.createRecordedTree(observationId, monitoringPlotId, newTreeModel())

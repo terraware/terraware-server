@@ -4,7 +4,6 @@ import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -225,7 +224,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val initial = store.create(accessionModel(speciesId = speciesId1))
 
     insertFacility(type = FacilityType.Nursery)
-    insertBatch(BatchesRow(accessionId = initial.id!!))
+    insertBatch(accessionId = initial.id!!)
     insertNurseryWithdrawal()
     insertBatchWithdrawal()
     insertPlantingSite()
@@ -339,8 +338,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     assertFalse(initial.hasDeliveries, "Should not have delivery after initial creation")
 
     val seedBankFacilityId = inserted.facilityId
-    val nurseryFacilityId = insertFacility(type = FacilityType.Nursery)
-    insertBatch(BatchesRow(accessionId = initial.id!!, facilityId = nurseryFacilityId))
+    insertFacility(type = FacilityType.Nursery)
+    insertBatch(accessionId = initial.id!!)
     insertNurseryWithdrawal()
     insertBatchWithdrawal()
     insertPlantingSite()

@@ -4,7 +4,6 @@ import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
@@ -24,23 +23,20 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
 
     val batchId =
         insertBatch(
-            BatchesRow(
-                accessionId = accessionId1,
-                germinationStartedDate = LocalDate.of(2023, 5, 15),
-                notes = "Notes",
-                seedsSownDate = LocalDate.of(2023, 5, 10),
-                substrateId = BatchSubstrate.Moss,
-                substrateNotes = "Substrate Notes",
-                treatmentId = SeedTreatment.Chemical,
-                treatmentNotes = "Treatment Notes",
-            ),
+            accessionId = accessionId1,
+            activeGrowthQuantity = 128,
             batchNumber = "23-2-1-008",
             germinatingQuantity = 64,
+            germinationStartedDate = LocalDate.of(2023, 5, 15),
             hardeningOffQuantity = 512,
-            activeGrowthQuantity = 128,
+            notes = "Notes",
             readyByDate = LocalDate.of(2023, 6, 7),
             readyQuantity = 256,
-            speciesId = speciesId,
+            seedsSownDate = LocalDate.of(2023, 5, 10),
+            substrateId = BatchSubstrate.Moss,
+            substrateNotes = "Substrate Notes",
+            treatmentId = SeedTreatment.Chemical,
+            treatmentNotes = "Treatment Notes",
         )
 
     insertSeedbankWithdrawal(
