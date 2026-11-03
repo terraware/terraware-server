@@ -1,3 +1,6 @@
+1c563a65 Enable the Gradle configuration cache (#5324)
+2abab5e0 Compute the git-based version number in a ValueSource (#5323)
+7708b58d Fix downloadDependencies to actually download dependencies (#5322)
 b59f39ca SW-9177 Add update endpoint for saved table views (#5304)
 2250164c SW-9171 Add delete endpoint for saved table views (#5303)
 4c3cf21d SW-9172 Add read endpoints for saved table views (#5302)
