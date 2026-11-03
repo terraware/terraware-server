@@ -34,6 +34,7 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
+import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.SystemUser
@@ -111,6 +112,7 @@ import freemarker.template.Configuration
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -122,6 +124,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 
 internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
@@ -135,6 +139,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var otherUserId: UserId
 
   private val messages: Messages = Messages()
+  private val publisher = TestEventPublisher()
 
   private lateinit var accessionStore: AccessionStore
   private lateinit var activityStore: ActivityStore
@@ -165,8 +170,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
-
-    val publisher = TestEventPublisher()
 
     organizationId = insertOrganization()
     facilityId = insertFacility()
@@ -1402,6 +1405,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     service.on(ObservationNotScheduledNotificationEvent(inserted.plantingSiteId))
 
     verify { emailService wasNot Called }
+    publisher.assertEventNotPublished<TerraformationContactMissingEvent>()
     assertTableEmpty(NOTIFICATIONS)
   }
 

@@ -1731,9 +1731,9 @@ class NotificationService(
   }
 
   /**
-   * Sends an email to the organization's Terraformation Contact. If there is none and the
-   * organization has any accelerator or application projects, publishes a missing-contact event.
-   * Does not create app notifications.
+   * Sends an email to the Terraformation contacts of organizations with accelerator or application
+   * projects. If there are no contacts, publishes a missing-contact event when [fallBackToSupport]
+   * is true. Does not create app notifications.
    */
   private fun sendToOrganizationContact(
       organization: OrganizationModel,
