@@ -20,8 +20,11 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.records.UploadProblemsRecord
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchStage
+import com.terraformation.backend.db.nursery.tables.pojos.BatchStageDetailsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -170,7 +173,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             ),
         ),
         listOf(
-            BatchesRow(
+            (BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 1),
                 activeGrowthQuantity = 2,
                 batchNumber = "23-2-1-001",
@@ -193,8 +196,34 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 readyQuantity = 4,
                 speciesId = SpeciesId(1),
                 version = 1,
-            ),
-            BatchesRow(
+            ) to
+                listOf(
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.Germinating,
+                        quantity = 1,
+                        latestObservedQuantity = 1,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.ActiveGrowth,
+                        quantity = 2,
+                        latestObservedQuantity = 2,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.HardeningOff,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.Ready,
+                        quantity = 4,
+                        latestObservedQuantity = 4,
+                    ),
+                )),
+            (BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 2),
                 activeGrowthQuantity = 0,
                 batchNumber = "23-2-1-002",
@@ -216,8 +245,34 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 readyQuantity = 0,
                 speciesId = SpeciesId(2),
                 version = 1,
-            ),
-            BatchesRow(
+            ) to
+                listOf(
+                    BatchStageDetailsRow(
+                        batchId = BatchId(2),
+                        stageId = BatchStage.Germinating,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(2),
+                        stageId = BatchStage.ActiveGrowth,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(2),
+                        stageId = BatchStage.HardeningOff,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(2),
+                        stageId = BatchStage.Ready,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                )),
+            (BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 3),
                 activeGrowthQuantity = 0,
                 batchNumber = "23-2-1-003",
@@ -239,7 +294,33 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 readyQuantity = 0,
                 speciesId = SpeciesId(1),
                 version = 1,
-            ),
+            ) to
+                listOf(
+                    BatchStageDetailsRow(
+                        batchId = BatchId(3),
+                        stageId = BatchStage.Germinating,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(3),
+                        stageId = BatchStage.ActiveGrowth,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(3),
+                        stageId = BatchStage.HardeningOff,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(3),
+                        stageId = BatchStage.Ready,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                )),
         ),
         listOf(
             BatchSubLocationsRow(
@@ -275,7 +356,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             ),
         ),
         listOf(
-            BatchesRow(
+            (BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 1),
                 activeGrowthQuantity = 2,
                 batchNumber = "23-2-1-001",
@@ -298,7 +379,33 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 readyQuantity = 3,
                 speciesId = SpeciesId(1),
                 version = 1,
-            ),
+            ) to
+                listOf(
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.Germinating,
+                        quantity = 123456,
+                        latestObservedQuantity = 123456,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.ActiveGrowth,
+                        quantity = 2,
+                        latestObservedQuantity = 2,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.HardeningOff,
+                        quantity = 0,
+                        latestObservedQuantity = 0,
+                    ),
+                    BatchStageDetailsRow(
+                        batchId = BatchId(1),
+                        stageId = BatchStage.Ready,
+                        quantity = 3,
+                        latestObservedQuantity = 3,
+                    ),
+                )),
         ),
         listOf(
             BatchSubLocationsRow(
@@ -398,7 +505,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
       filename: String,
       locale: Locale,
       expectedSpecies: List<SpeciesRow>,
-      expectedBatches: List<BatchesRow>,
+      expectedBatches: List<Pair<BatchesRow, List<BatchStageDetailsRow>>>,
       expectedSubLocations: List<BatchSubLocationsRow> = emptyList(),
   ) {
     val csvContent =
@@ -445,9 +552,18 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     )
 
     assertJsonEquals(
-        expectedBatches.map { it.copy(id = null, speciesId = mappedSpeciesIds[it.speciesId]) },
+        expectedBatches.map { (batch, _) ->
+          batch.copy(id = null, speciesId = mappedSpeciesIds[batch.speciesId])
+        },
         actualBatches.map { it.copy(id = null) },
         "Imported batches",
+    )
+
+    assertTableEquals(
+        expectedBatches.flatMap { (_, quantities) ->
+          quantities.map { BatchStageDetailsRecord(it.copy(batchId = mappedBatchIds[it.batchId])) }
+        },
+        message = "Imported stage quantities",
     )
 
     assertJsonEquals(

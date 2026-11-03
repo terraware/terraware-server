@@ -2,8 +2,12 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchStageDetailsRow
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.nursery.db.BatchInventoryInsufficientException
 import com.terraformation.backend.nursery.db.BatchPhaseReversalNotAllowedException
 import com.terraformation.backend.nursery.model.NurseryBatchPhase
@@ -36,6 +40,12 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
 
   @Test
   fun `updates quantities and creates history entry`() {
+    val initialQuantities =
+        dslContext
+            .selectFrom(BATCH_STAGE_DETAILS)
+            .fetchInto(BatchStageDetailsRow::class.java)
+            .associateBy { it.stageId }
+
     val before = batchesDao.fetchOneById(batchId)!!
 
     store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 2)
@@ -57,6 +67,22 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
             version = 4,
         ),
         after,
+    )
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.Germinating).copy(quantity = 8)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.ActiveGrowth).copy(quantity = 15)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.HardeningOff).copy(quantity = 42)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.Ready).copy(quantity = 35)
+            ),
+        ),
     )
 
     assertEquals(
@@ -101,6 +127,12 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
 
   @Test
   fun `supports moves from any status to any later status`() {
+    val initialQuantities =
+        dslContext
+            .selectFrom(BATCH_STAGE_DETAILS)
+            .fetchInto(BatchStageDetailsRow::class.java)
+            .associateBy { it.stageId }
+
     val before = batchesDao.fetchOneById(batchId)!!
 
     store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.HardeningOff, 3)
@@ -119,6 +151,22 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
             version = 2,
         ),
         after,
+    )
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.Germinating).copy(quantity = 7)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.ActiveGrowth).copy(quantity = 20)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.HardeningOff).copy(quantity = 43)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.Ready).copy(quantity = 30)
+            ),
+        ),
     )
 
     assertEquals(
