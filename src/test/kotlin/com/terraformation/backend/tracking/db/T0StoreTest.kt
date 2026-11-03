@@ -1931,7 +1931,17 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class AssignNewObservationSpeciesZero {
     @Test
-    fun `completing an ad-hoc observation does not add zero t0 densities`() {
+    fun `completing an ad-hoc or biomass observation does not add zero t0 densities`() {
+      insertPlotT0Observation(monitoringPlotId = monitoringPlotId, observationId = observationId)
+      val biomassObservationId =
+          insertObservation(observationType = ObservationType.BiomassMeasurements)
+      insertObservationPlot(isPermanent = true, monitoringPlotId = monitoringPlotId)
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = monitoringPlotId,
+          speciesId = speciesId1,
+          totalLive = 1,
+      )
+
       insertMonitoringPlot(isAdHoc = true, plotNumber = 20)
       val adHocObservationId = insertObservation(isAdHoc = true)
       insertObservationPlot()
@@ -1939,6 +1949,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
 
       store.on(ObservationStateUpdatedEvent(adHocObservationId, ObservationState.Completed))
+      store.on(ObservationStateUpdatedEvent(biomassObservationId, ObservationState.Completed))
 
       assertTableEmpty(PLOT_T0_DENSITIES)
     }
