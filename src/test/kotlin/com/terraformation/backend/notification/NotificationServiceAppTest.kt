@@ -1392,7 +1392,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
 
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
-  fun `non-accelerator organizations do not send contact notifications`(hasContact: Boolean) {
+  fun `non-accelerator organizations do not send TF contact notifications`(hasContact: Boolean) {
     insertPlantingSite()
     insertStratum()
     if (hasContact) {
