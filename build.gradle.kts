@@ -211,6 +211,15 @@ testing {
             )
             systemProperty("java.locale.providers", "SPI,CLDR")
             testLogging { exceptionFormat = TestExceptionFormat.FULL }
+
+            // Reuse the test database container across local test runs unless the developer has
+            // explicitly configured reuse. CI builds always use a new container.
+            if (
+                !providers.environmentVariable("CI").isPresent &&
+                    !providers.environmentVariable("TESTCONTAINERS_REUSE_ENABLE").isPresent
+            ) {
+              environment("TESTCONTAINERS_REUSE_ENABLE", "true")
+            }
           }
         }
       }
