@@ -419,6 +419,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       every {
         batchStore.addToExistingBatch(
             accessionId = accessionId,
+            addedDate = transferredBatch.addedDate,
             batchId = existingBatchId,
             germinatingQuantity = 10,
         )

@@ -377,6 +377,7 @@ COMMENT ON COLUMN nursery.batch_quantity_history.accession_id IS 'If this change
 COMMENT ON COLUMN nursery.batch_quantity_history.batch_id IS 'Which batch''s quantities were changed.';
 COMMENT ON COLUMN nursery.batch_quantity_history.created_by IS 'Which user triggered the change in quantities. "Created" here refers to the history row, not the batch.';
 COMMENT ON COLUMN nursery.batch_quantity_history.created_time IS 'When the change in quantities happened. "Created" here refers to the history row, not the batch.';
+COMMENT ON COLUMN nursery.batch_quantity_history.effective_time IS 'When this change took effect for time-in-stage calculations. Usually the same as `created_time`, but can be earlier for backdated withdrawals, transfers, and seeds added from accessions. Null for history recorded before this was tracked.';
 COMMENT ON COLUMN nursery.batch_quantity_history.germinating_quantity IS 'New number of germinating seedlings in the batch.';
 COMMENT ON COLUMN nursery.batch_quantity_history.hardening_off_quantity IS 'New number of hardening-off seedlings in the batch.';
 COMMENT ON COLUMN nursery.batch_quantity_history.history_type_id IS 'Type of operation that resulted in the change in quantities.';

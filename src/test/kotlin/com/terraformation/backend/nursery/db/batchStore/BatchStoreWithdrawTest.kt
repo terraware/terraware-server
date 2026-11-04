@@ -12,6 +12,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchStageDetailsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistoryRecord
 import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.db.nursery.tables.records.WithdrawalsRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
@@ -105,7 +106,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                 id = null,
                 notes = "Notes",
                 purpose = WithdrawalPurpose.Other,
-                withdrawnDate = LocalDate.of(2022, 10, 1),
+                withdrawnDate = LocalDate.EPOCH,
                 batchWithdrawals =
                     listOf(
                         BatchWithdrawalModel(
@@ -183,6 +184,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   createdTime = withdrawalTime,
                   withdrawalId = withdrawal.id,
                   version = 2,
+                  effectiveTime = withdrawalTime,
               )
 
           assertEquals(
@@ -224,7 +226,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       facilityId = facilityId,
                       notes = "Notes",
                       purposeId = WithdrawalPurpose.Other,
-                      withdrawnDate = LocalDate.of(2022, 10, 1),
+                      withdrawnDate = LocalDate.EPOCH,
                       createdBy = user.userId,
                       createdTime = withdrawalTime,
                       modifiedBy = user.userId,
@@ -393,6 +395,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       readyQuantity = 27,
                       hardeningOffQuantity = 36,
                       version = 2,
+                      effectiveTime =
+                          ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, newYorkZone).toInstant(),
                   ),
               ),
               batchQuantityHistoryDao.findAll().map { it.copy(id = null) },
@@ -433,6 +437,75 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               "Should have inserted batch withdrawals row",
           )
         },
+    )
+  }
+
+  @Test
+  fun `quantity history effective times do not run backwards even for backdated withdrawals`() {
+    val previousEffectiveTime =
+        ZonedDateTime.of(2023, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    val previousCreatedTime = ZonedDateTime.of(2023, 1, 2, 12, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    insertBatchQuantityHistory(
+        activeGrowthQuantity = 20,
+        batchId = species1Batch1Id,
+        createdTime = previousCreatedTime,
+        effectiveTime = previousEffectiveTime,
+        germinatingQuantity = 10,
+        hardeningOffQuantity = 40,
+        readyQuantity = 30,
+    )
+
+    val withdrawalTime = ZonedDateTime.of(2023, 1, 10, 12, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    clock.instant = withdrawalTime
+    val withdrawal =
+        store.withdraw(
+            NewWithdrawalModel(
+                batchWithdrawals =
+                    listOf(
+                        BatchWithdrawalModel(
+                            activeGrowthQuantityWithdrawn = 2,
+                            batchId = species1Batch1Id,
+                            germinatingQuantityWithdrawn = 1,
+                            hardeningOffQuantityWithdrawn = 4,
+                            readyQuantityWithdrawn = 3,
+                        )
+                    ),
+                facilityId = facilityId,
+                id = null,
+                purpose = WithdrawalPurpose.Other,
+                withdrawnDate = LocalDate.of(2023, 1, 1),
+            )
+        )
+
+    assertTableEquals(
+        listOf(
+            BatchQuantityHistoryRecord(
+                activeGrowthQuantity = 20,
+                batchId = species1Batch1Id,
+                createdBy = user.userId,
+                createdTime = previousCreatedTime,
+                effectiveTime = previousEffectiveTime,
+                germinatingQuantity = 10,
+                hardeningOffQuantity = 40,
+                historyTypeId = BatchQuantityHistoryType.Observed,
+                readyQuantity = 30,
+                version = 1,
+            ),
+            BatchQuantityHistoryRecord(
+                activeGrowthQuantity = 18,
+                batchId = species1Batch1Id,
+                createdBy = user.userId,
+                createdTime = withdrawalTime,
+                effectiveTime = previousEffectiveTime,
+                germinatingQuantity = 9,
+                hardeningOffQuantity = 36,
+                historyTypeId = BatchQuantityHistoryType.Computed,
+                readyQuantity = 27,
+                version = 2,
+                withdrawalId = withdrawal.id,
+            ),
+        ),
+        "History should not move backward in effective time",
     )
   }
 
@@ -859,6 +932,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   createdBy = user.userId,
                   createdTime = withdrawalTime,
                   withdrawalId = withdrawal.id,
+                  effectiveTime =
+                      ZonedDateTime.of(2022, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
               )
           val originBatchHistoryRow =
               BatchQuantityHistoryRow(
@@ -866,6 +941,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   createdBy = user.userId,
                   createdTime = withdrawalTime,
                   withdrawalId = withdrawal.id,
+                  effectiveTime =
+                      ZonedDateTime.of(2022, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
               )
 
           assertEquals(
@@ -1234,6 +1311,18 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       hardeningOffQuantity = 4,
                       withdrawalId = firstWithdrawal.id,
                       version = 1,
+                      effectiveTime =
+                          ZonedDateTime.of(
+                                  2022,
+                                  10,
+                                  1,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  destinationTimeZone,
+                              )
+                              .toInstant(),
                   ),
                   BatchQuantityHistoryRow(
                       batchId = newBatch.id!!,
@@ -1246,6 +1335,18 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       hardeningOffQuantity = 4 + 7,
                       withdrawalId = secondWithdrawal.id,
                       version = 2,
+                      effectiveTime =
+                          ZonedDateTime.of(
+                                  2022,
+                                  10,
+                                  2,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  destinationTimeZone,
+                              )
+                              .toInstant(),
                   ),
                   BatchQuantityHistoryRow(
                       batchId = species1Batch1Id,
@@ -1258,6 +1359,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       hardeningOffQuantity = 40 - 4,
                       withdrawalId = firstWithdrawal.id,
                       version = 2,
+                      effectiveTime =
+                          ZonedDateTime.of(2022, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
                   ),
                   BatchQuantityHistoryRow(
                       batchId = species1Batch1Id,
@@ -1270,6 +1373,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       hardeningOffQuantity = 40 - 4 - 7,
                       withdrawalId = secondWithdrawal.id,
                       version = 3,
+                      effectiveTime =
+                          ZonedDateTime.of(2022, 10, 2, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
                   ),
               ),
               batchQuantityHistoryDao.findAll().map { it.copy(id = null) }.toSet(),

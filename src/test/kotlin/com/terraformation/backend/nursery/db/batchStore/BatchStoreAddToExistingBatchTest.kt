@@ -7,13 +7,15 @@ import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistory
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
-  private val transferTime = Instant.ofEpochSecond(1000)
+  private val addedDate = LocalDate.of(1970, 1, 2)
+  private val transferTime = Instant.ofEpochSecond(3 * 86_400 + 1_000)
 
   private lateinit var batch: ExistingBatchModel
   private lateinit var batchId: BatchId
@@ -41,6 +43,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
     val updatedBatch =
         store.addToExistingBatch(
             accessionId = secondAccessionId,
+            addedDate = addedDate,
             batchId = batchId,
             germinatingQuantity = 100,
         )
@@ -61,6 +64,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
   fun `records accession the seeds came from in quantity history`() {
     store.addToExistingBatch(
         accessionId = secondAccessionId,
+        addedDate = addedDate,
         batchId = batchId,
         germinatingQuantity = 100,
     )
@@ -73,6 +77,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
                 batchId = batchId,
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
+                effectiveTime = Instant.EPOCH,
                 germinatingQuantity = 10,
                 hardeningOffQuantity = 3,
                 historyTypeId = BatchQuantityHistoryType.Observed,
@@ -85,6 +90,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
                 batchId = batchId,
                 createdBy = user.userId,
                 createdTime = transferTime,
+                effectiveTime = Instant.ofEpochSecond(86_400),
                 germinatingQuantity = 110,
                 hardeningOffQuantity = 3,
                 historyTypeId = BatchQuantityHistoryType.Computed,
@@ -99,6 +105,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
   fun `does not modify accession ID of batch`() {
     store.addToExistingBatch(
         accessionId = secondAccessionId,
+        addedDate = addedDate,
         batchId = batchId,
         germinatingQuantity = 1,
     )
@@ -111,6 +118,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
     assertThrows<IllegalArgumentException> {
       store.addToExistingBatch(
           accessionId = secondAccessionId,
+          addedDate = addedDate,
           batchId = batchId,
           germinatingQuantity = -1,
       )

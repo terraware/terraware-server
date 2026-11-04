@@ -93,6 +93,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
                 hardeningOffQuantity = 40,
                 readyQuantity = 30,
                 version = 2,
+                effectiveTime = updateTime,
             ),
             BatchQuantityHistoryRow(
                 batchId = batchId,
@@ -104,6 +105,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
                 hardeningOffQuantity = 47,
                 readyQuantity = 30,
                 version = 3,
+                effectiveTime = updateTime,
             ),
             BatchQuantityHistoryRow(
                 batchId = batchId,
@@ -115,6 +117,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
                 hardeningOffQuantity = 42,
                 readyQuantity = 35,
                 version = 4,
+                effectiveTime = updateTime,
             ),
         ),
         batchQuantityHistoryDao.findAll().map { it.copy(id = null) },
@@ -173,6 +176,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
                 hardeningOffQuantity = 43,
                 readyQuantity = 30,
                 version = 2,
+                effectiveTime = updateTime,
             )
         ),
         batchQuantityHistoryDao.findAll().map { it.copy(id = null) },

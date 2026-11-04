@@ -82,7 +82,9 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdra
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import jakarta.inject.Named
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.math.roundToInt
 import org.jooq.DSLContext
@@ -290,6 +292,7 @@ class BatchStore(
           hardeningOffQuantity = newModel.hardeningOffQuantity,
           historyType = BatchQuantityHistoryType.Observed,
           readyQuantity = newModel.readyQuantity,
+          userSuppliedDate = if (withdrawalId != null) newModel.addedDate else null,
           version = 1,
           withdrawalId = withdrawalId,
       )
@@ -504,6 +507,7 @@ class BatchStore(
       withdrawalId: WithdrawalId? = null,
       notes: String? = null,
       accessionId: AccessionId? = null,
+      userSuppliedDate: LocalDate? = null,
   ) {
     if (germinating < 0 || activeGrowth < 0 || hardeningOff < 0 || ready < 0) {
       throw IllegalArgumentException("Quantities may not be negative")
@@ -542,6 +546,7 @@ class BatchStore(
             withdrawalId,
             notes,
             accessionId,
+            userSuppliedDate,
         )
         updateRates(batchId)
       }
@@ -556,6 +561,7 @@ class BatchStore(
 
   fun addToExistingBatch(
       accessionId: AccessionId,
+      addedDate: LocalDate,
       batchId: BatchId,
       germinatingQuantity: Int,
   ): ExistingBatchModel {
@@ -575,6 +581,7 @@ class BatchStore(
             hardeningOff = batch.hardeningOffQuantity,
             historyType = BatchQuantityHistoryType.Computed,
             ready = batch.readyQuantity,
+            userSuppliedDate = addedDate,
             version = batch.version,
         )
       }
@@ -881,6 +888,7 @@ class BatchStore(
                         newReadyQuantity,
                         BatchQuantityHistoryType.Computed,
                         withdrawalId,
+                        userSuppliedDate = withdrawal.withdrawnDate,
                     )
                   } else {
                     updateVersionedBatch(batchId, batch.version) {}
@@ -1063,6 +1071,7 @@ class BatchStore(
             destinationQuantities.getValue(BatchStage.Ready).quantity +
                 batchWithdrawal.readyQuantityWithdrawn,
             BatchQuantityHistoryType.Computed,
+            userSuppliedDate = withdrawal.withdrawnDate,
             withdrawalId = withdrawalId,
         )
 
@@ -1156,14 +1165,46 @@ class BatchStore(
       withdrawalId: WithdrawalId? = null,
       notes: String? = null,
       accessionId: AccessionId? = null,
+      userSuppliedDate: LocalDate? = null,
   ) {
+    val recorded = clock.instant()
+    val effectiveTime =
+        if (userSuppliedDate == null) {
+          recorded
+        } else {
+          val zone = parentStore.getEffectiveTimeZone(batchId)
+          val previous =
+              if (userSuppliedDate == LocalDate.ofInstant(recorded, zone)) {
+                null
+              } else {
+                dslContext
+                    .select(
+                        BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME,
+                        BATCH_QUANTITY_HISTORY.CREATED_TIME,
+                    )
+                    .from(BATCH_QUANTITY_HISTORY)
+                    .where(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(batchId))
+                    .orderBy(BATCH_QUANTITY_HISTORY.VERSION.desc())
+                    .limit(1)
+                    .fetchOne()
+                    ?.let { it.value1() ?: it.value2() }
+              }
+          computeEffectiveTime(
+              previous = previous,
+              recorded = recorded,
+              userSuppliedDate = userSuppliedDate,
+              zone = zone,
+          )
+        }
+
     batchQuantityHistoryDao.insert(
         BatchQuantityHistoryRow(
             accessionId = accessionId,
             activeGrowthQuantity = activeGrowthQuantity,
             batchId = batchId,
             createdBy = currentUser().userId,
-            createdTime = clock.instant(),
+            createdTime = recorded,
+            effectiveTime = effectiveTime,
             germinatingQuantity = germinatingQuantity,
             hardeningOffQuantity = hardeningOffQuantity,
             historyTypeId = historyType,
@@ -1173,6 +1214,25 @@ class BatchStore(
             withdrawalId = withdrawalId,
         ),
     )
+  }
+
+  /**
+   * Returns when a quantity change took effect. This is needed by the time-in-stage calculations.
+   * The effective time can be earlier than the recorded time if a user backdated a withdrawal, a
+   * transfer, or seeds added from an accession. A user-supplied date means the start of that day in
+   * the nursery's time zone, clamped to no earlier than the previous history row and no later than
+   * the recorded time.
+   */
+  private fun computeEffectiveTime(
+      previous: Instant?,
+      recorded: Instant,
+      userSuppliedDate: LocalDate,
+      zone: ZoneId,
+  ): Instant {
+    if (userSuppliedDate == LocalDate.ofInstant(recorded, zone)) return recorded
+
+    val userTime = userSuppliedDate.atStartOfDay(zone).toInstant()
+    return minOf(recorded, previous?.let { maxOf(userTime, it) } ?: userTime)
   }
 
   fun fetchEstimatedReady(

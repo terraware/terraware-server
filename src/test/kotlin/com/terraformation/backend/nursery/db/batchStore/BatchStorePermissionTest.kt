@@ -6,6 +6,7 @@ import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import io.mockk.every
+import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
@@ -28,6 +29,7 @@ internal class BatchStorePermissionTest : BatchStoreTest() {
     assertThrows<AccessDeniedException> {
       store.addToExistingBatch(
           accessionId = AccessionId(1),
+          addedDate = LocalDate.EPOCH,
           batchId = batchId,
           germinatingQuantity = 1,
       )
