@@ -2,9 +2,13 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.pojos.BatchStageDetailsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistoryRecord
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.nursery.db.BatchStaleException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,6 +30,12 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
 
   @Test
   fun `updates latest observed quantities if history type is Observed`() {
+    val initialQuantities =
+        dslContext
+            .selectFrom(BATCH_STAGE_DETAILS)
+            .fetchInto(BatchStageDetailsRow::class.java)
+            .associateBy { it.stageId }
+
     val before = batchesDao.fetchOneById(batchId)!!
 
     store.updateQuantities(
@@ -59,6 +69,30 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         ),
         after,
     )
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                initialQuantities
+                    .getValue(BatchStage.Germinating)
+                    .copy(quantity = 1, latestObservedQuantity = 1)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities
+                    .getValue(BatchStage.ActiveGrowth)
+                    .copy(quantity = 2, latestObservedQuantity = 2)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities
+                    .getValue(BatchStage.HardeningOff)
+                    .copy(quantity = 4, latestObservedQuantity = 4)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities
+                    .getValue(BatchStage.Ready)
+                    .copy(quantity = 3, latestObservedQuantity = 3)
+            ),
+        ),
+    )
 
     assertTableEquals(
         BatchQuantityHistoryRecord(
@@ -78,6 +112,12 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
 
   @Test
   fun `does not update latest observed quantities if history type is Computed`() {
+    val initialQuantities =
+        dslContext
+            .selectFrom(BATCH_STAGE_DETAILS)
+            .fetchInto(BatchStageDetailsRow::class.java)
+            .associateBy { it.stageId }
+
     val before = batchesDao.fetchOneById(batchId)!!
 
     store.updateQuantities(
@@ -104,6 +144,22 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
             version = 2,
         ),
         after,
+    )
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.Germinating).copy(quantity = 1)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.ActiveGrowth).copy(quantity = 2)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.HardeningOff).copy(quantity = 4)
+            ),
+            BatchStageDetailsRecord(
+                initialQuantities.getValue(BatchStage.Ready).copy(quantity = 3)
+            ),
+        ),
     )
   }
 
@@ -149,6 +205,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
                 hardeningOffQuantity = 4,
             )
     batchesDao.update(before)
+    val beforeQuantities = dslContext.selectFrom(BATCH_STAGE_DETAILS).fetch()
 
     store.updateQuantities(
         batchId = batchId,
@@ -161,6 +218,10 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
     )
 
     assertEquals(before, batchesDao.fetchOneById(batchId))
+    assertTableEquals(
+        beforeQuantities,
+        message = "Stage quantities",
+    )
     assertTableEmpty(BATCH_QUANTITY_HISTORY)
   }
 
