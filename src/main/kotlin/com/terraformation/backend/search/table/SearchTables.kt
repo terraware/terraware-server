@@ -35,6 +35,7 @@ class SearchTables(clock: Clock) {
   val applications = ApplicationsTable(this)
   val bags = BagsTable(this)
   val batches = BatchesTable(this)
+  val batchStageDetails = BatchStageDetailsTable(this, clock)
   val batchSubLocations = BatchSubLocationsTable(this)
   val autoCalculatedIndicators = AutoCalculatedIndicatorsTable(this)
   val batchWithdrawals = BatchWithdrawalsTable(this)

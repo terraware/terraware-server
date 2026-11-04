@@ -2379,6 +2379,11 @@ abstract class DatabaseBackedTest {
       stage: BatchStage = BatchStage.Germinating,
       quantity: Int = 0,
       latestObservedQuantity: Int = quantity,
+      countedQuantity: Int? = null,
+      countedSeedlingDays: Double? = null,
+      openSeedlingDays: Double? = null,
+      timeInStageAsOf: Instant? = null,
+      timeInStageCleared: Boolean? = null,
   ) {
     with(BATCH_STAGE_DETAILS) {
       dslContext
@@ -2387,6 +2392,11 @@ abstract class DatabaseBackedTest {
           .set(STAGE_ID, stage)
           .set(QUANTITY, quantity)
           .set(LATEST_OBSERVED_QUANTITY, latestObservedQuantity)
+          .set(COUNTED_QUANTITY, countedQuantity)
+          .set(COUNTED_SEEDLING_DAYS, countedSeedlingDays)
+          .set(OPEN_SEEDLING_DAYS, openSeedlingDays)
+          .set(TIME_IN_STAGE_AS_OF, timeInStageAsOf)
+          .set(TIME_IN_STAGE_CLEARED, timeInStageCleared)
           .execute()
     }
   }

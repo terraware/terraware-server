@@ -40,6 +40,11 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
               BATCHES.ID,
               BATCH_SUB_LOCATIONS.BATCH_ID,
           ),
+          batchStageDetails.asMultiValueSublist(
+              "stageDetails",
+              BATCHES.ID,
+              BATCH_STAGE_DETAILS.BATCH_ID,
+          ),
           batchWithdrawals.asMultiValueSublist(
               "withdrawals",
               BATCHES.ID,
