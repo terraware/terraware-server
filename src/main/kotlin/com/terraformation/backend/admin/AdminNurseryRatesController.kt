@@ -6,6 +6,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
@@ -78,6 +79,41 @@ class AdminNurseryRatesController(
       val batchesUpdated = candidateBatchIds.size - batchesStillWithoutRates.value1()
 
       redirectAttributes.successMessage = "Populated rates for $batchesUpdated batches"
+    }
+
+    return "redirect:/admin/"
+  }
+
+  @PostMapping("/backfillTimeInStage")
+  fun backfillTimeInStage(redirectAttributes: RedirectAttributes): String {
+    val candidateBatchIds =
+        dslContext
+            .selectDistinct(BATCH_QUANTITY_HISTORY.BATCH_ID)
+            .from(BATCH_QUANTITY_HISTORY)
+            .where(BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME.isNull)
+            .fetch(BATCH_QUANTITY_HISTORY.BATCH_ID.asNonNullable())
+
+    log.info("Backfilling time in stage for ${candidateBatchIds.size} batches")
+
+    val errorMessages = mutableListOf<String>()
+
+    systemUser.run {
+      candidateBatchIds.forEach { batchId ->
+        try {
+          batchStore.backfillTimeInStage(batchId)
+        } catch (e: Exception) {
+          errorMessages.add("Unable to backfill time in stage for $batchId: $e")
+          log.warn("Unable to backfill time in stage for $batchId", e)
+        }
+      }
+    }
+
+    if (errorMessages.isNotEmpty()) {
+      redirectAttributes.failureMessage = "Some time-in-stage backfills failed"
+      redirectAttributes.failureDetails = errorMessages
+    } else {
+      redirectAttributes.successMessage =
+          "Backfilled time in stage for ${candidateBatchIds.size} batches"
     }
 
     return "redirect:/admin/"

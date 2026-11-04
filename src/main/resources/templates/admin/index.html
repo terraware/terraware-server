@@ -316,6 +316,19 @@
             <input type="submit" value="Backfill Nursery Rates"/>
         </form>
     </th:block>
+
+    <th:block th:if="${canBackfillNurseryRates}">
+        <h3>Backfill Time in Stage</h3>
+
+        <p>
+            This backfills effective times for existing batch quantity history and computes
+            time-in-stage statistics for eligible batches.
+        </p>
+
+        <form method="POST" action="/admin/backfillTimeInStage">
+            <input type="submit" value="Backfill Time in Stage"/>
+        </form>
+    </th:block>
 </details>
 
 <details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
