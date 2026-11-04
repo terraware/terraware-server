@@ -4,13 +4,17 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.NurseryBatchPhase
+import io.mockk.every
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -23,6 +27,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @BeforeEach
   fun insertOtherNursery() {
     destinationFacilityId = insertFacility(type = FacilityType.Nursery)
+    every { user.canReadWithdrawal(any()) } returns true
   }
 
   @Test
@@ -192,6 +197,142 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         current = Quantities(0, 37, 93, 51),
         expectedGerminationRate = 95,
         expectedLossRate = 13,
+    )
+  }
+
+  @Test
+  fun `replays stage time after withdrawals, status changes, undo, and manual edits`() {
+    val start = LocalDate.of(2023, 1, 1)
+    val created = LocalDate.of(2023, 1, 11)
+    val deadDate = LocalDate.of(2023, 1, 16)
+    val stageChangeDate = LocalDate.of(2023, 2, 1)
+    val outplantDate = LocalDate.of(2023, 2, 6)
+    val undoDate = LocalDate.of(2023, 3, 11)
+    val asOf = LocalDate.of(2023, 3, 16).atStartOfDay(ZoneOffset.UTC).toInstant()
+
+    clock.instant = created.atStartOfDay(ZoneOffset.UTC).toInstant()
+    val batchId =
+        store
+            .create(
+                NewBatchModel(
+                    activeGrowthQuantity = 0,
+                    addedDate = start,
+                    facilityId = facilityId,
+                    germinatingQuantity = 100,
+                    hardeningOffQuantity = 0,
+                    readyQuantity = 0,
+                    seedsSownDate = start,
+                    speciesId = speciesId,
+                )
+            )
+            .id
+
+    clock.instant = LocalDate.of(2023, 1, 31).atStartOfDay(ZoneOffset.UTC).toInstant()
+    store.withdraw(
+        NewWithdrawalModel(
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        activeGrowthQuantityWithdrawn = 0,
+                        batchId = batchId,
+                        germinatingQuantityWithdrawn = 20,
+                        hardeningOffQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 0,
+                    )
+                ),
+            facilityId = facilityId,
+            id = null,
+            purpose = WithdrawalPurpose.Dead,
+            withdrawnDate = deadDate,
+        )
+    )
+
+    clock.instant = stageChangeDate.atStartOfDay(ZoneOffset.UTC).toInstant()
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.Ready, 79)
+
+    clock.instant = LocalDate.of(2023, 3, 1).atStartOfDay(ZoneOffset.UTC).toInstant()
+    val outplant =
+        store.withdraw(
+            NewWithdrawalModel(
+                batchWithdrawals =
+                    listOf(
+                        BatchWithdrawalModel(
+                            activeGrowthQuantityWithdrawn = 0,
+                            batchId = batchId,
+                            germinatingQuantityWithdrawn = 0,
+                            hardeningOffQuantityWithdrawn = 0,
+                            readyQuantityWithdrawn = 30,
+                        )
+                    ),
+                facilityId = facilityId,
+                id = null,
+                purpose = WithdrawalPurpose.OutPlant,
+                withdrawnDate = outplantDate,
+            )
+        )
+
+    clock.instant = undoDate.atStartOfDay(ZoneOffset.UTC).toInstant()
+    store.undoWithdrawal(outplant.id)
+
+    clock.instant = asOf
+    store.updateQuantities(
+        batchId,
+        store.fetchOneById(batchId).version,
+        0,
+        0,
+        0,
+        0,
+        BatchQuantityHistoryType.Observed,
+    )
+
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 79,
+                countedSeedlingDays = 2449.0,
+                latestObservedQuantity = 0,
+                openSeedlingDays = 0.0,
+                quantity = 0,
+                stageId = BatchStage.Germinating,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = true,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 0,
+                countedSeedlingDays = 0.0,
+                latestObservedQuantity = 0,
+                openSeedlingDays = 0.0,
+                quantity = 0,
+                stageId = BatchStage.ActiveGrowth,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = false,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 0,
+                countedSeedlingDays = 0.0,
+                latestObservedQuantity = 0,
+                openSeedlingDays = 0.0,
+                quantity = 0,
+                stageId = BatchStage.HardeningOff,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = false,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 0,
+                countedSeedlingDays = 0.0,
+                latestObservedQuantity = 0,
+                openSeedlingDays = 0.0,
+                quantity = 0,
+                stageId = BatchStage.Ready,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = true,
+            ),
+        ),
+        message = "Replayed stage times after withdrawals, status changes, undo, and manual edit",
     )
   }
 

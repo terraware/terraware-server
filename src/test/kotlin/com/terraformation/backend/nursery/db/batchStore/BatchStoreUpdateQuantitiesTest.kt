@@ -3,7 +3,6 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchStage
-import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchStageDetailsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistoryRecord
 import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
@@ -154,6 +153,13 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
 
   @Test
   fun `inserts quantity history row`() {
+    insertBatchQuantityHistory(
+        batchId = batchId,
+        effectiveTime = null,
+        historyType = BatchQuantityHistoryType.Observed,
+        version = 1,
+    )
+
     store.updateQuantities(
         batchId = batchId,
         version = 1,
@@ -164,9 +170,51 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         historyType = BatchQuantityHistoryType.Computed,
     )
 
-    assertEquals(
+    assertTableEquals(
         listOf(
-            BatchQuantityHistoryRow(
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                latestObservedQuantity = 0,
+                quantity = 1,
+                stageId = BatchStage.Germinating,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                latestObservedQuantity = 0,
+                quantity = 2,
+                stageId = BatchStage.ActiveGrowth,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                latestObservedQuantity = 0,
+                quantity = 4,
+                stageId = BatchStage.HardeningOff,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                latestObservedQuantity = 1,
+                quantity = 3,
+                stageId = BatchStage.Ready,
+            ),
+        ),
+        message = "Legacy history keeps time-in-stage stats unavailable",
+    )
+
+    assertTableEquals(
+        listOf(
+            BatchQuantityHistoryRecord(
+                activeGrowthQuantity = 0,
+                batchId = batchId,
+                createdBy = user.userId,
+                createdTime = updateTime,
+                effectiveTime = null,
+                germinatingQuantity = 0,
+                hardeningOffQuantity = 0,
+                historyTypeId = BatchQuantityHistoryType.Observed,
+                readyQuantity = 0,
+                version = 1,
+            ),
+            BatchQuantityHistoryRecord(
                 batchId = batchId,
                 historyTypeId = BatchQuantityHistoryType.Computed,
                 createdBy = user.userId,
@@ -179,7 +227,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
                 effectiveTime = updateTime,
             ),
         ),
-        batchQuantityHistoryDao.findAll().map { it.copy(id = null) },
+        message = "History preserves the legacy row and inserts the new row",
     )
   }
 
