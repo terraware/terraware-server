@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumHistoryId
@@ -51,6 +52,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureTy
 import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.StratumMapEditModel
 import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.StratumPlotCounts
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumMapEditModel
 import com.terraformation.backend.tracking.model.SubstratumModel
@@ -586,6 +588,21 @@ data class PlantingZonePayload(
   )
 }
 
+data class StratumPlotCountsResponsePayload(
+    val numPermanentPlots: Int,
+    val numTemporaryPlots: Int,
+    val observationType: ObservationType,
+) {
+  constructor(
+      observationType: ObservationType,
+      stratumPlotCounts: StratumPlotCounts,
+  ) : this(
+      numPermanentPlots = stratumPlotCounts.numPermanentPlots,
+      numTemporaryPlots = stratumPlotCounts.numTemporaryPlots,
+      observationType = observationType,
+  )
+}
+
 data class StratumResponsePayload(
     @Schema(description = "Area of stratum in hectares.") //
     val areaHa: BigDecimal,
@@ -601,8 +618,18 @@ data class StratumResponsePayload(
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
     val name: String,
+    @Schema(deprecated = true, description = "Use plotCounts instead.") //
     val numPermanentPlots: Int,
+    @Schema(deprecated = true, description = "Use plotCounts instead.") //
     val numTemporaryPlots: Int,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "Number of plots that will be assigned in observations of specific types."
+            )
+    )
+    val plotCounts: List<StratumPlotCountsResponsePayload>,
     val substrata: List<SubstratumResponsePayload>,
     @Schema(
         description =
@@ -623,6 +650,14 @@ data class StratumResponsePayload(
       name = model.name,
       numPermanentPlots = model.plantPlotCounts.numPermanentPlots,
       numTemporaryPlots = model.plantPlotCounts.numTemporaryPlots,
+      plotCounts =
+          listOf(
+              StratumPlotCountsResponsePayload(
+                  ObservationType.BiomassMeasurements,
+                  model.biomassPlotCounts,
+              ),
+              StratumPlotCountsResponsePayload(ObservationType.Monitoring, model.plantPlotCounts),
+          ),
       substrata = model.substrata.map { SubstratumResponsePayload(it) },
       targetPlantDensity = model.targetPlantDensity,
   )
