@@ -119,6 +119,12 @@ class BatchStore(
 ) {
   companion object {
     /**
+     * When Hardening Off was released to production. Active Growth times of batches created before
+     * then include time that would now count as Hardening Off, so they aren't reported.
+     */
+    private val HARDENING_OFF_RELEASE_TIME = Instant.parse("2025-08-28T12:56:00-07:00")
+
+    /**
      * Number of times we will retry withdrawing from a batch if its version number is stale. This
      * should only happen if another client is withdrawing from the same batch at the same time,
      * which should be exceedingly rare.
@@ -1689,18 +1695,23 @@ class BatchStore(
     if (!isReplayable(historyRows)) return
 
     val first = historyRows.first()
+    val batchDateRow =
+        dslContext
+            .select(
+                BATCHES.CREATED_TIME,
+                BATCHES.SEEDS_SOWN_DATE,
+                BATCHES.GERMINATION_STARTED_DATE,
+            )
+            .from(BATCHES)
+            .where(BATCHES.ID.eq(batchId))
+            .fetchOne() ?: return
+    val createdTime = batchDateRow[BATCHES.CREATED_TIME]!!
     val initialGerminatingStart =
         if (first.withdrawalId == null) {
-          val dateRow =
-              dslContext
-                  .select(BATCHES.SEEDS_SOWN_DATE, BATCHES.GERMINATION_STARTED_DATE)
-                  .from(BATCHES)
-                  .where(BATCHES.ID.eq(batchId))
-                  .fetchOne()
           val earliestDate =
               listOfNotNull(
-                      dateRow?.get(BATCHES.SEEDS_SOWN_DATE),
-                      dateRow?.get(BATCHES.GERMINATION_STARTED_DATE),
+                      batchDateRow[BATCHES.SEEDS_SOWN_DATE],
+                      batchDateRow[BATCHES.GERMINATION_STARTED_DATE],
                   )
                   .minOrNull()
           earliestDate?.atStartOfDay(parentStore.getEffectiveTimeZone(batchId))?.toInstant()
@@ -1709,7 +1720,23 @@ class BatchStore(
         }
 
     val events = toStageTimeEvents(batchId, historyRows)
-    writeTimeInStage(batchId, StageTimeCalculator.calculate(events, initialGerminatingStart))
+    val stats =
+        StageTimeCalculator.calculate(events, initialGerminatingStart).mapValues {
+            (stage, calculatedStats) ->
+          if (
+              stage == BatchStage.ActiveGrowth && createdTime.isBefore(HARDENING_OFF_RELEASE_TIME)
+          ) {
+            calculatedStats.copy(
+                cleared = false,
+                countedDays = 0.0,
+                countedQuantity = 0,
+                openDays = 0.0,
+            )
+          } else {
+            calculatedStats
+          }
+        }
+    writeTimeInStage(batchId, stats)
   }
 
   /**

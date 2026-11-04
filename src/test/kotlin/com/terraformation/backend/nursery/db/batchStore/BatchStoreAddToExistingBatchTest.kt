@@ -16,8 +16,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
-  private val addedDate = LocalDate.of(1970, 1, 2)
-  private val transferTime = Instant.ofEpochSecond(3 * 86_400 + 1_000)
+  private val addedDate = LocalDate.of(2025, 8, 30)
+  private val batchCreatedTime = Instant.parse("2025-08-29T00:00:00Z")
+  private val transferTime = Instant.parse("2025-09-01T00:16:40Z")
 
   private lateinit var batch: ExistingBatchModel
   private lateinit var batchId: BatchId
@@ -30,6 +31,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
     originalAccessionId = insertAccession(number = "1")
     secondAccessionId = insertAccession(number = "2")
 
+    clock.instant = batchCreatedTime
     batch =
         store.create(
             makeNewBatchModel().copy(accessionId = originalAccessionId, germinatingQuantity = 10)
@@ -50,7 +52,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
             germinatingQuantity = 100,
         )
 
-    val asOfTime = Instant.ofEpochSecond(86_400)
+    val asOfTime = Instant.parse("2025-08-30T00:00:00Z")
     fun stageStats(stage: BatchStage, quantity: Int, days: Double) =
         StageTimeStats(
             asOfTime = asOfTime,
@@ -97,8 +99,8 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
                 activeGrowthQuantity = 1,
                 batchId = batchId,
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                effectiveTime = Instant.EPOCH,
+                createdTime = batchCreatedTime,
+                effectiveTime = batchCreatedTime,
                 germinatingQuantity = 10,
                 hardeningOffQuantity = 3,
                 historyTypeId = BatchQuantityHistoryType.Observed,
@@ -111,7 +113,7 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
                 batchId = batchId,
                 createdBy = user.userId,
                 createdTime = transferTime,
-                effectiveTime = Instant.ofEpochSecond(86_400),
+                effectiveTime = Instant.parse("2025-08-30T00:00:00Z"),
                 germinatingQuantity = 110,
                 hardeningOffQuantity = 3,
                 historyTypeId = BatchQuantityHistoryType.Computed,

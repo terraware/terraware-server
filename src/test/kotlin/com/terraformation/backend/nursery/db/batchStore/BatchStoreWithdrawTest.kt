@@ -699,7 +699,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
     val effectiveTime = LocalDate.of(2022, 10, 1).atStartOfDay(ZoneOffset.UTC).toInstant()
-    val withdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    val withdrawalTime = ZonedDateTime.of(2025, 8, 29, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
     clock.instant = withdrawalTime
 
     fun expectedStageDetails(batchId: BatchId, stage: BatchStage, quantity: Int) =
@@ -1134,7 +1134,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val newReadyByDate = LocalDate.of(2000, 1, 2)
     val secondEffectiveTime =
         LocalDate.of(2022, 10, 2).atStartOfDay(destinationTimeZone).toInstant()
-    val firstWithdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    val firstWithdrawalTime = ZonedDateTime.of(2025, 8, 29, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
     clock.instant = firstWithdrawalTime
 
     val firstWithdrawal =
@@ -1159,7 +1159,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             newReadyByDate,
         )
 
-    val secondWithdrawalTime = ZonedDateTime.of(2023, 2, 2, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
+    val secondWithdrawalTime = ZonedDateTime.of(2025, 8, 30, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
     clock.instant = secondWithdrawalTime
 
     val secondWithdrawal =
