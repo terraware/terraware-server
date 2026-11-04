@@ -15,6 +15,7 @@ import com.terraformation.backend.seedbank.AccessionService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
+import java.time.InstantSource
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class TransfersController(
+    private val clock: InstantSource,
     private val accessionService: AccessionService,
 ) {
   @Operation(summary = "Transfers seeds to a nursery.")
@@ -41,7 +43,10 @@ class TransfersController(
             batchId = payload.batchId,
             withdrawnByUserId = payload.withdrawnByUserId,
         )
-    return CreateNurseryTransferResponsePayload(AccessionPayloadV2(accession), BatchPayload(batch))
+    return CreateNurseryTransferResponsePayload(
+        AccessionPayloadV2(accession),
+        BatchPayload(batch, clock.instant()),
+    )
   }
 }
 

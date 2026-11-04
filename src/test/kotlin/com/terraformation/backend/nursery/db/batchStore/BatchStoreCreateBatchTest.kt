@@ -19,6 +19,7 @@ import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRec
 import com.terraformation.backend.nursery.api.CreateBatchRequestPayload
 import com.terraformation.backend.nursery.model.BatchStageDetailsModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
+import com.terraformation.backend.nursery.model.StageTimeStats
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -81,32 +82,31 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             treatmentId = SeedTreatment.Chemical,
             version = 1,
         )
+
+    fun expectedStageDetails(stage: BatchStage, quantity: Int) =
+        BatchStageDetailsModel(
+            batchId = returnedModel.id,
+            latestObservedQuantity = quantity,
+            quantity = quantity,
+            stage = stage,
+            timeInStage =
+                StageTimeStats(
+                    asOfTime = clock.instant(),
+                    cleared = false,
+                    countedDays = 0.0,
+                    countedQuantity = quantity,
+                    inStage = quantity,
+                    openDays = 0.0,
+                    stage = stage,
+                ),
+        )
+
     val expectedQuantities =
         listOf(
-            BatchStageDetailsModel(
-                batchId = returnedModel.id,
-                latestObservedQuantity = 0,
-                quantity = 0,
-                stage = BatchStage.Germinating,
-            ),
-            BatchStageDetailsModel(
-                batchId = returnedModel.id,
-                latestObservedQuantity = 1,
-                quantity = 1,
-                stage = BatchStage.ActiveGrowth,
-            ),
-            BatchStageDetailsModel(
-                batchId = returnedModel.id,
-                latestObservedQuantity = 4,
-                quantity = 4,
-                stage = BatchStage.HardeningOff,
-            ),
-            BatchStageDetailsModel(
-                batchId = returnedModel.id,
-                latestObservedQuantity = 2,
-                quantity = 2,
-                stage = BatchStage.Ready,
-            ),
+            expectedStageDetails(BatchStage.Germinating, 0),
+            expectedStageDetails(BatchStage.ActiveGrowth, 1),
+            expectedStageDetails(BatchStage.HardeningOff, 4),
+            expectedStageDetails(BatchStage.Ready, 2),
         )
     val expectedModel =
         ExistingBatchModel(

@@ -48,6 +48,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.Min
 import jakarta.ws.rs.QueryParam
+import java.time.Instant
+import java.time.InstantSource
 import java.time.LocalDate
 import java.time.LocalDateTime
 import org.locationtech.jts.geom.Point
@@ -68,6 +70,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/nursery/withdrawals")
 @RestController
 class WithdrawalsController(
+    private val clock: InstantSource,
     val batchService: BatchService,
     val batchStore: BatchStore,
     val deliveryStore: DeliveryStore,
@@ -87,7 +90,7 @@ class WithdrawalsController(
           null
         }
 
-    return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal)
+    return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal, clock.instant())
   }
 
   @ApiResponse200
@@ -107,7 +110,7 @@ class WithdrawalsController(
     val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
     val deliveryModel = withdrawal.deliveryId?.let { deliveryStore.fetchOneById(it) }
 
-    return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal)
+    return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal, clock.instant())
   }
 
   @Operation(summary = "Creates a new photo of a seedling batch withdrawal.")
@@ -366,8 +369,9 @@ data class GetNurseryWithdrawalResponsePayload(
       batches: List<ExistingBatchModel>,
       delivery: DeliveryModel?,
       withdrawal: ExistingWithdrawalModel,
+      now: Instant,
   ) : this(
-      batches.map { BatchPayload(it) },
+      batches.map { BatchPayload(it, now) },
       delivery?.let { DeliveryPayload(it) },
       NurseryWithdrawalPayload(withdrawal),
   )

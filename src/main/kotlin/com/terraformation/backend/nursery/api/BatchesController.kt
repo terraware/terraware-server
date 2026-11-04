@@ -28,6 +28,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
@@ -37,12 +38,14 @@ import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.nursery.model.NurseryBatchPhase
+import com.terraformation.backend.nursery.model.StageTimeStats
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.Min
 import jakarta.ws.rs.QueryParam
 import java.time.Instant
+import java.time.InstantSource
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import org.springframework.core.io.InputStreamResource
@@ -64,6 +67,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/v1/nursery/batches")
 class BatchesController(
+    private val clock: InstantSource,
     private val batchPhotoService: BatchPhotoService,
     private val batchStore: BatchStore,
 ) {
@@ -73,7 +77,7 @@ class BatchesController(
   @Operation(summary = "Gets information about a single seedling batch.")
   fun getBatch(@PathVariable id: BatchId): BatchResponsePayload {
     val row = batchStore.fetchOneById(id)
-    return BatchResponsePayload(BatchPayload(row))
+    return BatchResponsePayload(BatchPayload(row, clock.instant()))
   }
 
   @ApiResponse(
@@ -86,7 +90,7 @@ class BatchesController(
   @PostMapping
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
     val insertedModel = batchStore.create(payload.toModel())
-    return BatchResponsePayload(BatchPayload(insertedModel))
+    return BatchResponsePayload(BatchPayload(insertedModel, clock.instant()))
   }
 
   @ApiResponseSimpleSuccess
@@ -235,6 +239,59 @@ data class BatchAccessionPayload(
     val accessionNumber: String?,
 )
 
+data class BatchStageTimePayload(
+    @Schema(
+        description =
+            "True if a manual quantity edit changed this stage's quantity, so its time in stage " +
+                "can't be calculated."
+    )
+    val cleared: Boolean,
+    @Schema(
+        description =
+            "Average number of days seedlings have spent in this stage, rounded to the nearest " +
+                "day. 0 means less than one day. Null if no seedlings have been in this stage or " +
+                "if a manual quantity edit made the time unknown."
+    )
+    val days: Int?,
+    @Schema(
+        description =
+            "True if seedlings are currently in this stage, so the average will keep increasing."
+    )
+    val inProgress: Boolean,
+) {
+  constructor(
+      now: Instant,
+      stats: StageTimeStats,
+  ) : this(
+      cleared = stats.cleared,
+      days = stats.roundedDays(now),
+      inProgress = stats.inProgress,
+  )
+}
+
+data class BatchTimeInStagePayload(
+    val germinating: BatchStageTimePayload,
+    val activeGrowth: BatchStageTimePayload,
+    val hardeningOff: BatchStageTimePayload,
+    val ready: BatchStageTimePayload,
+) {
+  companion object {
+    fun of(stats: Map<BatchStage, StageTimeStats>, now: Instant): BatchTimeInStagePayload? {
+      if (stats.isEmpty()) return null
+
+      fun payload(stage: BatchStage) =
+          BatchStageTimePayload(now = now, stats = stats.getValue(stage))
+
+      return BatchTimeInStagePayload(
+          activeGrowth = payload(BatchStage.ActiveGrowth),
+          germinating = payload(BatchStage.Germinating),
+          hardeningOff = payload(BatchStage.HardeningOff),
+          ready = payload(BatchStage.Ready),
+      )
+    }
+  }
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class BatchPayload(
     @Schema(
@@ -282,6 +339,12 @@ data class BatchPayload(
     val subLocationIds: Set<SubLocationId>,
     val substrate: BatchSubstrate?,
     val substrateNotes: String?,
+    @Schema(
+        description =
+            "How long seedlings have spent in each stage. Absent if the batch's history predates " +
+                "time-in-stage tracking."
+    )
+    val timeInStage: BatchTimeInStagePayload?,
     val totalWithdrawn: Int,
     val treatment: SeedTreatment?,
     val treatmentNotes: String?,
@@ -294,7 +357,8 @@ data class BatchPayload(
     val version: Int,
 ) {
   constructor(
-      model: ExistingBatchModel
+      model: ExistingBatchModel,
+      now: Instant,
   ) : this(
       accessionId = model.accessionNumbers.keys.firstOrNull(),
       accessionNumber = model.accessionNumbers.values.firstOrNull(),
@@ -320,6 +384,7 @@ data class BatchPayload(
       subLocationIds = model.subLocationIds,
       substrate = model.substrate,
       substrateNotes = model.substrateNotes,
+      timeInStage = BatchTimeInStagePayload.of(model.timeInStage, now),
       totalWithdrawn = model.totalWithdrawn,
       treatment = model.treatment,
       treatmentNotes = model.treatmentNotes,

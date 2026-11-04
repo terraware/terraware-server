@@ -9,6 +9,7 @@ data class BatchStageDetailsModel(
     val latestObservedQuantity: Int,
     val quantity: Int,
     val stage: BatchStage,
+    val timeInStage: StageTimeStats? = null,
 )
 
 fun BatchStageDetailsRow.toModel(): BatchStageDetailsModel =
@@ -17,4 +18,16 @@ fun BatchStageDetailsRow.toModel(): BatchStageDetailsModel =
         latestObservedQuantity = latestObservedQuantity!!,
         quantity = quantity!!,
         stage = stageId!!,
+        timeInStage =
+            countedQuantity?.let { countedQuantity ->
+              StageTimeStats(
+                  asOfTime = timeInStageAsOf!!,
+                  cleared = timeInStageCleared!!,
+                  countedDays = countedSeedlingDays!!,
+                  countedQuantity = countedQuantity,
+                  inStage = quantity!!,
+                  openDays = openSeedlingDays!!,
+                  stage = stageId!!,
+              )
+            },
     )
