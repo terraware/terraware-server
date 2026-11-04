@@ -336,6 +336,116 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
     )
   }
 
+  @Test
+  fun `does not calculate stage time when withdrawal history has a quantity gap`() {
+    val historyTime = LocalDate.of(2023, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()
+    val batchId =
+        insertBatch(
+            activeGrowthQuantity = 17,
+            germinatingQuantity = 7,
+            hardeningOffQuantity = 26,
+            readyQuantity = 35,
+            version = 2,
+        )
+    val withdrawalId =
+        insertNurseryWithdrawal(
+            createdTime = historyTime,
+            purpose = WithdrawalPurpose.Dead,
+            withdrawnDate = LocalDate.of(2023, 1, 1),
+        )
+    insertBatchWithdrawal(
+        activeGrowthQuantityWithdrawn = 3,
+        batchId = batchId,
+        germinatingQuantityWithdrawn = 2,
+        hardeningOffQuantityWithdrawn = 4,
+        readyQuantityWithdrawn = 5,
+        withdrawalId = withdrawalId,
+    )
+    insertBatchQuantityHistory(
+        activeGrowthQuantity = 20,
+        batchId = batchId,
+        createdTime = historyTime,
+        effectiveTime = historyTime,
+        germinatingQuantity = 10,
+        hardeningOffQuantity = 30,
+        historyType = BatchQuantityHistoryType.Observed,
+        readyQuantity = 40,
+        version = 1,
+    )
+    insertBatchQuantityHistory(
+        activeGrowthQuantity = 17,
+        batchId = batchId,
+        createdTime = historyTime.plusSeconds(1),
+        effectiveTime = historyTime.plusSeconds(1),
+        germinatingQuantity = 7,
+        hardeningOffQuantity = 26,
+        historyType = BatchQuantityHistoryType.Computed,
+        readyQuantity = 35,
+        version = 2,
+        withdrawalId = withdrawalId,
+    )
+
+    store.updateQuantities(
+        batchId,
+        activeGrowth = 17,
+        germinating = 6,
+        hardeningOff = 26,
+        historyType = BatchQuantityHistoryType.Observed,
+        ready = 35,
+        version = 2,
+    )
+
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = null,
+                countedSeedlingDays = null,
+                latestObservedQuantity = 6,
+                openSeedlingDays = null,
+                quantity = 6,
+                stageId = BatchStage.Germinating,
+                timeInStageAsOf = null,
+                timeInStageCleared = null,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = null,
+                countedSeedlingDays = null,
+                latestObservedQuantity = 17,
+                openSeedlingDays = null,
+                quantity = 17,
+                stageId = BatchStage.ActiveGrowth,
+                timeInStageAsOf = null,
+                timeInStageCleared = null,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = null,
+                countedSeedlingDays = null,
+                latestObservedQuantity = 26,
+                openSeedlingDays = null,
+                quantity = 26,
+                stageId = BatchStage.HardeningOff,
+                timeInStageAsOf = null,
+                timeInStageCleared = null,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = null,
+                countedSeedlingDays = null,
+                latestObservedQuantity = 35,
+                openSeedlingDays = null,
+                quantity = 35,
+                stageId = BatchStage.Ready,
+                timeInStageAsOf = null,
+                timeInStageCleared = null,
+            ),
+        ),
+        message = "Stage stats remain null after a withdrawal history gap",
+    )
+  }
+
   /**
    * Runs a scenario that consists of a canned sequence of operations. This is to support running
    * the example cases listed in the calculations spreadsheet that's part of the requirements doc.
