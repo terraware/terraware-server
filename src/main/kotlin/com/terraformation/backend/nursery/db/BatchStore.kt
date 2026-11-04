@@ -55,7 +55,9 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose as SeedbankWithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS as SEEDBANK_WITHDRAWALS
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
@@ -1737,6 +1739,110 @@ class BatchStore(
           }
         }
     writeTimeInStage(batchId, stats)
+  }
+
+  /**
+   * Recomputes effective times from the first missing value onward, then calculates the batch's
+   * time-in-stage stats. Withdrawals and transfers use their withdrawal dates. Legacy rows for
+   * seeds added to an existing batch from an accession don't link to the seed bank withdrawal, so
+   * they use the date of the only matching withdrawal recorded within a minute of the row, if there
+   * is one. Other rows use their recorded times unless a stored effective time is available.
+   * Batches whose history isn't replayable still get no stats.
+   */
+  fun backfillTimeInStage(batchId: BatchId) {
+    dslContext.transaction { _ ->
+      dslContext
+          .select(BATCHES.ID)
+          .from(BATCHES)
+          .where(BATCHES.ID.eq(batchId))
+          .forUpdate()
+          .fetchOne() ?: throw BatchNotFoundException(batchId)
+
+      val historyRows =
+          dslContext
+              .select(
+                  BATCH_QUANTITY_HISTORY.ACCESSION_ID,
+                  BATCH_QUANTITY_HISTORY.CREATED_TIME,
+                  BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME,
+                  BATCH_QUANTITY_HISTORY.ID,
+                  BATCH_QUANTITY_HISTORY.VERSION,
+                  BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID,
+                  WITHDRAWALS.WITHDRAWN_DATE,
+              )
+              .from(BATCH_QUANTITY_HISTORY)
+              .leftJoin(WITHDRAWALS)
+              .on(WITHDRAWALS.ID.eq(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID))
+              .where(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(batchId))
+              .orderBy(BATCH_QUANTITY_HISTORY.VERSION)
+              .fetch()
+      if (historyRows.none { it[BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME] == null }) {
+        return@transaction
+      }
+
+      val zone by lazy { parentStore.getEffectiveTimeZone(batchId) }
+      var previous: Instant? = null
+      var recompute = false
+      historyRows.forEach { row ->
+        val storedEffectiveTime = row[BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME]
+        if (storedEffectiveTime == null) recompute = true
+        val effectiveTime =
+            if (recompute) {
+              val createdTime = row[BATCH_QUANTITY_HISTORY.CREATED_TIME]!!
+              val accessionId = row[BATCH_QUANTITY_HISTORY.ACCESSION_ID]
+              val withdrawalId = row[BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID]
+              val userSuppliedDate =
+                  when {
+                    withdrawalId != null -> row[WITHDRAWALS.WITHDRAWN_DATE]
+                    accessionId != null && row[BATCH_QUANTITY_HISTORY.VERSION]!! > 1 -> {
+                      // Seeds added to an existing batch from an accession use the accession
+                      // withdrawal's date. Legacy history rows don't link to that withdrawal,
+                      // so look for the only one created within a minute of the history row.
+                      val createdTimeStart = createdTime.minusSeconds(60)
+                      val createdTimeEnd = createdTime.plusSeconds(60)
+                      dslContext
+                          .select(SEEDBANK_WITHDRAWALS.DATE)
+                          .from(SEEDBANK_WITHDRAWALS)
+                          .where(SEEDBANK_WITHDRAWALS.BATCH_ID.eq(batchId))
+                          .and(SEEDBANK_WITHDRAWALS.ACCESSION_ID.eq(accessionId))
+                          .and(
+                              SEEDBANK_WITHDRAWALS.PURPOSE_ID.eq(SeedbankWithdrawalPurpose.Nursery)
+                          )
+                          .and(
+                              SEEDBANK_WITHDRAWALS.CREATED_TIME.between(
+                                  createdTimeStart,
+                                  createdTimeEnd,
+                              )
+                          )
+                          .fetch(SEEDBANK_WITHDRAWALS.DATE)
+                          .singleOrNull()
+                    }
+                    else -> null
+                  }
+              val effectiveTime =
+                  if (userSuppliedDate != null) {
+                    computeEffectiveTime(
+                        previous = previous,
+                        recorded = createdTime,
+                        userSuppliedDate = userSuppliedDate,
+                        zone = zone,
+                    )
+                  } else {
+                    storedEffectiveTime ?: createdTime
+                  }
+              dslContext
+                  .update(BATCH_QUANTITY_HISTORY)
+                  .set(BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME, effectiveTime)
+                  .where(BATCH_QUANTITY_HISTORY.ID.eq(row[BATCH_QUANTITY_HISTORY.ID]!!))
+                  .execute()
+              effectiveTime
+            } else {
+              storedEffectiveTime!!
+            }
+        previous = effectiveTime
+      }
+
+      updateTimeInStage(batchId)
+    }
   }
 
   /**
