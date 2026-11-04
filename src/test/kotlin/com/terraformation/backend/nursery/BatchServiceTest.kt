@@ -7,7 +7,9 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
@@ -283,16 +285,34 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(WithdrawalPurpose.Undo, undoWithdrawal.purpose, "Undo withdrawal purpose")
       assertNull(undoWithdrawal.deliveryId, "Should not have created delivery")
 
-      val batchesRow = batchesDao.fetchOneById(batchId)!!
-      assertEquals(
-          listOf(10, 20, 30, 40),
+      assertTableEquals(
           listOf(
-              batchesRow.germinatingQuantity,
-              batchesRow.activeGrowthQuantity,
-              batchesRow.hardeningOffQuantity,
-              batchesRow.readyQuantity,
+              BatchStageDetailsRecord(
+                  batchId = batchId,
+                  stageId = BatchStage.Germinating,
+                  quantity = 10,
+                  latestObservedQuantity = 10,
+              ),
+              BatchStageDetailsRecord(
+                  batchId = batchId,
+                  stageId = BatchStage.ActiveGrowth,
+                  quantity = 20,
+                  latestObservedQuantity = 20,
+              ),
+              BatchStageDetailsRecord(
+                  batchId = batchId,
+                  stageId = BatchStage.HardeningOff,
+                  quantity = 30,
+                  latestObservedQuantity = 30,
+              ),
+              BatchStageDetailsRecord(
+                  batchId = batchId,
+                  stageId = BatchStage.Ready,
+                  quantity = 40,
+                  latestObservedQuantity = 40,
+              ),
           ),
-          "Batch quantities after withdrawal",
+          message = "Batch quantities after withdrawal",
       )
     }
   }

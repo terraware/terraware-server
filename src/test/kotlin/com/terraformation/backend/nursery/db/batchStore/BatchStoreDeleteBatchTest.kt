@@ -2,8 +2,10 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.records.BatchStageDetailsRecord
 import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
@@ -87,6 +89,36 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             modifiedBy = user.userId,
             modifiedTime = Instant.EPOCH,
         )
+    )
+
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                stageId = BatchStage.Germinating,
+                quantity = 0,
+                latestObservedQuantity = 0,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                stageId = BatchStage.ActiveGrowth,
+                quantity = 0,
+                latestObservedQuantity = 0,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                stageId = BatchStage.HardeningOff,
+                quantity = 0,
+                latestObservedQuantity = 0,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                stageId = BatchStage.Ready,
+                quantity = 0,
+                latestObservedQuantity = 0,
+            ),
+        ),
+        message = "Stage quantities",
     )
 
     eventPublisher.assertEventNotPublished<BatchDeletionStartedEvent>()
