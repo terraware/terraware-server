@@ -56,10 +56,6 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
 
     assertEquals(
         before.copy(
-            germinatingQuantity = 8,
-            hardeningOffQuantity = 42,
-            activeGrowthQuantity = 15,
-            readyQuantity = 35,
             totalLost = 0,
             // moved 2 seeds from germinating to active-growth
             totalLossCandidates = 92,
@@ -141,10 +137,6 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
 
     assertEquals(
         before.copy(
-            activeGrowthQuantity = 20,
-            germinatingQuantity = 7,
-            hardeningOffQuantity = 43,
-            readyQuantity = 30,
             totalLost = 0,
             totalLossCandidates = 93,
             modifiedTime = updateTime,

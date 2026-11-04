@@ -53,14 +53,6 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
 
     assertEquals(
         before.copy(
-            germinatingQuantity = 1,
-            activeGrowthQuantity = 2,
-            readyQuantity = 3,
-            hardeningOffQuantity = 4,
-            latestObservedGerminatingQuantity = 1,
-            latestObservedActiveGrowthQuantity = 2,
-            latestObservedReadyQuantity = 3,
-            latestObservedHardeningOffQuantity = 4,
             latestObservedTime = updateTime,
             modifiedTime = updateTime,
             totalLost = 0,
@@ -134,10 +126,6 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
 
     assertEquals(
         before.copy(
-            germinatingQuantity = 1,
-            activeGrowthQuantity = 2,
-            readyQuantity = 3,
-            hardeningOffQuantity = 4,
             totalLost = 0,
             totalLossCandidates = 9,
             modifiedTime = updateTime,
@@ -195,16 +183,23 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
 
   @Test
   fun `does nothing if quantities are the same as the current values`() {
-    val before =
-        batchesDao
-            .fetchOneById(batchId)!!
-            .copy(
-                germinatingQuantity = 1,
-                activeGrowthQuantity = 2,
-                readyQuantity = 3,
-                hardeningOffQuantity = 4,
-            )
-    batchesDao.update(before)
+    val before = batchesDao.fetchOneById(batchId)!!
+    mapOf(
+            BatchStage.Germinating to 1,
+            BatchStage.ActiveGrowth to 2,
+            BatchStage.Ready to 3,
+            BatchStage.HardeningOff to 4,
+        )
+        .forEach { (stage, quantity) ->
+          with(BATCH_STAGE_DETAILS) {
+            dslContext
+                .update(this)
+                .set(QUANTITY, quantity)
+                .where(BATCH_ID.eq(batchId))
+                .and(STAGE_ID.eq(stage))
+                .execute()
+          }
+        }
     val beforeQuantities = dslContext.selectFrom(BATCH_STAGE_DETAILS).fetch()
 
     store.updateQuantities(

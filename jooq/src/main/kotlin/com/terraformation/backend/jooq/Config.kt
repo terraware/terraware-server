@@ -680,6 +680,10 @@ val EMBEDDABLES =
             .withTables("funder.published_auto_calculated_indicator_baselines")
             .withColumns("project_id", "auto_calculated_indicator_id"),
         EmbeddableDefinitionType()
+            .withName("batch_stage_detail_id")
+            .withTables("nursery.batch_stage_details")
+            .withColumns("batch_id", "stage_id"),
+        EmbeddableDefinitionType()
             .withName("batch_sub_location_id")
             .withTables("nursery.batch_sub_locations")
             .withColumns("batch_id", "sub_location_id"),

@@ -398,6 +398,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_C
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -416,6 +417,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistoryRecord
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.BagId
@@ -2282,6 +2284,7 @@ abstract class DatabaseBackedTest {
       germinatingQuantity: Int = 0,
       germinationStartedDate: LocalDate? = null,
       hardeningOffQuantity: Int = 0,
+      insertStageDetails: Boolean = true,
       notes: String? = null,
       organizationId: OrganizationId = inserted.organizationId,
       projectId: ProjectId? = null,
@@ -2327,22 +2330,15 @@ abstract class DatabaseBackedTest {
     val row =
         BatchesRow(
             accessionId = accessionId,
-            activeGrowthQuantity = activeGrowthQuantity,
             addedDate = addedDate,
             batchNumber = batchNumber,
             createdBy = createdBy,
             createdTime = createdTime,
             facilityId = facilityId,
-            germinatingQuantity = germinatingQuantity,
             germinationStartedDate = germinationStartedDate,
             germinationRate = effectiveGerminationRate,
-            hardeningOffQuantity = hardeningOffQuantity,
             totalGerminated = totalGerminated,
             totalGerminationCandidates = totalGerminationCandidates,
-            latestObservedActiveGrowthQuantity = activeGrowthQuantity,
-            latestObservedGerminatingQuantity = germinatingQuantity,
-            latestObservedHardeningOffQuantity = hardeningOffQuantity,
-            latestObservedReadyQuantity = readyQuantity,
             latestObservedTime = createdTime,
             lossRate = effectiveLossRate,
             totalLost = totalLost,
@@ -2352,7 +2348,6 @@ abstract class DatabaseBackedTest {
             notes = notes,
             organizationId = organizationId,
             projectId = projectId,
-            readyQuantity = readyQuantity,
             readyByDate = readyByDate,
             seedsSownDate = seedsSownDate,
             speciesId = speciesId,
@@ -2364,8 +2359,36 @@ abstract class DatabaseBackedTest {
         )
 
     batchesDao.insert(row)
+    if (insertStageDetails) {
+      mapOf(
+              BatchStage.Germinating to germinatingQuantity,
+              BatchStage.ActiveGrowth to activeGrowthQuantity,
+              BatchStage.HardeningOff to hardeningOffQuantity,
+              BatchStage.Ready to readyQuantity,
+          )
+          .forEach { (stage, quantity) ->
+            insertBatchStageDetails(batchId = row.id!!, stage = stage, quantity = quantity)
+          }
+    }
 
     return row.id!!.also { inserted.batchIds.add(it) }
+  }
+
+  fun insertBatchStageDetails(
+      batchId: BatchId = inserted.batchId,
+      stage: BatchStage = BatchStage.Germinating,
+      quantity: Int = 0,
+      latestObservedQuantity: Int = quantity,
+  ) {
+    with(BATCH_STAGE_DETAILS) {
+      dslContext
+          .insertInto(this)
+          .set(BATCH_ID, batchId)
+          .set(STAGE_ID, stage)
+          .set(QUANTITY, quantity)
+          .set(LATEST_OBSERVED_QUANTITY, latestObservedQuantity)
+          .execute()
+    }
   }
 
   fun insertBatchSubLocation(

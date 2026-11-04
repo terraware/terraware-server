@@ -386,7 +386,7 @@ COMMENT ON COLUMN nursery.batch_quantity_history.withdrawal_id IS 'If this chang
 
 COMMENT ON TABLE nursery.batch_quantity_history_types IS '(Enum) Types of operations that can result in changes to remaining quantities of seedling batches.';
 
-COMMENT ON VIEW nursery.batch_stage_details IS 'Current inventory and latest observed quantities for each stage of a nursery batch.';
+COMMENT ON TABLE nursery.batch_stage_details IS 'Current inventory and latest observed quantities for each stage of a nursery batch.';
 COMMENT ON COLUMN nursery.batch_stage_details.latest_observed_quantity IS 'Latest user-observed number of seedlings in this stage. Withdrawals do not cause this to decrease.';
 COMMENT ON COLUMN nursery.batch_stage_details.quantity IS 'Number of seedlings currently available in this stage. Withdrawals cause this to decrease.';
 
