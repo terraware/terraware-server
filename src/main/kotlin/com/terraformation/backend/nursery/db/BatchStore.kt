@@ -72,6 +72,10 @@ import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.NurseryBatchPhase
 import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.nursery.model.SpeciesSummary
+import com.terraformation.backend.nursery.model.StageTimeCalculator
+import com.terraformation.backend.nursery.model.StageTimeEvent
+import com.terraformation.backend.nursery.model.StageTimeEventType
+import com.terraformation.backend.nursery.model.StageTimeStats
 import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonDateRequestFulfilledException
@@ -296,6 +300,7 @@ class BatchStore(
           version = 1,
           withdrawalId = withdrawalId,
       )
+      updateTimeInStage(rowWithDefaults.id!!)
 
       updateSubLocations(
           rowWithDefaults.id!!,
@@ -481,6 +486,13 @@ class BatchStore(
             }
         batchDetailsHistorySubLocationsDao.insert(detailsHistorySubLocationsRows)
       }
+
+      if (
+          existingBatch.seedsSownDate != updatedBatch.seedsSownDate ||
+              existingBatch.germinationStartedDate != updatedBatch.germinationStartedDate
+      ) {
+        updateTimeInStage(batchId)
+      }
     }
 
     updateVersionedBatch(batchId, version, successFunc) {
@@ -549,6 +561,7 @@ class BatchStore(
             userSuppliedDate,
         )
         updateRates(batchId)
+        updateTimeInStage(batchId)
       }
 
       updateVersionedBatch(batchId, version, successFunc) { update ->
@@ -1469,6 +1482,168 @@ class BatchStore(
           .set(BATCH_SUB_LOCATIONS.SUB_LOCATION_ID, subLocationId)
           .execute()
     }
+  }
+
+  private data class TimeInStageHistoryRow(
+      val effectiveTime: Instant?,
+      val germinating: Int,
+      val activeGrowth: Int,
+      val hardeningOff: Int,
+      val ready: Int,
+      val hasUndoRow: Boolean,
+      val historyType: BatchQuantityHistoryType,
+      val originatingBatchId: BatchId?,
+      val purpose: WithdrawalPurpose?,
+      val version: Int,
+      val withdrawalId: WithdrawalId?,
+  )
+
+  /**
+   * Returns a batch's quantity history in version order, along with the withdrawal details needed
+   * to tell what kind of change each row represents.
+   */
+  private fun fetchTimeInStageHistory(batchId: BatchId): List<TimeInStageHistoryRow> {
+    val undoHistory = BATCH_QUANTITY_HISTORY.`as`("undo_history")
+    val undoWithdrawal = WITHDRAWALS.`as`("undo_withdrawal")
+    val hasUndoRow =
+        DSL.field(
+            DSL.exists(
+                dslContext
+                    .selectOne()
+                    .from(undoHistory)
+                    .join(undoWithdrawal)
+                    .on(undoHistory.WITHDRAWAL_ID.eq(undoWithdrawal.ID))
+                    .where(undoHistory.BATCH_ID.eq(batchId))
+                    .and(
+                        undoWithdrawal.UNDOES_WITHDRAWAL_ID.eq(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID)
+                    )
+            )
+        )
+
+    return dslContext
+        .select(
+            BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY,
+            BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME,
+            BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY,
+            BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY,
+            BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID,
+            BATCH_QUANTITY_HISTORY.READY_QUANTITY,
+            BATCH_QUANTITY_HISTORY.VERSION,
+            BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID,
+            BATCH_WITHDRAWALS.BATCH_ID,
+            WITHDRAWALS.PURPOSE_ID,
+            hasUndoRow,
+        )
+        .from(BATCH_QUANTITY_HISTORY)
+        .leftJoin(BATCH_WITHDRAWALS)
+        .on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCH_QUANTITY_HISTORY.BATCH_ID))
+        .and(BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID))
+        .leftJoin(WITHDRAWALS)
+        .on(WITHDRAWALS.ID.eq(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID))
+        .where(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(batchId))
+        .orderBy(BATCH_QUANTITY_HISTORY.VERSION)
+        .fetch { row ->
+          TimeInStageHistoryRow(
+              activeGrowth = row[BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY]!!,
+              effectiveTime = row[BATCH_QUANTITY_HISTORY.EFFECTIVE_TIME],
+              germinating = row[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!,
+              hardeningOff = row[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY]!!,
+              hasUndoRow = row[hasUndoRow] == true,
+              historyType = row[BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID]!!,
+              originatingBatchId = row[BATCH_WITHDRAWALS.BATCH_ID],
+              purpose = row[WITHDRAWALS.PURPOSE_ID],
+              ready = row[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!,
+              version = row[BATCH_QUANTITY_HISTORY.VERSION]!!,
+              withdrawalId = row[BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID],
+          )
+        }
+  }
+
+  /**
+   * Returns true if a batch's quantity history is complete enough to calculate time in stage. It
+   * isn't if the initial row is missing or if any row lacks an effective time.
+   */
+  private fun isReplayable(historyRows: List<TimeInStageHistoryRow>): Boolean {
+    if (historyRows.isEmpty()) return false
+
+    val first = historyRows.first()
+    return first.historyType == BatchQuantityHistoryType.Observed &&
+        first.version == 1 &&
+        historyRows.none { it.effectiveTime == null }
+  }
+
+  /**
+   * Converts quantity history rows to time-in-stage calculator events, classifying each row by what
+   * kind of change it represents.
+   */
+  private fun toStageTimeEvents(
+      batchId: BatchId,
+      historyRows: List<TimeInStageHistoryRow>,
+  ): List<StageTimeEvent> = historyRows.mapIndexed { index, row ->
+    val type =
+        when {
+          index == 0 -> StageTimeEventType.Created
+          row.historyType == BatchQuantityHistoryType.StatusChanged ->
+              StageTimeEventType.StageChange
+          row.purpose == WithdrawalPurpose.Undo || row.hasUndoRow -> StageTimeEventType.Skipped
+          row.historyType == BatchQuantityHistoryType.Observed -> StageTimeEventType.ManualEdit
+          row.purpose == WithdrawalPurpose.OutPlant && row.originatingBatchId == batchId ->
+              StageTimeEventType.Outplanting
+          else -> StageTimeEventType.Other
+        }
+
+    StageTimeEvent(
+        activeGrowth = row.activeGrowth,
+        effectiveTime = row.effectiveTime!!,
+        germinating = row.germinating,
+        hardeningOff = row.hardeningOff,
+        ready = row.ready,
+        type = type,
+    )
+  }
+
+  /** Stores calculated time-in-stage statistics in a batch's stage details. */
+  private fun writeTimeInStage(batchId: BatchId, stats: Map<BatchStage, StageTimeStats>) {
+    stats.forEach { (stage, stageStats) ->
+      dslContext
+          .update(BATCH_STAGE_DETAILS)
+          .set(BATCH_STAGE_DETAILS.COUNTED_QUANTITY, stageStats.countedQuantity)
+          .set(BATCH_STAGE_DETAILS.COUNTED_SEEDLING_DAYS, stageStats.countedDays)
+          .set(BATCH_STAGE_DETAILS.OPEN_SEEDLING_DAYS, stageStats.openDays)
+          .set(BATCH_STAGE_DETAILS.TIME_IN_STAGE_CLEARED, stageStats.cleared)
+          .set(BATCH_STAGE_DETAILS.TIME_IN_STAGE_AS_OF, stageStats.asOfTime)
+          .where(BATCH_STAGE_DETAILS.BATCH_ID.eq(batchId))
+          .and(BATCH_STAGE_DETAILS.STAGE_ID.eq(stage))
+          .execute()
+    }
+  }
+
+  private fun updateTimeInStage(batchId: BatchId) {
+    val historyRows = fetchTimeInStageHistory(batchId)
+    if (!isReplayable(historyRows)) return
+
+    val first = historyRows.first()
+    val initialGerminatingStart =
+        if (first.withdrawalId == null) {
+          val dateRow =
+              dslContext
+                  .select(BATCHES.SEEDS_SOWN_DATE, BATCHES.GERMINATION_STARTED_DATE)
+                  .from(BATCHES)
+                  .where(BATCHES.ID.eq(batchId))
+                  .fetchOne()
+          val earliestDate =
+              listOfNotNull(
+                      dateRow?.get(BATCHES.SEEDS_SOWN_DATE),
+                      dateRow?.get(BATCHES.GERMINATION_STARTED_DATE),
+                  )
+                  .minOrNull()
+          earliestDate?.atStartOfDay(parentStore.getEffectiveTimeZone(batchId))?.toInstant()
+        } else {
+          null
+        }
+
+    val events = toStageTimeEvents(batchId, historyRows)
+    writeTimeInStage(batchId, StageTimeCalculator.calculate(events, initialGerminatingStart))
   }
 
   /**

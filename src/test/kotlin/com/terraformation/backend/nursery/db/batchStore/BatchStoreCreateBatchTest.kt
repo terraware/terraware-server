@@ -177,9 +177,14 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
         expectedQuantities.map {
           BatchStageDetailsRecord(
               batchId = it.batchId,
+              countedQuantity = it.quantity,
+              countedSeedlingDays = 0.0,
               latestObservedQuantity = it.latestObservedQuantity,
+              openSeedlingDays = 0.0,
               quantity = it.quantity,
               stageId = it.stage,
+              timeInStageAsOf = clock.instant,
+              timeInStageCleared = false,
           )
         },
         message = "Stage quantities",

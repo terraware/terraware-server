@@ -529,7 +529,18 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
     assertTableEquals(
         expectedBatches.flatMap { (_, quantities) ->
-          quantities.map { BatchStageDetailsRecord(it.copy(batchId = mappedBatchIds[it.batchId])) }
+          quantities.map {
+            BatchStageDetailsRecord(
+                it.copy(
+                    batchId = mappedBatchIds[it.batchId],
+                    countedQuantity = it.quantity,
+                    countedSeedlingDays = 0.0,
+                    openSeedlingDays = 0.0,
+                    timeInStageAsOf = clock.instant,
+                    timeInStageCleared = false,
+                )
+            )
+          }
         },
         message = "Imported stage quantities",
     )
