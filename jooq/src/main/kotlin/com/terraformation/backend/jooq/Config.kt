@@ -159,6 +159,11 @@ val ENUM_TABLES =
                     listOf("batch_quantity_history\\.history_type_id"),
                     isLocalizable = false,
                 ),
+                EnumTable(
+                    "batch_stages",
+                    listOf("batch_stage_details\\.stage_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("batch_substrates", listOf("nursery\\..*\\.substrate_id")),
                 EnumTable(
                     "withdrawal_purposes",

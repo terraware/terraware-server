@@ -5,7 +5,9 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIONS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -65,31 +67,48 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
           DSL.value(0),
       )
 
+  private fun quantityField(table: Table<*>, stage: BatchStage): Field<Int?> =
+      DSL.field(
+          DSL.select(BATCH_STAGE_DETAILS.QUANTITY)
+              .from(BATCH_STAGE_DETAILS)
+              .where(BATCH_STAGE_DETAILS.BATCH_ID.eq(table.column(BATCHES.ID)))
+              .and(BATCH_STAGE_DETAILS.STAGE_ID.eq(stage))
+      )
+
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
-        integerField("activeGrowthQuantity", BATCHES.ACTIVE_GROWTH_QUANTITY),
+        integerField("activeGrowthQuantity") { table ->
+          quantityField(table, BatchStage.ActiveGrowth)
+        },
         dateField("addedDate", BATCHES.ADDED_DATE),
         upperCaseTextField("batchNumber", BATCHES.BATCH_NUMBER),
-        integerField("germinatingQuantity", BATCHES.GERMINATING_QUANTITY),
+        integerField("germinatingQuantity") { table ->
+          quantityField(table, BatchStage.Germinating)
+        },
         integerField("germinationRate", BATCHES.GERMINATION_RATE),
         dateField("germinationStartedDate", BATCHES.GERMINATION_STARTED_DATE),
-        integerField("hardeningOffQuantity", BATCHES.HARDENING_OFF_QUANTITY),
+        integerField("hardeningOffQuantity") { table ->
+          quantityField(table, BatchStage.HardeningOff)
+        },
         idWrapperField("id", BATCHES.ID, ::BatchId),
         idWrapperField("initialBatchId", BATCHES.INITIAL_BATCH_ID, ::BatchId),
         integerField("lossRate", BATCHES.LOSS_RATE),
         textField("notes", BATCHES.NOTES),
-        integerField("notReadyQuantity", BATCHES.ACTIVE_GROWTH_QUANTITY),
+        integerField("notReadyQuantity") { table ->
+          quantityField(table, BatchStage.ActiveGrowth)
+        },
         dateField("readyByDate", BATCHES.READY_BY_DATE),
-        integerField("readyQuantity", BATCHES.READY_QUANTITY),
+        integerField("readyQuantity") { table ->
+          quantityField(table, BatchStage.Ready)
+        },
         dateField("seedsSownDate", BATCHES.SEEDS_SOWN_DATE),
         enumField("substrate", BATCHES.SUBSTRATE_ID),
         textField("substrateNotes", BATCHES.SUBSTRATE_NOTES),
         integerField("totalQuantity") { table ->
-          table
-              .column(BATCHES.READY_QUANTITY)
-              .plus(table.column(BATCHES.ACTIVE_GROWTH_QUANTITY))
-              .plus(table.column(BATCHES.HARDENING_OFF_QUANTITY))
+          quantityField(table, BatchStage.Ready)
+              .plus(quantityField(table, BatchStage.ActiveGrowth))
+              .plus(quantityField(table, BatchStage.HardeningOff))
         },
         enumField("treatment", BATCHES.TREATMENT_ID),
         textField("treatmentNotes", BATCHES.TREATMENT_NOTES),

@@ -4,7 +4,9 @@ import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
 import org.jooq.DSLContext
@@ -30,7 +32,12 @@ class AdminNurseryRatesController(
           dslContext
               .select(ID)
               .from(BATCHES)
-              .where(GERMINATION_RATE.isNull.and(GERMINATING_QUANTITY.eq(0)))
+              .join(BATCH_STAGE_DETAILS)
+              .on(
+                  BATCH_STAGE_DETAILS.BATCH_ID.eq(BATCHES.ID)
+                      .and(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.Germinating))
+              )
+              .where(GERMINATION_RATE.isNull.and(BATCH_STAGE_DETAILS.QUANTITY.eq(0)))
               .or(LOSS_RATE.isNull)
               .fetch(ID.asNonNullable())
         }
@@ -59,7 +66,12 @@ class AdminNurseryRatesController(
             dslContext
                 .selectCount()
                 .from(BATCHES)
-                .where(GERMINATION_RATE.isNull.and(GERMINATING_QUANTITY.eq(0)))
+                .join(BATCH_STAGE_DETAILS)
+                .on(
+                    BATCH_STAGE_DETAILS.BATCH_ID.eq(BATCHES.ID)
+                        .and(BATCH_STAGE_DETAILS.STAGE_ID.eq(BatchStage.Germinating))
+                )
+                .where(GERMINATION_RATE.isNull.and(BATCH_STAGE_DETAILS.QUANTITY.eq(0)))
                 .or(LOSS_RATE.isNull)
                 .fetchSingle()
           }

@@ -82,6 +82,13 @@ VALUES (1, 'Observed'),
        (3, 'StatusChanged')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO nursery.batch_stages (id, name)
+VALUES (1, 'Germinating'),
+       (2, 'Active Growth'),
+       (3, 'Hardening Off'),
+       (4, 'Ready')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO nursery.batch_substrates (id, name)
 VALUES (1, 'MediaMix'),
        (2, 'Soil'),

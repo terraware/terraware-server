@@ -82,6 +82,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_P
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -2028,7 +2029,8 @@ class ReportStore(
             DSL.select(
                     DSL.sum(READY_QUANTITY_WITHDRAWN) +
                         DSL.sum(GERMINATING_QUANTITY_WITHDRAWN) +
-                        DSL.sum(ACTIVE_GROWTH_QUANTITY_WITHDRAWN)
+                        DSL.sum(ACTIVE_GROWTH_QUANTITY_WITHDRAWN) +
+                        DSL.sum(HARDENING_OFF_QUANTITY_WITHDRAWN)
                 )
                 .from(this)
                 .join(WITHDRAWAL_SUMMARIES)
@@ -2044,10 +2046,13 @@ class ReportStore(
       with(BATCHES) {
         DSL.field(
             DSL.select(
-                    DSL.sum(READY_QUANTITY) +
-                        DSL.sum(GERMINATING_QUANTITY) +
-                        DSL.sum(ACTIVE_GROWTH_QUANTITY) +
-                        DSL.coalesce(DSL.sum(withdrawnSeedlingsField), 0)
+                    DSL.sum(
+                        DSL.field(
+                            DSL.select(DSL.sum(BATCH_STAGE_DETAILS.QUANTITY))
+                                .from(BATCH_STAGE_DETAILS)
+                                .where(BATCH_STAGE_DETAILS.BATCH_ID.eq(BATCHES.ID))
+                        )
+                    ) + DSL.coalesce(DSL.sum(withdrawnSeedlingsField), 0)
                 )
                 .from(this)
                 .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))

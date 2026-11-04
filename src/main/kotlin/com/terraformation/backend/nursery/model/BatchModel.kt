@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -104,29 +105,33 @@ data class ExistingBatchModel(
       subLocationIds: Set<SubLocationId> = emptySet(),
       totalWithdrawn: Int,
       accessionNumbers: Map<AccessionId, String> = emptyMap(),
+      quantities: Map<BatchStage, BatchStageDetailsModel>,
   ) : this(
       accessionNumbers = accessionNumbers,
       addedDate = row.addedDate!!,
       batchNumber = row.batchNumber!!,
       facilityId = row.facilityId!!,
-      germinatingQuantity = row.germinatingQuantity!!,
+      germinatingQuantity = quantities.getValue(BatchStage.Germinating).quantity,
       germinationRate = row.germinationRate,
       germinationStartedDate = row.germinationStartedDate,
-      hardeningOffQuantity = row.hardeningOffQuantity!!,
+      hardeningOffQuantity = quantities.getValue(BatchStage.HardeningOff).quantity,
       id = row.id!!,
       initialBatchId = row.initialBatchId,
-      latestObservedActiveGrowthQuantity = row.latestObservedActiveGrowthQuantity!!,
-      latestObservedGerminatingQuantity = row.latestObservedGerminatingQuantity!!,
-      latestObservedHardeningOffQuantity = row.latestObservedHardeningOffQuantity!!,
-      latestObservedReadyQuantity = row.latestObservedReadyQuantity!!,
+      latestObservedActiveGrowthQuantity =
+          quantities.getValue(BatchStage.ActiveGrowth).latestObservedQuantity,
+      latestObservedGerminatingQuantity =
+          quantities.getValue(BatchStage.Germinating).latestObservedQuantity,
+      latestObservedHardeningOffQuantity =
+          quantities.getValue(BatchStage.HardeningOff).latestObservedQuantity,
+      latestObservedReadyQuantity = quantities.getValue(BatchStage.Ready).latestObservedQuantity,
       latestObservedTime = row.latestObservedTime!!,
       lossRate = row.lossRate,
       notes = row.notes,
-      activeGrowthQuantity = row.activeGrowthQuantity!!,
+      activeGrowthQuantity = quantities.getValue(BatchStage.ActiveGrowth).quantity,
       organizationId = row.organizationId!!,
       projectId = row.projectId,
       readyByDate = row.readyByDate,
-      readyQuantity = row.readyQuantity!!,
+      readyQuantity = quantities.getValue(BatchStage.Ready).quantity,
       seedsSownDate = row.seedsSownDate,
       speciesId = row.speciesId!!,
       subLocationIds = subLocationIds,

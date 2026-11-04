@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_STAGE_DETAILS
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
@@ -139,22 +140,20 @@ class PublicStatisticsStore(
 
   private fun sumSeedlingsInNurseries(): Long {
     with(BATCHES) {
-      return dslContext
-          .select(
-              DSL.sum(
-                  GERMINATING_QUANTITY.plus(ACTIVE_GROWTH_QUANTITY)
-                      .plus(READY_QUANTITY)
-                      .plus(HARDENING_OFF_QUANTITY)
+      val batchTotals =
+          DSL.select(DSL.sum(BATCH_STAGE_DETAILS.QUANTITY).`as`("quantity"))
+              .from(BATCH_STAGE_DETAILS)
+              .join(BATCHES)
+              .on(BATCHES.ID.eq(BATCH_STAGE_DETAILS.BATCH_ID))
+              .where(ORGANIZATION_ID.notIn(excludedOrganizationIds))
+              .groupBy(BATCHES.ID)
+              .having(
+                  DSL.sum(BATCH_STAGE_DETAILS.QUANTITY).le(MAX_SEEDLINGS_IN_BATCH.toBigDecimal())
               )
-          )
-          .from(BATCHES)
-          .where(ORGANIZATION_ID.notIn(excludedOrganizationIds))
-          .and(
-              (GERMINATING_QUANTITY.plus(ACTIVE_GROWTH_QUANTITY)
-                      .plus(READY_QUANTITY)
-                      .plus(HARDENING_OFF_QUANTITY))
-                  .le(MAX_SEEDLINGS_IN_BATCH)
-          )
+              .asTable("batch_totals")
+      return dslContext
+          .select(DSL.sum(batchTotals.field("quantity", java.math.BigDecimal::class.java)))
+          .from(batchTotals)
           .fetchOne(0, Long::class.java) ?: 0L
     }
   }
