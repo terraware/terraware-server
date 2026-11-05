@@ -2452,6 +2452,7 @@ class PlantingSiteStore(
                 )
                 .from(table)
                 .where(tableIdField.eq(scopeIdField))
+                .orderBy(speciesIdField)
         )
         .convertFrom { result ->
           result.map { record ->

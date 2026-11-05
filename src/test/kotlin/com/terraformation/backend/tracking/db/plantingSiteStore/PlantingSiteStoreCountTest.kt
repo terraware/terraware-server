@@ -102,122 +102,129 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
               id = plantingSiteId,
               strata =
                   listOf(
-                      PlantingSiteReportedPlantTotals.Stratum(
-                          id = stratumId1,
-                          species =
-                              listOf(
-                                  PlantingSiteReportedPlantTotals.Species(
-                                      id = speciesId1,
-                                      totalPlants = 10,
-                                  ),
-                                  PlantingSiteReportedPlantTotals.Species(
-                                      id = speciesId2,
-                                      totalPlants = 20,
-                                  ),
-                              ),
-                          targetPlants = 20,
-                          totalPlants = 30,
-                          totalSpecies = 2,
-                          substrata =
-                              listOf(
-                                  PlantingSiteReportedPlantTotals.Substratum(
-                                      id = substratumId1a,
-                                      species =
-                                          listOf(
-                                              PlantingSiteReportedPlantTotals.Species(
-                                                  id = speciesId1,
-                                                  totalPlants = 5,
-                                              )
+                          PlantingSiteReportedPlantTotals.Stratum(
+                              id = stratumId1,
+                              species =
+                                  listOf(
+                                          PlantingSiteReportedPlantTotals.Species(
+                                              id = speciesId1,
+                                              totalPlants = 10,
                                           ),
-                                      totalPlants = 5,
-                                      totalSpecies = 1,
-                                  ),
-                                  PlantingSiteReportedPlantTotals.Substratum(
-                                      id = substratumId1b,
-                                      species =
-                                          listOf(
-                                              PlantingSiteReportedPlantTotals.Species(
-                                                  id = speciesId1,
-                                                  totalPlants = 5,
-                                              ),
-                                              PlantingSiteReportedPlantTotals.Species(
-                                                  id = speciesId2,
-                                                  totalPlants = 20,
-                                              ),
+                                          PlantingSiteReportedPlantTotals.Species(
+                                              id = speciesId2,
+                                              totalPlants = 20,
                                           ),
-                                      totalPlants = 25,
-                                      totalSpecies = 2,
-                                  ),
-                              ),
-                      ),
-                      PlantingSiteReportedPlantTotals.Stratum(
-                          id = stratumId2,
-                          species =
-                              listOf(
-                                  PlantingSiteReportedPlantTotals.Species(
-                                      id = speciesId2,
-                                      totalPlants = 40,
-                                  ),
-                                  PlantingSiteReportedPlantTotals.Species(
-                                      id = speciesId3,
-                                      totalPlants = 70,
-                                  ),
-                              ),
-                          targetPlants = 404,
-                          totalPlants = 110,
-                          totalSpecies = 2,
-                          substrata =
-                              listOf(
-                                  PlantingSiteReportedPlantTotals.Substratum(
-                                      id = substratumId2,
-                                      species =
-                                          listOf(
-                                              PlantingSiteReportedPlantTotals.Species(
-                                                  id = speciesId2,
-                                                  totalPlants = 50,
-                                              ),
-                                              PlantingSiteReportedPlantTotals.Species(
-                                                  id = speciesId3,
-                                                  totalPlants = 55,
-                                              ),
+                                      )
+                                      .sortedBy { it.id },
+                              targetPlants = 20,
+                              totalPlants = 30,
+                              totalSpecies = 2,
+                              substrata =
+                                  listOf(
+                                          PlantingSiteReportedPlantTotals.Substratum(
+                                              id = substratumId1a,
+                                              species =
+                                                  listOf(
+                                                      PlantingSiteReportedPlantTotals.Species(
+                                                          id = speciesId1,
+                                                          totalPlants = 5,
+                                                      )
+                                                  ),
+                                              totalPlants = 5,
+                                              totalSpecies = 1,
                                           ),
-                                      totalPlants = 105,
-                                      totalSpecies = 2,
-                                  )
-                              ),
-                      ),
-                      PlantingSiteReportedPlantTotals.Stratum(
-                          id = emptyStratumId,
-                          substrata =
-                              listOf(
-                                  PlantingSiteReportedPlantTotals.Substratum(
-                                      id = emptySubstratumId,
-                                      species = emptyList(),
-                                      totalSpecies = 0,
-                                      totalPlants = 0,
-                                  )
-                              ),
-                          species = emptyList(),
-                          targetPlants = 250,
-                          totalSpecies = 0,
-                          totalPlants = 0,
-                      ),
-                  ),
+                                          PlantingSiteReportedPlantTotals.Substratum(
+                                              id = substratumId1b,
+                                              species =
+                                                  listOf(
+                                                          PlantingSiteReportedPlantTotals.Species(
+                                                              id = speciesId1,
+                                                              totalPlants = 5,
+                                                          ),
+                                                          PlantingSiteReportedPlantTotals.Species(
+                                                              id = speciesId2,
+                                                              totalPlants = 20,
+                                                          ),
+                                                      )
+                                                      .sortedBy { it.id },
+                                              totalPlants = 25,
+                                              totalSpecies = 2,
+                                          ),
+                                      )
+                                      .sortedBy { it.id },
+                          ),
+                          PlantingSiteReportedPlantTotals.Stratum(
+                              id = stratumId2,
+                              species =
+                                  listOf(
+                                          PlantingSiteReportedPlantTotals.Species(
+                                              id = speciesId2,
+                                              totalPlants = 40,
+                                          ),
+                                          PlantingSiteReportedPlantTotals.Species(
+                                              id = speciesId3,
+                                              totalPlants = 70,
+                                          ),
+                                      )
+                                      .sortedBy { it.id },
+                              targetPlants = 404,
+                              totalPlants = 110,
+                              totalSpecies = 2,
+                              substrata =
+                                  listOf(
+                                      PlantingSiteReportedPlantTotals.Substratum(
+                                          id = substratumId2,
+                                          species =
+                                              listOf(
+                                                      PlantingSiteReportedPlantTotals.Species(
+                                                          id = speciesId2,
+                                                          totalPlants = 50,
+                                                      ),
+                                                      PlantingSiteReportedPlantTotals.Species(
+                                                          id = speciesId3,
+                                                          totalPlants = 55,
+                                                      ),
+                                                  )
+                                                  .sortedBy { it.id },
+                                          totalPlants = 105,
+                                          totalSpecies = 2,
+                                      )
+                                  ),
+                          ),
+                          PlantingSiteReportedPlantTotals.Stratum(
+                              id = emptyStratumId,
+                              substrata =
+                                  listOf(
+                                      PlantingSiteReportedPlantTotals.Substratum(
+                                          id = emptySubstratumId,
+                                          species = emptyList(),
+                                          totalSpecies = 0,
+                                          totalPlants = 0,
+                                      )
+                                  ),
+                              species = emptyList(),
+                              targetPlants = 250,
+                              totalSpecies = 0,
+                              totalPlants = 0,
+                          ),
+                      )
+                      .sortedBy { it.id },
               species =
                   listOf(
-                      PlantingSiteReportedPlantTotals.Species(
-                          id = speciesId1,
-                          totalPlants = 10,
-                      ),
-                      PlantingSiteReportedPlantTotals.Species(
-                          id = speciesId2,
-                          totalPlants = 60,
-                      ),
-                      PlantingSiteReportedPlantTotals.Species(
-                          id = speciesId3,
-                          totalPlants = 80,
-                      ),
-                  ),
+                          PlantingSiteReportedPlantTotals.Species(
+                              id = speciesId1,
+                              totalPlants = 10,
+                          ),
+                          PlantingSiteReportedPlantTotals.Species(
+                              id = speciesId2,
+                              totalPlants = 60,
+                          ),
+                          PlantingSiteReportedPlantTotals.Species(
+                              id = speciesId3,
+                              totalPlants = 80,
+                          ),
+                      )
+                      .sortedBy { it.id },
               totalPlants = 150,
               totalSpecies = 3,
           )
