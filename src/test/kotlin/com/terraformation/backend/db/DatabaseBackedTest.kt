@@ -2381,6 +2381,8 @@ abstract class DatabaseBackedTest {
       latestObservedQuantity: Int = quantity,
       countedQuantity: Int? = null,
       countedSeedlingDays: Double? = null,
+      finishedQuantity: Double? = null,
+      finishedSeedlingDays: Double? = null,
       openSeedlingDays: Double? = null,
       timeInStageAsOf: Instant? = null,
       timeInStageCleared: Boolean? = null,
@@ -2394,6 +2396,8 @@ abstract class DatabaseBackedTest {
           .set(LATEST_OBSERVED_QUANTITY, latestObservedQuantity)
           .set(COUNTED_QUANTITY, countedQuantity)
           .set(COUNTED_SEEDLING_DAYS, countedSeedlingDays)
+          .set(FINISHED_QUANTITY, finishedQuantity)
+          .set(FINISHED_SEEDLING_DAYS, finishedSeedlingDays)
           .set(OPEN_SEEDLING_DAYS, openSeedlingDays)
           .set(TIME_IN_STAGE_AS_OF, timeInStageAsOf)
           .set(TIME_IN_STAGE_CLEARED, timeInStageCleared)

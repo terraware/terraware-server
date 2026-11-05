@@ -292,6 +292,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                 batchId = batchId,
                 countedQuantity = 79,
                 countedSeedlingDays = 2449.0,
+                finishedQuantity = 79.0,
+                finishedSeedlingDays = 2449.0,
                 latestObservedQuantity = 0,
                 openSeedlingDays = 0.0,
                 quantity = 0,
@@ -303,6 +305,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                 batchId = batchId,
                 countedQuantity = 0,
                 countedSeedlingDays = 0.0,
+                finishedQuantity = 0.0,
+                finishedSeedlingDays = 0.0,
                 latestObservedQuantity = 0,
                 openSeedlingDays = 0.0,
                 quantity = 0,
@@ -314,6 +318,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                 batchId = batchId,
                 countedQuantity = 0,
                 countedSeedlingDays = 0.0,
+                finishedQuantity = 0.0,
+                finishedSeedlingDays = 0.0,
                 latestObservedQuantity = 0,
                 openSeedlingDays = 0.0,
                 quantity = 0,
@@ -325,6 +331,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                 batchId = batchId,
                 countedQuantity = 0,
                 countedSeedlingDays = 0.0,
+                finishedQuantity = 0.0,
+                finishedSeedlingDays = 0.0,
                 latestObservedQuantity = 0,
                 openSeedlingDays = 0.0,
                 quantity = 0,
@@ -334,6 +342,133 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
             ),
         ),
         message = "Replayed stage times after withdrawals, status changes, undo, and manual edit",
+    )
+  }
+
+  @Test
+  fun `stores completed stage time excluding dead seedlings and including ready outplanting`() {
+    val createdTime = Instant.parse("2026-01-01T00:00:00Z")
+    val asOf = Instant.parse("2026-01-21T00:00:00Z")
+    clock.instant = createdTime
+    val batchId =
+        store
+            .create(
+                NewBatchModel(
+                    activeGrowthQuantity = 20,
+                    addedDate = LocalDate.of(2026, 1, 1),
+                    facilityId = facilityId,
+                    germinatingQuantity = 100,
+                    hardeningOffQuantity = 0,
+                    readyQuantity = 0,
+                    speciesId = speciesId,
+                )
+            )
+            .id
+
+    clock.instant = Instant.parse("2026-01-06T00:00:00Z")
+    store.withdraw(
+        NewWithdrawalModel(
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        activeGrowthQuantityWithdrawn = 0,
+                        batchId = batchId,
+                        germinatingQuantityWithdrawn = 20,
+                        hardeningOffQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 0,
+                    )
+                ),
+            facilityId = facilityId,
+            id = null,
+            purpose = WithdrawalPurpose.Dead,
+            withdrawnDate = LocalDate.of(2026, 1, 6),
+        )
+    )
+    clock.instant = Instant.parse("2026-01-11T00:00:00Z")
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.Ready, 60)
+    store.changeStatuses(
+        batchId,
+        NurseryBatchPhase.ActiveGrowth,
+        NurseryBatchPhase.HardeningOff,
+        10,
+    )
+    clock.instant = asOf
+    store.withdraw(
+        NewWithdrawalModel(
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        activeGrowthQuantityWithdrawn = 0,
+                        batchId = batchId,
+                        germinatingQuantityWithdrawn = 0,
+                        hardeningOffQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 30,
+                    )
+                ),
+            facilityId = facilityId,
+            id = null,
+            purpose = WithdrawalPurpose.OutPlant,
+            withdrawnDate = LocalDate.of(2026, 1, 21),
+        )
+    )
+
+    assertTableEquals(
+        listOf(
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 80,
+                countedSeedlingDays = 1000.0,
+                finishedQuantity = 60.0,
+                finishedSeedlingDays = 600.0,
+                latestObservedQuantity = 100,
+                openSeedlingDays = 400.0,
+                quantity = 20,
+                stageId = BatchStage.Germinating,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = false,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 20,
+                countedSeedlingDays = 300.0,
+                finishedQuantity = 0.0,
+                finishedSeedlingDays = 0.0,
+                latestObservedQuantity = 20,
+                openSeedlingDays = 200.0,
+                quantity = 10,
+                stageId = BatchStage.ActiveGrowth,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = false,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 10,
+                countedSeedlingDays = 100.0,
+                finishedQuantity = 0.0,
+                finishedSeedlingDays = 0.0,
+                latestObservedQuantity = 0,
+                openSeedlingDays = 100.0,
+                quantity = 10,
+                stageId = BatchStage.HardeningOff,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = false,
+            ),
+            BatchStageDetailsRecord(
+                batchId = batchId,
+                countedQuantity = 60,
+                countedSeedlingDays = 600.0,
+                finishedQuantity = 30.0,
+                finishedSeedlingDays = 300.0,
+                latestObservedQuantity = 0,
+                openSeedlingDays = 300.0,
+                quantity = 30,
+                stageId = BatchStage.Ready,
+                timeInStageAsOf = asOf,
+                timeInStageCleared = false,
+            ),
+        ),
+        message =
+            "Completed seedlings exclude starting seedlings, dead withdrawals, and open stage time",
     )
   }
 
@@ -391,6 +526,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
             batchId = batchId,
             countedQuantity = countedQuantity,
             countedSeedlingDays = countedDays,
+            finishedQuantity = if (stage == BatchStage.Ready) 0.0 else countedQuantity.toDouble(),
+            finishedSeedlingDays = countedDays,
             latestObservedQuantity = latestObservedQuantity,
             openSeedlingDays = openDays,
             quantity = quantity,

@@ -535,6 +535,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                     batchId = mappedBatchIds[it.batchId],
                     countedQuantity = if (it.stageId == BatchStage.ActiveGrowth) 0 else it.quantity,
                     countedSeedlingDays = 0.0,
+                    finishedQuantity = 0.0,
+                    finishedSeedlingDays = 0.0,
                     openSeedlingDays = 0.0,
                     timeInStageAsOf = clock.instant,
                     timeInStageCleared = false,
