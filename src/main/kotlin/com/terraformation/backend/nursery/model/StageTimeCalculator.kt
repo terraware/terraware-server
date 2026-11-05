@@ -37,7 +37,7 @@ data class StageTimeStats(
     val countedDays: Double,
     val countedQuantity: Int,
     val finishedDays: Double = 0.0,
-    val finishedQuantity: Int = 0,
+    val finishedQuantity: Double = 0.0,
     val inStage: Int,
     val openDays: Double,
     val stage: BatchStage,
@@ -60,9 +60,11 @@ data class StageTimeStats(
  * Replays a batch's quantity history to compute, for each stage, how many seedlings count toward
  * the stage's average time and how many seedling-days they've accumulated. Finished quantities and
  * seedling-days count only seedlings that complete a stage via a stage change or outplanting from
- * Ready, excluding seedlings still in the stage and non-completing removals. Skipped events such as
- * undone withdrawals don't change any quantities, and manual edits clear any stage whose quantity
- * they change.
+ * Ready, excluding seedlings still in the stage and non-completing removals. Seedlings present at
+ * creation are excluded from their starting stage except Germinating. Departures are split
+ * proportionally between starting seedlings and seedlings that entered the stage later. Skipped
+ * events such as undone withdrawals don't change any quantities, and manual edits clear any stage
+ * whose quantity they change.
  */
 object StageTimeCalculator {
   fun daysBetween(start: Instant, end: Instant): Double =
@@ -90,6 +92,7 @@ object StageTimeCalculator {
               countedQuantity = quantity,
               inStage = quantity,
               openDays = prehistoryDays,
+              startingInStage = if (stage == BatchStage.Germinating) 0.0 else quantity.toDouble(),
           )
         }
 
@@ -113,13 +116,38 @@ object StageTimeCalculator {
             event.type == StageTimeEventType.StageChange ||
                 (event.type == StageTimeEventType.Outplanting && stage == BatchStage.Ready)
 
+        state.startingOpenDays += state.startingInStage * elapsedDays
+        // Entered seedlings arrived later, e.g., via a stage change; only they count as finished.
+        // Germinating has no starting pool, so its initial seedlings count as entered too.
+        val startingDecrease =
+            when {
+              state.startingInStage == 0.0 -> 0.0
+              state.startingInStage == state.inStage.toDouble() -> decrease.toDouble()
+              decrease == state.inStage -> state.startingInStage
+              else -> decrease * state.startingInStage / state.inStage
+            }
+        val enteredDecrease = decrease - startingDecrease
+        val enteredInStage = state.inStage - state.startingInStage
+        val enteredShare =
+            if (enteredInStage > 0) {
+              (state.openDays + state.inStage * elapsedDays - state.startingOpenDays) /
+                  enteredInStage
+            } else {
+              0.0
+            }
+        val startingShare =
+            if (state.startingInStage > 0) state.startingOpenDays / state.startingInStage else 0.0
+        state.startingInStage -= startingDecrease
+        state.startingOpenDays =
+            if (state.startingInStage == 0.0) 0.0
+            else state.startingOpenDays - startingDecrease * startingShare
         state.openDays += state.inStage * elapsedDays - decrease * share
         state.countedDays += state.inStage * elapsedDays - if (completes) 0.0 else decrease * share
         state.countedQuantity += increase - if (completes) 0 else decrease
         state.inStage += delta
         if (completes) {
-          state.finishedDays += decrease * share
-          state.finishedQuantity += decrease
+          state.finishedDays += enteredDecrease * enteredShare
+          state.finishedQuantity += enteredDecrease
         }
         if (event.type == StageTimeEventType.ManualEdit && quantity != previousQuantity) {
           state.cleared = true
@@ -150,6 +178,10 @@ object StageTimeCalculator {
       var inStage: Int,
       var openDays: Double,
       var finishedDays: Double = 0.0,
-      var finishedQuantity: Int = 0,
+      var finishedQuantity: Double = 0.0,
+      // Seedlings present in this stage at batch creation, excluded from finished stats.
+      // Germinating is the exception: its starting pool is empty.
+      var startingInStage: Double,
+      var startingOpenDays: Double = 0.0,
   )
 }

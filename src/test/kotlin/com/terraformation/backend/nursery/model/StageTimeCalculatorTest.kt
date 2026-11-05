@@ -50,7 +50,7 @@ internal class StageTimeCalculatorTest {
   fun `counts only completed seedlings`(
       name: String,
       eventRows: List<String>,
-      expected: List<Pair<Int, Double>>,
+      expected: List<Pair<Number, Double>>,
   ) {
     val actual = StageTimeCalculator.calculate(eventRows.map(::parseEvent), instant("01-01"))
     assertAll(
@@ -59,8 +59,9 @@ internal class StageTimeCalculatorTest {
             val (quantity, days) = expected[index]
             val stats = actual.getValue(stage)
             assertEquals(
-                quantity,
+                quantity.toDouble(),
                 stats.finishedQuantity,
+                if (quantity.toDouble() == 0.0) 0.0 else 1e-6,
                 "$name / $stage finished quantity",
             )
             assertEquals(days, stats.finishedDays, 1e-6, "$name / $stage finished days")
@@ -122,6 +123,48 @@ internal class StageTimeCalculatorTest {
     @JvmStatic
     fun finishedExamples() =
         listOf(
+            Arguments.of(
+                "Large starting pool does not produce fractional finished seedlings",
+                listOf("01-01,C,0,999999937,0,0", "01-11,S,0,3,999999934,0"),
+                listOf(0 to 0.0, 0 to 0.0, 0 to 0.0, 0 to 0.0),
+            ),
+            Arguments.of(
+                "Emptying a mixed pool leaves no starting seedlings when refilled",
+                listOf(
+                    "01-01,C,31,3,0,0",
+                    "01-02,S,0,34,0,0",
+                    "01-03,X,0,28,0,0",
+                    "01-04,X,0,0,0,0",
+                    "01-05,X,0,7,0,0",
+                    "01-06,S,0,0,7,0",
+                ),
+                listOf(31 to 31.0, 7 to 7.0, 0 to 0.0, 0 to 0.0),
+            ),
+            Arguments.of(
+                "Starting Active Growth seedlings leave proportionally",
+                listOf(
+                    "01-01,C,100,100,0,0",
+                    "01-11,S,0,200,0,0",
+                    "01-31,S,0,100,100,0",
+                    "02-10,S,0,0,200,0",
+                ),
+                listOf(100 to 1000.0, 100 to 2500.0, 0 to 0.0, 0 to 0.0),
+            ),
+            Arguments.of(
+                "Uneven pools with non-completing and completing departures",
+                listOf(
+                    "01-01,C,10,20,0,0",
+                    "01-11,S,0,30,0,0",
+                    "01-21,X,0,27,0,0",
+                    "01-31,S,0,22,5,0",
+                ),
+                listOf(10 to 100.0, 5.0 / 3 to 100.0 / 3, 0 to 0.0, 0 to 0.0),
+            ),
+            Arguments.of(
+                "Starting Ready seedlings do not count when outplanted",
+                listOf("01-01,C,0,0,0,100", "01-11,O,0,0,0,0"),
+                listOf(0 to 0.0, 0 to 0.0, 0 to 0.0, 0 to 0.0),
+            ),
             Arguments.of(
                 "Creation and open stages",
                 listOf("01-01,C,10,20,30,40", "01-11,X,10,20,30,40"),
