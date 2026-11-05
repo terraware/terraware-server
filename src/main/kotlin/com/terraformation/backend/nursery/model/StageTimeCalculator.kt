@@ -36,6 +36,8 @@ data class StageTimeStats(
     val cleared: Boolean,
     val countedDays: Double,
     val countedQuantity: Int,
+    val finishedDays: Double = 0.0,
+    val finishedQuantity: Int = 0,
     val inStage: Int,
     val openDays: Double,
     val stage: BatchStage,
@@ -56,9 +58,11 @@ data class StageTimeStats(
 
 /**
  * Replays a batch's quantity history to compute, for each stage, how many seedlings count toward
- * the stage's average time and how many seedling-days they've accumulated. Stage changes complete
- * earlier stages, outplanting completes Ready, skipped events such as undone withdrawals don't
- * change any quantities, and manual edits clear any stage whose quantity they change.
+ * the stage's average time and how many seedling-days they've accumulated. Finished quantities and
+ * seedling-days count only seedlings that complete a stage via a stage change or outplanting from
+ * Ready, excluding seedlings still in the stage and non-completing removals. Skipped events such as
+ * undone withdrawals don't change any quantities, and manual edits clear any stage whose quantity
+ * they change.
  */
 object StageTimeCalculator {
   fun daysBetween(start: Instant, end: Instant): Double =
@@ -113,6 +117,10 @@ object StageTimeCalculator {
         state.countedDays += state.inStage * elapsedDays - if (completes) 0.0 else decrease * share
         state.countedQuantity += increase - if (completes) 0 else decrease
         state.inStage += delta
+        if (completes) {
+          state.finishedDays += decrease * share
+          state.finishedQuantity += decrease
+        }
         if (event.type == StageTimeEventType.ManualEdit && quantity != previousQuantity) {
           state.cleared = true
         }
@@ -126,6 +134,8 @@ object StageTimeCalculator {
           cleared = state.cleared,
           countedDays = state.countedDays,
           countedQuantity = state.countedQuantity,
+          finishedDays = state.finishedDays,
+          finishedQuantity = state.finishedQuantity,
           inStage = state.inStage,
           openDays = state.openDays,
           stage = stage,
@@ -139,5 +149,7 @@ object StageTimeCalculator {
       var countedQuantity: Int,
       var inStage: Int,
       var openDays: Double,
+      var finishedDays: Double = 0.0,
+      var finishedQuantity: Int = 0,
   )
 }
