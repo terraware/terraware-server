@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>observed_site_species_totals - terraware.tracking</title>
+        <title>observed_site_species_totals - terraware_71a55913_7131c89f869b.tracking</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_71a55913_7131c89f869b</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -134,6 +134,11 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="observed_site_species_totals.[biomass_species_id, observation_id] references observation_biomass_species.[id, observation_id] via observed_site_species_totals_biomass_species_id_observatio_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observed_site_species_totals_biomass_species_id_observatio_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
                                             <tr>
                                                 <td title="observed_site_species_totals.observation_id references observations.id via observed_site_species_totals_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observed_site_species_totals_observation_id_fkey</td>
@@ -328,6 +333,28 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="biomass_species_id">biomass_species_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="observed_site_species_totals.[biomass_species_id, observation_id] references observation_biomass_species.[id, observation_id] via observed_site_species_totals_biomass_species_id_observatio_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observed_site_species_totals_biomass_species_id_observatio_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td><p>Species identity for biomass totals. Null for plant monitoring totals.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -358,6 +385,12 @@
                                 </tr>
                                 </thead>
                                 <tbody>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observed_site_species_totals_biomass_species_id_observation_idx</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>biomass_species_id + observation_id + planting_site_history_id</td>
+                                </tr>
                                 <tr>
                                     <td title='Indexed'>observed_site_species_totals_observation_id_idx</td>
                                     <td>Performance</td>

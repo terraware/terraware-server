@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_71a55913_7131c89f869b" schema="funder" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+   <tables>
+      <table name="funding_entities" remarks="Top-level information about Funding Entities for Funders." schema="funder" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="funding_entity_id" foreignKey="funding_entity_projects_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_projects"/>
+            <child column="funding_entity_id" foreignKey="funding_entity_users_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="funding_entities_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="funding_entities_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="funding_entity_projects" remarks="Which funding entities are associated with which projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="funding_entity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entity_projects_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <primaryKey column="funding_entity_id" sequenceNumberInPK="1"/>
+         <primaryKey column="project_id" sequenceNumberInPK="2"/>
+         <index name="funding_entity_projects_pkey" unique="true">
+            <column ascending="true" name="funding_entity_id"/>
+            <column ascending="true" name="project_id"/>
+         </index>
+         <index name="funding_entity_projects_funding_entity_id_idx" unique="false">
+            <column ascending="true" name="funding_entity_id"/>
+         </index>
+         <index name="funding_entity_projects_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="funding_entity_users" remarks="Funding Entity membership." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="funding_entity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entity_users_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entities"/>
+         </column>
+         <primaryKey column="user_id" sequenceNumberInPK="1"/>
+         <index name="funding_entity_users_pkey" unique="true">
+            <column ascending="true" name="user_id"/>
+         </index>
+         <index name="funding_entity_users_funding_entity_id_idx" unique="false">
+            <column ascending="true" name="funding_entity_id"/>
+         </index>
+         <index name="funding_entity_users_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+      </table>
+      <table name="published_activities" remarks="Published project activities visible to funders." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="activity_id" foreignKey="published_activity_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activity_media_files"/>
+            <child column="activity_id" foreignKey="published_activity_observation_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activity_observation_media_files"/>
+            <child column="activity_id" foreignKey="published_activity_observations_activity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_activity_observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="activity_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="activity_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_highlight" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="published_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="published_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="activity_id" sequenceNumberInPK="1"/>
+         <index name="published_activities_pkey" unique="true">
+            <column ascending="true" name="activity_id"/>
+         </index>
+         <index name="published_activities_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="published_activity_media_files" remarks="Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="activity_id" foreignKey="published_activity_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="activity_media_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="is_cover_photo" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_hidden_on_map" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="list_position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="published_activity_media_files_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="published_activity_media_files_activity_id_list_position_key" unique="true">
+            <column ascending="true" name="activity_id"/>
+            <column ascending="true" name="list_position"/>
+         </index>
+      </table>
+      <table name="published_activity_observation_media_files" remarks="Observation-specific details about media files in published activities." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="activity_id" foreignKey="published_activity_observation_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="published_activity_observation_media_files_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="published_activity_observation_media_fil_monitoring_plot_id_idx" unique="false">
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <index name="published_activity_observation_media_files_activity_id_idx" unique="false">
+            <column ascending="true" name="activity_id"/>
+         </index>
+      </table>
+      <table name="published_activity_observations" remarks="Which published activities represent which observations. Top-level observation results are copied here as well since the underlying results could change after publication." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="activity_id" foreignKey="published_activity_observations_activity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_activities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="live_plants" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="plant_density" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="survival_rate" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="activity_id" sequenceNumberInPK="1"/>
+         <index name="published_activity_observations_pkey" unique="true">
+            <column ascending="true" name="activity_id"/>
+         </index>
+         <index name="published_activity_observations_observation_id_key" unique="true">
+            <column ascending="true" name="observation_id"/>
+         </index>
+      </table>
+      <table name="published_auto_calculated_indicator_baselines" remarks="Published project-level baseline and end-of-project target values for auto-calculated indicators." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auto_calculated_indicator_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="baseline" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="auto_calculated_indicator_id" sequenceNumberInPK="2"/>
+         <index name="published_auto_calculated_indicator_baselines_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="auto_calculated_indicator_id"/>
+         </index>
+         <index name="published_auto_calculated_indi_auto_calculated_indicator_id_idx" unique="false">
+            <column ascending="true" name="auto_calculated_indicator_id"/>
+         </index>
+      </table>
+      <table name="published_auto_calculated_indicator_targets" remarks="Published project targets for auto-calculated indicators by year" schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auto_calculated_indicator_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="auto_calculated_indicator_id" sequenceNumberInPK="2"/>
+         <primaryKey column="year" sequenceNumberInPK="3"/>
+         <index name="published_auto_calculated_indicator_targets_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="auto_calculated_indicator_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+         <index name="published_auto_calculated_indicator_targets_project_id_year_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+      </table>
+      <table name="published_common_indicator_baselines" remarks="Published project-level baseline and end-of-project target values for common indicators." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="common_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="baseline" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
+         <index name="published_common_indicator_baselines_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+         <index name="published_common_indicator_baselines_common_indicator_id_idx" unique="false">
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+      </table>
+      <table name="published_common_indicator_targets" remarks="Published project targets for standard indicators by year" schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="common_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
+         <primaryKey column="year" sequenceNumberInPK="3"/>
+         <index name="published_common_indicator_targets_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="common_indicator_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+         <index name="published_common_indicator_targets_project_id_year_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+      </table>
+      <table name="published_project_carbon_certs" remarks="Carbon Certifications for published projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="carbon_certification" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="carbon_certification" sequenceNumberInPK="2"/>
+         <index name="published_project_carbon_certs_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="carbon_certification"/>
+         </index>
+      </table>
+      <table name="published_project_details" remarks="Published Project Data visible to funders." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accumulation_rate" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="annual_carbon" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="deal_description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="deal_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="methodology_number" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="min_project_area" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="num_native_species" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="per_hectare_estimated_budget" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="project_area" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="project_highlight_photo_value_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="project_zone_figure_value_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="standard" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="tf_reforestable_land" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="total_expansion_potential" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="total_vcu" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="verra_link" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="published_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="19" name="published_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <index name="published_project_details_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="published_project_indicator_baselines" remarks="Published project-level baseline and end-of-project target values for project-specific indicators." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="baseline" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="project_indicator_id" sequenceNumberInPK="2"/>
+         <index name="published_project_indicator_baselines_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="project_indicator_id"/>
+         </index>
+         <index name="published_project_indicator_baselines_project_indicator_id_idx" unique="false">
+            <column ascending="true" name="project_indicator_id"/>
+         </index>
+      </table>
+      <table name="published_project_indicator_targets" remarks="Published project targets for project-specific indicators by year" schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="project_indicator_id" sequenceNumberInPK="2"/>
+         <primaryKey column="year" sequenceNumberInPK="3"/>
+         <index name="published_project_indicator_targets_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="project_indicator_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+         <index name="published_project_indicator_targets_project_id_year_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+      </table>
+      <table name="published_project_land_use" remarks="Land Use Model Types and hectares of each for published projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="land_use_model_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="land_use_model_hectares" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="land_use_model_type_id" sequenceNumberInPK="2"/>
+         <index name="published_project_land_use_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="land_use_model_type_id"/>
+         </index>
+      </table>
+      <table name="published_project_sdg" remarks="Sustainable Development Goals for published projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="sdg_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="sdg_number" sequenceNumberInPK="2"/>
+         <index name="published_project_sdg_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="sdg_number"/>
+         </index>
+      </table>
+      <table name="published_report_achievements" remarks="Achievements of published reports." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="report_id" foreignKey="published_report_achievements_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="achievement" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <primaryKey column="position" sequenceNumberInPK="2"/>
+         <index name="published_report_achievements_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="position"/>
+         </index>
+         <checkConstraint constraint="(&quot;position&quot; &gt;= 0)" name="published_report_achievements_position_check"/>
+      </table>
+      <table name="published_report_auto_calculated_indicators" remarks="Auto-calculated indicators of published reports." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="report_id" foreignKey="published_report_auto_calculated_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auto_calculated_indicator_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="supporting_document_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <primaryKey column="auto_calculated_indicator_id" sequenceNumberInPK="2"/>
+         <index name="published_report_auto_calculated_indicators_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="auto_calculated_indicator_id"/>
+         </index>
+      </table>
+      <table name="published_report_challenges" remarks="Challenges and mitigation plans of published reports." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="report_id" foreignKey="published_report_challenges_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="challenge" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="mitigation_plan" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <primaryKey column="position" sequenceNumberInPK="2"/>
+         <index name="published_report_challenges_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="position"/>
+         </index>
+         <checkConstraint constraint="(&quot;position&quot; &gt;= 0)" name="published_report_challenges_position_check"/>
+      </table>
+      <table name="published_report_common_indicators" remarks="Standard indicators of published reports." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="report_id" foreignKey="published_report_common_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="common_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="supporting_document_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
+         <index name="published_report_common_indicators_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+      </table>
+      <table name="published_report_photos" remarks="Photos for the published accelerator project report." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="report_id" foreignKey="published_report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="published_report_photos_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="published_report_photos_report_id_idx" unique="false">
+            <column ascending="true" name="report_id"/>
+         </index>
+      </table>
+      <table name="published_report_project_indicators" remarks="Project-specific indicators of published reports." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="report_id" foreignKey="published_report_project_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="supporting_document_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <primaryKey column="project_indicator_id" sequenceNumberInPK="2"/>
+         <index name="published_report_project_indicators_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="project_indicator_id"/>
+         </index>
+      </table>
+      <table name="published_reports" remarks="Published reports visible to funders." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="report_id" foreignKey="published_report_achievements_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_achievements"/>
+            <child column="report_id" foreignKey="published_report_auto_calculated_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_auto_calculated_indicators"/>
+            <child column="report_id" foreignKey="published_report_challenges_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_challenges"/>
+            <child column="report_id" foreignKey="published_report_common_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_common_indicators"/>
+            <child column="report_id" foreignKey="published_report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_photos"/>
+            <child column="report_id" foreignKey="published_report_project_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_project_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="report_quarter_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="published_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="published_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="financial_summaries" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="additional_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <index name="published_reports_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+         </index>
+         <index name="published_reports_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+         <checkConstraint constraint="(end_date &gt; start_date)" name="published_reports_check"/>
+      </table>
+   </tables>
+</database>

@@ -10,6 +10,7 @@ user_disclaimers
 upload_problems
 seed_fund_report_photos
 seed_fund_report_files
+saved_table_views
 project_land_use_model_types
 organization_media_files
 organization_managed_location_types

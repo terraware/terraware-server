@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>batches - terraware.nursery</title>
+        <title>batches - terraware_71a55913_7131c89f869b.nursery</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.nursery</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_71a55913_7131c89f869b</b></a><span class="navbar-brand" style="padding-left: 0">.nursery</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -143,6 +143,11 @@
                                             <tr>
                                                 <td title="batch_quantity_history.batch_id references batches.id via batch_quantity_history_batch_id_fkey"><a href='batch_quantity_history.html'>batch_quantity_history</a><span class='relatedKey'>.batch_id</span></td>
                                                 <td class="constraint detail">batch_quantity_history_batch_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="batch_stage_details.batch_id references batches.id via batch_stage_details_batch_id_fkey"><a href='batch_stage_details.html'>batch_stage_details</a><span class='relatedKey'>.batch_id</span></td>
+                                                <td class="constraint detail">batch_stage_details_batch_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -284,108 +289,6 @@
                                         </table>
                                     </td>
                                     <td><p>User-supplied date the batch was added to the nursery&rsquo;s inventory.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="germinating_quantity">germinating_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Number of germinating seedlings currently available in inventory. Withdrawals cause this to decrease.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="active_growth_quantity">active_growth_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Number of active-growth-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="ready_quantity">ready_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Number of ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="latest_observed_germinating_quantity">latest_observed_germinating_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Latest user-observed number of germinating seedlings currently available in inventory. Withdrawals do not cause this to decrease.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="latest_observed_active_growth_quantity">latest_observed_active_growth_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Latest user-observed number of active-growth-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="latest_observed_ready_quantity">latest_observed_ready_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Latest user-observed number of ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="latest_observed_time">latest_observed_time</span></td>
@@ -776,40 +679,6 @@
                                     </td>
                                     <td><p>Date when newly-arrived seeds were first sown.</p></td>
                                 </tr>
-                                <tr>
-                                    <td><span id="hardening_off_quantity">hardening_off_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>0</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Number of hardening-off seedlings currently available in inventory. Withdrawals cause this to decrease.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="latest_observed_hardening_off_quantity">latest_observed_hardening_off_quantity</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>0</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Latest user-observed number of hardening-off seedlings currently available in inventory. Withdrawals do not cause this to decrease.</p></td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -911,36 +780,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>batches_germinating_quantity_check</td>
-                                    <td>(germinating_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_latest_observed_germinating_quantity_check</td>
-                                    <td>(latest_observed_germinating_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
                                     <td>batches_version_check</td>
                                     <td>(version &gt; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>(latest_observed_active_growth_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_not_ready_quantity_check</td>
-                                    <td>(active_growth_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
                                     <td>batches_notes_check</td>
                                     <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_ready_quantity_check</td>
-                                    <td>(ready_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>(latest_observed_ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>

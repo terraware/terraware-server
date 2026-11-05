@@ -290,15 +290,15 @@
 <text text-anchor="start" x="332" y="-441.2" font-family="Helvetica,sans-Serif" font-size="11.00">scientific_name</text>
 <polygon fill="none" stroke="black" points="300,-415 300,-433 518,-433 518,-415 300,-415"/>
 <text text-anchor="start" x="303" y="-421.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="300,-397 300,-415 402,-415 402,-397 300,-397"/>
-<polygon fill="none" stroke="black" points="300,-397 300,-415 402,-415 402,-397 300,-397"/>
+<polygon fill="#ffffff" stroke="transparent" points="300,-397 300,-415 399,-415 399,-397 300,-397"/>
+<polygon fill="none" stroke="black" points="300,-397 300,-415 399,-415 399,-397 300,-397"/>
 <text text-anchor="start" x="303" y="-403.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="402,-397 402,-415 455,-415 455,-397 402,-397"/>
-<polygon fill="none" stroke="black" points="402,-397 402,-415 455,-415 455,-397 402,-397"/>
-<text text-anchor="start" x="445" y="-403.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="455,-397 455,-415 518,-415 518,-397 455,-397"/>
-<polygon fill="none" stroke="black" points="455,-397 455,-415 518,-415 518,-397 455,-397"/>
-<text text-anchor="start" x="499" y="-403.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="399,-397 399,-415 451,-415 451,-397 399,-397"/>
+<polygon fill="none" stroke="black" points="399,-397 399,-415 451,-415 451,-397 399,-397"/>
+<text text-anchor="start" x="441" y="-403.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="451,-397 451,-415 518,-415 518,-397 451,-397"/>
+<polygon fill="none" stroke="black" points="451,-397 451,-415 518,-415 518,-397 451,-397"/>
+<text text-anchor="start" x="493" y="-403.2" font-family="Helvetica,sans-Serif" font-size="11.00">14 &gt;</text>
 </a>
 </g>
 </g>

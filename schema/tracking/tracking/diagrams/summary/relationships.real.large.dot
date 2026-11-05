@@ -158,7 +158,8 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="permanent_live" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">permanent_live</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="survival_rate" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">survival_rate</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="monitoring_plot_history_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">monitoring_plot_history_id</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD PORT="biomass_species_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16">biomass_species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observed_plot_species_totals.html"
     target="_top"
@@ -218,18 +219,6 @@ digraph "largeRelationshipsDiagram" {
     target="_top"
     tooltip="simplified_substratum_histories"
   ];
-  "simplified_strata" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="100" HEIGHT="16"><B>simplified_strata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="stratum_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="100" HEIGHT="16">stratum_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="boundary" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="100" HEIGHT="16">boundary</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/simplified_strata.html"
-    target="_top"
-    tooltip="simplified_strata"
-  ];
   "scheduled_planting_dates" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -246,6 +235,18 @@ digraph "largeRelationshipsDiagram" {
     URL="../../tables/scheduled_planting_dates.html"
     target="_top"
     tooltip="scheduled_planting_dates"
+  ];
+  "simplified_strata" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="100" HEIGHT="16"><B>simplified_strata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="stratum_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="100" HEIGHT="16">stratum_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="boundary" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="100" HEIGHT="16">boundary</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/simplified_strata.html"
+    target="_top"
+    tooltip="simplified_strata"
   ];
   "planting_site_histories" [
    label=<
@@ -577,7 +578,7 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="common_name" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="174" HEIGHT="16">common_name</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="is_invasive" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="174" HEIGHT="16">is_invasive</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="is_threatened" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="174" HEIGHT="16">is_threatened</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">14 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observation_biomass_species.html"
     target="_top"
@@ -978,7 +979,8 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="permanent_live" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">permanent_live</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="survival_rate" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">survival_rate</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="planting_site_history_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">planting_site_history_id</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD PORT="biomass_species_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="170" HEIGHT="16">biomass_species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observed_site_species_totals.html"
     target="_top"
@@ -1047,7 +1049,8 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="permanent_live" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="196" HEIGHT="16">permanent_live</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="survival_rate" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="196" HEIGHT="16">survival_rate</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="stratum_history_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="196" HEIGHT="16">stratum_history_id</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD PORT="biomass_species_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="196" HEIGHT="16">biomass_species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observed_stratum_species_totals.html"
     target="_top"
@@ -1094,7 +1097,8 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="permanent_live" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="218" HEIGHT="16">permanent_live</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="survival_rate" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="218" HEIGHT="16">survival_rate</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="substratum_history_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="218" HEIGHT="16">substratum_history_id</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD PORT="biomass_species_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="218" HEIGHT="16">biomass_species_id</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observed_substratum_species_totals.html"
     target="_top"
@@ -1403,19 +1407,27 @@ digraph "largeRelationshipsDiagram" {
   "observed_plot_coordinates":"observation_id":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_coordinates":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_coordinates":"position_id":w -> "observation_plot_positions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_plot_species_totals":"biomass_species_id":w -> "observation_biomass_species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"certainty_id":w -> "recorded_species_certainties":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"monitoring_plot_history_id":w -> "monitoring_plot_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"monitoring_plot_id":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_plot_species_totals":"observation_id":w -> "observation_biomass_species":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_site_species_totals":"biomass_species_id":w -> "observation_biomass_species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"certainty_id":w -> "recorded_species_certainties":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_site_species_totals":"observation_id":w -> "observation_biomass_species":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"planting_site_history_id":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"planting_site_id":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_stratum_species_totals":"biomass_species_id":w -> "observation_biomass_species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_stratum_species_totals":"certainty_id":w -> "recorded_species_certainties":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_stratum_species_totals":"observation_id":w -> "observation_biomass_species":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_stratum_species_totals":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_stratum_species_totals":"stratum_history_id":w -> "stratum_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_stratum_species_totals":"stratum_id":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_substratum_species_totals":"biomass_species_id":w -> "observation_biomass_species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"certainty_id":w -> "recorded_species_certainties":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_substratum_species_totals":"observation_id":w -> "observation_biomass_species":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"substratum_history_id":w -> "substratum_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"substratum_id":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>terraware.public</title>
+        <title>terraware_71a55913_7131c89f869b.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_71a55913_7131c89f869b</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -120,7 +120,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">DECLARE&#10;&#9;geomtext alias for $1;&#10;&#9;srid alias for $2;&#10;&#9;mline public.geometry;&#10;&#9;geom public.geometry;&#10;BEGIN&#10;&#9;mline :&#61; public.ST_MultiLineStringFromText(geomtext, srid);&#10;&#10;&#9;IF mline IS NULL&#10;&#9;THEN&#10;&#9;&#9;RAISE EXCEPTION &#39;Input is not a MultiLinestring&#39;;&#10;&#9;END IF;&#10;&#10;&#9;geom :&#61; public.ST_BuildArea(mline);&#10;&#10;&#9;IF public.GeometryType(geom) !&#61; &#39;POLYGON&#39;&#10;&#9;THEN&#10;&#9;&#9;RAISE EXCEPTION &#39;Input returns more then a single polygon, try using BdMPolyFromText instead&#39;;&#10;&#9;END IF;&#10;&#10;&#9;RETURN geom;&#10;END;</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">DECLARE&#10;&#9;geomtext alias for $1;&#10;&#9;srid alias for $2;&#10;&#9;mline public.geometry;&#10;&#9;geom public.geometry;&#10;BEGIN&#10;&#9;mline :&#61; public.ST_MultiLineStringFromText(geomtext, srid);&#10;&#10;&#9;IF mline IS NULL&#10;&#9;THEN&#10;&#9;&#9;RAISE EXCEPTION &#39;Input is not a MultiLinestring&#39;;&#10;&#9;END IF;&#10;&#10;&#9;geom :&#61; public.ST_BuildArea(mline);&#10;&#10;&#9;IF public.ST_GeometryType(geom) !&#61; &#39;ST_Polygon&#39;&#10;&#9;THEN&#10;&#9;&#9;RAISE EXCEPTION &#39;Input returns more then a single polygon, try using BdMPolyFromText instead&#39;;&#10;&#9;END IF;&#10;&#10;&#9;RETURN geom;&#10;END;</textarea>
                         </div>
                     </div>
                 </section>

@@ -74,6 +74,7 @@ mux_assets
 organization_managed_location_types
 organization_media_files
 project_land_use_model_types
+saved_table_views
 seed_fund_report_files
 seed_fund_report_photos
 species_ecosystem_types

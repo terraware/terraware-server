@@ -502,54 +502,54 @@
 <g id="node8" class="node">
 <title>observation_substratum_results</title>
 <g id="a_node8"><a xlink:href="../../tables/observation_substratum_results.html" xlink:title="observation_substratum_results" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1358.5,-558 1358.5,-682 1595.5,-682 1595.5,-558 1358.5,-558"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1359,-660 1359,-682 1596,-682 1596,-660 1359,-660"/>
-<polygon fill="none" stroke="black" points="1359,-660 1359,-682 1596,-682 1596,-660 1359,-660"/>
-<text text-anchor="start" x="1364" y="-669.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_substratum_results</text>
-<text text-anchor="start" x="1557" y="-668.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1359,-638 1359,-660 1596,-660 1596,-638 1359,-638"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1364" y="-655"/>
-<text text-anchor="start" x="1391" y="-646.2" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1359,-616 1359,-638 1596,-638 1596,-616 1359,-616"/>
-<polygon fill="none" stroke="black" points="1359,-616 1359,-638 1596,-638 1596,-616 1359,-616"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1364" y="-633"/>
-<text text-anchor="start" x="1391" y="-624.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_id</text>
-<polygon fill="none" stroke="black" points="1359,-594 1359,-616 1596,-616 1596,-594 1359,-594"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1364" y="-611"/>
-<text text-anchor="start" x="1391" y="-602.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_history_id</text>
-<polygon fill="none" stroke="black" points="1359,-576 1359,-594 1596,-594 1596,-576 1359,-576"/>
-<text text-anchor="start" x="1362" y="-582.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1359,-558 1359,-576 1475,-576 1475,-558 1359,-558"/>
-<polygon fill="none" stroke="black" points="1359,-558 1359,-576 1475,-576 1475,-558 1359,-558"/>
-<text text-anchor="start" x="1362" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="transparent" points="1475,-558 1475,-576 1535,-576 1535,-558 1475,-558"/>
-<polygon fill="none" stroke="black" points="1475,-558 1475,-576 1535,-576 1535,-558 1475,-558"/>
-<text text-anchor="start" x="1525" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1535,-558 1535,-576 1596,-576 1596,-558 1535,-558"/>
-<polygon fill="none" stroke="black" points="1535,-558 1535,-576 1596,-576 1596,-558 1535,-558"/>
-<text text-anchor="start" x="1586" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1358.5,-547 1358.5,-671 1595.5,-671 1595.5,-547 1358.5,-547"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1359,-649 1359,-671 1596,-671 1596,-649 1359,-649"/>
+<polygon fill="none" stroke="black" points="1359,-649 1359,-671 1596,-671 1596,-649 1359,-649"/>
+<text text-anchor="start" x="1364" y="-658.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_substratum_results</text>
+<text text-anchor="start" x="1557" y="-657.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1359,-627 1359,-649 1596,-649 1596,-627 1359,-627"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1364" y="-644"/>
+<text text-anchor="start" x="1391" y="-635.2" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1359,-605 1359,-627 1596,-627 1596,-605 1359,-605"/>
+<polygon fill="none" stroke="black" points="1359,-605 1359,-627 1596,-627 1596,-605 1359,-605"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1364" y="-622"/>
+<text text-anchor="start" x="1391" y="-613.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_id</text>
+<polygon fill="none" stroke="black" points="1359,-583 1359,-605 1596,-605 1596,-583 1359,-583"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1364" y="-600"/>
+<text text-anchor="start" x="1391" y="-591.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_history_id</text>
+<polygon fill="none" stroke="black" points="1359,-565 1359,-583 1596,-583 1596,-565 1359,-565"/>
+<text text-anchor="start" x="1362" y="-571.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1359,-547 1359,-565 1475,-565 1475,-547 1359,-547"/>
+<polygon fill="none" stroke="black" points="1359,-547 1359,-565 1475,-565 1475,-547 1359,-547"/>
+<text text-anchor="start" x="1362" y="-553.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="transparent" points="1475,-547 1475,-565 1535,-565 1535,-547 1475,-547"/>
+<polygon fill="none" stroke="black" points="1475,-547 1475,-565 1535,-565 1535,-547 1475,-547"/>
+<text text-anchor="start" x="1525" y="-553.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1535,-547 1535,-565 1596,-565 1596,-547 1535,-547"/>
+<polygon fill="none" stroke="black" points="1535,-547 1535,-565 1596,-565 1596,-547 1535,-547"/>
+<text text-anchor="start" x="1586" y="-553.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- observation_substratum_results&#45;&gt;substratum_histories -->
 <g id="edge11" class="edge">
 <title>observation_substratum_results:w&#45;&gt;substratum_histories:e</title>
-<path fill="none" stroke="black" d="M1343.32,-606.82C1271.48,-626.57 1353.5,-801 1262,-801"/>
-<polygon fill="black" stroke="black" points="1350.06,-605.98 1358.44,-608.57 1354.03,-605.49 1358,-605 1358,-605 1358,-605 1354.03,-605.49 1357.56,-601.43 1350.06,-605.98 1350.06,-605.98"/>
-<ellipse fill="none" stroke="black" cx="1346.88" cy="-606.37" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1343.63,-595.67C1267.28,-615.26 1358.06,-801 1262,-801"/>
+<polygon fill="black" stroke="black" points="1350.05,-594.92 1358.41,-597.58 1354.03,-594.46 1358,-594 1358,-594 1358,-594 1354.03,-594.46 1357.59,-590.42 1350.05,-594.92 1350.05,-594.92"/>
+<ellipse fill="none" stroke="black" cx="1346.87" cy="-595.29" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_substratum_results&#45;&gt;substrata -->
 <g id="edge12" class="edge">
 <title>observation_substratum_results:w&#45;&gt;substrata:e</title>
-<path fill="none" stroke="black" d="M1343.6,-624.98C1298.21,-609.84 1358.38,-513.84 1305,-476 1281.43,-459.29 1066.45,-456.65 1045,-476 978.47,-536 1093.09,-877 1003.5,-877"/>
-<polygon fill="black" stroke="black" points="1350.08,-625.89 1357.5,-630.57 1354.04,-626.44 1358,-627 1358,-627 1358,-627 1354.04,-626.44 1358.5,-623.43 1350.08,-625.89 1350.08,-625.89"/>
-<ellipse fill="none" stroke="black" cx="1346.91" cy="-625.44" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1343.67,-613.84C1302.29,-598.91 1355.04,-510.56 1305,-476 1257.46,-443.16 1087.91,-437.3 1045,-476 978.47,-536 1093.09,-877 1003.5,-877"/>
+<polygon fill="black" stroke="black" points="1350.09,-614.81 1357.46,-619.56 1354.04,-615.4 1358,-616 1358,-616 1358,-616 1354.04,-615.4 1358.54,-612.44 1350.09,-614.81 1350.09,-614.81"/>
+<ellipse fill="none" stroke="black" cx="1346.92" cy="-614.33" rx="3.2" ry="3.2"/>
 </g>
 <!-- observed_substratum_species_totals -->
 <g id="node9" class="node">
 <title>observed_substratum_species_totals</title>
 <g id="a_node9"><a xlink:href="../../tables/observed_substratum_species_totals.html" xlink:title="observed_substratum_species_totals" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1346,-811 1346,-1001 1608,-1001 1608,-811 1346,-811"/>
+<polygon fill="#ffffff" stroke="transparent" points="1346,-789 1346,-1001 1608,-1001 1608,-789 1346,-789"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1346,-979 1346,-1001 1608,-1001 1608,-979 1346,-979"/>
 <polygon fill="none" stroke="black" points="1346,-979 1346,-1001 1608,-1001 1608,-979 1346,-979"/>
 <text text-anchor="start" x="1351" y="-988.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observed_substratum_species_totals</text>
@@ -576,17 +576,21 @@
 <polygon fill="none" stroke="black" points="1346,-847 1346,-869 1608,-869 1608,-847 1346,-847"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1351" y="-864"/>
 <text text-anchor="start" x="1378" y="-855.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_history_id</text>
-<polygon fill="none" stroke="black" points="1346,-829 1346,-847 1608,-847 1608,-829 1346,-829"/>
-<text text-anchor="start" x="1349" y="-835.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1346,-811 1346,-829 1475,-829 1475,-811 1346,-811"/>
-<polygon fill="none" stroke="black" points="1346,-811 1346,-829 1475,-829 1475,-811 1346,-811"/>
-<text text-anchor="start" x="1349" y="-817.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="transparent" points="1475,-811 1475,-829 1541,-829 1541,-811 1475,-811"/>
-<polygon fill="none" stroke="black" points="1475,-811 1475,-829 1541,-829 1541,-811 1475,-811"/>
-<text text-anchor="start" x="1531" y="-817.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1541,-811 1541,-829 1608,-829 1608,-811 1541,-811"/>
-<polygon fill="none" stroke="black" points="1541,-811 1541,-829 1608,-829 1608,-811 1541,-811"/>
-<text text-anchor="start" x="1598" y="-817.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1346,-825 1346,-847 1608,-847 1608,-825 1346,-825"/>
+<polygon fill="none" stroke="black" points="1346,-825 1346,-847 1608,-847 1608,-825 1346,-825"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1351" y="-842"/>
+<text text-anchor="start" x="1378" y="-833.2" font-family="Helvetica,sans-Serif" font-size="11.00">biomass_species_id</text>
+<polygon fill="none" stroke="black" points="1346,-807 1346,-825 1608,-825 1608,-807 1346,-807"/>
+<text text-anchor="start" x="1349" y="-813.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1346,-789 1346,-807 1475,-807 1475,-789 1346,-789"/>
+<polygon fill="none" stroke="black" points="1346,-789 1346,-807 1475,-807 1475,-789 1346,-789"/>
+<text text-anchor="start" x="1349" y="-795.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 7</text>
+<polygon fill="#ffffff" stroke="transparent" points="1475,-789 1475,-807 1541,-807 1541,-789 1475,-789"/>
+<polygon fill="none" stroke="black" points="1475,-789 1475,-807 1541,-807 1541,-789 1475,-789"/>
+<text text-anchor="start" x="1531" y="-795.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1541,-789 1541,-807 1608,-807 1608,-789 1541,-789"/>
+<polygon fill="none" stroke="black" points="1541,-789 1541,-807 1608,-807 1608,-789 1541,-789"/>
+<text text-anchor="start" x="1598" y="-795.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
