@@ -591,7 +591,7 @@ class AdminPlantingSitesController(
                 .toSet()
     try {
       val observationId =
-          observationStore.createObservation(
+          observationService.scheduleObservation(
               NewObservationModel(
                   endDate = LocalDate.parse(endDate),
                   id = null,
@@ -602,6 +602,7 @@ class AdminPlantingSitesController(
                   startDate = LocalDate.parse(startDate),
                   state = ObservationState.Upcoming,
               ),
+              skipValidation = true,
           )
 
       redirectAttributes.successMessage = "Created observation $observationId"
