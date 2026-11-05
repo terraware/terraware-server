@@ -1745,6 +1745,27 @@ class BatchStore(
     writeTimeInStage(batchId, stats)
   }
 
+  fun fetchBatchIdsNeedingFinishedTimeInStage(): List<BatchId> =
+      dslContext
+          .selectDistinct(BATCH_STAGE_DETAILS.BATCH_ID)
+          .from(BATCH_STAGE_DETAILS)
+          .where(BATCH_STAGE_DETAILS.COUNTED_QUANTITY.isNotNull)
+          .and(BATCH_STAGE_DETAILS.FINISHED_QUANTITY.isNull)
+          .fetch(BATCH_STAGE_DETAILS.BATCH_ID.asNonNullable())
+
+  fun recalculateTimeInStage(batchId: BatchId) {
+    dslContext.transaction { _ ->
+      dslContext
+          .select(BATCHES.ID)
+          .from(BATCHES)
+          .where(BATCHES.ID.eq(batchId))
+          .forUpdate()
+          .fetchOne() ?: return@transaction
+
+      updateTimeInStage(batchId)
+    }
+  }
+
   /**
    * Recomputes effective times from the first missing value onward, then calculates the batch's
    * time-in-stage stats. Withdrawals and transfers use their withdrawal dates. Legacy rows for

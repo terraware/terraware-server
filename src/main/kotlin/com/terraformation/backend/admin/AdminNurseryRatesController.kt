@@ -97,7 +97,7 @@ class AdminNurseryRatesController(
 
     val errorMessages = mutableListOf<String>()
 
-    systemUser.run {
+    val recalculatedBatchCount = systemUser.run {
       candidateBatchIds.forEach { batchId ->
         try {
           batchStore.backfillTimeInStage(batchId)
@@ -106,14 +106,28 @@ class AdminNurseryRatesController(
           log.warn("Unable to backfill time in stage for $batchId", e)
         }
       }
+
+      val finishedCandidateBatchIds = batchStore.fetchBatchIdsNeedingFinishedTimeInStage()
+      log.info("Recalculating finished time in stage for ${finishedCandidateBatchIds.size} batches")
+
+      finishedCandidateBatchIds.forEach { batchId ->
+        try {
+          batchStore.recalculateTimeInStage(batchId)
+        } catch (e: Exception) {
+          errorMessages.add("Unable to recalculate finished time in stage for $batchId: $e")
+          log.warn("Unable to recalculate finished time in stage for $batchId", e)
+        }
+      }
+      finishedCandidateBatchIds.size
     }
 
     if (errorMessages.isNotEmpty()) {
-      redirectAttributes.failureMessage = "Some time-in-stage backfills failed"
+      redirectAttributes.failureMessage = "Some time-in-stage backfills or recalculations failed"
       redirectAttributes.failureDetails = errorMessages
     } else {
       redirectAttributes.successMessage =
-          "Backfilled time in stage for ${candidateBatchIds.size} batches"
+          "Backfilled time in stage for ${candidateBatchIds.size} batches and recalculated " +
+              "finished time in stage for $recalculatedBatchCount batches"
     }
 
     return "redirect:/admin/"
