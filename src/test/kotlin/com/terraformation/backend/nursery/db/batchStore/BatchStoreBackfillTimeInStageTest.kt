@@ -223,6 +223,8 @@ internal class BatchStoreBackfillTimeInStageTest : BatchStoreTest() {
             batchId = batchId,
             countedQuantity = quantity,
             countedSeedlingDays = days,
+            finishedQuantity = 0.0,
+            finishedSeedlingDays = 0.0,
             latestObservedQuantity = quantity,
             openSeedlingDays = days,
             quantity = quantity,

@@ -183,6 +183,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
               batchId = it.batchId,
               countedQuantity = it.timeInStage?.countedQuantity ?: it.quantity,
               countedSeedlingDays = 0.0,
+              finishedQuantity = 0.0,
+              finishedSeedlingDays = 0.0,
               latestObservedQuantity = it.latestObservedQuantity,
               openSeedlingDays = 0.0,
               quantity = it.quantity,

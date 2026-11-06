@@ -1683,6 +1683,8 @@ class BatchStore(
           .update(BATCH_STAGE_DETAILS)
           .set(BATCH_STAGE_DETAILS.COUNTED_QUANTITY, stageStats.countedQuantity)
           .set(BATCH_STAGE_DETAILS.COUNTED_SEEDLING_DAYS, stageStats.countedDays)
+          .set(BATCH_STAGE_DETAILS.FINISHED_QUANTITY, stageStats.finishedQuantity)
+          .set(BATCH_STAGE_DETAILS.FINISHED_SEEDLING_DAYS, stageStats.finishedDays)
           .set(BATCH_STAGE_DETAILS.OPEN_SEEDLING_DAYS, stageStats.openDays)
           .set(BATCH_STAGE_DETAILS.TIME_IN_STAGE_CLEARED, stageStats.cleared)
           .set(BATCH_STAGE_DETAILS.TIME_IN_STAGE_AS_OF, stageStats.asOfTime)
@@ -1732,6 +1734,8 @@ class BatchStore(
                 cleared = false,
                 countedDays = 0.0,
                 countedQuantity = 0,
+                finishedDays = 0.0,
+                finishedQuantity = 0.0,
                 openDays = 0.0,
             )
           } else {
