@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class StageTimeCalculatorTest {
@@ -42,6 +43,30 @@ internal class StageTimeCalculatorTest {
           )
         }
     assertAll(example.name, *assertions.toTypedArray())
+  }
+
+  @MethodSource("finishedExamples")
+  @ParameterizedTest(name = "{0}")
+  fun `counts only completed seedlings`(
+      name: String,
+      eventRows: List<String>,
+      expected: List<Pair<Int, Double>>,
+  ) {
+    val actual = StageTimeCalculator.calculate(eventRows.map(::parseEvent), instant("01-01"))
+    assertAll(
+        BatchStage.entries.mapIndexed { index, stage ->
+          {
+            val (quantity, days) = expected[index]
+            val stats = actual.getValue(stage)
+            assertEquals(
+                quantity,
+                stats.finishedQuantity,
+                "$name / $stage finished quantity",
+            )
+            assertEquals(days, stats.finishedDays, 1e-6, "$name / $stage finished days")
+          }
+        }
+    )
   }
 
   companion object {
@@ -90,6 +115,49 @@ internal class StageTimeCalculatorTest {
                 "Backdated withdrawals|08-29|-|01-01,C,100,0,0,0;01-11,S,0,100,0,0;01-31,S,0,0,0,100;02-10,O,0,0,0,60;02-15,X,0,0,0,50;02-15,O,0,0,0,20;08-19T12:00,O,0,0,0,0|0,100,1000,10,10,false,false;0,100,2000,20,20,false,false;0,0,0,-,-,false,false;0,90,4860,54,54,false,false",
             )
             .map(::parseExample)
+
+    // Events use the spreadsheet parser's time,type,germinating,activeGrowth,hardeningOff,ready
+    // format. Expected pairs are finished quantity to days in Germinating, Active Growth,
+    // Hardening Off, Ready order.
+    @JvmStatic
+    fun finishedExamples() =
+        listOf(
+            Arguments.of(
+                "Creation and open stages",
+                listOf("01-01,C,10,20,30,40", "01-11,X,10,20,30,40"),
+                listOf(0 to 0.0, 0 to 0.0, 0 to 0.0, 0 to 0.0),
+            ),
+            Arguments.of(
+                "Partial completions and non-completing removals",
+                listOf(
+                    "01-01,C,100,0,0,0",
+                    "01-06,X,80,0,0,0",
+                    "01-11,S,40,40,0,0",
+                    "01-16,X,20,30,0,0",
+                    "01-21,S,0,20,30,0",
+                    "01-26,S,0,0,20,30",
+                    "01-31,O,0,0,10,10",
+                ),
+                listOf(60 to 800.0, 30 to 400.0, 10 to 50.0, 20 to 100.0),
+            ),
+            Arguments.of(
+                "Mixed-age arrivals and skipped withdrawals",
+                listOf(
+                    "01-01,C,100,0,0,0",
+                    "01-11,X,200,0,0,0",
+                    "01-16,K,100,0,0,0",
+                    "01-17,K,200,0,0,0",
+                    "01-21,S,100,100,0,0",
+                    "01-26,S,0,200,0,0",
+                ),
+                listOf(200 to 3500.0, 0 to 0.0, 0 to 0.0, 0 to 0.0),
+            ),
+            Arguments.of(
+                "Manual edits do not complete stages",
+                listOf("01-01,C,10,20,30,40", "01-11,M,0,0,0,0"),
+                listOf(0 to 0.0, 0 to 0.0, 0 to 0.0, 0 to 0.0),
+            ),
+        )
 
     data class Example(
         val asOf: Instant,
