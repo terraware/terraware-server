@@ -433,13 +433,25 @@ class ObservationService(
     return row
   }
 
-  fun scheduleObservation(observation: NewObservationModel): ObservationId {
+  /**
+   * Schedules a new observation.
+   *
+   * @param skipValidation If true, don't require the observation to be in the future and don't
+   *   require its substrata to have plantings. This is used by the admin UI to allow admins to
+   *   override the default restrictions.
+   */
+  fun scheduleObservation(
+      observation: NewObservationModel,
+      skipValidation: Boolean = false,
+  ): ObservationId {
     requirePermissions { scheduleObservation(observation.plantingSiteId) }
 
-    validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
+    if (!skipValidation) {
+      validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
 
-    if (!plantingSiteStore.hasSubstratumPlantings(observation.plantingSiteId)) {
-      throw ScheduleObservationWithoutPlantsException(observation.plantingSiteId)
+      if (!plantingSiteStore.hasSubstratumPlantings(observation.plantingSiteId)) {
+        throw ScheduleObservationWithoutPlantsException(observation.plantingSiteId)
+      }
     }
 
     val observationId = observationStore.createObservation(observation)
