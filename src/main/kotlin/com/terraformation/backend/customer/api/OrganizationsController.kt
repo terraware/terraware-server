@@ -108,6 +108,20 @@ class OrganizationsController(
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.Owner))
   }
 
+  @Operation(summary = "Updates the location of an existing organization.")
+  @PutMapping("/{organizationId}/location")
+  fun updateOrganizationLocation(
+      @PathVariable organizationId: OrganizationId,
+      @RequestBody payload: UpdateOrganizationLocationRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    organizationStore.updateLocation(
+        organizationId,
+        payload.countryCode,
+        payload.botanicalCountryCode,
+    )
+    return SimpleSuccessResponsePayload()
+  }
+
   @Operation(summary = "Updates an existing organization.")
   @PutMapping("/{organizationId}")
   fun updateOrganization(
@@ -511,3 +525,10 @@ data class CreateOrganizationUserResponsePayload(
 
 data class ListOrganizationsResponsePayload(val organizations: List<OrganizationPayload>) :
     SuccessResponsePayload
+
+data class UpdateOrganizationLocationRequestPayload(
+    @Schema(description = "ISO 3166 alpha-2 country code. Null clears the country.", example = "AU")
+    val countryCode: String?,
+    @Schema(description = "TDWG Level 3 botanical country code. Null clears the botanical country.")
+    val botanicalCountryCode: String?,
+)

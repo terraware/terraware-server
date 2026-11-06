@@ -31,6 +31,7 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserPreferencesRow
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationManagedLocationTypesRecord
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
@@ -103,6 +104,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateEntityWithOwner(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
+    every { user.canUpdateOrganizationLocation(any()) } returns true
     every { user.canAddOrganizationUser(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
     every { user.canRemoveOrganizationUser(any(), any()) } returns true
@@ -912,6 +914,104 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val expectedAfterDeletion = emptyList<ManagedLocationType>()
     val actualAfterDeletion = organizationManagedLocationTypesDao.findAll()
     assertEquals(expectedAfterDeletion, actualAfterDeletion)
+  }
+
+  @Test
+  fun `updateLocation updates location and publishes event`() {
+    val botanicalCode = insertBotanicalCountry()
+    val before = dslContext.fetchSingle(ORGANIZATIONS)
+    clock.instant = Instant.ofEpochSecond(123)
+
+    store.updateLocation(inserted.organizationId, "AU", botanicalCode)
+
+    assertTableEquals(
+        before.apply {
+          botanicalCountryCode = botanicalCode
+          countryCode = "AU"
+          countrySubdivisionCode = null
+          modifiedBy = user.userId
+          modifiedTime = clock.instant
+        }
+    )
+    publisher.assertEventPublished(
+        OrganizationLocationUpdatedEvent(
+            botanicalCountryCode = botanicalCode,
+            countryCode = "AU",
+            organizationId = inserted.organizationId,
+        )
+    )
+  }
+
+  @Test
+  fun `updateLocation uppercases country code and keeps matching subdivision`() {
+    val before = dslContext.fetchSingle(ORGANIZATIONS)
+
+    store.updateLocation(inserted.organizationId, "us", null)
+
+    assertTableEquals(before.apply { countryCode = "US" })
+  }
+
+  @Test
+  fun `updateLocation null clears location`() {
+    val botanicalCode = insertBotanicalCountry()
+    store.updateLocation(inserted.organizationId, "US", botanicalCode)
+    val before = dslContext.fetchSingle(ORGANIZATIONS)
+
+    store.updateLocation(inserted.organizationId, null, null)
+
+    assertTableEquals(
+        before.apply {
+          botanicalCountryCode = null
+          countryCode = null
+          countrySubdivisionCode = null
+        }
+    )
+    publisher.assertEventPublished(
+        OrganizationLocationUpdatedEvent(
+            botanicalCountryCode = null,
+            countryCode = null,
+            organizationId = inserted.organizationId,
+        )
+    )
+  }
+
+  @Test
+  fun `updateLocation unchanged location does not publish event`() {
+    val before = dslContext.fetchSingle(ORGANIZATIONS)
+
+    store.updateLocation(inserted.organizationId, "US", null)
+
+    assertTableEquals(before)
+    publisher.assertEventNotPublished<OrganizationLocationUpdatedEvent>()
+  }
+
+  @Test
+  fun `updateLocation requires permission`() {
+    every { user.canUpdateOrganizationLocation(inserted.organizationId) } returns false
+    val before = dslContext.fetchSingle(ORGANIZATIONS)
+
+    assertThrows<AccessDeniedException> {
+      store.updateLocation(inserted.organizationId, "AU", null)
+    }
+
+    assertTableEquals(before)
+    publisher.assertNoEventsPublished()
+  }
+
+  @Test
+  fun `updateLocation rejects invalid country codes`() {
+    val before = dslContext.fetchSingle(ORGANIZATIONS)
+
+    assertThrows<IllegalArgumentException>("Invalid botanical country code") {
+      store.updateLocation(inserted.organizationId, "AU", "XXX")
+    }
+
+    assertThrows<IllegalArgumentException>("Invalid country code") {
+      store.updateLocation(inserted.organizationId, "XX", null)
+    }
+
+    assertTableEquals(before)
+    publisher.assertNoEventsPublished()
   }
 
   private fun organizationUserModel(
