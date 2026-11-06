@@ -322,7 +322,8 @@
 
         <p>
             This backfills effective times for existing batch quantity history and computes
-            time-in-stage statistics for eligible batches.
+            time-in-stage statistics for eligible batches. It also fills in missing finished
+            seedling statistics for batches with previously calculated time in stage.
         </p>
 
         <form method="POST" action="/admin/backfillTimeInStage">
