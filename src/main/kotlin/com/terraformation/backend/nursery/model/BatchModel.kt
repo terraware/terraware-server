@@ -87,6 +87,7 @@ data class ExistingBatchModel(
     val subLocationIds: Set<SubLocationId> = emptySet(),
     val substrate: BatchSubstrate? = null,
     val substrateNotes: String? = null,
+    val timeInStage: Map<BatchStage, StageTimeStats> = emptyMap(),
     val totalWithdrawn: Int,
     val treatment: SeedTreatment? = null,
     val treatmentNotes: String? = null,
@@ -100,6 +101,7 @@ data class ExistingBatchModel(
       quantities: Map<BatchStage, BatchStageDetailsModel>,
   ) : this(
       accessionNumbers = accessionNumbers,
+      activeGrowthQuantity = quantities.getValue(BatchStage.ActiveGrowth).quantity,
       addedDate = row.addedDate!!,
       batchNumber = row.batchNumber!!,
       facilityId = row.facilityId!!,
@@ -119,7 +121,6 @@ data class ExistingBatchModel(
       latestObservedTime = row.latestObservedTime!!,
       lossRate = row.lossRate,
       notes = row.notes,
-      activeGrowthQuantity = quantities.getValue(BatchStage.ActiveGrowth).quantity,
       organizationId = row.organizationId!!,
       projectId = row.projectId,
       readyByDate = row.readyByDate,
@@ -129,6 +130,12 @@ data class ExistingBatchModel(
       subLocationIds = subLocationIds,
       substrate = row.substrateId,
       substrateNotes = row.substrateNotes,
+      timeInStage =
+          quantities
+              .mapNotNull { (stage, details) ->
+                details.timeInStage?.let { stats -> stage to stats }
+              }
+              .toMap(),
       totalWithdrawn = totalWithdrawn,
       treatment = row.treatmentId,
       treatmentNotes = row.treatmentNotes,

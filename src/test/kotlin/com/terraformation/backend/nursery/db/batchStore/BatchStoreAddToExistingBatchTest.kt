@@ -3,9 +3,11 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistoryRecord
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.nursery.model.ExistingBatchModel
+import com.terraformation.backend.nursery.model.StageTimeStats
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -48,11 +50,30 @@ internal class BatchStoreAddToExistingBatchTest : BatchStoreTest() {
             germinatingQuantity = 100,
         )
 
+    val asOfTime = Instant.ofEpochSecond(86_400)
+    fun stageStats(stage: BatchStage, quantity: Int, days: Double) =
+        StageTimeStats(
+            asOfTime = asOfTime,
+            cleared = false,
+            countedDays = days,
+            countedQuantity = quantity,
+            inStage = quantity,
+            openDays = days,
+            stage = stage,
+        )
+
     assertEquals(
         batch.copy(
             accessionNumbers = mapOf(originalAccessionId to "1", secondAccessionId to "2"),
             germinatingQuantity = 110,
             lossRate = 0,
+            timeInStage =
+                mapOf(
+                    BatchStage.Germinating to stageStats(BatchStage.Germinating, 110, 10.0),
+                    BatchStage.ActiveGrowth to stageStats(BatchStage.ActiveGrowth, 1, 1.0),
+                    BatchStage.HardeningOff to stageStats(BatchStage.HardeningOff, 3, 3.0),
+                    BatchStage.Ready to stageStats(BatchStage.Ready, 2, 2.0),
+                ),
             version = 2,
         ),
         updatedBatch,
