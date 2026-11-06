@@ -73,6 +73,7 @@ import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.NurseryBatchPhase
 import com.terraformation.backend.nursery.model.NurseryStats
+import com.terraformation.backend.nursery.model.SpeciesStageTimeModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.StageTimeCalculator
 import com.terraformation.backend.nursery.model.StageTimeEvent
@@ -408,8 +409,48 @@ class BatchStore(
             .orderBy(FACILITIES.NAME)
             .fetchInto(FacilitiesRow::class.java)
 
+    val stageTimes =
+        with(BATCH_STAGE_DETAILS) {
+          val qualifiesForRange =
+              FINISHED_QUANTITY.ge(SpeciesStageTimeModel.MIN_TYPICAL_RANGE_FINISHED_QUANTITY)
+          val batchAverage = FINISHED_SEEDLING_DAYS.div(FINISHED_QUANTITY)
+          dslContext
+              .select(
+                  STAGE_ID,
+                  DSL.sum(FINISHED_SEEDLING_DAYS).div(DSL.sum(FINISHED_QUANTITY)),
+                  DSL.count(),
+                  DSL.percentileCont(0.25)
+                      .withinGroupOrderBy(batchAverage)
+                      .filterWhere(qualifiesForRange),
+                  DSL.percentileCont(0.75)
+                      .withinGroupOrderBy(batchAverage)
+                      .filterWhere(qualifiesForRange),
+                  DSL.count().filterWhere(qualifiesForRange),
+              )
+              .from(BATCH_STAGE_DETAILS)
+              .join(BATCHES)
+              .on(BATCHES.ID.eq(BATCH_ID))
+              .where(BATCHES.SPECIES_ID.eq(speciesId))
+              .and(FINISHED_QUANTITY.gt(0.0))
+              .and(TIME_IN_STAGE_CLEARED.isDistinctFrom(true))
+              .groupBy(STAGE_ID)
+              .fetch()
+              .associate { row ->
+                row.value1()!! to
+                    SpeciesStageTimeModel.of(
+                        averageDays = row.value2()?.toDouble(),
+                        batchCount = row.value3(),
+                        typicalMaxDays = row.value5()?.toDouble(),
+                        typicalMinDays = row.value4()?.toDouble(),
+                        typicalRangeBatchCount = row.value6(),
+                    )
+              }
+        }
+
     return SpeciesSummary(
         activeGrowthQuantity = inventory?.activeGrowthQuantity ?: 0,
+        averageTimeInStage =
+            BatchStage.entries.associateWith { stageTimes[it] ?: SpeciesStageTimeModel.of() },
         germinatingQuantity = inventory?.germinatingQuantity ?: 0,
         germinationRate = germinationRate?.roundToInt(),
         hardeningOffQuantity = inventory?.hardeningOffQuantity ?: 0,

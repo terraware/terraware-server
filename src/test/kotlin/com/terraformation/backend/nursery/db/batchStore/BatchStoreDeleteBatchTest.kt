@@ -10,6 +10,7 @@ import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
+import com.terraformation.backend.nursery.model.SpeciesStageTimeModel
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import io.mockk.every
 import java.time.Instant
@@ -174,6 +175,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
 
     val summaryBeforeDelete =
         SpeciesSummary(
+            averageTimeInStage = BatchStage.entries.associateWith { SpeciesStageTimeModel.of() },
             germinatingQuantity = 101,
             germinationRate = 58,
             hardeningOffQuantity = 404,
@@ -197,6 +199,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     // Total dead and total withdrawn are unaffected because they are part of the withdrawal history
     assertEquals(
         SpeciesSummary(
+            averageTimeInStage = BatchStage.entries.associateWith { SpeciesStageTimeModel.of() },
             germinatingQuantity = 100,
             germinationRate = 50,
             hardeningOffQuantity = 400,
