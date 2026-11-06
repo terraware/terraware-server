@@ -698,8 +698,22 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val destinationFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
+    val effectiveTime = LocalDate.of(2022, 10, 1).atStartOfDay(ZoneOffset.UTC).toInstant()
     val withdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
     clock.instant = withdrawalTime
+
+    fun expectedStageDetails(batchId: BatchId, stage: BatchStage, quantity: Int) =
+        BatchStageDetailsRecord(
+            batchId = batchId,
+            countedQuantity = quantity,
+            countedSeedlingDays = 0.0,
+            latestObservedQuantity = quantity,
+            openSeedlingDays = 0.0,
+            quantity = quantity,
+            stageId = stage,
+            timeInStageAsOf = effectiveTime,
+            timeInStageCleared = false,
+        )
 
     val withdrawal =
         store.withdraw(
@@ -765,64 +779,19 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   expectedQuantity(species2Batch1, BatchStage.ActiveGrowth, 80 - 11),
                   expectedQuantity(species2Batch1, BatchStage.HardeningOff, 100 - 13),
                   expectedQuantity(species2Batch1, BatchStage.Ready, 90 - 12),
-                  BatchStageDetailsRecord(
-                      newSpecies1Batch1.id!!,
-                      BatchStage.Germinating,
-                      1,
-                      1,
-                  ),
-                  BatchStageDetailsRecord(
-                      newSpecies1Batch1.id!!,
-                      BatchStage.ActiveGrowth,
-                      2,
-                      2,
-                  ),
-                  BatchStageDetailsRecord(
-                      newSpecies1Batch1.id!!,
-                      BatchStage.HardeningOff,
-                      4,
-                      4,
-                  ),
-                  BatchStageDetailsRecord(newSpecies1Batch1.id!!, BatchStage.Ready, 3, 3),
-                  BatchStageDetailsRecord(
-                      newSpecies1Batch2.id!!,
-                      BatchStage.Germinating,
-                      4,
-                      4,
-                  ),
-                  BatchStageDetailsRecord(
-                      newSpecies1Batch2.id!!,
-                      BatchStage.ActiveGrowth,
-                      5,
-                      5,
-                  ),
-                  BatchStageDetailsRecord(
-                      newSpecies1Batch2.id!!,
-                      BatchStage.HardeningOff,
-                      7,
-                      7,
-                  ),
-                  BatchStageDetailsRecord(newSpecies1Batch2.id!!, BatchStage.Ready, 6, 6),
-                  BatchStageDetailsRecord(
-                      newSpecies2Batch.id!!,
-                      BatchStage.Germinating,
-                      10,
-                      10,
-                  ),
-                  BatchStageDetailsRecord(
-                      newSpecies2Batch.id!!,
-                      BatchStage.ActiveGrowth,
-                      11,
-                      11,
-                  ),
-                  BatchStageDetailsRecord(
-                      newSpecies2Batch.id!!,
-                      BatchStage.HardeningOff,
-                      13,
-                      13,
-                  ),
-                  BatchStageDetailsRecord(newSpecies2Batch.id!!, BatchStage.Ready, 12, 12),
-              )
+                  expectedStageDetails(newSpecies1Batch1.id!!, BatchStage.Germinating, 1),
+                  expectedStageDetails(newSpecies1Batch1.id!!, BatchStage.ActiveGrowth, 2),
+                  expectedStageDetails(newSpecies1Batch1.id!!, BatchStage.HardeningOff, 4),
+                  expectedStageDetails(newSpecies1Batch1.id!!, BatchStage.Ready, 3),
+                  expectedStageDetails(newSpecies1Batch2.id!!, BatchStage.Germinating, 4),
+                  expectedStageDetails(newSpecies1Batch2.id!!, BatchStage.ActiveGrowth, 5),
+                  expectedStageDetails(newSpecies1Batch2.id!!, BatchStage.HardeningOff, 7),
+                  expectedStageDetails(newSpecies1Batch2.id!!, BatchStage.Ready, 6),
+                  expectedStageDetails(newSpecies2Batch.id!!, BatchStage.Germinating, 10),
+                  expectedStageDetails(newSpecies2Batch.id!!, BatchStage.ActiveGrowth, 11),
+                  expectedStageDetails(newSpecies2Batch.id!!, BatchStage.HardeningOff, 13),
+                  expectedStageDetails(newSpecies2Batch.id!!, BatchStage.Ready, 12),
+              ),
           )
         },
         {
@@ -1163,6 +1132,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
         )
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
+    val secondEffectiveTime =
+        LocalDate.of(2022, 10, 2).atStartOfDay(destinationTimeZone).toInstant()
     val firstWithdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
     clock.instant = firstWithdrawalTime
 
@@ -1215,6 +1186,24 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
     val newBatch = batchesDao.fetchByFacilityId(destinationFacilityId).first()
 
+    fun expectedStageDetails(
+        stage: BatchStage,
+        quantity: Int,
+        latestObservedQuantity: Int,
+        days: Double,
+    ) =
+        BatchStageDetailsRecord(
+            batchId = newBatch.id!!,
+            countedQuantity = quantity,
+            countedSeedlingDays = days,
+            latestObservedQuantity = latestObservedQuantity,
+            openSeedlingDays = days,
+            quantity = quantity,
+            stageId = stage,
+            timeInStageAsOf = secondEffectiveTime,
+            timeInStageCleared = false,
+        )
+
     assertAll(
         {
           assertTableEquals(
@@ -1223,10 +1212,10 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   expectedQuantity(species1Batch1, BatchStage.ActiveGrowth, 20 - 2 - 5),
                   expectedQuantity(species1Batch1, BatchStage.HardeningOff, 40 - 4 - 7),
                   expectedQuantity(species1Batch1, BatchStage.Ready, 30 - 3 - 6),
-                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.Germinating, 1 + 4, 1),
-                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.ActiveGrowth, 2 + 5, 2),
-                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.HardeningOff, 4 + 7, 4),
-                  BatchStageDetailsRecord(newBatch.id!!, BatchStage.Ready, 3 + 6, 3),
+                  expectedStageDetails(BatchStage.Germinating, 5, 1, 1.0),
+                  expectedStageDetails(BatchStage.ActiveGrowth, 7, 2, 2.0),
+                  expectedStageDetails(BatchStage.HardeningOff, 11, 4, 4.0),
+                  expectedStageDetails(BatchStage.Ready, 9, 3, 3.0),
               ),
               where = BATCH_STAGE_DETAILS.BATCH_ID.`in`(species1Batch1Id, newBatch.id!!),
           )

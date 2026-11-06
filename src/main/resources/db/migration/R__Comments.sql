@@ -388,8 +388,13 @@ COMMENT ON COLUMN nursery.batch_quantity_history.withdrawal_id IS 'If this chang
 COMMENT ON TABLE nursery.batch_quantity_history_types IS '(Enum) Types of operations that can result in changes to remaining quantities of seedling batches.';
 
 COMMENT ON TABLE nursery.batch_stage_details IS 'Current inventory and latest observed quantities for each stage of a nursery batch.';
+COMMENT ON COLUMN nursery.batch_stage_details.counted_quantity IS 'Number of seedlings that count toward this stage''s average time in stage: those that completed the stage plus those still in it. Null if time in stage can''t be calculated for the batch.';
+COMMENT ON COLUMN nursery.batch_stage_details.counted_seedling_days IS 'Total days spent in this stage by counted seedlings, as of time_in_stage_as_of. Null if time in stage can''t be calculated for the batch.';
 COMMENT ON COLUMN nursery.batch_stage_details.latest_observed_quantity IS 'Latest user-observed number of seedlings in this stage. Withdrawals do not cause this to decrease.';
+COMMENT ON COLUMN nursery.batch_stage_details.open_seedling_days IS 'Total days spent in this stage, as of time_in_stage_as_of, by seedlings that are still in it. Null if time in stage can''t be calculated for the batch.';
 COMMENT ON COLUMN nursery.batch_stage_details.quantity IS 'Number of seedlings currently available in this stage. Withdrawals cause this to decrease.';
+COMMENT ON COLUMN nursery.batch_stage_details.time_in_stage_as_of IS 'Effective time of the latest quantity change; seedlings still in the stage accrue time after this. Null if time in stage can''t be calculated for the batch.';
+COMMENT ON COLUMN nursery.batch_stage_details.time_in_stage_cleared IS 'True if a manual quantity edit changed this stage, making its time in stage unknown. Null if time in stage can''t be calculated for the batch.';
 
 COMMENT ON TABLE nursery.batch_stages IS '(Enum) Growth stages of nursery seedlings.';
 
