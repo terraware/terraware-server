@@ -128,6 +128,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 readyQuantity = 2,
                 hardeningOffQuantity = 4,
                 version = 1,
+                effectiveTime = clock.instant(),
             ),
         )
 

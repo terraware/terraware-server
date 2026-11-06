@@ -172,6 +172,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 hardeningOffQuantity = 40,
                 withdrawalId = undoWithdrawal.id,
                 version = 3,
+                effectiveTime = clock.instant,
             )
         ),
         quantityHistories.filter { it.batchId == batch1Id && it.withdrawalId == undoWithdrawal.id },

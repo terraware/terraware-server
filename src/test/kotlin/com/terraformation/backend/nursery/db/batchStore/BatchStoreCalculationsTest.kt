@@ -243,7 +243,14 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
     val batchId = createBatch(initial)
 
-    addedFromAccession?.let { store.addToExistingBatch(insertAccession(), batchId, it.germinating) }
+    addedFromAccession?.let {
+      store.addToExistingBatch(
+          accessionId = insertAccession(),
+          addedDate = LocalDate.EPOCH,
+          batchId = batchId,
+          germinatingQuantity = it.germinating,
+      )
+    }
     manualEdits?.let { addManualEdits(batchId, it) }
 
     // Do this in three steps to mimic how the web app would behave.

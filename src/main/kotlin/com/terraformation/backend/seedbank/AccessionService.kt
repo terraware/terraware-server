@@ -149,6 +149,7 @@ class AccessionService(
           if (existingBatch != null) {
             batchStore.addToExistingBatch(
                 accessionId = accessionId,
+                addedDate = batch.addedDate,
                 batchId = existingBatch.id,
                 germinatingQuantity = batch.germinatingQuantity,
             )
