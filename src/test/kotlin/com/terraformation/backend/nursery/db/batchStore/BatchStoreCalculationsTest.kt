@@ -13,6 +13,7 @@ import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.nursery.model.NurseryBatchPhase
 import io.mockk.every
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -333,6 +334,83 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
             ),
         ),
         message = "Replayed stage times after withdrawals, status changes, undo, and manual edit",
+    )
+  }
+
+  @Test
+  fun `omits active growth time for batches created before hardening off release`() {
+    val activeGrowthStartedAt = Instant.parse("2025-08-29T00:00:00Z")
+    val asOf = Instant.parse("2025-09-01T00:00:00Z")
+
+    fun createBatch(createdTime: Instant): BatchId {
+      clock.instant = createdTime
+      val addedDate = createdTime.atZone(ZoneOffset.UTC).toLocalDate()
+      return store
+          .create(
+              NewBatchModel(
+                  activeGrowthQuantity = 0,
+                  addedDate = addedDate,
+                  facilityId = facilityId,
+                  germinatingQuantity = 5,
+                  hardeningOffQuantity = 0,
+                  readyQuantity = 0,
+                  seedsSownDate = LocalDate.of(2025, 8, 26),
+                  speciesId = speciesId,
+              )
+          )
+          .id
+    }
+
+    fun moveSeedlingsToReady(batchId: BatchId) {
+      clock.instant = activeGrowthStartedAt
+      store.changeStatuses(
+          batchId,
+          NurseryBatchPhase.Germinating,
+          NurseryBatchPhase.ActiveGrowth,
+          5,
+      )
+      clock.instant = asOf
+      store.changeStatuses(batchId, NurseryBatchPhase.ActiveGrowth, NurseryBatchPhase.Ready, 5)
+    }
+
+    val legacyBatchId = createBatch(Instant.parse("2025-08-28T19:55:59Z"))
+    moveSeedlingsToReady(legacyBatchId)
+    val currentBatchId = createBatch(Instant.parse("2025-08-28T19:56:00Z"))
+    moveSeedlingsToReady(currentBatchId)
+
+    fun expectedStageDetails(
+        batchId: BatchId,
+        stage: BatchStage,
+        latestObservedQuantity: Int,
+        quantity: Int,
+        countedQuantity: Int,
+        countedDays: Double,
+        openDays: Double,
+    ) =
+        BatchStageDetailsRecord(
+            batchId = batchId,
+            countedQuantity = countedQuantity,
+            countedSeedlingDays = countedDays,
+            latestObservedQuantity = latestObservedQuantity,
+            openSeedlingDays = openDays,
+            quantity = quantity,
+            stageId = stage,
+            timeInStageAsOf = asOf,
+            timeInStageCleared = false,
+        )
+
+    assertTableEquals(
+        listOf(
+            expectedStageDetails(legacyBatchId, BatchStage.Germinating, 5, 0, 5, 15.0, 0.0),
+            expectedStageDetails(legacyBatchId, BatchStage.ActiveGrowth, 0, 0, 0, 0.0, 0.0),
+            expectedStageDetails(legacyBatchId, BatchStage.HardeningOff, 0, 0, 0, 0.0, 0.0),
+            expectedStageDetails(legacyBatchId, BatchStage.Ready, 0, 5, 5, 0.0, 0.0),
+            expectedStageDetails(currentBatchId, BatchStage.Germinating, 5, 0, 5, 15.0, 0.0),
+            expectedStageDetails(currentBatchId, BatchStage.ActiveGrowth, 0, 0, 5, 15.0, 0.0),
+            expectedStageDetails(currentBatchId, BatchStage.HardeningOff, 0, 0, 0, 0.0, 0.0),
+            expectedStageDetails(currentBatchId, BatchStage.Ready, 0, 5, 5, 0.0, 0.0),
+        ),
+        message = "Active Growth time-in-stage stats respect the Hardening Off release date",
     )
   }
 

@@ -83,7 +83,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             version = 1,
         )
 
-    fun expectedStageDetails(stage: BatchStage, quantity: Int) =
+    fun expectedStageDetails(
+        stage: BatchStage,
+        quantity: Int,
+        countedQuantity: Int = quantity,
+    ) =
         BatchStageDetailsModel(
             batchId = returnedModel.id,
             latestObservedQuantity = quantity,
@@ -94,7 +98,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                     asOfTime = clock.instant(),
                     cleared = false,
                     countedDays = 0.0,
-                    countedQuantity = quantity,
+                    countedQuantity = countedQuantity,
                     inStage = quantity,
                     openDays = 0.0,
                     stage = stage,
@@ -104,7 +108,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val expectedQuantities =
         listOf(
             expectedStageDetails(BatchStage.Germinating, 0),
-            expectedStageDetails(BatchStage.ActiveGrowth, 1),
+            expectedStageDetails(BatchStage.ActiveGrowth, 1, countedQuantity = 0),
             expectedStageDetails(BatchStage.HardeningOff, 4),
             expectedStageDetails(BatchStage.Ready, 2),
         )
@@ -177,7 +181,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
         expectedQuantities.map {
           BatchStageDetailsRecord(
               batchId = it.batchId,
-              countedQuantity = it.quantity,
+              countedQuantity = it.timeInStage?.countedQuantity ?: it.quantity,
               countedSeedlingDays = 0.0,
               latestObservedQuantity = it.latestObservedQuantity,
               openSeedlingDays = 0.0,
