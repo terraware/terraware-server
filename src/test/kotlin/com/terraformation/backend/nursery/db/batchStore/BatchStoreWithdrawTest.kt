@@ -1466,6 +1466,31 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   }
 
   @Test
+  fun `throws exception if source and destination facilities are the same`() {
+    assertThrows<IllegalArgumentException> {
+      store.withdraw(
+          NewWithdrawalModel(
+              batchWithdrawals =
+                  listOf(
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 1,
+                          activeGrowthQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
+              destinationFacilityId = facilityId,
+              facilityId = facilityId,
+              id = null,
+              purpose = WithdrawalPurpose.NurseryTransfer,
+              withdrawnDate = LocalDate.EPOCH,
+          )
+      )
+    }
+  }
+
+  @Test
   fun `stores plantingSeasonId in withdrawal`() {
     insertPlantingSite()
     val plantingSeasonId = insertPlantingSeason()

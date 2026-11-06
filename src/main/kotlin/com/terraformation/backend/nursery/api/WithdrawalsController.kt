@@ -297,8 +297,8 @@ data class CreateNurseryWithdrawalRequestPayload(
     @Schema(
         description =
             "If purpose is \"Nursery Transfer\", the ID of the facility to transfer to. Must be " +
-                "in the same organization as the originating facility. Not allowed for purposes " +
-                "other than \"Nursery Transfer\"."
+                "in the same organization as the originating facility. Cannot be the same as " +
+                "facilityId. Not allowed for purposes other than \"Nursery Transfer\"."
     )
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,

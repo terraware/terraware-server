@@ -813,6 +813,9 @@ class BatchStore(
       if (withdrawal.destinationFacilityId == null) {
         throw IllegalArgumentException("Nursery transfer must include destination facility ID")
       }
+      if (withdrawal.facilityId == withdrawal.destinationFacilityId) {
+        throw IllegalArgumentException("Cannot transfer from a nursery to itself")
+      }
 
       requirePermissions { createBatch(withdrawal.destinationFacilityId) }
 
