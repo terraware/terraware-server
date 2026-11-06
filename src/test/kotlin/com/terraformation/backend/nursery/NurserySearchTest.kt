@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.BatchStage
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingType
@@ -93,15 +94,52 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
       batchId1 =
           insertBatch(
+              activeGrowthQuantity = 2,
               addedDate = LocalDate.of(2021, 3, 4),
-              organizationId = organizationId,
               facilityId = facilityId,
               germinatingQuantity = 1,
-              activeGrowthQuantity = 2,
-              readyQuantity = 4,
               hardeningOffQuantity = 8,
+              insertStageDetails = false,
+              organizationId = organizationId,
+              readyQuantity = 4,
               speciesId = speciesId1,
           )
+      insertBatchStageDetails(
+          batchId = batchId1,
+          countedQuantity = 4,
+          countedSeedlingDays = 6.0,
+          quantity = 1,
+          stage = BatchStage.Germinating,
+          timeInStageAsOf = clock.instant().minusSeconds(86_400),
+          timeInStageCleared = false,
+      )
+      insertBatchStageDetails(
+          batchId = batchId1,
+          countedQuantity = 3,
+          countedSeedlingDays = 1.5,
+          quantity = 2,
+          stage = BatchStage.ActiveGrowth,
+          timeInStageAsOf = clock.instant(),
+          timeInStageCleared = false,
+      )
+      insertBatchStageDetails(
+          batchId = batchId1,
+          countedQuantity = 1,
+          countedSeedlingDays = 0.0,
+          quantity = 8,
+          stage = BatchStage.HardeningOff,
+          timeInStageAsOf = clock.instant(),
+          timeInStageCleared = true,
+      )
+      insertBatchStageDetails(
+          batchId = batchId1,
+          countedQuantity = 2,
+          countedSeedlingDays = 5.0,
+          quantity = 4,
+          stage = BatchStage.Ready,
+          timeInStageAsOf = clock.instant(),
+          timeInStageCleared = false,
+      )
       insertBatchSubLocation()
       batchId2 =
           insertBatch(
@@ -399,6 +437,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("hardeningOffQuantity"),
                   prefix.resolve("activeGrowthQuantity"),
                   prefix.resolve("readyQuantity"),
+                  prefix.resolve("stageDetails.stage"),
+                  prefix.resolve("stageDetails.days"),
+                  prefix.resolve("stageDetails.cleared"),
+                  prefix.resolve("stageDetails.quantity"),
                   prefix.resolve("totalQuantity"),
                   prefix.resolve("totalQuantityWithdrawn"),
                   prefix.resolve("facility_name"),
@@ -422,6 +464,32 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hardeningOffQuantity" to number(8),
                       "activeGrowthQuantity" to number(2),
                       "readyQuantity" to number(4),
+                      "stageDetails" to
+                          listOf(
+                              mapOf(
+                                  "stage" to "Germinating",
+                                  "days" to number(2),
+                                  "cleared" to "false",
+                                  "quantity" to number(1),
+                              ),
+                              mapOf(
+                                  "stage" to "Active Growth",
+                                  "days" to number(0),
+                                  "cleared" to "false",
+                                  "quantity" to number(2),
+                              ),
+                              mapOf(
+                                  "stage" to "Hardening Off",
+                                  "cleared" to "true",
+                                  "quantity" to number(8),
+                              ),
+                              mapOf(
+                                  "stage" to "Ready",
+                                  "days" to number(3),
+                                  "cleared" to "false",
+                                  "quantity" to number(4),
+                              ),
+                          ),
                       "totalQuantity" to number(2 + 4 + 8),
                       "totalQuantityWithdrawn" to number(1024 + 2048 + 4096),
                       "facility_name" to "Nursery",
@@ -441,6 +509,25 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hardeningOffQuantity" to number(64),
                       "activeGrowthQuantity" to number(16),
                       "readyQuantity" to number(32),
+                      "stageDetails" to
+                          listOf(
+                              mapOf(
+                                  "stage" to "Germinating",
+                                  "quantity" to number(8),
+                              ),
+                              mapOf(
+                                  "stage" to "Active Growth",
+                                  "quantity" to number(16),
+                              ),
+                              mapOf(
+                                  "stage" to "Hardening Off",
+                                  "quantity" to number(64),
+                              ),
+                              mapOf(
+                                  "stage" to "Ready",
+                                  "quantity" to number(32),
+                              ),
+                          ),
                       "totalQuantity" to number(16 + 32 + 64),
                       "totalQuantityWithdrawn" to
                           number(8192 + 16384 + 32768 + 65536 + 131072 + 262144),
@@ -455,6 +542,25 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hardeningOffQuantity" to number(512),
                       "activeGrowthQuantity" to number(128),
                       "readyQuantity" to number(256),
+                      "stageDetails" to
+                          listOf(
+                              mapOf(
+                                  "stage" to "Germinating",
+                                  "quantity" to number(64),
+                              ),
+                              mapOf(
+                                  "stage" to "Active Growth",
+                                  "quantity" to number(128),
+                              ),
+                              mapOf(
+                                  "stage" to "Hardening Off",
+                                  "quantity" to number(512),
+                              ),
+                              mapOf(
+                                  "stage" to "Ready",
+                                  "quantity" to number(256),
+                              ),
+                          ),
                       "totalQuantity" to number(128 + 256 + 512),
                       "totalQuantityWithdrawn" to number(0),
                       "facility_name" to "Other Nursery",

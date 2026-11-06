@@ -162,7 +162,6 @@ val ENUM_TABLES =
                 EnumTable(
                     "batch_stages",
                     listOf("batch_stage_details\\.stage_id"),
-                    isLocalizable = false,
                 ),
                 EnumTable("batch_substrates", listOf("nursery\\..*\\.substrate_id")),
                 EnumTable(
