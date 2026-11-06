@@ -1750,6 +1750,17 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateOrganizationLocation(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateOrganizationLocation(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to update location of organization $organizationId"
+        )
+      }
+    }
+  }
+
   fun updateOrganizationMedia(organizationId: OrganizationId) {
     user.recordPermissionChecks {
       if (!user.canUpdateOrganizationMedia(organizationId)) {
@@ -1804,6 +1815,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateProject(projectId)) {
         readProject(projectId)
         throw AccessDeniedException("No permission to update project $projectId")
+      }
+    }
+  }
+
+  fun updateProjectLocation(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectLocation(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update location of project $projectId")
       }
     }
   }

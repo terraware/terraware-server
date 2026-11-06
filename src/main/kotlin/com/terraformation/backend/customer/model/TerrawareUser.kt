@@ -605,6 +605,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean = defaultPermission
 
+  fun canUpdateOrganizationLocation(organizationId: OrganizationId): Boolean = defaultPermission
+
   fun canUpdateOrganizationMedia(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canUpdateParticipantProjectSpecies(
@@ -618,6 +620,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdatePlantingSiteProject(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
   fun canUpdateProject(projectId: ProjectId): Boolean = defaultPermission
+
+  fun canUpdateProjectLocation(projectId: ProjectId): Boolean = defaultPermission
 
   fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean = defaultPermission
 

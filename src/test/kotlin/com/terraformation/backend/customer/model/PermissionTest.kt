@@ -530,6 +530,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -718,6 +719,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectReports = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectReports = true,
     )
 
@@ -784,6 +786,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -837,6 +840,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -1019,6 +1023,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectReports = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectReports = true,
     )
 
@@ -1076,6 +1081,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -1221,6 +1227,7 @@ internal class PermissionTest : DatabaseTest() {
         listActivities = true,
         listPublishedActivities = true,
         readProject = true,
+        updateProjectLocation = true,
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectReports = true,
@@ -1499,6 +1506,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -1727,6 +1735,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectAcceleratorDetails = true,
         updateProjectInternalUsers = true,
         updateProjectReports = true,
@@ -1845,6 +1854,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -1910,6 +1920,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectInternalUsers = true,
@@ -1959,6 +1970,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectInternalUsers = true,
@@ -2124,6 +2136,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -2189,6 +2202,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectInternalUsers = true,
@@ -2245,6 +2259,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectInternalUsers = true,
@@ -2396,6 +2411,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationLocation = true,
         updateOrganizationMedia = true,
     )
 
@@ -2467,6 +2483,7 @@ internal class PermissionTest : DatabaseTest() {
         readPublishedReports = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectAcceleratorDetails = true,
         updateProjectInternalUsers = true,
         updateProjectReports = true,
@@ -2523,6 +2540,7 @@ internal class PermissionTest : DatabaseTest() {
         readPublishedReports = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
+        updateProjectLocation = true,
         updateProjectAcceleratorDetails = true,
         updateProjectInternalUsers = true,
         updateProjectReports = true,
@@ -3251,6 +3269,7 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser: Boolean = false,
         removeTerraformationContact: Boolean = false,
         updateOrganization: Boolean = false,
+        updateOrganizationLocation: Boolean = false,
         updateOrganizationMedia: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
@@ -3374,6 +3393,11 @@ internal class PermissionTest : DatabaseTest() {
             updateOrganization,
             user.canUpdateOrganization(idInDatabase),
             "Can update organization $organizationId",
+        )
+        assertEquals(
+            updateOrganizationLocation,
+            user.canUpdateOrganizationLocation(idInDatabase),
+            "Can update organization location",
         )
         assertEquals(
             updateOrganizationMedia,
@@ -4198,6 +4222,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDefaultVoters: Boolean = false,
         updateInternalVariableWorkflowDetails: Boolean = false,
         updateProject: Boolean = false,
+        updateProjectLocation: Boolean = false,
         updateProjectAcceleratorDetails: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
         updateProjectInternalUsers: Boolean = false,
@@ -4310,6 +4335,11 @@ internal class PermissionTest : DatabaseTest() {
             updateProject,
             user.canUpdateProject(idInDatabase),
             "Can update project $projectId",
+        )
+        assertEquals(
+            updateProjectLocation,
+            user.canUpdateProjectLocation(idInDatabase),
+            "Can update project location",
         )
         assertEquals(
             updateProjectAcceleratorDetails,
