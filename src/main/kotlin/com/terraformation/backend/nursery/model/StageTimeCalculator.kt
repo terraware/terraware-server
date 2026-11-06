@@ -49,8 +49,7 @@ data class StageTimeStats(
         (countedDays + inStage * StageTimeCalculator.daysBetween(asOfTime, now)) / countedQuantity
       }
 
-  fun roundedDays(now: Instant): Int? =
-      averageDays(now)?.let { if (it < 1) 0 else floor(it + 0.5).toInt() }
+  fun roundedDays(now: Instant): Int? = StageTimeCalculator.roundDays(averageDays(now))
 
   val inProgress: Boolean
     get() = inStage > 0
@@ -67,6 +66,8 @@ data class StageTimeStats(
  * whose quantity they change.
  */
 object StageTimeCalculator {
+  fun roundDays(days: Double?): Int? = days?.let { if (it < 1) 0 else floor(it + 0.5).toInt() }
+
   fun daysBetween(start: Instant, end: Instant): Double =
       Duration.between(start, end).toMillis() / 86_400_000.0
 
