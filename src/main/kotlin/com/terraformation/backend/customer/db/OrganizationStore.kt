@@ -228,6 +228,35 @@ class OrganizationStore(
   fun update(organizationId: OrganizationId, updateFunc: (OrganizationsRow) -> OrganizationsRow) {
     requirePermissions { updateOrganization(organizationId) }
 
+    updateWithoutPermissionCheck(organizationId, updateFunc)
+  }
+
+  fun updateLocation(
+      organizationId: OrganizationId,
+      countryCode: String?,
+      botanicalCountryCode: String?,
+  ) {
+    requirePermissions { updateOrganizationLocation(organizationId) }
+
+    val normalizedCountryCode = countryCode?.uppercase()
+
+    updateWithoutPermissionCheck(organizationId) {
+      it.copy(
+          botanicalCountryCode = botanicalCountryCode,
+          countryCode = normalizedCountryCode,
+          countrySubdivisionCode =
+              it.countrySubdivisionCode?.takeIf { subdivision ->
+                normalizedCountryCode != null &&
+                    subdivision.startsWith("$normalizedCountryCode-", ignoreCase = true)
+              },
+      )
+    }
+  }
+
+  private fun updateWithoutPermissionCheck(
+      organizationId: OrganizationId,
+      updateFunc: (OrganizationsRow) -> OrganizationsRow,
+  ) {
     val existingRow =
         organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
