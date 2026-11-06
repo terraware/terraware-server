@@ -685,6 +685,9 @@ data class IndividualUser(
   override fun canUpdateOrganization(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
+  override fun canUpdateOrganizationLocation(organizationId: OrganizationId) =
+      isManagerOrHigher(organizationId)
+
   override fun canUpdateOrganizationMedia(organizationId: OrganizationId) = isMember(organizationId)
 
   override fun canUpdateParticipantProjectSpecies(
@@ -706,6 +709,9 @@ data class IndividualUser(
     val organizationId = parentStore.getOrganizationId(projectId) ?: return false
     return isAdminOrHigher(organizationId) || isGlobalWriter(organizationId)
   }
+
+  override fun canUpdateProjectLocation(projectId: ProjectId) =
+      canUpdateProject(projectId) || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
   override fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean =
       isTFExpertOrHigher()

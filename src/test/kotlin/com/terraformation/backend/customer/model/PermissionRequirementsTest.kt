@@ -1134,6 +1134,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updateOrganization(organizationId) } ifUser { canUpdateOrganization(organizationId) }
 
   @Test
+  fun updateOrganizationLocation() =
+      allow { updateOrganizationLocation(organizationId) } ifUser
+          {
+            canUpdateOrganizationLocation(organizationId)
+          }
+
+  @Test
   fun updateOrganizationMedia() =
       allow { updateOrganizationMedia(organizationId) } ifUser
           {
@@ -1174,6 +1181,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun updateProject() = allow { updateProject(projectId) } ifUser { canUpdateProject(projectId) }
+
+  @Test
+  fun updateProjectLocation() =
+      allow { updateProjectLocation(projectId) } ifUser { canUpdateProjectLocation(projectId) }
 
   @Test
   fun updateProjectAcceleratorDetails() =
