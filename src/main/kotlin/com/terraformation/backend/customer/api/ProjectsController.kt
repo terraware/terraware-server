@@ -23,6 +23,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.util.Optional
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -99,6 +100,16 @@ class ProjectsController(
   fun deleteProject(@PathVariable id: ProjectId): SimpleSuccessResponsePayload {
     projectStore.delete(id)
 
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Updates the location of an existing project.")
+  @PutMapping("/{id}/location")
+  fun updateProjectLocation(
+      @PathVariable id: ProjectId,
+      @RequestBody payload: UpdateProjectLocationRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    projectStore.updateLocation(id, payload.countryCode, payload.botanicalCountryCode)
     return SimpleSuccessResponsePayload()
   }
 
@@ -264,3 +275,10 @@ data class ProjectInternalUserResponsePayload(
 data class ListProjectInternalUsersResponsePayload(
     val users: List<ProjectInternalUserResponsePayload>
 ) : SuccessResponsePayload
+
+data class UpdateProjectLocationRequestPayload(
+    @Schema(description = "ISO 3166 alpha-2 country code. Null clears the country.", example = "AU")
+    val countryCode: String?,
+    @Schema(description = "TDWG Level 3 botanical country code. Null clears the botanical country.")
+    val botanicalCountryCode: String?,
+)
