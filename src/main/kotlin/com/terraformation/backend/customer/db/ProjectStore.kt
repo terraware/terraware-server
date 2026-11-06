@@ -26,6 +26,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
@@ -164,6 +165,24 @@ class ProjectStore(
   fun update(projectId: ProjectId, updateFunc: (ExistingProjectModel) -> ExistingProjectModel) {
     requirePermissions { updateProject(projectId) }
 
+    updateWithoutPermissionCheck(projectId, updateFunc)
+  }
+
+  fun updateLocation(projectId: ProjectId, countryCode: String?, botanicalCountryCode: String?) {
+    requirePermissions { updateProjectLocation(projectId) }
+
+    val normalizedCountryCode = countryCode?.uppercase()
+    validateCountryCode(normalizedCountryCode)
+
+    updateWithoutPermissionCheck(projectId) {
+      it.copy(botanicalCountryCode = botanicalCountryCode, countryCode = normalizedCountryCode)
+    }
+  }
+
+  private fun updateWithoutPermissionCheck(
+      projectId: ProjectId,
+      updateFunc: (ExistingProjectModel) -> ExistingProjectModel,
+  ) {
     val existing = fetchOneById(projectId)
     val updated = updateFunc(existing)
 
@@ -328,6 +347,15 @@ class ProjectStore(
         .selectFrom(PROJECT_INTERNAL_USERS)
         .where(conditions)
         .fetchInto(ProjectInternalUsersRow::class.java)
+  }
+
+  private fun validateCountryCode(countryCode: String?) {
+    if (countryCode != null) {
+      require(countryCode.length == 2) { "Country code must be 2 characters long" }
+      require(dslContext.fetchExists(COUNTRIES, COUNTRIES.CODE.eq(countryCode.uppercase()))) {
+        "Country code not recognized"
+      }
+    }
   }
 
   private fun validateBotanicalCountryCode(botanicalCountryCode: String?) {

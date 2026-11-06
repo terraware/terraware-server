@@ -31,6 +31,7 @@ import com.terraformation.backend.db.default_schema.tables.records.OrganizationU
 import com.terraformation.backend.db.default_schema.tables.records.ProjectInternalUsersRecord
 import com.terraformation.backend.db.default_schema.tables.records.ProjectsRecord
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -331,6 +332,108 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val actual = store.findAll().toSet()
 
       assertEquals(expected, actual)
+    }
+  }
+
+  @Nested
+  inner class UpdateLocation {
+    @BeforeEach
+    fun setUp() {
+      insertOrganizationUser(role = Role.Manager)
+      insertProject(countryCode = "US", description = "Keep description")
+    }
+
+    @Test
+    fun `updates location and publishes event`() {
+      val botanicalCode = insertBotanicalCountry()
+      val before = dslContext.fetchSingle(PROJECTS)
+      clock.instant = Instant.ofEpochSecond(123)
+
+      store.updateLocation(inserted.projectId, "AU", botanicalCode)
+
+      assertTableEquals(
+          before.apply {
+            botanicalCountryCode = botanicalCode
+            countryCode = "AU"
+            modifiedBy = user.userId
+            modifiedTime = clock.instant
+          }
+      )
+      eventPublisher.assertEventPublished(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = "US"),
+              changedTo =
+                  ProjectUpdatedEventValues(
+                      botanicalCountryCode = botanicalCode,
+                      countryCode = "AU",
+                  ),
+              organizationId = inserted.organizationId,
+              projectId = inserted.projectId,
+          )
+      )
+    }
+
+    @Test
+    fun `uppercases country code`() {
+      val before = dslContext.fetchSingle(PROJECTS)
+
+      store.updateLocation(inserted.projectId, "au", null)
+
+      assertTableEquals(before.apply { countryCode = "AU" })
+    }
+
+    @Test
+    fun `null clears location`() {
+      val botanicalCode = insertBotanicalCountry()
+      store.updateLocation(inserted.projectId, "US", botanicalCode)
+      val before = dslContext.fetchSingle(PROJECTS)
+
+      store.updateLocation(inserted.projectId, null, null)
+
+      assertTableEquals(
+          before.apply {
+            botanicalCountryCode = null
+            countryCode = null
+          }
+      )
+      eventPublisher.assertEventPublished(
+          ProjectUpdatedEvent(
+              changedFrom =
+                  ProjectUpdatedEventValues(
+                      botanicalCountryCode = botanicalCode,
+                      countryCode = "US",
+                  ),
+              changedTo = ProjectUpdatedEventValues(),
+              organizationId = inserted.organizationId,
+              projectId = inserted.projectId,
+          )
+      )
+    }
+
+    @Test
+    fun `unchanged location does not publish event`() {
+      val before = dslContext.fetchSingle(PROJECTS)
+
+      store.updateLocation(inserted.projectId, "US", null)
+
+      assertTableEquals(before)
+      eventPublisher.assertEventNotPublished<ProjectUpdatedEvent>()
+    }
+
+    @Test
+    fun `rejects invalid country codes`() {
+      val before = dslContext.fetchSingle(PROJECTS)
+
+      assertThrows<IllegalArgumentException>("Invalid botanical country code") {
+        store.updateLocation(inserted.projectId, "AU", "XXX")
+      }
+
+      assertThrows<IllegalArgumentException>("Invalid country code") {
+        store.updateLocation(inserted.projectId, "XX", null)
+      }
+
+      assertTableEquals(before)
+      eventPublisher.assertNoEventsPublished()
     }
   }
 
