@@ -95,6 +95,7 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
@@ -1492,6 +1493,10 @@ class BatchStore(
       val ready: Int,
       val hasUndoRow: Boolean,
       val historyType: BatchQuantityHistoryType,
+      val netGerminatingQuantity: Int?,
+      val netActiveGrowthQuantity: Int?,
+      val netHardeningOffQuantity: Int?,
+      val netReadyQuantity: Int?,
       val originatingBatchId: BatchId?,
       val purpose: WithdrawalPurpose?,
       val version: Int,
@@ -1503,6 +1508,44 @@ class BatchStore(
    * to tell what kind of change each row represents.
    */
   private fun fetchTimeInStageHistory(batchId: BatchId): List<TimeInStageHistoryRow> {
+    // Net per-stage change from each withdrawal, including transfers into this batch. Used by
+    // isReplayable to detect gaps in the batch's history.
+    val transfer = BATCH_WITHDRAWALS.`as`("history_transfer")
+    fun netQuantity(alias: String, quantity: Field<Int?>) =
+        DSL.sum(
+                DSL.case_()
+                    .`when`(transfer.DESTINATION_BATCH_ID.eq(batchId), quantity)
+                    .`when`(transfer.BATCH_ID.eq(batchId), quantity.neg())
+                    .otherwise(0)
+            )
+            .cast(SQLDataType.INTEGER)
+            .`as`(alias)
+
+    val netGerminatingDelta =
+        netQuantity("net_germinating_quantity", transfer.GERMINATING_QUANTITY_WITHDRAWN)
+    val netActiveGrowthDelta =
+        netQuantity("net_active_growth_quantity", transfer.ACTIVE_GROWTH_QUANTITY_WITHDRAWN)
+    val netHardeningOffDelta =
+        netQuantity("net_hardening_off_quantity", transfer.HARDENING_OFF_QUANTITY_WITHDRAWN)
+    val netReadyDelta = netQuantity("net_ready_quantity", transfer.READY_QUANTITY_WITHDRAWN)
+    val transferDeltas =
+        DSL.select(
+                transfer.WITHDRAWAL_ID,
+                netGerminatingDelta,
+                netActiveGrowthDelta,
+                netHardeningOffDelta,
+                netReadyDelta,
+            )
+            .from(transfer)
+            .where(transfer.BATCH_ID.eq(batchId).or(transfer.DESTINATION_BATCH_ID.eq(batchId)))
+            .groupBy(transfer.WITHDRAWAL_ID)
+            .asTable("transfer_deltas")
+    val transferWithdrawalId = transferDeltas.field(transfer.WITHDRAWAL_ID)!!
+    val netGerminatingQuantity = transferDeltas.field(netGerminatingDelta)!!
+    val netActiveGrowthQuantity = transferDeltas.field(netActiveGrowthDelta)!!
+    val netHardeningOffQuantity = transferDeltas.field(netHardeningOffDelta)!!
+    val netReadyQuantity = transferDeltas.field(netReadyDelta)!!
+
     val undoHistory = BATCH_QUANTITY_HISTORY.`as`("undo_history")
     val undoWithdrawal = WITHDRAWALS.`as`("undo_withdrawal")
     val hasUndoRow =
@@ -1531,6 +1574,10 @@ class BatchStore(
             BATCH_QUANTITY_HISTORY.VERSION,
             BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID,
             BATCH_WITHDRAWALS.BATCH_ID,
+            netGerminatingQuantity,
+            netActiveGrowthQuantity,
+            netHardeningOffQuantity,
+            netReadyQuantity,
             WITHDRAWALS.PURPOSE_ID,
             hasUndoRow,
         )
@@ -1538,6 +1585,8 @@ class BatchStore(
         .leftJoin(BATCH_WITHDRAWALS)
         .on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCH_QUANTITY_HISTORY.BATCH_ID))
         .and(BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID))
+        .leftJoin(transferDeltas)
+        .on(transferWithdrawalId.eq(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID))
         .leftJoin(WITHDRAWALS)
         .on(WITHDRAWALS.ID.eq(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID))
         .where(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(batchId))
@@ -1550,6 +1599,10 @@ class BatchStore(
               hardeningOff = row[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY]!!,
               hasUndoRow = row[hasUndoRow] == true,
               historyType = row[BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID]!!,
+              netActiveGrowthQuantity = row[netActiveGrowthQuantity],
+              netGerminatingQuantity = row[netGerminatingQuantity],
+              netHardeningOffQuantity = row[netHardeningOffQuantity],
+              netReadyQuantity = row[netReadyQuantity],
               originatingBatchId = row[BATCH_WITHDRAWALS.BATCH_ID],
               purpose = row[WITHDRAWALS.PURPOSE_ID],
               ready = row[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!,
@@ -1561,7 +1614,8 @@ class BatchStore(
 
   /**
    * Returns true if a batch's quantity history is complete enough to calculate time in stage. It
-   * isn't if the initial row is missing or if any row lacks an effective time.
+   * isn't if the initial row is missing, if any row lacks an effective time, or if a withdrawal's
+   * quantities don't account for the change from the previous row.
    */
   private fun isReplayable(historyRows: List<TimeInStageHistoryRow>): Boolean {
     if (historyRows.isEmpty()) return false
@@ -1569,7 +1623,19 @@ class BatchStore(
     val first = historyRows.first()
     return first.historyType == BatchQuantityHistoryType.Observed &&
         first.version == 1 &&
-        historyRows.none { it.effectiveTime == null }
+        historyRows.none { it.effectiveTime == null } &&
+        historyRows.zipWithNext().all { (previous, row) ->
+          row.historyType != BatchQuantityHistoryType.Computed ||
+              row.withdrawalId == null ||
+              row.netGerminatingQuantity == null ||
+              row.netActiveGrowthQuantity == null ||
+              row.netHardeningOffQuantity == null ||
+              row.netReadyQuantity == null ||
+              (previous.germinating + row.netGerminatingQuantity == row.germinating &&
+                  previous.activeGrowth + row.netActiveGrowthQuantity == row.activeGrowth &&
+                  previous.hardeningOff + row.netHardeningOffQuantity == row.hardeningOff &&
+                  previous.ready + row.netReadyQuantity == row.ready)
+        }
   }
 
   /**
