@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.projectTo
+import com.terraformation.backend.util.toMultiPolygon
 import kotlin.random.Random
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,6 +23,107 @@ import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 class StratumModelTest : BaseStratumModelTest() {
+  @Nested
+  inner class PlacePermanentPlots {
+    @Test
+    fun `uses 200 meters when all plots fit across requests`() {
+      val west = Turtle(siteOrigin).makeMultiPolygon { square(31) }
+      val east =
+          Turtle(siteOrigin).makeMultiPolygon {
+            east(240)
+            square(31)
+          }
+      val boundary = west.union(east).toMultiPolygon()
+      val stratum = stratumModel(boundary = boundary, substrata = emptyList())
+
+      val actual =
+          stratum.placePermanentPlots(
+              siteOrigin,
+              null,
+              listOf(
+                  PermanentPlotPlacementRequest(west, listOf(1)),
+                  PermanentPlotPlacementRequest(east, listOf(2)),
+              ),
+          )
+
+      assertEquals(200.0, actual.spacingMeters, "Spacing used")
+      assertEquals(listOf(1, 2), actual.plots.map { it.second }, "Permanent indexes placed")
+    }
+
+    @Test
+    fun `falls back to 100 meters for all plots`() {
+      val west = Turtle(siteOrigin).makeMultiPolygon { square(31) }
+      val east =
+          Turtle(siteOrigin).makeMultiPolygon {
+            east(150)
+            square(31)
+          }
+      val boundary = west.union(east).toMultiPolygon()
+      val stratum = stratumModel(boundary = boundary, substrata = emptyList())
+
+      val actual =
+          stratum.placePermanentPlots(
+              siteOrigin,
+              null,
+              listOf(
+                  PermanentPlotPlacementRequest(west, listOf(1)),
+                  PermanentPlotPlacementRequest(east, listOf(2)),
+              ),
+          )
+
+      assertEquals(100.0, actual.spacingMeters, "Spacing used")
+      assertEquals(listOf(1, 2), actual.plots.map { it.second }, "Permanent indexes placed")
+    }
+
+    @Test
+    fun `falls back to zero when 100 meters does not fit`() {
+      val boundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(61, 31) }
+      val stratum = stratumModel(boundary = boundary, substrata = emptyList())
+
+      val actual =
+          stratum.placePermanentPlots(
+              siteOrigin,
+              null,
+              listOf(PermanentPlotPlacementRequest(boundary, listOf(1, 2))),
+          )
+
+      assertEquals(0.0, actual.spacingMeters, "Spacing used")
+      assertEquals(listOf(1, 2), actual.plots.map { it.second }, "Permanent indexes placed")
+    }
+
+    @Test
+    fun `chooses the level placing the most when no level fits all plots`() {
+      val boundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(61, 31) }
+      val stratum = stratumModel(boundary = boundary, substrata = emptyList())
+
+      val actual =
+          stratum.placePermanentPlots(
+              siteOrigin,
+              null,
+              listOf(PermanentPlotPlacementRequest(boundary, listOf(1, 2, 3))),
+          )
+
+      assertEquals(0.0, actual.spacingMeters, "Spacing used")
+      assertEquals(listOf(1, 2), actual.plots.map { it.second }, "Permanent indexes that fit")
+    }
+
+    @Test
+    fun `prefers higher spacing on a partial placement tie`() {
+      val boundary = Turtle(siteOrigin).makeMultiPolygon { square(31) }
+      val stratum = stratumModel(boundary = boundary, substrata = emptyList())
+
+      val actual =
+          stratum.placePermanentPlots(
+              siteOrigin,
+              null,
+              listOf(PermanentPlotPlacementRequest(boundary, listOf(1, 2))),
+          )
+
+      assertEquals(200.0, actual.spacingMeters, "Spacing used")
+      assertEquals(listOf(1), actual.plots.map { it.second }, "Permanent indexes that fit")
+    }
+  }
+
   @Nested
   inner class ChoosePermanentPlots {
     @Test

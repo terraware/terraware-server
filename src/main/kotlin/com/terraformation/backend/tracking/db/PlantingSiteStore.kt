@@ -83,13 +83,13 @@ import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.ExistingSubstratumModel
-import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.MonitoringPlotHistoryModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.NewSubstratumModel
+import com.terraformation.backend.tracking.model.PermanentPlotPlacementRequest
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryEventModel
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryEventType
@@ -1885,6 +1885,10 @@ class PlantingSiteStore(
       searchBoundary: MultiPolygon = stratum.boundary,
       excludePlotIds: Set<MonitoringPlotId> = emptySet(),
   ): List<MonitoringPlotId> {
+    if (permanentIndexes.isEmpty()) {
+      return emptyList()
+    }
+
     val userId = currentUser().userId
     val now = clock.instant()
 
@@ -1892,21 +1896,19 @@ class PlantingSiteStore(
       throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
     }
 
-    // List of [boundary, permanent index]
-    val plotBoundaries: List<Pair<Polygon, Int>> =
-        stratum
-            .findUnusedSquares(
-                count = permanentIndexes.size,
-                excludeAllPermanentPlots = true,
-                excludePlotIds = excludePlotIds,
-                exclusion = plantingSite.exclusion,
-                gridOrigin = plantingSite.gridOrigin,
-                searchBoundary = searchBoundary,
-                sizeMeters = MONITORING_PLOT_SIZE,
-            )
-            .zip(permanentIndexes)
+    val placement =
+        stratum.placePermanentPlots(
+            gridOrigin = plantingSite.gridOrigin,
+            exclusion = plantingSite.exclusion,
+            requests = listOf(PermanentPlotPlacementRequest(searchBoundary, permanentIndexes)),
+            excludePlotIds = excludePlotIds,
+        )
+    log.info(
+        "Stratum ${stratum.id}: placed ${placement.plots.size}/${permanentIndexes.size} " +
+            "permanent plots with ${placement.spacingMeters}m spacing"
+    )
 
-    return plotBoundaries.map { (plotBoundary, permanentIndex) ->
+    return placement.plots.map { (plotBoundary, permanentIndex) ->
       val existingPlot = stratum.findMonitoringPlot(plotBoundary)
 
       if (existingPlot != null) {
