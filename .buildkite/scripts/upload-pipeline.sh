@@ -8,6 +8,13 @@ set -euo pipefail
 
 if [[ "$BUILDKITE_BRANCH" == "$BUILDKITE_PIPELINE_DEFAULT_BRANCH" ]]; then
     export BUILDKITE_GIT_DIFF_BASE="HEAD~1"
+else
+    base="${BUILDKITE_PULL_REQUEST_BASE_BRANCH:-$BUILDKITE_PIPELINE_DEFAULT_BRANCH}"
+    # Shallow clones may not track the base branch.
+    echo "--- :git: Fetch diff base $base"
+    if ! git fetch -- origin "+refs/heads/$base:refs/remotes/origin/$base"; then
+        echo "Warning: Could not fetch $base; change detection will use local refs." >&2
+    fi
 fi
 
 pipeline_file="${UPLOAD_PIPELINE_FILE:-.buildkite/pipeline.yml}"
