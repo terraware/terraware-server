@@ -23,13 +23,13 @@ plugins {
   // kotlin("kapt")
 
   id("dev.monosoul.jooq-docker") version "9.0.11"
-  id("com.diffplug.spotless") version "8.10.4"
+  id("com.diffplug.spotless") version "8.11.0"
   id("org.springframework.boot") version "4.1.2"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
-  id("org.springdoc.openapi-gradle-plugin") version "1.9.0"
+  id("org.springdoc.openapi-gradle-plugin") version "2.1.0"
 
   id("com.github.jk1.dependency-license-report") version "3.1.5"
 
@@ -105,7 +105,7 @@ dependencies {
   implementation("com.drewnoakes:metadata-extractor:2.22.0")
   implementation("com.dropbox.core:dropbox-core-sdk:8.0.2")
   implementation("com.google.api-client:google-api-client:2.9.2")
-  implementation("com.google.auth:google-auth-library-oauth2-http:1.55.0")
+  implementation("com.google.auth:google-auth-library-oauth2-http:1.57.0")
   implementation("com.google.apis:google-api-services-drive:v3-rev20261023-2.9.2")
   implementation("com.opencsv:opencsv:5.12.0")
   implementation("com.pgvector:pgvector:0.1.6")
@@ -118,7 +118,7 @@ dependencies {
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
   implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
-  implementation("io.swagger.core.v3:swagger-annotations:2.2.55")
+  implementation("io.swagger.core.v3:swagger-annotations:3.0.0")
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.21")
@@ -147,7 +147,7 @@ dependencies {
   implementation("software.amazon.awssdk:rds")
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
-  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:4.5.0")
+  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:4.6.0")
   implementation("tools.jackson.dataformat:jackson-dataformat-xml")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
@@ -156,7 +156,7 @@ dependencies {
   runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-  testImplementation("io.mockk:mockk:1.14.11")
+  testImplementation("io.mockk:mockk:1.14.12")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.4")
   testImplementation("org.junit.platform:junit-platform-launcher")
