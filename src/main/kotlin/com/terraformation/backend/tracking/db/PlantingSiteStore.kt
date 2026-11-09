@@ -1055,23 +1055,19 @@ class PlantingSiteStore(
   ): List<ReplacementResult> {
     val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
     val stratum = plantingSite.strata.single { it.id == stratumId }
-    val replacementResults = mutableListOf<ReplacementResult>()
+    val requests =
+        edits
+            .filter { it.permanentIndex != null }
+            .groupBy { it.region }
+            .map { (region, plotEdits) ->
+              PermanentPlotPlacementRequest(region, plotEdits.map { it.permanentIndex!! })
+            }
+    if (requests.isEmpty()) {
+      return emptyList()
+    }
 
-    edits
-        .filter { it.permanentIndex != null }
-        .groupBy { it.region }
-        .forEach { (region, plotEdits) ->
-          val newPlotIds =
-              createPermanentPlots(
-                  plantingSite,
-                  stratum,
-                  plotEdits.map { it.permanentIndex!! },
-                  region,
-              )
-          replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
-        }
-
-    return replacementResults
+    val newPlotIds = createPermanentPlots(plantingSite, stratum, requests)
+    return listOf(ReplacementResult(newPlotIds.toSet(), emptySet()))
   }
 
   private fun applySubstratumEdit(
@@ -1703,7 +1699,12 @@ class PlantingSiteStore(
                 createPermanentPlots(
                         plantingSite,
                         stratum,
-                        listOf(unusedPermanentIndex),
+                        listOf(
+                            PermanentPlotPlacementRequest(
+                                stratum.boundary,
+                                listOf(unusedPermanentIndex),
+                            )
+                        ),
                         excludePlotIds = observationPlotIds,
                     )
                     .firstOrNull()
@@ -1759,7 +1760,11 @@ class PlantingSiteStore(
               stratum.permanentIndexExists(it)
             }
 
-        createPermanentPlots(plantingSite, stratum, missingPermanentIndexes)
+        createPermanentPlots(
+            plantingSite,
+            stratum,
+            listOf(PermanentPlotPlacementRequest(stratum.boundary, missingPermanentIndexes)),
+        )
       }
     }
   }
@@ -1881,11 +1886,11 @@ class PlantingSiteStore(
   private fun createPermanentPlots(
       plantingSite: ExistingPlantingSiteModel,
       stratum: ExistingStratumModel,
-      permanentIndexes: List<Int>,
-      searchBoundary: MultiPolygon = stratum.boundary,
+      requests: List<PermanentPlotPlacementRequest>,
       excludePlotIds: Set<MonitoringPlotId> = emptySet(),
   ): List<MonitoringPlotId> {
-    if (permanentIndexes.isEmpty()) {
+    val requestedCount = requests.sumOf { it.permanentIndexes.size }
+    if (requestedCount == 0) {
       return emptyList()
     }
 
@@ -1900,11 +1905,11 @@ class PlantingSiteStore(
         stratum.placePermanentPlots(
             gridOrigin = plantingSite.gridOrigin,
             exclusion = plantingSite.exclusion,
-            requests = listOf(PermanentPlotPlacementRequest(searchBoundary, permanentIndexes)),
+            requests = requests,
             excludePlotIds = excludePlotIds,
         )
     log.info(
-        "Stratum ${stratum.id}: placed ${placement.plots.size}/${permanentIndexes.size} " +
+        "Stratum ${stratum.id}: placed ${placement.plots.size}/$requestedCount " +
             "permanent plots with ${placement.spacingMeters}m spacing"
     )
 
