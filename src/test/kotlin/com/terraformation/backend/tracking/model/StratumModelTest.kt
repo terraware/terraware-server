@@ -1,9 +1,12 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertSetEquals
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.util.Turtle
+import com.terraformation.backend.util.projectTo
 import kotlin.random.Random
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,6 +16,9 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 class StratumModelTest : BaseStratumModelTest() {
@@ -769,6 +775,106 @@ class StratumModelTest : BaseStratumModelTest() {
 
   @Nested
   inner class FindUnusedSquares {
+    @Test
+    fun `spaces new squares from permanent plots and each other`() {
+      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { square(601) }
+      val existingPlot =
+          monitoringPlotModel(
+              boundary = Turtle(siteOrigin).makePolygon { square(30) },
+              permanentIndex = 1,
+          )
+      val stratum =
+          stratumModel(
+              boundary = siteBoundary,
+              substrata =
+                  listOf(substratumModel(boundary = siteBoundary, plots = listOf(existingPlot))),
+          )
+
+      val actual = stratum.findUnusedSquares(siteOrigin, count = 2, minSpacingMeters = 200.0)
+
+      assertEquals(2, actual.size, "Number of spaced squares")
+      val boundaries = (listOf(existingPlot.boundary) + actual).map { it.projectTo(32633) }
+      boundaries.forEachIndexed { index, boundary ->
+        boundaries.drop(index + 1).forEach { other ->
+          assertThat(boundary.distance(other))
+              .describedAs("Edge-to-edge spacing in meters")
+              .isGreaterThanOrEqualTo(199.0)
+        }
+      }
+    }
+
+    @Test
+    fun `allows exact spacing and does not space from unavailable plots`() {
+      // Only x=90 fits: a 60m gap from the permanent plot at x=0 and no gap from the
+      // unavailable plot at x=120. Spacing rules out x=30 and x=60; availability rules out x=120.
+      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(151, 31) }
+      val existingPlot =
+          monitoringPlotModel(
+              boundary = Turtle(siteOrigin).makePolygon { square(30) },
+              permanentIndex = 1,
+          )
+      val unavailablePlot =
+          monitoringPlotModel(
+              id = 2,
+              boundary =
+                  Turtle(siteOrigin).makePolygon {
+                    east(120)
+                    square(30)
+                  },
+              isAvailable = false,
+          )
+      val stratum =
+          stratumModel(
+              boundary = siteBoundary,
+              substrata =
+                  listOf(
+                      substratumModel(
+                          boundary = siteBoundary,
+                          plots = listOf(existingPlot, unavailablePlot),
+                      )
+                  ),
+          )
+      val expected =
+          Turtle(siteOrigin).makePolygon {
+            east(90)
+            square(30)
+          }
+
+      val actual = stratum.findUnusedSquares(siteOrigin, count = 2, minSpacingMeters = 60.0)
+
+      assertEquals(1, actual.size, "Number of squares at exact spacing")
+      assertGeometryEquals(expected, actual.single(), "Square at exact spacing")
+    }
+
+    @Test
+    fun `spaces from permanent plots in projected coordinates`() {
+      val origin = geometryFactory.createPoint(Coordinate(-63.0, 10.0))
+      val siteBoundary =
+          Turtle(origin).makeMultiPolygon { rectangle(61, 31) }.projectTo(SRID.UTM_20S)
+              as MultiPolygon
+      val existingPlot =
+          monitoringPlotModel(
+              boundary =
+                  Turtle(origin).makePolygon { square(30) }.projectTo(SRID.UTM_20S) as Polygon,
+              permanentIndex = 1,
+          )
+      val stratum =
+          stratumModel(
+              boundary = siteBoundary,
+              substrata =
+                  listOf(substratumModel(boundary = siteBoundary, plots = listOf(existingPlot))),
+          )
+
+      val actual =
+          stratum.findUnusedSquares(
+              origin.projectTo(SRID.UTM_20S) as Point,
+              count = 1,
+              minSpacingMeters = 200.0,
+          )
+
+      assertEquals(emptyList<Polygon>(), actual, "Squares outside projected permanent plot spacing")
+    }
+
     @Test
     fun `excludes permanent monitoring plots`() {
       // Boundary is a 61x31m square, and there is an existing plot in the southwestern 30x30m.
