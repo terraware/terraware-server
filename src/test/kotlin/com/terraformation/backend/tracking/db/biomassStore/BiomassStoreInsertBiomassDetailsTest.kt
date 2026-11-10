@@ -38,6 +38,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.security.access.AccessDeniedException
 
 class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
@@ -52,8 +54,14 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
     insertObservationPlot(claimedBy = currentUser().userId, claimedTime = Instant.EPOCH)
   }
 
-  @Test
-  fun `inserts required biomass detail, quadrat species and details, trees and branches`() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class, names = ["BiomassMeasurements", "BaselineSurvey"])
+  fun `inserts required biomass detail, quadrat species and details, trees and branches`(
+      type: ObservationType
+  ) {
+    observationId = insertObservation(observationType = type)
+    insertObservationPlot(claimedBy = user.userId, claimedTime = clock.instant)
+
     val herbaceousSpeciesId1 = insertSpecies()
     val herbaceousSpeciesId2 = insertSpecies()
 

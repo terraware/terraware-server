@@ -64,10 +64,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertObservationRequestedSubstratum()
   }
 
-  @Test
-  fun `rejects plants for biomass observations before completing plot`() {
-    val biomassObservationId =
-        insertObservation(observationType = ObservationType.BiomassMeasurements)
+  @ParameterizedTest
+  @EnumSource(ObservationType::class, names = ["BiomassMeasurements", "BaselineSurvey"])
+  fun `rejects plants for biomass observations before completing plot`(type: ObservationType) {
+    val biomassObservationId = insertObservation(observationType = type)
     val biomassPlotId = insertMonitoringPlot()
     insertObservationPlot(
         claimedBy = user.userId,

@@ -2812,6 +2812,96 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertSubstratum()
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `completes baseline plots with biomass details`(includeSpecies: Boolean) {
+      val (observationId, plotIds) = insertObservationWithPlots(ObservationType.BaselineSurvey)
+      val plotId = plotIds.single()
+      val details =
+          biomassDetails().let {
+            if (includeSpecies) it else it.copy(species = emptySet(), trees = emptyList())
+          }
+
+      service.completePlot(
+          observationId = observationId,
+          monitoringPlotId = plotId,
+          biomassDetails = details,
+          conditions = emptySet(),
+          notes = null,
+          observedTime = clock.instant,
+      )
+
+      assertTableEquals(
+          ObservationBiomassDetailsRecord(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              forestTypeId = BiomassForestType.Terrestrial,
+              herbaceousCoverPercent = 0,
+              smallTreesCountLow = 0,
+              smallTreesCountHigh = 0,
+              soilAssessment = "Soil",
+              nextTreeNumber = if (includeSpecies) 2 else 1,
+          )
+      )
+      assertEquals(if (includeSpecies) 1 else 0, recordedTreesDao.count(), "Recorded trees")
+      assertEquals(
+          ObservationPlotStatus.Completed,
+          observationPlotsDao
+              .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
+              .single()
+              .statusId,
+          "Plot status",
+      )
+      assertTableEmpty(RECORDED_PLANTS)
+      eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
+    }
+
+    @Test
+    fun `rejects baseline plots without biomass details`() {
+      val (observationId, plotIds) = insertObservationWithPlots(ObservationType.BaselineSurvey)
+
+      assertThrows<IllegalArgumentException> {
+        service.completePlot(
+            observationId = observationId,
+            monitoringPlotId = plotIds.single(),
+            conditions = emptySet(),
+            notes = null,
+            observedTime = clock.instant,
+        )
+      }
+
+      assertTableEmpty(OBSERVATION_BIOMASS_DETAILS)
+      eventPublisher.assertEventNotPublished<ObservationCompletedEvent>()
+    }
+
+    @Test
+    fun `rejects plants for baseline plots with biomass details`() {
+      val (observationId, plotIds) = insertObservationWithPlots(ObservationType.BaselineSurvey)
+
+      assertThrows<IllegalArgumentException> {
+        service.completePlot(
+            observationId = observationId,
+            monitoringPlotId = plotIds.single(),
+            biomassDetails = biomassDetails(),
+            conditions = emptySet(),
+            notes = null,
+            observedTime = clock.instant,
+            plants =
+                listOf(
+                    RecordedPlantsRow(
+                        certaintyId = Other,
+                        speciesName = "Other",
+                        statusId = RecordedPlantStatus.Live,
+                    )
+                ),
+        )
+      }
+
+      assertTableEmpty(OBSERVATION_BIOMASS_DETAILS)
+      assertTableEmpty(RECORDED_PLANTS)
+      eventPublisher.assertEventNotPublished<ObservationCompletedEvent>()
+    }
+
     @Test
     fun `completes biomass plots with shared species and deferred totals`() {
       val (observationId, plotIds) =

@@ -138,7 +138,10 @@ class BiomassStore(
       throw IllegalStateException("Observation $observationId is already completed.")
     }
 
-    if (observationType != ObservationType.BiomassMeasurements) {
+    if (
+        observationType != ObservationType.BiomassMeasurements &&
+            observationType != ObservationType.BaselineSurvey
+    ) {
       throw IllegalStateException("Observation $observationId is not a biomass measurement")
     }
 

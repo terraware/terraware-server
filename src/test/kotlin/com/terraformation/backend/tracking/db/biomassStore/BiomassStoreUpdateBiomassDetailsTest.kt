@@ -13,6 +13,8 @@ import java.time.Instant
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.security.access.AccessDeniedException
 
 class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
@@ -33,8 +35,12 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
     )
   }
 
-  @Test
-  fun `updates editable fields for terrestrial observation`() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class, names = ["BiomassMeasurements", "BaselineSurvey"])
+  fun `updates editable fields for terrestrial observation`(type: ObservationType) {
+    observationsDao.update(
+        observationsDao.fetchOneById(inserted.observationId)!!.copy(observationTypeId = type)
+    )
     val before = dslContext.fetchSingle(OBSERVATION_BIOMASS_DETAILS)
 
     store.updateBiomassDetails(inserted.observationId, inserted.monitoringPlotId) {
