@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -11,6 +12,26 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest() {
+  @Test
+  fun `includes simultaneous baseline observations without plantings`() {
+    insertPlantingSite()
+    insertStratum()
+    insertSubstratum()
+    val expected =
+        List(2) {
+          insertObservation(
+                  observationType = ObservationType.BaselineSurvey,
+                  startDate = LocalDate.EPOCH,
+                  state = ObservationState.Upcoming,
+              )
+              .also { insertObservationRequestedSubstratum(observationId = it) }
+        }
+
+    val actual = store.fetchStartableObservations().map { it.id }.toSet()
+
+    assertEquals(expected.toSet(), actual, "Startable baseline observations")
+  }
+
   @BeforeEach
   fun insertFacilityAndSpecies() {
     insertFacility(type = FacilityType.Nursery)

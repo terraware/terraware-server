@@ -13,6 +13,68 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.locationtech.jts.geom.Envelope
 
 class StratumPlotAllocatorTest : BaseStratumModelTest() {
+  @ParameterizedTest
+  @CsvSource("2,2,false", "10,3,true")
+  fun `baseline uses temporary plots and preserves existing permanent plots`(
+      configured: Int,
+      expected: Int,
+      shortfall: Boolean,
+  ) {
+    val permanent = monitoringPlotModel(10, permanentIndex = 1)
+    val stratum =
+        stratumModel(
+                plantNumPermanentPlots = 1,
+                substrata =
+                    listOf(
+                        substratumModel(
+                            plots = listOf(permanent),
+                            boundary = substratumBoundary(1, 4),
+                        )
+                    ),
+            )
+            .copy(
+                baselinePlotCounts =
+                    StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = configured)
+            )
+
+    val allocation =
+        StratumPlotAllocator(
+                stratum,
+                ObservationType.BaselineSurvey,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = emptySet(),
+            )
+            .allocate(substrataIds(1))
+
+    assertEquals(emptySet<MonitoringPlotId>(), allocation.permanentPlotIds, "Permanent assignments")
+    assertEquals(expected, allocation.temporaryPlotBoundaries.size, "Temporary assignments")
+    assertEquals(shortfall, allocation.isShortfall, "Shortfall")
+    allocation.temporaryPlotBoundaries.forEach {
+      assertEquals(0.0, it.intersection(permanent.boundary).area, 1e-12, "Permanent overlap")
+    }
+  }
+
+  @Test
+  fun `baseline with zero configured plots is unstartable`() {
+    val stratum =
+        stratumModel(substrata = listOf(substratumModel(boundary = substratumBoundary(1, 4))))
+            .copy(
+                baselinePlotCounts = StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0)
+            )
+
+    assertThrows<StratumFullException> {
+      StratumPlotAllocator(
+              stratum,
+              ObservationType.BaselineSurvey,
+              siteOrigin,
+              exclusion = null,
+              observedPermanentPlotIds = emptySet(),
+          )
+          .allocate(substrataIds(1))
+    }
+  }
+
   private fun fullStratum(
       numPlots: Int = 4,
       plantNumPermanentPlots: Int = 6,

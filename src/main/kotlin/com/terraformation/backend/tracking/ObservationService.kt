@@ -446,14 +446,13 @@ class ObservationService(
   ): ObservationId {
     requirePermissions { scheduleObservation(observation.plantingSiteId) }
 
-    if (observation.observationType == ObservationType.BaselineSurvey) {
-      throw IllegalArgumentException("Baseline surveys cannot be scheduled")
-    }
-
     if (!skipValidation) {
       validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
 
-      if (!plantingSiteStore.hasSubstratumPlantings(observation.plantingSiteId)) {
+      if (
+          observation.observationType != ObservationType.BaselineSurvey &&
+              !plantingSiteStore.hasSubstratumPlantings(observation.plantingSiteId)
+      ) {
         throw ScheduleObservationWithoutPlantsException(observation.plantingSiteId)
       }
     }

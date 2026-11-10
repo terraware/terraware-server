@@ -119,7 +119,9 @@ class AdminPlantingSitesController(
     val observationMessages = observations.associate { observation ->
       observation.id to
           when {
-            plantCounts.isEmpty() -> "No reported plants"
+            plantCounts.isEmpty() &&
+                observation.observationType != ObservationType.BaselineSurvey ->
+                "No reported plants"
             observation.startDate > LocalDate.now(clock) -> "Start date is in future"
             canManageObservations[observation.id] != true -> "No permission to start observation"
             else -> null
@@ -131,6 +133,7 @@ class AdminPlantingSitesController(
               observation.startDate <= LocalDate.now(clock) &&
               canManageObservations[observation.id] == true &&
               (plantCounts.isNotEmpty() ||
+                  observation.observationType == ObservationType.BaselineSurvey ||
                   observation.observationType == ObservationType.BiomassMeasurements))
     }
 
