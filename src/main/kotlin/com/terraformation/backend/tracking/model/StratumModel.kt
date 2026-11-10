@@ -683,8 +683,7 @@ data class StratumModel<
         stableId: StableId = StableId(name),
         targetPlantDensity: BigDecimal? = null,
         baselineErrorMargin: BigDecimal = plantErrorMargin,
-        baselineNumPermanentPlots: Int? = plantNumPermanentPlots,
-        baselineNumTemporaryPlots: Int? = plantNumTemporaryPlots,
+        baselineNumTemporaryPlots: Int? = null,
         baselineStudentsT: BigDecimal = plantStudentsT,
         baselineVariance: BigDecimal = plantVariance,
         biomassErrorMargin: BigDecimal = plantErrorMargin,
@@ -708,8 +707,8 @@ data class StratumModel<
                   errorMargin = baselineErrorMargin,
                   numPermanentPlots = 0,
                   numTemporaryPlots =
-                      (baselineNumPermanentPlots ?: defaultBaselinePermanentPlots) +
-                          (baselineNumTemporaryPlots ?: defaultBaselineTemporaryPlots),
+                      baselineNumTemporaryPlots
+                          ?: (defaultBaselinePermanentPlots + defaultBaselineTemporaryPlots),
                   studentsT = baselineStudentsT,
                   variance = baselineVariance,
               ),
@@ -741,7 +740,7 @@ data class StratumModel<
     }
 
     /** Returns the permanent and temporary plot counts based on the statistical formula inputs. */
-    private fun calculatePlotCounts(
+    fun calculatePlotCounts(
         errorMargin: BigDecimal,
         studentsT: BigDecimal,
         variance: BigDecimal,
