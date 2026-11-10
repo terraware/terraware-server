@@ -311,8 +311,11 @@ class PlantingSiteImporter(
               if (errorMargin != null && variance != null) {
                 StratumModel.create(
                     baselineErrorMargin = errorMargin,
-                    baselineNumPermanentPlots = numPermanentPlots,
-                    baselineNumTemporaryPlots = numTemporaryPlots,
+                    baselineNumPermanentPlots =
+                        if (numPermanentPlots == null && numTemporaryPlots == null) null else 0,
+                    baselineNumTemporaryPlots =
+                        if (numPermanentPlots == null && numTemporaryPlots == null) null
+                        else (numPermanentPlots ?: 0) + (numTemporaryPlots ?: 0),
                     baselineStudentsT = studentsT,
                     baselineVariance = variance,
                     biomassErrorMargin = errorMargin,

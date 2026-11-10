@@ -48,9 +48,6 @@ data class StratumPlotCounts(
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
     val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
-  fun temporaryOnly(): StratumPlotCounts =
-      copy(numPermanentPlots = 0, numTemporaryPlots = numPermanentPlots + numTemporaryPlots)
-
   override fun equals(other: Any?) =
       other is StratumPlotCounts &&
           numPermanentPlots == other.numPermanentPlots &&
@@ -75,7 +72,11 @@ data class StratumModel<
     TIMESTAMP : Instant?,
 >(
     val areaHa: BigDecimal,
-    val baselinePlotCounts: StratumPlotCounts = StratumPlotCounts().temporaryOnly(),
+    val baselinePlotCounts: StratumPlotCounts =
+        StratumPlotCounts(
+            numPermanentPlots = 0,
+            numTemporaryPlots = DEFAULT_NUM_PERMANENT_PLOTS + DEFAULT_NUM_TEMPORARY_PLOTS,
+        ),
     val biomassPlotCounts: StratumPlotCounts = StratumPlotCounts(),
     val boundary: MultiPolygon,
     val boundaryModifiedTime: TIMESTAMP,
@@ -704,15 +705,14 @@ data class StratumModel<
           areaHa = areaHa,
           baselinePlotCounts =
               StratumPlotCounts(
-                      errorMargin = baselineErrorMargin,
-                      numPermanentPlots =
-                          baselineNumPermanentPlots ?: defaultBaselinePermanentPlots,
-                      numTemporaryPlots =
-                          baselineNumTemporaryPlots ?: defaultBaselineTemporaryPlots,
-                      studentsT = baselineStudentsT,
-                      variance = baselineVariance,
-                  )
-                  .temporaryOnly(),
+                  errorMargin = baselineErrorMargin,
+                  numPermanentPlots = 0,
+                  numTemporaryPlots =
+                      (baselineNumPermanentPlots ?: defaultBaselinePermanentPlots) +
+                          (baselineNumTemporaryPlots ?: defaultBaselineTemporaryPlots),
+                  studentsT = baselineStudentsT,
+                  variance = baselineVariance,
+              ),
           biomassPlotCounts =
               StratumPlotCounts(
                   errorMargin = biomassErrorMargin,

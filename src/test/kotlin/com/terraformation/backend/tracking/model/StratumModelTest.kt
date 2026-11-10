@@ -54,7 +54,10 @@ class StratumModelTest : BaseStratumModelTest() {
             substrata = emptyList(),
         )
 
-    assertEquals(model.plantPlotCounts.temporaryOnly(), model.baselinePlotCounts)
+    assertEquals(
+        model.plantPlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = 8),
+        model.baselinePlotCounts,
+    )
     assertEquals(model.baselinePlotCounts, model.plotCounts(ObservationType.BaselineSurvey))
     assertEquals(model.baselinePlotCounts, model.toNew().baselinePlotCounts)
   }
@@ -77,9 +80,19 @@ class StratumModelTest : BaseStratumModelTest() {
   }
 
   @Test
-  fun `normalizing empty baseline counts keeps both counts zero`() {
-    val counts = StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0)
-    assertEquals(counts, counts.temporaryOnly())
+  fun `baseline model preserves zero plot counts`() {
+    val model =
+        StratumModel.create(
+            boundary = Turtle(siteOrigin).makeMultiPolygon { square(100) },
+            name = "Baseline",
+            baselineNumPermanentPlots = 0,
+            baselineNumTemporaryPlots = 0,
+            substrata = emptyList(),
+        )
+    assertEquals(
+        StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0),
+        model.baselinePlotCounts,
+    )
   }
 
   @Nested

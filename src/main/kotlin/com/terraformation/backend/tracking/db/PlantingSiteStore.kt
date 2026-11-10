@@ -957,7 +957,7 @@ class PlantingSiteStore(
         }
       }
       is StratumEdit.Update -> {
-        val baselinePlotCounts = edit.desiredModel.baselinePlotCounts.temporaryOnly()
+        val baselinePlotCounts = edit.desiredModel.baselinePlotCounts
         with(STRATA) {
           val boundaryChanged =
               !edit.existingModel.boundary.equalsOrBothNull(edit.desiredModel.boundary)
@@ -967,12 +967,8 @@ class PlantingSiteStore(
                   .set(AREA_HA, edit.desiredModel.areaHa)
                   .set(BASELINE_ERROR_MARGIN, baselinePlotCounts.errorMargin)
                   .set(
-                      BASELINE_NUM_PERMANENT_PLOTS,
-                      baselinePlotCounts.numPermanentPlots,
-                  )
-                  .set(
                       BASELINE_NUM_TEMPORARY_PLOTS,
-                      baselinePlotCounts.numTemporaryPlots,
+                      baselinePlotCounts.numPermanentPlots + baselinePlotCounts.numTemporaryPlots,
                   )
                   .set(BASELINE_STUDENTS_T, baselinePlotCounts.studentsT)
                   .set(BASELINE_VARIANCE, baselinePlotCounts.variance)
@@ -1248,21 +1244,13 @@ class PlantingSiteStore(
     requirePermissions { updateStratum(stratumId) }
 
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
-    val edited =
-        editFunc(initial).let {
-          it.copy(
-              baselineNumPermanentPlots = 0,
-              baselineNumTemporaryPlots =
-                  it.baselineNumPermanentPlots!! + it.baselineNumTemporaryPlots!!,
-          )
-        }
+    val edited = editFunc(initial)
 
     entityLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
       with(STRATA) {
         dslContext
             .update(STRATA)
             .set(BASELINE_ERROR_MARGIN, edited.baselineErrorMargin)
-            .set(BASELINE_NUM_PERMANENT_PLOTS, edited.baselineNumPermanentPlots)
             .set(BASELINE_NUM_TEMPORARY_PLOTS, edited.baselineNumTemporaryPlots)
             .set(BASELINE_STUDENTS_T, edited.baselineStudentsT)
             .set(BASELINE_VARIANCE, edited.baselineVariance)
@@ -1404,13 +1392,13 @@ class PlantingSiteStore(
   ): StratumId {
     val userId = currentUser().userId
 
-    val baselinePlotCounts = stratum.baselinePlotCounts.temporaryOnly()
+    val baselinePlotCounts = stratum.baselinePlotCounts
     val strataRow =
         StrataRow(
             areaHa = stratum.areaHa,
             baselineErrorMargin = baselinePlotCounts.errorMargin,
-            baselineNumPermanentPlots = baselinePlotCounts.numPermanentPlots,
-            baselineNumTemporaryPlots = baselinePlotCounts.numTemporaryPlots,
+            baselineNumTemporaryPlots =
+                baselinePlotCounts.numPermanentPlots + baselinePlotCounts.numTemporaryPlots,
             baselineStudentsT = baselinePlotCounts.studentsT,
             baselineVariance = baselinePlotCounts.variance,
             biomassErrorMargin = stratum.biomassPlotCounts.errorMargin,
@@ -2300,7 +2288,6 @@ class PlantingSiteStore(
             DSL.select(
                     STRATA.AREA_HA,
                     STRATA.BASELINE_ERROR_MARGIN,
-                    STRATA.BASELINE_NUM_PERMANENT_PLOTS,
                     STRATA.BASELINE_NUM_TEMPORARY_PLOTS,
                     STRATA.BASELINE_STUDENTS_T,
                     STRATA.BASELINE_VARIANCE,
@@ -2341,7 +2328,7 @@ class PlantingSiteStore(
                 baselinePlotCounts =
                     StratumPlotCounts(
                         errorMargin = record[STRATA.BASELINE_ERROR_MARGIN]!!,
-                        numPermanentPlots = record[STRATA.BASELINE_NUM_PERMANENT_PLOTS]!!,
+                        numPermanentPlots = 0,
                         numTemporaryPlots = record[STRATA.BASELINE_NUM_TEMPORARY_PLOTS]!!,
                         studentsT = record[STRATA.BASELINE_STUDENTS_T]!!,
                         variance = record[STRATA.BASELINE_VARIANCE]!!,

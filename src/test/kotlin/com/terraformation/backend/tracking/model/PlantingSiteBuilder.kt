@@ -236,13 +236,12 @@ private constructor(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
           baselinePlotCounts =
               StratumPlotCounts(
-                      errorMargin = plantErrorMargin,
-                      numPermanentPlots = baselineNumPermanentPlots,
-                      numTemporaryPlots = baselineNumTemporaryPlots,
-                      studentsT = plantStudentsT,
-                      variance = plantVariance,
-                  )
-                  .temporaryOnly(),
+                  errorMargin = plantErrorMargin,
+                  numPermanentPlots = 0,
+                  numTemporaryPlots = baselineNumPermanentPlots + baselineNumTemporaryPlots,
+                  studentsT = plantStudentsT,
+                  variance = plantVariance,
+              ),
           biomassPlotCounts =
               StratumPlotCounts(
                   errorMargin = plantErrorMargin,
