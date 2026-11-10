@@ -41,6 +41,14 @@ interface RateLimitedEvent<T : RateLimitedEvent<T>> {
   @JsonIgnore fun getMinimumInterval(): Duration
 
   /**
+   * Returns how long to defer an event that isn't being rate-limited. Events with the same rate
+   * limit key that are published during the delay are combined with it, and the minimum interval
+   * starts once the deferred event is published. This allows a burst of related events to be
+   * published as a single combined event. The default is to publish the event immediately.
+   */
+  @JsonIgnore fun getInitialDelay(): Duration = Duration.ZERO
+
+  /**
    * Combines an existing pending event with this one. This can be used to, for example, generate
    * notifications like "there have been 3 edits to such-and-such entity." The existing pending
    * event is replaced with the return value of this function, but continues to be scheduled for the

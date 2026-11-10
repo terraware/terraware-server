@@ -19,6 +19,9 @@ import org.springframework.context.event.EventListener
  *
  * Otherwise, the event is stored in the database (possibly after being combined with an existing
  * pending event) and will be published once the minimum interval between events has elapsed.
+ *
+ * If the event has an initial delay, it is stored rather than being published immediately, and is
+ * published (possibly after being combined with additional events) once the delay has elapsed.
  */
 interface RateLimitedEventPublisher {
   fun <T : RateLimitedEvent<T>> publishEvent(event: T)
