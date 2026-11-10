@@ -15,11 +15,21 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class UpdateStratum {
+    @Test
+    fun `database rejects baseline permanent plots`() {
+      insertPlantingSite()
+
+      assertThrows<DataIntegrityViolationException> {
+        insertStratum(baselineNumPermanentPlots = 1)
+      }
+    }
+
     @Test
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)
@@ -57,6 +67,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val expected =
           StrataRow(
               areaHa = BigDecimal.ONE,
+              baselineErrorMargin = BigDecimal(21),
+              baselineNumPermanentPlots = 0,
+              baselineNumTemporaryPlots = 45,
+              baselineStudentsT = BigDecimal(24),
+              baselineVariance = BigDecimal(25),
               biomassErrorMargin = newBiomassErrorMargin,
               biomassNumPermanentPlots = newBiomassNumPermanentPlots,
               biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,
@@ -85,6 +100,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       store.updateStratum(stratumId) {
         it.copy(
             // Editable
+            baselineErrorMargin = BigDecimal(21),
+            baselineNumPermanentPlots = 22,
+            baselineNumTemporaryPlots = 23,
+            baselineStudentsT = BigDecimal(24),
+            baselineVariance = BigDecimal(25),
             biomassErrorMargin = newBiomassErrorMargin,
             biomassNumPermanentPlots = newBiomassNumPermanentPlots,
             biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,

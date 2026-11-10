@@ -5,9 +5,11 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.tracking.api.StratumResponsePayload
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.projectTo
 import com.terraformation.backend.util.toMultiPolygon
+import java.math.BigDecimal
 import kotlin.random.Random
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,6 +25,63 @@ import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 class StratumModelTest : BaseStratumModelTest() {
+  @Test
+  fun `stratum payload includes baseline plot counts`() {
+    val model =
+        PlantingSiteBuilder.existingSite {
+              stratum(baselineNumPermanent = 7, baselineNumTemporary = 3)
+            }
+            .strata
+            .single()
+    val counts =
+        StratumResponsePayload(model).plotCounts.single {
+          it.observationType == ObservationType.BaselineSurvey
+        }
+
+    assertEquals(0, counts.numPermanentPlots, "Baseline permanent plots")
+    assertEquals(10, counts.numTemporaryPlots, "Baseline temporary plots")
+  }
+
+  @Test
+  fun `baseline counts default from plant settings and use only temporary plots`() {
+    val model =
+        StratumModel.create(
+            boundary = Turtle(siteOrigin).makeMultiPolygon { square(100) },
+            name = "Baseline",
+            plantNumPermanentPlots = 5,
+            plantNumTemporaryPlots = 3,
+            plantErrorMargin = BigDecimal(12),
+            substrata = emptyList(),
+        )
+
+    assertEquals(model.plantPlotCounts.temporaryOnly(), model.baselinePlotCounts)
+    assertEquals(model.baselinePlotCounts, model.plotCounts(ObservationType.BaselineSurvey))
+    assertEquals(model.baselinePlotCounts, model.toNew().baselinePlotCounts)
+  }
+
+  @Test
+  fun `baseline counts calculated from formula fold permanent plots into temporary plots`() {
+    val model =
+        StratumModel.create(
+            boundary = Turtle(siteOrigin).makeMultiPolygon { square(100) },
+            name = "Baseline",
+            substrata = emptyList(),
+        )
+
+    assertEquals(
+        StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 24),
+        model.baselinePlotCounts,
+    )
+    assertEquals(18, model.maxPermanentPlots, "Maximum permanent plots")
+    assertEquals(6, model.maxTemporaryPlots, "Maximum temporary plots")
+  }
+
+  @Test
+  fun `normalizing empty baseline counts keeps both counts zero`() {
+    val counts = StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0)
+    assertEquals(counts, counts.temporaryOnly())
+  }
+
   @Nested
   inner class PlacePermanentPlots {
     @Test

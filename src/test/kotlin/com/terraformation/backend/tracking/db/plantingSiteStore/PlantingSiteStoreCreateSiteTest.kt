@@ -144,6 +144,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               strata =
                   listOf(
                       StratumModel.create(
+                          baselineErrorMargin = BigDecimal(31),
+                          baselineNumPermanentPlots = 32,
+                          baselineNumTemporaryPlots = 33,
+                          baselineStudentsT = BigDecimal(34),
+                          baselineVariance = BigDecimal(35),
                           biomassErrorMargin = BigDecimal(21),
                           biomassNumPermanentPlots = 22,
                           biomassNumTemporaryPlots = 23,
@@ -242,6 +247,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertSetEquals(
           setOf(
               commonStrataRow.copy(
+                  baselineErrorMargin = BigDecimal(31),
+                  baselineNumPermanentPlots = 0,
+                  baselineNumTemporaryPlots = 65,
+                  baselineStudentsT = BigDecimal(34),
+                  baselineVariance = BigDecimal(35),
                   biomassErrorMargin = BigDecimal(21),
                   biomassNumPermanentPlots = 22,
                   biomassNumTemporaryPlots = 23,
@@ -259,6 +269,13 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   targetPlantDensity = BigDecimal(8),
               ),
               commonStrataRow.copy(
+                  baselineErrorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
+                  baselineNumPermanentPlots = 0,
+                  baselineNumTemporaryPlots =
+                      StratumModel.DEFAULT_NUM_PERMANENT_PLOTS +
+                          StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+                  baselineStudentsT = StratumModel.DEFAULT_STUDENTS_T,
+                  baselineVariance = StratumModel.DEFAULT_VARIANCE,
                   biomassErrorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
                   biomassNumPermanentPlots = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
                   biomassNumTemporaryPlots = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,

@@ -685,6 +685,11 @@ COMMENT ON TABLE tracking.stratum_species_targets IS 'Which species are intended
 COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum''s planting site.';
 
 COMMENT ON TABLE tracking.strata IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.';
+COMMENT ON COLUMN tracking.strata.baseline_error_margin IS 'Error margin for the baseline survey plot count statistical formula.';
+COMMENT ON COLUMN tracking.strata.baseline_num_permanent_plots IS 'Always zero; baseline surveys use temporary plots only.';
+COMMENT ON COLUMN tracking.strata.baseline_num_temporary_plots IS 'Number of temporary plots to assign to the next baseline survey. Includes any permanent plots from the statistical formula.';
+COMMENT ON COLUMN tracking.strata.baseline_students_t IS 'Student''s t value for the baseline survey plot count statistical formula.';
+COMMENT ON COLUMN tracking.strata.baseline_variance IS 'Variance for the baseline survey plot count statistical formula.';
 COMMENT ON COLUMN tracking.strata.biomass_num_permanent_plots IS 'Number of permanent plots to assign to the next biomass monitoring observation. This is typically derived from a statistical formula.';
 COMMENT ON COLUMN tracking.strata.boundary IS 'Boundary of the stratum. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a stratum has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.strata.boundary_modified_by IS 'Which user most recently edited the stratum''s boundary.';
@@ -728,6 +733,8 @@ COMMENT ON COLUMN tracking.recorded_trees.trunk_number IS 'A unique incremental 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 
 COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
+
+COMMENT ON CONSTRAINT baseline_permanent_plots_zero ON tracking.strata IS 'Baseline surveys use temporary plots only.';
 
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 

@@ -11,12 +11,31 @@ import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.n
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 class PlantingSiteEditCalculatorTest {
+  @Test
+  fun `detects baseline count changes without adding permanent plots`() {
+    val existing = existingSite { stratum(plantNumPermanent = 1) { substratum { permanent() } } }
+    val desired =
+        existing.copy(
+            strata =
+                existing.strata.map {
+                  it.copy(baselinePlotCounts = it.baselinePlotCounts.copy(numTemporaryPlots = 50))
+                }
+        )
+
+    val edit = calculateSiteEdit(existing, desired).stratumEdits.single()
+
+    assertEquals(desired.strata.single(), edit.desiredModel)
+    assertFalse(edit.isNoOp(), "Baseline count change is not a no-op")
+    assertEquals(emptyList<MonitoringPlotEdit.Create>(), edit.monitoringPlotEdits)
+  }
+
   @Test
   fun `returns create edits for newly added stratum and substratum`() {
     val existing =

@@ -957,6 +957,7 @@ class PlantingSiteStore(
         }
       }
       is StratumEdit.Update -> {
+        val baselinePlotCounts = edit.desiredModel.baselinePlotCounts.temporaryOnly()
         with(STRATA) {
           val boundaryChanged =
               !edit.existingModel.boundary.equalsOrBothNull(edit.desiredModel.boundary)
@@ -964,6 +965,17 @@ class PlantingSiteStore(
               dslContext
                   .update(STRATA)
                   .set(AREA_HA, edit.desiredModel.areaHa)
+                  .set(BASELINE_ERROR_MARGIN, baselinePlotCounts.errorMargin)
+                  .set(
+                      BASELINE_NUM_PERMANENT_PLOTS,
+                      baselinePlotCounts.numPermanentPlots,
+                  )
+                  .set(
+                      BASELINE_NUM_TEMPORARY_PLOTS,
+                      baselinePlotCounts.numTemporaryPlots,
+                  )
+                  .set(BASELINE_STUDENTS_T, baselinePlotCounts.studentsT)
+                  .set(BASELINE_VARIANCE, baselinePlotCounts.variance)
                   .set(BIOMASS_ERROR_MARGIN, edit.desiredModel.biomassPlotCounts.errorMargin)
                   .set(
                       BIOMASS_NUM_PERMANENT_PLOTS,
@@ -1236,12 +1248,24 @@ class PlantingSiteStore(
     requirePermissions { updateStratum(stratumId) }
 
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
-    val edited = editFunc(initial)
+    val edited =
+        editFunc(initial).let {
+          it.copy(
+              baselineNumPermanentPlots = 0,
+              baselineNumTemporaryPlots =
+                  it.baselineNumPermanentPlots!! + it.baselineNumTemporaryPlots!!,
+          )
+        }
 
     entityLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
       with(STRATA) {
         dslContext
             .update(STRATA)
+            .set(BASELINE_ERROR_MARGIN, edited.baselineErrorMargin)
+            .set(BASELINE_NUM_PERMANENT_PLOTS, edited.baselineNumPermanentPlots)
+            .set(BASELINE_NUM_TEMPORARY_PLOTS, edited.baselineNumTemporaryPlots)
+            .set(BASELINE_STUDENTS_T, edited.baselineStudentsT)
+            .set(BASELINE_VARIANCE, edited.baselineVariance)
             .set(BIOMASS_ERROR_MARGIN, edited.biomassErrorMargin)
             .set(BIOMASS_NUM_PERMANENT_PLOTS, edited.biomassNumPermanentPlots)
             .set(BIOMASS_NUM_TEMPORARY_PLOTS, edited.biomassNumTemporaryPlots)
@@ -1380,9 +1404,15 @@ class PlantingSiteStore(
   ): StratumId {
     val userId = currentUser().userId
 
+    val baselinePlotCounts = stratum.baselinePlotCounts.temporaryOnly()
     val strataRow =
         StrataRow(
             areaHa = stratum.areaHa,
+            baselineErrorMargin = baselinePlotCounts.errorMargin,
+            baselineNumPermanentPlots = baselinePlotCounts.numPermanentPlots,
+            baselineNumTemporaryPlots = baselinePlotCounts.numTemporaryPlots,
+            baselineStudentsT = baselinePlotCounts.studentsT,
+            baselineVariance = baselinePlotCounts.variance,
             biomassErrorMargin = stratum.biomassPlotCounts.errorMargin,
             biomassNumPermanentPlots = stratum.biomassPlotCounts.numPermanentPlots,
             biomassNumTemporaryPlots = stratum.biomassPlotCounts.numTemporaryPlots,
@@ -2269,6 +2299,11 @@ class PlantingSiteStore(
     return DSL.multiset(
             DSL.select(
                     STRATA.AREA_HA,
+                    STRATA.BASELINE_ERROR_MARGIN,
+                    STRATA.BASELINE_NUM_PERMANENT_PLOTS,
+                    STRATA.BASELINE_NUM_TEMPORARY_PLOTS,
+                    STRATA.BASELINE_STUDENTS_T,
+                    STRATA.BASELINE_VARIANCE,
                     STRATA.BIOMASS_ERROR_MARGIN,
                     STRATA.BIOMASS_NUM_PERMANENT_PLOTS,
                     STRATA.BIOMASS_NUM_TEMPORARY_PLOTS,
@@ -2303,6 +2338,14 @@ class PlantingSiteStore(
           result.map { record: Record ->
             ExistingStratumModel(
                 areaHa = record[STRATA.AREA_HA]!!,
+                baselinePlotCounts =
+                    StratumPlotCounts(
+                        errorMargin = record[STRATA.BASELINE_ERROR_MARGIN]!!,
+                        numPermanentPlots = record[STRATA.BASELINE_NUM_PERMANENT_PLOTS]!!,
+                        numTemporaryPlots = record[STRATA.BASELINE_NUM_TEMPORARY_PLOTS]!!,
+                        studentsT = record[STRATA.BASELINE_STUDENTS_T]!!,
+                        variance = record[STRATA.BASELINE_VARIANCE]!!,
+                    ),
                 biomassPlotCounts =
                     StratumPlotCounts(
                         errorMargin = record[STRATA.BIOMASS_ERROR_MARGIN]!!,

@@ -145,6 +145,8 @@ private constructor(
       name: String = "S$currentStratumId",
       plantNumPermanent: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
       plantNumTemporary: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      baselineNumPermanent: Int = plantNumPermanent,
+      baselineNumTemporary: Int = plantNumTemporary,
       biomassNumPermanent: Int = plantNumPermanent,
       biomassNumTemporary: Int = plantNumTemporary,
       stableId: StableId = StableId(name),
@@ -161,6 +163,8 @@ private constructor(
             name = name,
             plantNumPermanentPlots = plantNumPermanent,
             plantNumTemporaryPlots = plantNumTemporary,
+            baselineNumPermanentPlots = baselineNumPermanent,
+            baselineNumTemporaryPlots = baselineNumTemporary,
             biomassNumPermanentPlots = biomassNumPermanent,
             biomassNumTemporaryPlots = biomassNumTemporary,
             stableId = stableId,
@@ -211,6 +215,8 @@ private constructor(
       private val name: String,
       private val plantNumPermanentPlots: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
       private val plantNumTemporaryPlots: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      private val baselineNumPermanentPlots: Int = plantNumPermanentPlots,
+      private val baselineNumTemporaryPlots: Int = plantNumTemporaryPlots,
       private val biomassNumPermanentPlots: Int = plantNumPermanentPlots,
       private val biomassNumTemporaryPlots: Int = plantNumTemporaryPlots,
       private val stableId: StableId = StableId(name),
@@ -228,6 +234,15 @@ private constructor(
     fun build(): ExistingStratumModel {
       return ExistingStratumModel(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
+          baselinePlotCounts =
+              StratumPlotCounts(
+                      errorMargin = plantErrorMargin,
+                      numPermanentPlots = baselineNumPermanentPlots,
+                      numTemporaryPlots = baselineNumTemporaryPlots,
+                      studentsT = plantStudentsT,
+                      variance = plantVariance,
+                  )
+                  .temporaryOnly(),
           biomassPlotCounts =
               StratumPlotCounts(
                   errorMargin = plantErrorMargin,

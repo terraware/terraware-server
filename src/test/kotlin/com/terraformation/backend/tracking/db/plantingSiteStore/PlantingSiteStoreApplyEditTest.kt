@@ -64,6 +64,22 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class ApplyPlantingSiteEdit {
     @Test
+    fun `folds baseline permanent plots into temporary plots on map edit`() {
+      val existing = createSite(newSite())
+      val initial = existing.strata.single()
+      val requested = initial.baselinePlotCounts.copy(numPermanentPlots = 7, numTemporaryPlots = 9)
+      val desired = existing.copy(strata = listOf(initial.copy(baselinePlotCounts = requested)))
+
+      store.applyPlantingSiteEdit(calculateSiteEdit(existing, desired))
+
+      val actual = store.fetchSiteById(existing.id, PlantingSiteDepth.Stratum).strata.single()
+      assertEquals(requested.temporaryOnly(), actual.baselinePlotCounts)
+      assertEquals(initial.plantPlotCounts, actual.plantPlotCounts, "Plant counts")
+      assertEquals(initial.biomassPlotCounts, actual.biomassPlotCounts, "Biomass counts")
+      eventPublisher.assertEventPublished { it is PlantingSiteMapEditedEvent }
+    }
+
+    @Test
     fun `adds map to site that has no map yet`() {
       val desired = newSite()
       val existing =
