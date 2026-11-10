@@ -11,6 +11,7 @@ import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_
 import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_NUM_TEMPORARY_PLOTS
 import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_STUDENTS_T
 import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_VARIANCE
+import com.terraformation.backend.util.bufferMeters
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.differenceNullable
@@ -328,6 +329,7 @@ data class StratumModel<
    * @param permanentPlotIds If non-null, the exact set of plots to treat as permanent instead of
    *   the plots that are permanent for either observation type (permanent indexes up to
    *   [maxPermanentPlots]).
+   * @param minSpacingMeters Minimum edge-to-edge gap from permanent plots and other new squares.
    * @return List of unused squares. If there is not enough room for the requested number of
    *   squares, this may be shorter than [count] elements; if there's no room for even a single
    *   square, the list will be empty.
@@ -342,6 +344,7 @@ data class StratumModel<
       searchBoundary: MultiPolygon = this.boundary,
       permanentPlotIds: Set<MonitoringPlotId>? = null,
       predicate: (Polygon) -> Boolean = { true },
+      minSpacingMeters: Double = 0.0,
   ): List<Polygon> {
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
@@ -350,6 +353,7 @@ data class StratumModel<
             excludeAllPermanentPlots,
             excludePlotIds,
             permanentPlotIds,
+            minSpacingMeters,
         )
     if (exclusion != null) {
       exclusionWithAllocatedSquares =
@@ -373,8 +377,7 @@ data class StratumModel<
         }
 
         if (squareNumber < count) {
-          // Prevent this square from being selected again by excluding an area in the middle of it.
-          val additionalExclusion = middleTriangle(square)
+          val additionalExclusion = squareExclusion(square, minSpacingMeters)
 
           val newCombinedExclusion =
               exclusionWithAllocatedSquares?.union(additionalExclusion) ?: additionalExclusion
@@ -498,6 +501,7 @@ data class StratumModel<
       includeAll: Boolean = false,
       excludePlotIds: Set<MonitoringPlotId>,
       permanentPlotIds: Set<MonitoringPlotId>? = null,
+      minSpacingMeters: Double = 0.0,
   ): MultiPolygon? {
     val relevantPlots =
         substrata
@@ -513,11 +517,29 @@ data class StratumModel<
     }
 
     return relevantPlots
-        .map { it.boundary }
-        .map { middleTriangle(it) }
+        .map { plot ->
+          squareExclusion(
+              plot.boundary,
+              if (isPermanent(plot, permanentPlotIds, includeAll)) minSpacingMeters else 0.0,
+          )
+        }
         .reduce { acc: Geometry, polygon: Geometry -> acc.union(polygon) }
         .toMultiPolygon()
   }
+
+  /**
+   * Returns the area to exclude from searches so that new squares don't overlap a square or, if
+   * [minSpacingMeters] is positive, come within that distance of it. With spacing, this is the
+   * square expanded outward by the spacing, with rounded corners; without spacing, it is a small
+   * triangle in the middle of the square.
+   */
+  private fun squareExclusion(square: Polygon, minSpacingMeters: Double): Geometry =
+      if (minSpacingMeters > 0.0) {
+        // Leave room for rounding when a grid square is exactly at the requested distance.
+        square.bufferMeters((minSpacingMeters - 0.01).coerceAtLeast(0.0))
+      } else {
+        middleTriangle(square)
+      }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is AnyStratumModel &&

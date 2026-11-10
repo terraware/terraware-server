@@ -414,6 +414,27 @@ fun Geometry.projectTo(targetSrid: Int): Geometry {
   return transformed
 }
 
+/** Expands a geometry in meters using a local azimuthal equidistant projection. */
+fun Geometry.bufferMeters(distanceMeters: Double): Geometry {
+  val center = centroid.also { it.srid = srid }.projectTo(SRID.LONG_LAT).coordinate
+  val sourceCrs = CRS.decode("EPSG:$srid", true)
+  val localCrs =
+      CRS.parseWKT(
+          """
+          PROJCS["Local equidistant",
+            GEOGCS["WGS 84", DATUM["WGS_1984", SPHEROID["WGS 84",6378137,298.257223563]],
+              PRIMEM["Greenwich",0], UNIT["degree",0.0174532925199433]],
+            PROJECTION["Azimuthal_Equidistant"],
+            PARAMETER["latitude_of_center",${center.y}],
+            PARAMETER["longitude_of_center",${center.x}], UNIT["metre",1]]
+          """
+              .trimIndent()
+      )
+  val projected = JTS.transform(this, CRS.findMathTransform(sourceCrs, localCrs))
+  val buffered = projected.buffer(distanceMeters)
+  return JTS.transform(buffered, CRS.findMathTransform(localCrs, sourceCrs)).also { it.srid = srid }
+}
+
 /**
  * Applies this `Optional` as a replacement for an existing value.
  *
