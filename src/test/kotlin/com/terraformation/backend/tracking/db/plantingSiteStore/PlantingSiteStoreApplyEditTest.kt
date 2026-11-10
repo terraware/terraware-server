@@ -73,7 +73,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       store.applyPlantingSiteEdit(calculateSiteEdit(existing, desired))
 
       val actual = store.fetchSiteById(existing.id, PlantingSiteDepth.Stratum).strata.single()
-      assertEquals(requested.temporaryOnly(), actual.baselinePlotCounts)
+      assertEquals(
+          requested.copy(numPermanentPlots = 0, numTemporaryPlots = 16),
+          actual.baselinePlotCounts,
+      )
       assertEquals(initial.plantPlotCounts, actual.plantPlotCounts, "Plant counts")
       assertEquals(initial.biomassPlotCounts, actual.biomassPlotCounts, "Biomass counts")
       eventPublisher.assertEventPublished { it is PlantingSiteMapEditedEvent }

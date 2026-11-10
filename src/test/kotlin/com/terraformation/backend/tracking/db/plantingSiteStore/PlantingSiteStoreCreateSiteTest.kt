@@ -248,7 +248,6 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           setOf(
               commonStrataRow.copy(
                   baselineErrorMargin = BigDecimal(31),
-                  baselineNumPermanentPlots = 0,
                   baselineNumTemporaryPlots = 65,
                   baselineStudentsT = BigDecimal(34),
                   baselineVariance = BigDecimal(35),
@@ -270,7 +269,6 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
               commonStrataRow.copy(
                   baselineErrorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
-                  baselineNumPermanentPlots = 0,
                   baselineNumTemporaryPlots =
                       StratumModel.DEFAULT_NUM_PERMANENT_PLOTS +
                           StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
