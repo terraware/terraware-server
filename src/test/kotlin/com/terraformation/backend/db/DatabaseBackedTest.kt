@@ -2983,7 +2983,6 @@ abstract class DatabaseBackedTest {
       plantStudentsT: BigDecimal = StratumModel.DEFAULT_STUDENTS_T,
       plantVariance: BigDecimal = StratumModel.DEFAULT_VARIANCE,
       baselineErrorMargin: BigDecimal = plantErrorMargin,
-      baselineNumPermanentPlots: Int = 0,
       baselineNumTemporaryPlots: Int = plantNumPermanentPlots + plantNumTemporaryPlots,
       baselineStudentsT: BigDecimal = plantStudentsT,
       baselineVariance: BigDecimal = plantVariance,
@@ -3002,7 +3001,6 @@ abstract class DatabaseBackedTest {
         StrataRow(
             areaHa = areaHa,
             baselineErrorMargin = baselineErrorMargin,
-            baselineNumPermanentPlots = baselineNumPermanentPlots,
             baselineNumTemporaryPlots = baselineNumTemporaryPlots,
             baselineStudentsT = baselineStudentsT,
             baselineVariance = baselineVariance,

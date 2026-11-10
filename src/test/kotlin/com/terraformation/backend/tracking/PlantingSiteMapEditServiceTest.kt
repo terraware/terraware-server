@@ -288,7 +288,6 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
                         boundaryModifiedTime = editTime,
                         stableId = StableId("Deleted-2"),
                         baselineErrorMargin = BigDecimal(10),
-                        baselineNumPermanentPlots = 0,
                         baselineNumTemporaryPlots = 24,
                         baselineStudentsT = BigDecimal("1.645"),
                         baselineVariance = BigDecimal(850),

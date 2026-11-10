@@ -117,6 +117,38 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val strataRow = strataDao.findAll().first()
       assertEquals(expectedPermanent, strataRow.plantNumPermanentPlots, "Permanent plots")
       assertEquals(expectedTemporary, strataRow.plantNumTemporaryPlots, "Temporary plots")
+      assertEquals(
+          expectedPermanent + expectedTemporary,
+          strataRow.baselineNumTemporaryPlots,
+          "Baseline temporary plots",
+      )
+    }
+
+    @CsvSource("15,4,19", "15,,15", ",4,4", ",0,0", ",,42")
+    @ParameterizedTest
+    fun `baseline plots use total explicit counts or calculated defaults`(
+        permanent: Int?,
+        temporary: Int?,
+        expected: Int,
+    ) {
+      val gen = ShapefileGenerator()
+      val feature =
+          gen.substratumFeature(
+              gen.multiRectangle(0 to 0, 100 to 100),
+              errorMargin = BigDecimal(70),
+              studentsT = BigDecimal("1.7"),
+              variance = BigDecimal(70000),
+              permanentPlots = permanent,
+              temporaryPlots = temporary,
+          )
+
+      val shapefiles = listOf(Shapefile(listOf(feature)))
+      val site = importer.shapefilesToModel(shapefiles, "site", null, organizationId)
+      importer.import("site", null, organizationId, shapefiles)
+
+      assertEquals(expected, strataDao.findAll().single().baselineNumTemporaryPlots)
+      assertEquals(0, site.strata.single().baselinePlotCounts.numPermanentPlots)
+      assertEquals(expected, site.strata.single().baselinePlotCounts.numTemporaryPlots)
     }
 
     @Test
@@ -169,7 +201,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
       val strataRow = strataDao.findAll().first()
-      assertEquals(0, strataRow.baselineNumPermanentPlots, "Baseline permanent plots")
       assertEquals(19, strataRow.baselineNumTemporaryPlots, "Baseline temporary plots")
       assertEquals(
           strataRow.plantErrorMargin,
