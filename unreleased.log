@@ -1,3 +1,6 @@
+bbd2b9c2 SW-9229 Place permanent plots for all map edit regions together (#5381)
+6238004d SW-9229 Space new permanent plots 200m or 100m apart (#5380)
+b6c33a61 SW-9229 Add spacing option to plot square search (#5379)
 3e98de8c Fetch PR base branch before pipeline upload (#5378)
 6e6335c0 Update dependencies (#5377)
 6ad242a2 SW-9218 Add endpoint to update project location (#5375)
