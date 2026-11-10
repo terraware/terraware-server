@@ -13,3 +13,6 @@ const val MONITORING_PLOT_SIZE: Double = 30.0
 
 /** Monitoring plot width and height in meters. */
 const val MONITORING_PLOT_SIZE_INT = MONITORING_PLOT_SIZE.toInt()
+
+/** Minimum edge-to-edge gaps to try, in order, when placing new permanent monitoring plots. */
+val PERMANENT_PLOT_SPACING_METERS = listOf(200.0, 100.0, 0.0)

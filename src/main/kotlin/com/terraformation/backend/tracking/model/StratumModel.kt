@@ -30,6 +30,17 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
+data class PermanentPlotPlacementRequest(
+    val searchBoundary: MultiPolygon,
+    val permanentIndexes: List<Int>,
+)
+
+data class PermanentPlotPlacement(
+    /** Boundaries of the placed plots, each paired with the permanent index it was placed for. */
+    val plots: List<Pair<Polygon, Int>>,
+    val spacingMeters: Double,
+)
+
 data class StratumPlotCounts(
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
     val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
@@ -292,6 +303,56 @@ data class StratumModel<
       plot.permanentIndex != null -> includeAllIndexes || plot.permanentIndex <= maxPermanentPlots
       else -> false
     }
+  }
+
+  /**
+   * Chooses locations for new permanent plots with the requested permanent indexes, trying each of
+   * [PERMANENT_PLOT_SPACING_METERS] in order. Each spacing level is an independent attempt to place
+   * all the requested plots, without keeping plots from earlier attempts. If no level fits all of
+   * them, returns the level that placed the most plots, preferring higher spacing on ties.
+   */
+  fun placePermanentPlots(
+      gridOrigin: Point,
+      exclusion: MultiPolygon?,
+      requests: List<PermanentPlotPlacementRequest>,
+      excludePlotIds: Set<MonitoringPlotId> = emptySet(),
+  ): PermanentPlotPlacement {
+    val requestedCount = requests.sumOf { it.permanentIndexes.size }
+    var best: PermanentPlotPlacement? = null
+
+    for (spacing in PERMANENT_PLOT_SPACING_METERS) {
+      var allocatedExclusion = exclusion
+      val plots = mutableListOf<Pair<Polygon, Int>>()
+      requests.forEach { request ->
+        val squares =
+            findUnusedSquares(
+                count = request.permanentIndexes.size,
+                excludeAllPermanentPlots = true,
+                excludePlotIds = excludePlotIds,
+                exclusion = allocatedExclusion,
+                gridOrigin = gridOrigin,
+                minSpacingMeters = spacing,
+                searchBoundary = request.searchBoundary,
+            )
+        plots.addAll(squares.zip(request.permanentIndexes))
+        squares.forEach { square ->
+          val additionalExclusion = squareExclusion(square, spacing)
+          allocatedExclusion =
+              (allocatedExclusion?.union(additionalExclusion) ?: additionalExclusion)
+                  .toMultiPolygon()
+        }
+      }
+
+      val placement = PermanentPlotPlacement(plots, spacing)
+      if (plots.size == requestedCount) {
+        return placement
+      }
+      if (best == null || plots.size > best.plots.size) {
+        best = placement
+      }
+    }
+
+    return best!!
   }
 
   /**
