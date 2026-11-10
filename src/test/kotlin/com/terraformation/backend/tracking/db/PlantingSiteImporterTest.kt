@@ -124,7 +124,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       )
     }
 
-    @CsvSource("15,4,19", "15,,15", ",4,4", ",0,0", ",,42")
+    @CsvSource("15,4,19", "5,,15", "15,,25", ",4,36", ",0,32", ",,42")
     @ParameterizedTest
     fun `baseline plots use total explicit counts or calculated defaults`(
         permanent: Int?,

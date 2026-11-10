@@ -29,7 +29,7 @@ class StratumModelTest : BaseStratumModelTest() {
   fun `stratum payload includes baseline plot counts`() {
     val model =
         PlantingSiteBuilder.existingSite {
-              stratum(baselineNumPermanent = 7, baselineNumTemporary = 3)
+              stratum(baselineNumTemporary = 10)
             }
             .strata
             .single()
@@ -43,7 +43,7 @@ class StratumModelTest : BaseStratumModelTest() {
   }
 
   @Test
-  fun `baseline counts default from plant settings and use only temporary plots`() {
+  fun `baseline counts default from plant statistical settings and use only temporary plots`() {
     val model =
         StratumModel.create(
             boundary = Turtle(siteOrigin).makeMultiPolygon { square(100) },
@@ -55,7 +55,7 @@ class StratumModelTest : BaseStratumModelTest() {
         )
 
     assertEquals(
-        model.plantPlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = 8),
+        model.plantPlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = 16),
         model.baselinePlotCounts,
     )
     assertEquals(model.baselinePlotCounts, model.plotCounts(ObservationType.BaselineSurvey))
@@ -85,7 +85,6 @@ class StratumModelTest : BaseStratumModelTest() {
         StratumModel.create(
             boundary = Turtle(siteOrigin).makeMultiPolygon { square(100) },
             name = "Baseline",
-            baselineNumPermanentPlots = 0,
             baselineNumTemporaryPlots = 0,
             substrata = emptyList(),
         )

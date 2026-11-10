@@ -145,8 +145,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   listOf(
                       StratumModel.create(
                           baselineErrorMargin = BigDecimal(31),
-                          baselineNumPermanentPlots = 32,
-                          baselineNumTemporaryPlots = 33,
+                          baselineNumTemporaryPlots = 65,
                           baselineStudentsT = BigDecimal(34),
                           baselineVariance = BigDecimal(35),
                           biomassErrorMargin = BigDecimal(21),
