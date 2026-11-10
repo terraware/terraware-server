@@ -78,7 +78,7 @@
 
                     const recalculatePermanentPlots = () => {
                         const defaultTotalPlots = calculateDefaultTotalPlots();
-                        const permanentPlots = Math.round(defaultTotalPlots * 0.75);
+                        const permanentPlots = prefix === 'baseline' ? 0 : Math.round(defaultTotalPlots * 0.75);
 
                         permanentPlotsField.value = `${permanentPlots}`;
 
@@ -92,6 +92,7 @@
                     temporaryPlotsField.addEventListener('change', recalculateTotalPlots);
                 }
 
+                registerCalculator('baseline');
                 registerCalculator('biomass');
                 registerCalculator('plant');
             }
@@ -271,7 +272,7 @@
                             123
                         </span>
                     </td>
-                    <td style="padding-left: 8px;" rowspan="2">
+                    <td style="padding-left: 8px;" rowspan="3">
                         <form method="POST" action="/admin/updateStratum"
                               th:id="|stratum-${stratum.id}|">
                             <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
@@ -316,6 +317,41 @@
                               th:text="${stratum.plantPlotCounts.numPermanentPlots + stratum.plantPlotCounts.numTemporaryPlots}">
                             123
                         </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="4"></td>
+                    <td>Baseline Survey</td>
+                    <td>
+                        <input type="number" required min="0.001" step="0.001" name="baselineVariance" size="8"
+                               th:id="|baselineVariance-${stratum.id}|"
+                               th:value="${stratum.baselinePlotCounts.variance}" th:form="|stratum-${stratum.id}|"/>
+                    </td>
+                    <td>
+                        <input type="number" required min="0.001" step="0.001" name="baselineErrorMargin"
+                               th:id="|baselineErrorMargin-${stratum.id}|"
+                               th:value="${stratum.baselinePlotCounts.errorMargin}" th:form="|stratum-${stratum.id}|"/>
+                    </td>
+                    <td>
+                        <input type="number" required min="0.001" step="0.001" name="baselineStudentsT"
+                               th:id="|baselineStudentsT-${stratum.id}|"
+                               th:value="${stratum.baselinePlotCounts.studentsT}" th:form="|stratum-${stratum.id}|"/>
+                    </td>
+                    <td>
+                        <input type="number" disabled name="baselineNumPermanent" value="0"
+                               th:id="|baselineNumPermanent-${stratum.id}|"
+                               th:form="|stratum-${stratum.id}|"/>
+                    </td>
+                    <td>
+                        <input type="number" required min="0" name="baselineNumTemporary"
+                               th:id="|baselineNumTemporary-${stratum.id}|"
+                               th:value="${stratum.baselinePlotCounts.numTemporaryPlots}"
+                               th:form="|stratum-${stratum.id}|"/>
+                    </td>
+                    <td>
+                        <span th:id="|baselineTotalPlots-${stratum.id}|"
+                              th:text="${stratum.baselinePlotCounts.numTemporaryPlots}">123</span>
                     </td>
                 </tr>
 
@@ -407,7 +443,7 @@
 
     <h3>Observations</h3>
 
-    <table border="1">
+    <table id="observations" border="1">
         <tr>
             <th>ID</th>
             <th>Type</th>
@@ -426,7 +462,7 @@
 
         <tr th:each="observation : ${observations}">
             <td th:text="${observation.id}">1</td>
-            <td th:text="|${observation.observationType == T(com.terraformation.backend.db.tracking.ObservationType).Monitoring ? 'Plant' : 'Biomass'}|">Plant Monitoring</td>
+            <td th:text="${observation.observationType == T(com.terraformation.backend.db.tracking.ObservationType).Monitoring ? 'Plant' : (observation.observationType == T(com.terraformation.backend.db.tracking.ObservationType).BaselineSurvey ? 'Baseline' : 'Biomass')}">Plant Monitoring</td>
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
             <td>
