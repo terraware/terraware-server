@@ -2874,9 +2874,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       eventPublisher.assertEventNotPublished<ObservationCompletedEvent>()
     }
 
-    @Test
-    fun `rejects plants for baseline plots with biomass details`() {
-      val (observationId, plotIds) = insertObservationWithPlots(ObservationType.BaselineSurvey)
+    @ParameterizedTest
+    @EnumSource(ObservationType::class, names = ["Monitoring"], mode = EnumSource.Mode.EXCLUDE)
+    fun `rejects plants for non-monitoring plots with biomass details`(type: ObservationType) {
+      val (observationId, plotIds) = insertObservationWithPlots(type)
 
       assertThrows<IllegalArgumentException> {
         service.completePlot(
@@ -3075,7 +3076,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           }
 
       assertEquals(
-          "Biomass observations must not contain plants",
+          "Only Monitoring observations may contain recorded plants",
           plantsForBiomassException.message,
       )
 

@@ -885,14 +885,15 @@ class ObservationService(
       biomassDetails: NewBiomassDetailsModel?,
       plants: Collection<RecordedPlantsRow>?,
   ) {
+    if (!plants.isNullOrEmpty() && observationType != ObservationType.Monitoring) {
+      throw IllegalArgumentException("Only Monitoring observations may contain recorded plants")
+    }
+
     when (observationType) {
       ObservationType.BaselineSurvey,
       ObservationType.BiomassMeasurements -> {
         if (biomassDetails == null) {
           throw IllegalArgumentException("Biomass observations must contain biomass details")
-        }
-        if (!plants.isNullOrEmpty()) {
-          throw IllegalArgumentException("Biomass observations must not contain plants")
         }
       }
       ObservationType.Monitoring -> {
