@@ -1508,6 +1508,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class ScheduleObservation {
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `rejects baseline surveys regardless of skip validation`(skipValidation: Boolean) {
+      assertThrows<IllegalArgumentException> {
+        service.scheduleObservation(
+            newObservationModel(plantingSiteId = inserted.plantingSiteId)
+                .copy(observationType = ObservationType.BaselineSurvey),
+            skipValidation = skipValidation,
+        )
+      }
+
+      assertTableEmpty(OBSERVATIONS)
+      eventPublisher.assertEventNotPublished<ObservationScheduledEvent>()
+    }
+
     @Test
     fun `throws access denied exception scheduling an observation if no permission to schedule observation`() {
       insertOrganizationUser(role = Role.Manager)
@@ -3138,6 +3153,31 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class CompleteAdHocObservation {
+    @Test
+    fun `rejects baseline surveys`() {
+      assertThrows<IllegalArgumentException> {
+        service.completeAdHocObservation(
+            biomassDetails =
+                NewBiomassDetailsModel(
+                    description = "Baseline details",
+                    forestType = BiomassForestType.Terrestrial,
+                    herbaceousCoverPercent = 0,
+                    observationId = null,
+                    smallTreeCountRange = 0 to 0,
+                    soilAssessment = "Soil assessment",
+                    plotId = null,
+                ),
+            observedTime = clock.instant,
+            observationType = ObservationType.BaselineSurvey,
+            plantingSiteId = inserted.plantingSiteId,
+            swCorner = point(1),
+        )
+      }
+
+      assertTableEmpty(OBSERVATIONS)
+      eventPublisher.assertEventNotPublished<ObservationCompletedEvent>()
+    }
+
     @BeforeEach
     fun setUp() {
       insertOrganizationUser(role = Role.Contributor)

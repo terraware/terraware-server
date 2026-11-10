@@ -708,5 +708,6 @@ class WelcomeToTerraware(
 private fun observationStringsPrefix(basePrefix: String, observationType: ObservationType) =
     when (observationType) {
       ObservationType.Monitoring -> basePrefix
+      ObservationType.BaselineSurvey,
       ObservationType.BiomassMeasurements -> "$basePrefix.biomass"
     }

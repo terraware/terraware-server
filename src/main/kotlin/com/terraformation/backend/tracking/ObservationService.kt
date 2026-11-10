@@ -446,6 +446,10 @@ class ObservationService(
   ): ObservationId {
     requirePermissions { scheduleObservation(observation.plantingSiteId) }
 
+    if (observation.observationType == ObservationType.BaselineSurvey) {
+      throw IllegalArgumentException("Baseline surveys cannot be scheduled")
+    }
+
     if (!skipValidation) {
       validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
 
@@ -548,6 +552,7 @@ class ObservationService(
     entityLocker.withLockedObservation(observationId) { observation ->
       @Suppress("DEPRECATION")
       when (observation.observationType) {
+        ObservationType.BaselineSurvey,
         ObservationType.BiomassMeasurements ->
             biomassStore.mergeOtherSpecies(observationId, otherSpeciesName, speciesId)
         ObservationType.Monitoring ->
@@ -821,6 +826,10 @@ class ObservationService(
   ): Pair<ObservationId, MonitoringPlotId> {
     requirePermissions { scheduleAdHocObservation(plantingSiteId) }
 
+    if (observationType == ObservationType.BaselineSurvey) {
+      throw IllegalArgumentException("Baseline surveys cannot be ad hoc")
+    }
+
     if (observedTime.isAfter(clock.instant().plusSeconds(CLOCK_TOLERANCE_SECONDS))) {
       throw IllegalArgumentException("Observed time is in the future")
     }
@@ -877,6 +886,7 @@ class ObservationService(
       plants: Collection<RecordedPlantsRow>?,
   ) {
     when (observationType) {
+      ObservationType.BaselineSurvey,
       ObservationType.BiomassMeasurements -> {
         if (biomassDetails == null) {
           throw IllegalArgumentException("Biomass observations must contain biomass details")
