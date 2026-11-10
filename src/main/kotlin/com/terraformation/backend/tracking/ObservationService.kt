@@ -148,6 +148,32 @@ class ObservationService(
 
         val plantingSite =
             plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
+        val strataToObserve =
+            if (observation.observationType == ObservationType.BaselineSurvey) {
+              plantingSite.strata.filter { stratum ->
+                val counts = stratum.baselinePlotCounts
+                val requested =
+                    stratum.substrata.any { it.id in observation.requestedSubstratumIds }
+                if (requested && counts.numPermanentPlots + counts.numTemporaryPlots == 0) {
+                  log.info("Skipping stratum ${stratum.id} because its baseline plot count is zero")
+                  false
+                } else {
+                  requested
+                }
+              }
+            } else {
+              plantingSite.strata
+            }
+
+        if (
+            observation.observationType == ObservationType.BaselineSurvey &&
+                strataToObserve.isEmpty()
+        ) {
+          log.info("Unable to start baseline observation because no plots are configured")
+          abandonUnstartableObservation(observation)
+          return@withLockedObservation
+        }
+
         val gridOrigin =
             plantingSite.gridOrigin
                 ?: throw IllegalStateException("Planting site has no grid origin")
@@ -159,7 +185,7 @@ class ObservationService(
               observationPlotStore.fetchObservedPermanentPlotIds(observation.plantingSiteId)
           val shortfalls = mutableListOf<ObservationPlotsUnderallocatedEvent.Shortfall>()
 
-          plantingSite.strata.forEach { stratum ->
+          strataToObserve.forEach { stratum ->
             log.withMDC("stratumId" to stratum.id) {
               if (stratum.substrata.any { it.id in observation.requestedSubstratumIds }) {
                 val allocation =

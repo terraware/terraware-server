@@ -55,6 +55,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRec
 import com.terraformation.backend.db.tracking.tables.records.ObservationSiteResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
@@ -340,20 +341,63 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `abandons baseline observation with zero temporary plots`() {
-      insertStratum(baselineNumTemporaryPlots = 0)
-      insertSubstratum()
+    fun `baseline skips zero count stratum and starts with other stratum temporary plots`() {
+      insertStratum(name = "North", width = 4, height = 1, baselineNumTemporaryPlots = 4)
+      val northSubstratumId = insertSubstratum(width = 4, height = 1)
+      insertStratum(name = "South", x = 4, width = 4, height = 1, baselineNumTemporaryPlots = 0)
+      val southSubstratumId = insertSubstratum(x = 4, width = 4, height = 1)
       val observationId =
           insertObservation(
               observationType = ObservationType.BaselineSurvey,
               state = ObservationState.Upcoming,
           )
-      insertObservationRequestedSubstratum()
+      insertObservationRequestedSubstratum(substratumId = northSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = southSubstratumId)
+
+      service.startObservation(observationId)
+
+      val started = observationStore.fetchObservationById(observationId)
+      assertEquals(ObservationState.InProgress, started.state, "Observation state")
+      val observationPlots = observationPlotsDao.findAll()
+      assertEquals(4, observationPlots.size, "Assigned plots")
+      observationPlots.forEach {
+        assertEquals(observationId, it.observationId, "Assigned observation")
+        assertEquals(false, it.isPermanent, "Temporary assignment")
+      }
+      val monitoringPlots = monitoringPlotsDao.findAll()
+      assertEquals(4, monitoringPlots.size, "Created plots")
+      monitoringPlots.forEach {
+        assertEquals(northSubstratumId, it.substratumId, "Non-zero stratum's substratum")
+        assertNull(it.permanentIndex, "Temporary plot index")
+      }
+      assertSetEquals(
+          monitoringPlots.map { it.id }.toSet(),
+          observationPlots.map { it.monitoringPlotId }.toSet(),
+          "All created plots belong to the observation",
+      )
+      eventPublisher.assertEventPublished(ObservationStartedEvent(started))
+      eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
+    }
+
+    @Test
+    fun `abandons baseline observation when all requested strata have zero plot counts`() {
+      insertStratum(baselineNumTemporaryPlots = 0)
+      val firstSubstratumId = insertSubstratum()
+      insertStratum(x = 4, baselineNumTemporaryPlots = 0)
+      val secondSubstratumId = insertSubstratum(x = 4)
+      val observationId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum(substratumId = firstSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = secondSubstratumId)
 
       service.startObservation(observationId)
 
       assertTableEmpty(OBSERVATIONS)
       assertTableEmpty(OBSERVATION_PLOTS)
+      assertTableEmpty(MONITORING_PLOTS, "No temporary plots created")
       eventPublisher.assertEventPublished(
           ObservationNotStartedEvent(observationId, ObservationType.BaselineSurvey, plantingSiteId)
       )
