@@ -202,6 +202,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = Instant.EPOCH,
                   number = "12345",
+                  processingNotes = "Notes",
                   remainingQuantity = BigDecimal(100),
                   remainingUnitsId = SeedQuantityUnits.Seeds,
                   speciesId = SpeciesId(1),
@@ -495,7 +496,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       testValidation(
           ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
-              "$california,$us,Description,Collector,$wild,1,ID,\"-13,45\",\"18,5578\"",
+              "$california,$us,Description,Collector,$wild,1,ID,\"Notes\",\"-13,45\",\"18,5578\"",
           UploadStatus.AwaitingProcessing,
           Locales.GIBBERISH,
       )
@@ -504,14 +505,14 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `accepts rows where all columns are blank`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
-      testValidation(",,,,  ,,,,,    ,,,\"  \",,,,,,\n", UploadStatus.AwaitingProcessing)
+      testValidation(",,,,  ,,,,,    ,,,\"  \",,,,,,,\n", UploadStatus.AwaitingProcessing)
     }
 
     @Test
     fun `accepts rows with country codes`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,uS,,,,,,,\n",
+          ",Scientific name,,,,,2022-03-04,,,,,uS,,,,,,,,\n",
           UploadStatus.AwaitingProcessing,
       )
     }
@@ -520,7 +521,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     fun `accepts rows with country names`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,canada,,,,,,,\n",
+          ",Scientific name,,,,,2022-03-04,,,,,canada,,,,,,,,\n",
           UploadStatus.AwaitingProcessing,
       )
     }
@@ -534,7 +535,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 2,
-              message = messages.csvWrongFieldCount(19, 6),
+              message = messages.csvWrongFieldCount(20, 6),
           ),
       )
     }
@@ -542,10 +543,10 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed scientific names`() {
       testValidation(
-          ",,,,,,2022-03-04,,,,,,,,,,,,\n" +
-              ",Name,,,,,2022-03-04,,,,,,,,,,,,\n" +
-              ",A very long name with too many words,,,,,2022-03-04,,,,,,,,,,,,\n" +
-              ",Bad name?,,,,,2022-03-04,,,,,,,,,,,,\n",
+          ",,,,,,2022-03-04,,,,,,,,,,,,,\n" +
+              ",Name,,,,,2022-03-04,,,,,,,,,,,,,\n" +
+              ",A very long name with too many words,,,,,2022-03-04,,,,,,,,,,,,,\n" +
+              ",Bad name?,,,,,2022-03-04,,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.MissingRequiredValue,
@@ -584,12 +585,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed collection dates`() {
       testValidation(
-          ",Scientific name,,,,,,,,,,,,,,,,,\n" +
-              ",Scientific name,,,,,January 6,,,,,,,,,,,,\n" +
-              ",Scientific name,,,,,2022-99-99,,,,,,,,,,,,\n" +
-              ",Scientific name,,,,,2022/03/04,,,,,,,,,,,,\n" +
-              ",Scientific name,,,,,2022-3-4,,,,,,,,,,,,\n" +
-              ",Scientific name,,,,,20220304,,,,,,,,,,,,\n",
+          ",Scientific name,,,,,,,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,January 6,,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,2022-99-99,,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,2022/03/04,,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,2022-3-4,,,,,,,,,,,,,\n" +
+              ",Scientific name,,,,,20220304,,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.MissingRequiredValue,
@@ -644,9 +645,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed statuses`() {
       testValidation(
-          ",Scientific name,,,,Bogus,2022-03-04,,,,,,,,,,,,\n" +
+          ",Scientific name,,,,Bogus,2022-03-04,,,,,,,,,,,,,\n" +
               // Withdrawn is a v1-only state
-              ",Scientific name,,,,Withdrawn,2022-03-04,,,,,,,,,,,,\n",
+              ",Scientific name,,,,Withdrawn,2022-03-04,,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.UnrecognizedValue,
@@ -670,7 +671,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with Used Up status and nonzero quantities`() {
       testValidation(
-          ",Scientific name,,1,Seeds,Used Up,2023-01-01,,,,,,,,,,,,",
+          ",Scientific name,,1,Seeds,Used Up,2023-01-01,,,,,,,,,,,,,",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.MalformedValue,
@@ -684,15 +685,15 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `rejects rows with malformed collection sources`() {
+    fun `rejects rows with malformed plant source types`() {
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,,,,Unknown,,,,\n",
+          ",Scientific name,,,,,2022-03-04,,,,,,,,Unknown,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
               position = 2,
-              field = "Collection Source",
+              field = "Plant Source Type",
               message = messages.accessionCsvCollectionSourceInvalid(),
               value = "Unknown",
           ),
@@ -702,9 +703,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed latitudes`() {
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,xyzzy,1\n" +
-              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,-91,1\n" +
-              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,91,1\n",
+          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,xyzzy,1\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,-91,1\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,91,1\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.MalformedValue,
@@ -736,9 +737,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with malformed longitudes`() {
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,xyzzy\n" +
-              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,-181\n" +
-              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,181\n",
+          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,1,xyzzy\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,1,-181\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,1,181\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.MalformedValue,
@@ -770,8 +771,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with only latitude or only longitude`() {
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,-1\n" +
-              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,\n",
+          ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,,-1\n" +
+              ",Scientific name,,,,,2022-03-04,,,,,,,,,,,,1,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.MissingRequiredValue,
@@ -795,7 +796,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects rows with bogus countries`() {
       testValidation(
-          ",Scientific name,,,,,2022-03-04,,,,,Unknown,,,,,,,\n",
+          ",Scientific name,,,,,2022-03-04,,,,,Unknown,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.UnrecognizedValue,
@@ -813,7 +814,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       insertAccession(number = "123")
 
       testValidation(
-          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,,,\n",
+          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,,,,\n",
           UploadStatus.AwaitingUserAction,
           UploadProblemsRow(
               typeId = UploadProblemType.DuplicateValue,
@@ -829,8 +830,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `rejects duplicate accession numbers in CSV file`() {
       testValidation(
-          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,,,\n" +
-              "123,Other name,,,,,2022-03-05,,,,,,,,,,,,\n",
+          "123,Scientific name,,,,,2022-03-04,,,,,,,,,,,,,\n" +
+              "123,Other name,,,,,2022-03-05,,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
               typeId = UploadProblemType.DuplicateValue,
@@ -960,7 +961,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     fun `uses Seeds as default quantity units if not specified`() {
       val uploadId =
           insertAccessionUpload(
-              ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n",
+              ",Species name,,10,,,2022-03-04,,,,,,,,,,,,,\n",
               UploadStatus.AwaitingProcessing,
           )
 
@@ -977,7 +978,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       val uploadId =
           insertAccessionUpload(
               "123,Species name,New common name,10,Seeds,Processing,2022-03-04,New Site," +
-                  "New Landowner,New City,New State,GB,New Notes,New Collector,Other,2,New ID,5,4\n",
+                  "New Landowner,New City,New State,GB,New Notes,New Collector,Other,2,New ID," +
+                  "New Plant Notes,5,4\n",
               UploadStatus.AwaitingProcessing,
           )
 
@@ -1044,6 +1046,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = Instant.EPOCH,
                   number = "123",
+                  processingNotes = "New Plant Notes",
                   remainingQuantity = BigDecimal.TEN,
                   remainingUnitsId = SeedQuantityUnits.Seeds,
                   speciesId = speciesId,
@@ -1116,7 +1119,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       val speciesId = insertSpecies(scientificName = "New name", initialScientificName = "Old name")
       val uploadId =
           insertAccessionUpload(
-              ",Old name,,,,,2022-03-04,,,,,,,,,,,,\n",
+              ",Old name,,,,,2022-03-04,,,,,,,,,,,,,\n",
               UploadStatus.AwaitingProcessing,
           )
 
@@ -1143,9 +1146,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     fun `ignores empty rows`() {
       val uploadId =
           insertAccessionUpload(
-              ",\" \",, ,,, ,,,,,,,,,,,,\n" +
-                  ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n" +
-                  ",,,,,,,,,,,,,,,,,,\n",
+              ",\" \",, ,,, ,,,,,,,,,,,,,\n" +
+                  ",Species name,,10,,,2022-03-04,,,,,,,,,,,,,\n" +
+                  ",,,,,,,,,,,,,,,,,,,\n",
               UploadStatus.AwaitingProcessing,
           )
 
@@ -1160,8 +1163,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     fun `accepts country codes and names`() {
       val uploadId =
           insertAccessionUpload(
-              ",Species name,,,,,2022-03-04,,,,,uganda,,,,,,,\n" +
-                  ",Species name,,,,,2022-03-04,,,,,gB,,,,,,,\n",
+              ",Species name,,,,,2022-03-04,,,,,uganda,,,,,,,,\n" +
+                  ",Species name,,,,,2022-03-04,,,,,gB,,,,,,,,\n",
               UploadStatus.AwaitingProcessing,
           )
 
@@ -1188,7 +1191,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       val uploadId =
           insertAccessionUpload(
               ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
-                  "$california,$us,Description,Collector,$wild,1,ID,\"-13,45\",\"18,5578\"",
+                  "$california,$us,Description,Collector,$wild,1,ID,Notes,\"-13,45\",\"18,5578\"",
               UploadStatus.AwaitingProcessing,
               Locales.GIBBERISH,
           )

@@ -172,8 +172,9 @@ class AccessionImporter(
     val numberOfPlants =
         values[15]?.let { NumberFormat.getIntegerInstance(locale).parse(it).toInt() }
     val plantId = values[16]
-    val latitude = values[17]?.toBigDecimal(locale)
-    val longitude = values[18]?.toBigDecimal(locale)
+    val plantNotes = values[17]
+    val latitude = values[18]?.toBigDecimal(locale)
+    val longitude = values[19]?.toBigDecimal(locale)
 
     val geolocations =
         if (latitude != null && longitude != null) {
@@ -216,6 +217,7 @@ class AccessionImporter(
               founderId = plantId,
               geolocations = geolocations,
               numberOfTrees = numberOfPlants,
+              processingNotes = plantNotes,
               remaining = SeedQuantityModel.of(quantity, units),
               speciesId = speciesId,
               state = status,
@@ -243,6 +245,7 @@ class AccessionImporter(
               founderId = plantId,
               geolocations = geolocations,
               numberOfTrees = numberOfPlants,
+              processingNotes = plantNotes,
               remaining = SeedQuantityModel.of(quantity, units),
               source = DataSource.FileImport,
               speciesId = speciesId,

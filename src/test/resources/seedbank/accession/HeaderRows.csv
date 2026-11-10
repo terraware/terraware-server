@@ -21,13 +21,13 @@ Please choose from the following list or an error will occur during upload:
 - In Storage
 - Used Up ","Collection Date*
 
-Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Collection Source
+Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Plant Source Type
 
 Please choose from the following list or an error will occur during upload:
 - Wild (In Situ)
 - Reintroduced
 - Cultivated (Ex Situ)
-- Other",Number of Plants ,Plant ID,"Latitude
+- Other",Number of Plants ,Plant ID,Plant Notes,"Latitude
 
 Decimal latitude of seed collection location (positive = north, negative = south)","Longitude
 
