@@ -529,7 +529,6 @@ class AdminPlantingSitesController(
       plantingSiteStore.updateStratum(stratumId) { row ->
         row.copy(
             baselineErrorMargin = baselineErrorMargin,
-            baselineNumPermanentPlots = 0,
             baselineNumTemporaryPlots = baselineNumTemporary,
             baselineStudentsT = baselineStudentsT,
             baselineVariance = baselineVariance,
