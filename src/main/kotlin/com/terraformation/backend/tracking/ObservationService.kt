@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
@@ -121,6 +122,13 @@ class ObservationService(
 ) {
   private val log = perClassLogger()
 
+  sealed interface PlotAssignmentResult {
+    data class Assigned(val shortfalls: List<ObservationPlotsUnderallocatedEvent.Shortfall>) :
+        PlotAssignmentResult
+
+    data object Unstartable : PlotAssignmentResult
+  }
+
   fun startObservation(observationId: ObservationId) {
     requirePermissions { manageObservation(observationId) }
 
@@ -135,134 +143,148 @@ class ObservationService(
           throw ObservationAlreadyStartedException(observationId)
         }
 
-        if (observation.requestedSubstratumIds.isEmpty()) {
-          log.info("Unable to start observation because none of its requested substrata exist")
-          abandonUnstartableObservation(observation)
-          return@withLockedObservation
-        }
+        when (val result = assignPlots(observation)) {
+          is PlotAssignmentResult.Unstartable -> abandonUnstartableObservation(observation)
+          is PlotAssignmentResult.Assigned -> {
+            val startedObservation = observationStore.recordObservationStart(observationId)
 
-        plantingSiteStore.ensurePermanentPlotsExist(
-            observation.plantingSiteId,
-            observation.observationType,
-        )
+            eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
 
-        val plantingSite =
-            plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
-        val strataToObserve =
-            plantingSite.strata
-                .filter { stratum ->
-                  stratum.substrata.any { it.id in observation.requestedSubstratumIds }
-                }
-                .filter { stratum ->
-                  if (
-                      observation.observationType == ObservationType.BaselineSurvey &&
-                          stratum.baselinePlotCounts.numTemporaryPlots == 0
-                  ) {
-                    log.info(
-                        "Skipping stratum ${stratum.id} because its baseline plot count is zero"
-                    )
-                    false
-                  } else {
-                    true
-                  }
-                }
-
-        if (
-            observation.observationType == ObservationType.BaselineSurvey &&
-                strataToObserve.isEmpty()
-        ) {
-          log.info("Unable to start baseline observation because no plots are configured")
-          abandonUnstartableObservation(observation)
-          return@withLockedObservation
-        }
-
-        val gridOrigin =
-            plantingSite.gridOrigin
-                ?: throw IllegalStateException("Planting site has no grid origin")
-
-        log.info("Starting observation")
-
-        try {
-          val observedPermanentPlotIds =
-              observationPlotStore.fetchObservedPermanentPlotIds(observation.plantingSiteId)
-          val shortfalls = mutableListOf<ObservationPlotsUnderallocatedEvent.Shortfall>()
-
-          strataToObserve.forEach { stratum ->
-            log.withMDC("stratumId" to stratum.id) {
-              val allocation =
-                  StratumPlotAllocator(
-                          stratum,
-                          observation.observationType,
-                          gridOrigin,
-                          plantingSite.exclusion,
-                          observedPermanentPlotIds,
-                      )
-                      .allocate(observation.requestedSubstratumIds)
-
-              if (
-                  allocation.permanentPlotIds.isEmpty() &&
-                      allocation.temporaryPlotBoundaries.isEmpty()
-              ) {
-                throw StratumFullException(stratum.id)
-              }
-
-              val temporaryPlotIds =
-                  allocation.temporaryPlotBoundaries.map { plotBoundary ->
-                    plantingSiteStore.createTemporaryPlot(
-                        plantingSite.id,
-                        stratum.id,
-                        plotBoundary,
-                    )
-                  }
-
-              observationPlotStore.addPlotsToObservation(
-                  observationId,
-                  allocation.permanentPlotIds,
-                  isPermanent = true,
-              )
-              observationPlotStore.addPlotsToObservation(
-                  observationId,
-                  temporaryPlotIds,
-                  isPermanent = false,
-              )
-
-              if (allocation.isShortfall) {
-                shortfalls.add(
-                    ObservationPlotsUnderallocatedEvent.Shortfall(
-                        numAllocated = allocation.numAllocated,
-                        numConfigured = allocation.numConfigured,
-                        stratumId = stratum.id,
-                        stratumName = stratum.name,
-                    )
-                )
-              }
-
-              log.info(
-                  "Added ${allocation.permanentPlotIds.size} permanent and " +
-                      "${temporaryPlotIds.size} temporary plots"
+            if (result.shortfalls.isNotEmpty()) {
+              eventPublisher.publishEvent(
+                  ObservationPlotsUnderallocatedEvent(
+                      observationId,
+                      observation.observationType,
+                      observation.plantingSiteId,
+                      result.shortfalls,
+                  )
               )
             }
           }
+        }
+      }
+    }
+  }
 
-          val startedObservation = observationStore.recordObservationStart(observationId)
+  /**
+   * Allocates plots to an observation for the strata in [stratumIds] (all strata if null) that
+   * contain a requested substratum. The caller must hold the observation lock. This does not
+   * abandon the observation, publish events, or change its state.
+   */
+  internal fun assignPlots(
+      observation: ExistingObservationModel,
+      stratumIds: Set<StratumId>? = null,
+  ): PlotAssignmentResult {
+    val observationId = observation.id
 
-          eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
+    if (observation.requestedSubstratumIds.isEmpty()) {
+      log.info("Unable to start observation because none of its requested substrata exist")
+      return PlotAssignmentResult.Unstartable
+    }
 
-          if (shortfalls.isNotEmpty()) {
-            eventPublisher.publishEvent(
-                ObservationPlotsUnderallocatedEvent(
-                    observationId,
-                    observation.observationType,
-                    observation.plantingSiteId,
-                    shortfalls,
+    plantingSiteStore.ensurePermanentPlotsExist(
+        observation.plantingSiteId,
+        observation.observationType,
+    )
+
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
+    val observableStrata =
+        plantingSite.strata
+            .filter { stratum ->
+              stratum.substrata.any { it.id in observation.requestedSubstratumIds }
+            }
+            .filter { stratum ->
+              if (
+                  observation.observationType == ObservationType.BaselineSurvey &&
+                      stratum.baselinePlotCounts.numTemporaryPlots == 0
+              ) {
+                log.info("Skipping stratum ${stratum.id} because its baseline plot count is zero")
+                false
+              } else {
+                true
+              }
+            }
+
+    if (
+        observation.observationType == ObservationType.BaselineSurvey && observableStrata.isEmpty()
+    ) {
+      log.info("Unable to start baseline observation because no plots are configured")
+      return PlotAssignmentResult.Unstartable
+    }
+
+    val strataToObserve = observableStrata.filter { stratumIds == null || it.id in stratumIds }
+
+    val gridOrigin =
+        plantingSite.gridOrigin ?: throw IllegalStateException("Planting site has no grid origin")
+
+    log.info("Starting observation")
+
+    try {
+      val observedPermanentPlotIds =
+          observationPlotStore.fetchObservedPermanentPlotIds(observation.plantingSiteId)
+      val shortfalls = mutableListOf<ObservationPlotsUnderallocatedEvent.Shortfall>()
+
+      strataToObserve.forEach { stratum ->
+        log.withMDC("stratumId" to stratum.id) {
+          val allocation =
+              StratumPlotAllocator(
+                      stratum,
+                      observation.observationType,
+                      gridOrigin,
+                      plantingSite.exclusion,
+                      observedPermanentPlotIds,
+                  )
+                  .allocate(observation.requestedSubstratumIds)
+
+          if (
+              allocation.permanentPlotIds.isEmpty() && allocation.temporaryPlotBoundaries.isEmpty()
+          ) {
+            throw StratumFullException(stratum.id)
+          }
+
+          val temporaryPlotIds =
+              allocation.temporaryPlotBoundaries.map { plotBoundary ->
+                plantingSiteStore.createTemporaryPlot(
+                    plantingSite.id,
+                    stratum.id,
+                    plotBoundary,
+                )
+              }
+
+          observationPlotStore.addPlotsToObservation(
+              observationId,
+              allocation.permanentPlotIds,
+              isPermanent = true,
+          )
+          observationPlotStore.addPlotsToObservation(
+              observationId,
+              temporaryPlotIds,
+              isPermanent = false,
+          )
+
+          if (allocation.isShortfall) {
+            shortfalls.add(
+                ObservationPlotsUnderallocatedEvent.Shortfall(
+                    numAllocated = allocation.numAllocated,
+                    numConfigured = allocation.numConfigured,
+                    stratumId = stratum.id,
+                    stratumName = stratum.name,
                 )
             )
           }
-        } catch (e: StratumFullException) {
-          log.info("Unable to start observation $observationId", e)
-          abandonUnstartableObservation(observation)
+
+          log.info(
+              "Added ${allocation.permanentPlotIds.size} permanent and " +
+                  "${temporaryPlotIds.size} temporary plots"
+          )
         }
       }
+
+      return PlotAssignmentResult.Assigned(shortfalls)
+    } catch (e: StratumFullException) {
+      log.info("Unable to start observation $observationId", e)
+      return PlotAssignmentResult.Unstartable
     }
   }
 
