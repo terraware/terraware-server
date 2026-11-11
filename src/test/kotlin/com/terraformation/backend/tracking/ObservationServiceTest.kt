@@ -82,6 +82,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
+import com.terraformation.backend.tracking.db.ObservationNotStartedException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotStore
 import com.terraformation.backend.tracking.db.ObservationRecalculationStore
@@ -1251,6 +1252,69 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               caption = null,
               isOriginal = true,
               type = ObservationMediaType.Soil,
+          )
+        }
+      }
+
+      @Test
+      fun `throws exception storing media for upcoming observation`() {
+        val upcomingObservationId = insertObservation(state = ObservationState.Upcoming)
+        insertObservationPlot()
+
+        assertThrows<ObservationNotStartedException> {
+          service.storeMediaFile(
+              observationId = upcomingObservationId,
+              monitoringPlotId = plotId,
+              position = ObservationPlotPosition.NortheastCorner,
+              data = byteArrayOf(1).inputStream(),
+              metadata = metadata,
+              caption = null,
+              isOriginal = true,
+          )
+        }
+
+        assertTableEmpty(OBSERVATION_MEDIA_FILES)
+      }
+
+      @Test
+      fun `allows super admin who is not an organization member to store media`() {
+        deleteOrganizationUser()
+        insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+
+        val fileId =
+            service.storeMediaFile(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = null,
+                isOriginal = true,
+            )
+
+        assertEquals(
+            fileId,
+            observationMediaFilesDao.findAll().single().fileId,
+            "Stored media file ID",
+        )
+      }
+
+      @Test
+      fun `throws not-started exception for super admin who is not an organization member`() {
+        deleteOrganizationUser()
+        insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+        val upcomingObservationId = insertObservation(state = ObservationState.Upcoming)
+        insertObservationPlot()
+
+        assertThrows<ObservationNotStartedException> {
+          service.storeMediaFile(
+              observationId = upcomingObservationId,
+              monitoringPlotId = plotId,
+              position = ObservationPlotPosition.NortheastCorner,
+              data = byteArrayOf(1).inputStream(),
+              metadata = metadata,
+              caption = null,
+              isOriginal = true,
           )
         }
       }
@@ -3291,6 +3355,43 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       assertTableEmpty(RECORDED_PLANTS)
+    }
+
+    @Test
+    fun `throws exception if observation is upcoming`() {
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      val plotId = insertMonitoringPlot()
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed,
+      )
+
+      assertThrows<ObservationNotStartedException> {
+        service.completePlot(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            conditions = emptySet(),
+            notes = null,
+            observedTime = clock.instant(),
+            plants =
+                listOf(
+                    RecordedPlantsRow(
+                        certaintyId = Other,
+                        gpsCoordinates = point(1),
+                        speciesName = "Other",
+                        statusId = RecordedPlantStatus.Live,
+                    )
+                ),
+        )
+      }
+
+      assertTableEmpty(RECORDED_PLANTS)
+      assertEquals(
+          ObservationPlotStatus.Claimed,
+          observationPlotsDao.findAll().single().statusId,
+          "Plot status",
+      )
     }
 
     @Test

@@ -3,6 +3,8 @@ package com.terraformation.backend.tracking.db.observationPlotStore
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
+import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.tracking.db.ObservationNotStartedException
 import com.terraformation.backend.tracking.db.PlotAlreadyClaimedException
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
@@ -91,6 +93,20 @@ class ObservationPlotStoreClaimPlotTest : BaseObservationPlotStoreTest() {
     )
 
     assertThrows<PlotAlreadyCompletedException> { store.claimPlot(observationId, plotId) }
+  }
+
+  @Test
+  fun `throws exception if observation is upcoming`() {
+    val upcomingObservationId = insertObservation(state = ObservationState.Upcoming)
+    insertObservationPlot()
+
+    assertThrows<ObservationNotStartedException> {
+      store.claimPlot(upcomingObservationId, plotId)
+    }
+
+    val row = observationPlotsDao.fetchByObservationId(upcomingObservationId).single()
+
+    assertEquals(ObservationPlotStatus.Unclaimed, row.statusId, "Plot status")
   }
 
   @Test

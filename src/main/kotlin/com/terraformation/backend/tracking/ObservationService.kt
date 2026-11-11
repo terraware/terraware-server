@@ -43,6 +43,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationStartDateExcepti
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
+import com.terraformation.backend.tracking.db.ObservationNotStartedException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotStore
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
@@ -338,6 +339,8 @@ class ObservationService(
       fileBatchId: FileBatchId? = null,
   ): FileId {
     requirePermissions { updateObservation(observationId) }
+
+    observationPlotStore.requireObservationStarted(observationId)
 
     val plantingSiteId =
         parentStore.getPlantingSiteId(observationId)
@@ -826,6 +829,10 @@ class ObservationService(
     requirePermissions { updateObservation(observationId) }
 
     entityLocker.withLockedObservation(observationId) { observation ->
+      if (!observation.isAdHoc && observation.state == ObservationState.Upcoming) {
+        throw ObservationNotStartedException(observationId)
+      }
+
       validateObservationData(observation.observationType, biomassDetails, plants)
 
       val plotStatus =

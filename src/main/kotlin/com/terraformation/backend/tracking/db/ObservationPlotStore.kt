@@ -299,8 +299,31 @@ class ObservationPlotStore(
         .execute()
   }
 
+  /**
+   * Throws [ObservationNotStartedException] if the observation is a scheduled (non-ad-hoc)
+   * observation that is still upcoming. Does not check read permission; callers are expected to
+   * have checked update permission.
+   */
+  fun requireObservationStarted(observationId: ObservationId) {
+    val observationInfo =
+        dslContext
+            .select(OBSERVATIONS.IS_AD_HOC, OBSERVATIONS.STATE_ID)
+            .from(OBSERVATIONS)
+            .where(OBSERVATIONS.ID.eq(observationId))
+            .fetchOne() ?: throw ObservationNotFoundException(observationId)
+
+    if (
+        !observationInfo[OBSERVATIONS.IS_AD_HOC]!! &&
+            observationInfo[OBSERVATIONS.STATE_ID] == ObservationState.Upcoming
+    ) {
+      throw ObservationNotStartedException(observationId)
+    }
+  }
+
   fun claimPlot(observationId: ObservationId, monitoringPlotId: MonitoringPlotId) {
     requirePermissions { updateObservation(observationId) }
+
+    requireObservationStarted(observationId)
 
     val rowsUpdated =
         dslContext

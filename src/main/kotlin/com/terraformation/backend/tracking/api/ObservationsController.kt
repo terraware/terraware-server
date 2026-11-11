@@ -318,7 +318,9 @@ class ObservationsController(
   }
 
   @ApiResponseSimpleSuccess
-  @ApiResponse409("The observation of the plot was already completed.")
+  @ApiResponse409(
+      "The observation of the plot was already completed, or the observation has not started yet."
+  )
   @Operation(summary = "Stores the results of a completed observation of a plot.")
   @PostMapping("/{observationId}/plots/{plotId}")
   fun completePlotObservation(
@@ -616,6 +618,8 @@ class ObservationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse200
+  @ApiResponse409("The observation has not started yet.")
   @Operation(
       summary = "Uploads a photo of a monitoring plot as part of the observation.",
       description =
@@ -651,6 +655,8 @@ class ObservationsController(
     return UploadPlotMediaResponsePayload(fileId)
   }
 
+  @ApiResponse200
+  @ApiResponse409("The observation has not started yet.")
   @Operation(
       summary =
           "Adds a photo, video, or data file of a monitoring plot after an observation is complete."
@@ -689,7 +695,9 @@ class ObservationsController(
     return UploadPlotMediaResponsePayload(fileId)
   }
 
-  @ApiResponse409("The plot is already claimed by someone else.")
+  @ApiResponse409(
+      "The plot is already claimed by someone else, or the observation has not started yet."
+  )
   @ApiResponseSimpleSuccess
   @Operation(
       summary = "Claims a monitoring plot.",
