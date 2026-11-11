@@ -75,5 +75,16 @@
     <input type="submit" value="Merge Observations"/>
 </form>
 
+<h3>Assign Plots to Upcoming Observations</h3>
+
+<p>
+    Assigns plots to every non-ad-hoc upcoming observation that doesn't have any plots yet. Observations
+    for which plots can't be assigned are left alone and listed in the result. Re-running is safe.
+</p>
+
+<form method="POST" action="/admin/assignPlotsToUpcomingObservations">
+    <input type="submit" value="Assign Plots to Upcoming Observations"/>
+</form>
+
 </body>
 </html>

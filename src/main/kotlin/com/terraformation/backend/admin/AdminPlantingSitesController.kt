@@ -616,7 +616,20 @@ class AdminPlantingSitesController(
               skipValidation = true,
           )
 
-      redirectAttributes.successMessage = "Created observation $observationId"
+      val plotsAssigned =
+          try {
+            observationService.assignPlotsToNewObservation(observationId)
+          } catch (e: Exception) {
+            log.warn("Unable to assign plots to observation $observationId", e)
+            false
+          }
+
+      redirectAttributes.successMessage =
+          if (plotsAssigned) {
+            "Created observation $observationId"
+          } else {
+            "Created observation $observationId (plots not assigned)"
+          }
     } catch (e: Exception) {
       log.warn("Observation creation failed", e)
       redirectAttributes.failureMessage = "Observation creation failed: ${e.message}"
