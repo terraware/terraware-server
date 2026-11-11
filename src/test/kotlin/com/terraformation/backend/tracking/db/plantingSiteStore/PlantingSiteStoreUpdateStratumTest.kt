@@ -1,12 +1,14 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
+import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import io.mockk.every
 import java.math.BigDecimal
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() {
+
   @Nested
   inner class UpdateStratum {
     @Test
@@ -262,6 +265,35 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       }
 
       eventPublisher.assertEventNotPublished<StratumDensityUpdatedEvent>()
+    }
+
+    @Test
+    fun `publishes StratumPlotCountsUpdatedEvent when plot counts change`() {
+      val plantingSiteId = insertPlantingSite()
+      val stratumId = insertStratum(plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+
+      val monitoring = setOf(ObservationType.Monitoring)
+      val biomass = setOf(ObservationType.BiomassMeasurements)
+
+      listOf(
+              { row: StrataRow -> row.copy(plantNumPermanentPlots = 2) } to monitoring,
+              { row: StrataRow -> row.copy(plantNumTemporaryPlots = 2) } to monitoring,
+              { row: StrataRow -> row.copy(biomassNumPermanentPlots = 2) } to biomass,
+              { row: StrataRow -> row.copy(biomassNumTemporaryPlots = 2) } to biomass,
+              { row: StrataRow ->
+                row.copy(plantNumPermanentPlots = 3, biomassNumTemporaryPlots = 3)
+              } to monitoring + biomass,
+          )
+          .forEachIndexed { index, (editFunc, expectedTypes) ->
+            eventPublisher.clear()
+
+            store.updateStratum(stratumId, editFunc)
+
+            eventPublisher.assertEventPublished(
+                StratumPlotCountsUpdatedEvent(plantingSiteId, stratumId, expectedTypes),
+                "Edit $index",
+            )
+          }
     }
 
     @Test

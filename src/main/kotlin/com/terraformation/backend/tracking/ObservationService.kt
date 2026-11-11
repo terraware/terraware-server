@@ -76,6 +76,7 @@ import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.AffectedStrata
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -1222,6 +1223,24 @@ class ObservationService(
     updateObservationsForChangedStrata(
         event.edited.id,
         event.plantingSiteEdit.affectedStrata.copy(createdStratumIds = createdStratumIds),
+        isPlotCountChange = false,
+    )
+  }
+
+  /**
+   * Updates observations, if any, when a stratum's plot counts change. Runs in the transaction that
+   * changed the counts, so if observations can't be updated, the change is rolled back.
+   *
+   * Unlike map edits, plot count changes never abandon observations: observations with completed
+   * plots are left alone, and observations that can't be given new plots keep their existing ones.
+   */
+  @EventListener
+  fun on(event: StratumPlotCountsUpdatedEvent) {
+    updateObservationsForChangedStrata(
+        event.plantingSiteId,
+        AffectedStrata(setOf(event.stratumId)),
+        isPlotCountChange = true,
+        event.observationTypes,
     )
   }
 
@@ -1233,9 +1252,10 @@ class ObservationService(
   }
 
   /**
-   * Updates active observations that have incomplete plots in strata whose maps have changed.
-   * Observations that already have completed plots are abandoned. The others get new plots in the
-   * changed strata; their plots in other strata are kept.
+   * Updates active observations that have incomplete plots in strata whose maps or plot counts have
+   * changed. For map edits, observations that already have completed plots are abandoned; for plot
+   * count changes, they are left alone. The others get new plots in the changed strata; their plots
+   * in other strata are kept.
    *
    * This runs as the system user because the change may have been made by a super admin who isn't a
    * member of the organization; the caller's permission to make the change was already checked.
@@ -1243,6 +1263,8 @@ class ObservationService(
   private fun updateObservationsForChangedStrata(
       plantingSiteId: PlantingSiteId,
       strata: AffectedStrata,
+      isPlotCountChange: Boolean,
+      observationTypes: Set<ObservationType>? = null,
   ) {
     if (strata.isEmpty()) {
       return
@@ -1250,14 +1272,26 @@ class ObservationService(
 
     systemUser.run {
       dslContext.transaction { _ ->
-        val affected = observationStore.classifyAffectedObservations(plantingSiteId, strata)
+        val affected =
+            observationStore.classifyAffectedObservations(plantingSiteId, strata, observationTypes)
 
-        affected.toAbandon.forEach { observationId ->
-          log.info("Abandoning observation $observationId because its strata have changed")
-          observationStore.abandonObservation(observationId)
+        if (isPlotCountChange) {
+          if (affected.toAbandon.isNotEmpty()) {
+            log.info(
+                "Not updating observations ${affected.toAbandon} for plot count change because " +
+                    "they have completed plots"
+            )
+          }
+        } else {
+          affected.toAbandon.forEach { observationId ->
+            log.info("Abandoning observation $observationId because its strata have changed")
+            observationStore.abandonObservation(observationId)
+          }
         }
 
-        affected.toReassign.forEach { observationId -> reassignPlots(observationId, strata) }
+        affected.toReassign.forEach { observationId ->
+          reassignPlots(observationId, strata, keepPlotsIfUnstartable = isPlotCountChange)
+        }
       }
     }
   }
@@ -1267,50 +1301,85 @@ class ObservationService(
    * observation has already started, its site and plot history IDs are refreshed so the new plots
    * show up in its results.
    *
-   * If the observation can't be given plots, it is abandoned (and, since it has no completed plots,
-   * deleted).
+   * If the observation can't be given plots, then if [keepPlotsIfUnstartable] is true, the
+   * reassignment is rolled back so the observation keeps its existing plots. Otherwise the
+   * observation is abandoned (and, since it has no completed plots, deleted).
    *
    * The observation may have changed between when it was classified and when its lock was acquired;
-   * if it has ended, it is left alone, and if it now has completed plots, it is abandoned.
+   * if it has ended, it is left alone, and if it now has completed plots, it is abandoned (or, if
+   * [keepPlotsIfUnstartable] is true, left alone).
    */
-  private fun reassignPlots(observationId: ObservationId, strata: AffectedStrata) {
+  private fun reassignPlots(
+      observationId: ObservationId,
+      strata: AffectedStrata,
+      keepPlotsIfUnstartable: Boolean,
+  ) {
     log.withMDC("observationId" to observationId) {
-      entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
-        if (
-            observation.state == ObservationState.Completed ||
-                observation.state == ObservationState.Abandoned
-        ) {
-          log.info("Observation has ended; not reassigning plots")
-          return@withLockedPlantingSiteAndObservation
-        }
+      try {
+        reassignPlotsWithLocks(observationId, strata, keepPlotsIfUnstartable)
+      } catch (e: ReassignmentRolledBackException) {
+        log.warn(
+            "Unable to reassign plots in strata ${strata.stratumIds}; observation keeps its " +
+                "existing plots"
+        )
+      }
+    }
+  }
 
-        if (observationPlotStore.hasCompletedPlots(observationId)) {
+  /** Thrown to roll back the nested transaction of a reassignment that couldn't assign plots. */
+  private class ReassignmentRolledBackException : RuntimeException()
+
+  private fun reassignPlotsWithLocks(
+      observationId: ObservationId,
+      strata: AffectedStrata,
+      keepPlotsIfUnstartable: Boolean,
+  ) {
+    // This runs in a nested transaction, so throwing an exception rolls back only this
+    // observation's changes.
+    entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
+      if (
+          observation.state == ObservationState.Completed ||
+              observation.state == ObservationState.Abandoned
+      ) {
+        log.info("Observation has ended; not reassigning plots")
+        return@withLockedPlantingSiteAndObservation
+      }
+
+      if (observationPlotStore.hasCompletedPlots(observationId)) {
+        if (keepPlotsIfUnstartable) {
+          log.info("Not reassigning plots because a plot was completed before it was updated")
+        } else {
           log.info("Abandoning observation because a plot was completed before it was updated")
           observationStore.abandonObservation(observationId)
-          return@withLockedPlantingSiteAndObservation
         }
+        return@withLockedPlantingSiteAndObservation
+      }
 
-        log.info("Reassigning plots in strata ${strata.stratumIds}")
+      log.info("Reassigning plots in strata ${strata.stratumIds}")
 
-        observationPlotStore.removeUnobservedPlots(observationId, strata)
+      observationPlotStore.removeUnobservedPlots(observationId, strata)
 
-        when (val result = assignPlots(observation, strata.allocationStratumIds)) {
-          is PlotAssignmentResult.Unstartable -> abandonUnstartableObservation(observation)
-          is PlotAssignmentResult.Assigned -> {
-            if (observation.state != ObservationState.Upcoming) {
-              observationStore.refreshHistoryIds(observationId)
+      when (val result = assignPlots(observation, strata.allocationStratumIds)) {
+        is PlotAssignmentResult.Unstartable ->
+            if (keepPlotsIfUnstartable) {
+              throw ReassignmentRolledBackException()
+            } else {
+              abandonUnstartableObservation(observation)
             }
-
-            eventPublisher.publishEvent(
-                ObservationPlotsReassignedEvent(
-                    observation.id,
-                    observation.observationType,
-                    observation.plantingSiteId,
-                )
-            )
-
-            publishEventIfUnderallocated(observation, result)
+        is PlotAssignmentResult.Assigned -> {
+          if (observation.state != ObservationState.Upcoming) {
+            observationStore.refreshHistoryIds(observationId)
           }
+
+          eventPublisher.publishEvent(
+              ObservationPlotsReassignedEvent(
+                  observation.id,
+                  observation.observationType,
+                  observation.plantingSiteId,
+              )
+          )
+
+          publishEventIfUnderallocated(observation, result)
         }
       }
     }
