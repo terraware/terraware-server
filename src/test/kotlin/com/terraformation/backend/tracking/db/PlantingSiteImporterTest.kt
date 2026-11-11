@@ -146,9 +146,21 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val site = importer.shapefilesToModel(shapefiles, "site", null, organizationId)
       importer.import("site", null, organizationId, shapefiles)
 
-      assertEquals(expected, strataDao.findAll().single().baselineNumTemporaryPlots)
-      assertEquals(0, site.strata.single().baselinePlotCounts.numPermanentPlots)
-      assertEquals(expected, site.strata.single().baselinePlotCounts.numTemporaryPlots)
+      assertEquals(
+          expected,
+          strataDao.findAll().single().baselineNumTemporaryPlots,
+          "Persisted baseline temporary plots",
+      )
+      assertEquals(
+          0,
+          site.strata.single().baselinePlotCounts.numPermanentPlots,
+          "Baseline permanent plots",
+      )
+      assertEquals(
+          expected,
+          site.strata.single().baselinePlotCounts.numTemporaryPlots,
+          "Baseline temporary plots",
+      )
     }
 
     @Test

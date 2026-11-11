@@ -958,6 +958,9 @@ class PlantingSiteStore(
       }
       is StratumEdit.Update -> {
         val baselinePlotCounts = edit.desiredModel.baselinePlotCounts
+        if (baselinePlotCounts.numPermanentPlots != 0) {
+          throw IllegalArgumentException("Baseline surveys must have zero permanent plots")
+        }
         with(STRATA) {
           val boundaryChanged =
               !edit.existingModel.boundary.equalsOrBothNull(edit.desiredModel.boundary)
@@ -966,10 +969,7 @@ class PlantingSiteStore(
                   .update(STRATA)
                   .set(AREA_HA, edit.desiredModel.areaHa)
                   .set(BASELINE_ERROR_MARGIN, baselinePlotCounts.errorMargin)
-                  .set(
-                      BASELINE_NUM_TEMPORARY_PLOTS,
-                      baselinePlotCounts.numPermanentPlots + baselinePlotCounts.numTemporaryPlots,
-                  )
+                  .set(BASELINE_NUM_TEMPORARY_PLOTS, baselinePlotCounts.numTemporaryPlots)
                   .set(BASELINE_STUDENTS_T, baselinePlotCounts.studentsT)
                   .set(BASELINE_VARIANCE, baselinePlotCounts.variance)
                   .set(BIOMASS_ERROR_MARGIN, edit.desiredModel.biomassPlotCounts.errorMargin)
@@ -1393,12 +1393,14 @@ class PlantingSiteStore(
     val userId = currentUser().userId
 
     val baselinePlotCounts = stratum.baselinePlotCounts
+    if (baselinePlotCounts.numPermanentPlots != 0) {
+      throw IllegalArgumentException("Baseline surveys must have zero permanent plots")
+    }
     val strataRow =
         StrataRow(
             areaHa = stratum.areaHa,
             baselineErrorMargin = baselinePlotCounts.errorMargin,
-            baselineNumTemporaryPlots =
-                baselinePlotCounts.numPermanentPlots + baselinePlotCounts.numTemporaryPlots,
+            baselineNumTemporaryPlots = baselinePlotCounts.numTemporaryPlots,
             baselineStudentsT = baselinePlotCounts.studentsT,
             baselineVariance = baselinePlotCounts.variance,
             biomassErrorMargin = stratum.biomassPlotCounts.errorMargin,
