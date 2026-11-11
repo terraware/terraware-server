@@ -137,6 +137,7 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsReassignedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -1206,6 +1207,56 @@ internal class NotificationServiceEmailTest {
     service.on(event)
 
     assertNoMessageSent()
+  }
+
+  @Test
+  fun observationPlotsReassigned() {
+    val recipients = setOf("english@x.com", "gibberish@x.com")
+    every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
+        recipients.map { userForEmail(it) }
+
+    service.on(
+        ObservationPlotsReassignedEvent(
+            observation.id,
+            ObservationType.Monitoring,
+            plantingSite.id,
+        )
+    )
+
+    val message = sentMessageFor("english@x.com")
+
+    assertSubjectContains(
+        "Upcoming Plant Monitoring Observation has new plot locations",
+        message = message,
+    )
+    assertBodyContains(
+        "My Site has a Plant Monitoring Observation scheduled for",
+        message = message,
+    )
+    assertBodyContains("Friday, January 2, 2026", "Start date", message = message)
+    assertBodyContains(
+        webAppUrls.fullObservation(organization.id, plantingSite.id, observation.id).toString(),
+        "Observation URL",
+        message = message,
+    )
+    assertBodyContains("See Observation", message = message)
+    assertRecipientsEqual(recipients)
+
+    assertIsEventListener<ObservationPlotsReassignedEvent>(service)
+  }
+
+  @Test
+  fun `observationPlotsReassigned for biomass observation`() {
+    service.on(
+        ObservationPlotsReassignedEvent(
+            observation.id,
+            ObservationType.BiomassMeasurements,
+            plantingSite.id,
+        )
+    )
+
+    assertSubjectContains("Upcoming Biomass Monitoring Observation has new plot locations")
+    assertBodyContains("has a Biomass Monitoring Observation scheduled for")
   }
 
   @Test
