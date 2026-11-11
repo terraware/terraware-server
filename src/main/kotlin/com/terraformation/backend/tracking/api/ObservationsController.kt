@@ -751,7 +751,7 @@ class ObservationsController(
   fun scheduleObservation(
       @RequestBody @Valid payload: ScheduleObservationRequestPayload
   ): ScheduleObservationResponsePayload {
-    val id = observationService.scheduleObservation(payload.toModel())
+    val id = observationService.scheduleObservation(payload.toModel(), payload.assignPlots ?: false)
 
     return ScheduleObservationResponsePayload(id)
   }
@@ -1110,6 +1110,12 @@ data class RescheduleObservationRequestPayload(
 )
 
 data class ScheduleObservationRequestPayload(
+    @Schema(
+        description =
+            "If true, assign monitoring plots now instead of when the observation starts.",
+        defaultValue = "false",
+    )
+    val assignPlots: Boolean? = null,
     @Schema(
         description =
             "The end date for this observation, should be limited to 2 months from the start date."

@@ -99,6 +99,9 @@ class ObservationPlotNotFoundException(
     val plotId: MonitoringPlotId,
 ) : EntityNotFoundException("Observation $observationId plot $plotId not found")
 
+class ObservationPlotsUnavailableException(val plantingSiteId: PlantingSiteId) :
+    MismatchedStateException("No room for monitoring plots in planting site $plantingSiteId")
+
 class ObservationRescheduleStateException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId cannot be rescheduled")
 

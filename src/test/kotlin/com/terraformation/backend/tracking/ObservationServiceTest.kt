@@ -86,6 +86,7 @@ import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotStartedException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotStore
+import com.terraformation.backend.tracking.db.ObservationPlotsUnavailableException
 import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
@@ -1940,22 +1941,161 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       eventPublisher.assertEventPublished(ObservationScheduledEvent(createdObservation))
     }
 
-    private fun newObservationModel(
-        plantingSiteId: PlantingSiteId,
-        startDate: LocalDate = LocalDate.EPOCH,
-        endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
-        requestedSubstratumIds: Set<SubstratumId> = emptySet(),
-    ): NewObservationModel =
-        NewObservationModel(
-            plantingSiteId = plantingSiteId,
-            id = null,
-            isAdHoc = false,
-            observationType = ObservationType.Monitoring,
-            requestedSubstratumIds = requestedSubstratumIds,
-            startDate = startDate,
-            endDate = endDate,
-            state = ObservationState.Upcoming,
+    @Test
+    fun `assigns plots when assignPlots is true even if user cannot update planting site`() {
+      helper.insertPlantedSite(plantNumPermanentPlots = 2, plantNumTemporaryPlots = 3)
+      // Can schedule observations because of the global role, but can't update the planting site.
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+
+      var hadPlotsWhenEventPublished: Boolean? = null
+      eventPublisher.register<ObservationScheduledEvent> { event ->
+        hadPlotsWhenEventPublished = observationPlotStore.hasPlots(event.observation.id)
+      }
+
+      val observationId =
+          service.scheduleObservation(
+              newObservationModel(
+                  plantingSiteId = inserted.plantingSiteId,
+                  requestedSubstratumIds = setOf(inserted.substratumId),
+              ),
+              assignPlots = true,
+          )
+
+      val observationPlots = observationPlotsDao.fetchByObservationId(observationId)
+      assertEquals(2, observationPlots.count { it.isPermanent!! }, "Number of permanent plots")
+      assertEquals(3, observationPlots.count { !it.isPermanent!! }, "Number of temporary plots")
+      assertEquals(
+          ObservationState.Upcoming,
+          observationsDao.fetchOneById(observationId)!!.stateId,
+          "Observation state",
+      )
+      assertEquals(true, hadPlotsWhenEventPublished, "Observation had plots when event published")
+      eventPublisher.assertEventPublished(
+          ObservationScheduledEvent(observationStore.fetchObservationById(observationId))
+      )
+    }
+
+    @Test
+    fun `throws exception and creates nothing if no room for plots`() {
+      plantingSiteId =
+          insertPlantingSite(
+              width = 4,
+              height = 1,
+              gridOrigin = point(1),
+              exclusion = rectangle(width = 10, height = 10, x = 10, y = 10),
+          )
+      insertStratum(
+          width = 4,
+          height = 1,
+          plantNumPermanentPlots = 1,
+          plantNumTemporaryPlots = 1,
+      )
+      val requestedSubstratumId = insertSubstratum(boundary = rectangle(MONITORING_PLOT_SIZE))
+      insertSubstratumPlanting()
+      insertSubstratum(x = 1, width = 3, height = 1)
+      insertMonitoringPlot(permanentIndex = 1, x = 1, y = 0)
+
+      assertThrows<ObservationPlotsUnavailableException> {
+        service.scheduleObservation(
+            newObservationModel(requestedSubstratumIds = setOf(requestedSubstratumId)),
+            assignPlots = true,
         )
+      }
+
+      assertTableEmpty(OBSERVATIONS)
+      assertTableEmpty(OBSERVATION_PLOTS)
+      eventPublisher.assertEventNotPublished<ObservationScheduledEvent>()
+    }
+
+    @Test
+    fun `publishes underallocated event at scheduling`() {
+      val boundary = rectangle(MONITORING_PLOT_SIZE)
+      val stratumId =
+          insertStratum(boundary = boundary, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      insertSubstratum(boundary = boundary)
+      insertSubstratumPlanting()
+
+      val observationId =
+          service.scheduleObservation(
+              newObservationModel(requestedSubstratumIds = setOf(inserted.substratumId)),
+              assignPlots = true,
+          )
+
+      eventPublisher.assertEventPublished(
+          ObservationPlotsUnderallocatedEvent(
+              observationId,
+              ObservationType.Monitoring,
+              plantingSiteId,
+              listOf(
+                  ObservationPlotsUnderallocatedEvent.Shortfall(
+                      numAllocated = 1,
+                      numConfigured = 2,
+                      stratumId = stratumId,
+                      stratumName = strataDao.fetchOneById(stratumId)!!.name!!,
+                  )
+              ),
+          )
+      )
+      assertEquals(
+          ObservationState.Upcoming,
+          observationsDao.fetchOneById(observationId)!!.stateId,
+          "Observation state",
+      )
+    }
+
+    @Test
+    fun `second upcoming observation does not treat first observation's permanent plots as observed`() {
+      // A 2x2 stratum: room for exactly 4 plots.
+      val boundary = rectangle(2 * MONITORING_PLOT_SIZE)
+      val stratumId =
+          insertStratum(boundary = boundary, plantNumPermanentPlots = 4, plantNumTemporaryPlots = 0)
+      val substratumId = insertSubstratum(boundary = boundary)
+      insertSubstratumPlanting()
+
+      // The first observation fits all 4 permanent plots.
+      val firstObservationId =
+          service.scheduleObservation(
+              newObservationModel(requestedSubstratumIds = setOf(substratumId)),
+              assignPlots = true,
+          )
+      assertEquals(
+          4,
+          observationPlotsDao.fetchByObservationId(firstObservationId).count { it.isPermanent!! },
+          "Permanent plots in first observation",
+      )
+
+      // Now the stratum is configured for 8 plots but only has room for 4. On a site with no prior
+      // observations, the allocator would use 3 permanent plots (75%) and 1 temporary plot. If the
+      // first observation's plots were treated as observed, all 4 would stay permanent.
+      strataDao.update(strataDao.fetchOneById(stratumId)!!.copy(plantNumTemporaryPlots = 4))
+
+      val secondObservationId =
+          service.scheduleObservation(
+              newObservationModel(requestedSubstratumIds = setOf(substratumId)),
+              assignPlots = true,
+          )
+
+      val expectedPermanentPlotIds =
+          monitoringPlotsDao
+              .fetchByPlantingSiteId(plantingSiteId)
+              .filter { it.permanentIndex != null && it.permanentIndex!! <= 3 }
+              .map { it.id }
+              .toSet()
+      val secondObservationPlots = observationPlotsDao.fetchByObservationId(secondObservationId)
+
+      assertSetEquals(
+          expectedPermanentPlotIds,
+          secondObservationPlots.filter { it.isPermanent!! }.map { it.monitoringPlotId }.toSet(),
+          "Permanent plots in second observation",
+      )
+      assertEquals(
+          1,
+          secondObservationPlots.count { !it.isPermanent!! },
+          "Temporary plots in second observation",
+      )
+    }
   }
 
   @Nested
@@ -4326,6 +4466,38 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
    *
    * Optionally also includes the plot in the most-recently-inserted observation.
    */
+  private fun newObservationModel(
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      startDate: LocalDate = LocalDate.EPOCH,
+      endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
+      requestedSubstratumIds: Set<SubstratumId> = emptySet(),
+  ): NewObservationModel =
+      NewObservationModel(
+          plantingSiteId = plantingSiteId,
+          id = null,
+          isAdHoc = false,
+          observationType = ObservationType.Monitoring,
+          requestedSubstratumIds = requestedSubstratumIds,
+          startDate = startDate,
+          endDate = endDate,
+          state = ObservationState.Upcoming,
+      )
+
+  /**
+   * Inserts a planting in the most recently inserted substratum so observations can be scheduled.
+   */
+  private fun insertSubstratumPlanting() {
+    if (inserted.speciesIds.isEmpty()) {
+      insertSpecies()
+    }
+    if (inserted.facilityIds.isEmpty()) {
+      insertFacility(type = FacilityType.Nursery)
+    }
+    insertNurseryWithdrawal()
+    insertDelivery()
+    insertPlanting()
+  }
+
   private fun insertPermanentPlot(
       permanentIndex: Int,
       x: Int = 0,

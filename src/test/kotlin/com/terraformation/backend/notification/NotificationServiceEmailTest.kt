@@ -1234,9 +1234,9 @@ internal class NotificationServiceEmailTest {
     service.on(event)
 
     assertSubjectContains(
-        "Plant Monitoring observation started with fewer than requested monitoring plots"
+        "Plant Monitoring observation scheduled with fewer than requested monitoring plots"
     )
-    assertBodyContains("started the scheduled Plant Monitoring observation for My Site")
+    assertBodyContains("scheduled the Plant Monitoring observation for My Site")
     assertBodyContains("stratum Stratum 1")
     assertBodyContains("stratum Stratum 5")
     assertBodyContains(" 5 assigned monitoring plots")
@@ -1265,9 +1265,9 @@ internal class NotificationServiceEmailTest {
     service.on(event)
 
     assertSubjectContains(
-        "Biomass Monitoring observation started with fewer than requested monitoring plots"
+        "Biomass Monitoring observation scheduled with fewer than requested monitoring plots"
     )
-    assertBodyContains("started the scheduled Biomass Monitoring observation for My Site")
+    assertBodyContains("scheduled the Biomass Monitoring observation for My Site")
   }
 
   @Test
