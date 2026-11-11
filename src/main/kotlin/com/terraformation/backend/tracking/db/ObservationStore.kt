@@ -20,7 +20,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
@@ -272,47 +271,6 @@ class ObservationStore(
           }
         }
         .filter { it != null && currentUser().canManageObservation(it.id) }
-  }
-
-  /**
-   * Returns the IDs of any active assigned observations of a planting site that include unobserved
-   * plots in specific strata.
-   */
-  fun fetchActiveObservationIds(
-      plantingSiteId: PlantingSiteId,
-      stratumIds: Collection<StratumId>,
-  ): List<ObservationId> {
-    requirePermissions { readPlantingSite(plantingSiteId) }
-
-    if (stratumIds.isEmpty()) {
-      return emptyList()
-    }
-
-    return with(OBSERVATIONS) {
-      dslContext
-          .select(ID)
-          .from(OBSERVATIONS)
-          .where(PLANTING_SITE_ID.eq(plantingSiteId))
-          .and(IS_AD_HOC.eq(false))
-          .and(STATE_ID.`in`(ObservationState.InProgress, ObservationState.Overdue))
-          .and(
-              ID.`in`(
-                  DSL.select(OBSERVATION_PLOTS.OBSERVATION_ID)
-                      .from(OBSERVATION_PLOTS)
-                      .where(
-                          OBSERVATION_PLOTS.monitoringPlots.substrata.STRATUM_ID.`in`(stratumIds)
-                      )
-                      .and(
-                          OBSERVATION_PLOTS.STATUS_ID.`in`(
-                              ObservationPlotStatus.Claimed,
-                              ObservationPlotStatus.Unclaimed,
-                          )
-                      )
-              )
-          )
-          .orderBy(ID)
-          .fetch(ID.asNonNullable())
-    }
   }
 
   /**

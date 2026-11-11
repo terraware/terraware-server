@@ -794,6 +794,10 @@ class AdminPlantingSitesController(
           "The following observations will be abandoned because they have incomplete " +
               "plots in edited strata: " +
               item.observationIds.joinToString(", ")
+      is PlantingSiteEditSummaryItem.ObservationPlotsReassigned ->
+          "The following observations will have their incomplete plots in edited strata " +
+              "replaced with newly-selected plots: " +
+              item.observationIds.joinToString(", ")
       is PlantingSiteEditSummaryItem.SiteAreaChanged ->
           "Total change in plantable area: ${item.areaHaDifference.toPlainString()}ha"
       is PlantingSiteEditSummaryItem.StratumCreated ->

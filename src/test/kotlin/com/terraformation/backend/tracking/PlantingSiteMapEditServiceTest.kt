@@ -5,6 +5,10 @@ import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.StrataRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstrataRecord
@@ -12,6 +16,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -22,6 +27,7 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditSummaryItem
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.edit.SubstratumEdit
+import com.terraformation.backend.tracking.model.AffectedObservations
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
@@ -66,6 +72,35 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
   }
 
   private val editTime = Instant.ofEpochSecond(10000)
+
+  private fun siteHistoryId(existing: ExistingPlantingSiteModel) =
+      plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).single().id!!
+
+  private fun insertPlotHistory(
+      existing: ExistingPlantingSiteModel,
+      plotId: MonitoringPlotId,
+  ): MonitoringPlotHistoryId {
+    val substratumId =
+        existing.strata
+            .flatMap { it.substrata }
+            .single { sub ->
+              sub.monitoringPlots.any { it.id == plotId }
+            }
+            .id
+    val substratumHistoryId =
+        dslContext
+            .select(SUBSTRATUM_HISTORIES.ID)
+            .from(SUBSTRATUM_HISTORIES)
+            .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(substratumId))
+            .fetchOne(SUBSTRATUM_HISTORIES.ID)!!
+    return insertMonitoringPlotHistory(
+        monitoringPlotId = plotId,
+        plantingSiteId = existing.id,
+        plantingSiteHistoryId = siteHistoryId(existing),
+        substratumId = substratumId,
+        substratumHistoryId = substratumHistoryId,
+    )
+  }
 
   @Nested
   inner class CalculateEdit {
@@ -456,14 +491,10 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
       val historyId = plantingSiteHistoriesDao.fetchByPlantingSiteId(existing.id).single().id!!
       val observationId =
           insertObservation(plantingSiteId = existing.id, plantingSiteHistoryId = historyId)
-      val plotHistoryId =
-          insertMonitoringPlotHistory(
-              monitoringPlotId = plotId,
-              plantingSiteId = existing.id,
-              plantingSiteHistoryId = historyId,
-              substratumId = null,
-          )
-      insertObservationPlot(monitoringPlotId = plotId, monitoringPlotHistoryId = plotHistoryId)
+      insertObservationPlot(
+          monitoringPlotId = plotId,
+          monitoringPlotHistoryId = insertPlotHistory(existing, plotId),
+      )
 
       val mapEdit =
           PlantingSiteMapEditModel.of(existing).withSubstratumBoundary(0, 0, rectangle(400, 500))
@@ -471,7 +502,7 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
 
       val siteItems =
           listOf(
-              PlantingSiteEditSummaryItem.ObservationsAbandoned(listOf(observationId)),
+              PlantingSiteEditSummaryItem.ObservationPlotsReassigned(listOf(observationId)),
               PlantingSiteEditSummaryItem.SiteAreaChanged(BigDecimal("-5.000")),
           )
       val stratumItems =
@@ -518,6 +549,172 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
           },
           { assertEquals(plotItems, service.summarizeEdit(edit, PlantingSiteDepth.Plot), "Plot") },
       )
+    }
+
+    @Nested
+    inner class ObservationItems {
+      private fun summarizeWithObservation(
+          state: ObservationState,
+          completedPlot: Boolean,
+      ): Pair<ObservationId, List<PlantingSiteEditSummaryItem>> {
+        val existing =
+            createSite(
+                newSite(width = 500) {
+                  stratum(plantNumPermanent = 2) {
+                    substratum {
+                      permanent()
+                      permanent()
+                    }
+                  }
+                }
+            )
+        val plotId = existing.strata[0].substrata[0].monitoringPlots[0].id
+        val otherPlotId = existing.strata[0].substrata[0].monitoringPlots[1].id
+        val observationId =
+            insertObservation(
+                plantingSiteId = existing.id,
+                plantingSiteHistoryId =
+                    if (state == ObservationState.Upcoming) null else siteHistoryId(existing),
+                state = state,
+            )
+        insertObservationPlot(
+            monitoringPlotId = plotId,
+            monitoringPlotHistoryId = insertPlotHistory(existing, plotId),
+            completedBy = if (completedPlot) user.userId else null,
+        )
+        insertObservationPlot(
+            monitoringPlotId = otherPlotId,
+            monitoringPlotHistoryId = insertPlotHistory(existing, otherPlotId),
+        )
+
+        val mapEdit =
+            PlantingSiteMapEditModel.of(existing).withSubstratumBoundary(0, 0, rectangle(400, 500))
+        val edit = service.calculateEdit(existing.id, mapEdit)
+
+        return observationId to service.summarizeEdit(edit, PlantingSiteDepth.Site)
+      }
+
+      @Test
+      fun `summary lists upcoming observation as reassigned`() {
+        val (observationId, items) = summarizeWithObservation(ObservationState.Upcoming, false)
+
+        assertEquals(
+            listOf(
+                PlantingSiteEditSummaryItem.ObservationPlotsReassigned(listOf(observationId)),
+                PlantingSiteEditSummaryItem.SiteAreaChanged(BigDecimal("-5.000")),
+            ),
+            items,
+        )
+      }
+
+      @Test
+      fun `summary lists in-progress observation with no completed plots as reassigned, not abandoned`() {
+        val (observationId, items) = summarizeWithObservation(ObservationState.InProgress, false)
+
+        assertEquals(
+            listOf(
+                PlantingSiteEditSummaryItem.ObservationPlotsReassigned(listOf(observationId)),
+                PlantingSiteEditSummaryItem.SiteAreaChanged(BigDecimal("-5.000")),
+            ),
+            items,
+        )
+      }
+
+      @Test
+      fun `summary lists in-progress observation with completed plots as abandoned`() {
+        val (observationId, items) = summarizeWithObservation(ObservationState.InProgress, true)
+
+        assertEquals(
+            listOf(
+                PlantingSiteEditSummaryItem.ObservationsAbandoned(listOf(observationId)),
+                PlantingSiteEditSummaryItem.SiteAreaChanged(BigDecimal("-5.000")),
+            ),
+            items,
+        )
+      }
+
+      @Test
+      fun `summary matches handler outcome when edit deletes a stratum`() {
+        val existing =
+            createSite(
+                newSite(width = 500) {
+                  stratum(width = 250, plantNumPermanent = 1) { substratum { permanent() } }
+                  stratum(width = 250, plantNumPermanent = 2) {
+                    substratum {
+                      permanent()
+                      permanent()
+                    }
+                  }
+                }
+            )
+        val historyId = siteHistoryId(existing)
+        val plotId = existing.strata[1].substrata[0].monitoringPlots[0].id
+        val otherPlotId = existing.strata[1].substrata[0].monitoringPlots[1].id
+
+        // Observation with a completed plot in the stratum that will be deleted.
+        val abandonedId =
+            insertObservation(
+                plantingSiteId = existing.id,
+                plantingSiteHistoryId = historyId,
+                state = ObservationState.InProgress,
+            )
+        // Observation with only incomplete plots in the stratum that will be deleted.
+        val reassignedId =
+            insertObservation(
+                plantingSiteId = existing.id,
+                plantingSiteHistoryId = historyId,
+                state = ObservationState.InProgress,
+            )
+        val plotHistoryId = insertPlotHistory(existing, plotId)
+        insertObservationPlot(
+            observationId = abandonedId,
+            monitoringPlotId = plotId,
+            monitoringPlotHistoryId = plotHistoryId,
+            completedBy = user.userId,
+        )
+        insertObservationPlot(
+            observationId = abandonedId,
+            monitoringPlotId = otherPlotId,
+            monitoringPlotHistoryId = insertPlotHistory(existing, otherPlotId),
+        )
+        insertObservationPlot(
+            observationId = reassignedId,
+            monitoringPlotId = plotId,
+            monitoringPlotHistoryId = plotHistoryId,
+        )
+
+        val fullMapEdit = PlantingSiteMapEditModel.of(existing)
+        val mapEdit = fullMapEdit.copy(strata = fullMapEdit.strata.take(1))
+        val edit = service.calculateEdit(existing.id, mapEdit)
+        val summary = service.summarizeEdit(edit, PlantingSiteDepth.Site)
+
+        val expected =
+            AffectedObservations(toAbandon = listOf(abandonedId), toReassign = listOf(reassignedId))
+
+        assertEquals(
+            expected,
+            AffectedObservations(
+                toAbandon =
+                    summary
+                        .filterIsInstance<PlantingSiteEditSummaryItem.ObservationsAbandoned>()
+                        .flatMap { it.observationIds },
+                toReassign =
+                    summary
+                        .filterIsInstance<PlantingSiteEditSummaryItem.ObservationPlotsReassigned>()
+                        .flatMap { it.observationIds },
+            ),
+            "Observations in summary",
+        )
+
+        clock.instant = editTime
+        service.applyEdit(existing.id, mapEdit)
+
+        assertEquals(
+            expected,
+            observationStore.classifyAffectedObservations(existing.id, edit.affectedStrata),
+            "Observations after applying edit",
+        )
+      }
     }
 
     @Test

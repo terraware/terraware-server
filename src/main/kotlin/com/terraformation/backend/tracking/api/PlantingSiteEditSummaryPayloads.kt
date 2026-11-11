@@ -21,6 +21,8 @@ sealed interface PlantingSiteEditSummaryItemPayload {
       return when (model) {
         is PlantingSiteEditSummaryItem.ObservationsAbandoned ->
             ObservationsAbandonedPayload(model.observationIds)
+        is PlantingSiteEditSummaryItem.ObservationPlotsReassigned ->
+            ObservationPlotsReassignedPayload(model.observationIds)
         is PlantingSiteEditSummaryItem.SiteAreaChanged ->
             SiteAreaChangedPayload(model.areaHaDifference)
         is PlantingSiteEditSummaryItem.StratumCreated ->
@@ -87,6 +89,15 @@ sealed interface PlantingSiteEditSummaryItemPayload {
             "edited strata."
 )
 data class ObservationsAbandonedPayload(val observationIds: List<ObservationId>) :
+    PlantingSiteEditSummaryItemPayload
+
+@JsonTypeName("ObservationPlotsReassigned")
+@Schema(
+    description =
+        "Incomplete plots in edited strata would be replaced with newly-selected plots in these " +
+            "observations."
+)
+data class ObservationPlotsReassignedPayload(val observationIds: List<ObservationId>) :
     PlantingSiteEditSummaryItemPayload
 
 @JsonTypeName("SiteAreaChanged")

@@ -18,6 +18,16 @@ sealed interface PlantingSiteEditSummaryItem {
       get() = PlantingSiteDepth.Site
   }
 
+  /**
+   * Observations whose incomplete plots in edited strata would be replaced with newly-selected
+   * plots. This includes upcoming observations that have already been assigned plots.
+   */
+  data class ObservationPlotsReassigned(val observationIds: List<ObservationId>) :
+      PlantingSiteEditSummaryItem {
+    override val depth: PlantingSiteDepth
+      get() = PlantingSiteDepth.Site
+  }
+
   /** Net change in the site's plantable area. */
   data class SiteAreaChanged(val areaHaDifference: BigDecimal) : PlantingSiteEditSummaryItem {
     override val depth: PlantingSiteDepth
