@@ -11,11 +11,13 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
+import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
@@ -28,11 +30,58 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class CreatePlantingSite {
+    @ParameterizedTest
+    @ValueSource(ints = [0, 16])
+    fun `stores baseline temporary total unchanged on create`(temporaryTotal: Int) {
+      val requested = newSite {
+        stratum(baselineNumTemporary = temporaryTotal)
+      }
+          .copy(organizationId = organizationId)
+
+      val actual = store.createPlantingSite(requested)
+
+      assertEquals(
+          requested.strata.single().baselinePlotCounts,
+          actual.strata.single().baselinePlotCounts,
+          "Baseline counts",
+      )
+      assertEquals(
+          temporaryTotal,
+          strataDao.findAll().single().baselineNumTemporaryPlots,
+          "Persisted baseline temporary total",
+      )
+    }
+
+    @Test
+    fun `rejects nonzero baseline permanent plots on create`() {
+      val initial = newSite().copy(organizationId = organizationId)
+      val stratum = initial.strata.single()
+      val requested =
+          initial.copy(
+              strata =
+                  listOf(
+                      stratum.copy(
+                          baselinePlotCounts =
+                              stratum.baselinePlotCounts.copy(numPermanentPlots = 7)
+                      )
+                  )
+          )
+
+      val exception = assertThrows<IllegalArgumentException> { store.createPlantingSite(requested) }
+
+      assertEquals("Baseline surveys must have zero permanent plots", exception.message, "Error")
+      assertTableEmpty(PLANTING_SITES)
+      assertTableEmpty(STRATA)
+      assertTableEmpty(PLANTING_SITE_HISTORIES)
+    }
+
     @Test
     fun `inserts new site`() {
       val projectId = insertProject()
