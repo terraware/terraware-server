@@ -57,9 +57,18 @@ class StratumModelTest : BaseStratumModelTest() {
     assertEquals(
         model.plantPlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = 16),
         model.baselinePlotCounts,
+        "Baseline counts from plant statistical settings",
     )
-    assertEquals(model.baselinePlotCounts, model.plotCounts(ObservationType.BaselineSurvey))
-    assertEquals(model.baselinePlotCounts, model.toNew().baselinePlotCounts)
+    assertEquals(
+        model.baselinePlotCounts,
+        model.plotCounts(ObservationType.BaselineSurvey),
+        "Baseline observation plot counts",
+    )
+    assertEquals(
+        model.baselinePlotCounts,
+        model.toNew().baselinePlotCounts,
+        "New model baseline counts",
+    )
   }
 
   @Test
