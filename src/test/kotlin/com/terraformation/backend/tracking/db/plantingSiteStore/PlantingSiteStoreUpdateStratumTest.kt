@@ -274,8 +274,10 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
       val monitoring = setOf(ObservationType.Monitoring)
       val biomass = setOf(ObservationType.BiomassMeasurements)
+      val baseline = setOf(ObservationType.BaselineSurvey)
 
       listOf(
+              { row: StrataRow -> row.copy(baselineNumTemporaryPlots = 5) } to baseline,
               { row: StrataRow -> row.copy(plantNumPermanentPlots = 2) } to monitoring,
               { row: StrataRow -> row.copy(plantNumTemporaryPlots = 2) } to monitoring,
               { row: StrataRow -> row.copy(biomassNumPermanentPlots = 2) } to biomass,

@@ -4987,7 +4987,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val observationId = insertObservation(state = ObservationState.Upcoming)
       insertObservationRequestedSubstratum(substratumId = roomySubstratumId)
       insertObservationRequestedSubstratum(substratumId = singlePlotSubstratumId)
-      assertTrue(service.assignPlotsToNewObservation(observationId), "Plots assigned")
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
 
       excludeSinglePlotSubstratum()
 

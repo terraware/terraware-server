@@ -324,6 +324,9 @@ class ObservationStore(
    * ID.
    *
    * @param observationTypes If non-null, only include observations of these types.
+   * @param includeRequestedStrata If true, also include observations that request substrata in the
+   *   strata but don't have any incomplete plots there, e.g., because the strata were configured to
+   *   have no plots when the observations were assigned plots.
    *
    * Upcoming observations without any plots are never affected; they get plots when they start.
    */
@@ -331,6 +334,7 @@ class ObservationStore(
       plantingSiteId: PlantingSiteId,
       strata: AffectedStrata,
       observationTypes: Set<ObservationType>? = null,
+      includeRequestedStrata: Boolean = false,
   ): AffectedObservations {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -348,6 +352,39 @@ class ObservationStore(
             )
         )
 
+    val hasIncompletePlotInStrata =
+        DSL.exists(
+            DSL.selectOne()
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .and(
+                    OBSERVATION_PLOTS.STATUS_ID.`in`(
+                        ObservationPlotStatus.Claimed,
+                        ObservationPlotStatus.Unclaimed,
+                    )
+                )
+                .and(observationPlotInStrataCondition(strata))
+        )
+
+    val requestsSubstratumInStrata =
+        if (includeRequestedStrata) {
+          DSL.exists(
+                  DSL.selectOne()
+                      .from(OBSERVATION_REQUESTED_SUBSTRATA)
+                      .join(SUBSTRATA)
+                      .on(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+                      .where(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                      .and(SUBSTRATA.STRATUM_ID.`in`(strata.stratumIds))
+              )
+              .andExists(
+                  DSL.selectOne()
+                      .from(OBSERVATION_PLOTS)
+                      .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
+        } else {
+          DSL.falseCondition()
+        }
+
     val observations =
         with(OBSERVATIONS) {
           dslContext
@@ -363,18 +400,7 @@ class ObservationStore(
                       ObservationState.Overdue,
                   )
               )
-              .andExists(
-                  DSL.selectOne()
-                      .from(OBSERVATION_PLOTS)
-                      .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(ID))
-                      .and(
-                          OBSERVATION_PLOTS.STATUS_ID.`in`(
-                              ObservationPlotStatus.Claimed,
-                              ObservationPlotStatus.Unclaimed,
-                          )
-                      )
-                      .and(observationPlotInStrataCondition(strata))
-              )
+              .and(hasIncompletePlotInStrata.or(requestsSubstratumInStrata))
               .orderBy(ID)
               .fetch()
         }

@@ -1315,6 +1315,11 @@ class PlantingSiteStore(
       // new plot counts, the change is rolled back.
       val changedObservationTypes =
           setOfNotNull(
+              if (initial.baselineNumTemporaryPlots != edited.baselineNumTemporaryPlots) {
+                ObservationType.BaselineSurvey
+              } else {
+                null
+              },
               if (
                   initial.plantNumPermanentPlots != edited.plantNumPermanentPlots ||
                       initial.plantNumTemporaryPlots != edited.plantNumTemporaryPlots

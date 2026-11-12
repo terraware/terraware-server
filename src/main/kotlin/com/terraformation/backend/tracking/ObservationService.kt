@@ -1255,7 +1255,8 @@ class ObservationService(
    * Updates active observations that have incomplete plots in strata whose maps or plot counts have
    * changed. For map edits, observations that already have completed plots are abandoned; for plot
    * count changes, they are left alone. The others get new plots in the changed strata; their plots
-   * in other strata are kept.
+   * in other strata are kept. For plot count changes, observations that request substrata in the
+   * changed strata but have no plots there are updated too, since they may now need plots there.
    *
    * This runs as the system user because the change may have been made by a super admin who isn't a
    * member of the organization; the caller's permission to make the change was already checked.
@@ -1273,7 +1274,12 @@ class ObservationService(
     systemUser.run {
       dslContext.transaction { _ ->
         val affected =
-            observationStore.classifyAffectedObservations(plantingSiteId, strata, observationTypes)
+            observationStore.classifyAffectedObservations(
+                plantingSiteId,
+                strata,
+                observationTypes,
+                includeRequestedStrata = isPlotCountChange,
+            )
 
         if (isPlotCountChange) {
           if (affected.toAbandon.isNotEmpty()) {
