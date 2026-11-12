@@ -45,6 +45,7 @@ import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
+import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -206,6 +207,8 @@ data class StratumDensityUpdatedEvent(
 ) : RateLimitedEvent<StratumDensityUpdatedEvent> {
   override fun getMinimumInterval(): Duration = Duration.ofHours(24)
 
+  override fun getInitialDelay(): Duration = Duration.ofMinutes(15)
+
   override fun getRateLimitKey() = plantingSiteId
 
   override fun combine(existing: StratumDensityUpdatedEvent): StratumDensityUpdatedEvent {
@@ -230,7 +233,10 @@ data class StratumDensityUpdatedEvent(
           )
     }
 
-    return StratumDensityUpdatedEvent(combinedChanges.values.toList(), plantingSiteId)
+    return StratumDensityUpdatedEvent(
+        combinedChanges.values.filterNot { it.previousDensity.equalsIgnoreScale(it.newDensity) },
+        plantingSiteId,
+    )
   }
 }
 
@@ -277,6 +283,8 @@ data class RateLimitedT0DataAssignedEvent(
       mapOf("organizationId" to organizationId, "plantingSiteId" to plantingSiteId)
 
   override fun getMinimumInterval(): Duration = Duration.ofHours(24)
+
+  override fun getInitialDelay(): Duration = Duration.ofMinutes(15)
 
   override fun combine(existing: RateLimitedT0DataAssignedEvent): RateLimitedT0DataAssignedEvent {
     require(existing.organizationId == organizationId) {
@@ -994,6 +1002,8 @@ data class RateLimitedMonitoringSpeciesTotalsEditedEvent(
       mapOf("organizationId" to organizationId, "plantingSiteId" to plantingSiteId)
 
   override fun getMinimumInterval(): Duration = Duration.ofHours(24)
+
+  override fun getInitialDelay(): Duration = Duration.ofMinutes(15)
 
   override fun combine(
       existing: RateLimitedMonitoringSpeciesTotalsEditedEvent

@@ -802,6 +802,11 @@ class NotificationService(
 
   @EventListener
   fun on(event: StratumDensityUpdatedEvent) {
+    if (event.densityChanges.isEmpty()) {
+      // Changes were reversed before the event was published.
+      return
+    }
+
     systemUser.run {
       val (plantingSite, organization) = fetchSiteAndOrg(event.plantingSiteId)
 
