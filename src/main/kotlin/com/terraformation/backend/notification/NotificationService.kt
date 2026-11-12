@@ -97,6 +97,7 @@ import com.terraformation.backend.email.model.PlantingSeasonRescheduled
 import com.terraformation.backend.email.model.PlantingSeasonScheduled
 import com.terraformation.backend.email.model.PlantingSeasonSpeciesUpdated
 import com.terraformation.backend.email.model.PlantingSeasonStarted
+import com.terraformation.backend.email.model.PlantingSeasonTargetQuantitiesChanged
 import com.terraformation.backend.email.model.PlantingSiteMapEdited
 import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
@@ -118,8 +119,10 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
@@ -191,6 +194,7 @@ class NotificationService(
     private val observationStore: ObservationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
+    private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore,
     private val plantingSeasonStore: PlantingSeasonStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
@@ -1421,6 +1425,64 @@ class NotificationService(
                       .fullPlantingSeason(event.organizationId, event.plantingSeasonId)
                       .toString(),
               removedSpeciesNames = removedSpeciesNames,
+          )
+
+      sendToOrganization(event.organizationId, emailContent = emailContent)
+    }
+  }
+
+  @EventListener
+  fun on(event: RateLimitedPlantingSeasonTargetQuantitiesChangedEvent) {
+    if (event.changes.isEmpty()) {
+      return
+    }
+
+    systemUser.run {
+      val plantingSeason = fetchPlantingSeasonOrNull(event.plantingSeasonId) ?: return@run
+      val plantingSite =
+          plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+
+      // Species that were removed from the season are covered by the species-updated email.
+      val speciesInSeason =
+          plantingSeasonSpeciesTargetsStore
+              .fetchList(event.plantingSeasonId)
+              .map { it.speciesId }
+              .toSet()
+      val speciesNames =
+          speciesStore.fetchScientificNames(
+              event.organizationId,
+              event.changes.map { it.speciesId }.filter { it in speciesInSeason },
+          )
+
+      val changes =
+          event.changes
+              .mapNotNull { change ->
+                speciesNames[change.speciesId]?.let { speciesName ->
+                  PlantingSeasonTargetQuantitiesChanged.Change(
+                      newQuantity = change.newQuantity,
+                      oldQuantity = change.oldQuantity,
+                      speciesName = speciesName,
+                      stratumName = change.stratumName,
+                      substratumName = change.substratumName,
+                  )
+                }
+              }
+              .sortedWith(compareBy({ it.speciesName }, { it.stratumName }, { it.substratumName }))
+
+      if (changes.isEmpty()) {
+        return@run
+      }
+
+      val emailContent =
+          PlantingSeasonTargetQuantitiesChanged(
+              config = config,
+              changes = changes,
+              plantingSeasonName = plantingSeason.name,
+              plantingSeasonUrl =
+                  webAppUrls
+                      .fullPlantingSeason(event.organizationId, event.plantingSeasonId)
+                      .toString(),
+              plantingSiteName = plantingSite.name,
           )
 
       sendToOrganization(event.organizationId, emailContent = emailContent)

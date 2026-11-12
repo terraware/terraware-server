@@ -13,6 +13,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import jakarta.inject.Named
@@ -82,6 +83,27 @@ class PlantingSeasonSpeciesTargetsStore(
             .set(MODIFIED_BY, userId)
             .set(MODIFIED_TIME, now)
             .execute()
+
+        if (!isNewSpecies && (oldQuantity ?: 0) != quantity) {
+          rateLimitedEventPublisher.publishEvent(
+              RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
+                  changes =
+                      listOf(
+                          RateLimitedPlantingSeasonTargetQuantitiesChangedEvent.Change(
+                              newQuantity = quantity,
+                              oldQuantity = oldQuantity ?: 0,
+                              speciesId = speciesId,
+                              stratumName = substratumInfo.stratumName,
+                              substratumId = substratumId,
+                              substratumName = substratumInfo.substratumName,
+                          )
+                      ),
+                  organizationId = organizationId,
+                  plantingSeasonId = plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+              )
+          )
+        }
 
         if (isNewSpecies) {
           rateLimitedEventPublisher.publishEvent(
@@ -267,15 +289,16 @@ class PlantingSeasonSpeciesTargetsStore(
 
     seasonHelper.withLockedPlantingSeason(plantingSeasonId) {
       with(PLANTING_SEASON_SPECIES_TARGETS) {
-        val rowsDeleted =
+        val deletedQuantity =
             dslContext
                 .deleteFrom(PLANTING_SEASON_SPECIES_TARGETS)
                 .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
                 .and(SUBSTRATUM_ID.eq(substratumId))
                 .and(SPECIES_ID.eq(speciesId))
-                .execute()
+                .returning(QUANTITY)
+                .fetchOne(QUANTITY)
 
-        if (rowsDeleted > 0) {
+        if (deletedQuantity != null) {
           val (plantingSiteId, organizationId) =
               seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
           val substratumInfo = seasonHelper.fetchSubstratumInfo(substratumId)
@@ -293,7 +316,28 @@ class PlantingSeasonSpeciesTargetsStore(
               )
           )
 
-          if (!speciesHasTargets(plantingSeasonId, speciesId)) {
+          if (speciesHasTargets(plantingSeasonId, speciesId)) {
+            if (deletedQuantity != 0) {
+              rateLimitedEventPublisher.publishEvent(
+                  RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
+                      changes =
+                          listOf(
+                              RateLimitedPlantingSeasonTargetQuantitiesChangedEvent.Change(
+                                  newQuantity = 0,
+                                  oldQuantity = deletedQuantity,
+                                  speciesId = speciesId,
+                                  stratumName = substratumInfo.stratumName,
+                                  substratumId = substratumId,
+                                  substratumName = substratumInfo.substratumName,
+                              )
+                          ),
+                      organizationId = organizationId,
+                      plantingSeasonId = plantingSeasonId,
+                      plantingSiteId = plantingSiteId,
+                  )
+              )
+            }
+          } else {
             rateLimitedEventPublisher.publishEvent(
                 RateLimitedPlantingSeasonSpeciesChangedEvent(
                     organizationId = organizationId,

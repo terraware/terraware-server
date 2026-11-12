@@ -435,6 +435,28 @@ class PlantingSeasonSpeciesUpdated(
     get() = EmailNotificationCategory.Nursery
 }
 
+class PlantingSeasonTargetQuantitiesChanged(
+    config: TerrawareServerConfig,
+    val changes: List<Change>,
+    val plantingSeasonName: String,
+    val plantingSeasonUrl: String,
+    val plantingSiteName: String,
+) : EmailTemplateModel(config) {
+  class Change(
+      val newQuantity: Int,
+      val oldQuantity: Int,
+      val speciesName: String,
+      val stratumName: String,
+      val substratumName: String,
+  )
+
+  override val templateDir: String
+    get() = "plantingSeason/targetQuantitiesChanged"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.Nursery
+}
+
 class PlantingSeasonNotScheduled(
     config: TerrawareServerConfig,
     val plantingSiteName: String,

@@ -124,9 +124,12 @@ import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.polygon
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.report.model.SeedFundReportMetadata
@@ -217,6 +220,7 @@ internal class NotificationServiceEmailTest {
   private val observationStore: ObservationStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
+  private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore = mockk()
   private val plantingSeasonStore: PlantingSeasonStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
   private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService = mockk()
@@ -289,6 +293,7 @@ internal class NotificationServiceEmailTest {
           observationStore,
           organizationStore,
           parentStore,
+          plantingSeasonSpeciesTargetsStore,
           plantingSeasonStore,
           plantingSiteStore,
           projectAcceleratorDetailsService,
@@ -1476,6 +1481,81 @@ internal class NotificationServiceEmailTest {
         RateLimitedPlantingSeasonSpeciesChangedEvent(
             organizationId = organization.id,
             plantingSeasonId = plantingSeason.id,
+        )
+    )
+
+    assertNoMessageSent()
+  }
+
+  @Test
+  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent lists quantity changes for species still in season`() {
+    every { plantingSeasonSpeciesTargetsStore.fetchList(plantingSeason.id) } returns
+        listOf(PlantingSeasonSpeciesTargetModel(25, species.id, SubstratumId(1)))
+
+    service.on(
+        RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
+            changes =
+                listOf(
+                    RateLimitedPlantingSeasonTargetQuantitiesChangedEvent.Change(
+                        newQuantity = 25,
+                        oldQuantity = 12,
+                        speciesId = species.id,
+                        stratumName = "North",
+                        substratumId = SubstratumId(1),
+                        substratumName = "North-1",
+                    ),
+                    RateLimitedPlantingSeasonTargetQuantitiesChangedEvent.Change(
+                        newQuantity = 40,
+                        oldQuantity = 30,
+                        speciesId = SpeciesId(2),
+                        stratumName = "South",
+                        substratumId = SubstratumId(2),
+                        substratumName = "South-1",
+                    ),
+                ),
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+            plantingSiteId = plantingSite.id,
+        )
+    )
+
+    assertSubjectContains(
+        "Species target quantities were changed in ${plantingSeason.name} for ${plantingSite.name}"
+    )
+    assertBodyContains("Species were updated in ${plantingSeason.name} for ${plantingSite.name}")
+    assertBodyContains(species.scientificName, "Species name")
+    assertBodyContains("North-1", "Substratum name")
+    assertBodyContains(">12<", "Old quantity")
+    assertBodyContains(">25<", "New quantity")
+    assertBodyNotContains("South-1", "Substratum of species no longer in season")
+    assertBodyContains(
+        webAppUrls.fullPlantingSeason(organization.id, plantingSeason.id),
+        "Link URL",
+    )
+    assertRecipientsEqual(organizationRecipients)
+    assertIsEventListener<RateLimitedPlantingSeasonTargetQuantitiesChangedEvent>(service)
+  }
+
+  @Test
+  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent does not send email if no species remain in season`() {
+    every { plantingSeasonSpeciesTargetsStore.fetchList(plantingSeason.id) } returns emptyList()
+
+    service.on(
+        RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
+            changes =
+                listOf(
+                    RateLimitedPlantingSeasonTargetQuantitiesChangedEvent.Change(
+                        newQuantity = 25,
+                        oldQuantity = 12,
+                        speciesId = species.id,
+                        stratumName = "North",
+                        substratumId = SubstratumId(1),
+                        substratumName = "North-1",
+                    )
+                ),
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+            plantingSiteId = plantingSite.id,
         )
     )
 
