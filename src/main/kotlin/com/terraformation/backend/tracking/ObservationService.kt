@@ -508,46 +508,51 @@ class ObservationService(
       }
     }
 
-    return dslContext.transactionResult { _ ->
-      if (assignPlots) {
-        // Plot allocation locks the planting site. Creating the observation first would take a
-        // weaker lock on the site via the foreign key, and two concurrent schedulings on the same
-        // site could then deadlock trying to upgrade it. Take the site lock up front instead; it
-        // is held until this transaction ends.
-        systemUser.run { entityLocker.withLockedPlantingSite(observation.plantingSiteId) {} }
-      }
-
-      val observationId = observationStore.createObservation(observation)
-
-      val assignmentResult =
+    val (observationId, assignmentResult) =
+        dslContext.transactionResult { _ ->
           if (assignPlots) {
-            // The caller's permission to schedule the observation was checked above. Allocation
-            // requires organization-level permissions a super admin might not have.
-            log.withMDC("observationId" to observationId) {
-              systemUser.run {
-                entityLocker.withLockedObservation(observationId) { lockedObservation ->
-                  when (val result = assignPlots(lockedObservation)) {
-                    is PlotAssignmentResult.Unstartable ->
-                        throw ObservationPlotsUnavailableException(observation.plantingSiteId)
-                    is PlotAssignmentResult.Assigned -> result
-                  }
-                }
-              }
-            }
-          } else {
-            null
+            // Plot allocation locks the planting site. Creating the observation first would take a
+            // weaker lock on the site via the foreign key, and two concurrent schedulings on the
+            // same site could then deadlock trying to upgrade it. Take the site lock up front
+            // instead; it is held until this transaction ends.
+            systemUser.run { entityLocker.withLockedPlantingSite(observation.plantingSiteId) {} }
           }
 
-      val createdObservation = observationStore.fetchObservationById(observationId)
+          val observationId = observationStore.createObservation(observation)
 
-      eventPublisher.publishEvent(ObservationScheduledEvent(createdObservation))
+          val assignmentResult =
+              if (assignPlots) {
+                // The caller's permission to schedule the observation was checked above. Allocation
+                // requires organization-level permissions a super admin might not have.
+                log.withMDC("observationId" to observationId) {
+                  systemUser.run {
+                    entityLocker.withLockedObservation(observationId) { lockedObservation ->
+                      when (val result = assignPlots(lockedObservation)) {
+                        is PlotAssignmentResult.Unstartable ->
+                            throw ObservationPlotsUnavailableException(observation.plantingSiteId)
+                        is PlotAssignmentResult.Assigned -> result
+                      }
+                    }
+                  }
+                }
+              } else {
+                null
+              }
 
-      if (assignmentResult != null) {
-        publishEventIfUnderallocated(createdObservation, assignmentResult)
-      }
+          observationId to assignmentResult
+        }
 
-      observationId
+    // Published after the transaction commits so that notifications aren't sent about an
+    // observation that ends up being rolled back.
+    val createdObservation = observationStore.fetchObservationById(observationId)
+
+    eventPublisher.publishEvent(ObservationScheduledEvent(createdObservation))
+
+    if (assignmentResult != null) {
+      publishEventIfUnderallocated(createdObservation, assignmentResult)
     }
+
+    return observationId
   }
 
   fun rescheduleObservation(
