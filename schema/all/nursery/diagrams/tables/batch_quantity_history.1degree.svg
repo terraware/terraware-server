@@ -14,7 +14,7 @@
 <g id="node1" class="node">
 <title>batch_quantity_history</title>
 <g id="a_node1"><a xlink:href="../../tables/batch_quantity_history.html" xlink:title="batch_quantity_history" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="510,-184.02 510,-514.02 775,-514.02 775,-184.02 510,-184.02"/>
+<polygon fill="#ffffff" stroke="transparent" points="510,-162.02 510,-514.02 775,-514.02 775,-162.02 510,-162.02"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="512.5,-490.02 512.5,-512.02 773.5,-512.02 773.5,-490.02 512.5,-490.02"/>
 <polygon fill="none" stroke="black" points="512.5,-490.02 512.5,-512.02 773.5,-512.02 773.5,-490.02 512.5,-490.02"/>
 <text text-anchor="start" x="517.5" y="-499.22" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batch_quantity_history</text>
@@ -80,16 +80,20 @@
 <text text-anchor="start" x="532.5" y="-212.22" font-family="Helvetica,sans-Serif" font-size="11.00">accession_id</text>
 <polygon fill="none" stroke="black" points="673.5,-204.02 673.5,-226.02 773.5,-226.02 773.5,-204.02 673.5,-204.02"/>
 <text text-anchor="start" x="676.5" y="-212.22" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="transparent" points="512.5,-186.02 512.5,-204.02 597.5,-204.02 597.5,-186.02 512.5,-186.02"/>
-<polygon fill="none" stroke="black" points="512.5,-186.02 512.5,-204.02 597.5,-204.02 597.5,-186.02 512.5,-186.02"/>
-<text text-anchor="start" x="515.5" y="-192.22" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="transparent" points="597.5,-186.02 597.5,-204.02 673.5,-204.02 673.5,-186.02 597.5,-186.02"/>
-<polygon fill="none" stroke="black" points="597.5,-186.02 597.5,-204.02 673.5,-204.02 673.5,-186.02 597.5,-186.02"/>
-<text text-anchor="start" x="663.5" y="-192.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="673.5,-186.02 673.5,-204.02 773.5,-204.02 773.5,-186.02 673.5,-186.02"/>
-<polygon fill="none" stroke="black" points="673.5,-186.02 673.5,-204.02 773.5,-204.02 773.5,-186.02 673.5,-186.02"/>
-<text text-anchor="start" x="754.5" y="-192.22" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="511,-185.02 511,-513.02 774,-513.02 774,-185.02 511,-185.02"/>
+<polygon fill="none" stroke="black" points="512.5,-182.02 512.5,-204.02 673.5,-204.02 673.5,-182.02 512.5,-182.02"/>
+<text text-anchor="start" x="532.5" y="-190.22" font-family="Helvetica,sans-Serif" font-size="11.00">effective_time</text>
+<polygon fill="none" stroke="black" points="673.5,-182.02 673.5,-204.02 773.5,-204.02 773.5,-182.02 673.5,-182.02"/>
+<text text-anchor="start" x="676.5" y="-190.22" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
+<polygon fill="#ffffff" stroke="transparent" points="512.5,-164.02 512.5,-182.02 597.5,-182.02 597.5,-164.02 512.5,-164.02"/>
+<polygon fill="none" stroke="black" points="512.5,-164.02 512.5,-182.02 597.5,-182.02 597.5,-164.02 512.5,-164.02"/>
+<text text-anchor="start" x="515.5" y="-170.22" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="transparent" points="597.5,-164.02 597.5,-182.02 673.5,-182.02 673.5,-164.02 597.5,-164.02"/>
+<polygon fill="none" stroke="black" points="597.5,-164.02 597.5,-182.02 673.5,-182.02 673.5,-164.02 597.5,-164.02"/>
+<text text-anchor="start" x="663.5" y="-170.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="673.5,-164.02 673.5,-182.02 773.5,-182.02 773.5,-164.02 673.5,-164.02"/>
+<polygon fill="none" stroke="black" points="673.5,-164.02 673.5,-182.02 773.5,-182.02 773.5,-164.02 673.5,-164.02"/>
+<text text-anchor="start" x="754.5" y="-170.22" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="511,-163.02 511,-513.02 774,-513.02 774,-163.02 511,-163.02"/>
 </a>
 </g>
 </g>

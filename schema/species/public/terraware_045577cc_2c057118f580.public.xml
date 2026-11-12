@@ -1,216 +1,237 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="terraware_71a55913_7131c89f869b" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_045577cc_2c057118f580" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
    <tables>
-      <table name="automations" remarks="Configuration of automatic processes run by the device manager." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+      <table name="botanical_countries" remarks="Geographic areas of each of the TDWG Level 3 regions." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level3_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <child column="botanical_country_code" foreignKey="country_botanical_countries_botanical_country_code_fkey" implied="false" onDeleteCascade="true" schema="public" table="country_botanical_countries"/>
+            <child column="botanical_country_code" foreignKey="organizations_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="botanical_country_code" foreignKey="wcvp_distributions_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="wcvp_distributions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="settings" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="device_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="timeseries_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="verbosity" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="17" id="13" name="lower_threshold" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
-         <column autoUpdated="false" defaultValue="null" digits="17" id="14" name="upper_threshold" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="automations_pkey" unique="true">
-            <column ascending="true" name="id"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="level2_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="level1_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="boundary" nullable="false" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <primaryKey column="level3_code" sequenceNumberInPK="1"/>
+         <index name="botanical_countries_pkey" unique="true">
+            <column ascending="true" name="level3_code"/>
          </index>
-         <index name="automations_device_id_timeseries_name_idx" unique="false">
-            <column ascending="true" name="device_id"/>
-            <column ascending="true" name="timeseries_name"/>
-         </index>
-         <index name="automations_facility_id_name_idx" unique="false">
-            <column ascending="true" name="facility_id"/>
-            <column ascending="true" name="name"/>
-         </index>
-         <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="automations_description_check"/>
-         <checkConstraint constraint="(timeseries_name !~ similar_to_escape(' *'::text))" name="automations_timeseries_name_check"/>
       </table>
-      <table name="device_managers" remarks="Information about device managers. This is a combination of information from the Balena API and locally-generated values." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="balena_id" nullable="false" remarks="Balena-assigned device identifier." size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="balena_modified_time" nullable="false" remarks="Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_online" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="last_connectivity_event" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="update_progress" nullable="true" remarks="Percent complete of software download and installation (0-100). Null if no software update is in progress." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="sensor_kit_id" nullable="false" remarks="ID code that is physically printed on the sensor kit and set as a tag value in the Balena device configuration." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="created_time" nullable="false" remarks="When this device manager was added to the local database. The Balena device may have been created earlier." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="refreshed_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="balena_uuid" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="device_managers_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="device_managers_balena_id_unique" unique="true">
-            <column ascending="true" name="balena_id"/>
-         </index>
-         <index name="device_managers_balena_uuid_unique" unique="true">
-            <column ascending="true" name="balena_uuid"/>
-         </index>
-         <index name="device_managers_facility_id_key" unique="true">
-            <column ascending="true" name="facility_id"/>
-         </index>
-         <index name="device_managers_short_code_key" unique="true">
-            <column ascending="true" name="sensor_kit_id"/>
-         </index>
-         <index name="device_managers_user_id_idx" unique="false">
-            <column ascending="true" name="user_id"/>
-         </index>
-         <checkConstraint constraint="(((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL)))" name="device_managers_user_iff_facility"/>
-      </table>
-      <table name="device_template_categories" remarks="(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="category_id" foreignKey="device_templates_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_templates"/>
+      <table name="conservation_categories" remarks="(Enum) IUCN conservation category codes." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <child column="conservation_category_id" foreignKey="species_conservation_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="device_template_categories_pkey" unique="true">
+         <index name="conservation_categories_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-      </table>
-      <table name="device_templates" remarks="Canned device configurations for use in cases where we want to show a list of possible devices to the user and create the selected device with the correct settings so that the device manager can talk to it." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="category_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="device_templates_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_template_categories"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="device_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="make" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="model" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="protocol" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="address" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="port" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="settings" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="verbosity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="device_templates_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="device_templates_category_id_name_key" unique="true">
-            <column ascending="true" name="category_id"/>
+         <index name="conservation_categories_name_key" unique="true">
             <column ascending="true" name="name"/>
          </index>
-         <checkConstraint constraint="(address !~ similar_to_escape(' *'::text))" name="device_templates_address_check"/>
-         <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="device_templates_description_check"/>
-         <checkConstraint constraint="(protocol !~ similar_to_escape(' *'::text))" name="device_templates_protocol_check"/>
       </table>
-      <table name="devices" remarks="Hardware devices managed by the device manager at a facility." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="device_id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="automations"/>
-            <child column="parent_id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
-            <child column="device_id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries"/>
+      <table name="country_botanical_countries" remarks="Which countries contain (either entirely or partially) which botanical countries." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="country_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="botanical_country_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="level3_code" foreignKey="country_botanical_countries_botanical_country_code_fkey" implied="false" onDeleteCascade="true" schema="public" table="botanical_countries"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="devices_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="make" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="model" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="protocol" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="address" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="port" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="true" digits="0" id="9" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="settings" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="parent_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="verbosity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="device_pkey" unique="true">
-            <column ascending="true" name="id"/>
+         <primaryKey column="country_code" sequenceNumberInPK="1"/>
+         <primaryKey column="botanical_country_code" sequenceNumberInPK="2"/>
+         <index name="country_botanical_countries_pkey" unique="true">
+            <column ascending="true" name="country_code"/>
+            <column ascending="true" name="botanical_country_code"/>
          </index>
-         <checkConstraint constraint="(address !~ similar_to_escape(' *'::text))" name="devices_address_check"/>
-         <checkConstraint constraint="(protocol !~ similar_to_escape(' *'::text))" name="devices_protocol_check"/>
+         <index name="country_botanical_countries_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
+         </index>
       </table>
-      <table name="facilities" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="facility_id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_sub_locations"/>
-            <child column="facility_id" foreignKey="batches_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
-            <child column="destination_facility_id" foreignKey="withdrawals_destination_facility_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
-            <child column="facility_id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
-            <child column="facility_id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="automations"/>
-            <child column="facility_id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
-            <child column="facility_id" foreignKey="devices_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
-            <child column="facility_id" foreignKey="accessions_facility_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="30" digits="0" id="7" name="max_idle_minutes" nullable="false" remarks="Send an alert if this many minutes pass without new timeseries data from a facility's device manager." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="last_timeseries_time" nullable="true" remarks="When the most recent timeseries data was received from the facility." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="idle_after_time" nullable="true" remarks="Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="idle_since_time" nullable="true" remarks="Time at which the facility became idle. Null if the facility is not currently considered idle." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="1" digits="0" id="12" name="connection_state_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_connection_states"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="last_notification_date" nullable="true" remarks="Local date on which facility-related notifications were last generated." size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="'1970-01-01 00:00:00+00'::timestamp with time zone" digits="6" id="16" name="next_notification_time" nullable="false" remarks="Time at which the server should next generate notifications for the facility if any are needed." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="build_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="build_completed_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="operation_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="capacity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="facility_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="location" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="site_module_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="facilities_idle_after_time_idx" unique="false">
-            <column ascending="true" name="idle_after_time"/>
-         </index>
-         <index name="facilities_next_notification_time_idx" unique="false">
-            <column ascending="true" name="next_notification_time"/>
-         </index>
-         <index name="facilities_organization_id_idx" unique="false">
-            <column ascending="true" name="organization_id"/>
-         </index>
-         <index name="facilities_organization_id_type_id_facility_number_key" unique="true">
-            <column ascending="true" name="organization_id"/>
-            <column ascending="true" name="type_id"/>
-            <column ascending="true" name="facility_number"/>
-         </index>
-         <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="facilities_description_check"/>
-      </table>
-      <table name="facility_connection_states" remarks="(Enum) Progress of the configuration of a device manager for a facility." schema="public" type="TABLE">
+      <table name="ecosystem_types" remarks="(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation's &quot;Terrestrial Ecoregions of the World&quot; report." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="connection_state_id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="ecosystem_type_id" foreignKey="species_ecosystem_types_ecosystem_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_ecosystem_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="facility_connection_states_pkey" unique="true">
+         <index name="ecosystem_types_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="ecosystem_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="external_dataset_imports" remarks="The most recently imported versions of external data sets." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="external_dataset_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="external_dataset_imports_external_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="imported_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="last_publication_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <primaryKey column="external_dataset_type_id" sequenceNumberInPK="1"/>
+         <index name="external_dataset_imports_pkey" unique="true">
+            <column ascending="true" name="external_dataset_type_id"/>
+         </index>
+      </table>
+      <table name="external_dataset_types" remarks="Types of external data sets that the system can pull information from." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="external_dataset_type_id" foreignKey="external_dataset_imports_external_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_imports"/>
+            <child column="calculated_nativity_dataset_type_id" foreignKey="project_species_calculated_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="pending_nativity_dataset_type_id" foreignKey="project_species_pending_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="common_name_dataset_type_id" foreignKey="species_common_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <child column="family_name_dataset_type_id" foreignKey="species_family_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="external_dataset_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="gbif_distributions" remarks="Information about geographic distribution of species and their conservation statuses." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="occurrence_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="threat_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="gbif_distributions_taxon_id_idx" unique="false">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+         <checkConstraint constraint="(country_code !~ similar_to_escape(' *'::text))" name="gbif_distributions_country_code_check"/>
+         <checkConstraint constraint="(establishment_means !~ similar_to_escape(' *'::text))" name="gbif_distributions_establishment_means_check"/>
+         <checkConstraint constraint="(occurrence_status !~ similar_to_escape(' *'::text))" name="gbif_distributions_occurrence_status_check"/>
+         <checkConstraint constraint="(threat_status !~ similar_to_escape(' *'::text))" name="gbif_distributions_threat_status_check"/>
+      </table>
+      <table name="gbif_name_words" numRows="0" remarks="Inverted index of lower-cased words from species and family names in the GBIF backbone dataset. Used to support fast per-word prefix searches." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="gbif_name_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="gbif_name_words_gbif_name_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_names"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="word" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="gbif_name_words_gbif_name_id_idx" unique="false">
+            <column ascending="true" name="gbif_name_id"/>
+         </index>
+         <index name="gbif_name_words_word_gbif_name_id_idx" unique="false">
+            <column ascending="true" name="word"/>
+            <column ascending="true" name="gbif_name_id"/>
+         </index>
+      </table>
+      <table name="gbif_names" numRows="0" remarks="Scientific and vernacular names from the GBIF backbone dataset. Names are not required to be unique." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="gbif_name_id" foreignKey="gbif_name_words_gbif_name_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_name_words"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="taxon_id" foreignKey="gbif_names_taxon_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_taxa"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="language" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="gbif_names_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="gbif_names__name_trgm" unique="false">
+            <column ascending="true" name="name"/>
+         </index>
+         <index name="gbif_names_name_is_scientific_idx" unique="false">
+            <column ascending="true" name="name"/>
+            <column ascending="true" name="is_scientific"/>
+         </index>
+         <index name="gbif_names_taxon_id_idx" unique="false">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+         <checkConstraint constraint="(language !~ similar_to_escape(' *'::text))" name="gbif_names_language_check"/>
+      </table>
+      <table name="gbif_taxa" remarks="Taxonomic data about species and families. A subset of the GBIF backbone dataset." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="GBIF-defined ID of the taxon. GBIF taxon IDs are unrelated to the WCVP taxon IDs for the same species." size="19" type="int8" typeCode="-5">
+            <child column="taxon_id" foreignKey="gbif_names_taxon_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_names"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="dataset_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="parent_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="accepted_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="original_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="canonical_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="generic_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="specific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="infraspecific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="taxon_rank" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="taxonomic_status" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="nomenclatural_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="phylum" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="class" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="order" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="family" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="genus" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
+         <index name="gbif_taxa_pkey" unique="true">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+         <checkConstraint constraint="(canonical_name !~ similar_to_escape(' *'::text))" name="gbif_taxa_canonical_name_check"/>
+         <checkConstraint constraint="(class !~ similar_to_escape(' *'::text))" name="gbif_taxa_class_check"/>
+         <checkConstraint constraint="(dataset_id !~ similar_to_escape(' *'::text))" name="gbif_taxa_dataset_id_check"/>
+         <checkConstraint constraint="(family !~ similar_to_escape(' *'::text))" name="gbif_taxa_family_check"/>
+         <checkConstraint constraint="(generic_name !~ similar_to_escape(' *'::text))" name="gbif_taxa_generic_name_check"/>
+         <checkConstraint constraint="(genus !~ similar_to_escape(' *'::text))" name="gbif_taxa_genus_check"/>
+         <checkConstraint constraint="(infraspecific_epithet !~ similar_to_escape(' *'::text))" name="gbif_taxa_infraspecific_epithet_check"/>
+         <checkConstraint constraint="(nomenclatural_status !~ similar_to_escape(' *'::text))" name="gbif_taxa_nomenclatural_status_check"/>
+         <checkConstraint constraint="(&quot;order&quot; !~ similar_to_escape(' *'::text))" name="gbif_taxa_order_check"/>
+         <checkConstraint constraint="(phylum !~ similar_to_escape(' *'::text))" name="gbif_taxa_phylum_check"/>
+         <checkConstraint constraint="(specific_epithet !~ similar_to_escape(' *'::text))" name="gbif_taxa_specific_epithet_check"/>
+      </table>
+      <table name="gbif_vernacular_names" remarks="Vernacular names for species and families. Part of the GBIF backbone dataset." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="vernacular_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="language" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="gbif_vernacular_names_taxon_id_idx" unique="false">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+         <checkConstraint constraint="(country_code !~ similar_to_escape(' *'::text))" name="gbif_vernacular_names_country_code_check"/>
+         <checkConstraint constraint="(language !~ similar_to_escape(' *'::text))" name="gbif_vernacular_names_language_check"/>
+      </table>
+      <table name="griis_resources" remarks="Resource-level metadata from the Global Register of Introduced and Invasive Species." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="griis_resource_id" foreignKey="griis_taxa_griis_resource_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="griis_taxa"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="resource_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="country_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="publication_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="updated_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="griis_resources_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="griis_resources_country_code_idx" unique="false">
+            <column ascending="true" name="country_code"/>
+         </index>
+         <index name="griis_resources_resource_name_key" unique="true">
+            <column ascending="true" name="resource_name"/>
+         </index>
+      </table>
+      <table name="griis_taxa" remarks="Information about which species are introduced or invasive in which locations." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="griis_resource_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="griis_taxa_griis_resource_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="griis_resources"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="accepted_name_usage" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="taxon_rank" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="taxonomic_status" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="occurrence_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="is_invasive" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="habitat" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="species_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="griis_taxa_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <primaryKey column="griis_resource_id" sequenceNumberInPK="1"/>
+         <primaryKey column="taxon_id" sequenceNumberInPK="2"/>
+         <index name="griis_taxa_pkey" unique="true">
+            <column ascending="true" name="griis_resource_id"/>
+            <column ascending="true" name="taxon_id"/>
+         </index>
+         <index name="griis_taxa_scientific_name_idx" unique="false">
+            <column ascending="true" name="scientific_name"/>
          </index>
       </table>
       <table name="organizations" remarks="Top-level information about organizations." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
-            <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+            <child column="organization_id" foreignKey="project_species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_species"/>
+            <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
             <child column="organization_id" foreignKey="accession_collectors_organization_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accession_collectors"/>
             <child column="organization_id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="draft_planting_sites"/>
             <child column="organization_id" foreignKey="monitoring_plots_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
@@ -229,7 +250,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="organization_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="organization_type_details" nullable="true" remarks="User provided information on the organization when type is Other, limited to 100 characters." size="100" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="website" nullable="true" remarks="Website information for the organization with no formatting restrictions." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="level3_code" foreignKey="organizations_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="botanical_countries"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="organization_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -244,54 +267,348 @@
          <checkConstraint constraint="((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text))" name="other_type_details_null_or_not_empty"/>
          <checkConstraint constraint="(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6)))" name="other_type_details_only_for_other"/>
       </table>
-      <table name="timeseries" remarks="Properties of a series of values collected from a device. Each device metric is represented as a timeseries." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="timeseries_id" foreignKey="timeseries_values_timeseries_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries_values"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="timeseries_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="device_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="units" nullable="true" remarks="For numeric timeseries, the units represented by the values; unit names should be short (possibly abbreviations) and in the default language of the site." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="decimal_places" nullable="true" remarks="For numeric timeseries, the number of digits after the decimal point to display." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="retention_days" nullable="true" remarks="If non-null, only retain values for this many days. If null, do not expire old timeseries values." size="10" type="int4" typeCode="4"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="timeseries_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="timeseries_unique_name_per_device" unique="true">
-            <column ascending="true" name="device_id"/>
-            <column ascending="true" name="name"/>
-         </index>
-         <checkConstraint constraint="(decimal_places &gt;= 0)" name="timeseries_decimal_places_check"/>
-         <checkConstraint constraint="(units !~ similar_to_escape(' *'::text))" name="timeseries_units_check"/>
-      </table>
-      <table name="timeseries_types" remarks="(Enum) Data formats of the values of a timeseries." schema="public" type="TABLE">
+      <table name="plant_material_sourcing_methods" remarks="(Enum) Sourcing methods for acquiring plant material." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="type_id" foreignKey="timeseries_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
+            <child column="plant_material_sourcing_method_id" foreignKey="species_plant_material_sourci_plant_material_sourcing_meth_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_plant_material_sourcing_methods"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="timeseries_type_pkey" unique="true">
+         <index name="plant_material_sourcing_methods_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="timeseries_values" remarks="Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="timeseries_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="timeseries_values_timeseries_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries"/>
+      <table name="project_species" remarks="Information about species in the context of specific projects, if applicable." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <index name="timeseries_value_timeseries_id_created_time_idx" unique="true">
-            <column ascending="true" name="timeseries_id"/>
-            <column ascending="false" name="created_time"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="true" remarks="If the information about this species only applies to one of an organization's projects, the project ID. Null if the organization has no projects (in which case we treat the organization as a &quot;project&quot;)." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="calculated_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_calculated_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="calculated_nativity_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_calculated_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="calculated_nativity_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="overridden_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_overridden_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="overridden_justification" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="overridden_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="overridden_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="pending_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_pending_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pending_nativity_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="pending_nativity_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_species_pending_nativity_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <index name="project_species_organization_id_project_id_species_id_idx" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="project_species_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+         <index name="project_species_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+         <checkConstraint constraint="((((calculated_nativity_id = 4) OR (calculated_nativity_id IS NULL)) AND (calculated_nativity_dataset_date IS NULL)) OR (calculated_nativity_dataset_date IS NOT NULL))" name="known_nativity_has_dataset"/>
+         <checkConstraint constraint="((((pending_nativity_id = 4) OR (pending_nativity_id IS NULL)) AND (pending_nativity_dataset_date IS NULL)) OR (pending_nativity_dataset_date IS NOT NULL))" name="known_pending_nativity_has_dataset"/>
+         <checkConstraint constraint="((calculated_nativity_dataset_date IS NULL) = (calculated_nativity_dataset_type_id IS NULL))" name="nativity_dataset_has_both_values"/>
+         <checkConstraint constraint="((pending_nativity_dataset_date IS NULL) = (pending_nativity_dataset_type_id IS NULL))" name="pending_nativity_dataset_has_both_values"/>
+      </table>
+      <table name="species" remarks="Per-organization information about species." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="species_id" foreignKey="participant_project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
+            <child column="species_id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="species_id" foreignKey="project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_species"/>
+            <child column="species_id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_ecosystem_types"/>
+            <child column="species_id" foreignKey="species_growth_forms_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_growth_forms"/>
+            <child column="species_id" foreignKey="species_plant_material_sourcing_methods_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_plant_material_sourcing_methods"/>
+            <child column="species_id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_problems"/>
+            <child column="species_id" foreignKey="species_successional_groups_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_successional_groups"/>
+            <child column="species_id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="species_id" foreignKey="observation_biomass_species_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_species"/>
+            <child column="species_id" foreignKey="observed_plot_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_species_totals"/>
+            <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
+            <child column="species_id" foreignKey="observed_stratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_stratum_species_totals"/>
+            <child column="species_id" foreignKey="observed_substratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_substratum_species_totals"/>
+            <child column="species_id" foreignKey="planting_date_request_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_date_request_species"/>
+            <child column="species_id" foreignKey="planting_season_allocated_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_allocated_species"/>
+            <child column="species_id" foreignKey="planting_season_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_species_targets"/>
+            <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
+            <child column="species_id" foreignKey="planting_site_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_species_targets"/>
+            <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
+            <child column="species_id" foreignKey="plot_t0_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_densities"/>
+            <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
+            <child column="species_id" foreignKey="scheduled_planting_date_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="scheduled_planting_date_species"/>
+            <child column="species_id" foreignKey="stratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_populations"/>
+            <child column="species_id" foreignKey="stratum_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_species_targets"/>
+            <child column="species_id" foreignKey="stratum_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_t0_temp_densities"/>
+            <child column="species_id" foreignKey="substratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_populations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="common_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="family_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="rare" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="seed_storage_behavior_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="deleted_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="checked_time" nullable="true" remarks="If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="initial_scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="conservation_category_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="id" foreignKey="species_conservation_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="conservation_categories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="ecological_role_known" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="dbh_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="height_at_maturity_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="local_uses_known" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="native_ecosystem" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="other_facts" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="average_wood_density" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="height_at_maturity_value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="dbh_value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="wood_density_level_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_wood_density_level_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wood_density_levels"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="common_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_common_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="common_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="family_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_family_name_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="family_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_pkey1" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species__not_checked_ix" unique="false">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species_organization_id_initial_scientific_name_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="initial_scientific_name"/>
+         </index>
+         <index name="species_organization_id_scientific_name_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="scientific_name"/>
+         </index>
+         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) = (common_name_dataset_date IS NULL))" name="common_name_source_has_both_values"/>
+         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) OR (common_name IS NOT NULL))" name="common_name_source_has_name"/>
+         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) = (family_name_dataset_date IS NULL))" name="family_name_source_has_both_values"/>
+         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) OR (family_name IS NOT NULL))" name="family_name_source_requires_name"/>
+         <checkConstraint constraint="(common_name !~ similar_to_escape(' *'::text))" name="species_common_name_check"/>
+         <checkConstraint constraint="(family_name !~ similar_to_escape(' *'::text))" name="species_family_name_check"/>
+      </table>
+      <table name="species_ecosystem_types" remarks="Ecosystems where each species can be found." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="ecosystem_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_ecosystem_types_ecosystem_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="ecosystem_types"/>
+         </column>
+         <primaryKey column="species_id" sequenceNumberInPK="1"/>
+         <primaryKey column="ecosystem_type_id" sequenceNumberInPK="2"/>
+         <index name="species_ecosystem_types_pkey" unique="true">
+            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="ecosystem_type_id"/>
+         </index>
+      </table>
+      <table name="species_growth_forms" remarks="Growth forms of each species" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_growth_forms_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="growth_form_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="species_id" sequenceNumberInPK="1"/>
+         <primaryKey column="growth_form_id" sequenceNumberInPK="2"/>
+         <index name="species_growth_forms_pkey" unique="true">
+            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="growth_form_id"/>
+         </index>
+         <index name="species_growth_forms_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+      </table>
+      <table name="species_native_categories" remarks="(Enum) Categories related to native-ness of a species. Used for accelerator species management." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="species_native_category_id" foreignKey="participant_project_species_species_native_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_native_categories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="species_nativities" remarks="(Enum) Native/invasive/introduced values for a species in a given region." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="species_nativity_id" foreignKey="griis_taxa_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="griis_taxa"/>
+            <child column="calculated_nativity_id" foreignKey="project_species_calculated_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="overridden_nativity_id" foreignKey="project_species_overridden_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="pending_nativity_id" foreignKey="project_species_pending_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_species"/>
+            <child column="species_nativity_id" foreignKey="wcvp_distributions_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wcvp_distributions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_nativities_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species_nativities_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="species_plant_material_sourcing_methods" remarks="Sourcing methods for the plant material used to grow a particular species." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_plant_material_sourcing_methods_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="plant_material_sourcing_method_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_plant_material_sourci_plant_material_sourcing_meth_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_material_sourcing_methods"/>
+         </column>
+         <primaryKey column="species_id" sequenceNumberInPK="1"/>
+         <primaryKey column="plant_material_sourcing_method_id" sequenceNumberInPK="2"/>
+         <index name="species_plant_material_sourcing_methods_pkey" unique="true">
+            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="plant_material_sourcing_method_id"/>
+         </index>
+         <index name="species_plant_material_sourcing_methods_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+      </table>
+      <table name="species_problem_fields" remarks="(Enum) Species fields that can be scanned for problems." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="field_id" foreignKey="species_problems_field_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_problem_fields_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="species_problem_types" remarks="(Enum) Specific types of problems that can be detected in species data." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="species_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_problem_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="species_problems" remarks="Problems found in species data. Rows are deleted from this table when the problem is marked as ignored by the user or the user accepts the suggested fix." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="field_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_problems_field_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problem_fields"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problem_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="suggested_value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_problems_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species_problems_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+         <checkConstraint constraint="(suggested_value !~ similar_to_escape(' *'::text))" name="species_problems_suggested_value_check"/>
+      </table>
+      <table name="species_successional_groups" remarks="The successional groupings that the species is planted in." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_successional_groups_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="successional_group_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_successional_groups_successional_group_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="successional_groups"/>
+         </column>
+         <primaryKey column="species_id" sequenceNumberInPK="1"/>
+         <primaryKey column="successional_group_id" sequenceNumberInPK="2"/>
+         <index name="species_successional_groups_pkey" unique="true">
+            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="successional_group_id"/>
+         </index>
+         <index name="species_successional_groups_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+      </table>
+      <table name="successional_groups" remarks="(Enum) Successional Groups that a plant may be planted in." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="successional_group_id" foreignKey="species_successional_groups_successional_group_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_successional_groups"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="successional_groups_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="wcvp_distributions" remarks="World Checklist of Vascular Plants distribution data, indicating which species are found in which botanical countries." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="taxon_id" foreignKey="wcvp_distributions_taxon_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="wcvp_taxa"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level3_code" nullable="false" remarks="Original TDWG level 3 region (botanical country) for this distribution record, if any. This is usually the same as `botanical_country_code` but preserves the original value if the code was not on the list of TDWG regions." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="occurrence_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="threat_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="botanical_country_code" nullable="true" remarks="Valid TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list." size="2147483647" type="text" typeCode="12">
+            <parent column="level3_code" foreignKey="wcvp_distributions_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="botanical_countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="species_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="wcvp_distributions_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
+         <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
+         <primaryKey column="level3_code" sequenceNumberInPK="2"/>
+         <index name="wcvp_distributions_pkey" unique="true">
+            <column ascending="true" name="taxon_id"/>
+            <column ascending="true" name="level3_code"/>
+         </index>
+         <index name="wcvp_distributions_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
+         </index>
+      </table>
+      <table name="wcvp_taxa" remarks="World Checklist of Vascular Plants species taxonomy." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="WCVP-defined ID of the taxon. WCVP taxon IDs are unrelated to the GBIF taxon IDs for the same species." size="19" type="int8" typeCode="-5">
+            <child column="taxon_id" foreignKey="wcvp_distributions_taxon_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="wcvp_distributions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accepted_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="family" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="genus" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="infraspecific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="nomenclatural_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="original_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="parent_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="specific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="taxon_rank" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="taxonomic_status" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
+         <index name="wcvp_taxa_pkey" unique="true">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+         <index name="wcvp_taxa_scientific_name_idx" unique="false">
+            <column ascending="true" name="scientific_name"/>
+         </index>
+      </table>
+      <table name="wood_density_levels" remarks="The taxonomic level in the at which a wood density measurement is known" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="wood_density_level_id" foreignKey="species_wood_density_level_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="wood_density_levels_pkey" unique="true">
+            <column ascending="true" name="id"/>
          </index>
       </table>
    </tables>

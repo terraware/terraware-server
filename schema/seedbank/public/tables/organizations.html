@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>organizations - terraware_71a55913_7131c89f869b.public</title>
+        <title>organizations - terraware_045577cc_2c057118f580.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware_71a55913_7131c89f869b</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_045577cc_2c057118f580</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -487,8 +487,8 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>other_type_details_null_or_not_empty</td>
-                                    <td>((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text))</td>
+                                    <td>organizations_country_code_check</td>
+                                    <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_description_check</td>
@@ -499,16 +499,16 @@
                                     <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_code_check</td>
-                                    <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>other_type_details_only_for_other</td>
-                                    <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
+                                    <td>other_type_details_null_or_not_empty</td>
+                                    <td>((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_country_subdivision_code_check</td>
                                     <td>(country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>other_type_details_only_for_other</td>
+                                    <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
                                 </tr>
                                 </tbody>
                             </table>

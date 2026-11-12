@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>batch_stage_details - terraware_71a55913_7131c89f869b.nursery</title>
+        <title>batch_stage_details - terraware_045577cc_2c057118f580.nursery</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware_71a55913_7131c89f869b</b></a><span class="navbar-brand" style="padding-left: 0">.nursery</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_045577cc_2c057118f580</b></a><span class="navbar-brand" style="padding-left: 0">.nursery</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -198,6 +198,125 @@
                                         </table>
                                     </td>
                                     <td><p>Latest user-observed number of seedlings in this stage. Withdrawals do not cause this to decrease.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="counted_quantity">counted_quantity</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Number of seedlings that count toward this stage&rsquo;s average time in stage: those that completed the stage plus those still in it. Null if time in stage can&rsquo;t be calculated for the batch.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="counted_seedling_days">counted_seedling_days</span></td>
+                                    <td>float8</td>
+                                    <td>17,17</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Total days spent in this stage by counted seedlings, as of time_in_stage_as_of. Null if time in stage can&rsquo;t be calculated for the batch.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="open_seedling_days">open_seedling_days</span></td>
+                                    <td>float8</td>
+                                    <td>17,17</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Total days spent in this stage, as of time_in_stage_as_of, by seedlings that are still in it. Null if time in stage can&rsquo;t be calculated for the batch.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="time_in_stage_cleared">time_in_stage_cleared</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>True if a manual quantity edit changed this stage, making its time in stage unknown. Null if time in stage can&rsquo;t be calculated for the batch.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="time_in_stage_as_of">time_in_stage_as_of</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Effective time of the latest quantity change; seedlings still in the stage accrue time after this. Null if time in stage can&rsquo;t be calculated for the batch.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="finished_quantity">finished_quantity</span></td>
+                                    <td>float8</td>
+                                    <td>17,17</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Number of seedlings that completed this stage via a stage change or, for Ready, outplanting. Excludes seedlings still in the stage, other withdrawals, and seedlings present at batch creation except in Germinating. May be fractional because departures are split proportionally between starting seedlings and ones that entered the stage later. Null if finished time in stage has not been calculated for the batch.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="finished_seedling_days">finished_seedling_days</span></td>
+                                    <td>float8</td>
+                                    <td>17,17</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Total days spent in this stage by seedlings that completed it. Null if finished time in stage has not been calculated for the batch.</p></td>
                                 </tr>
                                 </tbody>
                             </table>

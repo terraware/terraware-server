@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>batch_quantity_history - terraware_71a55913_7131c89f869b.nursery</title>
+        <title>batch_quantity_history - terraware_045577cc_2c057118f580.nursery</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware_71a55913_7131c89f869b</b></a><span class="navbar-brand" style="padding-left: 0">.nursery</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_045577cc_2c057118f580</b></a><span class="navbar-brand" style="padding-left: 0">.nursery</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -357,6 +357,23 @@
                                     </td>
                                     <td><p>If this change in quantity was due to a transfer of seeds from an accession, the accession&rsquo;s ID. This may differ from the accession ID of the batch itself if seeds from more than one accession were added to the batch.</p></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="effective_time">effective_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>When this change took effect for time-in-stage calculations. Usually the same as <code>created_time</code>, but can be earlier for backdated withdrawals, transfers, and seeds added from accessions. Null for history recorded before this was tracked.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -440,16 +457,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>batch_quantity_history_germinating_quantity_check</td>
-                                    <td>(germinating_quantity &gt;&#61; 0)</td>
+                                    <td>batch_quantity_history_not_ready_quantity_check</td>
+                                    <td>(active_growth_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>batch_quantity_history_ready_quantity_check</td>
                                     <td>(ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batch_quantity_history_not_ready_quantity_check</td>
-                                    <td>(active_growth_quantity &gt;&#61; 0)</td>
+                                    <td>batch_quantity_history_germinating_quantity_check</td>
+                                    <td>(germinating_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>

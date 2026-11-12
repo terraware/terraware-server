@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="terraware_71a55913_7131c89f869b" schema="nursery" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_045577cc_2c057118f580" schema="nursery" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
    <tables>
       <table name="batch_details_history" remarks="Record of changes of user-editable attributes of each nursery batch." schema="nursery" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -8,11 +8,15 @@
             <parent column="id" foreignKey="batch_details_history_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="version" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_details_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="ready_by_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="project_name" nullable="true" remarks="Name of project as of the time the batch was edited. Not updated if project is later renamed." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="substrate_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="batch_details_history_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_substrates"/>
@@ -43,7 +47,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_details_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_details_history_sub_locatio_batch_details_history_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_details_history"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="sub_location_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="sub_location_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_details_history_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sub_location_name" nullable="false" remarks="Name of sub-location as of the time the batch was edited. Not updated if sub-location is later renamed." size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="batch_details_history_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
@@ -63,9 +69,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="file_id" nullable="true" remarks="File ID if the photo exists. Null if the photo has been deleted." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_photos_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="deleted_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="deleted_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_photos_deleted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batch_photos_pkey" unique="true">
@@ -86,7 +96,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="history_type_id" nullable="false" remarks="Type of operation that resulted in the change in quantities." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="batch_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_quantity_history_types"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="Which user triggered the change in quantities. &quot;Created&quot; here refers to the history row, not the batch." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="Which user triggered the change in quantities. &quot;Created&quot; here refers to the history row, not the batch." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="When the change in quantities happened. &quot;Created&quot; here refers to the history row, not the batch." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="germinating_quantity" nullable="false" remarks="New number of germinating seedlings in the batch." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="active_growth_quantity" nullable="false" remarks="New number of active-growth-for-planting seedlings in the batch." size="10" type="int4" typeCode="4"/>
@@ -97,7 +109,10 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="version" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="hardening_off_quantity" nullable="false" remarks="New number of hardening-off seedlings in the batch." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="accession_id" nullable="true" remarks="If this change in quantity was due to a transfer of seeds from an accession, the accession's ID. This may differ from the accession ID of the batch itself if seeds from more than one accession were added to the batch." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="accession_id" nullable="true" remarks="If this change in quantity was due to a transfer of seeds from an accession, the accession's ID. This may differ from the accession ID of the batch itself if seeds from more than one accession were added to the batch." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_quantity_history_accession_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="effective_time" nullable="true" remarks="When this change took effect for time-in-stage calculations. Usually the same as `created_time`, but can be earlier for backdated withdrawals, transfers, and seeds added from accessions. Null for history recorded before this was tracked." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batch_quantity_history_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -135,6 +150,13 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="quantity" nullable="false" remarks="Number of seedlings currently available in this stage. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="latest_observed_quantity" nullable="false" remarks="Latest user-observed number of seedlings in this stage. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="counted_quantity" nullable="true" remarks="Number of seedlings that count toward this stage's average time in stage: those that completed the stage plus those still in it. Null if time in stage can't be calculated for the batch." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="5" name="counted_seedling_days" nullable="true" remarks="Total days spent in this stage by counted seedlings, as of time_in_stage_as_of. Null if time in stage can't be calculated for the batch." size="17" type="float8" typeCode="8"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="6" name="open_seedling_days" nullable="true" remarks="Total days spent in this stage, as of time_in_stage_as_of, by seedlings that are still in it. Null if time in stage can't be calculated for the batch." size="17" type="float8" typeCode="8"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="time_in_stage_cleared" nullable="true" remarks="True if a manual quantity edit changed this stage, making its time in stage unknown. Null if time in stage can't be calculated for the batch." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="time_in_stage_as_of" nullable="true" remarks="Effective time of the latest quantity change; seedlings still in the stage accrue time after this. Null if time in stage can't be calculated for the batch." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="9" name="finished_quantity" nullable="true" remarks="Number of seedlings that completed this stage via a stage change or, for Ready, outplanting. Excludes seedlings still in the stage, other withdrawals, and seedlings present at batch creation except in Germinating. May be fractional because departures are split proportionally between starting seedlings and ones that entered the stage later. Null if finished time in stage has not been calculated for the batch." size="17" type="float8" typeCode="8"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="10" name="finished_seedling_days" nullable="true" remarks="Total days spent in this stage by seedlings that completed it. Null if finished time in stage has not been calculated for the batch." size="17" type="float8" typeCode="8"/>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="stage_id" sequenceNumberInPK="2"/>
          <index name="batch_stage_details_pkey" unique="true">
@@ -161,9 +183,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="sub_location_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="sub_location_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batch_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
@@ -230,22 +256,35 @@
             <child column="batch_id" foreignKey="withdrawals_batch_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="version" nullable="false" remarks="Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="false" remarks="Which organization owns the nursery where this batch is located." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="false" remarks="Which organization owns the nursery where this batch is located." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="facility_id" nullable="false" remarks="Which nursery contains the batch. Facility must be of type &quot;Nursery&quot; and under the same organization as the species ID (enforced in application code)." size="19" type="int8" typeCode="-5">
             <child column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_sub_locations"/>
+            <parent column="id" foreignKey="batches_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="species_id" nullable="false" remarks="Species of the batch's plants. Must be under the same organization as the facility ID (enforced in application code)." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="species_id" nullable="false" remarks="Species of the batch's plants. Must be under the same organization as the facility ID (enforced in application code)." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="batch_number" nullable="false" remarks="User-friendly unique (per organization) identifier for the batch. Not used internally or in API; &quot;id&quot; is the internal identifier." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="added_date" nullable="false" remarks="User-supplied date the batch was added to the nursery's inventory." size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="latest_observed_time" nullable="false" remarks="When the latest user observation of seedling quantities took place." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="Which user initially created the batch." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="Which user initially created the batch." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="created_time" nullable="false" remarks="When the batch was initially created." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modified_by" nullable="false" remarks="Which user most recently modified the batch, either directly or by creating a withdrawal." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modified_by" nullable="false" remarks="Which user most recently modified the batch, either directly or by creating a withdrawal." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="modified_time" nullable="false" remarks="When the batch was most recently modified, either directly or by creating a withdrawal." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="notes" nullable="true" remarks="User-supplied freeform notes about batch." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="ready_by_date" nullable="true" remarks="User-supplied estimate of when the batch will be ready for planting." size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="accession_id" nullable="true" remarks="If the batch was created by a nursery transfer from a seed bank, the originating accession ID." size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="accession_id" nullable="true" remarks="If the batch was created by a nursery transfer from a seed bank, the originating accession ID." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_accession_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="substrate_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="batches_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_substrates"/>
          </column>
@@ -326,22 +365,34 @@
             <child column="undoes_withdrawal_id" foreignKey="withdrawals_undoes_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
             <child column="withdrawal_id" foreignKey="deliveries_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="deliveries"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose_id" nullable="false" remarks="Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_purposes"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="withdrawn_date" nullable="false" remarks="User-supplied date when the seedlings were withdrawn." size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="Which user created the withdrawal." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="Which user created the withdrawal." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="When the withdrawal was created." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="Which user most recently modified the withdrawal." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="Which user most recently modified the withdrawal." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="When the withdrawal was most recently modified." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="destination_facility_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the facility where the seedlings were sent. May be null if the facility was subsequently deleted." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="destination_facility_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the facility where the seedlings were sent. May be null if the facility was subsequently deleted." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_destination_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="notes" nullable="true" remarks="User-supplied freeform text describing the withdrawal." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="undoes_withdrawal_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="withdrawals_undoes_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="planting_season_id" nullable="true" remarks="Optional planting season for which the seedlings were withdrawn for planting." size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="scheduled_planting_date_request_id" nullable="true" remarks="If the withdrawal is being used to fulfill a scheduled planting date request for a planting season." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="planting_season_id" nullable="true" remarks="Optional planting season for which the seedlings were withdrawn for planting." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_planting_season_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_seasons"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="scheduled_planting_date_request_id" nullable="true" remarks="If the withdrawal is being used to fulfill a scheduled planting date request for a planting season." size="19" type="int8" typeCode="-5">
+            <parent column="scheduled_planting_date_id" foreignKey="withdrawals_scheduled_planting_date_request_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_date_requests"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="withdrawals_pkey" unique="true">
             <column ascending="true" name="id"/>

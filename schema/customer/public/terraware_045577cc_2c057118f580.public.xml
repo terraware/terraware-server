@@ -1,26 +1,158 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="terraware_71a55913_7131c89f869b" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_045577cc_2c057118f580" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
    <tables>
+      <table name="app_versions" remarks="Minimum and recommended versions for Terraware mobile apps." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="platform" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="minimum_version" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="recommended_version" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="app_name" sequenceNumberInPK="1"/>
+         <primaryKey column="platform" sequenceNumberInPK="2"/>
+         <index name="app_versions_pkey" unique="true">
+            <column ascending="true" name="app_name"/>
+            <column ascending="true" name="platform"/>
+         </index>
+      </table>
+      <table name="countries" remarks="Country information per ISO-3166." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model." size="2147483647" type="text" typeCode="12">
+            <child column="country_code" foreignKey="applications_country_code_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
+            <child column="country_code" foreignKey="published_project_details_country_code_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_details"/>
+            <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
+            <child column="country_code" foreignKey="organizations_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="country_code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="country_code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+            <child column="collection_site_country_code" foreignKey="accessions_collection_site_country_code_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="country_code" foreignKey="planting_sites_country_code_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="Name of country in US English." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="region_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="countries_region_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="regions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="code_alpha3" nullable="false" remarks="ISO-3166 alpha-3 country code. This is used in cases where an external system or user needs an alpha-3 code instad of an alpha-2 code, but is treated purely as descriptive data in the data model." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="eligible" nullable="false" remarks="If false, projects in this country are ineligible for the accelerator program." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="countries_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="countries_code_alpha3_key" unique="true">
+            <column ascending="true" name="code_alpha3"/>
+         </index>
+         <index name="countries_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+         <checkConstraint constraint="(code = upper(code))" name="countries_code_caps"/>
+         <checkConstraint constraint="(length(code) = 2)" name="countries_code_length"/>
+      </table>
+      <table name="country_subdivisions" remarks="Country subdivision (state, province, region, etc.) information per ISO-3166-2." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Full ISO-3166-2 subdivision code including country code prefix." size="2147483647" type="text" typeCode="12">
+            <child column="country_subdivision_code" foreignKey="organizations_country_subdivision_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="country_code" nullable="false" remarks="ISO-3166 alpha-2 country code." size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="Name of subdivision in US English." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="country_subdivisions_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="country_subdivisions_country_code_idx" unique="false">
+            <column ascending="true" name="country_code"/>
+         </index>
+         <checkConstraint constraint="((length(code) &gt;= 4) AND (length(code) &lt;= 6))" name="country_subdivisions_code_length"/>
+         <checkConstraint constraint="(substr(code, 1, 2) = country_code)" name="country_subdivisions_code_matches_country"/>
+      </table>
+      <table name="device_managers" remarks="Information about device managers. This is a combination of information from the Balena API and locally-generated values." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="balena_id" nullable="false" remarks="Balena-assigned device identifier." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="balena_modified_time" nullable="false" remarks="Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_online" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="last_connectivity_event" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="update_progress" nullable="true" remarks="Percent complete of software download and installation (0-100). Null if no software update is in progress." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="sensor_kit_id" nullable="false" remarks="ID code that is physically printed on the sensor kit and set as a tag value in the Balena device configuration." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="created_time" nullable="false" remarks="When this device manager was added to the local database. The Balena device may have been created earlier." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="refreshed_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="balena_uuid" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="device_managers_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="device_managers_balena_id_unique" unique="true">
+            <column ascending="true" name="balena_id"/>
+         </index>
+         <index name="device_managers_balena_uuid_unique" unique="true">
+            <column ascending="true" name="balena_uuid"/>
+         </index>
+         <index name="device_managers_facility_id_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+         </index>
+         <index name="device_managers_short_code_key" unique="true">
+            <column ascending="true" name="sensor_kit_id"/>
+         </index>
+         <index name="device_managers_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+         <checkConstraint constraint="(((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL)))" name="device_managers_user_iff_facility"/>
+      </table>
+      <table name="disclaimers" remarks="Disclaimers content and effective dates." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="disclaimer_id" foreignKey="user_disclaimers_disclaimer_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_disclaimers"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="content" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="effective_on" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="disclaimers_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="disclaimers_effective_on_idx" unique="false">
+            <column ascending="true" name="effective_on"/>
+         </index>
+      </table>
+      <table name="email_notification_categories" remarks="(Enum) Categories of email notifications that users can individually opt into or out of." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="email_notification_category_id" foreignKey="user_email_notification_categ_email_notification_category__fkey" implied="false" onDeleteCascade="false" schema="public" table="user_email_notification_categories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="email_notification_categories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="facilities" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="facility_id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_sub_locations"/>
             <child column="facility_id" foreignKey="batches_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
             <child column="destination_facility_id" foreignKey="withdrawals_destination_facility_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
             <child column="facility_id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
-            <child column="facility_id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
+            <child column="facility_id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
+            <child column="facility_id" foreignKey="uploads_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="facility_id" foreignKey="accessions_facility_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="site_module_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_types"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="30" digits="0" id="7" name="max_idle_minutes" nullable="false" remarks="Send an alert if this many minutes pass without new timeseries data from a facility's device manager." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="last_timeseries_time" nullable="true" remarks="When the most recent timeseries data was received from the facility." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="idle_after_time" nullable="true" remarks="Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="idle_since_time" nullable="true" remarks="Time at which the facility became idle. Null if the facility is not currently considered idle." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="1" digits="0" id="12" name="connection_state_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="12" name="connection_state_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_connection_states"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
@@ -53,6 +185,26 @@
          </index>
          <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="facilities_description_check"/>
       </table>
+      <table name="facility_connection_states" remarks="(Enum) Progress of the configuration of a device manager for a facility." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="connection_state_id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_connection_states_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="facility_types" remarks="(Enum) Types of facilities that can be represented in the data model." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="site_module_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="site_module_type_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="files" remarks="Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="file_id" foreignKey="activity_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activity_media_files"/>
@@ -64,7 +216,9 @@
             <child column="file_id" foreignKey="published_report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_photos"/>
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
-            <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
+            <child column="file_id" foreignKey="organization_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_media_files"/>
+            <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_files"/>
+            <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_photos"/>
             <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
             <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_media_files"/>
          </column>
@@ -73,9 +227,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="size" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="captured_local_time" nullable="true" remarks="If applicable, the date and time in the local time zone of wherever the file's data was captured. For example, the time a photo was taken. This may differ from `created_time`, which represents when the file was stored in Terraware. This is typically extracted from the file itself, e.g., EXIF metadata." size="29" type="timestamp" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="geolocation" nullable="true" remarks="If applicable, the location where the file was created. For photos, typically extracted from EXIF metadata." size="2147483647" type="geometry" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="file_batch_id" nullable="true" remarks="If this file was uploaded as part of a batch, the ID of the batch." size="19" type="int8" typeCode="-5"/>
@@ -92,33 +250,222 @@
          <checkConstraint constraint="(length(content_type) &gt; 0)" name="content_type_cannot_be_empty_string"/>
          <checkConstraint constraint="(length(file_name) &gt; 0)" name="file_name_cannot_be_empty_string"/>
       </table>
-      <table name="growth_forms" remarks="(Enum) What physical form a particular species takes. For example, &quot;Tree&quot; or &quot;Shrub.&quot;" schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+      <table name="global_roles" remarks="(Enum) System-wide roles that can be assigned to users. Global roles are not tied to organizations. These are generally for system or business administration; most users have no global roles." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="global_role_id" foreignKey="user_global_roles_global_role_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_global_roles"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="growth_forms_pkey" unique="true">
+         <index name="global_roles_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="global_roles_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="internal_tags" remarks="Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="internal_tag_id" foreignKey="organization_internal_tags_internal_tag_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_internal_tags"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="is_system" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="internal_tags_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="internal_tags_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="internal_tags_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="internal_tags_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="land_use_model_types" remarks="(Enum) Types of ways a project's land can be used." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="land_use_model_type_id" foreignKey="published_project_land_use_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_land_use"/>
+            <child column="land_use_model_type_id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_land_use_model_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="land_use_model_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="land_use_model_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="managed_location_types" remarks="(Enum) Type of managed location for business analytics purposes." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="managed_location_type_id" foreignKey="organization_managed_location_typ_managed_location_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_managed_location_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="managed_location_types_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="identifier_sequences" remarks="Current state for generating user-facing identifiers (accession number, etc.) for each organization." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="identifier_sequences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+      <table name="notification_criticalities" remarks="(Enum) Criticality information of notifications in the application." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="notification_criticality_id" foreignKey="notification_types_notification_criticality_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notification_types"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="prefix" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="next_value" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="notification_criticalities_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="notification_types" remarks="(Enum) Types of notifications in the application." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="notification_type_id" foreignKey="notifications_notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
+            <child column="notification_type_id" foreignKey="planting_site_notifications_notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_site_notifications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="notification_criticality_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="notification_types_notification_criticality_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notification_criticalities"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="notification_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="notifications" remarks="Notifications for application users." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="notification_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="notifications_notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notification_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="notifications_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="organization_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="title" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="body" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="local_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="8" name="is_read" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="notifications_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="organization_internal_tags" remarks="Which internal (non-user-facing) tags apply to which organizations." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_internal_tags_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="internal_tag_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_internal_tags_internal_tag_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="internal_tags"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_internal_tags_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="organization_id" sequenceNumberInPK="1"/>
-         <primaryKey column="prefix" sequenceNumberInPK="2"/>
-         <index name="identifier_sequences_pkey" unique="true">
+         <primaryKey column="internal_tag_id" sequenceNumberInPK="2"/>
+         <index name="organization_internal_tags_pkey" unique="true">
             <column ascending="true" name="organization_id"/>
-            <column ascending="true" name="prefix"/>
+            <column ascending="true" name="internal_tag_id"/>
+         </index>
+      </table>
+      <table name="organization_managed_location_types" remarks="Per-organization information about managed location types for business analytics purposes." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_managed_location_types_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="managed_location_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="organization_managed_location_typ_managed_location_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="managed_location_types"/>
+         </column>
+         <primaryKey column="organization_id" sequenceNumberInPK="1"/>
+         <primaryKey column="managed_location_type_id" sequenceNumberInPK="2"/>
+         <index name="organization_managed_location_types_pkey" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="managed_location_type_id"/>
+         </index>
+      </table>
+      <table name="organization_media_files" remarks="Media files (photos, videos, etc.) associated with organizations." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_media_files_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="organization_media_files_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="organization_media_files_organization_id_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
+         </index>
+      </table>
+      <table name="organization_report_settings" remarks="Organization-level settings for quarterly reports. Project-level settings are in `project_report_settings`." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_report_settings_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="is_enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="organization_id" sequenceNumberInPK="1"/>
+         <index name="organization_report_settings_pkey" unique="true">
+            <column ascending="true" name="organization_id"/>
+         </index>
+      </table>
+      <table name="organization_types" remarks="(Enum) Type of forestry organization for business analytics purposes." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="organization_type_id" foreignKey="organizations_organization_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="organization_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="organization_users" remarks="Organization membership and role information." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="role_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="roles"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <primaryKey column="user_id" sequenceNumberInPK="1"/>
+         <primaryKey column="organization_id" sequenceNumberInPK="2"/>
+         <index name="organization_users_pkey" unique="true">
+            <column ascending="true" name="user_id"/>
+            <column ascending="true" name="organization_id"/>
+         </index>
+         <index name="organization_users_organization_id_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
          </index>
       </table>
       <table name="organizations" remarks="Top-level information about organizations." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
             <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
-            <child column="organization_id" foreignKey="identifier_sequences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="identifier_sequences"/>
-            <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+            <child column="organization_id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="notifications"/>
+            <child column="organization_id" foreignKey="organization_internal_tags_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_internal_tags"/>
+            <child column="organization_id" foreignKey="organization_managed_location_types_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_managed_location_types"/>
+            <child column="organization_id" foreignKey="organization_media_files_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_media_files"/>
+            <child column="organization_id" foreignKey="organization_report_settings_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_report_settings"/>
+            <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
+            <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+            <child column="organization_id" foreignKey="saved_table_views_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="saved_table_views"/>
+            <child column="organization_id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+            <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+            <child column="organization_id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_preferences"/>
             <child column="organization_id" foreignKey="accession_collectors_organization_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accession_collectors"/>
             <child column="organization_id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="draft_planting_sites"/>
             <child column="organization_id" foreignKey="monitoring_plots_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
@@ -128,13 +475,23 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="disabled_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="country_subdivision_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="organizations_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="country_subdivision_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="organizations_country_subdivision_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="organization_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="organization_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="organizations_organization_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_types"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="organization_type_details" nullable="true" remarks="User provided information on the organization when type is Other, limited to 100 characters." size="100" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="website" nullable="true" remarks="Website information for the organization with no formatting restrictions." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -152,162 +509,642 @@
          <checkConstraint constraint="((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text))" name="other_type_details_null_or_not_empty"/>
          <checkConstraint constraint="(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6)))" name="other_type_details_only_for_other"/>
       </table>
-      <table name="seed_storage_behaviors" remarks="(Enum) How seeds of a particular species behave in storage." schema="public" type="TABLE">
+      <table name="project_internal_roles" remarks="(Enum) Roles a user is allowed to have on a project." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="seed_storage_behavior_id" foreignKey="species_seed_storage_behavior_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <child column="project_internal_role_id" foreignKey="project_internal_users_project_user_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="seed_storage_behaviors_pkey" unique="true">
+         <index name="project_internal_roles_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="seed_treatments" remarks="(Enum) Techniques that can be used to treat seeds before testing them for viability." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="treatment_id" foreignKey="batch_details_history_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
-            <child column="treatment_id" foreignKey="batches_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
-            <child column="treatment_id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="viability_tests"/>
+      <table name="project_internal_users" remarks="Which users have which internal roles on a project." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_treatment_pkey" unique="true">
-            <column ascending="true" name="id"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_internal_role_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_internal_users_project_user_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_roles"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="role_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="user_id" sequenceNumberInPK="2"/>
+         <index name="project_internal_users_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="user_id"/>
+         </index>
+         <checkConstraint constraint="((project_internal_role_id IS NULL) &lt;&gt; (role_name IS NULL))" name="project_internal_users_role_exclusive"/>
+      </table>
+      <table name="project_land_use_model_types" remarks="Which projects have which types of land use models." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="land_use_model_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="land_use_model_types"/>
+         </column>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="land_use_model_type_id" sequenceNumberInPK="2"/>
+         <index name="project_land_use_model_types_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="land_use_model_type_id"/>
          </index>
       </table>
-      <table name="species" remarks="Per-organization information about species." schema="public" type="TABLE">
+      <table name="project_report_settings" remarks="Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="is_enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <index name="project_report_settings_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="projects" remarks="Distinguishes among an organization's projects." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="species_id" foreignKey="participant_project_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
-            <child column="species_id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
-            <child column="species_id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-            <child column="species_id" foreignKey="observation_biomass_species_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_species"/>
-            <child column="species_id" foreignKey="observed_plot_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_species_totals"/>
-            <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
-            <child column="species_id" foreignKey="observed_stratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_stratum_species_totals"/>
-            <child column="species_id" foreignKey="observed_substratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_substratum_species_totals"/>
-            <child column="species_id" foreignKey="planting_date_request_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_date_request_species"/>
-            <child column="species_id" foreignKey="planting_season_allocated_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_allocated_species"/>
-            <child column="species_id" foreignKey="planting_season_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_species_targets"/>
-            <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
-            <child column="species_id" foreignKey="planting_site_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_species_targets"/>
-            <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
-            <child column="species_id" foreignKey="plot_t0_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_densities"/>
-            <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
-            <child column="species_id" foreignKey="scheduled_planting_date_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="scheduled_planting_date_species"/>
-            <child column="species_id" foreignKey="stratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_populations"/>
-            <child column="species_id" foreignKey="stratum_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_species_targets"/>
-            <child column="species_id" foreignKey="stratum_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_t0_temp_densities"/>
-            <child column="species_id" foreignKey="substratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_populations"/>
+            <child column="project_id" foreignKey="activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activities"/>
+            <child column="project_id" foreignKey="applications_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
+            <child column="project_id" foreignKey="auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicator_targets"/>
+            <child column="project_id" foreignKey="common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicator_targets"/>
+            <child column="project_id" foreignKey="deliverable_project_due_dates_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_project_due_dates"/>
+            <child column="project_id" foreignKey="event_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="event_projects"/>
+            <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
+            <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
+            <child column="project_id" foreignKey="project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicator_targets"/>
+            <child column="project_id" foreignKey="project_indicators_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicators"/>
+            <child column="project_id" foreignKey="project_modules_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_modules"/>
+            <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>
+            <child column="project_id" foreignKey="project_report_configs_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_report_configs"/>
+            <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
+            <child column="project_id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_vote_decisions"/>
+            <child column="project_id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
+            <child column="project_id" foreignKey="report_auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_auto_calculated_indicator_targets"/>
+            <child column="project_id" foreignKey="report_common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_common_indicator_targets"/>
+            <child column="project_id" foreignKey="report_project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_indicator_targets"/>
+            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
+            <child column="project_id" foreignKey="submission_documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
+            <child column="project_id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submissions"/>
+            <child column="project_id" foreignKey="documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="project_id" foreignKey="variable_owners_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_owners"/>
+            <child column="project_id" foreignKey="variable_values_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
+            <child column="project_id" foreignKey="variable_workflow_history_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_workflow_history"/>
+            <child column="project_id" foreignKey="funding_entity_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_projects"/>
+            <child column="project_id" foreignKey="published_activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_activities"/>
+            <child column="project_id" foreignKey="published_auto_calculated_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_baselines"/>
+            <child column="project_id" foreignKey="published_auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_targets"/>
+            <child column="project_id" foreignKey="published_common_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_baselines"/>
+            <child column="project_id" foreignKey="published_common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_targets"/>
+            <child column="project_id" foreignKey="published_project_carbon_certs_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_carbon_certs"/>
+            <child column="project_id" foreignKey="published_project_details_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_details"/>
+            <child column="project_id" foreignKey="published_project_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_baselines"/>
+            <child column="project_id" foreignKey="published_project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_targets"/>
+            <child column="project_id" foreignKey="published_project_land_use_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_land_use"/>
+            <child column="project_id" foreignKey="published_project_sdg_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_sdg"/>
+            <child column="project_id" foreignKey="published_reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+            <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
+            <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="project_id" foreignKey="project_internal_users_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_internal_users"/>
+            <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
+            <child column="project_id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_report_settings"/>
+            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+            <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="project_id" foreignKey="draft_planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+            <child column="project_id" foreignKey="planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="common_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="family_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="rare" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="seed_storage_behavior_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="species_seed_storage_behavior_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_storage_behaviors"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="3" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="deleted_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="checked_time" nullable="true" remarks="If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="initial_scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="conservation_category_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="ecological_role_known" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="dbh_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="height_at_maturity_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="local_uses_known" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="native_ecosystem" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="other_facts" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="average_wood_density" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="height_at_maturity_value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="dbh_value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="wood_density_level_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="common_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="common_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="family_name_dataset_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="family_name_dataset_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+            <parent column="id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="species_pkey1" unique="true">
+         <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="species__not_checked_ix" unique="false">
-            <column ascending="true" name="id"/>
+         <index name="projects_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
          </index>
-         <index name="species_organization_id_initial_scientific_name_idx" unique="false">
+         <index name="projects_created_by_idx" unique="false">
+            <column ascending="true" name="created_by"/>
+         </index>
+         <index name="projects_modified_by_idx" unique="false">
+            <column ascending="true" name="modified_by"/>
+         </index>
+         <index name="projects_organization_id_id_key" unique="true">
             <column ascending="true" name="organization_id"/>
-            <column ascending="true" name="initial_scientific_name"/>
-         </index>
-         <index name="species_organization_id_scientific_name_key" unique="true">
-            <column ascending="true" name="organization_id"/>
-            <column ascending="true" name="scientific_name"/>
-         </index>
-         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) = (common_name_dataset_date IS NULL))" name="common_name_source_has_both_values"/>
-         <checkConstraint constraint="((common_name_dataset_type_id IS NULL) OR (common_name IS NOT NULL))" name="common_name_source_has_name"/>
-         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) = (family_name_dataset_date IS NULL))" name="family_name_source_has_both_values"/>
-         <checkConstraint constraint="((family_name_dataset_type_id IS NULL) OR (family_name IS NOT NULL))" name="family_name_source_requires_name"/>
-         <checkConstraint constraint="(common_name !~ similar_to_escape(' *'::text))" name="species_common_name_check"/>
-         <checkConstraint constraint="(family_name !~ similar_to_escape(' *'::text))" name="species_family_name_check"/>
-      </table>
-      <table name="sub_locations" remarks="The available locations where seeds can be stored at a seed bank facility or seedlings can be stored at a nursery facility." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="sub_location_id" foreignKey="batch_details_history_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history_sub_locations"/>
-            <child column="sub_location_id" foreignKey="batch_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_sub_locations"/>
-            <child column="sub_location_id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_sub_locations"/>
-            <parent column="id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="E.g., Freezer 1, Freezer 2" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="now()" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="storage_location_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="storage_locations_facility_id_name_key" unique="true">
-            <column ascending="true" name="facility_id"/>
+         <index name="projects_organization_id_name_key" unique="true">
+            <column ascending="true" name="organization_id"/>
             <column ascending="true" name="name"/>
          </index>
-         <index name="sub_locations_facility_id_id_key" unique="true">
-            <column ascending="true" name="facility_id"/>
+      </table>
+      <table name="regions" remarks="(Enum) Parts of the world where countries are located." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="region_id" foreignKey="countries_region_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="regions_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="regions_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="roles" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="roles_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="roles_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="saved_table_views" remarks="Named, user-defined configurations of client-side tables (filters, search, sort order, visible columns, column order)." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="saved_table_views_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="true" remarks="If null, the view is global to the user. Otherwise, it is specific to the user and the organization." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="saved_table_views_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="table_name" nullable="false" remarks="Client-defined identifier of the table the view applies to." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="name" nullable="false" remarks="User-supplied name for the view. Unique per user, table, and organization." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="settings" nullable="false" remarks="Client-defined JSON describing the view, e.g., filters, search, sort order, visible columns, and column order." size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="base_view" nullable="true" remarks="Client-defined identifier of the view this view is based on, if any." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="saved_table_views_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="saved_table_views_organization_id_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
+         </index>
+         <index name="saved_table_views_user_id_table_name_organization_id_name_key" unique="true">
+            <column ascending="true" name="user_id"/>
+            <column ascending="true" name="table_name"/>
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="seed_fund_report_files" remarks="Linking table between `reports` and `files` for non-photo files." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_files_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+         </column>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="report_files_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="report_files_report_id_idx" unique="false">
+            <column ascending="true" name="report_id"/>
+         </index>
+      </table>
+      <table name="seed_fund_report_photos" remarks="Linking table between `reports` and `files` for photos." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <primaryKey column="file_id" sequenceNumberInPK="2"/>
+         <index name="report_photos_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="photo_not_shared_between_reports" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+      </table>
+      <table name="seed_fund_report_statuses" remarks="(Enum) Describes where in the workflow each partner report is." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="status_id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="report_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="report_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="seed_fund_reports" remarks="Partner-submitted reports about their organizations and projects." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="report_id" foreignKey="report_files_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_report_files"/>
+            <child column="report_id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_report_photos"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="quarter" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="locked_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="locked_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="submitted_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="submitted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_report_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="body" nullable="false" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="project_id" nullable="true" remarks="If this report is for a specific project and the project still exists, the project ID. If the project has been deleted, this will be null but `project_name` will still be populated." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="project_name" nullable="true" remarks="If this report is for a specific project, the name of the project as of the time the report was submitted." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="reports_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="one_org_report_per_quarter" unique="false">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="year"/>
+            <column ascending="true" name="quarter"/>
+         </index>
+         <index name="one_project_report_per_quarter" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="year"/>
+            <column ascending="true" name="quarter"/>
+         </index>
+         <index name="reports_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+         <checkConstraint constraint="((locked_time IS NULL) OR (submitted_time IS NULL))" name="cannot_submit_while_locked"/>
+         <checkConstraint constraint="(((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL)))" name="locked_by_and_time_both_set"/>
+         <checkConstraint constraint="((quarter &gt;= 1) AND (quarter &lt;= 4))" name="quarter_in_range"/>
+         <checkConstraint constraint="(((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id = 3)))" name="status_reflects_locked"/>
+         <checkConstraint constraint="(((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id = 4)))" name="status_reflects_submitted"/>
+         <checkConstraint constraint="(((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)))" name="submitted_by_and_time_both_set"/>
+      </table>
+      <table name="upload_problem_types" remarks="(Enum) Specific types of problems encountered while processing a user-uploaded file." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="upload_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="upload_problem_types_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="thumbnails" remarks="Information about server-generated versions of photos and still images of videos." schema="public" type="TABLE">
+      <table name="upload_problems" remarks="Details about problems (validation failures, etc.) in user-uploaded files." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="upload_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="uploads"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="width" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="height" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="size" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="is_full_size" nullable="true" remarks="True if this thumbnail's dimensions are the same as the original photo or video." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="upload_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_problem_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="is_error" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="position" nullable="true" remarks="Where in the uploaded file the problem appears, or null if it is a problem with the file as a whole. This may be a byte offset, a line number, or a record number depending on the type of file." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="field" nullable="true" remarks="If the problem pertains to a specific field, its name. Null if the problem affects an entire record or the entire file." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="message" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="thumbnail_pkey" unique="true">
+         <index name="upload_problems_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="thumbnails_unique_height" unique="true">
-            <column ascending="true" name="file_id"/>
-            <column ascending="true" name="height"/>
+         <index name="upload_problems_upload_id_idx" unique="false">
+            <column ascending="true" name="upload_id"/>
          </index>
-         <index name="thumbnails_unique_storage_url" unique="true">
-            <column ascending="true" name="storage_url"/>
+         <checkConstraint constraint="(field !~ similar_to_escape(' *'::text))" name="upload_problems_field_check"/>
+         <checkConstraint constraint="(message !~ similar_to_escape(' *'::text))" name="upload_problems_message_check"/>
+         <checkConstraint constraint="(value !~ similar_to_escape(' *'::text))" name="upload_problems_value_check"/>
+      </table>
+      <table name="upload_statuses" remarks="(Enum) Available statuses of user-uploaded files. Uploads progress through these statuses as the system processes the files." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="status_id" foreignKey="uploads_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="finished" nullable="false" remarks="If true, this status means that the system is finished processing the file." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="upload_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
          </index>
-         <index name="thumbnails_unique_width" unique="true">
-            <column ascending="true" name="file_id"/>
-            <column ascending="true" name="width"/>
+      </table>
+      <table name="upload_types" remarks="(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="uploads_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="expire_files" nullable="false" remarks="Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="upload_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
          </index>
+      </table>
+      <table name="uploads" remarks="Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="upload_id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="upload_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="filename" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="uploads_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="uploads_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="organization_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="uploads_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="locale" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="uploads_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uploads_facility_id_idx" unique="false">
+            <column ascending="true" name="facility_id"/>
+         </index>
+      </table>
+      <table name="user_disclaimers" remarks="Records of user acceptance of disclaimers." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="disclaimer_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_disclaimers_disclaimer_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="disclaimers"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_disclaimers_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="accepted_on" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="disclaimer_id" sequenceNumberInPK="1"/>
+         <primaryKey column="user_id" sequenceNumberInPK="2"/>
+         <index name="user_disclaimers_pkey" unique="true">
+            <column ascending="true" name="disclaimer_id"/>
+            <column ascending="true" name="user_id"/>
+         </index>
+         <index name="user_disclaimers_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+      </table>
+      <table name="user_email_notification_categories" remarks="Which categories of email notifications each user has opted into. Users only receive categorized email notifications if they have opted into the category and have also enabled email notifications in `users.email_notifications_enabled`." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_email_notification_categories_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="email_notification_category_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="user_email_notification_categ_email_notification_category__fkey" implied="false" onDeleteCascade="false" schema="public" table="email_notification_categories"/>
+         </column>
+         <primaryKey column="user_id" sequenceNumberInPK="1"/>
+         <primaryKey column="email_notification_category_id" sequenceNumberInPK="2"/>
+         <index name="user_email_notification_categories_pkey" unique="true">
+            <column ascending="true" name="user_id"/>
+            <column ascending="true" name="email_notification_category_id"/>
+         </index>
+         <index name="user_email_notification_categ_email_notification_category_i_idx" unique="false">
+            <column ascending="true" name="email_notification_category_id"/>
+         </index>
+      </table>
+      <table name="user_global_roles" remarks="Which users have which global roles." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_global_roles_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="global_role_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="user_global_roles_global_role_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="global_roles"/>
+         </column>
+         <primaryKey column="user_id" sequenceNumberInPK="1"/>
+         <primaryKey column="global_role_id" sequenceNumberInPK="2"/>
+         <index name="user_global_roles_pkey" unique="true">
+            <column ascending="true" name="user_id"/>
+            <column ascending="true" name="global_role_id"/>
+         </index>
+         <index name="user_global_roles_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+      </table>
+      <table name="user_preferences" remarks="Client-defined preferences that should persist across browser sessions." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_preferences_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="true" remarks="If null, preferences are global to the user. Otherwise, they are specific to the user and the organization." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="preferences" nullable="false" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <index name="user_preferences_user_id_idx" unique="true">
+            <column ascending="true" name="user_id"/>
+         </index>
+         <index name="user_preferences_user_id_organization_id_idx" unique="true">
+            <column ascending="true" name="user_id"/>
+            <column ascending="true" name="organization_id"/>
+         </index>
+      </table>
+      <table name="user_types" remarks="(Enum) Types of users. Most users are of type 1, &quot;Individual.&quot;" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="user_type_id" foreignKey="users_user_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="user_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="user_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="users" remarks="User identities. A user can be associated with organizations via `organization_users`." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="created_by" foreignKey="activities_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activities"/>
+            <child column="modified_by" foreignKey="activities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activities"/>
+            <child column="verified_by" foreignKey="activities_verified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activities"/>
+            <child column="modified_by" foreignKey="application_histories_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_histories"/>
+            <child column="created_by" foreignKey="applications_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
+            <child column="modified_by" foreignKey="applications_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
+            <child column="user_id" foreignKey="default_voters_user_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="default_voters"/>
+            <child column="created_by" foreignKey="deliverables_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <child column="modified_by" foreignKey="deliverables_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <child column="created_by" foreignKey="events_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="events"/>
+            <child column="modified_by" foreignKey="events_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="events"/>
+            <child column="created_by" foreignKey="modules_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
+            <child column="modified_by" foreignKey="modules_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
+            <child column="created_by" foreignKey="participant_project_species_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
+            <child column="modified_by" foreignKey="participant_project_species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
+            <child column="created_by" foreignKey="project_overall_scores_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_overall_scores"/>
+            <child column="modified_by" foreignKey="project_overall_scores_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_overall_scores"/>
+            <child column="created_by" foreignKey="project_scores_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_scores"/>
+            <child column="modified_by" foreignKey="project_scores_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_scores"/>
+            <child column="created_by" foreignKey="project_votes_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
+            <child column="modified_by" foreignKey="project_votes_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
+            <child column="user_id" foreignKey="project_votes_user_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
+            <child column="modified_by" foreignKey="report_auto_calculated_indicators_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_auto_calculated_indicators"/>
+            <child column="modified_by" foreignKey="report_common_indicators_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_common_indicators"/>
+            <child column="modified_by" foreignKey="report_project_indicators_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_indicators"/>
+            <child column="created_by" foreignKey="reports_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="submitted_by" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="created_by" foreignKey="submission_documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
+            <child column="created_by" foreignKey="submissions_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
+            <child column="modified_by" foreignKey="submissions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
+            <child column="created_by" foreignKey="user_internal_interests_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_internal_interests"/>
+            <child column="user_id" foreignKey="user_internal_interests_user_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_internal_interests"/>
+            <child column="created_by" foreignKey="document_saved_versions_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="document_saved_versions"/>
+            <child column="created_by" foreignKey="documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="modified_by" foreignKey="documents_modified_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="owned_by" foreignKey="documents_owned_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="created_by" foreignKey="variable_manifests_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifests"/>
+            <child column="owned_by" foreignKey="variable_owners_owned_by_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_owners"/>
+            <child column="created_by" foreignKey="variable_values_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <child column="created_by" foreignKey="variable_workflow_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_workflow_history"/>
+            <child column="created_by" foreignKey="funding_entities_created_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="funding_entities"/>
+            <child column="modified_by" foreignKey="funding_entities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="funding_entities"/>
+            <child column="user_id" foreignKey="funding_entity_users_user_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_users"/>
+            <child column="published_by" foreignKey="published_activities_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activities"/>
+            <child column="published_by" foreignKey="published_project_details_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_details"/>
+            <child column="published_by" foreignKey="published_reports_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
+            <child column="created_by" foreignKey="batch_details_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
+            <child column="created_by" foreignKey="batch_photos_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
+            <child column="deleted_by" foreignKey="batch_photos_deleted_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
+            <child column="created_by" foreignKey="batch_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_quantity_history"/>
+            <child column="created_by" foreignKey="batches_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="modified_by" foreignKey="batches_modified_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="created_by" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
+            <child column="modified_by" foreignKey="withdrawals_modified_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
+            <child column="user_id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
+            <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="created_by" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
+            <child column="modified_by" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
+            <child column="created_by" foreignKey="internal_tags_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="internal_tags"/>
+            <child column="modified_by" foreignKey="internal_tags_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="internal_tags"/>
+            <child column="user_id" foreignKey="notifications_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
+            <child column="created_by" foreignKey="organization_internal_tags_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_internal_tags"/>
+            <child column="created_by" foreignKey="organization_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
+            <child column="modified_by" foreignKey="organization_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
+            <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
+            <child column="created_by" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="created_by" foreignKey="project_internal_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
+            <child column="modified_by" foreignKey="project_internal_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
+            <child column="user_id" foreignKey="project_internal_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
+            <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="user_id" foreignKey="saved_table_views_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="saved_table_views"/>
+            <child column="locked_by" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+            <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+            <child column="submitted_by" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+            <child column="created_by" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+            <child column="user_id" foreignKey="user_disclaimers_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_disclaimers"/>
+            <child column="user_id" foreignKey="user_email_notification_categories_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_email_notification_categories"/>
+            <child column="user_id" foreignKey="user_global_roles_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_global_roles"/>
+            <child column="user_id" foreignKey="user_preferences_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_preferences"/>
+            <child column="created_by" foreignKey="accession_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_quantity_history"/>
+            <child column="updated_by" foreignKey="accession_state_history_updated_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_state_history"/>
+            <child column="created_by" foreignKey="accessions_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="modified_by" foreignKey="accessions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="created_by" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
+            <child column="withdrawn_by" foreignKey="withdrawals_withdrawn_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
+            <child column="created_by" foreignKey="deliveries_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <child column="modified_by" foreignKey="deliveries_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <child column="reassigned_by" foreignKey="deliveries_reassigned_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
+            <child column="created_by" foreignKey="draft_planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+            <child column="modified_by" foreignKey="draft_planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+            <child column="created_by" foreignKey="monitoring_plot_histories_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plot_histories"/>
+            <child column="created_by" foreignKey="monitoring_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
+            <child column="modified_by" foreignKey="monitoring_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
+            <child column="claimed_by" foreignKey="observation_plots_claimed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="completed_by" foreignKey="observation_plots_completed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="created_by" foreignKey="observation_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="modified_by" foreignKey="observation_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="created_by" foreignKey="planting_date_requests_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_date_requests"/>
+            <child column="modified_by" foreignKey="planting_date_requests_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_date_requests"/>
+            <child column="created_by" foreignKey="planting_season_allocated_species_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_allocated_species"/>
+            <child column="modified_by" foreignKey="planting_season_allocated_species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_allocated_species"/>
+            <child column="created_by" foreignKey="planting_season_species_targets_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_species_targets"/>
+            <child column="modified_by" foreignKey="planting_season_species_targets_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_species_targets"/>
+            <child column="created_by" foreignKey="planting_seasons_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_seasons"/>
+            <child column="modified_by" foreignKey="planting_seasons_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_seasons"/>
+            <child column="created_by" foreignKey="planting_site_histories_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_site_histories"/>
+            <child column="created_by" foreignKey="planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+            <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+            <child column="created_by" foreignKey="plantings_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
+            <child column="created_by" foreignKey="plot_t0_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_densities"/>
+            <child column="modified_by" foreignKey="plot_t0_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_densities"/>
+            <child column="created_by" foreignKey="plot_t0_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
+            <child column="modified_by" foreignKey="plot_t0_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
+            <child column="created_by" foreignKey="scheduled_planting_dates_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="scheduled_planting_dates"/>
+            <child column="modified_by" foreignKey="scheduled_planting_dates_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="scheduled_planting_dates"/>
+            <child column="boundary_modified_by" foreignKey="strata_boundary_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
+            <child column="created_by" foreignKey="strata_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
+            <child column="modified_by" foreignKey="strata_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
+            <child column="created_by" foreignKey="stratum_t0_temp_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="stratum_t0_temp_densities"/>
+            <child column="modified_by" foreignKey="stratum_t0_temp_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="stratum_t0_temp_densities"/>
+            <child column="created_by" foreignKey="substrata_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="substrata"/>
+            <child column="modified_by" foreignKey="substrata_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="substrata"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="true" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="first_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="last_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="user_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="users_user_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="last_activity_time" nullable="true" remarks="When the user most recently interacted with the system." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="email_notifications_enabled" nullable="false" remarks="If true, the user wants to receive notifications via email." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="locale" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="cookies_consented" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="15" name="cookies_consented_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="users_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="users_auth_id_key" unique="true">
+            <column ascending="true" name="auth_id"/>
+         </index>
+         <index name="users_email_key" unique="true">
+            <column ascending="true" name="email"/>
+         </index>
+         <checkConstraint constraint="(auth_id !~ similar_to_escape(' *'::text))" name="users_auth_id_check"/>
+         <checkConstraint constraint="(first_name !~ similar_to_escape(' *'::text))" name="users_first_name_check"/>
+         <checkConstraint constraint="(last_name !~ similar_to_escape(' *'::text))" name="users_last_name_check"/>
       </table>
    </tables>
    <routines>

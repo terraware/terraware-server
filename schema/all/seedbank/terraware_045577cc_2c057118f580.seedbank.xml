@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="terraware_71a55913_7131c89f869b" schema="seedbank" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_045577cc_2c057118f580" schema="seedbank" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
    <tables>
       <table name="accession_collectors" remarks="Names of people who collected each accession." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">

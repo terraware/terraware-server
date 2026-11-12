@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>gbif_taxa - terraware_71a55913_7131c89f869b.public</title>
+        <title>gbif_taxa - terraware_045577cc_2c057118f580.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware_71a55913_7131c89f869b</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_045577cc_2c057118f580</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -505,16 +505,16 @@
                                     <td>(class !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>gbif_taxa_infraspecific_epithet_check</td>
-                                    <td>(infraspecific_epithet !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>gbif_taxa_dataset_id_check</td>
+                                    <td>(dataset_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>gbif_taxa_nomenclatural_status_check</td>
                                     <td>(nomenclatural_status !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>gbif_taxa_family_check</td>
-                                    <td>(family !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>gbif_taxa_order_check</td>
+                                    <td>(&quot;order&quot; !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>gbif_taxa_generic_name_check</td>
@@ -525,20 +525,20 @@
                                     <td>(genus !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>gbif_taxa_specific_epithet_check</td>
-                                    <td>(specific_epithet !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>gbif_taxa_infraspecific_epithet_check</td>
+                                    <td>(infraspecific_epithet !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>gbif_taxa_dataset_id_check</td>
-                                    <td>(dataset_id !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>gbif_taxa_order_check</td>
-                                    <td>(&quot;order&quot; !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>gbif_taxa_family_check</td>
+                                    <td>(family !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>gbif_taxa_phylum_check</td>
                                     <td>(phylum !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>gbif_taxa_specific_epithet_check</td>
+                                    <td>(specific_epithet !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

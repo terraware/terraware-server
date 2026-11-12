@@ -1,5 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="terraware_71a55913_7131c89f869b" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_045577cc_2c057118f580" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
    <tables>
+      <table name="chat_memory_conversations" remarks="Information about Ask Terraware conversations." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111">
+            <child column="conversation_id" foreignKey="chat_memory_messages_conversation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="chat_memory_messages"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="chat_memory_conversations_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="chat_memory_message_types" remarks="(Enum) Message types that can be stored as part of the memory of an LLM chat conversation." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="message_type_id" foreignKey="chat_memory_messages_message_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="chat_memory_messages"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="chat_memory_message_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="chat_memory_message_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="chat_memory_messages" remarks="Messages from Ask Terraware conversations. Both questions (prompts to the LLM) and answers (responses from the LLM) are recorded." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="conversation_id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111">
+            <parent column="id" foreignKey="chat_memory_messages_conversation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="chat_memory_conversations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="message_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="chat_memory_messages_message_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="chat_memory_message_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="content" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="chat_memory_messages_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="chat_memory_messages_conversation_id_idx" unique="false">
+            <column ascending="true" name="conversation_id"/>
+         </index>
+      </table>
       <table name="files" remarks="Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="file_id" foreignKey="activity_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activity_media_files"/>
@@ -38,28 +81,131 @@
          <checkConstraint constraint="(length(content_type) &gt; 0)" name="content_type_cannot_be_empty_string"/>
          <checkConstraint constraint="(length(file_name) &gt; 0)" name="file_name_cannot_be_empty_string"/>
       </table>
-      <table name="identifier_sequences" remarks="Current state for generating user-facing identifiers (accession number, etc.) for each organization." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="prefix" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="next_value" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <primaryKey column="organization_id" sequenceNumberInPK="1"/>
-         <primaryKey column="prefix" sequenceNumberInPK="2"/>
-         <index name="identifier_sequences_pkey" unique="true">
-            <column ascending="true" name="organization_id"/>
-            <column ascending="true" name="prefix"/>
-         </index>
-      </table>
-      <table name="seed_treatments" remarks="(Enum) Techniques that can be used to treat seeds before testing them for viability." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="treatment_id" foreignKey="batch_details_history_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
-            <child column="treatment_id" foreignKey="batches_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
-            <child column="treatment_id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="viability_tests"/>
+      <table name="land_use_model_types" remarks="(Enum) Types of ways a project's land can be used." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="land_use_model_type_id" foreignKey="published_project_land_use_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_land_use"/>
+            <child column="land_use_model_type_id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_land_use_model_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_treatment_pkey" unique="true">
+         <index name="land_use_model_types_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
+         <index name="land_use_model_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="project_land_use_model_types" remarks="Which projects have which types of land use models." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="land_use_model_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="land_use_model_types"/>
+         </column>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="land_use_model_type_id" sequenceNumberInPK="2"/>
+         <index name="project_land_use_model_types_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="land_use_model_type_id"/>
+         </index>
+      </table>
+      <table name="projects" remarks="Distinguishes among an organization's projects." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="project_id" foreignKey="activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activities"/>
+            <child column="project_id" foreignKey="applications_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
+            <child column="project_id" foreignKey="auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicator_targets"/>
+            <child column="project_id" foreignKey="common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicator_targets"/>
+            <child column="project_id" foreignKey="deliverable_project_due_dates_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_project_due_dates"/>
+            <child column="project_id" foreignKey="event_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="event_projects"/>
+            <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
+            <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
+            <child column="project_id" foreignKey="project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicator_targets"/>
+            <child column="project_id" foreignKey="project_indicators_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicators"/>
+            <child column="project_id" foreignKey="project_modules_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_modules"/>
+            <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>
+            <child column="project_id" foreignKey="project_report_configs_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_report_configs"/>
+            <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
+            <child column="project_id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_vote_decisions"/>
+            <child column="project_id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
+            <child column="project_id" foreignKey="report_auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_auto_calculated_indicator_targets"/>
+            <child column="project_id" foreignKey="report_common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_common_indicator_targets"/>
+            <child column="project_id" foreignKey="report_project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_indicator_targets"/>
+            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
+            <child column="project_id" foreignKey="submission_documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
+            <child column="project_id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submissions"/>
+            <child column="project_id" foreignKey="documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="project_id" foreignKey="variable_owners_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_owners"/>
+            <child column="project_id" foreignKey="variable_values_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
+            <child column="project_id" foreignKey="variable_workflow_history_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_workflow_history"/>
+            <child column="project_id" foreignKey="funding_entity_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_projects"/>
+            <child column="project_id" foreignKey="published_activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_activities"/>
+            <child column="project_id" foreignKey="published_auto_calculated_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_baselines"/>
+            <child column="project_id" foreignKey="published_auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_targets"/>
+            <child column="project_id" foreignKey="published_common_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_baselines"/>
+            <child column="project_id" foreignKey="published_common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_targets"/>
+            <child column="project_id" foreignKey="published_project_carbon_certs_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_carbon_certs"/>
+            <child column="project_id" foreignKey="published_project_details_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_details"/>
+            <child column="project_id" foreignKey="published_project_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_baselines"/>
+            <child column="project_id" foreignKey="published_project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_targets"/>
+            <child column="project_id" foreignKey="published_project_land_use_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_land_use"/>
+            <child column="project_id" foreignKey="published_project_sdg_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_sdg"/>
+            <child column="project_id" foreignKey="published_reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+            <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
+            <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
+            <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="project_id" foreignKey="draft_planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+            <child column="project_id" foreignKey="planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="3" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="projects_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="accelerator_phases"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="projects_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="projects_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
+         </index>
+         <index name="projects_created_by_idx" unique="false">
+            <column ascending="true" name="created_by"/>
+         </index>
+         <index name="projects_modified_by_idx" unique="false">
+            <column ascending="true" name="modified_by"/>
+         </index>
+         <index name="projects_organization_id_id_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="projects_organization_id_name_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="vector_store" remarks="Content snippets and embeddings for use as context in Ask Terraware LLM prompts. This table is used by the Spring AI vector store library, and its structure needs to match what the library expects." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="uuid_generate_v4()" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="content" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="metadata" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="embedding" nullable="false" remarks="" size="2147483647" type="halfvec" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="vector_store_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="vector_store_embedding_idx" unique="false">
+            <column ascending="true" name="embedding"/>
+         </index>
+         <index name="vector_store_expr_idx" unique="false"/>
       </table>
    </tables>
    <routines>
