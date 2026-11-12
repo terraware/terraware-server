@@ -1937,22 +1937,24 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @ParameterizedTest
-    @ValueSource(
-        strings =
-            [
-                "InProgress",
-                "Overdue",
-            ]
+    @CsvSource(
+        "InProgress,Monitoring",
+        "Overdue,Monitoring",
+        "InProgress,BiomassMeasurements",
+        "Overdue,BiomassMeasurements",
+        "InProgress,BaselineSurvey",
+        "Overdue,BaselineSurvey",
     )
     fun `reschedules an In-Progress or Overdue observation if there are no observed plots`(
-        stateName: String
+        state: ObservationState,
+        observationType: ObservationType,
     ) {
       insertPlantingSite(x = 0)
       insertStratum(plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
       insertSubstratum()
       insertMonitoringPlot()
 
-      val observationId = insertObservation(state = ObservationState.valueOf(stateName))
+      val observationId = insertObservation(observationType = observationType, state = state)
       insertObservationPlot()
       val originalObservation = observationStore.fetchObservationById(observationId)
 
@@ -1963,22 +1965,27 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val updatedObservation = observationStore.fetchObservationById(observationId)
       assertEquals(
-          ObservationState.Upcoming,
-          updatedObservation.state,
-          "State should show as Upcoming",
+          originalObservation.copy(
+              endDate = endDate,
+              plantingSiteHistoryId = null,
+              startDate = startDate,
+              state = ObservationState.Upcoming,
+          ),
+          updatedObservation,
+          "Rescheduled observation",
       )
-      assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
-      assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
       assertTableEmpty(OBSERVATION_PLOTS, "Observation plots should be removed")
 
-      eventPublisher.assertExactEventsPublished(
-          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation))
+      eventPublisher.assertEventPublished(
+          ObservationRescheduledEvent(originalObservation, updatedObservation)
       )
     }
 
-    @Test
-    fun `reschedules an upcoming observation`() {
-      val observationId = insertObservation(state = ObservationState.Upcoming)
+    @ParameterizedTest
+    @EnumSource(ObservationType::class)
+    fun `reschedules an upcoming observation`(observationType: ObservationType) {
+      val observationId =
+          insertObservation(observationType = observationType, state = ObservationState.Upcoming)
       val originalObservation = observationStore.fetchObservationById(observationId)
 
       val startDate = LocalDate.EPOCH
@@ -1988,15 +1995,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val updatedObservation = observationStore.fetchObservationById(observationId)
       assertEquals(
-          ObservationState.Upcoming,
-          updatedObservation.state,
-          "State should show as Upcoming",
+          originalObservation.copy(startDate = startDate, endDate = endDate),
+          updatedObservation,
+          "Rescheduled observation",
       )
-      assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
-      assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
 
-      eventPublisher.assertExactEventsPublished(
-          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation))
+      eventPublisher.assertEventPublished(
+          ObservationRescheduledEvent(originalObservation, updatedObservation)
       )
     }
   }

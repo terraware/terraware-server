@@ -4,7 +4,9 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.tracking.db.ObservationAlreadyEndedException
+import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,17 +19,21 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.security.access.AccessDeniedException
 
 class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
-  @Test
-  fun `deletes an observation if no plot has been completed`() {
-    val observationId = insertObservation()
+  @ParameterizedTest
+  @EnumSource(ObservationType::class)
+  fun `deletes an observation if no plot has been completed`(observationType: ObservationType) {
+    val observationId = insertObservation(observationType = observationType)
     assertNotNull(observationsDao.fetchOneById(observationId), "Before abandon")
     store.abandonObservation(observationId)
     recalculator.recalculateAllSites()
     assertNull(observationsDao.fetchOneById(observationId), "After abandon")
   }
 
-  @Test
-  fun `sets an observation to Abandoned and incomplete plots to Not Observed and unclaims`() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class)
+  fun `sets an observation to Abandoned and incomplete plots to Not Observed and unclaims`(
+      observationType: ObservationType
+  ) {
     insertStratum()
     insertSubstratum()
     val earlierCompletedPlotId = insertMonitoringPlot()
@@ -35,7 +41,7 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
     val unclaimedPlotId = insertMonitoringPlot()
     val claimedPlotId = insertMonitoringPlot()
 
-    val observationId = insertObservation()
+    val observationId = insertObservation(observationType = observationType)
 
     insertObservationPlot(
         observationId = observationId,
@@ -106,6 +112,9 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
         ),
         observationsDao.fetchOneById(observationId),
         "Observation after abandoning",
+    )
+    eventPublisher.assertEventPublished(
+        ObservationStateUpdatedEvent(observationId, ObservationState.Abandoned)
     )
   }
 
