@@ -45,6 +45,7 @@ import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
+import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -232,7 +233,10 @@ data class StratumDensityUpdatedEvent(
           )
     }
 
-    return StratumDensityUpdatedEvent(combinedChanges.values.toList(), plantingSiteId)
+    return StratumDensityUpdatedEvent(
+        combinedChanges.values.filterNot { it.previousDensity.equalsIgnoreScale(it.newDensity) },
+        plantingSiteId,
+    )
   }
 }
 
