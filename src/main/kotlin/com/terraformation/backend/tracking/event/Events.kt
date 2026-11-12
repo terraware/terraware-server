@@ -206,6 +206,8 @@ data class StratumDensityUpdatedEvent(
 ) : RateLimitedEvent<StratumDensityUpdatedEvent> {
   override fun getMinimumInterval(): Duration = Duration.ofHours(24)
 
+  override fun getInitialDelay(): Duration = Duration.ofMinutes(15)
+
   override fun getRateLimitKey() = plantingSiteId
 
   override fun combine(existing: StratumDensityUpdatedEvent): StratumDensityUpdatedEvent {
@@ -277,6 +279,8 @@ data class RateLimitedT0DataAssignedEvent(
       mapOf("organizationId" to organizationId, "plantingSiteId" to plantingSiteId)
 
   override fun getMinimumInterval(): Duration = Duration.ofHours(24)
+
+  override fun getInitialDelay(): Duration = Duration.ofMinutes(15)
 
   override fun combine(existing: RateLimitedT0DataAssignedEvent): RateLimitedT0DataAssignedEvent {
     require(existing.organizationId == organizationId) {
@@ -994,6 +998,8 @@ data class RateLimitedMonitoringSpeciesTotalsEditedEvent(
       mapOf("organizationId" to organizationId, "plantingSiteId" to plantingSiteId)
 
   override fun getMinimumInterval(): Duration = Duration.ofHours(24)
+
+  override fun getInitialDelay(): Duration = Duration.ofMinutes(15)
 
   override fun combine(
       existing: RateLimitedMonitoringSpeciesTotalsEditedEvent
