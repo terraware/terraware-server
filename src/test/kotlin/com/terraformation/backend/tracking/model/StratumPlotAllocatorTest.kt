@@ -13,28 +13,13 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.locationtech.jts.geom.Envelope
 
 class StratumPlotAllocatorTest : BaseStratumModelTest() {
-  @ParameterizedTest
-  @CsvSource("2,2,false", "10,3,true")
-  fun `baseline uses temporary plots and preserves existing permanent plots`(
-      configured: Int,
-      expected: Int,
-      shortfall: Boolean,
-  ) {
-    val permanent = monitoringPlotModel(10, permanentIndex = 1)
+  @Test
+  fun `temporary only shortfall allocation excludes existing permanent plots`() {
     val stratum =
-        stratumModel(
-                plantNumPermanentPlots = 1,
-                substrata =
-                    listOf(
-                        substratumModel(
-                            plots = listOf(permanent),
-                            boundary = substratumBoundary(1, 4),
-                        )
-                    ),
-            )
+        fullStratum(numPlots = 1, capacity = 4)
             .copy(
                 baselinePlotCounts =
-                    StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = configured)
+                    StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 10)
             )
 
     val allocation =
@@ -48,10 +33,15 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
             .allocate(substrataIds(1))
 
     assertEquals(emptySet<MonitoringPlotId>(), allocation.permanentPlotIds, "Permanent assignments")
-    assertEquals(expected, allocation.temporaryPlotBoundaries.size, "Temporary assignments")
-    assertEquals(shortfall, allocation.isShortfall, "Shortfall")
+    assertEquals(3, allocation.temporaryPlotBoundaries.size, "Temporary assignments")
+    assertTrue(allocation.isShortfall, "Shortfall")
     allocation.temporaryPlotBoundaries.forEach {
-      assertEquals(0.0, it.intersection(permanent.boundary).area, 1e-12, "Permanent overlap")
+      assertEquals(
+          0.0,
+          it.intersection(monitoringPlotBoundary(10)).area,
+          1e-12,
+          "Permanent overlap",
+      )
     }
   }
 
@@ -78,6 +68,7 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
   private fun fullStratum(
       numPlots: Int = 4,
       plantNumPermanentPlots: Int = 6,
+      capacity: Int = numPlots,
   ): ExistingStratumModel =
       stratumModel(
           plantNumPermanentPlots = plantNumPermanentPlots,
@@ -86,7 +77,8 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
               listOf(
                   substratumModel(
                       plots =
-                          List(numPlots) { monitoringPlotModel(10 + it, permanentIndex = it + 1) }
+                          List(numPlots) { monitoringPlotModel(10 + it, permanentIndex = it + 1) },
+                      boundary = substratumBoundary(1, capacity),
                   )
               ),
       )
