@@ -67,6 +67,7 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsReassignedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -74,6 +75,7 @@ import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.model.AffectedStrata
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
@@ -135,7 +137,7 @@ class ObservationService(
     requirePermissions { manageObservation(observationId) }
 
     log.withMDC("observationId" to observationId) {
-      entityLocker.withLockedObservation(observationId) { observation ->
+      entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
         if (observation.state != ObservationState.Upcoming) {
           throw ObservationAlreadyStartedException(observationId)
         }
@@ -166,8 +168,13 @@ class ObservationService(
 
   /**
    * Allocates plots to an observation for the strata in [stratumIds] (all strata if null) that
-   * contain a requested substratum. The caller must hold the observation lock. This does not
-   * abandon the observation, publish events, or change its state.
+   * contain a requested substratum. This does not abandon the observation, publish events, or
+   * change its state.
+   *
+   * The caller must hold the planting site lock and then the observation lock, acquired in that
+   * order (see [EntityLocker.withLockedPlantingSiteAndObservation]). Allocation locks the planting
+   * site to create plots, and planting site edits lock the site before updating observations, so
+   * taking the observation lock first can deadlock.
    */
   internal fun assignPlots(
       observation: ExistingObservationModel,
@@ -317,13 +324,13 @@ class ObservationService(
     return log.withMDC("observationId" to observationId) {
       try {
         systemUser.run {
-          entityLocker.withLockedObservation(observationId) { observation ->
+          entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
             if (
                 observation.state != ObservationState.Upcoming ||
                     observationPlotStore.hasPlots(observationId)
             ) {
               log.info("Observation already started or has plots; not assigning plots")
-              return@withLockedObservation NewObservationAssignment.Skipped
+              return@withLockedPlantingSiteAndObservation NewObservationAssignment.Skipped
             }
 
             when (val result = assignPlots(observation)) {
@@ -607,8 +614,8 @@ class ObservationService(
                 // requires organization-level permissions a super admin might not have.
                 log.withMDC("observationId" to observationId) {
                   systemUser.run {
-                    entityLocker.withLockedObservation(observationId) { lockedObservation ->
-                      when (val result = assignPlots(lockedObservation)) {
+                    entityLocker.withLockedPlantingSiteAndObservation(observationId) { locked ->
+                      when (val result = assignPlots(locked)) {
                         is PlotAssignmentResult.Unstartable ->
                             throw ObservationPlotsUnavailableException(observation.plantingSiteId)
                         is PlotAssignmentResult.Assigned -> result
@@ -775,7 +782,8 @@ class ObservationService(
   ): ReplacementResult {
     requirePermissions { replaceObservationPlot(observationId) }
 
-    return entityLocker.withLockedObservation(observationId) { observation ->
+    // Replacements can create temporary plots, which locks the planting site.
+    return entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
       if (observation.isAdHoc) {
         throw IllegalStateException("Ad-hoc observation plot cannot be replaced.")
       }
@@ -1190,29 +1198,86 @@ class ObservationService(
     )
   }
 
-  /** Updates observations, if any, when a site's map is edited. */
+  /**
+   * Updates observations, if any, when a site's map is edited. Runs in the edit's transaction, so
+   * if observations can't be updated, the edit is rolled back.
+   */
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
-    dslContext.transaction { _ ->
-      // Abandon any active observations with incomplete plots in strata that are affected by the
-      // edit.
-      val affectedStratumIds =
-          event.plantingSiteEdit.stratumEdits
-              .filterNot { it.isNoOp() }
-              .mapNotNull { it.existingModel?.id }
-      val affectedObservationIds =
-          observationStore.fetchActiveObservationIds(event.edited.id, affectedStratumIds)
-
-      affectedObservationIds.forEach { observationId ->
-        observationStore.abandonObservation(observationId)
-      }
-    }
+    updateObservationsForChangedStrata(event.edited.id, event.plantingSiteEdit.affectedStrata)
   }
 
   @EventListener
   fun on(event: MonitoringSpeciesTotalsEditedEvent) {
     RateLimitedMonitoringSpeciesTotalsEditedEvent.of(event)?.let {
       rateLimitedEventPublisher.publishEvent(it)
+    }
+  }
+
+  /**
+   * Updates active observations that have incomplete plots in strata whose maps have changed.
+   * Observations that already have completed plots are abandoned. The others get new plots in the
+   * changed strata; their plots in other strata are kept.
+   *
+   * This runs as the system user because the change may have been made by a super admin who isn't a
+   * member of the organization; the caller's permission to make the change was already checked.
+   */
+  private fun updateObservationsForChangedStrata(
+      plantingSiteId: PlantingSiteId,
+      strata: AffectedStrata,
+  ) {
+    if (strata.isEmpty()) {
+      return
+    }
+
+    systemUser.run {
+      dslContext.transaction { _ ->
+        val affected = observationStore.classifyAffectedObservations(plantingSiteId, strata)
+
+        affected.toAbandon.forEach { observationId ->
+          log.info("Abandoning observation $observationId because its strata have changed")
+          observationStore.abandonObservation(observationId)
+        }
+
+        affected.toReassign.forEach { observationId -> reassignPlots(observationId, strata) }
+      }
+    }
+  }
+
+  /**
+   * Replaces an observation's incomplete plots in specific strata with newly-allocated ones. If the
+   * observation has already started, its site and plot history IDs are refreshed so the new plots
+   * show up in its results.
+   *
+   * If the observation can't be given plots, it is abandoned (and, since it has no completed plots,
+   * deleted).
+   */
+  private fun reassignPlots(observationId: ObservationId, strata: AffectedStrata) {
+    log.withMDC("observationId" to observationId) {
+      entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
+        log.info("Reassigning plots in strata ${strata.stratumIds}")
+
+        observationPlotStore.removeUnobservedPlots(observationId, strata)
+
+        when (val result = assignPlots(observation, strata.stratumIds)) {
+          is PlotAssignmentResult.Unstartable -> abandonUnstartableObservation(observation)
+          is PlotAssignmentResult.Assigned -> {
+            if (observation.state != ObservationState.Upcoming) {
+              observationStore.refreshHistoryIds(observationId)
+            }
+
+            eventPublisher.publishEvent(
+                ObservationPlotsReassignedEvent(
+                    observation.id,
+                    observation.observationType,
+                    observation.plantingSiteId,
+                )
+            )
+
+            publishEventIfUnderallocated(observation, result)
+          }
+        }
+      }
     }
   }
 
@@ -1232,6 +1297,11 @@ class ObservationService(
     }
   }
 
+  /**
+   * Abandons an observation that couldn't be given plots. Since such an observation has no
+   * completed plots, this deletes it. Any temporary plots it was using that no other observation
+   * uses are deleted too, including ones created by a partially-successful allocation.
+   */
   private fun abandonUnstartableObservation(observation: ExistingObservationModel) {
     eventPublisher.publishEvent(
         ObservationNotStartedEvent(
@@ -1241,7 +1311,11 @@ class ObservationService(
         )
     )
 
+    val plotIds = observationPlotStore.fetchUnobservedPlotIds(observation.id)
+
     observationStore.abandonObservation(observation.id)
+
+    systemUser.run { observationPlotStore.deleteOrphanedTemporaryPlots(plotIds) }
   }
 
   /**

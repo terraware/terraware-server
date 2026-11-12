@@ -114,6 +114,17 @@ data class ObservationNotStartedEvent(
 ) : ObservationSchedulingNotificationEvent
 
 /**
+ * Published when an observation's plots in some strata were replaced because the strata's maps
+ * changed. Not published if the observation couldn't be given new plots; that publishes
+ * [ObservationNotStartedEvent] instead.
+ */
+data class ObservationPlotsReassignedEvent(
+    val observationId: ObservationId,
+    val observationType: ObservationType,
+    val plantingSiteId: PlantingSiteId,
+)
+
+/**
  * Published when an observation started with fewer monitoring plots than its strata are configured
  * for because the strata didn't have room for all of them. Only strata that fell short are
  * included.
