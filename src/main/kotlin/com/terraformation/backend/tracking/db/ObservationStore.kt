@@ -68,6 +68,8 @@ import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesEdite
 import com.terraformation.backend.tracking.event.ObservationPlotCoordinatesEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
+import com.terraformation.backend.tracking.model.AffectedObservations
+import com.terraformation.backend.tracking.model.AffectedStrata
 import com.terraformation.backend.tracking.model.EditableMonitoringSpeciesModel
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -311,6 +313,82 @@ class ObservationStore(
           .orderBy(ID)
           .fetch(ID.asNonNullable())
     }
+  }
+
+  /**
+   * Returns the active observations of a planting site that have incomplete plots in specific
+   * strata, classified by whether they should be abandoned or have their plots reassigned.
+   *
+   * Plots are matched to strata using the plot histories recorded when they were added to their
+   * observations, not their current substrata, and plots in deleted strata are matched by stable
+   * ID.
+   *
+   * @param observationTypes If non-null, only include observations of these types.
+   *
+   * Upcoming observations without any plots are never affected; they get plots when they start.
+   */
+  fun classifyAffectedObservations(
+      plantingSiteId: PlantingSiteId,
+      strata: AffectedStrata,
+      observationTypes: Set<ObservationType>? = null,
+  ): AffectedObservations {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    if (strata.isEmpty() || observationTypes?.isEmpty() == true) {
+      return AffectedObservations(emptyList(), emptyList())
+    }
+
+    val hasCompletedPlotField =
+        DSL.field(
+            DSL.exists(
+                DSL.selectOne()
+                    .from(OBSERVATION_PLOTS)
+                    .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                    .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+            )
+        )
+
+    val observations =
+        with(OBSERVATIONS) {
+          dslContext
+              .select(ID, STATE_ID, hasCompletedPlotField)
+              .from(OBSERVATIONS)
+              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(IS_AD_HOC.eq(false))
+              .and(observationTypes?.let { OBSERVATION_TYPE_ID.`in`(it) } ?: DSL.noCondition())
+              .and(
+                  STATE_ID.`in`(
+                      ObservationState.Upcoming,
+                      ObservationState.InProgress,
+                      ObservationState.Overdue,
+                  )
+              )
+              .andExists(
+                  DSL.selectOne()
+                      .from(OBSERVATION_PLOTS)
+                      .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(ID))
+                      .and(
+                          OBSERVATION_PLOTS.STATUS_ID.`in`(
+                              ObservationPlotStatus.Claimed,
+                              ObservationPlotStatus.Unclaimed,
+                          )
+                      )
+                      .and(observationPlotInStrataCondition(strata))
+              )
+              .orderBy(ID)
+              .fetch()
+        }
+
+    val (toAbandon, toReassign) =
+        observations.partition { record ->
+          record[OBSERVATIONS.STATE_ID] != ObservationState.Upcoming &&
+              record[hasCompletedPlotField] == true
+        }
+
+    return AffectedObservations(
+        toAbandon = toAbandon.map { it[OBSERVATIONS.ID]!! },
+        toReassign = toReassign.map { it[OBSERVATIONS.ID]!! },
+    )
   }
 
   fun createObservation(newModel: NewObservationModel): ObservationId {
