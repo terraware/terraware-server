@@ -5,7 +5,9 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventValues
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.security.access.AccessDeniedException
 
@@ -47,6 +50,9 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
   override lateinit var user: TerrawareUser
 
   private val eventPublisher = TestEventPublisher()
+  private val store by lazy {
+    ObservationScenario.forTest(this, eventPublisher = eventPublisher).observationStore
+  }
 
   @BeforeEach
   fun setUp() {
@@ -1183,6 +1189,32 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
         observationEdited(1) { plot(1) { species(0, live = 2) } }
       }
     }
+  }
+
+  @ParameterizedTest
+  @EnumSource(ObservationType::class, names = ["Monitoring"], mode = EnumSource.Mode.EXCLUDE)
+  fun `rejects plant count edits for non-monitoring observations`(type: ObservationType) {
+    insertPlantingSite()
+    insertStratum()
+    insertSubstratum()
+    insertMonitoringPlot()
+    insertObservation(observationType = type)
+    insertObservationPlot(completedBy = user.userId)
+
+    assertThrows<IllegalArgumentException> {
+      store.updateMonitoringSpecies(
+          observationId = inserted.observationId,
+          monitoringPlotId = inserted.monitoringPlotId,
+          certainty = RecordedSpeciesCertainty.Other,
+          speciesId = null,
+          speciesName = "Other",
+      ) {
+        it.copy(totalLive = 2)
+      }
+    }
+
+    assertTableEmpty(OBSERVED_PLOT_SPECIES_TOTALS)
+    eventPublisher.assertEventNotPublished<MonitoringSpeciesTotalsEditedEvent>()
   }
 
   fun scenario(init: ObservationScenario.() -> Unit) {

@@ -522,12 +522,8 @@ class ObservationStore(
         throw PlotAlreadyCompletedException(monitoringPlotId)
       }
 
-      if (
-          plants.isNotEmpty() &&
-              (observationType == ObservationType.BiomassMeasurements ||
-                  observationType == ObservationType.BaselineSurvey)
-      ) {
-        throw IllegalArgumentException("Biomass observations must not contain plants")
+      if (plants.isNotEmpty() && observationType != ObservationType.Monitoring) {
+        throw IllegalArgumentException("Only Monitoring observations may contain recorded plants")
       }
 
       observationPlotConditionsDao.insert(

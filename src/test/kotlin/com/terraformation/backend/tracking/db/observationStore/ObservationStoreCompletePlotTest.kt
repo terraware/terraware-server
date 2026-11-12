@@ -65,8 +65,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
   }
 
   @ParameterizedTest
-  @EnumSource(ObservationType::class, names = ["BiomassMeasurements", "BaselineSurvey"])
-  fun `rejects plants for biomass observations before completing plot`(type: ObservationType) {
+  @EnumSource(ObservationType::class, names = ["Monitoring"], mode = EnumSource.Mode.EXCLUDE)
+  fun `rejects plants for non-monitoring observations before completing plot`(
+      type: ObservationType
+  ) {
     val biomassObservationId = insertObservation(observationType = type)
     val biomassPlotId = insertMonitoringPlot()
     insertObservationPlot(
@@ -97,7 +99,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
           )
         }
 
-    assertEquals("Biomass observations must not contain plants", exception.message)
+    assertEquals("Only Monitoring observations may contain recorded plants", exception.message)
     assertTableEmpty(RECORDED_PLANTS)
     assertEquals(
         ObservationPlotStatus.Claimed,
