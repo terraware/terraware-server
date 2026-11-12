@@ -1,2 +1,8 @@
+2ee6eb13 SW-9265 Allow Baseline Survey observations to be scheduled (#5389)
+9fe5a8cc SW-9269 Edit Baseline Survey plot counts in admin UI (#5388)
+9b6092d5 SW-9269 Add Baseline Survey plot count settings to strata (#5387)
+b008d965 SW-9266 Only accept recorded plants for Monitoring observations (#5386)
+98f8707d SW-9266 Allow biomass details for Baseline Survey plots (#5385)
+8896183d SW-9264 Add Baseline Survey observation type (#5384)
 69b7cfe6 SW-9134 Return time-in-stage seedling count (#5393)
 a688764f SW-9106 Delay first notification for tracking edits (#5392)
