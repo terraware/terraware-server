@@ -507,6 +507,10 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam stratumId: StratumId,
       @RequestParam name: String,
+      @RequestParam baselineErrorMargin: BigDecimal,
+      @RequestParam baselineNumTemporary: Int,
+      @RequestParam baselineStudentsT: BigDecimal,
+      @RequestParam baselineVariance: BigDecimal,
       @RequestParam biomassErrorMargin: BigDecimal,
       @RequestParam biomassNumPermanent: Int,
       @RequestParam biomassNumTemporary: Int,
@@ -524,6 +528,10 @@ class AdminPlantingSitesController(
     try {
       plantingSiteStore.updateStratum(stratumId) { row ->
         row.copy(
+            baselineErrorMargin = baselineErrorMargin,
+            baselineNumTemporaryPlots = baselineNumTemporary,
+            baselineStudentsT = baselineStudentsT,
+            baselineVariance = baselineVariance,
             biomassErrorMargin = biomassErrorMargin,
             biomassNumPermanentPlots = biomassNumPermanent,
             biomassNumTemporaryPlots = biomassNumTemporary,
