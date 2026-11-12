@@ -55,6 +55,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.documentproducer.db.DocumentStore
@@ -455,6 +456,7 @@ class NotificationService(
                       .toString(),
                   plantingSite.name,
                   observation.startDate,
+                  isUpcoming = observation.state == ObservationState.Upcoming,
               ),
       )
     }

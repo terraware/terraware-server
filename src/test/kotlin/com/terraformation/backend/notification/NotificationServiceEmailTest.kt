@@ -1214,6 +1214,8 @@ internal class NotificationServiceEmailTest {
     val recipients = setOf("english@x.com", "gibberish@x.com")
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns
         recipients.map { userForEmail(it) }
+    every { observationStore.fetchObservationById(observation.id) } returns
+        observation.copy(state = ObservationState.Upcoming)
 
     service.on(
         ObservationPlotsReassignedEvent(
@@ -1247,6 +1249,9 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun `observationPlotsReassigned for biomass observation`() {
+    every { observationStore.fetchObservationById(observation.id) } returns
+        observation.copy(state = ObservationState.Upcoming)
+
     service.on(
         ObservationPlotsReassignedEvent(
             observation.id,
@@ -1257,6 +1262,23 @@ internal class NotificationServiceEmailTest {
 
     assertSubjectContains("Upcoming Biomass Monitoring Observation has new plot locations")
     assertBodyContains("has a Biomass Monitoring Observation scheduled for")
+  }
+
+  @Test
+  fun `observationPlotsReassigned for in-progress observation`() {
+    every { observationStore.fetchObservationById(observation.id) } returns
+        observation.copy(state = ObservationState.InProgress)
+
+    service.on(
+        ObservationPlotsReassignedEvent(
+            observation.id,
+            ObservationType.Monitoring,
+            plantingSite.id,
+        )
+    )
+
+    assertSubjectContains("In-progress Plant Monitoring Observation has new plot locations")
+    assertBodyContains("has a Plant Monitoring Observation that was scheduled to start on")
   }
 
   @Test
