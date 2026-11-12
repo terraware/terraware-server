@@ -197,6 +197,29 @@ class SpeciesStore(
         } ?: throw SpeciesNotFoundException(speciesId)
   }
 
+  /**
+   * Returns the scientific names of the species with the given IDs. Species that are deleted or
+   * that belong to other organizations are omitted.
+   */
+  fun fetchScientificNames(
+      organizationId: OrganizationId,
+      speciesIds: Collection<SpeciesId>,
+  ): Map<SpeciesId, String> {
+    requirePermissions { readOrganization(organizationId) }
+
+    if (speciesIds.isEmpty()) {
+      return emptyMap()
+    }
+
+    return dslContext
+        .select(SPECIES.ID, SPECIES.SCIENTIFIC_NAME)
+        .from(SPECIES)
+        .where(SPECIES.ID.`in`(speciesIds))
+        .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .and(SPECIES.DELETED_TIME.isNull)
+        .fetchMap(SPECIES.ID.asNonNullable(), SPECIES.SCIENTIFIC_NAME.asNonNullable())
+  }
+
   fun fetchSpeciesByPlantingSiteId(plantingSiteId: PlantingSiteId): List<ExistingSpeciesModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 

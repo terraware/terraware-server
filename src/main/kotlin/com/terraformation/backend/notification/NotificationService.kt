@@ -56,6 +56,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
@@ -94,6 +95,7 @@ import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduledSupport
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
 import com.terraformation.backend.email.model.PlantingSeasonScheduled
+import com.terraformation.backend.email.model.PlantingSeasonSpeciesUpdated
 import com.terraformation.backend.email.model.PlantingSeasonStarted
 import com.terraformation.backend.email.model.PlantingSiteMapEdited
 import com.terraformation.backend.email.model.ScheduleObservation
@@ -114,6 +116,10 @@ import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
@@ -185,6 +191,7 @@ class NotificationService(
     private val observationStore: ObservationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
+    private val plantingSeasonStore: PlantingSeasonStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val projectStore: ProjectStore,
@@ -1385,6 +1392,42 @@ class NotificationService(
   }
 
   @EventListener
+  fun on(event: RateLimitedPlantingSeasonSpeciesChangedEvent) {
+    if (event.addedSpeciesIds.isEmpty() && event.removedSpeciesIds.isEmpty()) {
+      return
+    }
+
+    systemUser.run {
+      val plantingSeason = fetchPlantingSeasonOrNull(event.plantingSeasonId) ?: return@run
+      val speciesNames =
+          speciesStore.fetchScientificNames(
+              event.organizationId,
+              event.addedSpeciesIds + event.removedSpeciesIds,
+          )
+      val addedSpeciesNames = event.addedSpeciesIds.mapNotNull { speciesNames[it] }.sorted()
+      val removedSpeciesNames = event.removedSpeciesIds.mapNotNull { speciesNames[it] }.sorted()
+
+      if (addedSpeciesNames.isEmpty() && removedSpeciesNames.isEmpty()) {
+        return@run
+      }
+
+      val emailContent =
+          PlantingSeasonSpeciesUpdated(
+              config = config,
+              addedSpeciesNames = addedSpeciesNames,
+              plantingSeasonName = plantingSeason.name,
+              plantingSeasonUrl =
+                  webAppUrls
+                      .fullPlantingSeason(event.organizationId, event.plantingSeasonId)
+                      .toString(),
+              removedSpeciesNames = removedSpeciesNames,
+          )
+
+      sendToOrganization(event.organizationId, emailContent = emailContent)
+    }
+  }
+
+  @EventListener
   fun on(event: RateLimitedMonitoringSpeciesTotalsEditedEvent) {
     systemUser.run {
       val organization = organizationStore.fetchOneById(event.organizationId)
@@ -1694,6 +1737,17 @@ class NotificationService(
     val project = projectStore.fetchOneById(projectId)
     val dealName = projectAcceleratorDetailsService.fetchOneById(projectId).dealName ?: project.name
     return project to dealName
+  }
+
+  private fun fetchPlantingSeasonOrNull(
+      plantingSeasonId: PlantingSeasonId
+  ): ExistingPlantingSeasonModel? {
+    return try {
+      plantingSeasonStore.fetchById(plantingSeasonId)
+    } catch (e: PlantingSeasonNotFoundException) {
+      log.info("Planting season $plantingSeasonId no longer exists; not sending notification")
+      null
+    }
   }
 
   /**

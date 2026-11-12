@@ -35,7 +35,13 @@ internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     PlantingSeasonScheduledDatesStore(clock, dslContext, eventPublisher, parentStore, seasonHelper)
   }
   private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore by lazy {
-    PlantingSeasonSpeciesTargetsStore(clock, dslContext, eventPublisher, seasonHelper)
+    PlantingSeasonSpeciesTargetsStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        eventPublisher,
+        seasonHelper,
+    )
   }
   private val plantingSeasonStore: PlantingSeasonStore by lazy {
     PlantingSeasonStore(clock, dslContext, eventPublisher, parentStore, seasonHelper)

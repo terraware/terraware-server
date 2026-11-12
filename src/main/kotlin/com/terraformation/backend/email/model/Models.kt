@@ -421,6 +421,20 @@ class PlantingSeasonStarted(
     get() = EmailNotificationCategory.PlantingAndObservations
 }
 
+class PlantingSeasonSpeciesUpdated(
+    config: TerrawareServerConfig,
+    val addedSpeciesNames: List<String>,
+    val plantingSeasonName: String,
+    val plantingSeasonUrl: String,
+    val removedSpeciesNames: List<String>,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "plantingSeason/speciesUpdated"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.Nursery
+}
+
 class PlantingSeasonNotScheduled(
     config: TerrawareServerConfig,
     val plantingSiteName: String,

@@ -577,6 +577,37 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class FetchScientificNames {
+    @Test
+    fun `returns names of non-deleted species in organization`() {
+      val speciesId1 = insertSpecies(scientificName = "Acacia koa")
+      val speciesId2 = insertSpecies(scientificName = "Banksia serrata")
+      val deletedSpeciesId = insertSpecies(deletedTime = Instant.EPOCH)
+      insertOrganization()
+      val otherOrganizationSpeciesId = insertSpecies()
+
+      assertEquals(
+          mapOf(speciesId1 to "Acacia koa", speciesId2 to "Banksia serrata"),
+          store.fetchScientificNames(
+              organizationId,
+              listOf(speciesId1, speciesId2, deletedSpeciesId, otherOrganizationSpeciesId),
+          ),
+      )
+    }
+
+    @Test
+    fun `throws exception if no permission to read organization`() {
+      val speciesId = insertSpecies()
+
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        store.fetchScientificNames(organizationId, listOf(speciesId))
+      }
+    }
+  }
+
+  @Nested
   inner class FetchAllUncheckedSpeciesIds {
     @Test
     fun `only returns unchecked species`() {

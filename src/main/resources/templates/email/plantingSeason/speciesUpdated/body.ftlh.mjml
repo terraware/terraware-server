@@ -1,0 +1,46 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.PlantingSeasonSpeciesUpdated" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.plantingSeason.speciesUpdated.email.body", plantingSeasonName)}
+                </mj-text>
+
+                <mj-raw><#if addedSpeciesNames?has_content></mj-raw>
+                    <mj-text mj-class="text-body03">
+                        ${strings("notification.plantingSeason.speciesUpdated.email.speciesAdded")}
+                        <ul>
+                            <#list addedSpeciesNames as speciesName>
+                                <li>${speciesName}</li>
+                            </#list>
+                        </ul>
+                    </mj-text>
+                <mj-raw></#if></mj-raw>
+
+                <mj-raw><#if removedSpeciesNames?has_content></mj-raw>
+                    <mj-text mj-class="text-body03">
+                        ${strings("notification.plantingSeason.speciesUpdated.email.speciesRemoved")}
+                        <ul>
+                            <#list removedSpeciesNames as speciesName>
+                                <li>${speciesName}</li>
+                            </#list>
+                        </ul>
+                    </mj-text>
+                <mj-raw></#if></mj-raw>
+
+                <mj-button mj-class="btn-productive-primary-md" href="${plantingSeasonUrl}">
+                    ${strings("notification.plantingSeason.speciesUpdated.email.buttonLabel")}
+                </mj-button>
+
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

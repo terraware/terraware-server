@@ -22,6 +22,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import jakarta.inject.Named
 import jakarta.ws.rs.core.UriBuilder
@@ -196,6 +197,13 @@ class WebAppUrls(
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/planting-plans/$plantingSiteId")
         .queryParam("section", "siteGoals")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun fullPlantingSeason(organizationId: OrganizationId, plantingSeasonId: PlantingSeasonId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/plants/planting-seasons/$plantingSeasonId")
         .queryParam("organizationId", organizationId)
         .build()
   }

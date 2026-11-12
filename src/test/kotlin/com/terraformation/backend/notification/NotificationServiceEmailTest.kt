@@ -94,6 +94,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
@@ -122,6 +123,10 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.polygon
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.report.model.SeedFundReportMetadata
@@ -212,6 +217,7 @@ internal class NotificationServiceEmailTest {
   private val observationStore: ObservationStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
+  private val plantingSeasonStore: PlantingSeasonStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
   private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService = mockk()
   private val projectStore: ProjectStore = mockk()
@@ -283,6 +289,7 @@ internal class NotificationServiceEmailTest {
           observationStore,
           organizationStore,
           parentStore,
+          plantingSeasonStore,
           plantingSiteStore,
           projectAcceleratorDetailsService,
           projectStore,
@@ -402,6 +409,16 @@ internal class NotificationServiceEmailTest {
           organizationId = organization.id,
           phase = AcceleratorPhase.Phase1FeasibilityStudy,
       )
+  private val plantingSeason =
+      ExistingPlantingSeasonModel(
+          endDate = LocalDate.of(2026, 6, 30),
+          id = PlantingSeasonId(1),
+          name = "Spring Season",
+          plantingSiteId = PlantingSiteId(1),
+          startDate = LocalDate.of(2026, 3, 1),
+          status = PlantingSeasonStatus.Upcoming,
+      )
+
   private val species =
       ExistingSpeciesModel(
           createdTime = Instant.EPOCH,
@@ -621,12 +638,19 @@ internal class NotificationServiceEmailTest {
     every {
       plantingSiteStore.fetchMonitoringPlotNumbers(plantingSite.id, listOf(monitoringPlot.id))
     } returns mapOf(monitoringPlot.id to monitoringPlot.plotNumber)
+    every { plantingSeasonStore.fetchById(plantingSeason.id) } returns plantingSeason
     every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns plantingSite
     every { projectAcceleratorDetailsService.fetchOneById(project.id) } returns
         projectAcceleratorDetails
     every { projectStore.fetchOneById(project.id) } returns project
     every { reportStore.fetchOne(acceleratorReportId) } returns report
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
+    every { speciesStore.fetchScientificNames(organization.id, any()) } answers
+        {
+          secondArg<Collection<SpeciesId>>()
+              .filter { it == species.id }
+              .associateWith { species.scientificName }
+        }
     every { speciesStore.fetchSpeciesById(species.id) } returns species
     every { user.email } returns "user@test.com"
     every { user.fullName } returns "Normal User"
@@ -1364,6 +1388,98 @@ internal class NotificationServiceEmailTest {
     assertBodyContains("Planting season", "Text")
     assertBodyContains(webAppUrls.fullNurseryInventory(organization.id), "Link URL")
     assertIsEventListener<PlantingSeasonStartedEvent>(service)
+  }
+
+  @Test
+  fun `rateLimitedPlantingSeasonSpeciesChangedEvent omits deleted species`() {
+    val deletedSpeciesId = SpeciesId(2)
+
+    service.on(
+        RateLimitedPlantingSeasonSpeciesChangedEvent(
+            addedSpeciesIds = setOf(species.id),
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+            removedSpeciesIds = setOf(deletedSpeciesId),
+        )
+    )
+
+    assertBodyContains(species.scientificName, "Added species")
+    assertBodyNotContains("Species removed", "Removed species heading")
+    assertRecipientsEqual(organizationRecipients)
+  }
+
+  @Test
+  fun `rateLimitedPlantingSeasonSpeciesChangedEvent does not send email if all species were deleted`() {
+    val deletedSpeciesId = SpeciesId(2)
+
+    service.on(
+        RateLimitedPlantingSeasonSpeciesChangedEvent(
+            addedSpeciesIds = setOf(deletedSpeciesId),
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+        )
+    )
+
+    assertNoMessageSent()
+  }
+
+  @Test
+  fun `rateLimitedPlantingSeasonSpeciesChangedEvent does not send email if planting season was deleted`() {
+    every { plantingSeasonStore.fetchById(plantingSeason.id) } throws
+        PlantingSeasonNotFoundException(plantingSeason.id)
+
+    service.on(
+        RateLimitedPlantingSeasonSpeciesChangedEvent(
+            addedSpeciesIds = setOf(species.id),
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+        )
+    )
+
+    assertNoMessageSent()
+  }
+
+  @Test
+  fun `rateLimitedPlantingSeasonSpeciesChangedEvent lists added and removed species`() {
+    val removedSpecies = species.copy(id = SpeciesId(2), scientificName = "Removed species")
+    every { speciesStore.fetchScientificNames(organization.id, any()) } returns
+        mapOf(
+            species.id to species.scientificName,
+            removedSpecies.id to removedSpecies.scientificName,
+        )
+
+    service.on(
+        RateLimitedPlantingSeasonSpeciesChangedEvent(
+            addedSpeciesIds = setOf(species.id),
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+            removedSpeciesIds = setOf(removedSpecies.id),
+        )
+    )
+
+    assertSubjectContains("Species were updated in ${plantingSeason.name}")
+    assertBodyContains("Species added", "Text")
+    assertBodyContains(species.scientificName, "Added species")
+    assertBodyContains("Species removed", "Text")
+    assertBodyContains(removedSpecies.scientificName, "Removed species")
+    assertBodyContains(
+        webAppUrls.fullPlantingSeason(organization.id, plantingSeason.id),
+        "Link URL",
+    )
+    assertRecipientsEqual(organizationRecipients)
+    assertIsEventListener<RateLimitedPlantingSeasonSpeciesChangedEvent>(service)
+  }
+
+  @Test
+  fun `rateLimitedPlantingSeasonSpeciesChangedEvent does not send email if no net changes`() {
+    service.on(
+        RateLimitedPlantingSeasonSpeciesChangedEvent(
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+        )
+    )
+
+    assertNoMessageSent()
   }
 
   @Test

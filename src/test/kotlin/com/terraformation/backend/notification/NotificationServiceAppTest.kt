@@ -83,6 +83,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.db.AccessionHelper
@@ -151,6 +152,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
+  private val plantingSeasonStore: PlantingSeasonStore = mockk()
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var projectAcceleratorDetailsService: ProjectAcceleratorDetailsService
   private lateinit var projectStore: ProjectStore
@@ -327,6 +329,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             observationStore,
             organizationStore,
             parentStore,
+            plantingSeasonStore,
             plantingSiteStore,
             projectAcceleratorDetailsService,
             projectStore,
