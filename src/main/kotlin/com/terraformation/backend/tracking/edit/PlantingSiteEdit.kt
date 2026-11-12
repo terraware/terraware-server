@@ -29,10 +29,14 @@ data class PlantingSiteEdit(
     /** Edits to this site's strata. */
     val stratumEdits: List<StratumEdit>,
 ) {
-  /** Existing strata that are changed or deleted by this edit. */
+  /**
+   * Existing strata whose boundaries, plot counts, or monitoring plots are changed by this edit, or
+   * that are deleted by it. Strata whose only changes are to metadata such as names aren't
+   * included.
+   */
   val affectedStrata: AffectedStrata
     get() {
-      val changedEdits = stratumEdits.filterNot { it.isNoOp() }
+      val changedEdits = stratumEdits.filter { it.affectsPlots() }
 
       return AffectedStrata(
           stratumIds = changedEdits.mapNotNull { it.existingModel?.id }.toSet(),

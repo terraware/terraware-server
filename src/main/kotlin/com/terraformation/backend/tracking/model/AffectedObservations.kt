@@ -9,7 +9,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 data class AffectedObservations(
     /**
      * In-progress or overdue observations that have at least one completed plot (in any stratum).
-     * These are abandoned, as before plots were assigned at scheduling time.
+     * These are abandoned, since their completed data can't be kept if their plots change.
      */
     val toAbandon: List<ObservationId>,
     /**
