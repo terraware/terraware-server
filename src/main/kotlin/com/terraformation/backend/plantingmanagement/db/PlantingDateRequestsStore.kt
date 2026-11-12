@@ -24,6 +24,8 @@ import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSp
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEventValues
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingDateRequestSubmittedEvent
+import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -38,6 +40,7 @@ class PlantingDateRequestsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val seasonHelper: SeasonHelper,
 ) {
 
@@ -95,6 +98,13 @@ class PlantingDateRequestsStore(
               plantingSiteId = plantingSiteId,
               scheduledPlantingDateId = scheduledPlantingDateId,
               status = PlantingDateRequestStatus.Pending,
+          )
+      )
+      rateLimitedEventPublisher.publishEvent(
+          RateLimitedPlantingDateRequestSubmittedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
           )
       )
 

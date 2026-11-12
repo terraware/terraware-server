@@ -435,6 +435,19 @@ class PlantingSeasonSpeciesUpdated(
     get() = EmailNotificationCategory.Nursery
 }
 
+class PlantingDateWithdrawalRequested(
+    config: TerrawareServerConfig,
+    val plantingDate: LocalDate,
+    val plantingSeasonName: String,
+    val withdrawalRequestsUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "plantingSeason/withdrawalRequested"
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.Nursery
+}
+
 class PlantingSeasonTargetQuantitiesChanged(
     config: TerrawareServerConfig,
     val changes: List<Change>,

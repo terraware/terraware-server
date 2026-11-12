@@ -28,6 +28,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSp
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEventValues
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingDateRequestSubmittedEvent
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -41,7 +42,13 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
   override lateinit var user: TerrawareUser
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingDateRequestsStore by lazy {
-    PlantingDateRequestsStore(clock, dslContext, eventPublisher, SeasonHelper(dslContext))
+    PlantingDateRequestsStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        eventPublisher,
+        SeasonHelper(dslContext),
+    )
   }
 
   private lateinit var organizationId: OrganizationId
@@ -294,6 +301,21 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
               substratumHistoryId = substratumHistoryId,
               substratumId = substratumId,
               substratumName = "1",
+          )
+      )
+    }
+
+    @Test
+    fun `publishes rate-limited submitted event`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+
+      store.create(scheduledPlantingDateId, plantingSeasonId)
+
+      eventPublisher.assertEventPublished(
+          RateLimitedPlantingDateRequestSubmittedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
           )
       )
     }

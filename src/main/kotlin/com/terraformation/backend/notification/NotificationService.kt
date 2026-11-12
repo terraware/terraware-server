@@ -91,6 +91,7 @@ import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
 import com.terraformation.backend.email.model.ParticipantProjectSpeciesAdded
 import com.terraformation.backend.email.model.ParticipantProjectSpeciesEdited
+import com.terraformation.backend.email.model.PlantingDateWithdrawalRequested
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduledSupport
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
@@ -119,8 +120,11 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDateNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingDateRequestSubmittedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
@@ -194,6 +198,7 @@ class NotificationService(
     private val observationStore: ObservationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
+    private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore,
     private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore,
     private val plantingSeasonStore: PlantingSeasonStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -1425,6 +1430,37 @@ class NotificationService(
                       .fullPlantingSeason(event.organizationId, event.plantingSeasonId)
                       .toString(),
               removedSpeciesNames = removedSpeciesNames,
+          )
+
+      sendToOrganization(event.organizationId, emailContent = emailContent)
+    }
+  }
+
+  @EventListener
+  fun on(event: RateLimitedPlantingDateRequestSubmittedEvent) {
+    systemUser.run {
+      val scheduledDate =
+          try {
+            plantingSeasonScheduledDatesStore.fetch(
+                event.plantingSeasonId,
+                event.scheduledPlantingDateId,
+            )
+          } catch (e: PlantingSeasonScheduledDateNotFoundException) {
+            log.info(
+                "Scheduled planting date ${event.scheduledPlantingDateId} no longer exists; not " +
+                    "sending notification"
+            )
+            return@run
+          }
+      val plantingSeason = fetchPlantingSeasonOrNull(event.plantingSeasonId) ?: return@run
+
+      val emailContent =
+          PlantingDateWithdrawalRequested(
+              config = config,
+              plantingDate = scheduledDate.date,
+              plantingSeasonName = plantingSeason.name,
+              withdrawalRequestsUrl =
+                  webAppUrls.fullNurseryWithdrawalRequests(event.organizationId).toString(),
           )
 
       sendToOrganization(event.organizationId, emailContent = emailContent)

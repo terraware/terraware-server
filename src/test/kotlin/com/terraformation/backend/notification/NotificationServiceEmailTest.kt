@@ -99,6 +99,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.documentproducer.db.DocumentStore
@@ -124,10 +125,14 @@ import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDateNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
+import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingDateRequestSubmittedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.polygon
@@ -220,6 +225,7 @@ internal class NotificationServiceEmailTest {
   private val observationStore: ObservationStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
+  private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore = mockk()
   private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore = mockk()
   private val plantingSeasonStore: PlantingSeasonStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
@@ -293,6 +299,7 @@ internal class NotificationServiceEmailTest {
           observationStore,
           organizationStore,
           parentStore,
+          plantingSeasonScheduledDatesStore,
           plantingSeasonSpeciesTargetsStore,
           plantingSeasonStore,
           plantingSiteStore,
@@ -1560,6 +1567,55 @@ internal class NotificationServiceEmailTest {
     )
 
     assertNoMessageSent()
+  }
+
+  @Test
+  fun `rateLimitedPlantingDateRequestSubmittedEvent does not send email if planting date was deleted`() {
+    val scheduledPlantingDateId = ScheduledPlantingDateId(1)
+    every {
+      plantingSeasonScheduledDatesStore.fetch(plantingSeason.id, scheduledPlantingDateId)
+    } throws PlantingSeasonScheduledDateNotFoundException(scheduledPlantingDateId)
+
+    service.on(
+        RateLimitedPlantingDateRequestSubmittedEvent(
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+            scheduledPlantingDateId = scheduledPlantingDateId,
+        )
+    )
+
+    assertNoMessageSent()
+  }
+
+  @Test
+  fun `rateLimitedPlantingDateRequestSubmittedEvent links to withdrawal requests`() {
+    val date = LocalDate.of(2026, 4, 15)
+    val scheduledPlantingDateId = ScheduledPlantingDateId(1)
+    every {
+      plantingSeasonScheduledDatesStore.fetch(plantingSeason.id, scheduledPlantingDateId)
+    } returns
+        ExistingPlantingSeasonScheduledDateModel(
+            date = date,
+            plantingSeasonId = plantingSeason.id,
+            scheduledPlantingDateId = scheduledPlantingDateId,
+        )
+
+    service.on(
+        RateLimitedPlantingDateRequestSubmittedEvent(
+            organizationId = organization.id,
+            plantingSeasonId = plantingSeason.id,
+            scheduledPlantingDateId = scheduledPlantingDateId,
+        )
+    )
+
+    assertSubjectContains("Withdrawal request was submitted for $date for ${plantingSeason.name}")
+    assertBodyContains(
+        "A Seedling Withdrawal request was submitted for $date for ${plantingSeason.name}."
+    )
+    assertBodyContains("/nursery/withdrawals?organizationId=${organization.id}", "Link URL")
+    assertBodyContains("tab=requests", "Link URL tab")
+    assertRecipientsEqual(organizationRecipients)
+    assertIsEventListener<RateLimitedPlantingDateRequestSubmittedEvent>(service)
   }
 
   @Test

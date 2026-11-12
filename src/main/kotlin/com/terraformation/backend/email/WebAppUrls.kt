@@ -137,6 +137,14 @@ class WebAppUrls(
         .build()
   }
 
+  fun fullNurseryWithdrawalRequests(organizationId: OrganizationId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/nursery/withdrawals")
+        .queryParam("organizationId", organizationId)
+        .queryParam("tab", "requests")
+        .build()
+  }
+
   fun nurseryInventory(): URI {
     return URI.create("/inventory")
   }

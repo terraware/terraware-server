@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import java.time.Duration
@@ -88,4 +89,28 @@ data class RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
 
     return existing.copy(changes = combinedChanges)
   }
+}
+
+/**
+ * Published when a withdrawal request is submitted to the nursery for a planting date. Requests are
+ * rate-limited separately for each planting date.
+ */
+data class RateLimitedPlantingDateRequestSubmittedEvent(
+    val organizationId: OrganizationId,
+    val plantingSeasonId: PlantingSeasonId,
+    val scheduledPlantingDateId: ScheduledPlantingDateId,
+) : RateLimitedEvent<RateLimitedPlantingDateRequestSubmittedEvent> {
+  override fun getRateLimitKey() =
+      mapOf(
+          "plantingSeasonId" to plantingSeasonId,
+          "scheduledPlantingDateId" to scheduledPlantingDateId,
+      )
+
+  override fun getMinimumInterval(): Duration = plantingSeasonNotificationMinimumInterval
+
+  override fun getInitialDelay(): Duration = plantingSeasonNotificationInitialDelay
+
+  override fun combine(
+      existing: RateLimitedPlantingDateRequestSubmittedEvent
+  ): RateLimitedPlantingDateRequestSubmittedEvent = this
 }
