@@ -9,10 +9,13 @@ import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStoreTest() {
-  @Test
-  fun `returns observations in date order`() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class)
+  fun `returns observations in date order`(observationType: ObservationType) {
     val plantingSiteHistoryId = inserted.plantingSiteHistoryId
     val startDate1 = LocalDate.of(2021, 4, 1)
     val startDate2 = LocalDate.of(2022, 3, 1)
@@ -34,6 +37,7 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
     val observationId1 =
         insertObservation(
             endDate = endDate2,
+            observationType = observationType,
             startDate = startDate2,
             state = ObservationState.Upcoming,
         )
@@ -41,6 +45,7 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
     val observationId2 =
         insertObservation(
             endDate = endDate1,
+            observationType = observationType,
             plantingSiteHistoryId = plantingSiteHistoryId,
             startDate = startDate1,
         )
@@ -61,7 +66,7 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
                 endDate = endDate1,
                 id = observationId2,
                 isAdHoc = false,
-                observationType = ObservationType.Monitoring,
+                observationType = observationType,
                 plantingSiteHistoryId = plantingSiteHistoryId,
                 plantingSiteId = plantingSiteId,
                 requestedSubstratumIds = setOf(substratumId),
@@ -72,7 +77,7 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
                 endDate = endDate2,
                 id = observationId1,
                 isAdHoc = false,
-                observationType = ObservationType.Monitoring,
+                observationType = observationType,
                 plantingSiteId = plantingSiteId,
                 startDate = startDate2,
                 state = ObservationState.Upcoming,

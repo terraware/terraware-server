@@ -48,6 +48,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class ObservationScenarioV2Test : ObservationScenarioTest() {
   override val user = mockUser()
@@ -1214,14 +1216,20 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       )
     }
 
-    @Test
-    fun `fetches ad-hoc biomass observation results`() {
-      val plotId = insertMonitoringPlot(isAdHoc = true)
+    @ParameterizedTest
+    @EnumSource(ObservationType::class, names = ["BiomassMeasurements", "BaselineSurvey"])
+    fun `fetches biomass observation results`(observationType: ObservationType) {
+      val isAdHoc = observationType == ObservationType.BiomassMeasurements
+      if (!isAdHoc) {
+        insertStratum()
+        insertSubstratum()
+      }
+      val plotId = insertMonitoringPlot(isAdHoc = isAdHoc)
       val observationId =
           insertObservation(
               completedTime = Instant.EPOCH,
-              isAdHoc = true,
-              observationType = ObservationType.BiomassMeasurements,
+              isAdHoc = isAdHoc,
+              observationType = observationType,
           )
       insertObservationPlot(completedBy = user.userId)
       insertObservationBiomassDetails(
@@ -1324,20 +1332,28 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
                       ),
               )
               .copy(
-                  observationType = ObservationType.BiomassMeasurements,
+                  observationType = observationType,
               )
 
-      assertEquals(expected, resultsStoreV2.fetchOneById(observationId), "Observation by ID")
-      assertEquals(
-          listOf(expected),
-          resultsStoreV2.fetchByPlantingSiteId(plantingSiteId, isAdHoc = true),
-          "Site observations",
-      )
-      assertEquals(
-          listOf(expected),
-          resultsStoreV2.fetchByOrganizationId(organizationId, isAdHoc = true),
-          "Organization observations",
-      )
+      mapOf(
+              "Observation by ID" to resultsStoreV2.fetchOneById(observationId),
+              "Site observations" to
+                  resultsStoreV2.fetchByPlantingSiteId(plantingSiteId, isAdHoc = isAdHoc).single(),
+              "Organization observations" to
+                  resultsStoreV2.fetchByOrganizationId(organizationId, isAdHoc = isAdHoc).single(),
+          )
+          .forEach { (description, actual) ->
+            assertEquals(observationType, actual.observationType, "$description type")
+            if (isAdHoc) {
+              assertEquals(expected, actual, description)
+            } else {
+              assertEquals(
+                  expected.adHocPlot!!.biomassDetails,
+                  actual.strata.single().substrata.single().monitoringPlots.single().biomassDetails,
+                  "$description biomass details",
+              )
+            }
+          }
     }
 
     private fun expectedAdHocResults(
