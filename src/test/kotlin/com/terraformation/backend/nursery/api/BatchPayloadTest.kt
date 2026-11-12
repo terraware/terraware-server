@@ -57,10 +57,34 @@ internal class BatchPayloadTest {
 
     assertEquals(
         BatchTimeInStagePayload(
-            activeGrowth = BatchStageTimePayload(cleared = false, days = 5, inProgress = true),
-            germinating = BatchStageTimePayload(cleared = false, days = 0, inProgress = false),
-            hardeningOff = BatchStageTimePayload(cleared = true, days = null, inProgress = true),
-            ready = BatchStageTimePayload(cleared = false, days = null, inProgress = false),
+            activeGrowth =
+                BatchStageTimePayload(
+                    cleared = false,
+                    countedQuantity = 2,
+                    days = 5,
+                    inProgress = true,
+                ),
+            germinating =
+                BatchStageTimePayload(
+                    cleared = false,
+                    countedQuantity = 1,
+                    days = 0,
+                    inProgress = false,
+                ),
+            hardeningOff =
+                BatchStageTimePayload(
+                    cleared = true,
+                    countedQuantity = 1,
+                    days = null,
+                    inProgress = true,
+                ),
+            ready =
+                BatchStageTimePayload(
+                    cleared = false,
+                    countedQuantity = 0,
+                    days = null,
+                    inProgress = false,
+                ),
         ),
         BatchTimeInStagePayload.of(stats, now),
         "Rounded time-in-stage payload",
