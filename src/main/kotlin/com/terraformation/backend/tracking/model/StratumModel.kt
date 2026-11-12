@@ -99,6 +99,7 @@ data class StratumModel<
   fun plotCounts(type: ObservationType): StratumPlotCounts =
       when (type) {
         ObservationType.Monitoring -> plantPlotCounts
+        ObservationType.BaselineSurvey,
         ObservationType.BiomassMeasurements -> biomassPlotCounts
       }
 

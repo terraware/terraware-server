@@ -454,7 +454,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.observation_types (id, name)
 VALUES (1, 'Monitoring'),
-       (2, 'Biomass Measurements')
+       (2, 'Biomass Measurements'),
+       (3, 'Baseline Survey')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO organization_types (id, name)

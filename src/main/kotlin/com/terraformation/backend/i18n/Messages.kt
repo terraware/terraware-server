@@ -418,6 +418,7 @@ class Messages {
     val prefix =
         when (observationType) {
           ObservationType.Monitoring -> "notification.observation.upcoming"
+          ObservationType.BaselineSurvey,
           ObservationType.BiomassMeasurements -> "notification.observation.upcoming.biomass"
         }
     return NotificationMessage(
