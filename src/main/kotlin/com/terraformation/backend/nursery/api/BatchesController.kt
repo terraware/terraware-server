@@ -246,6 +246,8 @@ data class BatchStageTimePayload(
                 "can't be calculated."
     )
     val cleared: Boolean,
+    @Schema(description = "Number of seedlings that contributed to the calculation of \"days\".")
+    val countedQuantity: Int,
     @Schema(
         description =
             "Average number of days seedlings have spent in this stage, rounded to the nearest " +
@@ -264,6 +266,7 @@ data class BatchStageTimePayload(
       stats: StageTimeStats,
   ) : this(
       cleared = stats.cleared,
+      countedQuantity = stats.countedQuantity,
       days = stats.roundedDays(now),
       inProgress = stats.inProgress,
   )
