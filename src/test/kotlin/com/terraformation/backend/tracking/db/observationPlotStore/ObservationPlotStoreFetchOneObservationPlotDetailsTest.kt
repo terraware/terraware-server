@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationPlotStore
 
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
@@ -11,10 +12,13 @@ import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class ObservationPlotStoreFetchOneObservationPlotDetailsTest : BaseObservationPlotStoreTest() {
-  @Test
-  fun `calculates correct values from related tables`() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class)
+  fun `calculates correct values from related tables`(observationType: ObservationType) {
     val userId1 = insertUser(firstName = "First", lastName = "Person")
     val userId2 = insertUser(firstName = "Second", lastName = "Human")
 
@@ -24,10 +28,10 @@ class ObservationPlotStoreFetchOneObservationPlotDetailsTest : BaseObservationPl
     // A plot that was observed previously and again in this observation
     val monitoringPlotId11 =
         insertMonitoringPlot(boundary = polygon(1), elevationMeters = BigDecimal.TEN)
-    insertObservation()
+    insertObservation(observationType = observationType)
     insertObservationPlot()
-    val observationId = insertObservation()
-    insertObservationPlot(isPermanent = true)
+    val observationId = insertObservation(observationType = observationType)
+    insertObservationPlot(isPermanent = observationType != ObservationType.BaselineSurvey)
 
     // This plot is claimed
     val monitoringPlotId12 = insertMonitoringPlot(boundary = polygon(2))
@@ -54,7 +58,7 @@ class ObservationPlotStoreFetchOneObservationPlotDetailsTest : BaseObservationPl
         AssignedPlotDetails(
             model =
                 ObservationPlotModel(
-                    isPermanent = true,
+                    isPermanent = observationType != ObservationType.BaselineSurvey,
                     monitoringPlotId = monitoringPlotId11,
                     observationId = observationId,
                 ),
