@@ -1,3 +1,4 @@
+58d050fd SW-9270 Cover Baseline Survey in observation fetch tests (#5394)
 b10a48f2 SW-9271 Cover Baseline Survey in abandon and reschedule tests (#5395)
 2ee6eb13 SW-9265 Allow Baseline Survey observations to be scheduled (#5389)
 9fe5a8cc SW-9269 Edit Baseline Survey plot counts in admin UI (#5388)
