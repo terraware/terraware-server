@@ -4581,7 +4581,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationRequestedSubstratum(substratumId = roomySubstratumId)
       insertObservationRequestedSubstratum(substratumId = singlePlotSubstratumId)
       insertObservationRequestedSubstratum(substratumId = unaffectedSubstratumId)
-      assertTrue(service.assignPlotsToNewObservation(observationId), "Plots assigned")
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
 
       excludeSinglePlotSubstratum()
 
@@ -4601,6 +4605,34 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           fetchTemporaryPlotIds(),
           "No orphaned temporary plots should remain",
       )
+    }
+
+    @Test
+    fun `does not publish not-started event when in-progress observation cannot be reassigned`() {
+      insertStrataWithSinglePlotSubstratum()
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = roomySubstratumId)
+      insertObservationRequestedSubstratum(substratumId = singlePlotSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = unaffectedSubstratumId)
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, inserted.plantingSiteHistoryId)
+          .set(OBSERVATIONS.STATE_ID, ObservationState.InProgress)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+
+      excludeSinglePlotSubstratum()
+
+      eventPublisher.clear()
+      service.on(mapEditedEvent(roomyStratumId, singlePlotStratumId))
+
+      assertNull(observationsDao.fetchOneById(observationId), "Observation should be deleted")
+      eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
     }
 
     @Test
@@ -4786,10 +4818,25 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private fun insertObservationWithPlots(
       state: ObservationState = ObservationState.Upcoming
   ): ObservationId {
-    val observationId = insertObservation(state = state)
+    // Plots can only be assigned to new observations while they're upcoming.
+    val observationId = insertObservation(state = ObservationState.Upcoming)
     insertObservationRequestedSubstratum(substratumId = editedSubstratumId)
     insertObservationRequestedSubstratum(substratumId = otherSubstratumId)
-    assertTrue(service.assignPlotsToNewObservation(observationId), "Plots assigned")
+    assertEquals(
+        ObservationService.NewObservationAssignment.Assigned,
+        service.assignPlotsToNewObservation(observationId),
+        "Plots assigned",
+    )
+
+    if (state != ObservationState.Upcoming) {
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, inserted.plantingSiteHistoryId)
+          .set(OBSERVATIONS.STATE_ID, state)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+    }
+
     return observationId
   }
 

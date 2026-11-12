@@ -1251,10 +1251,27 @@ class ObservationService(
    *
    * If the observation can't be given plots, it is abandoned (and, since it has no completed plots,
    * deleted).
+   *
+   * The observation may have changed between when it was classified and when its lock was acquired;
+   * if it has ended, it is left alone, and if it now has completed plots, it is abandoned.
    */
   private fun reassignPlots(observationId: ObservationId, strata: AffectedStrata) {
     log.withMDC("observationId" to observationId) {
       entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
+        if (
+            observation.state == ObservationState.Completed ||
+                observation.state == ObservationState.Abandoned
+        ) {
+          log.info("Observation has ended; not reassigning plots")
+          return@withLockedPlantingSiteAndObservation
+        }
+
+        if (observationPlotStore.hasCompletedPlots(observationId)) {
+          log.info("Abandoning observation because a plot was completed before it was updated")
+          observationStore.abandonObservation(observationId)
+          return@withLockedPlantingSiteAndObservation
+        }
+
         log.info("Reassigning plots in strata ${strata.stratumIds}")
 
         observationPlotStore.removeUnobservedPlots(observationId, strata)
@@ -1301,15 +1318,21 @@ class ObservationService(
    * Abandons an observation that couldn't be given plots. Since such an observation has no
    * completed plots, this deletes it. Any temporary plots it was using that no other observation
    * uses are deleted too, including ones created by a partially-successful allocation.
+   *
+   * If the observation hasn't started yet, publishes [ObservationNotStartedEvent]. Observations
+   * that have already started (which can happen if a map edit leaves no room for their plots) are
+   * abandoned without that notification, since it would incorrectly say they weren't started.
    */
   private fun abandonUnstartableObservation(observation: ExistingObservationModel) {
-    eventPublisher.publishEvent(
-        ObservationNotStartedEvent(
-            observation.id,
-            observation.observationType,
-            observation.plantingSiteId,
-        )
-    )
+    if (observation.state == ObservationState.Upcoming) {
+      eventPublisher.publishEvent(
+          ObservationNotStartedEvent(
+              observation.id,
+              observation.observationType,
+              observation.plantingSiteId,
+          )
+      )
+    }
 
     val plotIds = observationPlotStore.fetchUnobservedPlotIds(observation.id)
 
