@@ -618,7 +618,8 @@ class AdminPlantingSitesController(
 
       val plotsAssigned =
           try {
-            observationService.assignPlotsToNewObservation(observationId)
+            observationService.assignPlotsToNewObservation(observationId) ==
+                ObservationService.NewObservationAssignment.Assigned
           } catch (e: Exception) {
             log.warn("Unable to assign plots to observation $observationId", e)
             false

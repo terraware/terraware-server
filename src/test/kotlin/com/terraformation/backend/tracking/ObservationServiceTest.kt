@@ -2113,7 +2113,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val observationsBefore = dslContext.fetch(OBSERVATIONS)
 
-      assertTrue(service.assignPlotsToNewObservation(observationId), "Plots assigned")
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
 
       assertEquals(
           mapOf(true to 1, false to 1),
@@ -2159,7 +2163,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val monitoringPlotsBefore = dslContext.fetch(MONITORING_PLOTS)
       val observationsBefore = dslContext.fetch(OBSERVATIONS)
 
-      assertFalse(service.assignPlotsToNewObservation(observationId), "Plots assigned")
+      assertEquals(
+          ObservationService.NewObservationAssignment.Failed,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
 
       assertTableEmpty(OBSERVATION_PLOTS)
       assertTableEquals(

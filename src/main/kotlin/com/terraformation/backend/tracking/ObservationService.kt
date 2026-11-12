@@ -289,37 +289,26 @@ class ObservationService(
     }
   }
 
-  /**
-   * Assigns plots to a newly-created observation that was inserted without going through
-   * [scheduleObservation]. If plots can't be assigned, leaves the observation without plots; they
-   * will be assigned (or the observation abandoned) when it starts.
-   *
-   * The caller needs permission to create observations on the planting site. Allocation itself runs
-   * as the system user, since it touches the planting site's plots in ways that require
-   * organization-level permissions a super admin might not have.
-   *
-   * @return True if plots were assigned, false if they couldn't be.
-   */
-  fun assignPlotsToNewObservation(observationId: ObservationId): Boolean {
-    return assignPlotsToObservation(observationId, onlyIfUnassigned = false) ==
-        NewObservationAssignment.Assigned
-  }
-
-  private enum class NewObservationAssignment {
+  enum class NewObservationAssignment {
     Assigned,
     Failed,
     Skipped,
   }
 
   /**
-   * @param onlyIfUnassigned If true, skip the observation unless it is still upcoming and has no
-   *   plots. This is checked with the observation locked, so it's safe for callers that looked up
-   *   the observation ID without holding the lock.
+   * Assigns plots to a newly-created observation that was inserted without going through
+   * [scheduleObservation]. If plots can't be assigned, leaves the observation without plots; they
+   * will be assigned (or the observation abandoned) when it starts.
+   *
+   * If the observation has already started or been given plots, for example because the scheduler
+   * started it after it was created, it is skipped. This is checked with the observation locked, so
+   * it's safe for callers that looked up the observation ID without holding the lock.
+   *
+   * The caller needs permission to create observations on the planting site. Allocation itself runs
+   * as the system user, since it touches the planting site's plots in ways that require
+   * organization-level permissions a super admin might not have.
    */
-  private fun assignPlotsToObservation(
-      observationId: ObservationId,
-      onlyIfUnassigned: Boolean,
-  ): NewObservationAssignment {
+  fun assignPlotsToNewObservation(observationId: ObservationId): NewObservationAssignment {
     val plantingSiteId =
         parentStore.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
@@ -330,9 +319,8 @@ class ObservationService(
         systemUser.run {
           entityLocker.withLockedObservation(observationId) { observation ->
             if (
-                onlyIfUnassigned &&
-                    (observation.state != ObservationState.Upcoming ||
-                        observationPlotStore.hasPlots(observationId))
+                observation.state != ObservationState.Upcoming ||
+                    observationPlotStore.hasPlots(observationId)
             ) {
               log.info("Observation already started or has plots; not assigning plots")
               return@withLockedObservation NewObservationAssignment.Skipped
@@ -373,7 +361,7 @@ class ObservationService(
         observationStore
             .fetchUpcomingObservationIdsWithoutPlots()
             .filter { currentUser().canManageObservation(it) }
-            .associateWith { assignPlotsToObservation(it, onlyIfUnassigned = true) }
+            .associateWith { assignPlotsToNewObservation(it) }
 
     return BackfillResult(
         assigned = outcomes.values.count { it == NewObservationAssignment.Assigned },
