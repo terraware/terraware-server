@@ -57,6 +57,10 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val expected =
           StrataRow(
               areaHa = BigDecimal.ONE,
+              baselineErrorMargin = BigDecimal(21),
+              baselineNumTemporaryPlots = 45,
+              baselineStudentsT = BigDecimal(24),
+              baselineVariance = BigDecimal(25),
               biomassErrorMargin = newBiomassErrorMargin,
               biomassNumPermanentPlots = newBiomassNumPermanentPlots,
               biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,
@@ -85,6 +89,10 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       store.updateStratum(stratumId) {
         it.copy(
             // Editable
+            baselineErrorMargin = BigDecimal(21),
+            baselineNumTemporaryPlots = 45,
+            baselineStudentsT = BigDecimal(24),
+            baselineVariance = BigDecimal(25),
             biomassErrorMargin = newBiomassErrorMargin,
             biomassNumPermanentPlots = newBiomassNumPermanentPlots,
             biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,

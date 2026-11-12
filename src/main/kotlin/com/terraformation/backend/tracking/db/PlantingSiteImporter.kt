@@ -309,7 +309,20 @@ class PlantingSiteImporter(
                   } ?: StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY
 
               if (errorMargin != null && variance != null) {
+                val (defaultPermanentPlots, defaultTemporaryPlots) =
+                    StratumModel.calculatePlotCounts(errorMargin, studentsT, variance)
                 StratumModel.create(
+                    baselineErrorMargin = errorMargin,
+                    // Baseline temporary counts sum other types' permanent and temporary counts.
+                    baselineNumTemporaryPlots =
+                        if (numPermanentPlots == null && numTemporaryPlots == null) {
+                          null
+                        } else {
+                          (numPermanentPlots ?: defaultPermanentPlots) +
+                              (numTemporaryPlots ?: defaultTemporaryPlots)
+                        },
+                    baselineStudentsT = studentsT,
+                    baselineVariance = variance,
                     biomassErrorMargin = errorMargin,
                     biomassNumPermanentPlots = numPermanentPlots,
                     biomassNumTemporaryPlots = numTemporaryPlots,

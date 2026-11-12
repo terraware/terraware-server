@@ -117,6 +117,50 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val strataRow = strataDao.findAll().first()
       assertEquals(expectedPermanent, strataRow.plantNumPermanentPlots, "Permanent plots")
       assertEquals(expectedTemporary, strataRow.plantNumTemporaryPlots, "Temporary plots")
+      assertEquals(
+          expectedPermanent + expectedTemporary,
+          strataRow.baselineNumTemporaryPlots,
+          "Baseline temporary plots",
+      )
+    }
+
+    @CsvSource("15,4,19", "5,,15", "15,,25", ",4,36", ",0,32", ",,42")
+    @ParameterizedTest
+    fun `baseline plots use total explicit counts or calculated defaults`(
+        permanent: Int?,
+        temporary: Int?,
+        expected: Int,
+    ) {
+      val gen = ShapefileGenerator()
+      val feature =
+          gen.substratumFeature(
+              gen.multiRectangle(0 to 0, 100 to 100),
+              errorMargin = BigDecimal(70),
+              studentsT = BigDecimal("1.7"),
+              variance = BigDecimal(70000),
+              permanentPlots = permanent,
+              temporaryPlots = temporary,
+          )
+
+      val shapefiles = listOf(Shapefile(listOf(feature)))
+      val site = importer.shapefilesToModel(shapefiles, "site", null, organizationId)
+      importer.import("site", null, organizationId, shapefiles)
+
+      assertEquals(
+          expected,
+          strataDao.findAll().single().baselineNumTemporaryPlots,
+          "Persisted baseline temporary plots",
+      )
+      assertEquals(
+          0,
+          site.strata.single().baselinePlotCounts.numPermanentPlots,
+          "Baseline permanent plots",
+      )
+      assertEquals(
+          expected,
+          site.strata.single().baselinePlotCounts.numTemporaryPlots,
+          "Baseline temporary plots",
+      )
     }
 
     @Test
@@ -169,6 +213,14 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
       val strataRow = strataDao.findAll().first()
+      assertEquals(19, strataRow.baselineNumTemporaryPlots, "Baseline temporary plots")
+      assertEquals(
+          strataRow.plantErrorMargin,
+          strataRow.baselineErrorMargin,
+          "Baseline error margin",
+      )
+      assertEquals(strataRow.plantStudentsT, strataRow.baselineStudentsT, "Baseline Student's t")
+      assertEquals(strataRow.plantVariance, strataRow.baselineVariance, "Baseline variance")
       assertEquals(15, strataRow.biomassNumPermanentPlots, "Biomass permanent plots")
       assertEquals(4, strataRow.biomassNumTemporaryPlots, "Biomass temporary plots")
       assertEquals(15, strataRow.plantNumPermanentPlots, "Plant permanent plots")

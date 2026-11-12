@@ -653,6 +653,10 @@ data class StratumResponsePayload(
       plotCounts =
           listOf(
               StratumPlotCountsResponsePayload(
+                  ObservationType.BaselineSurvey,
+                  model.baselinePlotCounts,
+              ),
+              StratumPlotCountsResponsePayload(
                   ObservationType.BiomassMeasurements,
                   model.biomassPlotCounts,
               ),

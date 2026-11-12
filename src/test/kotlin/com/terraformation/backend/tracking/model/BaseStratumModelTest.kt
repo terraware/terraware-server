@@ -157,6 +157,14 @@ abstract class BaseStratumModelTest {
   ) =
       ExistingStratumModel(
           areaHa = BigDecimal.ONE,
+          baselinePlotCounts =
+              StratumPlotCounts(
+                  errorMargin = BigDecimal.ONE,
+                  numPermanentPlots = 0,
+                  numTemporaryPlots = plantNumPermanentPlots + plantNumTemporaryPlots,
+                  studentsT = BigDecimal.ONE,
+                  variance = BigDecimal.ONE,
+              ),
           biomassPlotCounts =
               StratumPlotCounts(
                   errorMargin = BigDecimal.ONE,

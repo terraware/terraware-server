@@ -49,6 +49,8 @@ import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.locationtech.jts.geom.Geometry
 import org.springframework.security.access.AccessDeniedException
 
@@ -63,6 +65,49 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
   @Nested
   inner class ApplyPlantingSiteEdit {
+    @ParameterizedTest
+    @ValueSource(ints = [0, 16])
+    fun `stores baseline temporary total unchanged on map edit`(temporaryTotal: Int) {
+      val existing = createSite(newSite())
+      val initial = existing.strata.single()
+      val requested =
+          initial.baselinePlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = temporaryTotal)
+      val desired = existing.copy(strata = listOf(initial.copy(baselinePlotCounts = requested)))
+
+      store.applyPlantingSiteEdit(calculateSiteEdit(existing, desired))
+
+      val actual = store.fetchSiteById(existing.id, PlantingSiteDepth.Stratum).strata.single()
+      assertEquals(requested, actual.baselinePlotCounts, "Baseline counts")
+      assertEquals(initial.plantPlotCounts, actual.plantPlotCounts, "Plant counts")
+      assertEquals(initial.biomassPlotCounts, actual.biomassPlotCounts, "Biomass counts")
+      eventPublisher.assertEventPublished { it is PlantingSiteMapEditedEvent }
+    }
+
+    @Test
+    fun `rejects nonzero baseline permanent plots on map edit`() {
+      val existing = createSite(newSite())
+      val initial = existing.strata.single()
+      val desired =
+          existing.copy(
+              strata =
+                  listOf(
+                      initial.copy(
+                          baselinePlotCounts =
+                              initial.baselinePlotCounts.copy(numPermanentPlots = 7)
+                      )
+                  )
+          )
+      val initialRows = dslContext.selectFrom(STRATA).fetch()
+
+      val exception =
+          assertThrows<IllegalArgumentException> {
+            store.applyPlantingSiteEdit(calculateSiteEdit(existing, desired))
+          }
+
+      assertEquals("Baseline surveys must have zero permanent plots", exception.message, "Error")
+      assertTableEquals(STRATA, initialRows)
+    }
+
     @Test
     fun `adds map to site that has no map yet`() {
       val desired = newSite()
