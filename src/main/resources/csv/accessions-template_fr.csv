@@ -23,14 +23,14 @@ Veuillez choisir parmi la liste suivante ou une erreur se produira lors du tél�
 - En entreposage
 - Épuisé","Date de collecte*
 
-Veuillez entrer au format AAAA-MM-JJ ou une erreur se produira lors du téléchargement. Si vous n'êtes pas sûr de la date exacte, une estimation est acceptable! Après l'importation, vous pourrez modifier la date et préciser une heure, si nécessaire.",Nom du site de collecte,Propriétaire foncier,Ville ou Comté,État / Province / Région,Pays,Description du site / Notes,Nom du collecteur,"Source de collecte
+Veuillez entrer au format AAAA-MM-JJ ou une erreur se produira lors du téléchargement. Si vous n'êtes pas sûr de la date exacte, une estimation est acceptable! Après l'importation, vous pourrez modifier la date et préciser une heure, si nécessaire.",Nom du site de collecte,Propriétaire foncier,Ville ou Comté,État / Province / Région,Pays,Description du site / Notes,Nom du collecteur,"Type de source végétale
 
 Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement:
 
 - Sauvage (In Situ)
 - Réintroduit
 - Cultivé (Ex Situ)
-- Autre",Nombre de plantes,ID de la plante,"Latitude
+- Autre",Nombre de plantes,ID de la plante,Notes sur la plante,"Latitude
 
 Latitude décimale de l'emplacement de collecte des graines (positif = nord, négatif = sud)","Longitude
 

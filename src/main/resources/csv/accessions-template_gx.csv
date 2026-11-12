@@ -22,13 +22,13 @@ Please choose from the following list or an error will occur during upload:
 - U3RvcmFnZQ SW4 (gibberish for In Storage)
 - VXA VXNlZA (gibberish for Used Up)","Collection Date*
 
-Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine! After importing, you can change the date and specify a time, if necessary.",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Collection Source
+Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine! After importing, you can change the date and specify a time, if necessary.",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Plant Source Type
 
 Please choose from the following list or an error will occur during upload:
 - V2lsZA (gibberish for Wild)
 - UmVpbnRyb2R1Y2Vk (gibberish for Reintroduced)
 - Q3VsdGl2YXRlZA (gibberish for Cultivated)
-- T3RoZXI (gibberish for Other)",Number of Plants ,Plant ID,"Latitude
+- T3RoZXI (gibberish for Other)",Number of Plants ,Plant ID,Plant Notes,"Latitude
 
 Decimal latitude of seed collection location (positive = north, negative = south)
 Gibberish uses comma as the decimal separator.","Longitude

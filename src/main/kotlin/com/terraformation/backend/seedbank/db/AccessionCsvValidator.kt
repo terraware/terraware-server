@@ -64,6 +64,7 @@ class AccessionCsvValidator(
           this::validateCollectionSource,
           this::validateNumberOfPlants,
           null,
+          null,
           this::validateLatitude,
           this::validateLongitude,
       )
@@ -239,17 +240,17 @@ class AccessionCsvValidator(
   }
 
   private fun validateLatitudeLongitude(values: List<String?>) {
-    if (values[17] == null && values[18] != null) {
-      addError(
-          UploadProblemType.MissingRequiredValue,
-          getColumnName(17),
-          null,
-          messages.accessionCsvLatitudeLongitude(),
-      )
-    } else if (values[17] != null && values[18] == null) {
+    if (values[18] == null && values[19] != null) {
       addError(
           UploadProblemType.MissingRequiredValue,
           getColumnName(18),
+          null,
+          messages.accessionCsvLatitudeLongitude(),
+      )
+    } else if (values[18] != null && values[19] == null) {
+      addError(
+          UploadProblemType.MissingRequiredValue,
+          getColumnName(19),
           null,
           messages.accessionCsvLatitudeLongitude(),
       )
