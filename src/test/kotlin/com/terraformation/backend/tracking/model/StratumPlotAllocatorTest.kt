@@ -13,9 +13,62 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.locationtech.jts.geom.Envelope
 
 class StratumPlotAllocatorTest : BaseStratumModelTest() {
+  @Test
+  fun `temporary only shortfall allocation excludes existing permanent plots`() {
+    val stratum =
+        fullStratum(numPlots = 1, capacity = 4)
+            .copy(
+                baselinePlotCounts =
+                    StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 10)
+            )
+
+    val allocation =
+        StratumPlotAllocator(
+                stratum,
+                ObservationType.BaselineSurvey,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = emptySet(),
+            )
+            .allocate(substrataIds(1))
+
+    assertEquals(emptySet<MonitoringPlotId>(), allocation.permanentPlotIds, "Permanent assignments")
+    assertEquals(3, allocation.temporaryPlotBoundaries.size, "Temporary assignments")
+    assertTrue(allocation.isShortfall, "Shortfall")
+    allocation.temporaryPlotBoundaries.forEach {
+      assertEquals(
+          0.0,
+          it.intersection(monitoringPlotBoundary(10)).area,
+          1e-12,
+          "Permanent overlap",
+      )
+    }
+  }
+
+  @Test
+  fun `baseline with zero configured plots is unstartable`() {
+    val stratum =
+        stratumModel(substrata = listOf(substratumModel(boundary = substratumBoundary(1, 4))))
+            .copy(
+                baselinePlotCounts = StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0)
+            )
+
+    assertThrows<StratumFullException> {
+      StratumPlotAllocator(
+              stratum,
+              ObservationType.BaselineSurvey,
+              siteOrigin,
+              exclusion = null,
+              observedPermanentPlotIds = emptySet(),
+          )
+          .allocate(substrataIds(1))
+    }
+  }
+
   private fun fullStratum(
       numPlots: Int = 4,
       plantNumPermanentPlots: Int = 6,
+      capacity: Int = numPlots,
   ): ExistingStratumModel =
       stratumModel(
           plantNumPermanentPlots = plantNumPermanentPlots,
@@ -24,7 +77,8 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
               listOf(
                   substratumModel(
                       plots =
-                          List(numPlots) { monitoringPlotModel(10 + it, permanentIndex = it + 1) }
+                          List(numPlots) { monitoringPlotModel(10 + it, permanentIndex = it + 1) },
+                      boundary = substratumBoundary(1, capacity),
                   )
               ),
       )

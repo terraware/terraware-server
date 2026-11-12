@@ -118,7 +118,8 @@ class StratumPlotAllocator(
                 observationType,
                 exclusion,
                 count = numAllocated - numPermanent,
-                permanentPlotIds = permanentPlotIds,
+                permanentPlotIds =
+                    if (plotCounts.numPermanentPlots == 0) null else permanentPlotIds,
             ),
         numConfigured = numConfigured,
         numAllocated = numAllocated,

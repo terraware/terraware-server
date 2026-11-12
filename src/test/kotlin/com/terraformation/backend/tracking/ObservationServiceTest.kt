@@ -8,6 +8,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.daily.ObservationScheduler
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.EntityNotFoundException
@@ -53,6 +54,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRec
 import com.terraformation.backend.db.tracking.tables.records.ObservationSiteResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
@@ -153,6 +155,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
@@ -266,6 +269,113 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @BeforeEach
     fun setUp() {
       insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+    }
+
+    @ParameterizedTest
+    @CsvSource("2,2,false", "10,3,false", "2,2,true")
+    fun `baseline assigns only temporary plots without plantings and skips zero count strata`(
+        configured: Int,
+        expected: Int,
+        scheduledStart: Boolean,
+    ) {
+      val northStratumId =
+          insertStratum(width = 4, height = 1, baselineNumTemporaryPlots = configured)
+      val northSubstratumId = insertSubstratum(width = 4, height = 1)
+      val permanentId = insertPermanentPlot(1)
+      val permanentBoundary = boundaryInPlotUnits(width = 1, height = 1)
+      insertStratum(x = 4, width = 4, height = 1, baselineNumTemporaryPlots = 0)
+      val southSubstratumId = insertSubstratum(x = 4, width = 4, height = 1)
+      val observationId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Upcoming,
+              startDate = LocalDate.EPOCH,
+              endDate = LocalDate.EPOCH.plusDays(1),
+          )
+      insertObservationRequestedSubstratum(substratumId = northSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = southSubstratumId)
+
+      if (scheduledStart) {
+        ObservationScheduler(
+                mockk(),
+                eventPublisher,
+                service,
+                observationStore,
+                plantingSiteStore,
+                systemUser,
+            )
+            .transitionObservations()
+      } else {
+        service.startObservation(observationId)
+      }
+
+      val plots = observationPlotsDao.findAll()
+      assertEquals(expected, plots.size, "Assigned plots")
+      assertEquals(0, plots.count { it.isPermanent == true }, "Permanent assignments")
+      assertEquals(
+          listOf(permanentId),
+          monitoringPlotsDao.findAll().filter { it.permanentIndex != null }.map { it.id },
+          "Existing permanent plots unchanged",
+      )
+      plots.forEach {
+        assertEquals(observationId, it.observationId, "Assigned observation")
+        val plot = monitoringPlotsDao.fetchOneById(it.monitoringPlotId!!)!!
+        assertEquals(northSubstratumId, plot.substratumId, "Non-zero stratum's substratum")
+        assertNull(plot.permanentIndex, "Temporary plot index")
+        val boundary = plot.boundary!!
+        assertEquals(0.0, permanentBoundary.intersection(boundary).area, 1e-12, "Permanent overlap")
+      }
+      assertSetEquals(
+          plots.map { it.monitoringPlotId }.toSet() + permanentId,
+          monitoringPlotsDao.findAll().map { it.id }.toSet(),
+          "All new plots belong to the observation",
+      )
+      val started = observationStore.fetchObservationById(observationId)
+      assertEquals(ObservationState.InProgress, started.state, "Observation state")
+      eventPublisher.assertEventPublished(ObservationStartedEvent(started))
+      eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
+      if (expected < configured) {
+        eventPublisher.assertEventPublished(
+            ObservationPlotsUnderallocatedEvent(
+                observationId,
+                ObservationType.BaselineSurvey,
+                plantingSiteId,
+                listOf(
+                    ObservationPlotsUnderallocatedEvent.Shortfall(
+                        numAllocated = expected,
+                        numConfigured = configured,
+                        stratumId = northStratumId,
+                        stratumName = strataDao.fetchOneById(northStratumId)!!.name!!,
+                    )
+                ),
+            )
+        )
+      }
+    }
+
+    @Test
+    fun `abandons baseline observation when all requested strata have zero plot counts`() {
+      insertStratum(baselineNumTemporaryPlots = 0)
+      val firstSubstratumId = insertSubstratum()
+      insertStratum(x = 4, baselineNumTemporaryPlots = 0)
+      val secondSubstratumId = insertSubstratum(x = 4)
+      val observationId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum(substratumId = firstSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = secondSubstratumId)
+
+      service.startObservation(observationId)
+
+      assertTableEmpty(OBSERVATIONS)
+      assertTableEmpty(OBSERVATION_PLOTS)
+      assertTableEmpty(MONITORING_PLOTS, "No temporary plots created")
+      eventPublisher.assertEventPublished(
+          ObservationNotStartedEvent(observationId, ObservationType.BaselineSurvey, plantingSiteId)
+      )
+      eventPublisher.assertEventNotPublished<ObservationStartedEvent>()
     }
 
     @Test
@@ -1508,19 +1618,35 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class ScheduleObservation {
-    @ParameterizedTest
-    @ValueSource(booleans = [false, true])
-    fun `rejects baseline surveys regardless of skip validation`(skipValidation: Boolean) {
-      assertThrows<IllegalArgumentException> {
-        service.scheduleObservation(
-            newObservationModel(plantingSiteId = inserted.plantingSiteId)
-                .copy(observationType = ObservationType.BaselineSurvey),
-            skipValidation = skipValidation,
-        )
-      }
+    @Test
+    fun `schedules baseline despite existing baseline observations`() {
+      insertStratum()
+      insertSubstratum()
+      listOf(ObservationState.Upcoming, ObservationState.InProgress, ObservationState.Completed)
+          .forEach { state ->
+            insertObservation(
+                completedTime = if (state == ObservationState.Completed) clock.instant() else null,
+                endDate = LocalDate.EPOCH.plusDays(1),
+                observationType = ObservationType.BaselineSurvey,
+                startDate = LocalDate.EPOCH,
+                state = state,
+            )
+            insertObservationRequestedSubstratum()
+          }
 
-      assertTableEmpty(OBSERVATIONS)
-      eventPublisher.assertEventNotPublished<ObservationScheduledEvent>()
+      val observationId =
+          service.scheduleObservation(
+              newObservationModel(
+                      plantingSiteId = inserted.plantingSiteId,
+                      requestedSubstratumIds = setOf(inserted.substratumId),
+                  )
+                  .copy(observationType = ObservationType.BaselineSurvey)
+          )
+
+      assertEquals(4, observationsDao.findAll().size, "Existing and new observations persisted")
+      val created = observationStore.fetchObservationById(observationId)
+      assertEquals(ObservationState.Upcoming, created.state, "Scheduled state")
+      eventPublisher.assertEventPublished(ObservationScheduledEvent(created))
     }
 
     @Test
@@ -1623,26 +1749,44 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
     }
 
-    @Test
-    fun `schedules a new observation for a site with plantings in substrata`() {
+    @ParameterizedTest
+    @CsvSource("Monitoring,false", "BaselineSurvey,false", "BaselineSurvey,true")
+    fun `schedules a new observation with plantings unless it is a baseline survey`(
+        observationType: ObservationType,
+        skipValidation: Boolean,
+    ) {
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
 
-      helper.insertPlantedSite(plantNumPermanentPlots = 2, plantNumTemporaryPlots = 3)
+      if (observationType == ObservationType.BaselineSurvey) {
+        insertStratum()
+        insertSubstratum()
+      } else {
+        helper.insertPlantedSite(plantNumPermanentPlots = 2, plantNumTemporaryPlots = 3)
+      }
 
       val observationId =
           service.scheduleObservation(
               newObservationModel(
-                  plantingSiteId = inserted.plantingSiteId,
-                  startDate = startDate,
-                  endDate = endDate,
-                  requestedSubstratumIds = setOf(inserted.substratumId),
-              )
+                      plantingSiteId = inserted.plantingSiteId,
+                      startDate = startDate,
+                      endDate = endDate,
+                      requestedSubstratumIds = setOf(inserted.substratumId),
+                  )
+                  .copy(observationType = observationType),
+              skipValidation = skipValidation,
           )
 
       assertNotNull(observationId)
 
       val createdObservation = observationStore.fetchObservationById(observationId)
+
+      assertEquals(observationType, createdObservation.observationType, "Observation type")
+      assertEquals(
+          setOf(inserted.substratumId),
+          createdObservation.requestedSubstratumIds,
+          "Requested substrata",
+      )
 
       assertEquals(
           ObservationState.Upcoming,
@@ -1656,9 +1800,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertEquals(endDate, createdObservation.endDate, "End date should match schedule input")
 
-      eventPublisher.assertExactEventsPublished(
-          setOf(ObservationScheduledEvent(createdObservation))
-      )
+      eventPublisher.assertEventPublished(ObservationScheduledEvent(createdObservation))
     }
 
     private fun newObservationModel(

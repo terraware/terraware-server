@@ -2957,19 +2957,21 @@ abstract class DatabaseBackedTest {
   private var nextStratumNumber: Int = 1
   private lateinit var lastStrataRow: StrataRow
 
+  fun boundaryInPlotUnits(width: Number, height: Number, x: Number = 0, y: Number = 0) =
+      rectangle(
+          width.toDouble() * MONITORING_PLOT_SIZE,
+          height.toDouble() * MONITORING_PLOT_SIZE,
+          x.toDouble() * MONITORING_PLOT_SIZE,
+          y.toDouble() * MONITORING_PLOT_SIZE,
+      )
+
   fun insertStratum(
       areaHa: BigDecimal = BigDecimal.TEN,
       x: Number = 0,
       y: Number = 0,
       width: Number = 3,
       height: Number = 2,
-      boundary: Geometry =
-          rectangle(
-              width.toDouble() * MONITORING_PLOT_SIZE,
-              height.toDouble() * MONITORING_PLOT_SIZE,
-              x.toDouble() * MONITORING_PLOT_SIZE,
-              y.toDouble() * MONITORING_PLOT_SIZE,
-          ),
+      boundary: Geometry = boundaryInPlotUnits(width, height, x, y),
       createdBy: UserId = inserted.userId,
       createdTime: Instant = clock.instant(),
       initialPlantingDensity: BigDecimal? = null,
