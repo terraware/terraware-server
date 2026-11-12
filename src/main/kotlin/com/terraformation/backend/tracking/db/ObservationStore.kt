@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -366,17 +367,17 @@ class ObservationStore(
           .where(OBSERVATIONS.ID.eq(observationId))
           .execute()
 
-      // If the observation was already in progress, it will have plots, but we want to assign a
-      // fresh set on the new start date so that the observation is based on up-to-date information
-      // about which substrata are planted. Delete the existing plots. This is a no-op if the
-      // observation hadn't started yet.
-      //
-      // Rescheduling should only be allowed if there are no completed plots, but for added safety,
-      // guard against deleting completed ones.
+      // Any plots that are already assigned to the observation are kept. Their history IDs are
+      // refreshed when the observation starts. Data can't be collected on an upcoming observation,
+      // so release any claims on plots that haven't been completed. (Rescheduling should only be
+      // allowed if there are no completed plots, but guard against touching them anyway.)
       dslContext
-          .deleteFrom(OBSERVATION_PLOTS)
+          .update(OBSERVATION_PLOTS)
+          .set(OBSERVATION_PLOTS.STATUS_ID, ObservationPlotStatus.Unclaimed)
+          .setNull(OBSERVATION_PLOTS.CLAIMED_BY)
+          .setNull(OBSERVATION_PLOTS.CLAIMED_TIME)
           .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-          .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+          .and(OBSERVATION_PLOTS.STATUS_ID.ne(ObservationPlotStatus.Completed))
           .execute()
     }
   }
@@ -426,26 +427,75 @@ class ObservationStore(
     requirePermissions { manageObservation(observationId) }
 
     return entityLocker.withLockedObservation(observationId) { observation ->
+      // Plots may have been assigned when the observation was scheduled, and the site map may have
+      // been edited since then.
       val plantingSiteHistoryId =
-          dslContext
-              .select(DSL.max(PLANTING_SITE_HISTORIES.ID))
-              .from(PLANTING_SITE_HISTORIES)
-              .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(observation.plantingSiteId))
-              .fetchOne()
-              ?.value1() ?: throw IllegalStateException("Planting site has no history")
-
-      dslContext
-          .update(OBSERVATIONS)
-          .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, plantingSiteHistoryId)
-          .set(OBSERVATIONS.STATE_ID, ObservationState.InProgress)
-          .where(OBSERVATIONS.ID.eq(observationId))
-          .execute()
+          updateHistoryIds(observationId, newState = ObservationState.InProgress)
 
       observation.copy(
           plantingSiteHistoryId = plantingSiteHistoryId,
           state = ObservationState.InProgress,
       )
     }
+  }
+
+  /**
+   * Points an observation at its planting site's latest map history, and points the observation's
+   * incomplete plots at their latest plot histories so they match the site history. Completed plots
+   * keep the histories they were observed with. The observation must already have started (upcoming
+   * observations have no site history). The caller should hold the observation lock.
+   *
+   * @return The observation's new planting site history ID.
+   */
+  fun refreshHistoryIds(observationId: ObservationId): PlantingSiteHistoryId {
+    requirePermissions { manageObservation(observationId) }
+
+    return updateHistoryIds(observationId, newState = null)
+  }
+
+  /**
+   * Implementation of [refreshHistoryIds] that can optionally also change the observation's state.
+   * The two need to happen in the same update because upcoming observations can't have site history
+   * IDs and other observations must have them.
+   */
+  private fun updateHistoryIds(
+      observationId: ObservationId,
+      newState: ObservationState?,
+  ): PlantingSiteHistoryId {
+    val plantingSiteHistoryId =
+        dslContext
+            .select(DSL.max(PLANTING_SITE_HISTORIES.ID))
+            .from(PLANTING_SITE_HISTORIES)
+            .join(OBSERVATIONS)
+            .on(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
+            .where(OBSERVATIONS.ID.eq(observationId))
+            .fetchOne()
+            ?.value1() ?: throw IllegalStateException("Planting site has no history")
+
+    dslContext
+        .update(OBSERVATIONS)
+        .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, plantingSiteHistoryId)
+        .apply { if (newState != null) set(OBSERVATIONS.STATE_ID, newState) }
+        .where(OBSERVATIONS.ID.eq(observationId))
+        .execute()
+
+    dslContext
+        .update(OBSERVATION_PLOTS)
+        .set(
+            OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID,
+            DSL.select(DSL.max(MONITORING_PLOT_HISTORIES.ID))
+                .from(MONITORING_PLOT_HISTORIES)
+                .where(
+                    MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(
+                        OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                    )
+                ),
+        )
+        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .and(OBSERVATION_PLOTS.STATUS_ID.ne(ObservationPlotStatus.Completed))
+        .execute()
+
+    return plantingSiteHistoryId
   }
 
   fun markUpcomingNotificationComplete(observationId: ObservationId) {

@@ -55,6 +55,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationSiteResu
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
@@ -143,6 +144,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import org.jobrunr.scheduling.JobScheduler
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -867,15 +869,86 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if observation already has plots assigned`() {
-      insertStratum()
-      insertSubstratum()
-      insertMonitoringPlot()
+    fun `starts observation with preassigned plots without reallocating`() {
+      // Configured for 2 plots but only has room for 1, so reallocating would come up short.
+      val boundary = rectangle(MONITORING_PLOT_SIZE)
+      insertStratum(boundary = boundary, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      insertSubstratum(boundary = boundary)
+      insertMonitoringPlot(permanentIndex = 1)
       val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum()
+      insertObservationPlot(isPermanent = true)
+      val plotsBeforeStart = observationPlotsDao.fetchByObservationId(observationId)
 
-      insertObservationPlot()
+      service.startObservation(observationId)
 
-      assertThrows<ObservationAlreadyStartedException> { service.startObservation(observationId) }
+      assertSetEquals(
+          plotsBeforeStart.map { it.monitoringPlotId to it.isPermanent }.toSet(),
+          observationPlotsDao
+              .fetchByObservationId(observationId)
+              .map { it.monitoringPlotId to it.isPermanent }
+              .toSet(),
+          "Plots after start",
+      )
+      assertEquals(
+          ObservationState.InProgress,
+          observationsDao.fetchOneById(observationId)!!.stateId,
+          "Observation state",
+      )
+      eventPublisher.assertEventPublished(
+          ObservationStartedEvent(observationStore.fetchObservationById(observationId))
+      )
+      eventPublisher.assertEventNotPublished<ObservationPlotsUnderallocatedEvent>()
+    }
+
+    @Test
+    fun `refreshes plot history ids at start`() {
+      insertStratum(width = 4, height = 1)
+      insertSubstratum(width = 4, height = 1)
+      val permanentPlotId = insertMonitoringPlot(permanentIndex = 1, x = 0)
+      val temporaryPlotId = insertMonitoringPlot(x = 1)
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum()
+      insertObservationPlot(monitoringPlotId = permanentPlotId, isPermanent = true)
+      insertObservationPlot(monitoringPlotId = temporaryPlotId)
+
+      // Simulate a map edit: it creates a new site history and new histories for every monitoring
+      // plot in the site.
+      val newSiteHistoryId = insertPlantingSiteHistory()
+      insertStratumHistory()
+      insertSubstratumHistory()
+      insertMonitoringPlotHistory(monitoringPlotId = permanentPlotId)
+      insertMonitoringPlotHistory(monitoringPlotId = temporaryPlotId)
+
+      service.startObservation(observationId)
+
+      val latestHistoryIds =
+          dslContext
+              .select(
+                  MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
+                  DSL.max(MONITORING_PLOT_HISTORIES.ID),
+              )
+              .from(MONITORING_PLOT_HISTORIES)
+              .groupBy(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID)
+              .fetchMap(
+                  MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
+                  DSL.max(MONITORING_PLOT_HISTORIES.ID),
+              )
+      val observationPlots = observationPlotsDao.fetchByObservationId(observationId)
+
+      assertNotEquals(emptyList<ObservationPlotsRow>(), observationPlots, "Observation plots")
+      assertEquals(
+          observationPlots.associate {
+            it.monitoringPlotId to latestHistoryIds[it.monitoringPlotId]
+          },
+          observationPlots.associate { it.monitoringPlotId to it.monitoringPlotHistoryId },
+          "Monitoring plot history IDs",
+      )
+      assertEquals(
+          newSiteHistoryId,
+          observationsDao.fetchOneById(observationId)!!.plantingSiteHistoryId,
+          "Planting site history ID should be the latest one",
+      )
     }
 
     @Test
@@ -2038,7 +2111,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           updatedObservation,
           "Rescheduled observation",
       )
-      assertTableEmpty(OBSERVATION_PLOTS, "Observation plots should be removed")
 
       eventPublisher.assertEventPublished(
           ObservationRescheduledEvent(originalObservation, updatedObservation)
@@ -2066,6 +2138,39 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventPublished(
           ObservationRescheduledEvent(originalObservation, updatedObservation)
+      )
+    }
+
+    @Test
+    fun `keeps unobserved plots on in-progress observation`() {
+      insertStratum(plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      insertSubstratum()
+      val plotId1 = insertMonitoringPlot(x = 0)
+      val plotId2 = insertMonitoringPlot(x = 1)
+
+      val observationId = insertObservation(state = ObservationState.InProgress)
+      insertObservationPlot(monitoringPlotId = plotId1, isPermanent = true)
+      insertObservationPlot(
+          monitoringPlotId = plotId2,
+          isPermanent = false,
+          claimedBy = user.userId,
+      )
+      val plotsBefore = observationPlotsDao.fetchByObservationId(observationId)
+
+      service.rescheduleObservation(observationId, LocalDate.EPOCH, LocalDate.EPOCH.plusDays(1))
+
+      assertSetEquals(
+          plotsBefore
+              .map {
+                it.copy(
+                    claimedBy = null,
+                    claimedTime = null,
+                    statusId = ObservationPlotStatus.Unclaimed,
+                )
+              }
+              .toSet(),
+          observationPlotsDao.fetchByObservationId(observationId).toSet(),
+          "Plots after reschedule should be kept and unclaimed",
       )
     }
   }
