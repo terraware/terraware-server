@@ -26,6 +26,11 @@ class PlantingSeasonService(
             newSeasonId,
         )
       }
+
+      if (newModel.speciesTargets.isNotEmpty()) {
+        plantingSeasonSpeciesTargetsStore.createInitialTargets(newSeasonId, newModel.speciesTargets)
+      }
+
       newSeasonId
     }
   }

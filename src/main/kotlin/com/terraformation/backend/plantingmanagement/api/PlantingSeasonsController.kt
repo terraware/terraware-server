@@ -15,6 +15,7 @@ import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonService
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,7 +39,9 @@ class PlantingSeasonsController(
   @Operation(
       summary = "Creates a new planting season.",
       description =
-          "If fromPlantingSeasonId is specified, copy all species/substrata over to the new season (with quantities of 0).",
+          "If fromPlantingSeasonId is specified, copy all species/substrata over to the new season " +
+              "(with quantities of 0). Otherwise, if speciesTargets is specified, use it as the " +
+              "new season's initial list of species targets.",
   )
   @PostMapping
   fun createPlantingSeason(
@@ -131,6 +134,12 @@ data class CreatePlantingSeasonRequestPayload(
     val fromPlantingSeasonId: PlantingSeasonId? = null,
     val name: String,
     val plantingSiteId: PlantingSiteId,
+    @Schema(
+        description =
+            "Initial species targets for the new season. May not be specified if " +
+                "fromPlantingSeasonId is specified."
+    )
+    val speciesTargets: List<SpeciesTargetPayload>? = null,
     val startDate: LocalDate,
 ) {
   fun validate() {
@@ -143,6 +152,7 @@ data class CreatePlantingSeasonRequestPayload(
           fromPlantingSeasonId = fromPlantingSeasonId,
           name = name,
           plantingSiteId = plantingSiteId,
+          speciesTargets = speciesTargets?.map { it.toModel() } ?: emptyList(),
           startDate = startDate,
       )
 }

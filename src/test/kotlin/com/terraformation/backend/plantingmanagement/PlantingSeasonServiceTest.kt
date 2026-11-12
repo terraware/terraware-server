@@ -16,11 +16,14 @@ import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledD
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import com.terraformation.backend.plantingmanagement.db.SeasonHelper
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -127,6 +130,94 @@ internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           PLANTING_SEASON_SPECIES_TARGETS,
           where = PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID.eq(newSeasonId),
       )
+    }
+
+    @Test
+    fun `inserts initial species targets and publishes created events`() {
+      val otherSpeciesId = insertSpecies()
+
+      val newSeasonId =
+          service.create(
+              NewPlantingSeasonModel(
+                  endDate = endDate,
+                  name = "Spring 2025",
+                  plantingSiteId = plantingSiteId,
+                  speciesTargets =
+                      listOf(
+                          PlantingSeasonSpeciesTargetModel(10, speciesId, substratumId),
+                          PlantingSeasonSpeciesTargetModel(0, otherSpeciesId, substratumId),
+                      ),
+                  startDate = startDate,
+              )
+          )
+
+      assertTableEquals(
+          listOf(
+              PlantingSeasonSpeciesTargetsRecord(
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  plantingSeasonId = newSeasonId,
+                  quantity = 10,
+                  speciesId = speciesId,
+                  substratumId = substratumId,
+              ),
+              PlantingSeasonSpeciesTargetsRecord(
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  plantingSeasonId = newSeasonId,
+                  quantity = 0,
+                  speciesId = otherSpeciesId,
+                  substratumId = substratumId,
+              ),
+          )
+      )
+
+      eventPublisher.assertEventPublished("Created event for first species") {
+        it is PlantingSeasonSpeciesTargetCreatedEvent &&
+            it.plantingSeasonId == newSeasonId &&
+            it.speciesId == speciesId &&
+            it.quantity == 10
+      }
+      eventPublisher.assertEventPublished("Created event for second species") {
+        it is PlantingSeasonSpeciesTargetCreatedEvent &&
+            it.plantingSeasonId == newSeasonId &&
+            it.speciesId == otherSpeciesId &&
+            it.quantity == 0
+      }
+    }
+
+    @Test
+    fun `throws exception if initial species target substratum does not exist`() {
+      assertThrows<SubstratumNotFoundException> {
+        service.create(
+            NewPlantingSeasonModel(
+                endDate = endDate,
+                name = "Spring 2025",
+                plantingSiteId = plantingSiteId,
+                speciesTargets =
+                    listOf(PlantingSeasonSpeciesTargetModel(10, speciesId, SubstratumId(-1))),
+                startDate = startDate,
+            )
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if both fromPlantingSeasonId and initial species targets are specified`() {
+      assertThrows<IllegalArgumentException> {
+        NewPlantingSeasonModel(
+            endDate = endDate,
+            fromPlantingSeasonId = plantingSeasonId,
+            name = "Spring 2025",
+            plantingSiteId = plantingSiteId,
+            speciesTargets = listOf(PlantingSeasonSpeciesTargetModel(10, speciesId, substratumId)),
+            startDate = startDate,
+        )
+      }
     }
   }
 }
