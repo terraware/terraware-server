@@ -46,6 +46,8 @@ class RateLimitedEventPublisherImpl(
     val now = clock.instant()
     val eventClass = event.javaClass.name
     val rateLimitKey = toJsonb(event.getRateLimitKey())
+    val initialDelay = event.getInitialDelay()
+    val isDelayed = initialDelay.isPositive
     var canPublishEventNow = false
     var eventRecordVanished = false
 
@@ -57,13 +59,14 @@ class RateLimitedEventPublisherImpl(
               .insertInto(RATE_LIMITED_EVENTS)
               .set(EVENT_CLASS, eventClass)
               .set(RATE_LIMIT_KEY, rateLimitKey)
-              .set(NEXT_TIME, now + event.getMinimumInterval())
+              .set(NEXT_TIME, now + if (isDelayed) initialDelay else event.getMinimumInterval())
+              .set(PENDING_EVENT, if (isDelayed) toJsonb(event) else null)
               .onConflictDoNothing()
               .execute()
         }
 
     if (rowsInserted == 1) {
-      canPublishEventNow = true
+      canPublishEventNow = !isDelayed
     } else {
       dslContext.transaction { _ ->
         with(RATE_LIMITED_EVENTS) {
@@ -78,33 +81,31 @@ class RateLimitedEventPublisherImpl(
 
           if (existingRecord != null) {
             val (nextTime, pendingEventJsonb) = existingRecord
-            if (nextTime < now) {
-              // Minimum interval has passed but we haven't deleted the rate limit record yet;
-              // it's safe to publish this event immediately.
+            val existingEvent = pendingEventJsonb?.let {
+              objectMapper.readValue(it.data(), event.javaClass)
+            }
+            val combinedEvent = if (existingEvent != null) event.combine(existingEvent) else event
+
+            // A newly-deferred event always waits for at least its initial delay so it can be
+            // combined with any related events that are published shortly after it.
+            val newNextTime =
+                if (isDelayed && existingEvent == null) {
+                  maxOf(nextTime, now + initialDelay)
+                } else {
+                  nextTime
+                }
+
+            // If there is already an event waiting to be published when the interval or initial
+            // delay expires, combine it with this event if needed. If the interval has already
+            // expired, the next scan will publish the event.
+            if (combinedEvent != existingEvent || newNextTime != nextTime) {
               dslContext
                   .update(RATE_LIMITED_EVENTS)
-                  .set(NEXT_TIME, now + event.getMinimumInterval())
+                  .set(NEXT_TIME, newNextTime)
+                  .set(PENDING_EVENT, toJsonb(combinedEvent))
                   .where(EVENT_CLASS.eq(eventClass))
                   .and(RATE_LIMIT_KEY.eq(rateLimitKey))
                   .execute()
-
-              canPublishEventNow = true
-            } else {
-              // If there is already an event waiting to be published when the interval expires,
-              // combine it with this event if needed.
-              val existingEvent = pendingEventJsonb?.let {
-                objectMapper.readValue(it.data(), event.javaClass)
-              }
-              val combinedEvent = if (existingEvent != null) event.combine(existingEvent) else event
-
-              if (combinedEvent != existingEvent) {
-                dslContext
-                    .update(RATE_LIMITED_EVENTS)
-                    .set(PENDING_EVENT, toJsonb(combinedEvent))
-                    .where(EVENT_CLASS.eq(eventClass))
-                    .and(RATE_LIMIT_KEY.eq(rateLimitKey))
-                    .execute()
-              }
             }
           } else {
             eventRecordVanished = true

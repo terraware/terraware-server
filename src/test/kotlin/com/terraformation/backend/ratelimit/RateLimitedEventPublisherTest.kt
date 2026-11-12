@@ -54,7 +54,7 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `publishes event immediately if previous one was longer ago than the minimum interval`() {
+  fun `publishes event on next scan if previous one was longer ago than the minimum interval`() {
     val event = TestEvent()
 
     rateLimitedEventPublisher.publishEvent(event)
@@ -63,6 +63,7 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
     clock.instant += event.getMinimumInterval().plusSeconds(1)
 
     rateLimitedEventPublisher.publishEvent(event)
+    rateLimitedEventPublisher.scanPendingEvents()
 
     eventPublisher.assertEventPublished(event)
   }
@@ -133,6 +134,66 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `defers event with initial delay and combines it with events published during the delay`() {
+    val event1 = DelayedTestEvent(data = 1)
+    val event2 = DelayedTestEvent(data = 2)
+    val combinedEvent = DelayedTestEvent(data = 3)
+
+    rateLimitedEventPublisher.publishEvent(event1)
+    clock.instant += event1.getInitialDelay().minusSeconds(1)
+    rateLimitedEventPublisher.publishEvent(event2)
+    rateLimitedEventPublisher.scanPendingEvents()
+
+    eventPublisher.assertNoEventsPublished("Published event before initial delay")
+
+    clock.instant += Duration.ofSeconds(1)
+    rateLimitedEventPublisher.scanPendingEvents()
+
+    eventPublisher.assertEventPublished(combinedEvent, "Published event after initial delay")
+  }
+
+  @Test
+  fun `starts minimum interval when event with initial delay is published`() {
+    val event = DelayedTestEvent()
+
+    rateLimitedEventPublisher.publishEvent(event)
+    clock.instant += event.getInitialDelay()
+    rateLimitedEventPublisher.scanPendingEvents()
+    eventPublisher.clear()
+
+    rateLimitedEventPublisher.publishEvent(event)
+    clock.instant += event.getMinimumInterval().minusSeconds(1)
+    rateLimitedEventPublisher.scanPendingEvents()
+
+    eventPublisher.assertNoEventsPublished("Published event before minimum interval")
+
+    clock.instant += Duration.ofSeconds(1)
+    rateLimitedEventPublisher.scanPendingEvents()
+
+    eventPublisher.assertEventPublished(event, "Published event after minimum interval")
+  }
+
+  @Test
+  fun `applies initial delay if minimum interval has passed but rate limit record still exists`() {
+    val event = DelayedTestEvent()
+
+    rateLimitedEventPublisher.publishEvent(event)
+    clock.instant += event.getInitialDelay()
+    rateLimitedEventPublisher.scanPendingEvents()
+    eventPublisher.clear()
+
+    clock.instant += event.getMinimumInterval().plusSeconds(1)
+    rateLimitedEventPublisher.publishEvent(event)
+
+    eventPublisher.assertNoEventsPublished("Published event before initial delay")
+
+    clock.instant += event.getInitialDelay()
+    rateLimitedEventPublisher.scanPendingEvents()
+
+    eventPublisher.assertEventPublished(event, "Published event after initial delay")
+  }
+
+  @Test
   fun `publishes non-rate-limited events immediately`() {
     val event = "an object that does not implement RateLimitedEvent"
 
@@ -158,5 +219,19 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
     override fun getMinimumInterval(): Duration = Duration.ofMinutes(5)
 
     override fun combine(existing: TestEvent) = TestEvent(userId, projectId, data + existing.data)
+  }
+
+  data class DelayedTestEvent(
+      val userId: UserId = UserId(1),
+      val data: Int = 1,
+  ) : RateLimitedEvent<DelayedTestEvent> {
+    override fun getRateLimitKey() = mapOf("userId" to userId)
+
+    override fun getMinimumInterval(): Duration = Duration.ofMinutes(5)
+
+    override fun getInitialDelay(): Duration = Duration.ofMinutes(1)
+
+    override fun combine(existing: DelayedTestEvent) =
+        DelayedTestEvent(userId, data + existing.data)
   }
 }
