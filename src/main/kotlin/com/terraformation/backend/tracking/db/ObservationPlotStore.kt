@@ -222,6 +222,17 @@ class ObservationPlotStore(
     )
   }
 
+  fun hasCompletedPlots(observationId: ObservationId): Boolean {
+    fetchObservationSiteInfo(observationId)
+
+    return dslContext.fetchExists(
+        DSL.selectOne()
+            .from(OBSERVATION_PLOTS)
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+    )
+  }
+
   fun addAdHocPlotToObservation(
       observationId: ObservationId,
       plotId: MonitoringPlotId,

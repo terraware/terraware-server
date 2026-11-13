@@ -6,6 +6,7 @@ import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.SimpleUserStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.daily.ObservationScheduler
@@ -16,6 +17,7 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -34,12 +36,14 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
 import com.terraformation.backend.db.tracking.SoilType
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
@@ -64,8 +68,14 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDI
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.eventlog.EventLogPayloadTransformer
+import com.terraformation.backend.eventlog.PersistentEvent
+import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -74,6 +84,7 @@ import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.file.mux.MuxStreamModel
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
@@ -90,6 +101,7 @@ import com.terraformation.backend.tracking.db.ObservationPlotsUnavailableExcepti
 import com.terraformation.backend.tracking.db.ObservationRecalculationStore
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
+import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
@@ -112,7 +124,9 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsReassignedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -144,6 +158,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import org.assertj.core.api.Assertions.assertThat
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -156,6 +171,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
@@ -165,6 +181,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.TransactionDefinition
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -4484,6 +4501,259 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `reassigns upcoming observation plots in edited stratum only`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots()
+      val plotsBefore = fetchPlotIdsByStratum(observationId)
+      val temporaryPlotId = fetchTemporaryPlotId(observationId, editedStratumId)
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+
+      eventPublisher.clear()
+      service.on(mapEditedEvent(editedStratumId))
+
+      val plotsAfter = fetchPlotIdsByStratum(observationId)
+      assertEquals(
+          plotsBefore[otherStratumId],
+          plotsAfter[otherStratumId],
+          "Plots in other stratum should not change",
+      )
+      assertEquals(2, plotsAfter[editedStratumId]?.size, "Number of plots in edited stratum")
+      assertNull(
+          monitoringPlotsDao.fetchOneById(temporaryPlotId),
+          "Old temporary plot should have been deleted",
+      )
+      assertTableEquals(observationsBefore, "Observations should not be modified")
+      eventPublisher.assertEventPublished(
+          ObservationPlotsReassignedEvent(
+              observationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `reassigns in-progress observation with no completed plots`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      val plotsBefore = fetchPlotIdsByStratum(observationId)
+      val temporaryPlotId = fetchTemporaryPlotId(observationId, editedStratumId)
+
+      // Claimed plots are replaced just like unclaimed ones.
+      dslContext
+          .update(OBSERVATION_PLOTS)
+          .set(OBSERVATION_PLOTS.STATUS_ID, ObservationPlotStatus.Claimed)
+          .set(OBSERVATION_PLOTS.CLAIMED_BY, user.userId)
+          .set(OBSERVATION_PLOTS.CLAIMED_TIME, clock.instant())
+          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(temporaryPlotId))
+          .execute()
+
+      eventPublisher.clear()
+      service.on(mapEditedEvent(editedStratumId))
+
+      val plotsAfter = fetchPlotIdsByStratum(observationId)
+      assertEquals(
+          plotsBefore[otherStratumId],
+          plotsAfter[otherStratumId],
+          "Plots in other stratum should not change",
+      )
+      assertEquals(2, plotsAfter[editedStratumId]?.size, "Number of plots in edited stratum")
+      assertFalse(
+          temporaryPlotId in plotsAfter[editedStratumId]!!,
+          "Claimed temporary plot should have been replaced",
+      )
+      assertEquals(
+          ObservationState.InProgress,
+          observationsDao.fetchOneById(observationId)!!.stateId,
+          "Observation state",
+      )
+      eventPublisher.assertEventPublished(
+          ObservationPlotsReassignedEvent(
+              observationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `assigns plots in new stratum that a requested substratum was moved into`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots()
+      val plotsBefore = fetchPlotIdsByStratum(observationId)
+      val deletedStratum = plantingSite.strata.single { it.id == editedStratumId }
+
+      // Simulate an edit that replaces the edited stratum with a new one covering the same area and
+      // moves the edited stratum's substratum into it, keeping the substratum's ID.
+      val newStratumId =
+          insertStratum(
+              width = 4,
+              height = 1,
+              plantNumPermanentPlots = 1,
+              plantNumTemporaryPlots = 1,
+          )
+      dslContext
+          .update(SUBSTRATA)
+          .set(SUBSTRATA.STRATUM_ID, newStratumId)
+          .where(SUBSTRATA.ID.eq(editedSubstratumId))
+          .execute()
+      dslContext.deleteFrom(STRATA).where(STRATA.ID.eq(editedStratumId)).execute()
+
+      val editedSite =
+          plantingSiteStore.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Plot)
+      val newStratum = editedSite.strata.single { it.id == newStratumId }
+
+      eventPublisher.clear()
+      service.on(
+          PlantingSiteMapEditedEvent(
+              editedSite,
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  desiredModel = editedSite,
+                  existingModel = editedSite,
+                  stratumEdits =
+                      listOf(
+                          StratumEdit.Delete(
+                              existingModel = deletedStratum,
+                              substratumEdits = emptyList(),
+                          ),
+                          StratumEdit.Create(
+                              desiredModel = newStratum,
+                              monitoringPlotEdits = emptyList(),
+                              substratumEdits = emptyList(),
+                          ),
+                      ),
+              ),
+              ReplacementResult(emptySet(), emptySet()),
+          )
+      )
+
+      val plotsAfter = fetchPlotIdsByStratum(observationId)
+      assertEquals(
+          plotsBefore[otherStratumId],
+          plotsAfter[otherStratumId],
+          "Plots in other stratum should not change",
+      )
+      assertEquals(2, plotsAfter[newStratumId]?.size, "Number of plots in new stratum")
+      eventPublisher.assertEventPublished(
+          ObservationPlotsReassignedEvent(
+              observationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `deletes orphaned temporary plots when reassignment is not able to start`() {
+      insertStrataWithSinglePlotSubstratum()
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = roomySubstratumId)
+      insertObservationRequestedSubstratum(substratumId = singlePlotSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = unaffectedSubstratumId)
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
+
+      excludeSinglePlotSubstratum()
+
+      eventPublisher.clear()
+      service.on(mapEditedEvent(roomyStratumId, singlePlotStratumId))
+
+      assertNull(observationsDao.fetchOneById(observationId), "Observation should be deleted")
+      eventPublisher.assertEventPublished(
+          ObservationNotStartedEvent(
+              observationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+      assertEquals(
+          emptySet<MonitoringPlotId>(),
+          fetchTemporaryPlotIds(),
+          "No orphaned temporary plots should remain",
+      )
+    }
+
+    @Test
+    fun `does not publish not-started event when in-progress observation cannot be reassigned`() {
+      insertStrataWithSinglePlotSubstratum()
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = roomySubstratumId)
+      insertObservationRequestedSubstratum(substratumId = singlePlotSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = unaffectedSubstratumId)
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, inserted.plantingSiteHistoryId)
+          .set(OBSERVATIONS.STATE_ID, ObservationState.InProgress)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+
+      excludeSinglePlotSubstratum()
+
+      eventPublisher.clear()
+      service.on(mapEditedEvent(roomyStratumId, singlePlotStratumId))
+
+      assertNull(observationsDao.fetchOneById(observationId), "Observation should be deleted")
+      eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
+    }
+
+    @Test
+    fun `upcoming observation without plots is untouched`() {
+      insertTwoStrata()
+      insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = editedSubstratumId)
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+
+      eventPublisher.clear()
+      service.on(mapEditedEvent(editedStratumId))
+
+      assertTableEquals(observationsBefore, "Observations")
+      assertTableEmpty(OBSERVATION_PLOTS)
+      eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
+    }
+
+    @Test
+    fun `event log renders for observation after temporary plot deleted`() {
+      val eventLogStore = EventLogStore(clock, dslContext, jacksonObjectMapper())
+      val messages = Messages()
+      val transformer =
+          EventLogPayloadTransformer(dslContext, messages, SimpleUserStore(dslContext, messages))
+      eventPublisher.register<PersistentEvent> { eventLogStore.insertEvent(it) }
+
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots()
+      val temporaryPlotId = fetchTemporaryPlotId(observationId, editedStratumId)
+
+      service.on(mapEditedEvent(editedStratumId))
+
+      assertNull(
+          monitoringPlotsDao.fetchOneById(temporaryPlotId),
+          "Old temporary plot should have been deleted",
+      )
+
+      val entries = eventLogStore.fetchByIds<PersistentEvent>(listOf(observationId))
+      assertThat(
+              entries
+                  .map { it.event }
+                  .filterIsInstance<ObservationPlotCreatedEvent>()
+                  .map { it.monitoringPlotId }
+          )
+          .describedAs("Event log should include creation of deleted temporary plot")
+          .contains(temporaryPlotId)
+
+      val payloads = assertDoesNotThrow { transformer.eventsToPayloads(entries) }
+      assertEquals(entries.size, payloads.size, "Number of event log payloads")
+    }
+
+    @Test
     fun `abandons in-progress observations in edited strata`() {
       insertStratum(plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1, width = 2, height = 7)
       insertSubstratum()
@@ -4557,7 +4827,254 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           "Observation states",
       )
     }
+
+    @Test
+    fun `refreshes history IDs of in-progress observation so reassigned plots appear in results`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      val newSiteHistoryId = insertSiteAndPlotHistoriesForMapEdit()
+
+      service.on(mapEditedEvent(editedStratumId))
+
+      assertEquals(
+          newSiteHistoryId,
+          observationsDao.fetchOneById(observationId)!!.plantingSiteHistoryId,
+          "Observation's planting site history ID should be the latest one",
+      )
+
+      val observationPlots = observationPlotsDao.fetchByObservationId(observationId)
+      assertEquals(
+          observationPlots.associate { it.monitoringPlotId to fetchLatestPlotHistoryId(it) },
+          observationPlots.associate { it.monitoringPlotId to it.monitoringPlotHistoryId },
+          "Monitoring plot history IDs should be the latest ones",
+      )
+
+      val results = ObservationResultsStoreV2(dslContext).fetchOneById(observationId)
+      assertSetEquals(
+          observationPlots.map { it.monitoringPlotId!! }.toSet(),
+          results.strata
+              .flatMap { it.substrata }
+              .flatMap { it.monitoringPlots }
+              .map { it.monitoringPlotId }
+              .toSet(),
+          "Plots in observation results",
+      )
+    }
   }
+
+  private lateinit var editedStratumId: StratumId
+  private lateinit var editedSubstratumId: SubstratumId
+  private lateinit var otherStratumId: StratumId
+  private lateinit var otherSubstratumId: SubstratumId
+
+  /**
+   * Inserts two side-by-side strata that are each configured for 1 permanent and 1 temporary plot.
+   */
+  private fun insertTwoStrata() {
+    editedStratumId =
+        insertStratum(width = 4, height = 1, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+    editedSubstratumId = insertSubstratum(width = 4, height = 1)
+    otherStratumId =
+        insertStratum(
+            x = 5,
+            width = 4,
+            height = 1,
+            plantNumPermanentPlots = 1,
+            plantNumTemporaryPlots = 1,
+        )
+    otherSubstratumId = insertSubstratum(x = 5, width = 4, height = 1)
+  }
+
+  private fun insertObservationWithPlots(
+      state: ObservationState = ObservationState.Upcoming
+  ): ObservationId {
+    // Plots can only be assigned to new observations while they're upcoming.
+    val observationId = insertObservation(state = ObservationState.Upcoming)
+    insertObservationRequestedSubstratum(substratumId = editedSubstratumId)
+    insertObservationRequestedSubstratum(substratumId = otherSubstratumId)
+    assertEquals(
+        ObservationService.NewObservationAssignment.Assigned,
+        service.assignPlotsToNewObservation(observationId),
+        "Plots assigned",
+    )
+
+    if (state != ObservationState.Upcoming) {
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, inserted.plantingSiteHistoryId)
+          .set(OBSERVATIONS.STATE_ID, state)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+    }
+
+    return observationId
+  }
+
+  private fun fetchPlotIdsByStratum(
+      observationId: ObservationId
+  ): Map<StratumId, Set<MonitoringPlotId>> {
+    val stratumIdField = OBSERVATION_PLOTS.monitoringPlots.substrata.STRATUM_ID
+    return dslContext
+        .select(stratumIdField, OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+        .from(OBSERVATION_PLOTS)
+        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .fetchGroups(
+            stratumIdField.asNonNullable(),
+            OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable(),
+        )
+        .mapValues { it.value.toSet() }
+  }
+
+  private fun fetchTemporaryPlotId(
+      observationId: ObservationId,
+      stratumId: StratumId,
+  ): MonitoringPlotId =
+      dslContext
+          .select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .and(OBSERVATION_PLOTS.IS_PERMANENT.isFalse)
+          .and(OBSERVATION_PLOTS.monitoringPlots.substrata.STRATUM_ID.eq(stratumId))
+          .fetchSingle(OBSERVATION_PLOTS.MONITORING_PLOT_ID)!!
+
+  /** Returns an event for a map edit that changed the boundaries of some strata. */
+  private fun mapEditedEvent(
+      vararg stratumIds: StratumId,
+      site: ExistingPlantingSiteModel =
+          plantingSiteStore.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Plot),
+  ): PlantingSiteMapEditedEvent {
+    return PlantingSiteMapEditedEvent(
+        site,
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal.ONE,
+            desiredModel = site,
+            existingModel = site,
+            stratumEdits =
+                stratumIds.map { stratumId ->
+                  val stratum = site.strata.single { it.id == stratumId }
+                  StratumEdit.Update(
+                      addedRegion = rectangle(0),
+                      areaHaDifference = BigDecimal.ONE,
+                      desiredModel = stratum,
+                      existingModel = stratum,
+                      monitoringPlotEdits = emptyList(),
+                      substratumEdits = emptyList(),
+                      removedRegion = rectangle(0),
+                  )
+                },
+        ),
+        ReplacementResult(emptySet(), emptySet()),
+    )
+  }
+
+  /**
+   * Simulates the history records a map edit creates: a new site history with copies of the
+   * previous one's stratum and substratum histories, and new histories for every monitoring plot in
+   * the site.
+   *
+   * @return The new site history ID.
+   */
+  private fun insertSiteAndPlotHistoriesForMapEdit(): PlantingSiteHistoryId {
+    val oldSiteHistoryId = inserted.plantingSiteHistoryId
+    val newSiteHistoryId = insertPlantingSiteHistory()
+
+    val newSubstratumHistoryIds =
+        stratumHistoriesDao
+            .fetchByPlantingSiteHistoryId(oldSiteHistoryId)
+            .flatMap { oldStratum ->
+              val newStratum = oldStratum.copy(id = null, plantingSiteHistoryId = newSiteHistoryId)
+              stratumHistoriesDao.insert(newStratum)
+
+              substratumHistoriesDao.fetchByStratumHistoryId(oldStratum.id!!).map { oldSubstratum ->
+                val newSubstratum =
+                    oldSubstratum.copy(id = null, stratumHistoryId = newStratum.id!!)
+                substratumHistoriesDao.insert(newSubstratum)
+                oldSubstratum.substratumId to newSubstratum.id!!
+              }
+            }
+            .toMap()
+
+    monitoringPlotsDao.fetchByPlantingSiteId(inserted.plantingSiteId).forEach { plot ->
+      insertMonitoringPlotHistory(
+          createdBy = user.userId,
+          createdTime = clock.instant(),
+          monitoringPlotId = plot.id!!,
+          plantingSiteHistoryId = newSiteHistoryId,
+          substratumId = plot.substratumId,
+          substratumHistoryId = newSubstratumHistoryIds[plot.substratumId],
+      )
+    }
+
+    return newSiteHistoryId
+  }
+
+  private fun fetchLatestPlotHistoryId(row: ObservationPlotsRow) =
+      dslContext
+          .select(DSL.max(MONITORING_PLOT_HISTORIES.ID))
+          .from(MONITORING_PLOT_HISTORIES)
+          .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(row.monitoringPlotId))
+          .fetchOne()
+          ?.value1()
+
+  private lateinit var roomyStratumId: StratumId
+  private lateinit var roomySubstratumId: SubstratumId
+  private lateinit var singlePlotStratumId: StratumId
+  private lateinit var singlePlotSubstratumId: SubstratumId
+  private lateinit var unaffectedSubstratumId: SubstratumId
+
+  /**
+   * Inserts a site with three strata, each configured for 1 permanent and 1 temporary plot. The
+   * second stratum's requested substratum is a single square that [excludeSinglePlotSubstratum] can
+   * exclude, after which that stratum has no room for plots.
+   */
+  private fun insertStrataWithSinglePlotSubstratum() {
+    plantingSiteId = insertPlantingSite(width = 14, height = 1, gridOrigin = point(1))
+
+    roomyStratumId =
+        insertStratum(width = 4, height = 1, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+    roomySubstratumId = insertSubstratum(width = 4, height = 1)
+
+    singlePlotStratumId =
+        insertStratum(
+            x = 5,
+            width = 4,
+            height = 1,
+            plantNumPermanentPlots = 1,
+            plantNumTemporaryPlots = 1,
+        )
+    singlePlotSubstratumId =
+        insertSubstratum(boundary = rectangle(MONITORING_PLOT_SIZE, x = 5 * MONITORING_PLOT_SIZE))
+    insertSubstratum(x = 6, width = 3, height = 1)
+    insertMonitoringPlot(permanentIndex = 1, x = 6, y = 0)
+
+    insertStratum(
+        x = 10,
+        width = 4,
+        height = 1,
+        plantNumPermanentPlots = 1,
+        plantNumTemporaryPlots = 1,
+    )
+    unaffectedSubstratumId = insertSubstratum(x = 10, width = 4, height = 1)
+  }
+
+  private fun excludeSinglePlotSubstratum() {
+    dslContext
+        .update(PLANTING_SITES)
+        .set(
+            PLANTING_SITES.EXCLUSION,
+            rectangle(width = 10, height = 10, x = 5 * MONITORING_PLOT_SIZE + 10, y = 10),
+        )
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
+        .execute()
+  }
+
+  /** Returns the IDs of all non-ad-hoc monitoring plots without permanent indexes. */
+  private fun fetchTemporaryPlotIds(): Set<MonitoringPlotId> =
+      monitoringPlotsDao
+          .findAll()
+          .filter { it.permanentIndex == null && it.isAdHoc == false }
+          .map { it.id!! }
+          .toSet()
 
   @Nested
   inner class UpdateCompletedPlot {

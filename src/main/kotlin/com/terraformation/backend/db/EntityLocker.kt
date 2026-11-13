@@ -12,6 +12,7 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ObservationModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class EntityLocker(
@@ -39,6 +40,39 @@ class EntityLocker(
               ?: throw ObservationNotFoundException(observationId)
 
       func(model)
+    }
+  }
+
+  /**
+   * Locks an observation's planting site, then the observation, and calls a function with both
+   * locks held. Use this instead of [withLockedObservation] when the function might also lock the
+   * planting site, e.g., by creating monitoring plots. Planting site edits lock the site before
+   * touching observations, so locking the observation first could deadlock.
+   *
+   * Requires the same permission as [withLockedObservation]. Locking the site row doesn't require
+   * permission to update the site; the function is still subject to its own permission checks.
+   */
+  fun <T> withLockedPlantingSiteAndObservation(
+      observationId: ObservationId,
+      func: (ExistingObservationModel) -> T,
+  ): T {
+    requirePermissions { updateObservation(observationId) }
+
+    return dslContext.transactionResult { _ ->
+      dslContext
+          .selectOne()
+          .from(PLANTING_SITES)
+          .where(
+              PLANTING_SITES.ID.eq(
+                  DSL.select(OBSERVATIONS.PLANTING_SITE_ID)
+                      .from(OBSERVATIONS)
+                      .where(OBSERVATIONS.ID.eq(observationId))
+              )
+          )
+          .forUpdate()
+          .execute()
+
+      withLockedObservation(observationId, func)
     }
   }
 
