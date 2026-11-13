@@ -23,6 +23,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.MonitoringPlotIdConverter
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -46,6 +47,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
@@ -111,6 +113,7 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
+import java.time.LocalDate
 import org.geotools.referencing.CRS
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -2192,12 +2195,78 @@ class PlantingSiteStore(
                 .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         )
 
+    val baselineCompletedTimeField =
+        DSL.field(
+            DSL.select(DSL.max(OBSERVATION_PLOTS.COMPLETED_TIME))
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                .and(
+                    OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(
+                        SUBSTRATA.ID
+                    )
+                )
+        )
+    val baselineCompletedDateField =
+        DSL.field(
+            "({0} AT TIME ZONE COALESCE({1}, {2}, 'UTC'))::date",
+            LocalDate::class.java,
+            baselineCompletedTimeField,
+            OBSERVATIONS.plantingSites.TIME_ZONE,
+            OBSERVATIONS.plantingSites.organizations.TIME_ZONE,
+        )
+    val baselineIsFinished =
+        OBSERVATIONS.STATE_ID.`in`(ObservationState.Completed, ObservationState.Abandoned)
+    val latestBaselineSurveyDateField =
+        DSL.`when`(baselineIsFinished, baselineCompletedDateField)
+            .otherwise(OBSERVATIONS.START_DATE)
+    val latestBaselineSurveyField =
+        DSL.multiset(
+                DSL.select(
+                        OBSERVATIONS.ID,
+                        latestBaselineSurveyDateField,
+                        OBSERVATIONS.STATE_ID,
+                    )
+                    .from(OBSERVATIONS)
+                    .where(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey))
+                    .and(
+                        DSL.or(
+                            DSL.and(baselineIsFinished, baselineCompletedTimeField.isNotNull),
+                            DSL.and(
+                                OBSERVATIONS.STATE_ID.`in`(
+                                    ObservationState.Upcoming,
+                                    ObservationState.InProgress,
+                                    ObservationState.Overdue,
+                                ),
+                                DSL.exists(
+                                    DSL.selectOne()
+                                        .from(OBSERVATION_REQUESTED_SUBSTRATA)
+                                        .where(
+                                            OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID.eq(
+                                                OBSERVATIONS.ID
+                                            )
+                                        )
+                                        .and(
+                                            OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(
+                                                SUBSTRATA.ID
+                                            )
+                                        )
+                                ),
+                            ),
+                        )
+                    )
+                    .orderBy(latestBaselineSurveyDateField.desc(), OBSERVATIONS.ID.desc())
+                    .limit(1)
+            )
+            .convertFrom { it.firstOrNull() }
+
     return DSL.multiset(
             DSL.select(
                     SUBSTRATA.AREA_HA,
                     boundaryField,
                     SUBSTRATA.FULL_NAME,
                     SUBSTRATA.ID,
+                    latestBaselineSurveyField,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
                     latestObservationNumPlots,
@@ -2220,11 +2289,15 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record: Record ->
             val latestObservationId = record[latestObservationIdField]
+            val latestBaselineSurvey = record[latestBaselineSurveyField]
             ExistingSubstratumModel(
                 areaHa = record[SUBSTRATA.AREA_HA]!!,
                 boundary = record[boundaryField]!! as MultiPolygon,
                 fullName = record[SUBSTRATA.FULL_NAME]!!,
                 id = record[SUBSTRATA.ID]!!,
+                latestBaselineSurveyDate = latestBaselineSurvey?.get(latestBaselineSurveyDateField),
+                latestBaselineSurveyId = latestBaselineSurvey?.get(OBSERVATIONS.ID),
+                latestBaselineSurveyStatus = latestBaselineSurvey?.get(OBSERVATIONS.STATE_ID),
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = latestObservationId,
                 latestObservationNumPlots =
