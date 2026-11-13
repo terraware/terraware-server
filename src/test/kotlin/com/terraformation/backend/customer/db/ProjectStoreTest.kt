@@ -35,6 +35,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -844,6 +845,18 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventPublished(ProjectDeletionStartedEvent(projectId))
       eventPublisher.assertEventPublished(ProjectDeletedEvent(organizationId, projectId))
+    }
+
+    @Test
+    fun `clears project ID on draft planting sites`() {
+      val projectId = insertProject()
+      val draftPlantingSiteId = insertDraftPlantingSite(projectId = projectId)
+
+      store.delete(projectId)
+
+      val draft = draftPlantingSitesDao.fetchOneById(draftPlantingSiteId)!!
+      assertEquals(organizationId, draft.organizationId, "Organization ID")
+      assertNull(draft.projectId, "Project ID")
     }
   }
 
