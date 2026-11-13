@@ -139,28 +139,24 @@ class ObservationService(
           throw ObservationAlreadyStartedException(observationId)
         }
 
-        if (observationPlotStore.hasPlots(observationId)) {
-          log.error("BUG! Observation has plots but state is still ${observation.state}")
-          throw ObservationAlreadyStartedException(observationId)
-        }
+        // Plots are usually assigned when the observation is scheduled. Observations that were
+        // scheduled without plots get them now.
+        val result =
+            if (observationPlotStore.hasPlots(observationId)) {
+              log.info("Starting observation with previously-assigned plots")
+              PlotAssignmentResult.Assigned(emptyList())
+            } else {
+              assignPlots(observation)
+            }
 
-        when (val result = assignPlots(observation)) {
+        when (result) {
           is PlotAssignmentResult.Unstartable -> abandonUnstartableObservation(observation)
           is PlotAssignmentResult.Assigned -> {
             val startedObservation = observationStore.recordObservationStart(observationId)
 
             eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
 
-            if (result.shortfalls.isNotEmpty()) {
-              eventPublisher.publishEvent(
-                  ObservationPlotsUnderallocatedEvent(
-                      observationId,
-                      observation.observationType,
-                      observation.plantingSiteId,
-                      result.shortfalls,
-                  )
-              )
-            }
+            publishEventIfUnderallocated(observation, result)
           }
         }
       }
@@ -179,7 +175,7 @@ class ObservationService(
     val observationId = observation.id
 
     if (observation.requestedSubstratumIds.isEmpty()) {
-      log.info("Unable to start observation because none of its requested substrata exist")
+      log.info("Unable to assign plots because none of the requested substrata exist")
       return PlotAssignmentResult.Unstartable
     }
 
@@ -219,11 +215,14 @@ class ObservationService(
     val gridOrigin =
         plantingSite.gridOrigin ?: throw IllegalStateException("Planting site has no grid origin")
 
-    log.info("Starting observation")
+    log.info("Assigning plots")
 
     try {
       val observedPermanentPlotIds =
-          observationPlotStore.fetchObservedPermanentPlotIds(observation.plantingSiteId)
+          observationPlotStore.fetchObservedPermanentPlotIds(
+              observation.plantingSiteId,
+              excludeObservationId = observationId,
+          )
       val shortfalls = mutableListOf<ObservationPlotsUnderallocatedEvent.Shortfall>()
 
       strataToObserve.forEach { stratum ->
@@ -284,7 +283,7 @@ class ObservationService(
 
       return PlotAssignmentResult.Assigned(shortfalls)
     } catch (e: StratumFullException) {
-      log.info("Unable to start observation $observationId", e)
+      log.info("Unable to assign plots to observation $observationId", e)
       return PlotAssignmentResult.Unstartable
     }
   }
@@ -1090,6 +1089,22 @@ class ObservationService(
   fun on(event: MonitoringSpeciesTotalsEditedEvent) {
     RateLimitedMonitoringSpeciesTotalsEditedEvent.of(event)?.let {
       rateLimitedEventPublisher.publishEvent(it)
+    }
+  }
+
+  private fun publishEventIfUnderallocated(
+      observation: ExistingObservationModel,
+      result: PlotAssignmentResult.Assigned,
+  ) {
+    if (result.shortfalls.isNotEmpty()) {
+      eventPublisher.publishEvent(
+          ObservationPlotsUnderallocatedEvent(
+              observation.id,
+              observation.observationType,
+              observation.plantingSiteId,
+              result.shortfalls,
+          )
+      )
     }
   }
 

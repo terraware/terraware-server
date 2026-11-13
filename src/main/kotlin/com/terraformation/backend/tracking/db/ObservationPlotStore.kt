@@ -396,7 +396,10 @@ class ObservationPlotStore(
     }
   }
 
-  fun fetchObservedPermanentPlotIds(plantingSiteId: PlantingSiteId): Set<MonitoringPlotId> {
+  fun fetchObservedPermanentPlotIds(
+      plantingSiteId: PlantingSiteId,
+      excludeObservationId: ObservationId? = null,
+  ): Set<MonitoringPlotId> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
@@ -404,8 +407,15 @@ class ObservationPlotStore(
         .from(OBSERVATION_PLOTS)
         .join(MONITORING_PLOTS)
         .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+        .join(OBSERVATIONS)
+        .on(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
         .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
         .and(OBSERVATION_PLOTS.IS_PERMANENT)
+        .and(OBSERVATIONS.STATE_ID.ne(ObservationState.Upcoming))
+        .and(
+            excludeObservationId?.let { OBSERVATION_PLOTS.OBSERVATION_ID.ne(it) }
+                ?: DSL.noCondition()
+        )
         .fetchSet(OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable())
   }
 
