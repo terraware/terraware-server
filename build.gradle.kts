@@ -220,6 +220,12 @@ testing {
             ) {
               environment("TESTCONTAINERS_REUSE_ENABLE", "true")
             }
+
+            // CI hosts' vCPUs are hyperthreads, so one test thread per vCPU oversubscribes the
+            // physical cores.
+            if (providers.environmentVariable("CI").isPresent) {
+              systemProperty("junit.jupiter.execution.parallel.config.dynamic.factor", "0.5")
+            }
           }
         }
       }
