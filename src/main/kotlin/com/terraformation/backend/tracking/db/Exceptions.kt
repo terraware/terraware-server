@@ -91,6 +91,9 @@ class ObservationMergeNotAllowedException(message: String) : MismatchedStateExce
 class ObservationNotFoundException(val observationId: ObservationId) :
     EntityNotFoundException("Observation $observationId not found")
 
+class ObservationNotStartedException(val observationId: ObservationId) :
+    MismatchedStateException("Observation $observationId has not started yet")
+
 class ObservationPlotNotFoundException(
     val observationId: ObservationId,
     val plotId: MonitoringPlotId,
