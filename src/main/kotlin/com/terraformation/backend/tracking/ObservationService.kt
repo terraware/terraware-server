@@ -202,21 +202,17 @@ class ObservationService(
               stratum.substrata.any { it.id in observation.requestedSubstratumIds }
             }
             .filter { stratum ->
-              if (
-                  observation.observationType == ObservationType.BaselineSurvey &&
-                      stratum.baselinePlotCounts.numTemporaryPlots == 0
-              ) {
-                log.info("Skipping stratum ${stratum.id} because its baseline plot count is zero")
+              val plotCounts = stratum.plotCounts(observation.observationType)
+              if (plotCounts.numPermanentPlots + plotCounts.numTemporaryPlots == 0) {
+                log.info("Skipping stratum ${stratum.id} because its plot count is zero")
                 false
               } else {
                 true
               }
             }
 
-    if (
-        observation.observationType == ObservationType.BaselineSurvey && observableStrata.isEmpty()
-    ) {
-      log.info("Unable to start baseline observation because no plots are configured")
+    if (observableStrata.isEmpty()) {
+      log.info("Unable to assign plots because no plots are configured")
       return PlotAssignmentResult.Unstartable
     }
 
@@ -1365,7 +1361,23 @@ class ObservationService(
 
       observationPlotStore.removeUnobservedPlots(observationId, strata)
 
-      when (val result = assignPlots(observation, strata.allocationStratumIds)) {
+      val assignmentResult = assignPlots(observation, strata.allocationStratumIds)
+
+      // Allocation only covers the changed strata, so it can succeed without assigning anything,
+      // e.g., if a changed stratum's plot count is now zero. If that removed the observation's last
+      // plots, it can no longer be conducted.
+      val result =
+          if (
+              assignmentResult is PlotAssignmentResult.Assigned &&
+                  !observationPlotStore.hasPlots(observationId)
+          ) {
+            log.info("Reassignment left the observation without any plots")
+            PlotAssignmentResult.Unstartable
+          } else {
+            assignmentResult
+          }
+
+      when (result) {
         is PlotAssignmentResult.Unstartable ->
             if (keepPlotsIfUnstartable) {
               throw ReassignmentRolledBackException()
