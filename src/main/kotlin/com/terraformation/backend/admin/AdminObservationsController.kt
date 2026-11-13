@@ -1,6 +1,7 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -26,6 +27,7 @@ class AdminObservationsController(
     private val dslContext: DSLContext,
     private val observationService: ObservationService,
     private val observationPlotStore: ObservationPlotStore,
+    private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
 
@@ -110,6 +112,21 @@ class AdminObservationsController(
       log.error("Failed to merge observation $sourceObservationId into $targetObservationId", e)
       redirectAttributes.failureMessage =
           "Failed to merge observation $sourceObservationId into $targetObservationId: $e"
+    }
+
+    return redirectToObservationsHome()
+  }
+
+  @PostMapping("/assignPlotsToUpcomingObservations")
+  fun adminAssignPlotsToUpcomingObservations(redirectAttributes: RedirectAttributes): String {
+    try {
+      val result = systemUser.run { observationService.assignPlotsToUpcomingObservations() }
+      redirectAttributes.successMessage =
+          "Assigned plots to ${result.assigned} observations; skipped ${result.skipped} " +
+              "that had started or already had plots; failed: ${result.failed}"
+    } catch (e: Exception) {
+      log.error("Failed to assign plots to upcoming observations", e)
+      redirectAttributes.failureMessage = "Failed to assign plots to upcoming observations: $e"
     }
 
     return redirectToObservationsHome()

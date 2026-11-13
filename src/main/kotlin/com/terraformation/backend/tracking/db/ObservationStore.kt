@@ -190,6 +190,24 @@ class ObservationStore(
     }
   }
 
+  /**
+   * Returns the IDs of upcoming, non-ad-hoc observations that have no assigned plots, in ID order.
+   */
+  fun fetchUpcomingObservationIdsWithoutPlots(): List<ObservationId> {
+    return with(OBSERVATIONS) {
+      dslContext
+          .select(ID.asNonNullable())
+          .from(OBSERVATIONS)
+          .where(STATE_ID.eq(ObservationState.Upcoming))
+          .and(IS_AD_HOC.eq(false))
+          .andNotExists(
+              DSL.selectOne().from(OBSERVATION_PLOTS).where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(ID))
+          )
+          .orderBy(ID)
+          .fetch { it.value1() }
+    }
+  }
+
   fun fetchStartableObservations(
       plantingSiteId: PlantingSiteId? = null
   ): List<ExistingObservationModel> {

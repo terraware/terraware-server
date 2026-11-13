@@ -289,6 +289,87 @@ class ObservationService(
     }
   }
 
+  enum class NewObservationAssignment {
+    Assigned,
+    Failed,
+    Skipped,
+  }
+
+  /**
+   * Assigns plots to a newly-created observation that was inserted without going through
+   * [scheduleObservation]. If plots can't be assigned, leaves the observation without plots; they
+   * will be assigned (or the observation abandoned) when it starts.
+   *
+   * If the observation has already started or been given plots, for example because the scheduler
+   * started it after it was created, it is skipped. This is checked with the observation locked, so
+   * it's safe for callers that looked up the observation ID without holding the lock.
+   *
+   * The caller needs permission to create observations on the planting site. Allocation itself runs
+   * as the system user, since it touches the planting site's plots in ways that require
+   * organization-level permissions a super admin might not have.
+   */
+  fun assignPlotsToNewObservation(observationId: ObservationId): NewObservationAssignment {
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    requirePermissions { createObservation(plantingSiteId) }
+
+    return log.withMDC("observationId" to observationId) {
+      try {
+        systemUser.run {
+          entityLocker.withLockedObservation(observationId) { observation ->
+            if (
+                observation.state != ObservationState.Upcoming ||
+                    observationPlotStore.hasPlots(observationId)
+            ) {
+              log.info("Observation already started or has plots; not assigning plots")
+              return@withLockedObservation NewObservationAssignment.Skipped
+            }
+
+            when (val result = assignPlots(observation)) {
+              is PlotAssignmentResult.Unstartable ->
+                  // Roll back any plots that were created before allocation failed.
+                  throw ObservationPlotsUnavailableException(observation.plantingSiteId)
+              is PlotAssignmentResult.Assigned -> publishEventIfUnderallocated(observation, result)
+            }
+
+            NewObservationAssignment.Assigned
+          }
+        }
+      } catch (e: ObservationPlotsUnavailableException) {
+        log.info("No room to assign plots to new observation; leaving it without plots")
+        NewObservationAssignment.Failed
+      } catch (e: Exception) {
+        log.error("Unable to assign plots to new observation; leaving it without plots", e)
+        NewObservationAssignment.Failed
+      }
+    }
+  }
+
+  data class BackfillResult(
+      val assigned: Int,
+      val skipped: Int,
+      val failed: List<ObservationId>,
+  )
+
+  /**
+   * Assigns plots to upcoming observations that the current user can manage. Skips any that have
+   * started or gained plots since their IDs were fetched.
+   */
+  fun assignPlotsToUpcomingObservations(): BackfillResult {
+    val outcomes =
+        observationStore
+            .fetchUpcomingObservationIdsWithoutPlots()
+            .filter { currentUser().canManageObservation(it) }
+            .associateWith { assignPlotsToNewObservation(it) }
+
+    return BackfillResult(
+        assigned = outcomes.values.count { it == NewObservationAssignment.Assigned },
+        skipped = outcomes.values.count { it == NewObservationAssignment.Skipped },
+        failed = outcomes.filterValues { it == NewObservationAssignment.Failed }.keys.toList(),
+    )
+  }
+
   fun readMediaFile(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,

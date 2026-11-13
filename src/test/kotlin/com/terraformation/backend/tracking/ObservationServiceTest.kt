@@ -2099,6 +2099,189 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class AssignPlotsToNewObservation {
+    @Test
+    fun `assigns plots for super admin who is not an organization member`() {
+      val boundary = rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
+      insertStratum(boundary = boundary, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      insertSubstratum(boundary = boundary)
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum()
+
+      deleteOrganizationUser()
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
+
+      assertEquals(
+          mapOf(true to 1, false to 1),
+          observationPlotsDao.findAll().groupingBy { it.isPermanent }.eachCount(),
+          "Number of plots by isPermanent",
+      )
+      assertTableEquals(observationsBefore, "Observations should not be modified")
+    }
+
+    @Test
+    fun `returns false and leaves no plots if a stratum is full`() {
+      plantingSiteId =
+          insertPlantingSite(
+              width = 9,
+              height = 1,
+              gridOrigin = point(1),
+              // Blocks the only square in the second stratum's requested substratum.
+              exclusion =
+                  rectangle(width = 10, height = 10, x = 5 * MONITORING_PLOT_SIZE + 10, y = 10),
+          )
+
+      // First stratum has room, so plots get created there before allocation fails.
+      insertStratum(width = 4, height = 1, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      val roomySubstratumId = insertSubstratum(width = 4, height = 1)
+
+      // Second stratum has no room in its requested substratum.
+      insertStratum(
+          x = 5,
+          width = 4,
+          height = 1,
+          plantNumPermanentPlots = 1,
+          plantNumTemporaryPlots = 1,
+      )
+      val fullSubstratumId =
+          insertSubstratum(boundary = rectangle(MONITORING_PLOT_SIZE, x = 5 * MONITORING_PLOT_SIZE))
+      insertSubstratum(x = 6, width = 3, height = 1)
+      insertMonitoringPlot(permanentIndex = 1, x = 6, y = 0)
+
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = roomySubstratumId)
+      insertObservationRequestedSubstratum(substratumId = fullSubstratumId)
+
+      val monitoringPlotsBefore = dslContext.fetch(MONITORING_PLOTS)
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+
+      assertEquals(
+          ObservationService.NewObservationAssignment.Failed,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
+
+      assertTableEmpty(OBSERVATION_PLOTS)
+      assertTableEquals(
+          monitoringPlotsBefore,
+          "Monitoring plots created during allocation should be rolled back",
+      )
+      assertTableEquals(observationsBefore, "Observations should not be modified")
+      eventPublisher.assertEventNotPublished<ObservationPlotsUnderallocatedEvent>()
+    }
+  }
+
+  @Nested
+  inner class AssignPlotsToUpcomingObservations {
+    @BeforeEach
+    fun setUp() {
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+    }
+
+    @Test
+    fun `assigns plots to upcoming observations without plots`() {
+      val boundary = rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
+      insertStratum(boundary = boundary, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      insertSubstratum(boundary = boundary)
+      insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum()
+
+      val result = service.assignPlotsToUpcomingObservations()
+
+      assertEquals(
+          ObservationService.BackfillResult(assigned = 1, skipped = 0, failed = emptyList()),
+          result,
+      )
+      assertEquals(
+          mapOf(true to 1, false to 1),
+          observationPlotsDao.findAll().groupingBy { it.isPermanent }.eachCount(),
+          "Number of plots by isPermanent",
+      )
+    }
+
+    @Test
+    fun `reports observations that could not be assigned`() {
+      val boundary = rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
+      insertStratum(boundary = boundary, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      val okSubstratumId = insertSubstratum(boundary = boundary)
+      val okObservationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = okSubstratumId)
+
+      // Second site whose only stratum has no room for plots.
+      val fullSiteId =
+          insertPlantingSite(
+              width = 1,
+              height = 1,
+              gridOrigin = point(1),
+              exclusion = rectangle(width = 10, height = 10, x = 10, y = 10),
+          )
+      insertStratum(width = 1, height = 1, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      val fullSubstratumId = insertSubstratum(width = 1, height = 1)
+      val failedObservationId =
+          insertObservation(plantingSiteId = fullSiteId, state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = fullSubstratumId)
+
+      val result = service.assignPlotsToUpcomingObservations()
+
+      assertEquals(
+          ObservationService.BackfillResult(
+              assigned = 1,
+              skipped = 0,
+              failed = listOf(failedObservationId),
+          ),
+          result,
+      )
+      assertEquals(
+          mapOf(okObservationId to 2),
+          observationPlotsDao.findAll().groupingBy { it.observationId }.eachCount(),
+          "Number of plots per observation",
+      )
+    }
+
+    @Test
+    fun `skips observations that gained plots or started after their IDs were fetched`() {
+      val boundary = rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
+      insertStratum(boundary = boundary, plantNumPermanentPlots = 1, plantNumTemporaryPlots = 1)
+      insertSubstratum(boundary = boundary)
+      insertMonitoringPlot(permanentIndex = 1)
+
+      val gainedPlotsObservationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum()
+      insertObservationPlot(isPermanent = true)
+
+      val startedObservationId = insertObservation(state = ObservationState.InProgress)
+      insertObservationRequestedSubstratum()
+
+      val unassignedObservationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum()
+
+      // Simulate the IDs having been fetched before the first two observations changed.
+      every { observationStore.fetchUpcomingObservationIdsWithoutPlots() } returns
+          listOf(gainedPlotsObservationId, startedObservationId, unassignedObservationId)
+
+      val result = service.assignPlotsToUpcomingObservations()
+
+      assertEquals(
+          ObservationService.BackfillResult(assigned = 1, skipped = 2, failed = emptyList()),
+          result,
+      )
+      assertEquals(
+          mapOf(gainedPlotsObservationId to 1, unassignedObservationId to 2),
+          observationPlotsDao.findAll().groupingBy { it.observationId }.eachCount(),
+          "Number of plots per observation",
+      )
+    }
+  }
+
+  @Nested
   inner class RescheduleObservation {
     private lateinit var observationId: ObservationId
 
