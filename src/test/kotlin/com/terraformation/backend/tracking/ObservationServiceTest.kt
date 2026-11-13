@@ -5084,6 +5084,67 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
       eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
     }
+
+    @Test
+    fun `keeps existing plots if setting count to zero would leave observation without plots`() {
+      editedStratumId = insertStratum(width = 4, height = 1, baselineNumTemporaryPlots = 1)
+      editedSubstratumId = insertSubstratum(width = 4, height = 1)
+      otherStratumId = insertStratum(x = 5, width = 4, height = 1, baselineNumTemporaryPlots = 1)
+      otherSubstratumId = insertSubstratum(x = 5, width = 4, height = 1)
+
+      val observationId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum(substratumId = editedSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = otherSubstratumId)
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, inserted.plantingSiteHistoryId)
+          .set(OBSERVATIONS.STATE_ID, ObservationState.InProgress)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+
+      // Simulate the other stratum having been unable to receive plots, e.g., because its count
+      // was raised after its area was excluded.
+      dslContext
+          .deleteFrom(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .and(
+              OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(
+                  fetchPlotIdsByStratum(observationId)[otherStratumId]!!
+              )
+          )
+          .execute()
+
+      dslContext
+          .update(STRATA)
+          .set(STRATA.BASELINE_NUM_TEMPORARY_PLOTS, 0)
+          .where(STRATA.ID.eq(editedStratumId))
+          .execute()
+
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+      val observationPlotsBefore = dslContext.fetch(OBSERVATION_PLOTS)
+
+      eventPublisher.clear()
+      service.on(
+          StratumPlotCountsUpdatedEvent(
+              inserted.plantingSiteId,
+              editedStratumId,
+              setOf(ObservationType.BaselineSurvey),
+          )
+      )
+
+      assertTableEquals(observationsBefore, "Observations")
+      assertTableEquals(observationPlotsBefore, "Observation plots")
+      eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
+    }
   }
 
   private lateinit var editedStratumId: StratumId
