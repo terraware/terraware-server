@@ -959,7 +959,10 @@ class ObservationService(
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    entityLocker.withLockedObservation(observationId) { observation ->
+    // Completing a plot locks the planting site to update its totals. Lock it before the
+    // observation so the lock order matches plot reassignment and replacement; otherwise a plot
+    // completion and a replacement in the same observation could deadlock.
+    entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
       if (!observation.isAdHoc && observation.state == ObservationState.Upcoming) {
         throw ObservationNotStartedException(observationId)
       }
