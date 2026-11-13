@@ -223,6 +223,36 @@ class ObservationStarted(
     get() = EmailNotificationCategory.PlantingAndObservations
 }
 
+class ObservationPlotsReassigned(
+    config: TerrawareServerConfig,
+    val observationType: ObservationType,
+    val observationUrl: String,
+    val plantingSiteName: String,
+    val startDate: LocalDate,
+    /** If false, the observation has already started, so the email uses different wording. */
+    val isUpcoming: Boolean,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/plotsReassigned"
+
+  val stringsPrefix: String
+    get() =
+        observationStringsPrefix(
+            if (isUpcoming) {
+              "notification.observation.plotsReassigned"
+            } else {
+              "notification.observation.plotsReassigned.inProgress"
+            },
+            observationType,
+        )
+
+  override val emailNotificationCategory: EmailNotificationCategory
+    get() = EmailNotificationCategory.PlantingAndObservations
+
+  val startDateString: String
+    get() = dateString(startDate)
+}
+
 class ObservationPlotsUnderallocated(
     config: TerrawareServerConfig,
     val observationType: ObservationType,

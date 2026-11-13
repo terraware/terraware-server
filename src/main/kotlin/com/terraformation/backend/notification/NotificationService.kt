@@ -55,6 +55,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.documentproducer.db.DocumentStore
@@ -83,6 +84,7 @@ import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.email.model.ObservationNotStarted
 import com.terraformation.backend.email.model.ObservationPlotReplaced
+import com.terraformation.backend.email.model.ObservationPlotsReassigned
 import com.terraformation.backend.email.model.ObservationPlotsUnderallocated
 import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
@@ -125,6 +127,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotsReassignedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotsUnderallocatedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -430,6 +433,33 @@ class NotificationService(
         emailContent,
         roles = setOf(Role.Owner, Role.Admin),
     )
+  }
+
+  @EventListener
+  fun on(event: ObservationPlotsReassignedEvent) {
+    log.info("Creating notifications for observation ${event.observationId} plots reassigned.")
+
+    systemUser.run {
+      val plantingSite =
+          plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+      val observation = observationStore.fetchObservationById(event.observationId)
+      val organizationId = plantingSite.organizationId
+
+      sendToOrganization(
+          organizationId,
+          emailContent =
+              ObservationPlotsReassigned(
+                  config,
+                  event.observationType,
+                  webAppUrls
+                      .fullObservation(organizationId, event.plantingSiteId, event.observationId)
+                      .toString(),
+                  plantingSite.name,
+                  observation.startDate,
+                  isUpcoming = observation.state == ObservationState.Upcoming,
+              ),
+      )
+    }
   }
 
   @EventListener
