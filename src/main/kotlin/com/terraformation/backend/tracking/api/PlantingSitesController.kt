@@ -530,11 +530,16 @@ data class SubstratumResponsePayload(
     val fullName: String,
     val id: SubstratumId,
     @Schema(
-        description = "Completion date in the site's time zone if completed; otherwise start date."
+        description =
+            "Latest completed plot date in the site's time zone for Completed/Abandoned; start date otherwise."
     )
     val latestBaselineSurveyDate: LocalDate?,
-    @Schema(description = "Latest requested non-abandoned Baseline Survey by start date, then ID.")
+    @Schema(description = "Latest qualifying Baseline Survey by substratum-specific date, then ID.")
     val latestBaselineSurveyId: ObservationId?,
+    @Schema(
+        description =
+            "Completed/Abandoned require a completed plot here; other states require this substratum to be requested."
+    )
     val latestBaselineSurveyStatus: ObservationState?,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,

@@ -35,260 +35,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class FetchSiteById {
     @ParameterizedTest
-    @EnumSource(ObservationType::class, names = ["Monitoring", "BiomassMeasurements"])
-    fun `non-baseline observations do not populate baseline fields`(type: ObservationType) {
-      val plantingSiteId = insertPlantingSite()
-      insertStratum()
-      insertSubstratum()
-      insertObservation(observationType = type, completedTime = Instant.ofEpochSecond(1000))
-      insertObservationRequestedSubstratum()
-
-      val actual =
-          store
-              .fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
-              .strata
-              .single()
-              .substrata
-              .single()
-
-      assertEquals(
-          Triple(null, null, null),
-          Triple(
-              actual.latestBaselineSurveyDate,
-              actual.latestBaselineSurveyId,
-              actual.latestBaselineSurveyStatus,
-          ),
-          "Latest Baseline Survey date, ID and status",
-      )
-    }
-
-    @ParameterizedTest
     @EnumSource(ObservationState::class, names = ["Upcoming", "InProgress", "Overdue"])
-    fun `unfinished baseline uses start date`(state: ObservationState) {
-      val plantingSiteId = insertPlantingSite()
-      insertStratum()
-      insertSubstratum()
-      val startDate = LocalDate.of(2023, 1, 10)
-      val observationId =
-          insertObservation(
-              observationType = ObservationType.BaselineSurvey,
-              state = state,
-              startDate = startDate,
-          )
-      insertObservationRequestedSubstratum()
-
-      val actual =
-          store
-              .fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
-              .strata
-              .single()
-              .substrata
-              .single()
-
-      assertEquals(
-          Triple(startDate, observationId, state),
-          Triple(
-              actual.latestBaselineSurveyDate,
-              actual.latestBaselineSurveyId,
-              actual.latestBaselineSurveyStatus,
-          ),
-          "Latest Baseline Survey date, ID and status",
-      )
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        "Pacific/Honolulu, Asia/Tokyo, 2023-01-14",
-        "null, Pacific/Honolulu, 2023-01-14",
-        "null, null, 2023-01-15",
-        nullValues = ["null"],
-    )
-    fun `completed baseline uses completion date in effective site time zone`(
-        siteZone: String?,
-        orgZone: String?,
-        expectedDate: LocalDate,
-    ) {
-      insertOrganization(timeZone = orgZone?.let { ZoneId.of(it) })
-      val plantingSiteId = insertPlantingSite(timeZone = siteZone?.let { ZoneId.of(it) })
-      insertStratum()
-      insertSubstratum()
-      val observationId =
-          insertObservation(
-              observationType = ObservationType.BaselineSurvey,
-              completedTime = Instant.parse("2023-01-15T05:00:00Z"),
-          )
-      insertObservationRequestedSubstratum()
-
-      val actual =
-          store
-              .fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
-              .strata
-              .single()
-              .substrata
-              .single()
-
-      assertEquals(
-          Triple(expectedDate, observationId, ObservationState.Completed),
-          Triple(
-              actual.latestBaselineSurveyDate,
-              actual.latestBaselineSurveyId,
-              actual.latestBaselineSurveyStatus,
-          ),
-          "Latest Baseline Survey date, ID and status",
-      )
-    }
-
-    @Test
-    fun `abandoned baseline is ignored`() {
-      val plantingSiteId = insertPlantingSite()
-      insertStratum()
-      insertSubstratum()
-      insertObservation(
-          observationType = ObservationType.BaselineSurvey,
-          state = ObservationState.Abandoned,
-          completedTime = Instant.EPOCH,
-      )
-      insertObservationRequestedSubstratum()
-
-      val actual =
-          store
-              .fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
-              .strata
-              .single()
-              .substrata
-              .single()
-
-      assertEquals(
-          Triple(null, null, null),
-          Triple(
-              actual.latestBaselineSurveyDate,
-              actual.latestBaselineSurveyId,
-              actual.latestBaselineSurveyStatus,
-          ),
-          "Latest Baseline Survey date, ID and status",
-      )
-    }
-
-    @Test
-    fun `baseline selected by latest start date then highest ID ignoring abandoned observations`() {
-      val plantingSiteId = insertPlantingSite()
-      insertStratum()
-      insertSubstratum()
-      val latestDate = LocalDate.of(2023, 1, 20)
-      insertObservation(
-          observationType = ObservationType.BaselineSurvey,
-          startDate = latestDate,
-          completedTime = Instant.parse("2023-01-30T00:00:00Z"),
-      )
-      insertObservationRequestedSubstratum()
-      val expectedId =
-          insertObservation(
-              observationType = ObservationType.BaselineSurvey,
-              startDate = latestDate,
-              state = ObservationState.Upcoming,
-          )
-      insertObservationRequestedSubstratum()
-      insertObservation(
-          observationType = ObservationType.BaselineSurvey,
-          startDate = latestDate.minusDays(1),
-          completedTime = Instant.parse("2023-01-31T00:00:00Z"),
-      )
-      insertObservationRequestedSubstratum()
-      insertObservation(
-          observationType = ObservationType.BaselineSurvey,
-          startDate = latestDate.plusDays(1),
-          state = ObservationState.Abandoned,
-          completedTime = Instant.EPOCH,
-      )
-      insertObservationRequestedSubstratum()
-
-      val actual =
-          store
-              .fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
-              .strata
-              .single()
-              .substrata
-              .single()
-
-      assertEquals(
-          Triple(latestDate, expectedId, ObservationState.Upcoming),
-          Triple(
-              actual.latestBaselineSurveyDate,
-              actual.latestBaselineSurveyId,
-              actual.latestBaselineSurveyStatus,
-          ),
-          "Latest Baseline Survey date, ID and status",
-      )
-    }
-
-    @Test
-    fun `baseline only applies to requested substrata`() {
-      val plantingSiteId = insertPlantingSite()
-      insertStratum()
-      val requestedId = insertSubstratum()
-      val unrequestedId = insertSubstratum()
-      val observationId =
-          insertObservation(
-              observationType = ObservationType.BaselineSurvey,
-              state = ObservationState.Upcoming,
-          )
-      insertObservationRequestedSubstratum(substratumId = requestedId)
-
-      val actual =
-          store
-              .fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
-              .strata
-              .single()
-              .substrata
-              .associateBy { it.id }
-
-      assertEquals(observationId, actual[requestedId]?.latestBaselineSurveyId)
-      val unrequested = actual[unrequestedId]!!
-      assertEquals(
-          Triple(null, null, null),
-          Triple(
-              unrequested.latestBaselineSurveyDate,
-              unrequested.latestBaselineSurveyId,
-              unrequested.latestBaselineSurveyStatus,
-          ),
-          "Unrequested substratum's latest Baseline Survey date, ID and status",
-      )
-    }
-
-    @ParameterizedTest
-    @EnumSource(PlantingSiteDepth::class)
-    fun `baseline fields honor fetch depth`(depth: PlantingSiteDepth) {
-      val plantingSiteId = insertPlantingSite()
-      insertStratum()
-      insertSubstratum()
-      val observationId =
-          insertObservation(
-              observationType = ObservationType.BaselineSurvey,
-              state = ObservationState.Upcoming,
-          )
-      insertObservationRequestedSubstratum()
-
-      val actual = store.fetchSiteById(plantingSiteId, depth)
-
-      when (depth) {
-        PlantingSiteDepth.Site ->
-            assertEquals(emptyList<ExistingStratumModel>(), actual.strata, "Strata")
-        PlantingSiteDepth.Stratum ->
-            assertEquals(
-                emptyList<SubstratumModel<*>>(),
-                actual.strata.single().substrata,
-                "Substrata",
-            )
-        else ->
-            assertEquals(
-                observationId,
-                actual.strata.single().substrata.single().latestBaselineSurveyId,
-            )
-      }
-    }
-
-    @Test
-    fun `honors depth`() {
+    fun `honors depth`(baselineState: ObservationState) {
       val plantingSiteId =
           insertPlantingSite(
               boundary = multiPolygon(3.0),
@@ -317,6 +65,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               isAvailable = false,
           )
       val exteriorPlotId = insertMonitoringPlot(boundary = polygon(0.2), substratumId = null)
+      val baselineId =
+          insertObservation(observationType = ObservationType.BaselineSurvey, state = baselineState)
+      insertObservationRequestedSubstratum(substratumId = substratumId)
 
       val expectedWithSite =
           ExistingPlantingSiteModel(
@@ -360,6 +111,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = substratumId,
+                                      latestBaselineSurveyDate = LocalDate.of(2023, 1, 1),
+                                      latestBaselineSurveyId = baselineId,
+                                      latestBaselineSurveyStatus = baselineState,
                                       fullName = "S1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
@@ -434,6 +188,31 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val allActual =
           PlantingSiteDepth.entries.associateWith { store.fetchSiteById(plantingSiteId, it) }
 
+      allExpected.forEach { (depth, expected) ->
+        assertEquals(
+            expected.strata
+                .flatMap { it.substrata }
+                .map {
+                  Triple(
+                      it.latestBaselineSurveyDate,
+                      it.latestBaselineSurveyId,
+                      it.latestBaselineSurveyStatus,
+                  )
+                },
+            allActual[depth]!!
+                .strata
+                .flatMap { it.substrata }
+                .map {
+                  Triple(
+                      it.latestBaselineSurveyDate,
+                      it.latestBaselineSurveyId,
+                      it.latestBaselineSurveyStatus,
+                  )
+                },
+            "Latest Baseline Survey fields at depth $depth",
+        )
+      }
+
       if (!allExpected.all { (depth, expected) -> allActual[depth]!!.equals(expected, 0.00001) }) {
         assertEquals(allExpected, allActual)
       }
@@ -462,6 +241,16 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       insertSimplifiedSubstratum(boundary = simplifiedSubstratumBoundary)
 
       val site = store.fetchSiteById(siteId, PlantingSiteDepth.Substratum, true)
+      val substratum = site.strata.single().substrata.single()
+      assertEquals(
+          Triple(null, null, null),
+          Triple(
+              substratum.latestBaselineSurveyDate,
+              substratum.latestBaselineSurveyId,
+              substratum.latestBaselineSurveyStatus,
+          ),
+          "Latest Baseline Survey fields without observations",
+      )
       assertGeometryEquals(simplifiedSiteBoundary, site.boundary, "Site Boundary")
       assertGeometryEquals(simplifiedExclusion, site.exclusion, "Site Exclusion")
       assertGeometryEquals(simplifiedStratumBoundary, site.strata[0].boundary, "Stratum Boundary")
@@ -494,8 +283,19 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       )
     }
 
-    @Test
-    fun `includes latest observation details`() {
+    @ParameterizedTest
+    @CsvSource(
+        "Pacific/Honolulu, Asia/Tokyo, 17",
+        "null, Pacific/Honolulu, 17",
+        "null, null, 18",
+        nullValues = ["null"],
+    )
+    fun `includes latest observation details`(
+        timeZone: ZoneId?,
+        orgTimeZone: ZoneId?,
+        completedDay: Int,
+    ) {
+      val organizationId = insertOrganization(timeZone = orgTimeZone)
       val plantingSiteId =
           insertPlantingSite(
               boundary = multiPolygon(3.0),
@@ -592,6 +392,84 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           statusId = ObservationPlotStatus.Claimed,
       )
 
+      insertObservation(
+          observationType = ObservationType.BiomassMeasurements,
+          completedTime = Instant.parse("2023-01-31T00:00:00Z"),
+      )
+      insertObservationRequestedSubstratum(substratumId = substratumId12)
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId121,
+          completedBy = user.userId,
+          completedTime = Instant.parse("2023-01-31T00:00:00Z"),
+      )
+
+      val completedBaselineId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              completedTime = Instant.parse("2023-01-31T00:00:00Z"),
+          )
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId111,
+          completedBy = user.userId,
+          completedTime = Instant.parse("2023-01-15T05:00:00Z"),
+      )
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId112,
+          completedBy = user.userId,
+          completedTime = Instant.parse("2023-01-16T05:00:00Z"),
+      )
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId121,
+          statusId = ObservationPlotStatus.Claimed,
+      )
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId2,
+          completedBy = user.userId,
+          completedTime = Instant.parse("2023-01-18T05:00:00Z"),
+      )
+
+      val abandonedBaselineId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Abandoned,
+              completedTime = Instant.parse("2023-01-31T00:00:00Z"),
+          )
+      insertObservationRequestedSubstratum(substratumId = substratumId12)
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId111,
+          completedBy = user.userId,
+          completedTime = Instant.parse("2023-01-16T08:00:00Z"),
+      )
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId121,
+          statusId = ObservationPlotStatus.Claimed,
+      )
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId2,
+          completedBy = user.userId,
+          completedTime = Instant.parse("2023-01-16T05:00:00Z"),
+      )
+
+      val upcomingBaselineId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Upcoming,
+              startDate = LocalDate.of(2023, 1, 16),
+          )
+      insertObservationRequestedSubstratum(substratumId = substratumId12)
+
+      for (state in listOf(ObservationState.Completed, ObservationState.Abandoned)) {
+        insertObservation(
+            observationType = ObservationType.BaselineSurvey,
+            state = state,
+            startDate = LocalDate.of(2023, 1, 30),
+            completedTime = Instant.parse("2023-01-31T00:00:00Z"),
+        )
+        for (substratumId in listOf(substratumId11, substratumId12, substratumId2)) {
+          insertObservationRequestedSubstratum(substratumId = substratumId)
+        }
+      }
+
       /* (x) - for latest (o) for observed but not the latest, (c) claimed but not completed.
 
         Observations         | 1 | 2 |
@@ -638,6 +516,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = substratumId11,
+                                      latestBaselineSurveyDate =
+                                          LocalDate.of(2023, 1, completedDay - 2),
+                                      latestBaselineSurveyId = abandonedBaselineId,
+                                      latestBaselineSurveyStatus = ObservationState.Abandoned,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(1000),
                                       latestObservationId = observationId1,
                                       latestObservationNumPlots = 1,
@@ -671,6 +553,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = substratumId12,
+                                      latestBaselineSurveyDate = LocalDate.of(2023, 1, 16),
+                                      latestBaselineSurveyId = upcomingBaselineId,
+                                      latestBaselineSurveyStatus = ObservationState.Upcoming,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
                                       latestObservationNumPlots = 1,
@@ -719,6 +604,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = substratumId2,
+                                      latestBaselineSurveyDate =
+                                          LocalDate.of(2023, 1, completedDay),
+                                      latestBaselineSurveyId = completedBaselineId,
+                                      latestBaselineSurveyStatus = ObservationState.Completed,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
                                       latestObservationNumPlots = 1,

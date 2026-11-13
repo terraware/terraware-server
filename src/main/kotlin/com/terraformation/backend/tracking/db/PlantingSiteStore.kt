@@ -114,7 +114,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.geotools.referencing.CRS
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -2196,27 +2195,63 @@ class PlantingSiteStore(
                 .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         )
 
-    val timeZoneField =
-        DSL.coalesce(
+    val baselineCompletedTimeField =
+        DSL.field(
+            DSL.select(DSL.max(OBSERVATION_PLOTS.COMPLETED_TIME))
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                .and(observationPlotCondition)
+        )
+    val baselineCompletedDateField =
+        DSL.field(
+            "({0} AT TIME ZONE COALESCE({1}, {2}, 'UTC'))::date",
+            LocalDate::class.java,
+            baselineCompletedTimeField,
             OBSERVATIONS.plantingSites.TIME_ZONE,
             OBSERVATIONS.plantingSites.organizations.TIME_ZONE,
         )
+    val baselineIsFinished =
+        OBSERVATIONS.STATE_ID.`in`(ObservationState.Completed, ObservationState.Abandoned)
+    val latestBaselineSurveyDateField =
+        DSL.`when`(baselineIsFinished, baselineCompletedDateField)
+            .otherwise(OBSERVATIONS.START_DATE)
     val latestBaselineSurveyField =
         DSL.multiset(
                 DSL.select(
                         OBSERVATIONS.ID,
-                        OBSERVATIONS.START_DATE,
-                        OBSERVATIONS.COMPLETED_TIME,
+                        latestBaselineSurveyDateField,
                         OBSERVATIONS.STATE_ID,
-                        timeZoneField,
                     )
                     .from(OBSERVATIONS)
-                    .join(OBSERVATION_REQUESTED_SUBSTRATA)
-                    .on(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                    .where(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
-                    .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey))
-                    .and(OBSERVATIONS.STATE_ID.ne(ObservationState.Abandoned))
-                    .orderBy(OBSERVATIONS.START_DATE.desc(), OBSERVATIONS.ID.desc())
+                    .where(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey))
+                    .and(
+                        DSL.or(
+                            DSL.and(baselineIsFinished, baselineCompletedTimeField.isNotNull),
+                            DSL.and(
+                                OBSERVATIONS.STATE_ID.`in`(
+                                    ObservationState.Upcoming,
+                                    ObservationState.InProgress,
+                                    ObservationState.Overdue,
+                                ),
+                                DSL.exists(
+                                    DSL.selectOne()
+                                        .from(OBSERVATION_REQUESTED_SUBSTRATA)
+                                        .where(
+                                            OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID.eq(
+                                                OBSERVATIONS.ID
+                                            )
+                                        )
+                                        .and(
+                                            OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(
+                                                SUBSTRATA.ID
+                                            )
+                                        )
+                                ),
+                            ),
+                        )
+                    )
+                    .orderBy(latestBaselineSurveyDateField.desc(), OBSERVATIONS.ID.desc())
                     .limit(1)
             )
             .convertFrom { it.firstOrNull() }
@@ -2256,20 +2291,7 @@ class PlantingSiteStore(
                 boundary = record[boundaryField]!! as MultiPolygon,
                 fullName = record[SUBSTRATA.FULL_NAME]!!,
                 id = record[SUBSTRATA.ID]!!,
-                latestBaselineSurveyDate =
-                    if (
-                        latestBaselineSurvey?.get(OBSERVATIONS.STATE_ID) ==
-                            ObservationState.Completed
-                    ) {
-                      latestBaselineSurvey[OBSERVATIONS.COMPLETED_TIME]?.let {
-                        LocalDate.ofInstant(
-                            it,
-                            latestBaselineSurvey[timeZoneField] ?: ZoneOffset.UTC,
-                        )
-                      }
-                    } else {
-                      latestBaselineSurvey?.get(OBSERVATIONS.START_DATE)
-                    },
+                latestBaselineSurveyDate = latestBaselineSurvey?.get(latestBaselineSurveyDateField),
                 latestBaselineSurveyId = latestBaselineSurvey?.get(OBSERVATIONS.ID),
                 latestBaselineSurveyStatus = latestBaselineSurvey?.get(OBSERVATIONS.STATE_ID),
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
