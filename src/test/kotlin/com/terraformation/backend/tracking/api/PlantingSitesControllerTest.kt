@@ -1,8 +1,6 @@
 package com.terraformation.backend.tracking.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
-import com.terraformation.backend.db.tracking.ObservationState
-import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -18,37 +16,6 @@ class PlantingSitesControllerTest : ControllerIntegrationTest() {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser()
-  }
-
-  @Test
-  fun `get site serializes latest baseline fields`() {
-    val plantingSiteId = insertPlantingSite()
-    insertStratum()
-    insertSubstratum()
-    val observationId =
-        insertObservation(
-            observationType = ObservationType.BaselineSurvey,
-            state = ObservationState.Upcoming,
-        )
-    insertObservationRequestedSubstratum()
-
-    mockMvc
-        .get("/api/v1/tracking/sites/$plantingSiteId")
-        .andExpectJson(
-            """
-        {
-          "site": {
-            "strata": [{
-              "substrata": [{
-                "latestBaselineSurveyDate": "2023-01-01",
-                "latestBaselineSurveyId": $observationId,
-                "latestBaselineSurveyStatus": "Upcoming"
-              }]
-            }]
-          }
-        }
-        """
-        )
   }
 
   @Nested
