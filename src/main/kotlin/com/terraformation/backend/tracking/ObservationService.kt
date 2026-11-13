@@ -46,6 +46,7 @@ import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotStartedException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotStore
+import com.terraformation.backend.tracking.db.ObservationPlotsUnavailableException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationResultsInvalidator
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -484,12 +485,14 @@ class ObservationService(
   /**
    * Schedules a new observation.
    *
+   * @param assignPlots If true, assign monitoring plots now instead of when the observation starts.
    * @param skipValidation If true, don't require the observation to be in the future and don't
    *   require its substrata to have plantings. This is used by the admin UI to allow admins to
    *   override the default restrictions.
    */
   fun scheduleObservation(
       observation: NewObservationModel,
+      assignPlots: Boolean = false,
       skipValidation: Boolean = false,
   ): ObservationId {
     requirePermissions { scheduleObservation(observation.plantingSiteId) }
@@ -505,10 +508,50 @@ class ObservationService(
       }
     }
 
-    val observationId = observationStore.createObservation(observation)
-    eventPublisher.publishEvent(
-        ObservationScheduledEvent(observationStore.fetchObservationById(observationId))
-    )
+    val (observationId, assignmentResult) =
+        dslContext.transactionResult { _ ->
+          if (assignPlots) {
+            // Plot allocation locks the planting site. Creating the observation first would take a
+            // weaker lock on the site via the foreign key, and two concurrent schedulings on the
+            // same site could then deadlock trying to upgrade it. Take the site lock up front
+            // instead; it is held until this transaction ends.
+            systemUser.run { entityLocker.withLockedPlantingSite(observation.plantingSiteId) {} }
+          }
+
+          val observationId = observationStore.createObservation(observation)
+
+          val assignmentResult =
+              if (assignPlots) {
+                // The caller's permission to schedule the observation was checked above. Allocation
+                // requires organization-level permissions a super admin might not have.
+                log.withMDC("observationId" to observationId) {
+                  systemUser.run {
+                    entityLocker.withLockedObservation(observationId) { lockedObservation ->
+                      when (val result = assignPlots(lockedObservation)) {
+                        is PlotAssignmentResult.Unstartable ->
+                            throw ObservationPlotsUnavailableException(observation.plantingSiteId)
+                        is PlotAssignmentResult.Assigned -> result
+                      }
+                    }
+                  }
+                }
+              } else {
+                null
+              }
+
+          observationId to assignmentResult
+        }
+
+    // Published after the transaction commits so that notifications aren't sent about an
+    // observation that ends up being rolled back.
+    val createdObservation = observationStore.fetchObservationById(observationId)
+
+    eventPublisher.publishEvent(ObservationScheduledEvent(createdObservation))
+
+    if (assignmentResult != null) {
+      publishEventIfUnderallocated(createdObservation, assignmentResult)
+    }
+
     return observationId
   }
 
