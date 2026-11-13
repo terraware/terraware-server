@@ -123,6 +123,7 @@ dependencies {
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.21")
   implementation("net.sf.geographiclib:GeographicLib-Java:2.1")
+  implementation("org.apache.commons:commons-statistics-distribution:1.2")
   implementation("org.apache.tika:tika-core:3.3.3")
   implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
   implementation("org.commonmark:commonmark:0.32.0")
