@@ -706,9 +706,9 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     insertPlantingSite(name = "My Site")
     insertObservation(
         endDate = endDate,
+        observationType = observationType,
         startDate = startDate,
         state = ObservationState.Upcoming,
-        observationType = observationType,
     )
 
     testEventNotification(
