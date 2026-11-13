@@ -401,6 +401,76 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `skips biomass strata with zero plot counts`() {
+      insertStratum(
+          width = 4,
+          height = 1,
+          biomassNumPermanentPlots = 1,
+          biomassNumTemporaryPlots = 1,
+      )
+      val nonZeroSubstratumId = insertSubstratum(width = 4, height = 1)
+      insertStratum(
+          x = 4,
+          width = 4,
+          height = 1,
+          biomassNumPermanentPlots = 0,
+          biomassNumTemporaryPlots = 0,
+      )
+      val zeroSubstratumId = insertSubstratum(x = 4, width = 4, height = 1)
+      val observationId =
+          insertObservation(
+              observationType = ObservationType.BiomassMeasurements,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum(substratumId = nonZeroSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = zeroSubstratumId)
+
+      service.startObservation(observationId)
+
+      val plots = observationPlotsDao.findAll()
+      assertEquals(2, plots.size, "Assigned plots")
+      plots.forEach {
+        val plot = monitoringPlotsDao.fetchOneById(it.monitoringPlotId!!)!!
+        assertEquals(nonZeroSubstratumId, plot.substratumId, "Non-zero stratum's substratum")
+      }
+      assertEquals(
+          ObservationState.InProgress,
+          observationStore.fetchObservationById(observationId).state,
+          "Observation state",
+      )
+      eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
+      eventPublisher.assertEventNotPublished<ObservationPlotsUnderallocatedEvent>()
+    }
+
+    @Test
+    fun `abandons biomass observation when all requested strata have zero plot counts`() {
+      insertStratum(biomassNumPermanentPlots = 0, biomassNumTemporaryPlots = 0)
+      val firstSubstratumId = insertSubstratum()
+      insertStratum(x = 4, biomassNumPermanentPlots = 0, biomassNumTemporaryPlots = 0)
+      val secondSubstratumId = insertSubstratum(x = 4)
+      val observationId =
+          insertObservation(
+              observationType = ObservationType.BiomassMeasurements,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum(substratumId = firstSubstratumId)
+      insertObservationRequestedSubstratum(substratumId = secondSubstratumId)
+
+      service.startObservation(observationId)
+
+      assertTableEmpty(OBSERVATIONS)
+      assertTableEmpty(OBSERVATION_PLOTS)
+      eventPublisher.assertEventPublished(
+          ObservationNotStartedEvent(
+              observationId,
+              ObservationType.BiomassMeasurements,
+              plantingSiteId,
+          )
+      )
+      eventPublisher.assertEventNotPublished<ObservationStartedEvent>()
+    }
+
+    @Test
     fun `assigns correct plots to strata`() {
       // Given a planting site with this structure:
       //

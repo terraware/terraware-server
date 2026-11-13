@@ -202,21 +202,17 @@ class ObservationService(
               stratum.substrata.any { it.id in observation.requestedSubstratumIds }
             }
             .filter { stratum ->
-              if (
-                  observation.observationType == ObservationType.BaselineSurvey &&
-                      stratum.baselinePlotCounts.numTemporaryPlots == 0
-              ) {
-                log.info("Skipping stratum ${stratum.id} because its baseline plot count is zero")
+              val plotCounts = stratum.plotCounts(observation.observationType)
+              if (plotCounts.numPermanentPlots + plotCounts.numTemporaryPlots == 0) {
+                log.info("Skipping stratum ${stratum.id} because its plot count is zero")
                 false
               } else {
                 true
               }
             }
 
-    if (
-        observation.observationType == ObservationType.BaselineSurvey && observableStrata.isEmpty()
-    ) {
-      log.info("Unable to start baseline observation because no plots are configured")
+    if (observableStrata.isEmpty()) {
+      log.info("Unable to assign plots because no plots are configured")
       return PlotAssignmentResult.Unstartable
     }
 
