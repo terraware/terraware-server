@@ -60,6 +60,7 @@ import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.db.SpeciesInWrongOrganizationException
+import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
@@ -1204,10 +1205,24 @@ class ObservationService(
   /**
    * Updates observations, if any, when a site's map is edited. Runs in the edit's transaction, so
    * if observations can't be updated, the edit is rolled back.
+   *
+   * An edit can move an existing substratum into a newly created stratum, so observations may need
+   * plots in the new strata as well as in the existing ones the edit changed.
    */
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
-    updateObservationsForChangedStrata(event.edited.id, event.plantingSiteEdit.affectedStrata)
+    val createdStableIds =
+        event.plantingSiteEdit.stratumEdits
+            .filterIsInstance<StratumEdit.Create>()
+            .map { it.desiredModel.stableId }
+            .toSet()
+    val createdStratumIds =
+        event.edited.strata.filter { it.stableId in createdStableIds }.map { it.id }.toSet()
+
+    updateObservationsForChangedStrata(
+        event.edited.id,
+        event.plantingSiteEdit.affectedStrata.copy(createdStratumIds = createdStratumIds),
+    )
   }
 
   @EventListener
@@ -1279,7 +1294,7 @@ class ObservationService(
 
         observationPlotStore.removeUnobservedPlots(observationId, strata)
 
-        when (val result = assignPlots(observation, strata.stratumIds)) {
+        when (val result = assignPlots(observation, strata.allocationStratumIds)) {
           is PlotAssignmentResult.Unstartable -> abandonUnstartableObservation(observation)
           is PlotAssignmentResult.Assigned -> {
             if (observation.state != ObservationState.Upcoming) {

@@ -71,6 +71,8 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.eventlog.EventLogPayloadTransformer
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.eventlog.db.EventLogStore
@@ -4565,6 +4567,74 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           observationsDao.fetchOneById(observationId)!!.stateId,
           "Observation state",
       )
+      eventPublisher.assertEventPublished(
+          ObservationPlotsReassignedEvent(
+              observationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `assigns plots in new stratum that a requested substratum was moved into`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots()
+      val plotsBefore = fetchPlotIdsByStratum(observationId)
+      val deletedStratum = plantingSite.strata.single { it.id == editedStratumId }
+
+      // Simulate an edit that replaces the edited stratum with a new one covering the same area and
+      // moves the edited stratum's substratum into it, keeping the substratum's ID.
+      val newStratumId =
+          insertStratum(
+              width = 4,
+              height = 1,
+              plantNumPermanentPlots = 1,
+              plantNumTemporaryPlots = 1,
+          )
+      dslContext
+          .update(SUBSTRATA)
+          .set(SUBSTRATA.STRATUM_ID, newStratumId)
+          .where(SUBSTRATA.ID.eq(editedSubstratumId))
+          .execute()
+      dslContext.deleteFrom(STRATA).where(STRATA.ID.eq(editedStratumId)).execute()
+
+      val editedSite =
+          plantingSiteStore.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Plot)
+      val newStratum = editedSite.strata.single { it.id == newStratumId }
+
+      eventPublisher.clear()
+      service.on(
+          PlantingSiteMapEditedEvent(
+              editedSite,
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  desiredModel = editedSite,
+                  existingModel = editedSite,
+                  stratumEdits =
+                      listOf(
+                          StratumEdit.Delete(
+                              existingModel = deletedStratum,
+                              substratumEdits = emptyList(),
+                          ),
+                          StratumEdit.Create(
+                              desiredModel = newStratum,
+                              monitoringPlotEdits = emptyList(),
+                              substratumEdits = emptyList(),
+                          ),
+                      ),
+              ),
+              ReplacementResult(emptySet(), emptySet()),
+          )
+      )
+
+      val plotsAfter = fetchPlotIdsByStratum(observationId)
+      assertEquals(
+          plotsBefore[otherStratumId],
+          plotsAfter[otherStratumId],
+          "Plots in other stratum should not change",
+      )
+      assertEquals(2, plotsAfter[newStratumId]?.size, "Number of plots in new stratum")
       eventPublisher.assertEventPublished(
           ObservationPlotsReassignedEvent(
               observationId,
