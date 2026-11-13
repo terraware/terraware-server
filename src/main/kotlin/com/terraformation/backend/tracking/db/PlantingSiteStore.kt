@@ -73,6 +73,7 @@ import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEven
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
+import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
@@ -1308,6 +1309,42 @@ class PlantingSiteStore(
                 .execute()
           }
         }
+      }
+
+      // Published inside the transaction so that if observations can't be updated to match the
+      // new plot counts, the change is rolled back.
+      val changedObservationTypes =
+          setOfNotNull(
+              if (initial.baselineNumTemporaryPlots != edited.baselineNumTemporaryPlots) {
+                ObservationType.BaselineSurvey
+              } else {
+                null
+              },
+              if (
+                  initial.plantNumPermanentPlots != edited.plantNumPermanentPlots ||
+                      initial.plantNumTemporaryPlots != edited.plantNumTemporaryPlots
+              ) {
+                ObservationType.Monitoring
+              } else {
+                null
+              },
+              if (
+                  initial.biomassNumPermanentPlots != edited.biomassNumPermanentPlots ||
+                      initial.biomassNumTemporaryPlots != edited.biomassNumTemporaryPlots
+              ) {
+                ObservationType.BiomassMeasurements
+              } else {
+                null
+              },
+          )
+      if (changedObservationTypes.isNotEmpty()) {
+        eventPublisher.publishEvent(
+            StratumPlotCountsUpdatedEvent(
+                initial.plantingSiteId!!,
+                stratumId,
+                changedObservationTypes,
+            )
+        )
       }
     }
 

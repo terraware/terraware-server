@@ -113,6 +113,36 @@ class ObservationStoreClassifyAffectedObservationsTest : BaseObservationStoreTes
   }
 
   @Test
+  fun `includes observations requesting affected strata without plots there if requested`() {
+    val affectedStratumId = insertStratum()
+    val affectedSubstratumId = insertSubstratum()
+    insertStratum()
+    insertSubstratum()
+    val otherPlotId = insertMonitoringPlot()
+
+    val withPlotsId = insertObservation(state = ObservationState.InProgress)
+    insertObservationRequestedSubstratum(substratumId = affectedSubstratumId)
+    insertObservationPlot(monitoringPlotId = otherPlotId)
+
+    // Upcoming observations without any plots get them when they start.
+    insertObservation(state = ObservationState.Upcoming)
+    insertObservationRequestedSubstratum(substratumId = affectedSubstratumId)
+
+    val strata = AffectedStrata(setOf(affectedStratumId))
+
+    assertEquals(
+        AffectedObservations(toAbandon = emptyList(), toReassign = listOf(withPlotsId)),
+        store.classifyAffectedObservations(plantingSiteId, strata, includeRequestedStrata = true),
+        "Including requested strata",
+    )
+    assertEquals(
+        NONE_AFFECTED,
+        store.classifyAffectedObservations(plantingSiteId, strata),
+        "Not including requested strata",
+    )
+  }
+
+  @Test
   fun `observations with no plots in affected strata are ignored`() {
     val affectedStratumId = insertStratum()
     val affectedSubstratumId = insertSubstratum()

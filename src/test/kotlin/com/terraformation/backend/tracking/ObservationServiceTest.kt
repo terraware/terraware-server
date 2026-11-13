@@ -134,6 +134,7 @@ import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -4859,6 +4860,159 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               .toSet(),
           "Plots in observation results",
       )
+    }
+  }
+
+  @Nested
+  inner class OnStratumPlotCountsUpdatedEvent {
+    @Test
+    fun `reassigns upcoming observation when plot counts change`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots()
+      val plotsBefore = fetchPlotIdsByStratum(observationId)
+
+      dslContext
+          .update(STRATA)
+          .set(STRATA.PLANT_NUM_TEMPORARY_PLOTS, 2)
+          .where(STRATA.ID.eq(editedStratumId))
+          .execute()
+
+      eventPublisher.clear()
+      service.on(
+          StratumPlotCountsUpdatedEvent(
+              inserted.plantingSiteId,
+              editedStratumId,
+              setOf(ObservationType.Monitoring),
+          )
+      )
+
+      val plotsAfter = fetchPlotIdsByStratum(observationId)
+      assertEquals(
+          plotsBefore[otherStratumId],
+          plotsAfter[otherStratumId],
+          "Plots in other stratum should not change",
+      )
+      assertEquals(3, plotsAfter[editedStratumId]?.size, "Number of plots in edited stratum")
+      eventPublisher.assertEventPublished(
+          ObservationPlotsReassignedEvent(
+              observationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `does not reassign observations of other types`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots()
+      val plotsBefore = fetchPlotIdsByStratum(observationId)
+
+      eventPublisher.clear()
+      service.on(
+          StratumPlotCountsUpdatedEvent(
+              inserted.plantingSiteId,
+              editedStratumId,
+              setOf(ObservationType.BiomassMeasurements),
+          )
+      )
+
+      assertEquals(plotsBefore, fetchPlotIdsByStratum(observationId), "Plots")
+      eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
+    }
+
+    @Test
+    fun `reassigns plots when super admin who is not an organization member changes counts`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots()
+      val temporaryPlotId = fetchTemporaryPlotId(observationId, editedStratumId)
+
+      deleteOrganizationUser()
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+
+      service.on(
+          StratumPlotCountsUpdatedEvent(
+              inserted.plantingSiteId,
+              editedStratumId,
+              setOf(ObservationType.Monitoring),
+          )
+      )
+
+      assertNull(
+          monitoringPlotsDao.fetchOneById(temporaryPlotId),
+          "Old temporary plot should have been deleted",
+      )
+    }
+
+    @Test
+    fun `does not abandon in-progress observation with completed plot`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      dslContext
+          .update(OBSERVATION_PLOTS)
+          .set(OBSERVATION_PLOTS.STATUS_ID, ObservationPlotStatus.Completed)
+          .set(OBSERVATION_PLOTS.CLAIMED_BY, user.userId)
+          .set(OBSERVATION_PLOTS.CLAIMED_TIME, clock.instant())
+          .set(OBSERVATION_PLOTS.COMPLETED_BY, user.userId)
+          .set(OBSERVATION_PLOTS.COMPLETED_TIME, clock.instant())
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .and(
+              OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
+                  fetchTemporaryPlotId(observationId, otherStratumId)
+              )
+          )
+          .execute()
+
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+      val observationPlotsBefore = dslContext.fetch(OBSERVATION_PLOTS)
+
+      eventPublisher.clear()
+      service.on(
+          StratumPlotCountsUpdatedEvent(
+              inserted.plantingSiteId,
+              editedStratumId,
+              setOf(ObservationType.Monitoring),
+          )
+      )
+
+      assertTableEquals(observationsBefore, "Observations")
+      assertTableEquals(observationPlotsBefore, "Observation plots")
+      eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
+      eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
+    }
+
+    @Test
+    fun `keeps existing plots of observation that can no longer be given plots`() {
+      insertStrataWithSinglePlotSubstratum()
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum(substratumId = roomySubstratumId)
+      insertObservationRequestedSubstratum(substratumId = singlePlotSubstratumId)
+      assertEquals(
+          ObservationService.NewObservationAssignment.Assigned,
+          service.assignPlotsToNewObservation(observationId),
+          "Plots assigned",
+      )
+
+      excludeSinglePlotSubstratum()
+
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+      val observationPlotsBefore = dslContext.fetch(OBSERVATION_PLOTS)
+      val monitoringPlotsBefore = dslContext.fetch(MONITORING_PLOTS)
+
+      eventPublisher.clear()
+      service.on(
+          StratumPlotCountsUpdatedEvent(
+              inserted.plantingSiteId,
+              singlePlotStratumId,
+              setOf(ObservationType.Monitoring),
+          )
+      )
+
+      assertTableEquals(observationsBefore, "Observations")
+      assertTableEquals(observationPlotsBefore, "Observation plots")
+      assertTableEquals(monitoringPlotsBefore, "Monitoring plots")
+      eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
+      eventPublisher.assertEventNotPublished<ObservationNotStartedEvent>()
     }
   }
 

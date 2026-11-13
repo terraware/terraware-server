@@ -114,8 +114,8 @@ data class ObservationNotStartedEvent(
 ) : ObservationSchedulingNotificationEvent
 
 /**
- * Published when an observation's plots in some strata were replaced because the strata's maps
- * changed. Not published if the observation couldn't be given new plots; that publishes
+ * Published when an observation's plots in some strata were replaced because the strata's maps or
+ * plot counts changed. Not published if the observation couldn't be given new plots; that publishes
  * [ObservationNotStartedEvent] instead.
  */
 data class ObservationPlotsReassignedEvent(
@@ -206,6 +206,20 @@ data class PlantingSiteMapEditedEvent(
 data class PlantingSiteHistoryCreatedEvent(
     val plantingSiteId: PlantingSiteId,
     val plantingSiteHistoryId: PlantingSiteHistoryId,
+)
+
+/**
+ * Published when the number of permanent or temporary plots a stratum is configured for changes.
+ * Listeners run in the transaction that updated the stratum.
+ */
+data class StratumPlotCountsUpdatedEvent(
+    val plantingSiteId: PlantingSiteId,
+    val stratumId: StratumId,
+    /**
+     * Types of observations whose plot counts changed: [ObservationType.Monitoring] for plant plot
+     * counts and [ObservationType.BiomassMeasurements] for biomass plot counts.
+     */
+    val observationTypes: Set<ObservationType>,
 )
 
 /**
