@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class ObservationStoreClassifyAffectedObservationsTest : BaseObservationStoreTest() {
-  private val noneAffected = AffectedObservations(emptyList(), emptyList())
+  private val NONE_AFFECTED = AffectedObservations(emptyList(), emptyList())
 
   private val plantingSiteStore: PlantingSiteStore by lazy {
     val geometrySimplifier = mockk<GeometrySimplifier>()
@@ -144,7 +144,7 @@ class ObservationStoreClassifyAffectedObservationsTest : BaseObservationStoreTes
     )
 
     assertEquals(
-        noneAffected,
+        NONE_AFFECTED,
         store.classifyAffectedObservations(
             plantingSiteId,
             AffectedStrata(setOf(affectedStratumId)),
@@ -161,7 +161,7 @@ class ObservationStoreClassifyAffectedObservationsTest : BaseObservationStoreTes
     insertObservationPlot()
 
     assertEquals(
-        noneAffected,
+        NONE_AFFECTED,
         store.classifyAffectedObservations(plantingSiteId, AffectedStrata(setOf(stratumId))),
     )
   }
@@ -241,7 +241,7 @@ class ObservationStoreClassifyAffectedObservationsTest : BaseObservationStoreTes
     plantingSiteStore.applyPlantingSiteEdit(calculateEditDeletingStratum(siteId))
 
     assertEquals(
-        noneAffected,
+        NONE_AFFECTED,
         store.classifyAffectedObservations(siteId, AffectedStrata(setOf(keptStratumId))),
     )
   }
