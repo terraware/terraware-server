@@ -218,8 +218,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       }
     }
 
-    @Test
-    fun `returns simplified site`() {
+    @ParameterizedTest
+    @EnumSource(ObservationState::class, names = ["Completed", "Abandoned"])
+    fun `returns simplified site`(baselineState: ObservationState) {
       val siteBoundary = multiPolygon(20.0)
       val exclusion = multiPolygon(10.0)
       val stratumBoundary = multiPolygon(15.0)
@@ -237,11 +238,37 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       )
       insertStratum(boundary = stratumBoundary)
       insertSimplifiedStratum(boundary = simplifiedStratumBoundary)
-      insertSubstratum(boundary = substratumBoundary)
+      val originalSubstratumId = insertSubstratum(boundary = substratumBoundary)
       insertSimplifiedSubstratum(boundary = simplifiedSubstratumBoundary)
+      val plotId = insertMonitoringPlot()
+      val movedToSubstratumId = insertSubstratum()
+      val baselineId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = baselineState,
+              completedTime = Instant.parse("2023-01-03T00:00:00Z"),
+          )
+      insertObservationPlot(
+          monitoringPlotId = plotId,
+          completedBy = user.userId,
+          completedTime = Instant.parse("2023-01-02T05:00:00Z"),
+      )
+      monitoringPlotsDao.update(
+          monitoringPlotsDao.fetchOneById(plotId)!!.copy(substratumId = movedToSubstratumId)
+      )
 
       val site = store.fetchSiteById(siteId, PlantingSiteDepth.Substratum, true)
-      val substratum = site.strata.single().substrata.single()
+      val original = site.strata.single().substrata.single { it.id == originalSubstratumId }
+      assertEquals(
+          Triple(LocalDate.of(2023, 1, 2), baselineId, baselineState),
+          Triple(
+              original.latestBaselineSurveyDate,
+              original.latestBaselineSurveyId,
+              original.latestBaselineSurveyStatus,
+          ),
+          "Latest Baseline Survey stays with its historical substratum",
+      )
+      val substratum = site.strata.single().substrata.single { it.id == movedToSubstratumId }
       assertEquals(
           Triple(null, null, null),
           Triple(
@@ -249,7 +276,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               substratum.latestBaselineSurveyId,
               substratum.latestBaselineSurveyStatus,
           ),
-          "Latest Baseline Survey fields without observations",
+          "Latest Baseline Survey does not move to the plot's current substratum",
       )
       assertGeometryEquals(simplifiedSiteBoundary, site.boundary, "Site Boundary")
       assertGeometryEquals(simplifiedExclusion, site.exclusion, "Site Exclusion")

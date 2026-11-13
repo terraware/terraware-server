@@ -2201,7 +2201,11 @@ class PlantingSiteStore(
                 .from(OBSERVATION_PLOTS)
                 .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
-                .and(observationPlotCondition)
+                .and(
+                    OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(
+                        SUBSTRATA.ID
+                    )
+                )
         )
     val baselineCompletedDateField =
         DSL.field(
