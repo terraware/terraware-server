@@ -156,7 +156,7 @@ class ObservationService(
 
             eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
 
-            publishUnderallocatedEvent(observation, result)
+            publishEventIfUnderallocated(observation, result)
           }
         }
       }
@@ -1092,7 +1092,7 @@ class ObservationService(
     }
   }
 
-  private fun publishUnderallocatedEvent(
+  private fun publishEventIfUnderallocated(
       observation: ExistingObservationModel,
       result: PlotAssignmentResult.Assigned,
   ) {
