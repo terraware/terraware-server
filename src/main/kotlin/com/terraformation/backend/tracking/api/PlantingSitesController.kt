@@ -532,12 +532,10 @@ data class SubstratumResponsePayload(
     @Schema(
         description = "Completion date in the site's time zone if completed; otherwise start date."
     )
-    @get:JsonInclude(JsonInclude.Include.ALWAYS)
     val latestBaselineSurveyDate: LocalDate?,
     @Schema(description = "Latest requested non-abandoned Baseline Survey by start date, then ID.")
-    @get:JsonInclude(JsonInclude.Include.ALWAYS)
     val latestBaselineSurveyId: ObservationId?,
-    @get:JsonInclude(JsonInclude.Include.ALWAYS) val latestBaselineSurveyStatus: ObservationState?,
+    val latestBaselineSurveyStatus: ObservationState?,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
     val latestObservationNumPlots: Int?,

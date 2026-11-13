@@ -21,31 +21,6 @@ class PlantingSitesControllerTest : ControllerIntegrationTest() {
   }
 
   @Test
-  fun `get site serializes null baseline fields when there are no observations`() {
-    val plantingSiteId = insertPlantingSite()
-    insertStratum()
-    insertSubstratum()
-
-    mockMvc
-        .get("/api/v1/tracking/sites/$plantingSiteId")
-        .andExpectJson(
-            """
-        {
-          "site": {
-            "strata": [{
-              "substrata": [{
-                "latestBaselineSurveyDate": null,
-                "latestBaselineSurveyId": null,
-                "latestBaselineSurveyStatus": null
-              }]
-            }]
-          }
-        }
-        """
-        )
-  }
-
-  @Test
   fun `get site serializes latest baseline fields`() {
     val plantingSiteId = insertPlantingSite()
     insertStratum()
