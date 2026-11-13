@@ -105,18 +105,22 @@ class PlantingSiteMapEditService(
       edit: PlantingSiteEdit,
       depth: PlantingSiteDepth,
   ): List<PlantingSiteEditSummaryItem> {
-    val affectedObservationIds =
-        observationStore.fetchActiveObservationIds(
-            edit.existingModel.id,
-            edit.stratumEdits.filterNot { it.isNoOp() }.mapNotNull { it.existingModel?.id },
-        )
+    val affectedObservations =
+        observationStore.classifyAffectedObservations(edit.existingModel.id, edit.affectedStrata)
 
     val plotNumbers = fetchPlotNumbers(edit)
 
     val items =
         listOfNotNull(
-            if (affectedObservationIds.isNotEmpty()) {
-              PlantingSiteEditSummaryItem.ObservationsAbandoned(affectedObservationIds)
+            if (affectedObservations.toAbandon.isNotEmpty()) {
+              PlantingSiteEditSummaryItem.ObservationsAbandoned(affectedObservations.toAbandon)
+            } else {
+              null
+            },
+            if (affectedObservations.toReassign.isNotEmpty()) {
+              PlantingSiteEditSummaryItem.ObservationPlotsReassigned(
+                  affectedObservations.toReassign
+              )
             } else {
               null
             },
