@@ -125,6 +125,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -696,13 +697,19 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  @Test
-  fun `should store started observation notification`() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class, names = ["Monitoring", "BaselineSurvey"])
+  fun `should store started observation notification`(observationType: ObservationType) {
     val startDate = LocalDate.of(2023, 3, 1)
     val endDate = startDate.plusDays(1)
 
-    insertPlantingSite()
-    insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+    insertPlantingSite(name = "My Site")
+    insertObservation(
+        endDate = endDate,
+        startDate = startDate,
+        state = ObservationState.Upcoming,
+        observationType = observationType,
+    )
 
     testEventNotification(
         ObservationStartedEvent(
@@ -710,15 +717,25 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
                 endDate = endDate,
                 id = inserted.observationId,
                 isAdHoc = false,
-                observationType = ObservationType.Monitoring,
+                observationType = observationType,
                 plantingSiteId = inserted.plantingSiteId,
                 startDate = startDate,
                 state = ObservationState.InProgress,
             )
         ),
         type = NotificationType.ObservationStarted,
-        title = "It is time to monitor your plantings!",
-        body = "Observations of your plantings need to be completed this month.",
+        title =
+            if (observationType == ObservationType.BaselineSurvey) {
+              "It is time to conduct the Baseline Survey of your Planting Site!"
+            } else {
+              "It is time to monitor your plantings!"
+            },
+        body =
+            if (observationType == ObservationType.BaselineSurvey) {
+              "A Baseline Survey of Planting Site My Site should be done now."
+            } else {
+              "Observations of your plantings need to be completed this month."
+            },
         localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
     )
   }

@@ -399,10 +399,19 @@ class Messages {
           body = getMessage("notification.observation.schedule.app.body"),
       )
 
-  fun observationStarted(): NotificationMessage {
+  fun observationStarted(
+      observationType: ObservationType,
+      plantingSiteName: String,
+  ): NotificationMessage {
+    val prefix =
+        if (observationType == ObservationType.BaselineSurvey) {
+          "notification.observation.started.baseline"
+        } else {
+          "notification.observation.started"
+        }
     return NotificationMessage(
-        title = getMessage("notification.observation.started.app.title"),
-        body = getMessage("notification.observation.started.app.body"),
+        title = getMessage("$prefix.app.title"),
+        body = getMessage("$prefix.app.body", plantingSiteName),
     )
   }
 
