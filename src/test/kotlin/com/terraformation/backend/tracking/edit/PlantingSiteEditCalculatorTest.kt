@@ -37,6 +37,30 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
+  fun `does not treat metadata-only changes as affecting strata`() {
+    val existing = existingSite { stratum(plantNumPermanent = 1) { substratum { permanent() } } }
+    val desired =
+        existing.copy(
+            strata =
+                existing.strata.map { stratum ->
+                  stratum.copy(
+                      initialPlantingDensity = stratum.initialPlantingDensity + BigDecimal.ONE,
+                      name = "Renamed",
+                      substrata =
+                          stratum.substrata.map {
+                            it.copy(fullName = "Renamed-${it.name}-x", name = "${it.name}-x")
+                          },
+                  )
+                }
+        )
+
+    val siteEdit = calculateSiteEdit(existing, desired)
+
+    assertFalse(siteEdit.stratumEdits.single().isNoOp(), "Metadata change is not a no-op")
+    assertEquals(emptySet<Any>(), siteEdit.affectedStrata.stratumIds, "Affected strata")
+  }
+
+  @Test
   fun `returns create edits for newly added stratum and substratum`() {
     val existing =
         existingSite(width = 500) {

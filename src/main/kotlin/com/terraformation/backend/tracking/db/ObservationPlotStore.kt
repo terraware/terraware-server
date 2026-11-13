@@ -18,7 +18,10 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
+import com.terraformation.backend.tracking.model.AffectedStrata
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
@@ -483,6 +486,86 @@ class ObservationPlotStore(
     }
   }
 
+  /**
+   * Removes an observation's incomplete plots that were in the affected strata when they were added
+   * to the observation (see [observationPlotInStrataCondition]), or that are no longer in any
+   * substratum. Then deletes any of the removed plots that are temporary plots no longer used by
+   * any observation (see [deleteOrphanedTemporaryPlots]).
+   */
+  fun removeUnobservedPlots(observationId: ObservationId, strata: AffectedStrata) {
+    requirePermissions { manageObservation(observationId) }
+
+    val removedPlotIds =
+        with(OBSERVATION_PLOTS) {
+          dslContext
+              .deleteFrom(OBSERVATION_PLOTS)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(STATUS_ID.`in`(ObservationPlotStatus.Claimed, ObservationPlotStatus.Unclaimed))
+              .and(
+                  DSL.or(
+                      observationPlotInStrataCondition(strata),
+                      DSL.exists(
+                          DSL.selectOne()
+                              .from(MONITORING_PLOTS)
+                              .where(MONITORING_PLOTS.ID.eq(MONITORING_PLOT_ID))
+                              .and(MONITORING_PLOTS.SUBSTRATUM_ID.isNull)
+                      ),
+                  )
+              )
+              .returning(MONITORING_PLOT_ID)
+              .fetch(MONITORING_PLOT_ID.asNonNullable())
+        }
+
+    deleteOrphanedTemporaryPlots(removedPlotIds)
+  }
+
+  fun fetchUnobservedPlotIds(observationId: ObservationId): List<MonitoringPlotId> {
+    requirePermissions { readObservation(observationId) }
+
+    return with(OBSERVATION_PLOTS) {
+      dslContext
+          .select(MONITORING_PLOT_ID)
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(STATUS_ID.`in`(ObservationPlotStatus.Claimed, ObservationPlotStatus.Unclaimed))
+          .fetch(MONITORING_PLOT_ID.asNonNullable())
+    }
+  }
+
+  /**
+   * Deletes temporary monitoring plots that aren't included in any observation. Only plots in
+   * [plotIds] are considered; plots with permanent indexes, ad-hoc plots, and plots that are still
+   * in any observation are never deleted. This is meant to clean up temporary plots that were
+   * allocated to observations that never observed them.
+   */
+  fun deleteOrphanedTemporaryPlots(plotIds: Collection<MonitoringPlotId>) {
+    if (plotIds.isEmpty()) {
+      return
+    }
+
+    val plantingSiteIds =
+        dslContext
+            .selectDistinct(MONITORING_PLOTS.PLANTING_SITE_ID)
+            .from(MONITORING_PLOTS)
+            .where(MONITORING_PLOTS.ID.`in`(plotIds))
+            .fetch(MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable())
+    requirePermissions { plantingSiteIds.forEach { updatePlantingSite(it) } }
+
+    with(MONITORING_PLOTS) {
+      dslContext
+          .deleteFrom(MONITORING_PLOTS)
+          .where(ID.`in`(plotIds))
+          .and(PERMANENT_INDEX.isNull)
+          .and(IS_AD_HOC.isFalse)
+          .andNotExists(
+              DSL.selectOne()
+                  .from(OBSERVATION_PLOTS)
+                  .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
+          )
+          .execute()
+    }
+  }
+
   private data class ObservationSiteInfo(val plantingSiteId: PlantingSiteId, val isAdHoc: Boolean)
 
   private fun fetchObservationSiteInfo(observationId: ObservationId): ObservationSiteInfo {
@@ -617,4 +700,45 @@ class ObservationPlotStore(
       }
     }
   }
+}
+
+/**
+ * Condition on [OBSERVATION_PLOTS] that is true if a plot was in one of the affected strata when it
+ * was added to its observation.
+ *
+ * This uses the plot history recorded on the observation plot rather than the plot's current
+ * substratum, so it gives the same answer before and after a map edit is applied. Deleting a
+ * substratum clears its plots' substratum IDs, and deleting a stratum clears the stratum IDs in its
+ * history rows, so plots in deleted strata are matched by the strata's stable IDs instead.
+ */
+internal fun observationPlotInStrataCondition(strata: AffectedStrata): Condition {
+  // DSL.or() of an empty list is a no-op condition, which would match every plot.
+  val stratumConditions =
+      listOfNotNull(
+          if (strata.stratumIds.isNotEmpty()) {
+            STRATUM_HISTORIES.STRATUM_ID.`in`(strata.stratumIds)
+          } else {
+            null
+          },
+          if (strata.deletedStableIds.isNotEmpty()) {
+            STRATUM_HISTORIES.STRATUM_ID.isNull.and(
+                STRATUM_HISTORIES.STABLE_ID.`in`(strata.deletedStableIds)
+            )
+          } else {
+            null
+          },
+      )
+  val stratumCondition =
+      if (stratumConditions.isEmpty()) DSL.falseCondition() else DSL.or(stratumConditions)
+
+  return DSL.exists(
+      DSL.selectOne()
+          .from(MONITORING_PLOT_HISTORIES)
+          .join(SUBSTRATUM_HISTORIES)
+          .on(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID))
+          .join(STRATUM_HISTORIES)
+          .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+          .where(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
+          .and(stratumCondition)
+  )
 }

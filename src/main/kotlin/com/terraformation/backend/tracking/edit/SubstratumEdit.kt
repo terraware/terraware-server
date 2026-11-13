@@ -54,15 +54,24 @@ sealed interface SubstratumEdit {
    */
   @JsonIgnore
   fun isNoOp(): Boolean =
-      this is Update &&
-          areaHaDifference.equalsIgnoreScale(BigDecimal.ZERO) &&
-          addedRegion.isEmpty &&
-          removedRegion.isEmpty &&
-          existingModel.boundary.equalsOrBothNull(desiredModel.boundary) &&
-          existingModel.areaHa.equalsIgnoreScale(desiredModel.areaHa) &&
+      !affectsPlots() &&
+          this is Update &&
           existingModel.name == desiredModel.name &&
-          existingModel.fullName == desiredModel.fullName &&
-          monitoringPlotEdits.all { it is MonitoringPlotEdit.Accept }
+          existingModel.fullName == desiredModel.fullName
+
+  /**
+   * Returns true if this edit changes the substratum's boundary or monitoring plots. Changes that
+   * only affect metadata such as the substratum's name don't count. Assumes the substratum stays in
+   * the same stratum.
+   */
+  fun affectsPlots(): Boolean =
+      this !is Update ||
+          !areaHaDifference.equalsIgnoreScale(BigDecimal.ZERO) ||
+          !addedRegion.isEmpty ||
+          !removedRegion.isEmpty ||
+          !existingModel.boundary.equalsOrBothNull(desiredModel.boundary) ||
+          !existingModel.areaHa.equalsIgnoreScale(desiredModel.areaHa) ||
+          monitoringPlotEdits.any { it !is MonitoringPlotEdit.Accept }
 
   fun equalsExact(other: SubstratumEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&

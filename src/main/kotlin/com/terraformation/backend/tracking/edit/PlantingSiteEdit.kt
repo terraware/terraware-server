@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.edit
 
+import com.terraformation.backend.tracking.model.AffectedStrata
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.util.equalsIgnoreScale
@@ -28,6 +29,25 @@ data class PlantingSiteEdit(
     /** Edits to this site's strata. */
     val stratumEdits: List<StratumEdit>,
 ) {
+  /**
+   * Existing strata whose boundaries, plot counts, or monitoring plots are changed by this edit, or
+   * that are deleted by it. Strata whose only changes are to metadata such as names aren't
+   * included.
+   */
+  val affectedStrata: AffectedStrata
+    get() {
+      val changedEdits = stratumEdits.filter { it.affectsPlots() }
+
+      return AffectedStrata(
+          stratumIds = changedEdits.mapNotNull { it.existingModel?.id }.toSet(),
+          deletedStableIds =
+              changedEdits
+                  .filterIsInstance<StratumEdit.Delete>()
+                  .map { it.existingModel.stableId }
+                  .toSet(),
+      )
+    }
+
   fun equalsExact(other: PlantingSiteEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&

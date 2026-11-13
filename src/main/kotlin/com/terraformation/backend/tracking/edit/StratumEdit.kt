@@ -53,22 +53,32 @@ sealed interface StratumEdit {
   /** Returns true if this edit only reports unchanged monitoring plots. */
   @JsonIgnore
   fun isNoOp(): Boolean =
-      this is Update &&
-          areaHaDifference.equalsIgnoreScale(BigDecimal.ZERO) &&
-          addedRegion.isEmpty &&
-          removedRegion.isEmpty &&
-          existingModel.baselinePlotCounts == desiredModel.baselinePlotCounts &&
-          existingModel.biomassPlotCounts == desiredModel.biomassPlotCounts &&
-          existingModel.boundary.equalsOrBothNull(desiredModel.boundary) &&
-          existingModel.areaHa.equalsIgnoreScale(desiredModel.areaHa) &&
+      !affectsPlots() &&
+          this is Update &&
           existingModel.name == desiredModel.name &&
           existingModel.initialPlantingDensity.equalsIgnoreScale(
               desiredModel.initialPlantingDensity
           ) &&
-          existingModel.plantPlotCounts == desiredModel.plantPlotCounts &&
-          monitoringPlotEdits.isEmpty() &&
-          substratumEdits.all { edit ->
-            edit.isNoOp() && existingModel.substrata.any { it.id == edit.existingModel?.id }
+          substratumEdits.all { it.isNoOp() }
+
+  /**
+   * Returns true if this edit changes the stratum's boundary, plot counts, or monitoring plots, or
+   * those of any of its substrata. Changes that only affect metadata such as names or planting
+   * densities don't count.
+   */
+  fun affectsPlots(): Boolean =
+      this !is Update ||
+          !areaHaDifference.equalsIgnoreScale(BigDecimal.ZERO) ||
+          !addedRegion.isEmpty ||
+          !removedRegion.isEmpty ||
+          existingModel.baselinePlotCounts != desiredModel.baselinePlotCounts ||
+          existingModel.biomassPlotCounts != desiredModel.biomassPlotCounts ||
+          !existingModel.boundary.equalsOrBothNull(desiredModel.boundary) ||
+          !existingModel.areaHa.equalsIgnoreScale(desiredModel.areaHa) ||
+          existingModel.plantPlotCounts != desiredModel.plantPlotCounts ||
+          monitoringPlotEdits.isNotEmpty() ||
+          substratumEdits.any { edit ->
+            edit.affectsPlots() || existingModel.substrata.none { it.id == edit.existingModel?.id }
           }
 
   fun equalsExact(other: StratumEdit, tolerance: Double = 0.0000001): Boolean =
