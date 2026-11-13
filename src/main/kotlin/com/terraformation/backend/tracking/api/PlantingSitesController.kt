@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -71,6 +72,7 @@ import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
@@ -527,6 +529,15 @@ data class SubstratumResponsePayload(
     val boundary: MultiPolygon,
     val fullName: String,
     val id: SubstratumId,
+    @Schema(
+        description = "Completion date in the site's time zone if completed; otherwise start date."
+    )
+    @get:JsonInclude(JsonInclude.Include.ALWAYS)
+    val latestBaselineSurveyDate: LocalDate?,
+    @Schema(description = "Latest requested non-abandoned Baseline Survey by start date, then ID.")
+    @get:JsonInclude(JsonInclude.Include.ALWAYS)
+    val latestBaselineSurveyId: ObservationId?,
+    @get:JsonInclude(JsonInclude.Include.ALWAYS) val latestBaselineSurveyStatus: ObservationState?,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
     val latestObservationNumPlots: Int?,
@@ -545,6 +556,9 @@ data class SubstratumResponsePayload(
       boundary = model.boundary,
       fullName = model.fullName,
       id = model.id,
+      latestBaselineSurveyDate = model.latestBaselineSurveyDate,
+      latestBaselineSurveyId = model.latestBaselineSurveyId,
+      latestBaselineSurveyStatus = model.latestBaselineSurveyStatus,
       latestObservationCompletedTime = model.latestObservationCompletedTime,
       latestObservationId = model.latestObservationId,
       latestObservationNumPlots = model.latestObservationNumPlots,

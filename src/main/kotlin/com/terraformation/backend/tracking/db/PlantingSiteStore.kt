@@ -23,6 +23,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.MonitoringPlotIdConverter
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -46,6 +47,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
@@ -111,6 +113,8 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
+import java.time.LocalDate
+import java.time.ZoneOffset
 import org.geotools.referencing.CRS
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -2192,12 +2196,38 @@ class PlantingSiteStore(
                 .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         )
 
+    val timeZoneField =
+        DSL.coalesce(
+            OBSERVATIONS.plantingSites.TIME_ZONE,
+            OBSERVATIONS.plantingSites.organizations.TIME_ZONE,
+        )
+    val latestBaselineSurveyField =
+        DSL.multiset(
+                DSL.select(
+                        OBSERVATIONS.ID,
+                        OBSERVATIONS.START_DATE,
+                        OBSERVATIONS.COMPLETED_TIME,
+                        OBSERVATIONS.STATE_ID,
+                        timeZoneField,
+                    )
+                    .from(OBSERVATIONS)
+                    .join(OBSERVATION_REQUESTED_SUBSTRATA)
+                    .on(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                    .where(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+                    .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey))
+                    .and(OBSERVATIONS.STATE_ID.ne(ObservationState.Abandoned))
+                    .orderBy(OBSERVATIONS.START_DATE.desc(), OBSERVATIONS.ID.desc())
+                    .limit(1)
+            )
+            .convertFrom { it.firstOrNull() }
+
     return DSL.multiset(
             DSL.select(
                     SUBSTRATA.AREA_HA,
                     boundaryField,
                     SUBSTRATA.FULL_NAME,
                     SUBSTRATA.ID,
+                    latestBaselineSurveyField,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
                     latestObservationNumPlots,
@@ -2220,11 +2250,28 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record: Record ->
             val latestObservationId = record[latestObservationIdField]
+            val latestBaselineSurvey = record[latestBaselineSurveyField]
             ExistingSubstratumModel(
                 areaHa = record[SUBSTRATA.AREA_HA]!!,
                 boundary = record[boundaryField]!! as MultiPolygon,
                 fullName = record[SUBSTRATA.FULL_NAME]!!,
                 id = record[SUBSTRATA.ID]!!,
+                latestBaselineSurveyDate =
+                    if (
+                        latestBaselineSurvey?.get(OBSERVATIONS.STATE_ID) ==
+                            ObservationState.Completed
+                    ) {
+                      latestBaselineSurvey[OBSERVATIONS.COMPLETED_TIME]?.let {
+                        LocalDate.ofInstant(
+                            it,
+                            latestBaselineSurvey[timeZoneField] ?: ZoneOffset.UTC,
+                        )
+                      }
+                    } else {
+                      latestBaselineSurvey?.get(OBSERVATIONS.START_DATE)
+                    },
+                latestBaselineSurveyId = latestBaselineSurvey?.get(OBSERVATIONS.ID),
+                latestBaselineSurveyStatus = latestBaselineSurvey?.get(OBSERVATIONS.STATE_ID),
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = latestObservationId,
                 latestObservationNumPlots =
