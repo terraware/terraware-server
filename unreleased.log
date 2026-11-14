@@ -1,3 +1,4 @@
+c1dcdf63 Use Jackson 3 for Thymeleaf JavaScript inlining (#5415)
 8b59926a SW-9188 Skip strata with zero plot counts for all observation types (#5409)
 0812c78a SW-9188 Email organization when observation plots are reassigned (#5405)
 de6e602b SW-9188 Summarize observations whose plots a map edit would reassign (#5404)
