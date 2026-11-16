@@ -678,13 +678,6 @@ COMMENT ON COLUMN tracking.substrata.stable_id IS 'Substratum identifier that do
 
 COMMENT ON TABLE tracking.stratum_histories IS 'Versions of stratum maps over time. Each time a planting site map changes, its strata'' maps are inserted into this table.';
 
-COMMENT ON TABLE tracking.stratum_populations IS 'Total number of plants of each species in each stratum.';
-
-COMMENT ON TABLE tracking.stratum_species_targets IS 'Which species are intended to be planted in each stratum.';
-
-COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum''s planting site.';
-
-COMMENT ON TABLE tracking.strata IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.';
 COMMENT ON TABLE tracking.stratum_plot_selection_parameters IS 'Plot selection parameters for each observation type in a stratum.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.error_margin IS 'Error margin for the plot count statistical formula.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_permanent_plots IS 'Number of permanent plots to assign to the next observation, typically derived from a statistical formula. Zero for baseline surveys.';
@@ -692,11 +685,13 @@ COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_temporary_plots
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.students_t IS 'Student''s t value for the plot count statistical formula.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.variance IS 'Variance for the plot count statistical formula.';
 
-COMMENT ON COLUMN tracking.strata.baseline_error_margin IS 'Error margin for the baseline survey plot count statistical formula.';
-COMMENT ON COLUMN tracking.strata.baseline_num_temporary_plots IS 'Number of temporary plots to assign to the next baseline survey. Includes any permanent plots from the statistical formula.';
-COMMENT ON COLUMN tracking.strata.baseline_students_t IS 'Student''s t value for the baseline survey plot count statistical formula.';
-COMMENT ON COLUMN tracking.strata.baseline_variance IS 'Variance for the baseline survey plot count statistical formula.';
-COMMENT ON COLUMN tracking.strata.biomass_num_permanent_plots IS 'Number of permanent plots to assign to the next biomass monitoring observation. This is typically derived from a statistical formula.';
+COMMENT ON TABLE tracking.stratum_populations IS 'Total number of plants of each species in each stratum.';
+
+COMMENT ON TABLE tracking.stratum_species_targets IS 'Which species are intended to be planted in each stratum.';
+
+COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum''s planting site.';
+
+COMMENT ON TABLE tracking.strata IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.';
 COMMENT ON COLUMN tracking.strata.boundary IS 'Boundary of the stratum. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a stratum has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.strata.boundary_modified_by IS 'Which user most recently edited the stratum''s boundary.';
 COMMENT ON COLUMN tracking.strata.boundary_modified_time IS 'When the stratum''s boundary was most recently modified.';
@@ -706,7 +701,6 @@ COMMENT ON COLUMN tracking.strata.initial_planting_density IS 'Number of plants 
 COMMENT ON COLUMN tracking.strata.modified_by IS 'Which user most recently modified the stratum.';
 COMMENT ON COLUMN tracking.strata.modified_time IS 'When the stratum was most recently modified.';
 COMMENT ON COLUMN tracking.strata.name IS 'Short name of this stratum. This is often just a single letter. Must be unique within a planting site.';
-COMMENT ON COLUMN tracking.strata.plant_num_permanent_plots IS 'Number of permanent plots to assign to the next plant monitoring observation. This is typically derived from a statistical formula.';
 COMMENT ON COLUMN tracking.strata.planting_site_id IS 'Which planting site this stratum is part of.';
 COMMENT ON COLUMN tracking.strata.stable_id IS 'Stratum identifier that doesn''t change even if the stratum is renamed or edited. Defaults to the stratum name.';
 COMMENT ON COLUMN tracking.strata.target_plant_density IS 'Number of plants per hectare that the stratum should have after planting is fully completed. This may be less than the initial planting density to account for seedlings not surviving.';

@@ -5,11 +5,13 @@ import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.DensityChangedEventModel
+import com.terraformation.backend.tracking.model.StratumPlotCounts
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
@@ -56,19 +58,37 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val newPlantNumTemporaryPlots = 14
       val newInitialPlantingDensity = BigDecimal(13)
       val newTargetPlantDensity = BigDecimal(15)
+      val expectedCounts =
+          mapOf(
+              ObservationType.BaselineSurvey to
+                  StratumPlotCounts(
+                      errorMargin = BigDecimal(21),
+                      numPermanentPlots = 0,
+                      numTemporaryPlots = 45,
+                      studentsT = BigDecimal(24),
+                      variance = BigDecimal(25),
+                  ),
+              ObservationType.BiomassMeasurements to
+                  StratumPlotCounts(
+                      errorMargin = newBiomassErrorMargin,
+                      numPermanentPlots = newBiomassNumPermanentPlots,
+                      numTemporaryPlots = newBiomassNumTemporaryPlots,
+                      studentsT = newBiomassStudentsT,
+                      variance = newBiomassVariance,
+                  ),
+              ObservationType.Monitoring to
+                  StratumPlotCounts(
+                      errorMargin = newPlantErrorMargin,
+                      numPermanentPlots = newPlantNumPermanentPlots,
+                      numTemporaryPlots = newPlantNumTemporaryPlots,
+                      studentsT = newPlantStudentsT,
+                      variance = newPlantVariance,
+                  ),
+          )
 
       val expected =
           StrataRow(
               areaHa = BigDecimal.ONE,
-              baselineErrorMargin = BigDecimal(21),
-              baselineNumTemporaryPlots = 45,
-              baselineStudentsT = BigDecimal(24),
-              baselineVariance = BigDecimal(25),
-              biomassErrorMargin = newBiomassErrorMargin,
-              biomassNumPermanentPlots = newBiomassNumPermanentPlots,
-              biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,
-              biomassStudentsT = newBiomassStudentsT,
-              biomassVariance = newBiomassVariance,
               boundary = multiPolygon(1),
               boundaryModifiedBy = createdBy,
               boundaryModifiedTime = createdTime,
@@ -79,35 +99,16 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
               name = newName,
-              plantErrorMargin = newPlantErrorMargin,
-              plantNumPermanentPlots = newPlantNumPermanentPlots,
-              plantNumTemporaryPlots = newPlantNumTemporaryPlots,
-              plantStudentsT = newPlantStudentsT,
-              plantVariance = newPlantVariance,
               plantingSiteId = plantingSiteId,
               stableId = StableId("initial"),
               targetPlantDensity = newTargetPlantDensity,
           )
 
-      store.updateStratum(stratumId) {
+      store.updateStratum(stratumId, expectedCounts) {
         it.copy(
             // Editable
-            baselineErrorMargin = BigDecimal(21),
-            baselineNumTemporaryPlots = 45,
-            baselineStudentsT = BigDecimal(24),
-            baselineVariance = BigDecimal(25),
-            biomassErrorMargin = newBiomassErrorMargin,
-            biomassNumPermanentPlots = newBiomassNumPermanentPlots,
-            biomassNumTemporaryPlots = newBiomassNumTemporaryPlots,
-            biomassStudentsT = newBiomassStudentsT,
-            biomassVariance = newBiomassVariance,
             initialPlantingDensity = newInitialPlantingDensity,
             name = newName,
-            plantErrorMargin = newPlantErrorMargin,
-            plantNumPermanentPlots = newPlantNumPermanentPlots,
-            plantNumTemporaryPlots = newPlantNumTemporaryPlots,
-            plantStudentsT = newPlantStudentsT,
-            plantVariance = newPlantVariance,
             targetPlantDensity = newTargetPlantDensity,
             // Not editable
             boundaryModifiedBy = user.userId,
@@ -120,6 +121,17 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       }
 
       assertEquals(expected, strataDao.fetchOneById(stratumId))
+      assertTableEquals(
+          expectedCounts.map { (type, counts) ->
+            dslContext.newRecord(STRATUM_PLOT_COUNTS, counts).apply {
+              this.stratumId = stratumId
+              observationTypeId = type
+              if (type == ObservationType.BaselineSurvey) {
+                numPermanentPlots = null
+              }
+            }
+          }
+      )
     }
 
     @Test
@@ -275,21 +287,37 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       val monitoring = setOf(ObservationType.Monitoring)
       val biomass = setOf(ObservationType.BiomassMeasurements)
       val baseline = setOf(ObservationType.BaselineSurvey)
+      val initialCounts = StratumPlotCounts(numPermanentPlots = 1, numTemporaryPlots = 1)
 
       listOf(
-              { row: StrataRow -> row.copy(baselineNumTemporaryPlots = 5) } to baseline,
-              { row: StrataRow -> row.copy(plantNumPermanentPlots = 2) } to monitoring,
-              { row: StrataRow -> row.copy(plantNumTemporaryPlots = 2) } to monitoring,
-              { row: StrataRow -> row.copy(biomassNumPermanentPlots = 2) } to biomass,
-              { row: StrataRow -> row.copy(biomassNumTemporaryPlots = 2) } to biomass,
-              { row: StrataRow ->
-                row.copy(plantNumPermanentPlots = 3, biomassNumTemporaryPlots = 3)
-              } to monitoring + biomass,
+              mapOf(
+                  ObservationType.BaselineSurvey to
+                      initialCounts.copy(numPermanentPlots = 0, numTemporaryPlots = 5)
+              ) to baseline,
+              mapOf(ObservationType.Monitoring to initialCounts.copy(numPermanentPlots = 2)) to
+                  monitoring,
+              mapOf(
+                  ObservationType.Monitoring to
+                      initialCounts.copy(numPermanentPlots = 2, numTemporaryPlots = 2)
+              ) to monitoring,
+              mapOf(
+                  ObservationType.BiomassMeasurements to initialCounts.copy(numPermanentPlots = 2)
+              ) to biomass,
+              mapOf(
+                  ObservationType.BiomassMeasurements to
+                      initialCounts.copy(numPermanentPlots = 2, numTemporaryPlots = 2)
+              ) to biomass,
+              mapOf(
+                  ObservationType.Monitoring to
+                      initialCounts.copy(numPermanentPlots = 3, numTemporaryPlots = 2),
+                  ObservationType.BiomassMeasurements to
+                      initialCounts.copy(numPermanentPlots = 2, numTemporaryPlots = 3),
+              ) to monitoring + biomass,
           )
-          .forEachIndexed { index, (editFunc, expectedTypes) ->
+          .forEachIndexed { index, (counts, expectedTypes) ->
             eventPublisher.clear()
 
-            store.updateStratum(stratumId, editFunc)
+            store.updateStratum(stratumId, counts) { it }
 
             eventPublisher.assertEventPublished(
                 StratumPlotCountsUpdatedEvent(plantingSiteId, stratumId, expectedTypes),

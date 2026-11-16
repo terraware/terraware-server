@@ -1,0 +1,18 @@
+DROP TRIGGER sync_stratum_plot_counts ON tracking.strata;
+DROP FUNCTION tracking.sync_stratum_plot_counts();
+
+ALTER TABLE tracking.strata
+    DROP COLUMN plant_variance,
+    DROP COLUMN plant_students_t,
+    DROP COLUMN plant_error_margin,
+    DROP COLUMN plant_num_permanent_plots,
+    DROP COLUMN plant_num_temporary_plots,
+    DROP COLUMN biomass_variance,
+    DROP COLUMN biomass_students_t,
+    DROP COLUMN biomass_error_margin,
+    DROP COLUMN biomass_num_permanent_plots,
+    DROP COLUMN biomass_num_temporary_plots,
+    DROP COLUMN baseline_variance,
+    DROP COLUMN baseline_students_t,
+    DROP COLUMN baseline_error_margin,
+    DROP COLUMN baseline_num_temporary_plots;

@@ -9,12 +9,14 @@ import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.StrataRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstrataRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.rectangle
@@ -275,6 +277,23 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
       val edited = service.applyEdit(existing.id, mapEdit)
 
       val newStratum = edited.strata.single { it.name == "Deleted" }
+      assertTableEquals(
+          mapOf(
+                  keptStratum.id to existing.strata.single { it.name == "Kept" },
+                  newStratum.id to existing.strata.single { it.name == "Deleted" },
+              )
+              .flatMap { (id, stratum) ->
+                ObservationType.entries.map { type ->
+                  dslContext.newRecord(STRATUM_PLOT_COUNTS, stratum.plotCounts(type)).apply {
+                    stratumId = id
+                    observationTypeId = type
+                    if (type == ObservationType.BaselineSurvey) {
+                      numPermanentPlots = null
+                    }
+                  }
+                }
+              }
+      )
 
       // Plot creation is random and geometry unions can add vertices, so boundaries are compared
       // via areas only.
@@ -312,25 +331,11 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
                         createdTime = editTime,
                         modifiedBy = user.userId,
                         modifiedTime = editTime,
-                        plantVariance = BigDecimal(850),
-                        plantStudentsT = BigDecimal("1.645"),
-                        plantErrorMargin = BigDecimal(10),
-                        plantNumPermanentPlots = 18,
-                        plantNumTemporaryPlots = 6,
                         areaHa = BigDecimal("12.500"),
                         initialPlantingDensity = BigDecimal(1500),
                         boundaryModifiedBy = user.userId,
                         boundaryModifiedTime = editTime,
                         stableId = StableId("Deleted-2"),
-                        baselineErrorMargin = BigDecimal(10),
-                        baselineNumTemporaryPlots = 24,
-                        baselineStudentsT = BigDecimal("1.645"),
-                        baselineVariance = BigDecimal(850),
-                        biomassErrorMargin = BigDecimal(10),
-                        biomassNumPermanentPlots = 18,
-                        biomassNumTemporaryPlots = 6,
-                        biomassStudentsT = BigDecimal("1.645"),
-                        biomassVariance = BigDecimal(850),
                     ),
                 ),
                 transform = { it.apply { boundary = null } },

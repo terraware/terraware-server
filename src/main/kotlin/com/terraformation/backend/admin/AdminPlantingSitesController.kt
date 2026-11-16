@@ -37,6 +37,7 @@ import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
+import com.terraformation.backend.tracking.model.StratumPlotCounts
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Hidden
 import java.math.BigDecimal
@@ -529,24 +530,38 @@ class AdminPlantingSitesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      plantingSiteStore.updateStratum(stratumId) { row ->
+      plantingSiteStore.updateStratum(
+          stratumId,
+          mapOf(
+              ObservationType.BaselineSurvey to
+                  StratumPlotCounts(
+                      errorMargin = baselineErrorMargin,
+                      numPermanentPlots = 0,
+                      numTemporaryPlots = baselineNumTemporary,
+                      studentsT = baselineStudentsT,
+                      variance = baselineVariance,
+                  ),
+              ObservationType.BiomassMeasurements to
+                  StratumPlotCounts(
+                      errorMargin = biomassErrorMargin,
+                      numPermanentPlots = biomassNumPermanent,
+                      numTemporaryPlots = biomassNumTemporary,
+                      studentsT = biomassStudentsT,
+                      variance = biomassVariance,
+                  ),
+              ObservationType.Monitoring to
+                  StratumPlotCounts(
+                      errorMargin = plantErrorMargin,
+                      numPermanentPlots = plantNumPermanent,
+                      numTemporaryPlots = plantNumTemporary,
+                      studentsT = plantStudentsT,
+                      variance = plantVariance,
+                  ),
+          ),
+      ) { row ->
         row.copy(
-            baselineErrorMargin = baselineErrorMargin,
-            baselineNumTemporaryPlots = baselineNumTemporary,
-            baselineStudentsT = baselineStudentsT,
-            baselineVariance = baselineVariance,
-            biomassErrorMargin = biomassErrorMargin,
-            biomassNumPermanentPlots = biomassNumPermanent,
-            biomassNumTemporaryPlots = biomassNumTemporary,
-            biomassStudentsT = biomassStudentsT,
-            biomassVariance = biomassVariance,
             initialPlantingDensity = initialPlantingDensity,
             name = name,
-            plantErrorMargin = plantErrorMargin,
-            plantNumPermanentPlots = plantNumPermanent,
-            plantNumTemporaryPlots = plantNumTemporary,
-            plantStudentsT = plantStudentsT,
-            plantVariance = plantVariance,
             targetPlantDensity = targetPlantDensity,
         )
       }

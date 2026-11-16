@@ -41,6 +41,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.StratumHistoriesRecord
+import com.terraformation.backend.db.tracking.tables.records.StratumPlotCountsRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstratumHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
@@ -58,6 +59,7 @@ import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_SUBST
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_SUBSTRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -969,21 +971,6 @@ class PlantingSiteStore(
               dslContext
                   .update(STRATA)
                   .set(AREA_HA, edit.desiredModel.areaHa)
-                  .set(BASELINE_ERROR_MARGIN, baselinePlotCounts.errorMargin)
-                  .set(BASELINE_NUM_TEMPORARY_PLOTS, baselinePlotCounts.numTemporaryPlots)
-                  .set(BASELINE_STUDENTS_T, baselinePlotCounts.studentsT)
-                  .set(BASELINE_VARIANCE, baselinePlotCounts.variance)
-                  .set(BIOMASS_ERROR_MARGIN, edit.desiredModel.biomassPlotCounts.errorMargin)
-                  .set(
-                      BIOMASS_NUM_PERMANENT_PLOTS,
-                      edit.desiredModel.biomassPlotCounts.numPermanentPlots,
-                  )
-                  .set(
-                      BIOMASS_NUM_TEMPORARY_PLOTS,
-                      edit.desiredModel.biomassPlotCounts.numTemporaryPlots,
-                  )
-                  .set(BIOMASS_STUDENTS_T, edit.desiredModel.biomassPlotCounts.studentsT)
-                  .set(BIOMASS_VARIANCE, edit.desiredModel.biomassPlotCounts.variance)
                   .set(BOUNDARY, edit.desiredModel.boundary)
                   .apply {
                     if (boundaryChanged) {
@@ -995,23 +982,16 @@ class PlantingSiteStore(
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
-                  .set(PLANT_ERROR_MARGIN, edit.desiredModel.plantPlotCounts.errorMargin)
-                  .set(
-                      PLANT_NUM_PERMANENT_PLOTS,
-                      edit.desiredModel.plantPlotCounts.numPermanentPlots,
-                  )
-                  .set(
-                      PLANT_NUM_TEMPORARY_PLOTS,
-                      edit.desiredModel.plantPlotCounts.numTemporaryPlots,
-                  )
-                  .set(PLANT_STUDENTS_T, edit.desiredModel.plantPlotCounts.studentsT)
-                  .set(PLANT_VARIANCE, edit.desiredModel.plantPlotCounts.variance)
                   .where(ID.eq(edit.existingModel.id))
                   .execute()
           if (rowsUpdated != 1) {
             throw StratumNotFoundException(edit.existingModel.id)
           }
         }
+        writePlotCounts(
+            edit.existingModel.id,
+            ObservationType.entries.associateWith { edit.desiredModel.plotCounts(it) },
+        )
         val stratumHistoryId =
             insertStratumHistory(
                 edit.desiredModel,
@@ -1241,38 +1221,40 @@ class PlantingSiteStore(
   fun updateStratum(
       stratumId: StratumId,
       editFunc: (StrataRow) -> StrataRow,
+  ) = updateStratum(stratumId, emptyMap(), editFunc)
+
+  fun updateStratum(
+      stratumId: StratumId,
+      plotCounts: Map<ObservationType, StratumPlotCounts>,
+      editFunc: (StrataRow) -> StrataRow,
   ) {
     requirePermissions { updateStratum(stratumId) }
 
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
+    val plotCountsField = plotCountsMultiset()
+    val initialPlotCounts =
+        dslContext
+            .select(plotCountsField)
+            .from(STRATA)
+            .where(STRATA.ID.eq(stratumId))
+            .fetchSingle(plotCountsField)!!
+    val editedPlotCounts = initialPlotCounts + plotCounts
 
     entityLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
       with(STRATA) {
         dslContext
             .update(STRATA)
-            .set(BASELINE_ERROR_MARGIN, edited.baselineErrorMargin)
-            .set(BASELINE_NUM_TEMPORARY_PLOTS, edited.baselineNumTemporaryPlots)
-            .set(BASELINE_STUDENTS_T, edited.baselineStudentsT)
-            .set(BASELINE_VARIANCE, edited.baselineVariance)
-            .set(BIOMASS_ERROR_MARGIN, edited.biomassErrorMargin)
-            .set(BIOMASS_NUM_PERMANENT_PLOTS, edited.biomassNumPermanentPlots)
-            .set(BIOMASS_NUM_TEMPORARY_PLOTS, edited.biomassNumTemporaryPlots)
-            .set(BIOMASS_STUDENTS_T, edited.biomassStudentsT)
-            .set(BIOMASS_VARIANCE, edited.biomassVariance)
             .set(INITIAL_PLANTING_DENSITY, edited.initialPlantingDensity)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, edited.name)
-            .set(PLANT_ERROR_MARGIN, edited.plantErrorMargin)
-            .set(PLANT_NUM_PERMANENT_PLOTS, edited.plantNumPermanentPlots)
-            .set(PLANT_NUM_TEMPORARY_PLOTS, edited.plantNumTemporaryPlots)
-            .set(PLANT_STUDENTS_T, edited.plantStudentsT)
-            .set(PLANT_VARIANCE, edited.plantVariance)
             .set(TARGET_PLANT_DENSITY, edited.targetPlantDensity)
             .where(ID.eq(stratumId))
             .execute()
       }
+
+      writePlotCounts(stratumId, editedPlotCounts)
 
       if (initial.name != edited.name) {
         with(SUBSTRATA) {
@@ -1314,29 +1296,14 @@ class PlantingSiteStore(
       // Published inside the transaction so that if observations can't be updated to match the
       // new plot counts, the change is rolled back.
       val changedObservationTypes =
-          setOfNotNull(
-              if (initial.baselineNumTemporaryPlots != edited.baselineNumTemporaryPlots) {
-                ObservationType.BaselineSurvey
-              } else {
-                null
-              },
-              if (
-                  initial.plantNumPermanentPlots != edited.plantNumPermanentPlots ||
-                      initial.plantNumTemporaryPlots != edited.plantNumTemporaryPlots
-              ) {
-                ObservationType.Monitoring
-              } else {
-                null
-              },
-              if (
-                  initial.biomassNumPermanentPlots != edited.biomassNumPermanentPlots ||
-                      initial.biomassNumTemporaryPlots != edited.biomassNumTemporaryPlots
-              ) {
-                ObservationType.BiomassMeasurements
-              } else {
-                null
-              },
-          )
+          ObservationType.entries
+              .filter { type ->
+                val before = initialPlotCounts.getValue(type)
+                val after = editedPlotCounts.getValue(type)
+                before.numPermanentPlots != after.numPermanentPlots ||
+                    before.numTemporaryPlots != after.numTemporaryPlots
+              }
+              .toSet()
       if (changedObservationTypes.isNotEmpty()) {
         eventPublisher.publishEvent(
             StratumPlotCountsUpdatedEvent(
@@ -1436,15 +1403,6 @@ class PlantingSiteStore(
     val strataRow =
         StrataRow(
             areaHa = stratum.areaHa,
-            baselineErrorMargin = baselinePlotCounts.errorMargin,
-            baselineNumTemporaryPlots = baselinePlotCounts.numTemporaryPlots,
-            baselineStudentsT = baselinePlotCounts.studentsT,
-            baselineVariance = baselinePlotCounts.variance,
-            biomassErrorMargin = stratum.biomassPlotCounts.errorMargin,
-            biomassNumPermanentPlots = stratum.biomassPlotCounts.numPermanentPlots,
-            biomassNumTemporaryPlots = stratum.biomassPlotCounts.numTemporaryPlots,
-            biomassStudentsT = stratum.biomassPlotCounts.studentsT,
-            biomassVariance = stratum.biomassPlotCounts.variance,
             boundary = stratum.boundary,
             boundaryModifiedBy = userId,
             boundaryModifiedTime = now,
@@ -1454,19 +1412,51 @@ class PlantingSiteStore(
             modifiedBy = userId,
             modifiedTime = now,
             name = stratum.name,
-            plantErrorMargin = stratum.plantPlotCounts.errorMargin,
-            plantNumPermanentPlots = stratum.plantPlotCounts.numPermanentPlots,
-            plantNumTemporaryPlots = stratum.plantPlotCounts.numTemporaryPlots,
-            plantStudentsT = stratum.plantPlotCounts.studentsT,
-            plantVariance = stratum.plantPlotCounts.variance,
             plantingSiteId = plantingSiteId,
             stableId = stratum.stableId,
             targetPlantDensity = stratum.targetPlantDensity,
         )
 
     strataDao.insert(strataRow)
+    writePlotCounts(
+        strataRow.id!!,
+        ObservationType.entries.associateWith { stratum.plotCounts(it) },
+    )
 
     return strataRow.id!!
+  }
+
+  private fun writePlotCounts(
+      stratumId: StratumId,
+      plotCounts: Map<ObservationType, StratumPlotCounts>,
+  ) {
+    dslContext
+        .batch(
+            plotCounts.map { (type, counts) ->
+              require(type != ObservationType.BaselineSurvey || counts.numPermanentPlots == 0) {
+                "Baseline surveys must have zero permanent plots"
+              }
+              val record =
+                  StratumPlotCountsRecord(
+                      stratumId = stratumId,
+                      observationTypeId = type,
+                      errorMargin = counts.errorMargin,
+                      numPermanentPlots =
+                          counts.numPermanentPlots.takeUnless {
+                            type == ObservationType.BaselineSurvey
+                          },
+                      numTemporaryPlots = counts.numTemporaryPlots,
+                      studentsT = counts.studentsT,
+                      variance = counts.variance,
+                  )
+              dslContext
+                  .insertInto(STRATUM_PLOT_COUNTS)
+                  .set(record)
+                  .onDuplicateKeyUpdate()
+                  .set(record)
+            }
+        )
+        .execute()
   }
 
   private fun createSubstratum(
@@ -2323,18 +2313,11 @@ class PlantingSiteStore(
     val latestObservationCompletedTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
 
+    val plotCountsField = plotCountsMultiset()
     return DSL.multiset(
             DSL.select(
                     STRATA.AREA_HA,
-                    STRATA.BASELINE_ERROR_MARGIN,
-                    STRATA.BASELINE_NUM_TEMPORARY_PLOTS,
-                    STRATA.BASELINE_STUDENTS_T,
-                    STRATA.BASELINE_VARIANCE,
-                    STRATA.BIOMASS_ERROR_MARGIN,
-                    STRATA.BIOMASS_NUM_PERMANENT_PLOTS,
-                    STRATA.BIOMASS_NUM_TEMPORARY_PLOTS,
-                    STRATA.BIOMASS_STUDENTS_T,
-                    STRATA.BIOMASS_VARIANCE,
+                    plotCountsField,
                     boundaryField,
                     STRATA.BOUNDARY_MODIFIED_TIME,
                     STRATA.ID,
@@ -2342,11 +2325,6 @@ class PlantingSiteStore(
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
                     STRATA.NAME,
-                    STRATA.PLANT_ERROR_MARGIN,
-                    STRATA.PLANT_NUM_PERMANENT_PLOTS,
-                    STRATA.PLANT_NUM_TEMPORARY_PLOTS,
-                    STRATA.PLANT_STUDENTS_T,
-                    STRATA.PLANT_VARIANCE,
                     STRATA.STABLE_ID,
                     substrataField,
                     STRATA.TARGET_PLANT_DENSITY,
@@ -2365,21 +2343,9 @@ class PlantingSiteStore(
             ExistingStratumModel(
                 areaHa = record[STRATA.AREA_HA]!!,
                 baselinePlotCounts =
-                    StratumPlotCounts(
-                        errorMargin = record[STRATA.BASELINE_ERROR_MARGIN]!!,
-                        numPermanentPlots = 0,
-                        numTemporaryPlots = record[STRATA.BASELINE_NUM_TEMPORARY_PLOTS]!!,
-                        studentsT = record[STRATA.BASELINE_STUDENTS_T]!!,
-                        variance = record[STRATA.BASELINE_VARIANCE]!!,
-                    ),
+                    record[plotCountsField]!!.getValue(ObservationType.BaselineSurvey),
                 biomassPlotCounts =
-                    StratumPlotCounts(
-                        errorMargin = record[STRATA.BIOMASS_ERROR_MARGIN]!!,
-                        numPermanentPlots = record[STRATA.BIOMASS_NUM_PERMANENT_PLOTS]!!,
-                        numTemporaryPlots = record[STRATA.BIOMASS_NUM_TEMPORARY_PLOTS]!!,
-                        studentsT = record[STRATA.BIOMASS_STUDENTS_T]!!,
-                        variance = record[STRATA.BIOMASS_VARIANCE]!!,
-                    ),
+                    record[plotCountsField]!!.getValue(ObservationType.BiomassMeasurements),
                 boundary = record[boundaryField]!! as MultiPolygon,
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
                 id = record[STRATA.ID]!!,
@@ -2387,14 +2353,7 @@ class PlantingSiteStore(
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
                 name = record[STRATA.NAME]!!,
-                plantPlotCounts =
-                    StratumPlotCounts(
-                        errorMargin = record[STRATA.PLANT_ERROR_MARGIN]!!,
-                        numPermanentPlots = record[STRATA.PLANT_NUM_PERMANENT_PLOTS]!!,
-                        numTemporaryPlots = record[STRATA.PLANT_NUM_TEMPORARY_PLOTS]!!,
-                        studentsT = record[STRATA.PLANT_STUDENTS_T]!!,
-                        variance = record[STRATA.PLANT_VARIANCE]!!,
-                    ),
+                plantPlotCounts = record[plotCountsField]!!.getValue(ObservationType.Monitoring),
                 stableId = record[STRATA.STABLE_ID]!!,
                 substrata = substrataField?.let { record[it] } ?: emptyList(),
                 targetPlantDensity = record[STRATA.TARGET_PLANT_DENSITY],
@@ -2402,6 +2361,34 @@ class PlantingSiteStore(
           }
         }
   }
+
+  private fun plotCountsMultiset(): Field<Map<ObservationType, StratumPlotCounts>> =
+      with(STRATUM_PLOT_COUNTS) {
+        DSL.multiset(
+                DSL.select(
+                        ERROR_MARGIN,
+                        NUM_PERMANENT_PLOTS,
+                        NUM_TEMPORARY_PLOTS,
+                        OBSERVATION_TYPE_ID,
+                        STUDENTS_T,
+                        VARIANCE,
+                    )
+                    .from(STRATUM_PLOT_COUNTS)
+                    .where(STRATUM_ID.eq(STRATA.ID))
+            )
+            .convertFrom { result ->
+              result.associate { record ->
+                record[OBSERVATION_TYPE_ID]!! to
+                    StratumPlotCounts(
+                        errorMargin = record[ERROR_MARGIN]!!,
+                        numPermanentPlots = record[NUM_PERMANENT_PLOTS] ?: 0,
+                        numTemporaryPlots = record[NUM_TEMPORARY_PLOTS]!!,
+                        studentsT = record[STUDENTS_T]!!,
+                        variance = record[VARIANCE]!!,
+                    )
+              }
+            }
+      }
 
   private fun stratumHistoriesMultiset(
       depth: PlantingSiteDepth,

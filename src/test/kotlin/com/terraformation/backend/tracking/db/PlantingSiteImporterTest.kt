@@ -8,6 +8,8 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -114,12 +116,23 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import("site", null, organizationId, listOf(Shapefile(listOf(substratumFeature))))
 
-      val strataRow = strataDao.findAll().first()
-      assertEquals(expectedPermanent, strataRow.plantNumPermanentPlots, "Permanent plots")
-      assertEquals(expectedTemporary, strataRow.plantNumTemporaryPlots, "Temporary plots")
+      val counts =
+          dslContext
+              .selectFrom(STRATUM_PLOT_COUNTS)
+              .fetchMap(STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID)
+      assertEquals(
+          expectedPermanent,
+          counts.getValue(ObservationType.Monitoring).numPermanentPlots,
+          "Permanent plots",
+      )
+      assertEquals(
+          expectedTemporary,
+          counts.getValue(ObservationType.Monitoring).numTemporaryPlots,
+          "Temporary plots",
+      )
       assertEquals(
           expectedPermanent + expectedTemporary,
-          strataRow.baselineNumTemporaryPlots,
+          counts.getValue(ObservationType.BaselineSurvey).numTemporaryPlots,
           "Baseline temporary plots",
       )
     }
@@ -148,7 +161,12 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           expected,
-          strataDao.findAll().single().baselineNumTemporaryPlots,
+          dslContext
+              .fetchSingle(
+                  STRATUM_PLOT_COUNTS,
+                  STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey),
+              )
+              .numTemporaryPlots,
           "Persisted baseline temporary plots",
       )
       assertEquals(
@@ -190,9 +208,13 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
-      val strataRow = strataDao.findAll().first()
-      assertEquals(32, strataRow.plantNumPermanentPlots, "Permanent plots")
-      assertEquals(10, strataRow.plantNumTemporaryPlots, "Temporary plots")
+      val counts =
+          dslContext.fetchSingle(
+              STRATUM_PLOT_COUNTS,
+              STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring),
+          )
+      assertEquals(32, counts.numPermanentPlots, "Permanent plots")
+      assertEquals(10, counts.numTemporaryPlots, "Temporary plots")
     }
 
     @Test
@@ -212,19 +234,25 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
-      val strataRow = strataDao.findAll().first()
-      assertEquals(19, strataRow.baselineNumTemporaryPlots, "Baseline temporary plots")
+      val counts =
+          dslContext
+              .selectFrom(STRATUM_PLOT_COUNTS)
+              .fetchMap(STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID)
+      val plantCounts = counts.getValue(ObservationType.Monitoring)
+      val baselineCounts = counts.getValue(ObservationType.BaselineSurvey)
+      val biomassCounts = counts.getValue(ObservationType.BiomassMeasurements)
+      assertEquals(19, baselineCounts.numTemporaryPlots, "Baseline temporary plots")
       assertEquals(
-          strataRow.plantErrorMargin,
-          strataRow.baselineErrorMargin,
+          plantCounts.errorMargin,
+          baselineCounts.errorMargin,
           "Baseline error margin",
       )
-      assertEquals(strataRow.plantStudentsT, strataRow.baselineStudentsT, "Baseline Student's t")
-      assertEquals(strataRow.plantVariance, strataRow.baselineVariance, "Baseline variance")
-      assertEquals(15, strataRow.biomassNumPermanentPlots, "Biomass permanent plots")
-      assertEquals(4, strataRow.biomassNumTemporaryPlots, "Biomass temporary plots")
-      assertEquals(15, strataRow.plantNumPermanentPlots, "Plant permanent plots")
-      assertEquals(4, strataRow.plantNumTemporaryPlots, "Plant temporary plots")
+      assertEquals(plantCounts.studentsT, baselineCounts.studentsT, "Baseline Student's t")
+      assertEquals(plantCounts.variance, baselineCounts.variance, "Baseline variance")
+      assertEquals(15, biomassCounts.numPermanentPlots, "Biomass permanent plots")
+      assertEquals(4, biomassCounts.numTemporaryPlots, "Biomass temporary plots")
+      assertEquals(15, plantCounts.numPermanentPlots, "Plant permanent plots")
+      assertEquals(4, plantCounts.numTemporaryPlots, "Plant temporary plots")
     }
   }
 

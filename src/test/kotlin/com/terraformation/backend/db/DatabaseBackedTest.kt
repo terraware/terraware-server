@@ -585,6 +585,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumSpeciesTargets
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.records.StratumPlotCountsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
@@ -3002,15 +3003,6 @@ abstract class DatabaseBackedTest {
     val row =
         StrataRow(
             areaHa = areaHa,
-            baselineErrorMargin = baselineErrorMargin,
-            baselineNumTemporaryPlots = baselineNumTemporaryPlots,
-            baselineStudentsT = baselineStudentsT,
-            baselineVariance = baselineVariance,
-            biomassErrorMargin = biomassErrorMargin,
-            biomassNumPermanentPlots = biomassNumPermanentPlots,
-            biomassNumTemporaryPlots = biomassNumTemporaryPlots,
-            biomassStudentsT = biomassStudentsT,
-            biomassVariance = biomassVariance,
             boundary = boundary,
             boundaryModifiedBy = boundaryModifiedBy,
             boundaryModifiedTime = boundaryModifiedTime,
@@ -3020,11 +3012,6 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
-            plantErrorMargin = plantErrorMargin,
-            plantNumPermanentPlots = plantNumPermanentPlots,
-            plantNumTemporaryPlots = plantNumTemporaryPlots,
-            plantStudentsT = plantStudentsT,
-            plantVariance = plantVariance,
             plantingSiteId = plantingSiteId,
             stableId = StableId("$stableId"),
             targetPlantDensity = targetPlantDensity,
@@ -3034,6 +3021,36 @@ abstract class DatabaseBackedTest {
     lastStrataRow = row
 
     val stratumId = row.id!!
+    dslContext
+        .batchInsert(
+            StratumPlotCountsRecord(
+                stratumId = stratumId,
+                observationTypeId = ObservationType.Monitoring,
+                errorMargin = plantErrorMargin,
+                numPermanentPlots = plantNumPermanentPlots,
+                numTemporaryPlots = plantNumTemporaryPlots,
+                studentsT = plantStudentsT,
+                variance = plantVariance,
+            ),
+            StratumPlotCountsRecord(
+                stratumId = stratumId,
+                observationTypeId = ObservationType.BiomassMeasurements,
+                errorMargin = biomassErrorMargin,
+                numPermanentPlots = biomassNumPermanentPlots,
+                numTemporaryPlots = biomassNumTemporaryPlots,
+                studentsT = biomassStudentsT,
+                variance = biomassVariance,
+            ),
+            StratumPlotCountsRecord(
+                stratumId = stratumId,
+                observationTypeId = ObservationType.BaselineSurvey,
+                errorMargin = baselineErrorMargin,
+                numTemporaryPlots = baselineNumTemporaryPlots,
+                studentsT = baselineStudentsT,
+                variance = baselineVariance,
+            ),
+        )
+        .execute()
     inserted.stratumIds.add(stratumId)
 
     if (insertHistory && inserted.plantingSiteHistoryIds.isNotEmpty()) {
