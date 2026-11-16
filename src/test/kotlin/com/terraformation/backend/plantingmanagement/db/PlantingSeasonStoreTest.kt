@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
@@ -229,138 +230,7 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class FetchList {
     @Test
-    fun `returns all seasons for planting site`() {
-      val id1 =
-          insertPlantingSeason(
-              name = "Spring 2025",
-              startDate = LocalDate.of(2025, 1, 1),
-              endDate = LocalDate.of(2025, 3, 31),
-              status = PlantingSeasonStatus.Upcoming,
-          )
-      val id2 =
-          insertPlantingSeason(
-              name = "Fall 2025",
-              startDate = LocalDate.of(2025, 9, 1),
-              endDate = LocalDate.of(2025, 11, 30),
-              status = PlantingSeasonStatus.Upcoming,
-          )
-
-      val result = store.fetchList(plantingSiteId)
-
-      assertEquals(
-          listOf(
-              ExistingPlantingSeasonModel(
-                  endDate = LocalDate.of(2025, 3, 31),
-                  id = id1,
-                  name = "Spring 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = LocalDate.of(2025, 1, 1),
-                  status = PlantingSeasonStatus.Upcoming,
-              ),
-              ExistingPlantingSeasonModel(
-                  endDate = LocalDate.of(2025, 11, 30),
-                  id = id2,
-                  name = "Fall 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = LocalDate.of(2025, 9, 1),
-                  status = PlantingSeasonStatus.Upcoming,
-              ),
-          ),
-          result,
-      )
-    }
-
-    @Test
-    fun `returns all seasons for organization`() {
-      val id1 =
-          insertPlantingSeason(
-              name = "Spring 2025",
-              startDate = LocalDate.of(2025, 1, 1),
-              endDate = LocalDate.of(2025, 3, 31),
-              status = PlantingSeasonStatus.Upcoming,
-          )
-      val id2 =
-          insertPlantingSeason(
-              name = "Fall 2025",
-              startDate = LocalDate.of(2025, 9, 1),
-              endDate = LocalDate.of(2025, 11, 30),
-              status = PlantingSeasonStatus.Upcoming,
-          )
-      insertOrganization()
-      insertOrganizationUser(role = Role.Manager)
-      insertPlantingSite()
-      insertPlantingSeason(
-          name = "Other Org Season",
-          startDate = LocalDate.of(2025, 1, 1),
-          endDate = LocalDate.of(2025, 3, 31),
-          status = PlantingSeasonStatus.Upcoming,
-      )
-
-      val result = store.fetchList(organizationId)
-
-      assertEquals(
-          listOf(
-              ExistingPlantingSeasonModel(
-                  endDate = LocalDate.of(2025, 3, 31),
-                  id = id1,
-                  name = "Spring 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = LocalDate.of(2025, 1, 1),
-                  status = PlantingSeasonStatus.Upcoming,
-              ),
-              ExistingPlantingSeasonModel(
-                  endDate = LocalDate.of(2025, 11, 30),
-                  id = id2,
-                  name = "Fall 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = LocalDate.of(2025, 9, 1),
-                  status = PlantingSeasonStatus.Upcoming,
-              ),
-          ),
-          result,
-      )
-    }
-
-    @Test
-    fun `returns empty list when no seasons exist for site`() {
-      val result = store.fetchList(plantingSiteId)
-
-      assertEquals(emptyList<ExistingPlantingSeasonModel>(), result)
-    }
-
-    @Test
-    fun `returns empty list when no seasons exist for org`() {
-      val result = store.fetchList(organizationId)
-
-      assertEquals(emptyList<ExistingPlantingSeasonModel>(), result)
-    }
-
-    @Test
-    fun `only returns seasons for the specified site`() {
-      val id = insertPlantingSeason(name = "Spring 2025", plantingSiteId = plantingSiteId)
-      insertPlantingSite()
-      val otherSiteId = inserted.plantingSiteId
-      insertPlantingSeason(name = "Spring 2025", plantingSiteId = otherSiteId)
-
-      val result = store.fetchList(plantingSiteId)
-
-      assertEquals(
-          listOf(
-              ExistingPlantingSeasonModel(
-                  endDate = LocalDate.EPOCH.plusDays(1),
-                  id = id,
-                  name = "Spring 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = LocalDate.EPOCH,
-                  status = PlantingSeasonStatus.Upcoming,
-              ),
-          ),
-          result,
-      )
-    }
-
-    @Test
-    fun `returns species targets for each season`() {
+    fun `returns all seasons for planting site or organization`() {
       val id1 =
           insertPlantingSeason(
               name = "Spring 2025",
@@ -380,10 +250,17 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val speciesId = insertSpecies()
       insertPlantingSeasonSpeciesTarget(plantingSeasonId = id1, quantity = 10)
       insertPlantingSeasonSpeciesTarget(plantingSeasonId = id2, quantity = 20)
+      insertOrganization()
+      insertOrganizationUser(role = Role.Manager)
+      insertPlantingSite()
+      insertPlantingSeason(
+          name = "Other Org Season",
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 3, 31),
+          status = PlantingSeasonStatus.Upcoming,
+      )
 
-      val result = store.fetchList(plantingSiteId)
-
-      assertEquals(
+      val expected =
           listOf(
               ExistingPlantingSeasonModel(
                   endDate = LocalDate.of(2025, 3, 31),
@@ -417,23 +294,66 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, 9, 1),
                   status = PlantingSeasonStatus.Upcoming,
               ),
+          )
+
+      assertAll(
+          { assertEquals(expected, store.fetchList(plantingSiteId), "Planting site seasons") },
+          { assertEquals(expected, store.fetchList(organizationId), "Organization seasons") },
+      )
+    }
+
+    @Test
+    fun `returns empty list when no seasons exist`() {
+      assertAll(
+          {
+            assertEquals(
+                emptyList<ExistingPlantingSeasonModel>(),
+                store.fetchList(plantingSiteId),
+                "Planting site seasons",
+            )
+          },
+          {
+            assertEquals(
+                emptyList<ExistingPlantingSeasonModel>(),
+                store.fetchList(organizationId),
+                "Organization seasons",
+            )
+          },
+      )
+    }
+
+    @Test
+    fun `only returns seasons for the specified site`() {
+      val id = insertPlantingSeason(name = "Spring 2025", plantingSiteId = plantingSiteId)
+      insertPlantingSite()
+      val otherSiteId = inserted.plantingSiteId
+      insertPlantingSeason(name = "Spring 2025", plantingSiteId = otherSiteId)
+
+      val result = store.fetchList(plantingSiteId)
+
+      assertEquals(
+          listOf(
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.EPOCH.plusDays(1),
+                  id = id,
+                  name = "Spring 2025",
+                  plantingSiteId = plantingSiteId,
+                  startDate = LocalDate.EPOCH,
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
           ),
           result,
       )
     }
 
     @Test
-    fun `throws PlantingSiteNotFoundException when user is not a member of the organization`() {
+    fun `throws exception when user is not a member of the organization`() {
       deleteOrganizationUser()
 
-      assertThrows<PlantingSiteNotFoundException> { store.fetchList(plantingSiteId) }
-    }
-
-    @Test
-    fun `throws OrganizationNotFoundException when user is not a member of the organization`() {
-      deleteOrganizationUser()
-
-      assertThrows<OrganizationNotFoundException> { store.fetchList(organizationId) }
+      assertAll(
+          { assertThrows<PlantingSiteNotFoundException> { store.fetchList(plantingSiteId) } },
+          { assertThrows<OrganizationNotFoundException> { store.fetchList(organizationId) } },
+      )
     }
   }
 
@@ -451,9 +371,7 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               status = PlantingSeasonStatus.Upcoming,
           )
 
-      val result = store.fetchById(id)
-
-      assertEquals(
+      val expected =
           ExistingPlantingSeasonModel(
               endDate = endDate,
               id = id,
@@ -461,35 +379,17 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               plantingSiteId = plantingSiteId,
               startDate = startDate,
               status = PlantingSeasonStatus.Upcoming,
-          ),
-          result,
-      )
-    }
-
-    @Test
-    fun `returns species targets when they exist`() {
-      val startDate = LocalDate.of(2025, 1, 1)
-      val endDate = LocalDate.of(2025, 3, 31)
-      val id =
-          insertPlantingSeason(
-              name = "Spring 2025",
-              startDate = startDate,
-              endDate = endDate,
-              status = PlantingSeasonStatus.Upcoming,
           )
+
+      assertEquals(expected, store.fetchById(id))
+
       insertStratum()
       val substratumId = insertSubstratum()
       val speciesId = insertSpecies()
       insertPlantingSeasonSpeciesTarget(plantingSeasonId = id, quantity = 42)
 
-      val result = store.fetchById(id)
-
       assertEquals(
-          ExistingPlantingSeasonModel(
-              endDate = endDate,
-              id = id,
-              name = "Spring 2025",
-              plantingSiteId = plantingSiteId,
+          expected.copy(
               speciesTargets =
                   listOf(
                       PlantingSeasonSpeciesTargetModel(
@@ -497,11 +397,10 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           speciesId = speciesId,
                           quantity = 42,
                       )
-                  ),
-              startDate = startDate,
-              status = PlantingSeasonStatus.Upcoming,
+                  )
           ),
-          result,
+          store.fetchById(id),
+          "Season with species targets",
       )
     }
 

@@ -176,7 +176,7 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `moves file earlier in list if requested`() {
+    fun `reorders files in list`() {
       val fileId1 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 1)
       val fileId2 = insertFileForActivity()
@@ -186,43 +186,25 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val fileId4 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 4)
 
-      store.updateMedia(activityId, fileId3) { it.copy(listPosition = 2) }
-
-      assertListPositions(listOf(fileId1, fileId3, fileId2, fileId4))
-    }
-
-    @Test
-    fun `maintains existing list position if requested`() {
-      val fileId1 = insertFileForActivity()
-      insertActivityMediaFile(listPosition = 1)
-      val fileId2 = insertFileForActivity()
-      insertActivityMediaFile(listPosition = 2)
-      val fileId3 = insertFileForActivity()
-      insertActivityMediaFile(listPosition = 3)
-
+      // Maintains existing position if no list position update requested
       store.updateMedia(activityId, fileId2) { it.copy(caption = "New caption") }
 
-      assertListPositions(listOf(fileId1, fileId2, fileId3))
-    }
+      assertListPositions(listOf(fileId1, fileId2, fileId3, fileId4), "No position change")
 
-    @Test
-    fun `moves file later in list if requested`() {
-      val fileId1 = insertFileForActivity()
-      insertActivityMediaFile(listPosition = 1)
-      val fileId2 = insertFileForActivity()
-      insertActivityMediaFile(listPosition = 2)
-      val fileId3 = insertFileForActivity()
-      insertActivityMediaFile(listPosition = 3)
-      val fileId4 = insertFileForActivity()
-      insertActivityMediaFile(listPosition = 4)
+      // Moves file earlier in list
+      store.updateMedia(activityId, fileId3) { it.copy(listPosition = 2) }
 
-      store.updateMedia(activityId, fileId2) { it.copy(listPosition = 3) }
+      assertListPositions(listOf(fileId1, fileId3, fileId2, fileId4), "Moved earlier in list")
 
-      assertListPositions(listOf(fileId1, fileId3, fileId2, fileId4), "Moved to middle of list")
+      // Moves file later in list to a middle position
+      store.updateMedia(activityId, fileId1) { it.copy(listPosition = 3) }
 
+      assertListPositions(listOf(fileId3, fileId2, fileId1, fileId4), "Moved later to middle")
+
+      // Moves file later in list to the end
       store.updateMedia(activityId, fileId3) { it.copy(listPosition = 4) }
 
-      assertListPositions(listOf(fileId1, fileId2, fileId4, fileId3), "Moved to end of list")
+      assertListPositions(listOf(fileId2, fileId1, fileId4, fileId3), "Moved to end of list")
     }
 
     @Test
