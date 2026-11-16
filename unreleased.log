@@ -1,3 +1,7 @@
+57d48afa Merge multi-scenario indicator and site-notification tests (#5422)
+70437f57 Merge sequential-state test variants into single tests (#5421)
+c22b7fc0 Fold same-fixture test variants into assertAll tests (#5420)
+05e41fcc Parameterize EXIF orientation tests in ImageUtilsTest (#5419)
 a462b490 Use stratum_plot_selection_parameters and drop legacy strata plot count columns (#5434)
 7bebec00 Add stratum_plot_selection_parameters table (#5433)
 674d4cb9 SW-9286 Allow deleting projects with draft planting sites (#5407)
