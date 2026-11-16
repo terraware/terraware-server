@@ -1,3 +1,5 @@
+7e644de8 Only check repo.osgeo.org for dependencies that are hosted there (#5424)
+2b95a8e8 Update dependencies (#5416)
 c1dcdf63 Use Jackson 3 for Thymeleaf JavaScript inlining (#5415)
 8b59926a SW-9188 Skip strata with zero plot counts for all observation types (#5409)
 0812c78a SW-9188 Email organization when observation plots are reassigned (#5405)
