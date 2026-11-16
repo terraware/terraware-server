@@ -4,6 +4,7 @@ import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
@@ -14,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
@@ -54,7 +56,14 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       )
       assertEquals(
           temporaryTotal,
-          strataDao.findAll().single().baselineNumTemporaryPlots,
+          dslContext
+              .fetchSingle(
+                  STRATUM_PLOT_SELECTION_PARAMETERS,
+                  STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(
+                      ObservationType.BaselineSurvey
+                  ),
+              )
+              .numTemporaryPlots,
           "Persisted baseline temporary total",
       )
     }
@@ -282,6 +291,19 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
 
       val actualStrata = strataDao.findAll().associateBy { it.name!! }
 
+      assertTableEquals(
+          newModel.strata.flatMap { stratum ->
+            ObservationType.entries.map { type ->
+              dslContext
+                  .newRecord(STRATUM_PLOT_SELECTION_PARAMETERS, stratum.plotCounts(type))
+                  .apply {
+                    stratumId = actualStrata.getValue(stratum.name).id
+                    observationTypeId = type
+                  }
+            }
+          }
+      )
+
       assertGeometryEquals(
           stratum1Boundary,
           actualStrata["Stratum 1"]?.boundary,
@@ -295,46 +317,16 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertSetEquals(
           setOf(
               commonStrataRow.copy(
-                  baselineErrorMargin = BigDecimal(31),
-                  baselineNumTemporaryPlots = 65,
-                  baselineStudentsT = BigDecimal(34),
-                  baselineVariance = BigDecimal(35),
-                  biomassErrorMargin = BigDecimal(21),
-                  biomassNumPermanentPlots = 22,
-                  biomassNumTemporaryPlots = 23,
-                  biomassStudentsT = BigDecimal(24),
-                  biomassVariance = BigDecimal(25),
                   id = actualStrata["Stratum 1"]?.id,
                   initialPlantingDensity = BigDecimal(6),
                   name = "Stratum 1",
-                  plantErrorMargin = BigDecimal(1),
-                  plantNumPermanentPlots = 3,
-                  plantNumTemporaryPlots = 4,
-                  plantStudentsT = BigDecimal(5),
-                  plantVariance = BigDecimal(7),
                   stableId = StableId("Stratum 1"),
                   targetPlantDensity = BigDecimal(8),
               ),
               commonStrataRow.copy(
-                  baselineErrorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
-                  baselineNumTemporaryPlots =
-                      StratumModel.DEFAULT_NUM_PERMANENT_PLOTS +
-                          StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
-                  baselineStudentsT = StratumModel.DEFAULT_STUDENTS_T,
-                  baselineVariance = StratumModel.DEFAULT_VARIANCE,
-                  biomassErrorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
-                  biomassNumPermanentPlots = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
-                  biomassNumTemporaryPlots = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
-                  biomassStudentsT = StratumModel.DEFAULT_STUDENTS_T,
-                  biomassVariance = StratumModel.DEFAULT_VARIANCE,
                   id = actualStrata["Stratum 2"]?.id,
                   initialPlantingDensity = StratumModel.DEFAULT_INITIAL_PLANTING_DENSITY,
                   name = "Stratum 2",
-                  plantErrorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
-                  plantNumPermanentPlots = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
-                  plantNumTemporaryPlots = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
-                  plantStudentsT = StratumModel.DEFAULT_STUDENTS_T,
-                  plantVariance = StratumModel.DEFAULT_VARIANCE,
                   stableId = StableId("Stratum 2"),
               ),
           ),
