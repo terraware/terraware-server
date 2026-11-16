@@ -446,6 +446,13 @@ class TerrawareServerConfig(
       /** Keycloak client ID that exchanges zero-tap tickets for tokens. */
       @DefaultValue("terraformation-mobile-app-v2")
       val audience: String = "terraformation-mobile-app-v2",
+      /** How long a client has to use a WebAuthn challenge. */
+      @DefaultValue("PT5M") val challengeLifetime: Duration = Duration.ofMinutes(5),
+      /**
+       * WebAuthn relying party ID: the domain name the Android app is associated with. Defaults to
+       * the host name of [webAppUrl].
+       */
+      val rpId: String? = null,
       /**
        * EC P-256 private key for signing zero-tap tickets: the base64-encoded PKCS#8 body of a PEM
        * file, without the BEGIN/END lines.

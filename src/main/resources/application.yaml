@@ -139,6 +139,7 @@ springdoc:
   # internal data model classes we don't actually expose to clients.
   packages-to-scan:
     - "com.terraformation.backend.accelerator.api"
+    - "com.terraformation.backend.auth.zerotap.api"
     - "com.terraformation.backend.documentproducer.api"
     - "com.terraformation.backend.customer.api"
     - "com.terraformation.backend.device.api"
