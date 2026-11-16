@@ -349,7 +349,7 @@ val ENUM_TABLES =
                     "observation_types",
                     listOf(
                         "observations\\.observation_type_id",
-                        "stratum_plot_counts\\.observation_type_id",
+                        "stratum_plot_selection_parameters\\.observation_type_id",
                     ),
                 ),
                 EnumTable(
@@ -857,8 +857,8 @@ val EMBEDDABLES =
             .withTables("public.species_plant_material_sourcing_methods")
             .withColumns("species_id", "plant_material_sourcing_method_id"),
         EmbeddableDefinitionType()
-            .withName("stratum_plot_count_id")
-            .withTables("tracking.stratum_plot_counts")
+            .withName("stratum_plot_selection_parameter_id")
+            .withTables("tracking.stratum_plot_selection_parameters")
             .withColumns("stratum_id", "observation_type_id"),
         EmbeddableDefinitionType()
             .withName("stratum_species_target_id")

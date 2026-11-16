@@ -685,12 +685,12 @@ COMMENT ON TABLE tracking.stratum_species_targets IS 'Which species are intended
 COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum''s planting site.';
 
 COMMENT ON TABLE tracking.strata IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.';
-COMMENT ON TABLE tracking.stratum_plot_counts IS 'Plot count parameters for each observation type in a stratum.';
-COMMENT ON COLUMN tracking.stratum_plot_counts.error_margin IS 'Error margin for the plot count statistical formula.';
-COMMENT ON COLUMN tracking.stratum_plot_counts.num_permanent_plots IS 'Number of permanent plots to assign to the next observation, typically derived from a statistical formula. Null for baseline surveys.';
-COMMENT ON COLUMN tracking.stratum_plot_counts.num_temporary_plots IS 'Number of temporary plots to assign to the next observation. For baseline surveys, includes any permanent plots from the statistical formula.';
-COMMENT ON COLUMN tracking.stratum_plot_counts.students_t IS 'Student''s t value for the plot count statistical formula.';
-COMMENT ON COLUMN tracking.stratum_plot_counts.variance IS 'Variance for the plot count statistical formula.';
+COMMENT ON TABLE tracking.stratum_plot_selection_parameters IS 'Plot selection parameters for each observation type in a stratum.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.error_margin IS 'Error margin for the plot count statistical formula.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_permanent_plots IS 'Number of permanent plots to assign to the next observation, typically derived from a statistical formula. Null for baseline surveys.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_temporary_plots IS 'Number of temporary plots to assign to the next observation. For baseline surveys, includes any permanent plots from the statistical formula.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.students_t IS 'Student''s t value for the plot count statistical formula.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.variance IS 'Variance for the plot count statistical formula.';
 
 COMMENT ON COLUMN tracking.strata.baseline_error_margin IS 'Error margin for the baseline survey plot count statistical formula.';
 COMMENT ON COLUMN tracking.strata.baseline_num_temporary_plots IS 'Number of temporary plots to assign to the next baseline survey. Includes any permanent plots from the statistical formula.';
