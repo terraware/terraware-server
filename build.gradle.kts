@@ -60,8 +60,15 @@ version = computeGitVersion("0.1")
 extra["kotlin-coroutines.version"] = "1.11.0"
 
 repositories {
-  maven("https://repo.osgeo.org/repository/geotools-releases/")
   mavenCentral()
+
+  maven("https://repo.osgeo.org/repository/geotools-releases/") {
+    content {
+      includeGroup("it.geosolutions.jgridshift")
+      includeGroup("org.apache.xml")
+      includeGroupAndSubgroups("org.geotools")
+    }
+  }
 }
 
 dependencies {
