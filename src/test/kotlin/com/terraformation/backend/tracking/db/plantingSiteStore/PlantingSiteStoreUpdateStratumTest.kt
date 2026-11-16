@@ -126,9 +126,6 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
             dslContext.newRecord(STRATUM_PLOT_SELECTION_PARAMETERS, counts).apply {
               this.stratumId = stratumId
               observationTypeId = type
-              if (type == ObservationType.BaselineSurvey) {
-                numPermanentPlots = null
-              }
             }
           }
       )

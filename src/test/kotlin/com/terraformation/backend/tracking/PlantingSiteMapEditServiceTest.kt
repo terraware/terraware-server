@@ -289,9 +289,6 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
                       .apply {
                         stratumId = id
                         observationTypeId = type
-                        if (type == ObservationType.BaselineSurvey) {
-                          numPermanentPlots = null
-                        }
                       }
                 }
               }

@@ -1441,10 +1441,7 @@ class PlantingSiteStore(
                       stratumId = stratumId,
                       observationTypeId = type,
                       errorMargin = parameters.errorMargin,
-                      numPermanentPlots =
-                          parameters.numPermanentPlots.takeUnless {
-                            type == ObservationType.BaselineSurvey
-                          },
+                      numPermanentPlots = parameters.numPermanentPlots,
                       numTemporaryPlots = parameters.numTemporaryPlots,
                       studentsT = parameters.studentsT,
                       variance = parameters.variance,
@@ -2382,7 +2379,7 @@ class PlantingSiteStore(
                 record[OBSERVATION_TYPE_ID]!! to
                     StratumPlotCounts(
                         errorMargin = record[ERROR_MARGIN]!!,
-                        numPermanentPlots = record[NUM_PERMANENT_PLOTS] ?: 0,
+                        numPermanentPlots = record[NUM_PERMANENT_PLOTS]!!,
                         numTemporaryPlots = record[NUM_TEMPORARY_PLOTS]!!,
                         studentsT = record[STUDENTS_T]!!,
                         variance = record[VARIANCE]!!,

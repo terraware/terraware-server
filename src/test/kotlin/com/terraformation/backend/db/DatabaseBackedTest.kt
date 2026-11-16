@@ -3045,6 +3045,7 @@ abstract class DatabaseBackedTest {
                 stratumId = stratumId,
                 observationTypeId = ObservationType.BaselineSurvey,
                 errorMargin = baselineErrorMargin,
+                numPermanentPlots = 0,
                 numTemporaryPlots = baselineNumTemporaryPlots,
                 studentsT = baselineStudentsT,
                 variance = baselineVariance,

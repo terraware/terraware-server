@@ -299,9 +299,6 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   .apply {
                     stratumId = actualStrata.getValue(stratum.name).id
                     observationTypeId = type
-                    if (type == ObservationType.BaselineSurvey) {
-                      numPermanentPlots = null
-                    }
                   }
             }
           }

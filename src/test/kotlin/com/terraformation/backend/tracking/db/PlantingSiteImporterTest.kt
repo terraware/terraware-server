@@ -244,7 +244,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
                 stratumId = stratumId,
                 observationTypeId = type,
                 errorMargin = BigDecimal(70),
-                numPermanentPlots = if (type == ObservationType.BaselineSurvey) null else 15,
+                numPermanentPlots = if (type == ObservationType.BaselineSurvey) 0 else 15,
                 numTemporaryPlots = if (type == ObservationType.BaselineSurvey) 19 else 4,
                 studentsT = BigDecimal(1.7),
                 variance = BigDecimal(70000),
