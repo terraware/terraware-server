@@ -347,10 +347,7 @@ val ENUM_TABLES =
                 ),
                 EnumTable(
                     "observation_types",
-                    listOf(
-                        "observations\\.observation_type_id",
-                        "stratum_plot_selection_parameters\\.observation_type_id",
-                    ),
+                    listOf(".*\\.observation_type_id"),
                 ),
                 EnumTable(
                     "planting_date_request_statuses",

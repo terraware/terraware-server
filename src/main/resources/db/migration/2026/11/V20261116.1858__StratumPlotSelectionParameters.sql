@@ -8,7 +8,7 @@ CREATE TABLE tracking.stratum_plot_selection_parameters (
     num_temporary_plots INTEGER NOT NULL,
     PRIMARY KEY (stratum_id, observation_type_id),
     CHECK ((observation_type_id = 3) = (num_permanent_plots IS NULL)),
-    CONSTRAINT must_have_permanent_clusters CHECK (observation_type_id <> 1 OR num_permanent_plots > 0),
+    CONSTRAINT must_have_permanent_plots CHECK (observation_type_id <> 1 OR num_permanent_plots > 0),
     CONSTRAINT no_negative_temporary_plots CHECK (observation_type_id <> 1 OR num_temporary_plots >= 0)
 );
 
