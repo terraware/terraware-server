@@ -5,7 +5,7 @@ import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
@@ -19,12 +19,34 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() {
 
   @Nested
   inner class UpdateStratum {
+    @ParameterizedTest
+    @EnumSource(ObservationType::class)
+    fun `only baseline surveys have a null permanent count`(observationType: ObservationType) {
+      insertPlantingSite()
+      insertStratum()
+
+      assertThrows<DataIntegrityViolationException> {
+        dslContext
+            .update(STRATUM_PLOT_SELECTION_PARAMETERS)
+            .set(
+                STRATUM_PLOT_SELECTION_PARAMETERS.NUM_PERMANENT_PLOTS,
+                if (observationType == ObservationType.BaselineSurvey) 1 else null,
+            )
+            .where(STRATUM_PLOT_SELECTION_PARAMETERS.STRATUM_ID.eq(inserted.stratumId))
+            .and(STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(observationType))
+            .execute()
+      }
+    }
+
     @Test
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)
@@ -123,7 +145,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       assertEquals(expected, strataDao.fetchOneById(stratumId))
       assertTableEquals(
           expectedCounts.map { (type, counts) ->
-            dslContext.newRecord(STRATUM_PLOT_COUNTS, counts).apply {
+            dslContext.newRecord(STRATUM_PLOT_SELECTION_PARAMETERS, counts).apply {
               this.stratumId = stratumId
               observationTypeId = type
               if (type == ObservationType.BaselineSurvey) {

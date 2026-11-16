@@ -16,7 +16,7 @@ import com.terraformation.backend.db.tracking.tables.records.SubstrataRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.rectangle
@@ -284,13 +284,15 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
               )
               .flatMap { (id, stratum) ->
                 ObservationType.entries.map { type ->
-                  dslContext.newRecord(STRATUM_PLOT_COUNTS, stratum.plotCounts(type)).apply {
-                    stratumId = id
-                    observationTypeId = type
-                    if (type == ObservationType.BaselineSurvey) {
-                      numPermanentPlots = null
-                    }
-                  }
+                  dslContext
+                      .newRecord(STRATUM_PLOT_SELECTION_PARAMETERS, stratum.plotCounts(type))
+                      .apply {
+                        stratumId = id
+                        observationTypeId = type
+                        if (type == ObservationType.BaselineSurvey) {
+                          numPermanentPlots = null
+                        }
+                      }
                 }
               }
       )

@@ -15,7 +15,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
@@ -58,8 +58,10 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           temporaryTotal,
           dslContext
               .fetchSingle(
-                  STRATUM_PLOT_COUNTS,
-                  STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey),
+                  STRATUM_PLOT_SELECTION_PARAMETERS,
+                  STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(
+                      ObservationType.BaselineSurvey
+                  ),
               )
               .numTemporaryPlots,
           "Persisted baseline temporary total",
@@ -292,13 +294,15 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertTableEquals(
           newModel.strata.flatMap { stratum ->
             ObservationType.entries.map { type ->
-              dslContext.newRecord(STRATUM_PLOT_COUNTS, stratum.plotCounts(type)).apply {
-                stratumId = actualStrata.getValue(stratum.name).id
-                observationTypeId = type
-                if (type == ObservationType.BaselineSurvey) {
-                  numPermanentPlots = null
-                }
-              }
+              dslContext
+                  .newRecord(STRATUM_PLOT_SELECTION_PARAMETERS, stratum.plotCounts(type))
+                  .apply {
+                    stratumId = actualStrata.getValue(stratum.name).id
+                    observationTypeId = type
+                    if (type == ObservationType.BaselineSurvey) {
+                      numPermanentPlots = null
+                    }
+                  }
             }
           }
       )

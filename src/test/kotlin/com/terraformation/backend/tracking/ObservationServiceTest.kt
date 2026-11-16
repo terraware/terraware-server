@@ -72,7 +72,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.eventlog.EventLogPayloadTransformer
 import com.terraformation.backend.eventlog.PersistentEvent
@@ -2159,10 +2159,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       // observations, the allocator would use 3 permanent plots (75%) and 1 temporary plot. If the
       // first observation's plots were treated as observed, all 4 would stay permanent.
       dslContext
-          .update(STRATUM_PLOT_COUNTS)
-          .set(STRATUM_PLOT_COUNTS.NUM_TEMPORARY_PLOTS, 4)
-          .where(STRATUM_PLOT_COUNTS.STRATUM_ID.eq(stratumId))
-          .and(STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+          .update(STRATUM_PLOT_SELECTION_PARAMETERS)
+          .set(STRATUM_PLOT_SELECTION_PARAMETERS.NUM_TEMPORARY_PLOTS, 4)
+          .where(STRATUM_PLOT_SELECTION_PARAMETERS.STRATUM_ID.eq(stratumId))
+          .and(STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
           .execute()
 
       val secondObservationId =
@@ -4948,10 +4948,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val plotsBefore = fetchPlotIdsByStratum(observationId)
 
       dslContext
-          .update(STRATUM_PLOT_COUNTS)
-          .set(STRATUM_PLOT_COUNTS.NUM_TEMPORARY_PLOTS, 2)
-          .where(STRATUM_PLOT_COUNTS.STRATUM_ID.eq(editedStratumId))
-          .and(STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+          .update(STRATUM_PLOT_SELECTION_PARAMETERS)
+          .set(STRATUM_PLOT_SELECTION_PARAMETERS.NUM_TEMPORARY_PLOTS, 2)
+          .where(STRATUM_PLOT_SELECTION_PARAMETERS.STRATUM_ID.eq(editedStratumId))
+          .and(STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
           .execute()
 
       eventPublisher.clear()
@@ -5131,10 +5131,14 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           .execute()
 
       dslContext
-          .update(STRATUM_PLOT_COUNTS)
-          .set(STRATUM_PLOT_COUNTS.NUM_TEMPORARY_PLOTS, 0)
-          .where(STRATUM_PLOT_COUNTS.STRATUM_ID.eq(editedStratumId))
-          .and(STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey))
+          .update(STRATUM_PLOT_SELECTION_PARAMETERS)
+          .set(STRATUM_PLOT_SELECTION_PARAMETERS.NUM_TEMPORARY_PLOTS, 0)
+          .where(STRATUM_PLOT_SELECTION_PARAMETERS.STRATUM_ID.eq(editedStratumId))
+          .and(
+              STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(
+                  ObservationType.BaselineSurvey
+              )
+          )
           .execute()
 
       val observationsBefore = dslContext.fetch(OBSERVATIONS)

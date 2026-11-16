@@ -9,7 +9,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -118,8 +118,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       val counts =
           dslContext
-              .selectFrom(STRATUM_PLOT_COUNTS)
-              .fetchMap(STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID)
+              .selectFrom(STRATUM_PLOT_SELECTION_PARAMETERS)
+              .fetchMap(STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID)
       assertEquals(
           expectedPermanent,
           counts.getValue(ObservationType.Monitoring).numPermanentPlots,
@@ -163,8 +163,10 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           expected,
           dslContext
               .fetchSingle(
-                  STRATUM_PLOT_COUNTS,
-                  STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey),
+                  STRATUM_PLOT_SELECTION_PARAMETERS,
+                  STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(
+                      ObservationType.BaselineSurvey
+                  ),
               )
               .numTemporaryPlots,
           "Persisted baseline temporary plots",
@@ -210,8 +212,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       val counts =
           dslContext.fetchSingle(
-              STRATUM_PLOT_COUNTS,
-              STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring),
+              STRATUM_PLOT_SELECTION_PARAMETERS,
+              STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring),
           )
       assertEquals(32, counts.numPermanentPlots, "Permanent plots")
       assertEquals(10, counts.numTemporaryPlots, "Temporary plots")
@@ -236,8 +238,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       val counts =
           dslContext
-              .selectFrom(STRATUM_PLOT_COUNTS)
-              .fetchMap(STRATUM_PLOT_COUNTS.OBSERVATION_TYPE_ID)
+              .selectFrom(STRATUM_PLOT_SELECTION_PARAMETERS)
+              .fetchMap(STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID)
       val plantCounts = counts.getValue(ObservationType.Monitoring)
       val baselineCounts = counts.getValue(ObservationType.BaselineSurvey)
       val biomassCounts = counts.getValue(ObservationType.BiomassMeasurements)

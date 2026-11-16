@@ -41,7 +41,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.StratumHistoriesRecord
-import com.terraformation.backend.db.tracking.tables.records.StratumPlotCountsRecord
+import com.terraformation.backend.db.tracking.tables.records.StratumPlotSelectionParametersRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstratumHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
@@ -59,7 +59,7 @@ import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_SUBST
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_SUBSTRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_COUNTS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -1437,7 +1437,7 @@ class PlantingSiteStore(
                 "Baseline surveys must have zero permanent plots"
               }
               val record =
-                  StratumPlotCountsRecord(
+                  StratumPlotSelectionParametersRecord(
                       stratumId = stratumId,
                       observationTypeId = type,
                       errorMargin = counts.errorMargin,
@@ -1450,7 +1450,7 @@ class PlantingSiteStore(
                       variance = counts.variance,
                   )
               dslContext
-                  .insertInto(STRATUM_PLOT_COUNTS)
+                  .insertInto(STRATUM_PLOT_SELECTION_PARAMETERS)
                   .set(record)
                   .onDuplicateKeyUpdate()
                   .set(record)
@@ -2363,7 +2363,7 @@ class PlantingSiteStore(
   }
 
   private fun plotCountsMultiset(): Field<Map<ObservationType, StratumPlotCounts>> =
-      with(STRATUM_PLOT_COUNTS) {
+      with(STRATUM_PLOT_SELECTION_PARAMETERS) {
         DSL.multiset(
                 DSL.select(
                         ERROR_MARGIN,
@@ -2373,7 +2373,7 @@ class PlantingSiteStore(
                         STUDENTS_T,
                         VARIANCE,
                     )
-                    .from(STRATUM_PLOT_COUNTS)
+                    .from(STRATUM_PLOT_SELECTION_PARAMETERS)
                     .where(STRATUM_ID.eq(STRATA.ID))
             )
             .convertFrom { result ->

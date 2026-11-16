@@ -585,7 +585,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumSpeciesTargets
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
-import com.terraformation.backend.db.tracking.tables.records.StratumPlotCountsRecord
+import com.terraformation.backend.db.tracking.tables.records.StratumPlotSelectionParametersRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
@@ -3023,7 +3023,7 @@ abstract class DatabaseBackedTest {
     val stratumId = row.id!!
     dslContext
         .batchInsert(
-            StratumPlotCountsRecord(
+            StratumPlotSelectionParametersRecord(
                 stratumId = stratumId,
                 observationTypeId = ObservationType.Monitoring,
                 errorMargin = plantErrorMargin,
@@ -3032,7 +3032,7 @@ abstract class DatabaseBackedTest {
                 studentsT = plantStudentsT,
                 variance = plantVariance,
             ),
-            StratumPlotCountsRecord(
+            StratumPlotSelectionParametersRecord(
                 stratumId = stratumId,
                 observationTypeId = ObservationType.BiomassMeasurements,
                 errorMargin = biomassErrorMargin,
@@ -3041,7 +3041,7 @@ abstract class DatabaseBackedTest {
                 studentsT = biomassStudentsT,
                 variance = biomassVariance,
             ),
-            StratumPlotCountsRecord(
+            StratumPlotSelectionParametersRecord(
                 stratumId = stratumId,
                 observationTypeId = ObservationType.BaselineSurvey,
                 errorMargin = baselineErrorMargin,

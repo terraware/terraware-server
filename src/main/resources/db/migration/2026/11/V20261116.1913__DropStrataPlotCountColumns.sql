@@ -1,6 +1,3 @@
-DROP TRIGGER sync_stratum_plot_counts ON tracking.strata;
-DROP FUNCTION tracking.sync_stratum_plot_counts();
-
 ALTER TABLE tracking.strata
     DROP COLUMN plant_variance,
     DROP COLUMN plant_students_t,
