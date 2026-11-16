@@ -2195,7 +2195,7 @@ class PlantingSiteStore(
                 .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         )
 
-    val baselineCompletedTimeField =
+    val latestCompletedPlotTimeField =
         DSL.field(
             DSL.select(DSL.max(OBSERVATION_PLOTS.COMPLETED_TIME))
                 .from(OBSERVATION_PLOTS)
@@ -2207,18 +2207,18 @@ class PlantingSiteStore(
                     )
                 )
         )
-    val baselineCompletedDateField =
+    val latestCompletedPlotDateField =
         DSL.field(
             "({0} AT TIME ZONE COALESCE({1}, {2}, 'UTC'))::date",
             LocalDate::class.java,
-            baselineCompletedTimeField,
+            latestCompletedPlotTimeField,
             OBSERVATIONS.plantingSites.TIME_ZONE,
             OBSERVATIONS.plantingSites.organizations.TIME_ZONE,
         )
     val baselineIsFinished =
         OBSERVATIONS.STATE_ID.`in`(ObservationState.Completed, ObservationState.Abandoned)
     val latestBaselineSurveyDateField =
-        DSL.`when`(baselineIsFinished, baselineCompletedDateField)
+        DSL.`when`(baselineIsFinished, latestCompletedPlotDateField)
             .otherwise(OBSERVATIONS.START_DATE)
     val latestBaselineSurveyField =
         DSL.multiset(
@@ -2231,7 +2231,7 @@ class PlantingSiteStore(
                     .where(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.BaselineSurvey))
                     .and(
                         DSL.or(
-                            DSL.and(baselineIsFinished, baselineCompletedTimeField.isNotNull),
+                            DSL.and(baselineIsFinished, latestCompletedPlotTimeField.isNotNull),
                             DSL.and(
                                 OBSERVATIONS.STATE_ID.`in`(
                                     ObservationState.Upcoming,
