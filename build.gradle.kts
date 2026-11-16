@@ -22,7 +22,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "9.0.11"
+  id("dev.monosoul.jooq-docker") version "9.0.12"
   id("com.diffplug.spotless") version "8.11.0"
   id("org.springframework.boot") version "4.1.2"
   id("io.spring.dependency-management") version "1.1.7"
@@ -91,7 +91,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
-  implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:4.2.1"))
+  implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:4.2.2"))
   implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
   implementation(platform("org.springframework.ai:spring-ai-bom:2.0.2"))
@@ -106,7 +106,7 @@ dependencies {
   implementation("com.dropbox.core:dropbox-core-sdk:8.0.2")
   implementation("com.google.api-client:google-api-client:2.9.2")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.57.0")
-  implementation("com.google.apis:google-api-services-drive:v3-rev20261023-2.9.2")
+  implementation("com.google.apis:google-api-services-drive:v3-rev20261106-2.9.2")
   implementation("com.opencsv:opencsv:5.12.0")
   implementation("com.pgvector:pgvector:0.1.6")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.16.0")
@@ -124,7 +124,7 @@ dependencies {
   implementation("net.coobird:thumbnailator:0.4.21")
   implementation("net.sf.geographiclib:GeographicLib-Java:2.1")
   implementation("org.apache.tika:tika-core:3.3.3")
-  implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
+  implementation("org.bouncycastle:bcpkix-jdk18on:1.87")
   implementation("org.commonmark:commonmark:0.32.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -135,7 +135,7 @@ dependencies {
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
   implementation("org.glassfish.jersey.core:jersey-common:4.0.3")
-  implementation("org.jobrunr:jobrunr-spring-boot-4-starter:9.0.3")
+  implementation("org.jobrunr:jobrunr-spring-boot-4-starter:9.0.4")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
