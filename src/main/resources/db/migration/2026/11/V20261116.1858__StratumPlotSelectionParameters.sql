@@ -4,10 +4,10 @@ CREATE TABLE tracking.stratum_plot_selection_parameters (
     variance NUMERIC NOT NULL,
     students_t NUMERIC NOT NULL,
     error_margin NUMERIC NOT NULL,
-    num_permanent_plots INTEGER,
+    num_permanent_plots INTEGER NOT NULL,
     num_temporary_plots INTEGER NOT NULL,
     PRIMARY KEY (stratum_id, observation_type_id),
-    CHECK ((observation_type_id = 3) = (num_permanent_plots IS NULL)),
+    CHECK (observation_type_id <> 3 OR num_permanent_plots = 0),
     CONSTRAINT must_have_permanent_plots CHECK (observation_type_id <> 1 OR num_permanent_plots > 0),
     CONSTRAINT no_negative_temporary_plots CHECK (observation_type_id <> 1 OR num_temporary_plots >= 0)
 );
@@ -25,6 +25,6 @@ CROSS JOIN LATERAL (
            (2, s.biomass_variance, s.biomass_students_t, s.biomass_error_margin,
             s.biomass_num_permanent_plots, s.biomass_num_temporary_plots),
            (3, s.baseline_variance, s.baseline_students_t, s.baseline_error_margin,
-            NULL, s.baseline_num_temporary_plots)
+            0, s.baseline_num_temporary_plots)
 ) AS counts(observation_type_id, variance, students_t, error_margin,
             num_permanent_plots, num_temporary_plots);
