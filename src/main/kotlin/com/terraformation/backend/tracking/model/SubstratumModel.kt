@@ -3,12 +3,14 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import org.locationtech.jts.geom.MultiPolygon
 
 data class SubstratumModel<SSID : SubstratumId?>(
@@ -16,6 +18,9 @@ data class SubstratumModel<SSID : SubstratumId?>(
     val boundary: MultiPolygon,
     val id: SSID,
     val fullName: String,
+    val latestBaselineSurveyDate: LocalDate? = null,
+    val latestBaselineSurveyId: ObservationId? = null,
+    val latestBaselineSurveyStatus: ObservationState? = null,
     /** The time of the latest observation, if the substratum has completed observations */
     val latestObservationCompletedTime: Instant? = null,
     /** The ID of the latest observation, if the substratum has completed observations */
