@@ -937,11 +937,56 @@ class ObservationService(
         }
       }
 
+      val upcomingOutcomes =
+          if (duration == ReplacementDuration.LongTerm) {
+            reassignUpcomingObservationsWithPlot(observationId, monitoringPlotId, stratum.id)
+          } else {
+            emptyMap()
+          }
+
       eventPublisher.publishEvent(
           ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId)
       )
 
-      ReplacementResult(addedPlotIds, removedPlotIds)
+      ReplacementResult(
+          addedPlotIds,
+          removedPlotIds,
+          reassignedObservationIds =
+              upcomingOutcomes.filterValues { it == ReassignmentOutcome.Reassigned }.keys,
+          deletedObservationIds =
+              upcomingOutcomes.filterValues { it == ReassignmentOutcome.Abandoned }.keys,
+      )
+    }
+  }
+
+  /**
+   * Gives new plots, in the stratum of a plot that was just replaced long-term, to the upcoming
+   * observations other than [observationId] that include the plot. The plot is no longer available,
+   * so they can't use it. Observations that can't be given new plots are deleted. In-progress
+   * observations aren't affected.
+   *
+   * This runs as the system user because reassignment updates the planting site, which the user may
+   * not have permission to do; the caller's permission to replace the plot was already checked.
+   */
+  private fun reassignUpcomingObservationsWithPlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      stratumId: StratumId,
+  ): Map<ObservationId, ReassignmentOutcome> {
+    return systemUser.run {
+      observationPlotStore
+          .fetchUpcomingObservationIdsWithPlot(monitoringPlotId, observationId)
+          .associateWith { upcomingObservationId ->
+            log.info(
+                "Reassigning plots in upcoming observation $upcomingObservationId because plot " +
+                    "$monitoringPlotId was replaced long-term"
+            )
+            reassignPlots(
+                upcomingObservationId,
+                AffectedStrata(setOf(stratumId)),
+                keepPlotsIfUnstartable = false,
+            )
+          }
     }
   }
 
@@ -1315,8 +1360,8 @@ class ObservationService(
       observationId: ObservationId,
       strata: AffectedStrata,
       keepPlotsIfUnstartable: Boolean,
-  ) {
-    log.withMDC("observationId" to observationId) {
+  ): ReassignmentOutcome {
+    return log.withMDC("observationId" to observationId) {
       try {
         reassignPlotsWithLocks(observationId, strata, keepPlotsIfUnstartable)
       } catch (e: ReassignmentRolledBackException) {
@@ -1324,8 +1369,18 @@ class ObservationService(
             "Unable to reassign plots in strata ${strata.stratumIds}; observation keeps its " +
                 "existing plots"
         )
+        ReassignmentOutcome.Unchanged
       }
     }
+  }
+
+  private enum class ReassignmentOutcome {
+    /** The observation was given new plots. */
+    Reassigned,
+    /** The observation was abandoned, or deleted if it had no completed plots. */
+    Abandoned,
+    /** The observation was left as it was. */
+    Unchanged,
   }
 
   /** Thrown to roll back the nested transaction of a reassignment that couldn't assign plots. */
@@ -1335,26 +1390,27 @@ class ObservationService(
       observationId: ObservationId,
       strata: AffectedStrata,
       keepPlotsIfUnstartable: Boolean,
-  ) {
+  ): ReassignmentOutcome {
     // This runs in a nested transaction, so throwing an exception rolls back only this
     // observation's changes.
-    entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
+    return entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
       if (
           observation.state == ObservationState.Completed ||
               observation.state == ObservationState.Abandoned
       ) {
         log.info("Observation has ended; not reassigning plots")
-        return@withLockedPlantingSiteAndObservation
+        return@withLockedPlantingSiteAndObservation ReassignmentOutcome.Unchanged
       }
 
       if (observationPlotStore.hasCompletedPlots(observationId)) {
         if (keepPlotsIfUnstartable) {
           log.info("Not reassigning plots because a plot was completed before it was updated")
+          return@withLockedPlantingSiteAndObservation ReassignmentOutcome.Unchanged
         } else {
           log.info("Abandoning observation because a plot was completed before it was updated")
           observationStore.abandonObservation(observationId)
+          return@withLockedPlantingSiteAndObservation ReassignmentOutcome.Abandoned
         }
-        return@withLockedPlantingSiteAndObservation
       }
 
       log.info("Reassigning plots in strata ${strata.stratumIds}")
@@ -1383,6 +1439,7 @@ class ObservationService(
               throw ReassignmentRolledBackException()
             } else {
               abandonUnstartableObservation(observation)
+              ReassignmentOutcome.Abandoned
             }
         is PlotAssignmentResult.Assigned -> {
           if (observation.state != ObservationState.Upcoming) {
@@ -1398,6 +1455,8 @@ class ObservationService(
           )
 
           publishEventIfUnderallocated(observation, result)
+
+          ReassignmentOutcome.Reassigned
         }
       }
     }

@@ -52,6 +52,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationMediaFilesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
@@ -5148,6 +5149,225 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(observationPlotsBefore, "Observation plots")
       eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
     }
+  }
+
+  @Nested
+  inner class ReplaceMonitoringPlotSharedWithOtherObservations {
+    @Test
+    fun `long-term replacement reassigns plots in upcoming observations that include the plot`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      val upcomingObservationId = insertObservationWithPlots(ObservationState.Upcoming)
+      val inProgressObservationId = insertObservationWithPlots(ObservationState.InProgress)
+      val plotId = fetchPermanentPlotId(observationId, editedStratumId)
+      val inProgressPlotsBefore =
+          dslContext.fetch(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(inProgressObservationId),
+          )
+      val upcomingOtherStratumPlotsBefore =
+          dslContext.fetch(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingObservationId)
+                  .and(OBSERVATION_PLOTS.monitoringPlots.substrata.STRATUM_ID.eq(otherStratumId)),
+          )
+
+      clock.instant = Instant.ofEpochSecond(60)
+      eventPublisher.clear()
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId,
+              plotId,
+              "Flooded",
+              ReplacementDuration.LongTerm,
+          )
+
+      val replacementPlotId = fetchPermanentPlotId(observationId, editedStratumId)
+
+      assertEquals(
+          ReplacementResult(
+              addedMonitoringPlotIds = setOf(replacementPlotId),
+              removedMonitoringPlotIds = setOf(plotId),
+              reassignedObservationIds = setOf(upcomingObservationId),
+          ),
+          result,
+          "Replacement result",
+      )
+
+      assertTableEquals(
+          inProgressPlotsBefore,
+          "In-progress observation's plots should not change",
+          where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(inProgressObservationId),
+      )
+      assertTableEquals(
+          upcomingOtherStratumPlotsBefore +
+              listOf(
+                  reassignedObservationPlot(upcomingObservationId, replacementPlotId, true),
+                  reassignedObservationPlot(
+                      upcomingObservationId,
+                      fetchTemporaryPlotId(upcomingObservationId, editedStratumId),
+                      false,
+                  ),
+              ),
+          "Upcoming observation's plots",
+          where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingObservationId),
+      )
+
+      eventPublisher.assertEventPublished(
+          ObservationPlotsReassignedEvent(
+              upcomingObservationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `long-term replacement deletes upcoming observation that can't be given new plots`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      val upcomingObservationId = insertObservationWithPlots(ObservationState.Upcoming)
+      val plotId = fetchPermanentPlotId(observationId, editedStratumId)
+      val plotRowBefore = monitoringPlotsDao.fetchOneById(plotId)!!
+
+      excludeEntireSite()
+
+      clock.instant = Instant.ofEpochSecond(60)
+      eventPublisher.clear()
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId,
+              plotId,
+              "Flooded",
+              ReplacementDuration.LongTerm,
+          )
+
+      assertEquals(
+          ReplacementResult(
+              addedMonitoringPlotIds = emptySet(),
+              removedMonitoringPlotIds = setOf(plotId),
+              deletedObservationIds = setOf(upcomingObservationId),
+          ),
+          result,
+          "Replacement result",
+      )
+
+      assertTableEmpty(
+          OBSERVATIONS,
+          "Upcoming observation should have been deleted",
+          where = OBSERVATIONS.ID.eq(upcomingObservationId),
+      )
+      assertTableEmpty(
+          OBSERVATION_PLOTS,
+          "Upcoming observation's plots",
+          where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingObservationId),
+      )
+      assertTableEquals(
+          MonitoringPlotsRecord(
+              plotRowBefore.copy(
+                  isAvailable = false,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+                  permanentIndex = null,
+              )
+          ),
+          "Replaced plot should still exist and be unavailable",
+          where = MONITORING_PLOTS.ID.eq(plotId),
+      )
+
+      eventPublisher.assertEventPublished(
+          ObservationNotStartedEvent(
+              upcomingObservationId,
+              ObservationType.Monitoring,
+              inserted.plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `temporary replacement does not affect other observations`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      val upcomingObservationId = insertObservationWithPlots(ObservationState.Upcoming)
+      val plotId = fetchPermanentPlotId(observationId, editedStratumId)
+      val temporaryPlotId = fetchTemporaryPlotId(observationId, editedStratumId)
+      val upcomingPlotsBefore =
+          dslContext.fetch(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingObservationId),
+          )
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId,
+              plotId,
+              "Flooded",
+              ReplacementDuration.Temporary,
+          )
+
+      val replacementPlotId =
+          fetchPlotIdsByStratum(observationId)[editedStratumId]!!.single { it != temporaryPlotId }
+
+      assertEquals(
+          ReplacementResult(
+              addedMonitoringPlotIds = setOf(replacementPlotId),
+              removedMonitoringPlotIds = setOf(plotId),
+          ),
+          result,
+      )
+      assertTableEquals(
+          upcomingPlotsBefore,
+          "Upcoming observation's plots",
+          where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingObservationId),
+      )
+    }
+
+    /**
+     * Returns the expected record for a plot that was added to an observation when its plots were
+     * reassigned. Reassignment runs as the system user.
+     */
+    private fun reassignedObservationPlot(
+        observationId: ObservationId,
+        monitoringPlotId: MonitoringPlotId,
+        isPermanent: Boolean,
+    ) =
+        ObservationPlotsRecord(
+            createdBy = systemUser.userId,
+            createdTime = clock.instant,
+            isPermanent = isPermanent,
+            modifiedBy = systemUser.userId,
+            modifiedTime = clock.instant,
+            monitoringPlotHistoryId =
+                monitoringPlotHistoriesDao.fetchByMonitoringPlotId(monitoringPlotId).maxOf {
+                  it.id!!
+                },
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            statusId = ObservationPlotStatus.Unclaimed,
+        )
+  }
+
+  private fun fetchPermanentPlotId(observationId: ObservationId, stratumId: StratumId) =
+      dslContext
+          .select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .and(OBSERVATION_PLOTS.IS_PERMANENT.isTrue)
+          .and(OBSERVATION_PLOTS.monitoringPlots.substrata.STRATUM_ID.eq(stratumId))
+          .fetchSingle(OBSERVATION_PLOTS.MONITORING_PLOT_ID)!!
+
+  /** Covers the whole planting site with an exclusion area so there's no room for new plots. */
+  private fun excludeEntireSite() {
+    dslContext
+        .update(PLANTING_SITES)
+        .set(
+            PLANTING_SITES.EXCLUSION,
+            rectangle(width = 20 * MONITORING_PLOT_SIZE, height = 5 * MONITORING_PLOT_SIZE),
+        )
+        .where(PLANTING_SITES.ID.eq(inserted.plantingSiteId))
+        .execute()
   }
 
   private lateinit var editedStratumId: StratumId

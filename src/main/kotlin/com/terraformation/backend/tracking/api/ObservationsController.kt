@@ -1087,12 +1087,26 @@ data class ReplaceObservationPlotResponsePayload(
                 "couldn't be satisfied."
     )
     val removedMonitoringPlotIds: Set<MonitoringPlotId>,
+    @Schema(
+        description =
+            "IDs of other upcoming observations that included the plot and were given new plots " +
+                "because it was replaced long-term."
+    )
+    val reassignedObservationIds: Set<ObservationId>,
+    @Schema(
+        description =
+            "IDs of other upcoming observations that included the plot and were deleted because " +
+                "it was replaced long-term and they couldn't be given new plots."
+    )
+    val deletedObservationIds: Set<ObservationId>,
 ) : SuccessResponsePayload {
   constructor(
       result: ReplacementResult
   ) : this(
       addedMonitoringPlotIds = result.addedMonitoringPlotIds,
       removedMonitoringPlotIds = result.removedMonitoringPlotIds,
+      reassignedObservationIds = result.reassignedObservationIds,
+      deletedObservationIds = result.deletedObservationIds,
   )
 }
 
