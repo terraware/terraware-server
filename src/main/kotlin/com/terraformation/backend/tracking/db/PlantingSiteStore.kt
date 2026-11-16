@@ -1232,7 +1232,7 @@ class PlantingSiteStore(
 
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
-    val plotParametersField = plotParametersMultiset()
+    val plotParametersField = plotParametersMultiset
     val initialPlotParameters =
         dslContext
             .select(plotParametersField)
@@ -2310,7 +2310,7 @@ class PlantingSiteStore(
     val latestObservationCompletedTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
 
-    val plotParametersField = plotParametersMultiset()
+    val plotParametersField = plotParametersMultiset
     return DSL.multiset(
             DSL.select(
                     STRATA.AREA_HA,
@@ -2360,7 +2360,7 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plotParametersMultiset(): Field<Map<ObservationType, StratumPlotCounts>> =
+  private val plotParametersMultiset: Field<Map<ObservationType, StratumPlotCounts>> =
       with(STRATUM_PLOT_SELECTION_PARAMETERS) {
         DSL.multiset(
                 DSL.select(
