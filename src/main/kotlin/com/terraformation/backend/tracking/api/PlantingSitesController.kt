@@ -529,17 +529,8 @@ data class SubstratumResponsePayload(
     val boundary: MultiPolygon,
     val fullName: String,
     val id: SubstratumId,
-    @Schema(
-        description =
-            "Latest completed plot date in the site's time zone for Completed/Abandoned; start date otherwise."
-    )
     val latestBaselineSurveyDate: LocalDate?,
-    @Schema(description = "Latest qualifying Baseline Survey by substratum-specific date, then ID.")
     val latestBaselineSurveyId: ObservationId?,
-    @Schema(
-        description =
-            "Completed/Abandoned require a completed plot here; other states require this substratum to be requested."
-    )
     val latestBaselineSurveyStatus: ObservationState?,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
