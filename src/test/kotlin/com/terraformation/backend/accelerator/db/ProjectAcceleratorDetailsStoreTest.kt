@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
@@ -618,14 +619,27 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception when phase is set but fileNaming is null`() {
+    fun `throws exception when phase is set but a required field is null`() {
       val projectId = insertProject()
 
       val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+      val expectedMessage =
+          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set."
 
-      val exception =
-          assertThrows<IllegalArgumentException> {
-            store.update(projectId, existingValues) {
+      fun assertThrowsMissingField(
+          field: String,
+          update: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel,
+      ) {
+        val exception =
+            assertThrows<IllegalArgumentException> {
+              store.update(projectId, existingValues, update)
+            }
+        assertEquals(expectedMessage, exception.message, field)
+      }
+
+      assertAll(
+          {
+            assertThrowsMissingField("fileNaming") {
               it.copy(
                   phase = AcceleratorPhase.Phase1FeasibilityStudy,
                   fileNaming = null,
@@ -633,23 +647,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
                   googleFolderUrl = URI("https://drive.google.com/test"),
               )
             }
-          }
-
-      assertEquals(
-          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
-          exception.message,
-      )
-    }
-
-    @Test
-    fun `throws exception when phase is set but dropboxFolderPath is null`() {
-      val projectId = insertProject()
-
-      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
-
-      val exception =
-          assertThrows<IllegalArgumentException> {
-            store.update(projectId, existingValues) {
+          },
+          {
+            assertThrowsMissingField("dropboxFolderPath") {
               it.copy(
                   phase = AcceleratorPhase.Phase1FeasibilityStudy,
                   fileNaming = "test-naming",
@@ -657,23 +657,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
                   googleFolderUrl = URI("https://drive.google.com/test"),
               )
             }
-          }
-
-      assertEquals(
-          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
-          exception.message,
-      )
-    }
-
-    @Test
-    fun `throws exception when phase is set but googleFolderUrl is null`() {
-      val projectId = insertProject()
-
-      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
-
-      val exception =
-          assertThrows<IllegalArgumentException> {
-            store.update(projectId, existingValues) {
+          },
+          {
+            assertThrowsMissingField("googleFolderUrl") {
               it.copy(
                   phase = AcceleratorPhase.Phase1FeasibilityStudy,
                   fileNaming = "test-naming",
@@ -681,11 +667,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
                   googleFolderUrl = null,
               )
             }
-          }
-
-      assertEquals(
-          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
-          exception.message,
+          },
       )
     }
 

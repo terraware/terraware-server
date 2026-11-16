@@ -11,6 +11,7 @@ import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -56,7 +57,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `Partial search returns every result that contains the string`() {
+    fun `Partial and fuzzy search returns every result that contains or is similar to the string`() {
       val speciesKoa = insertSpecies(scientificName = "Koa")
       val speciesKoaia = insertSpecies(scientificName = "Koaia")
       val speciesKoaAcacia = insertSpecies(scientificName = "Koa Acacia")
@@ -84,45 +85,34 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               )
           )
 
-      val conditions =
-          FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.Partial)
-
-      assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
-    }
-
-    @Test
-    fun `Fuzzy search returns every result that is similar the string`() {
-      val speciesKoa = insertSpecies(scientificName = "Koa")
-      val speciesKoaia = insertSpecies(scientificName = "Koaia")
-      val speciesKoaAcacia = insertSpecies(scientificName = "Koa Acacia")
-      insertSpecies(scientificName = "Monstera Deliciosa")
-
-      val prefix = SearchFieldPrefix(searchTables.species)
-
-      val fields = listOf("id", "scientificName").map { prefix.resolve(it) }
-
-      val expected =
-          SearchResults(
-              listOf(
-                  mapOf(
-                      "id" to "$speciesKoa",
-                      "scientificName" to "Koa",
-                  ),
-                  mapOf(
-                      "id" to "$speciesKoaia",
-                      "scientificName" to "Koaia",
-                  ),
-                  mapOf(
-                      "id" to "$speciesKoaAcacia",
-                      "scientificName" to "Koa Acacia",
-                  ),
-              )
-          )
-
-      val conditions =
-          FieldNode(prefix.resolve("scientificName"), listOf("Koaa"), SearchFilterType.Fuzzy)
-
-      assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
+      assertAll(
+          {
+            val conditions =
+                FieldNode(
+                    prefix.resolve("scientificName"),
+                    listOf("Koa"),
+                    SearchFilterType.Partial,
+                )
+            assertJsonEquals(
+                expected,
+                searchService.search(prefix, fields, mapOf(prefix to conditions)),
+                "Partial",
+            )
+          },
+          {
+            val conditions =
+                FieldNode(
+                    prefix.resolve("scientificName"),
+                    listOf("Koaa"),
+                    SearchFilterType.Fuzzy,
+                )
+            assertJsonEquals(
+                expected,
+                searchService.search(prefix, fields, mapOf(prefix to conditions)),
+                "Fuzzy",
+            )
+          },
+      )
     }
 
     @Test

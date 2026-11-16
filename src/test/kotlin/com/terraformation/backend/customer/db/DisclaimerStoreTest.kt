@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
@@ -242,14 +243,20 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty list for no disclaimers`() {
-      insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
-      assertEquals(emptyList<DisclaimerModel>(), store.fetchAllDisclaimers())
-    }
-
-    @Test
-    fun `throws exception for non-super-admins`() {
-      assertThrows<AccessDeniedException> { store.fetchAllDisclaimers() }
+    fun `returns empty list for no disclaimers and requires super admin`() {
+      assertAll(
+          {
+            assertThrows<AccessDeniedException>("Not super admin") { store.fetchAllDisclaimers() }
+          },
+          {
+            insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
+            assertEquals(
+                emptyList<DisclaimerModel>(),
+                store.fetchAllDisclaimers(),
+                "No disclaimers",
+            )
+          },
+      )
     }
   }
 
@@ -332,14 +339,20 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws disclaimer not found exception if disclaimer does not exist`() {
-      insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
-      assertThrows<DisclaimerNotFoundException> { store.fetchOneDisclaimer(DisclaimerId(-1)) }
-    }
-
-    @Test
-    fun `throws exception for non-super-admins`() {
-      assertThrows<AccessDeniedException> { store.fetchOneDisclaimer(DisclaimerId(-1)) }
+    fun `throws exception if disclaimer does not exist or user is not super admin`() {
+      assertAll(
+          {
+            assertThrows<AccessDeniedException>("Not super admin") {
+              store.fetchOneDisclaimer(DisclaimerId(-1))
+            }
+          },
+          {
+            insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
+            assertThrows<DisclaimerNotFoundException>("No such disclaimer") {
+              store.fetchOneDisclaimer(DisclaimerId(-1))
+            }
+          },
+      )
     }
   }
 
