@@ -2612,11 +2612,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty results when there are no eligible sites to notify scheduling new observations`() {
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
     fun `returns site with substratum plantings and no completed observations`() {
       helper.insertPlantedSite()
 
@@ -2627,22 +2622,28 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty results with observations completed more recent than two weeks`() {
-      helper.insertPlantedSite()
+    fun `returns only eligible sites to notify scheduling new observations`() {
+      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
 
+      // Site with an observation completed more recently than two weeks
+      helper.insertPlantedSite()
       insertObservation(completedTime = Instant.EPOCH)
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
-    fun `returns empty results with observations completed earlier than two weeks but with other observations scheduled`() {
+      // Site with an observation completed earlier than two weeks but with another observation
+      // already scheduled
       helper.insertPlantedSite()
-
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS))
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+      // Eligible site with an observation completed earlier than two weeks
+      val eligibleSiteId = helper.insertPlantedSite()
+      insertObservation(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS))
+
+      assertEquals(
+          setOf(eligibleSiteId),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+          "Eligible sites",
+      )
     }
 
     @Test
@@ -2709,13 +2710,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty results if planting site did not have notification sent to schedule observations`() {
-      helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 4, ChronoUnit.DAYS))
-
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
     fun `returns site with substratum plantings planted earlier than 4 weeks and no completed observations`() {
       helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 4, ChronoUnit.DAYS))
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
@@ -2727,24 +2721,32 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty results with observations completed more recent than six weeks`() {
+    fun `returns only eligible sites to remind`() {
+      // Site did not have a ScheduleObservation notification sent
+      helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 4, ChronoUnit.DAYS))
+
+      // Site with an observation completed more recently than six weeks
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
-
       insertObservation(completedTime = Instant.EPOCH)
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
-    fun `returns empty results with observations completed earlier than six weeks but with other observations scheduled`() {
+      // Site with an observation completed earlier than six weeks but with another observation
+      // already scheduled
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
-
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS))
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
+      // Eligible site with the notification sent and an old completed observation
+      val eligibleSiteId = helper.insertPlantedSite()
+      insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
+      insertObservation(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS))
+
+      assertEquals(
+          setOf(eligibleSiteId),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+          "Eligible sites",
+      )
     }
 
     @Test
@@ -2802,34 +2804,30 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty results with observations completed more recent than eight weeks`() {
+    fun `returns only eligible sites for first notification`() {
+      // Site with an observation completed more recently than eight weeks
       helper.insertPlantedSite()
-
       insertObservation(completedTime = Instant.EPOCH)
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
-    fun `returns empty results with observations completed earlier than eight weeks but with other observations scheduled`() {
+      // Site with an observation completed earlier than eight weeks but with another observation
+      // already scheduled
       helper.insertPlantedSite()
-
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS))
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
-    fun `returns empty results if notification already sent`() {
+      // Site where the notification was already sent
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
+      insertObservation(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS))
 
+      // Eligible site with an observation completed earlier than eight weeks
+      val eligibleSiteId = helper.insertPlantedSite()
       insertObservation(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS))
 
       assertEquals(
-          emptyList<Any>(),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+          setOf(eligibleSiteId),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+          "Eligible sites",
       )
     }
 
@@ -2877,13 +2875,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty results if planting site did not have notification sent to schedule observations`() {
-      helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 14, ChronoUnit.DAYS))
-
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
     fun `returns site with substratum plantings planted earlier than 14 weeks and no completed observations`() {
       helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 14, ChronoUnit.DAYS))
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
@@ -2895,39 +2886,39 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty results with observations completed more recent than sixteen weeks`() {
+    fun `returns only eligible sites for second notification`() {
+      // Site did not have the first ObservationNotScheduledSupport notification sent
+      helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 14, ChronoUnit.DAYS))
+
+      // Site with an observation completed more recently than sixteen weeks
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
-
       insertObservation(completedTime = Instant.EPOCH)
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
-    fun `returns empty results with observations completed earlier than sixteen weeks but with other observations scheduled`() {
+      // Site with an observation completed earlier than sixteen weeks but with another observation
+      // already scheduled
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
-
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
 
-      assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
-    }
-
-    @Test
-    fun `returns empty results if notification already sent`() {
+      // Site where the second notification was already sent
       helper.insertPlantedSite()
       insertPlantingSiteNotification(
           type = NotificationType.ObservationNotScheduledSupport,
           number = 2,
       )
+      insertObservation(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
 
+      // Eligible site with the first notification sent and an old completed observation
+      val eligibleSiteId = helper.insertPlantedSite()
+      insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
       insertObservation(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
 
       assertEquals(
-          emptyList<Any>(),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+          setOf(eligibleSiteId),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+          "Eligible sites",
       )
     }
 

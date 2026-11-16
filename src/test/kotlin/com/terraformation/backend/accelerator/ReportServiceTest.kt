@@ -17,6 +17,9 @@ import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.records.ReportPhotosRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -43,6 +46,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.MediaType
@@ -414,20 +418,22 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns empty list when report has never been published`() {
-      assertEquals(
-          emptyList<PublishedReportComparedProps>(),
-          service.fetchOne(reportId, computeUnpublishedChanges = true).unpublishedProperties,
-          "Report has not been published",
-      )
-    }
-
-    @Test
-    fun `returns empty list when computeUnpublishedChanges is false`() {
-      assertEquals(
-          emptyList<PublishedReportComparedProps>(),
-          service.fetchOne(reportId, computeUnpublishedChanges = false).unpublishedProperties,
-          "Not requesting unpublished properties",
+    fun `returns empty list when report has never been published or changes not requested`() {
+      assertAll(
+          {
+            assertEquals(
+                emptyList<PublishedReportComparedProps>(),
+                service.fetchOne(reportId, computeUnpublishedChanges = true).unpublishedProperties,
+                "Report has not been published",
+            )
+          },
+          {
+            assertEquals(
+                emptyList<PublishedReportComparedProps>(),
+                service.fetchOne(reportId, computeUnpublishedChanges = false).unpublishedProperties,
+                "Not requesting unpublished properties",
+            )
+          },
       )
     }
 
@@ -569,80 +575,35 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `does not identify commonIndicators as changed for non-publishable indicators`() {
-      insertCommonIndicator(isPublishable = false)
+    fun `does not identify indicators as changed for non-publishable or null-valued indicators`() {
       insertPublishedReport(
           highlights = "highlights",
           additionalComments = "additional comments",
           financialSummaries = "financial summaries",
       )
-      // Published has no common indicator row (non-publishable not published)
-      insertReportCommonIndicator(value = BigDecimal(99))
 
-      assertEquals(
-          emptyList<PublishedReportComparedProps>(),
-          service
-              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "CommonIndicators should not be flagged for non-publishable indicators",
-      )
-    }
-
-    @Test
-    fun `does not check commonIndicators with null values`() {
+      // A changed publishable indicator, so a comparison that bails out early or flags an
+      // ignored indicator produces the wrong result here
       insertCommonIndicator(isPublishable = true)
-      insertPublishedReport(
-          highlights = "highlights",
-          additionalComments = "additional comments",
-          financialSummaries = "financial summaries",
-      )
-      insertReportCommonIndicator(value = null)
+      insertPublishedReportCommonIndicator(value = BigDecimal(10))
+      insertReportCommonIndicator(value = BigDecimal(11))
 
-      assertEquals(
-          emptyList<PublishedReportComparedProps>(),
-          service
-              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "CommonIndicators should not be flagged for indicators with null values",
-      )
-    }
-
-    @Test
-    fun `does not identify projectIndicators as changed for non-publishable indicators`() {
+      insertCommonIndicator(isPublishable = false)
+      insertReportCommonIndicator(value = BigDecimal(99))
       insertProjectIndicator(isPublishable = false)
-      insertPublishedReport(
-          highlights = "highlights",
-          additionalComments = "additional comments",
-          financialSummaries = "financial summaries",
-      )
-      // Published has no project indicator row (non-publishable not published)
       insertReportProjectIndicator(value = BigDecimal(99))
-
-      assertEquals(
-          emptyList<PublishedReportComparedProps>(),
-          service
-              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "ProjectIndicators should not be flagged for non-publishable indicators",
-      )
-    }
-
-    @Test
-    fun `does not check projectIndicators with null values`() {
+      insertCommonIndicator(isPublishable = true)
+      insertReportCommonIndicator(value = null)
       insertProjectIndicator(isPublishable = true)
-      insertPublishedReport(
-          highlights = "highlights",
-          additionalComments = "additional comments",
-          financialSummaries = "financial summaries",
-      )
       insertReportProjectIndicator(value = null)
 
       assertEquals(
-          emptyList<PublishedReportComparedProps>(),
+          setOf(PublishedReportComparedProps.CommonIndicators),
           service
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "ProjectIndicators should not be flagged for indicators with null values",
+              .unpublishedProperties
+              .toSet(),
+          "Only the changed publishable indicator should be flagged",
       )
     }
 
@@ -748,52 +709,18 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `identifies commonIndicators as changed when progressNotes changed`() {
+    fun `identifies indicators as changed when progressNotes changed`() {
       insertCommonIndicator(isPublishable = true)
-      insertPublishedReport(
-          highlights = "highlights",
-          additionalComments = "additional comments",
-          financialSummaries = "financial summaries",
-      )
-      insertPublishedReportCommonIndicator(value = BigDecimal(10), progressNotes = "old notes")
-      insertReportCommonIndicator(value = BigDecimal(10), progressNotes = "new notes")
-
-      assertEquals(
-          listOf(PublishedReportComparedProps.CommonIndicators),
-          service
-              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "CommonIndicators should be flagged when progressNotes changed",
-      )
-    }
-
-    @Test
-    fun `identifies projectIndicators as changed when progressNotes changed`() {
       insertProjectIndicator(isPublishable = true)
       insertPublishedReport(
           highlights = "highlights",
           additionalComments = "additional comments",
           financialSummaries = "financial summaries",
       )
+      insertPublishedReportCommonIndicator(value = BigDecimal(10), progressNotes = "old notes")
+      insertReportCommonIndicator(value = BigDecimal(10), progressNotes = "old notes")
       insertPublishedReportProjectIndicator(value = BigDecimal(10), progressNotes = "old notes")
-      insertReportProjectIndicator(value = BigDecimal(10), progressNotes = "new notes")
-
-      assertEquals(
-          listOf(PublishedReportComparedProps.ProjectIndicators),
-          service
-              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "ProjectIndicators should be flagged when progressNotes changed",
-      )
-    }
-
-    @Test
-    fun `identifies autoCalculatedIndicators as changed when progressNotes changed`() {
-      insertPublishedReport(
-          highlights = "highlights",
-          additionalComments = "additional comments",
-          financialSummaries = "financial summaries",
-      )
+      insertReportProjectIndicator(value = BigDecimal(10), progressNotes = "old notes")
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
           value = BigDecimal(40),
@@ -802,21 +729,63 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
           systemValue = BigDecimal(40),
-          progressNotes = "new notes",
+          progressNotes = "old notes",
       )
 
-      assertEquals(
-          listOf(PublishedReportComparedProps.AutoCalculatedIndicators),
+      fun flags() =
           service
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "AutoCalculatedIndicators should be flagged when progressNotes changed",
+              .unpublishedProperties
+              .toSet()
+
+      assertAll(
+          {
+            dslContext
+                .update(REPORT_COMMON_INDICATORS)
+                .set(REPORT_COMMON_INDICATORS.PROGRESS_NOTES, "new notes")
+                .execute()
+            assertEquals(
+                setOf(PublishedReportComparedProps.CommonIndicators),
+                flags(),
+                "CommonIndicators flagged when its progressNotes changed",
+            )
+          },
+          {
+            dslContext
+                .update(REPORT_PROJECT_INDICATORS)
+                .set(REPORT_PROJECT_INDICATORS.PROGRESS_NOTES, "new notes")
+                .execute()
+            assertEquals(
+                setOf(
+                    PublishedReportComparedProps.CommonIndicators,
+                    PublishedReportComparedProps.ProjectIndicators,
+                ),
+                flags(),
+                "ProjectIndicators flagged when its progressNotes changed",
+            )
+          },
+          {
+            dslContext
+                .update(REPORT_AUTO_CALCULATED_INDICATORS)
+                .set(REPORT_AUTO_CALCULATED_INDICATORS.PROGRESS_NOTES, "new notes")
+                .execute()
+            assertEquals(
+                setOf(
+                    PublishedReportComparedProps.AutoCalculatedIndicators,
+                    PublishedReportComparedProps.CommonIndicators,
+                    PublishedReportComparedProps.ProjectIndicators,
+                ),
+                flags(),
+                "AutoCalculatedIndicators flagged when its progressNotes changed",
+            )
+          },
       )
     }
 
     @Test
-    fun `identifies commonIndicators as changed when supportingDocumentUrl changed`() {
+    fun `identifies indicators as changed when supportingDocumentUrl changed`() {
       insertCommonIndicator(isPublishable = true)
+      insertProjectIndicator(isPublishable = true)
       insertPublishedReport(
           highlights = "highlights",
           additionalComments = "additional comments",
@@ -828,25 +797,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       insertReportCommonIndicator(
           value = BigDecimal(10),
-          supportingDocumentUrl = URI("https://example.com/new"),
-      )
-
-      assertEquals(
-          listOf(PublishedReportComparedProps.CommonIndicators),
-          service
-              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "CommonIndicators should be flagged when supportingDocumentUrl changed",
-      )
-    }
-
-    @Test
-    fun `identifies projectIndicators as changed when supportingDocumentUrl changed`() {
-      insertProjectIndicator(isPublishable = true)
-      insertPublishedReport(
-          highlights = "highlights",
-          additionalComments = "additional comments",
-          financialSummaries = "financial summaries",
+          supportingDocumentUrl = URI("https://example.com/old"),
       )
       insertPublishedReportProjectIndicator(
           value = BigDecimal(10),
@@ -854,24 +805,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       insertReportProjectIndicator(
           value = BigDecimal(10),
-          supportingDocumentUrl = URI("https://example.com/new"),
-      )
-
-      assertEquals(
-          listOf(PublishedReportComparedProps.ProjectIndicators),
-          service
-              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "ProjectIndicators should be flagged when supportingDocumentUrl changed",
-      )
-    }
-
-    @Test
-    fun `identifies autoCalculatedIndicators as changed when supportingDocumentUrl changed`() {
-      insertPublishedReport(
-          highlights = "highlights",
-          additionalComments = "additional comments",
-          financialSummaries = "financial summaries",
+          supportingDocumentUrl = URI("https://example.com/old"),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
@@ -881,15 +815,58 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
           systemValue = BigDecimal(40),
-          supportingDocumentUrl = URI("https://example.com/new"),
+          supportingDocumentUrl = URI("https://example.com/old"),
       )
 
-      assertEquals(
-          listOf(PublishedReportComparedProps.AutoCalculatedIndicators),
+      fun flags() =
           service
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
-              .unpublishedProperties,
-          "AutoCalculatedIndicators should be flagged when supportingDocumentUrl changed",
+              .unpublishedProperties
+              .toSet()
+
+      val newUrl = URI("https://example.com/new")
+
+      assertAll(
+          {
+            dslContext
+                .update(REPORT_COMMON_INDICATORS)
+                .set(REPORT_COMMON_INDICATORS.SUPPORTING_DOCUMENT_URL, newUrl)
+                .execute()
+            assertEquals(
+                setOf(PublishedReportComparedProps.CommonIndicators),
+                flags(),
+                "CommonIndicators flagged when its supportingDocumentUrl changed",
+            )
+          },
+          {
+            dslContext
+                .update(REPORT_PROJECT_INDICATORS)
+                .set(REPORT_PROJECT_INDICATORS.SUPPORTING_DOCUMENT_URL, newUrl)
+                .execute()
+            assertEquals(
+                setOf(
+                    PublishedReportComparedProps.CommonIndicators,
+                    PublishedReportComparedProps.ProjectIndicators,
+                ),
+                flags(),
+                "ProjectIndicators flagged when its supportingDocumentUrl changed",
+            )
+          },
+          {
+            dslContext
+                .update(REPORT_AUTO_CALCULATED_INDICATORS)
+                .set(REPORT_AUTO_CALCULATED_INDICATORS.SUPPORTING_DOCUMENT_URL, newUrl)
+                .execute()
+            assertEquals(
+                setOf(
+                    PublishedReportComparedProps.AutoCalculatedIndicators,
+                    PublishedReportComparedProps.CommonIndicators,
+                    PublishedReportComparedProps.ProjectIndicators,
+                ),
+                flags(),
+                "AutoCalculatedIndicators flagged when its supportingDocumentUrl changed",
+            )
+          },
       )
     }
   }
