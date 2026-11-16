@@ -11,12 +11,16 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URI
+import java.util.stream.Stream
 import javax.imageio.ImageIO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
@@ -36,116 +40,34 @@ internal class ImageUtilsTest {
         }
   }
 
-  @Test
-  fun `should not process image for orientation 1`() {
-    every { utils.getOrientation(any()) } returns 1
+  @ParameterizedTest(name = "orientation {0}: {1}")
+  @MethodSource("orientations")
+  fun `should apply expected transforms`(
+      orientation: Int,
+      @Suppress("UNUSED_PARAMETER") description: String,
+      flipHorizontalCount: Int,
+      flipVerticalCount: Int,
+      rotationDegrees: Double?,
+  ) {
+    every { utils.getOrientation(any()) } returns orientation
     val image = utils.read(photoStorageUrl)
 
     assertNotNull(image)
 
     verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 0) { utils.flipHorizontal(any()) }
-    verify(exactly = 0) { utils.flipVertical(any()) }
-    verify(exactly = 0) { utils.rotateByDegree(any(), any()) }
-  }
-
-  @Test
-  fun `should flip image horizontally for orientation 2`() {
-    every { utils.getOrientation(any()) } returns 2
-    val image = utils.read(photoStorageUrl)
-
-    assertNotNull(image)
-
-    verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 1) { utils.flipHorizontal(any()) }
-    verify(exactly = 0) { utils.flipVertical(any()) }
-    verify(exactly = 0) { utils.rotateByDegree(any(), any()) }
-  }
-
-  @Test
-  fun `should rotate image by 180 degrees for orientation 3`() {
-    every { utils.getOrientation(any()) } returns 3
-    val image = utils.read(photoStorageUrl)
-
-    assertNotNull(image)
-
-    verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 0) { utils.flipHorizontal(any()) }
-    verify(exactly = 0) { utils.flipVertical(any()) }
-    verify(exactly = 1) { utils.rotateByDegree(any(), 180.0) }
-  }
-
-  @Test
-  fun `should flip image vertically for orientation 4`() {
-    every { utils.getOrientation(any()) } returns 4
-    val image = utils.read(photoStorageUrl)
-
-    assertNotNull(image)
-
-    verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 0) { utils.flipHorizontal(any()) }
-    verify(exactly = 1) { utils.flipVertical(any()) }
-    verify(exactly = 0) { utils.rotateByDegree(any(), any()) }
-  }
-
-  @Test
-  fun `should flip image horizontally and then rotate image by 270 degrees for orientation 5`() {
-    every { utils.getOrientation(any()) } returns 5
-    val image = utils.read(photoStorageUrl)
-
-    assertNotNull(image)
-
-    verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 1) { utils.flipHorizontal(any()) }
-    verify(exactly = 0) { utils.flipVertical(any()) }
-    verify(exactly = 1) { utils.rotateByDegree(any(), 270.0) }
-    verifyOrder {
-      utils.flipHorizontal(any())
-      utils.rotateByDegree(any(), 270.0)
+    verify(exactly = flipHorizontalCount) { utils.flipHorizontal(any()) }
+    verify(exactly = flipVerticalCount) { utils.flipVertical(any()) }
+    if (rotationDegrees != null) {
+      verify(exactly = 1) { utils.rotateByDegree(any(), rotationDegrees) }
+      if (flipHorizontalCount > 0) {
+        verifyOrder {
+          utils.flipHorizontal(any())
+          utils.rotateByDegree(any(), rotationDegrees)
+        }
+      }
+    } else {
+      verify(exactly = 0) { utils.rotateByDegree(any(), any()) }
     }
-  }
-
-  @Test
-  fun `should rotate image by 90 degrees for orientation 6`() {
-    every { utils.getOrientation(any()) } returns 6
-    val image = utils.read(photoStorageUrl)
-
-    assertNotNull(image)
-
-    verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 0) { utils.flipHorizontal(any()) }
-    verify(exactly = 0) { utils.flipVertical(any()) }
-    verify(exactly = 1) { utils.rotateByDegree(any(), 90.0) }
-  }
-
-  @Test
-  fun `should flip image horizontally and then rotate image by 90 degrees for orientation 7`() {
-    every { utils.getOrientation(any()) } returns 7
-    val image = utils.read(photoStorageUrl)
-
-    assertNotNull(image)
-
-    verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 1) { utils.flipHorizontal(any()) }
-    verify(exactly = 0) { utils.flipVertical(any()) }
-    verify(exactly = 1) { utils.rotateByDegree(any(), 90.0) }
-    verifyOrder {
-      utils.flipHorizontal(any())
-      utils.rotateByDegree(any(), 90.0)
-    }
-  }
-
-  @Test
-  fun `should rotate image by 270 degrees for orientation 8`() {
-    every { utils.getOrientation(any()) } returns 8
-    val image = utils.read(photoStorageUrl)
-
-    assertNotNull(image)
-
-    verify(exactly = 1) { utils.getOrientation(photoStorageUrl) }
-    verify(exactly = 0) { utils.flipHorizontal(any()) }
-    verify(exactly = 0) { utils.flipVertical(any()) }
-    verify(exactly = 1) { utils.rotateByDegree(any(), 270.0) }
   }
 
   @Test
@@ -169,6 +91,19 @@ internal class ImageUtilsTest {
   }
 
   companion object {
+    @JvmStatic
+    fun orientations(): Stream<Arguments> =
+        Stream.of(
+            Arguments.of(1, "no transform", 0, 0, null),
+            Arguments.of(2, "flip horizontal", 1, 0, null),
+            Arguments.of(3, "rotate 180", 0, 0, 180.0),
+            Arguments.of(4, "flip vertical", 0, 1, null),
+            Arguments.of(5, "flip horizontal then rotate 270", 1, 0, 270.0),
+            Arguments.of(6, "rotate 90", 0, 0, 90.0),
+            Arguments.of(7, "flip horizontal then rotate 90", 1, 0, 90.0),
+            Arguments.of(8, "rotate 270", 0, 0, 270.0),
+        )
+
     private const val photoWidth = 5
     private const val photoHeight = 5
 
