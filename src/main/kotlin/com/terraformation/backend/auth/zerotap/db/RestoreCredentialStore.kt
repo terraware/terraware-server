@@ -1,6 +1,7 @@
 package com.terraformation.backend.auth.zerotap.db
 
 import com.terraformation.backend.auth.zerotap.model.RestoreCredentialModel
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.db.default_schema.RestoreCredentialId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.RESTORE_CREDENTIALS
@@ -10,6 +11,7 @@ import jakarta.inject.Named
 import java.time.Duration
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.context.event.EventListener
 
 /**
  * Stores Android restore credentials and the single-use WebAuthn challenges used to register and
@@ -47,6 +49,15 @@ class RestoreCredentialStore(
           .and(EXPIRES_TIME.gt(clock.instant()))
           .execute() == 1
     }
+  }
+
+  @EventListener
+  fun on(event: UserDeletionStartedEvent) {
+    deleteByUserId(event.userId)
+    dslContext
+        .deleteFrom(RESTORE_CREDENTIAL_CHALLENGES)
+        .where(RESTORE_CREDENTIAL_CHALLENGES.USER_ID.eq(event.userId))
+        .execute()
   }
 
   fun deleteExpiredChallenges() {
@@ -120,5 +131,12 @@ class RestoreCredentialStore(
         .deleteFrom(RESTORE_CREDENTIALS)
         .where(RESTORE_CREDENTIALS.CREDENTIAL_ID.eq(credentialId))
         .execute() == 1
+  }
+
+  fun deleteByUserId(userId: UserId) {
+    dslContext
+        .deleteFrom(RESTORE_CREDENTIALS)
+        .where(RESTORE_CREDENTIALS.USER_ID.eq(userId))
+        .execute()
   }
 }

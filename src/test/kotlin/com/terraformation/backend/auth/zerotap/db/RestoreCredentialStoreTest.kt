@@ -1,9 +1,11 @@
 package com.terraformation.backend.auth.zerotap.db
 
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.tables.records.RestoreCredentialChallengesRecord
 import com.terraformation.backend.db.default_schema.tables.records.RestoreCredentialsRecord
 import com.terraformation.backend.db.default_schema.tables.references.RESTORE_CREDENTIALS
+import com.terraformation.backend.db.default_schema.tables.references.RESTORE_CREDENTIAL_CHALLENGES
 import java.time.Duration
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -166,6 +168,19 @@ class RestoreCredentialStoreTest : DatabaseTest() {
     }
 
     @Test
+    fun `deleteByUserId deletes user's credentials but not other users'`() {
+      val userId = inserted.userId
+      insertRestoreCredential()
+      insertUser()
+      insertRestoreCredential()
+      val expected = dslContext.fetch(RESTORE_CREDENTIALS).filter { it.userId != userId }
+
+      store.deleteByUserId(userId)
+
+      assertTableEquals(expected)
+    }
+
+    @Test
     fun `deleteCredential only deletes the credential once`() {
       insertRestoreCredential(credentialId = credentialId)
       val otherCredentialId = insertRestoreCredential()
@@ -177,6 +192,29 @@ class RestoreCredentialStoreTest : DatabaseTest() {
       )
 
       assertTableEquals(expected)
+    }
+  }
+
+  @Nested
+  inner class UserDeletion {
+    @Test
+    fun `deletes user's credentials and challenges but not other users'`() {
+      val deletedUserId = inserted.userId
+      insertRestoreCredential()
+      insertRestoreCredentialChallenge(userId = deletedUserId)
+
+      insertUser()
+      insertRestoreCredential()
+      insertRestoreCredentialChallenge(userId = inserted.userId)
+      val expectedCredentials =
+          dslContext.fetch(RESTORE_CREDENTIALS).filter { it.userId != deletedUserId }
+      val expectedChallenges =
+          dslContext.fetch(RESTORE_CREDENTIAL_CHALLENGES).filter { it.userId != deletedUserId }
+
+      store.on(UserDeletionStartedEvent(deletedUserId))
+
+      assertTableEquals(expectedCredentials, "Credentials")
+      assertTableEquals(expectedChallenges, "Challenges")
     }
   }
 }
