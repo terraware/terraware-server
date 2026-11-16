@@ -960,8 +960,8 @@ class PlantingSiteStore(
         }
       }
       is StratumEdit.Update -> {
-        val baselinePlotCounts = edit.desiredModel.baselinePlotCounts
-        if (baselinePlotCounts.numPermanentPlots != 0) {
+        val baselinePlotParameters = edit.desiredModel.baselinePlotCounts
+        if (baselinePlotParameters.numPermanentPlots != 0) {
           throw IllegalArgumentException("Baseline surveys must have zero permanent plots")
         }
         with(STRATA) {
@@ -988,7 +988,7 @@ class PlantingSiteStore(
             throw StratumNotFoundException(edit.existingModel.id)
           }
         }
-        writePlotCounts(
+        writePlotParameters(
             edit.existingModel.id,
             ObservationType.entries.associateWith { edit.desiredModel.plotCounts(it) },
         )
@@ -1225,21 +1225,21 @@ class PlantingSiteStore(
 
   fun updateStratum(
       stratumId: StratumId,
-      plotCounts: Map<ObservationType, StratumPlotCounts>,
+      plotParameters: Map<ObservationType, StratumPlotCounts>,
       editFunc: (StrataRow) -> StrataRow,
   ) {
     requirePermissions { updateStratum(stratumId) }
 
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
-    val plotCountsField = plotCountsMultiset()
-    val initialPlotCounts =
+    val plotParametersField = plotParametersMultiset()
+    val initialPlotParameters =
         dslContext
-            .select(plotCountsField)
+            .select(plotParametersField)
             .from(STRATA)
             .where(STRATA.ID.eq(stratumId))
-            .fetchSingle(plotCountsField)!!
-    val editedPlotCounts = initialPlotCounts + plotCounts
+            .fetchSingle(plotParametersField)!!
+    val editedPlotParameters = initialPlotParameters + plotParameters
 
     entityLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
       with(STRATA) {
@@ -1254,7 +1254,7 @@ class PlantingSiteStore(
             .execute()
       }
 
-      writePlotCounts(stratumId, editedPlotCounts)
+      writePlotParameters(stratumId, editedPlotParameters)
 
       if (initial.name != edited.name) {
         with(SUBSTRATA) {
@@ -1298,8 +1298,8 @@ class PlantingSiteStore(
       val changedObservationTypes =
           ObservationType.entries
               .filter { type ->
-                val before = initialPlotCounts.getValue(type)
-                val after = editedPlotCounts.getValue(type)
+                val before = initialPlotParameters.getValue(type)
+                val after = editedPlotParameters.getValue(type)
                 before.numPermanentPlots != after.numPermanentPlots ||
                     before.numTemporaryPlots != after.numTemporaryPlots
               }
@@ -1396,8 +1396,8 @@ class PlantingSiteStore(
   ): StratumId {
     val userId = currentUser().userId
 
-    val baselinePlotCounts = stratum.baselinePlotCounts
-    if (baselinePlotCounts.numPermanentPlots != 0) {
+    val baselinePlotParameters = stratum.baselinePlotCounts
+    if (baselinePlotParameters.numPermanentPlots != 0) {
       throw IllegalArgumentException("Baseline surveys must have zero permanent plots")
     }
     val strataRow =
@@ -1418,7 +1418,7 @@ class PlantingSiteStore(
         )
 
     strataDao.insert(strataRow)
-    writePlotCounts(
+    writePlotParameters(
         strataRow.id!!,
         ObservationType.entries.associateWith { stratum.plotCounts(it) },
     )
@@ -1426,28 +1426,28 @@ class PlantingSiteStore(
     return strataRow.id!!
   }
 
-  private fun writePlotCounts(
+  private fun writePlotParameters(
       stratumId: StratumId,
-      plotCounts: Map<ObservationType, StratumPlotCounts>,
+      plotParameters: Map<ObservationType, StratumPlotCounts>,
   ) {
     dslContext
         .batch(
-            plotCounts.map { (type, counts) ->
-              require(type != ObservationType.BaselineSurvey || counts.numPermanentPlots == 0) {
+            plotParameters.map { (type, parameters) ->
+              require(type != ObservationType.BaselineSurvey || parameters.numPermanentPlots == 0) {
                 "Baseline surveys must have zero permanent plots"
               }
               val record =
                   StratumPlotSelectionParametersRecord(
                       stratumId = stratumId,
                       observationTypeId = type,
-                      errorMargin = counts.errorMargin,
+                      errorMargin = parameters.errorMargin,
                       numPermanentPlots =
-                          counts.numPermanentPlots.takeUnless {
+                          parameters.numPermanentPlots.takeUnless {
                             type == ObservationType.BaselineSurvey
                           },
-                      numTemporaryPlots = counts.numTemporaryPlots,
-                      studentsT = counts.studentsT,
-                      variance = counts.variance,
+                      numTemporaryPlots = parameters.numTemporaryPlots,
+                      studentsT = parameters.studentsT,
+                      variance = parameters.variance,
                   )
               dslContext
                   .insertInto(STRATUM_PLOT_SELECTION_PARAMETERS)
@@ -2313,11 +2313,11 @@ class PlantingSiteStore(
     val latestObservationCompletedTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
 
-    val plotCountsField = plotCountsMultiset()
+    val plotParametersField = plotParametersMultiset()
     return DSL.multiset(
             DSL.select(
                     STRATA.AREA_HA,
-                    plotCountsField,
+                    plotParametersField,
                     boundaryField,
                     STRATA.BOUNDARY_MODIFIED_TIME,
                     STRATA.ID,
@@ -2343,9 +2343,9 @@ class PlantingSiteStore(
             ExistingStratumModel(
                 areaHa = record[STRATA.AREA_HA]!!,
                 baselinePlotCounts =
-                    record[plotCountsField]!!.getValue(ObservationType.BaselineSurvey),
+                    record[plotParametersField]!!.getValue(ObservationType.BaselineSurvey),
                 biomassPlotCounts =
-                    record[plotCountsField]!!.getValue(ObservationType.BiomassMeasurements),
+                    record[plotParametersField]!!.getValue(ObservationType.BiomassMeasurements),
                 boundary = record[boundaryField]!! as MultiPolygon,
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
                 id = record[STRATA.ID]!!,
@@ -2353,7 +2353,8 @@ class PlantingSiteStore(
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
                 name = record[STRATA.NAME]!!,
-                plantPlotCounts = record[plotCountsField]!!.getValue(ObservationType.Monitoring),
+                plantPlotCounts =
+                    record[plotParametersField]!!.getValue(ObservationType.Monitoring),
                 stableId = record[STRATA.STABLE_ID]!!,
                 substrata = substrataField?.let { record[it] } ?: emptyList(),
                 targetPlantDensity = record[STRATA.TARGET_PLANT_DENSITY],
@@ -2362,7 +2363,7 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plotCountsMultiset(): Field<Map<ObservationType, StratumPlotCounts>> =
+  private fun plotParametersMultiset(): Field<Map<ObservationType, StratumPlotCounts>> =
       with(STRATUM_PLOT_SELECTION_PARAMETERS) {
         DSL.multiset(
                 DSL.select(

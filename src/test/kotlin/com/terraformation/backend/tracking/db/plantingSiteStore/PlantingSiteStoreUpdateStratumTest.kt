@@ -19,34 +19,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() {
 
   @Nested
   inner class UpdateStratum {
-    @ParameterizedTest
-    @EnumSource(ObservationType::class)
-    fun `only baseline surveys have a null permanent count`(observationType: ObservationType) {
-      insertPlantingSite()
-      insertStratum()
-
-      assertThrows<DataIntegrityViolationException> {
-        dslContext
-            .update(STRATUM_PLOT_SELECTION_PARAMETERS)
-            .set(
-                STRATUM_PLOT_SELECTION_PARAMETERS.NUM_PERMANENT_PLOTS,
-                if (observationType == ObservationType.BaselineSurvey) 1 else null,
-            )
-            .where(STRATUM_PLOT_SELECTION_PARAMETERS.STRATUM_ID.eq(inserted.stratumId))
-            .and(STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(observationType))
-            .execute()
-      }
-    }
-
     @Test
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)

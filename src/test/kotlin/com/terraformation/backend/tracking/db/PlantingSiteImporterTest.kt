@@ -9,6 +9,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.records.StratumPlotSelectionParametersRecord
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
@@ -236,25 +237,20 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
-      val counts =
-          dslContext
-              .selectFrom(STRATUM_PLOT_SELECTION_PARAMETERS)
-              .fetchMap(STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID)
-      val plantCounts = counts.getValue(ObservationType.Monitoring)
-      val baselineCounts = counts.getValue(ObservationType.BaselineSurvey)
-      val biomassCounts = counts.getValue(ObservationType.BiomassMeasurements)
-      assertEquals(19, baselineCounts.numTemporaryPlots, "Baseline temporary plots")
-      assertEquals(
-          plantCounts.errorMargin,
-          baselineCounts.errorMargin,
-          "Baseline error margin",
+      val stratumId = strataDao.findAll().single().id!!
+      assertTableEquals(
+          ObservationType.entries.map { type ->
+            StratumPlotSelectionParametersRecord(
+                stratumId = stratumId,
+                observationTypeId = type,
+                errorMargin = BigDecimal(70),
+                numPermanentPlots = if (type == ObservationType.BaselineSurvey) null else 15,
+                numTemporaryPlots = if (type == ObservationType.BaselineSurvey) 19 else 4,
+                studentsT = BigDecimal(1.7),
+                variance = BigDecimal(70000),
+            )
+          }
       )
-      assertEquals(plantCounts.studentsT, baselineCounts.studentsT, "Baseline Student's t")
-      assertEquals(plantCounts.variance, baselineCounts.variance, "Baseline variance")
-      assertEquals(15, biomassCounts.numPermanentPlots, "Biomass permanent plots")
-      assertEquals(4, biomassCounts.numTemporaryPlots, "Biomass temporary plots")
-      assertEquals(15, plantCounts.numPermanentPlots, "Plant permanent plots")
-      assertEquals(4, plantCounts.numTemporaryPlots, "Plant temporary plots")
     }
   }
 
