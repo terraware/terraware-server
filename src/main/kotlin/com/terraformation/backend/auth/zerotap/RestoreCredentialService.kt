@@ -7,6 +7,8 @@ import com.webauthn4j.WebAuthnManager
 import com.webauthn4j.converter.AttestedCredentialDataConverter
 import com.webauthn4j.converter.exception.DataConversionException
 import com.webauthn4j.converter.util.ObjectConverter
+import com.webauthn4j.credential.CredentialRecordImpl
+import com.webauthn4j.data.AuthenticationParameters
 import com.webauthn4j.data.PublicKeyCredentialParameters
 import com.webauthn4j.data.PublicKeyCredentialType
 import com.webauthn4j.data.RegistrationParameters
@@ -18,6 +20,8 @@ import jakarta.inject.Named
 import java.security.SecureRandom
 import kotlin.io.encoding.Base64
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 import tools.jackson.core.JacksonException
 
 /**
@@ -30,6 +34,7 @@ import tools.jackson.core.JacksonException
 class RestoreCredentialService(
     private val config: TerrawareServerConfig,
     private val restoreCredentialStore: RestoreCredentialStore,
+    private val zeroTapTicketIssuer: ZeroTapTicketIssuer,
 ) {
   private val objectConverter = ObjectConverter()
   private val attestedCredentialDataConverter = AttestedCredentialDataConverter(objectConverter)
@@ -118,6 +123,84 @@ class RestoreCredentialService(
     )
   }
 
+  /**
+   * Returns the WebAuthn credential request options, as a JSON string, that the app passes to
+   * Credential Manager to get the user's restore credential after the app is restored on a new
+   * device.
+   */
+  fun createAuthenticationOptions(): String {
+    val challenge = generateRandomBytes()
+    restoreCredentialStore.createChallenge(challenge, null, config.zeroTap.challengeLifetime)
+
+    val options =
+        mapOf(
+            "challenge" to base64Url.encode(challenge),
+            "rpId" to rpId(),
+            "timeout" to config.zeroTap.challengeLifetime.toMillis(),
+            "userVerification" to "discouraged",
+        )
+
+    return objectConverter.jsonMapper.writeValueAsString(options)
+  }
+
+  /**
+   * Verifies an authentication response from a restore credential and returns a zero-tap ticket the
+   * app can exchange for tokens at Keycloak. Restore credentials are single-use: the credential is
+   * deleted and the app is expected to register a new one once it's signed in.
+   *
+   * Failures are deliberately not distinguished from one another, so unauthenticated callers can't
+   * use this to learn which credentials exist.
+   */
+  fun authenticate(authenticationResponseJson: String): String {
+    val authenticationData =
+        try {
+          webAuthnManager.parseAuthenticationResponseJSON(authenticationResponseJson)
+        } catch (e: DataConversionException) {
+          throw notAccepted()
+        } catch (e: JacksonException) {
+          throw notAccepted()
+        }
+    val challenge = authenticationData.collectedClientData?.challenge?.value ?: throw notAccepted()
+
+    if (!restoreCredentialStore.consumeChallenge(challenge, null)) {
+      throw notAccepted()
+    }
+
+    val credentialId = authenticationData.credentialId
+    val credential = restoreCredentialStore.fetchByCredentialId(credentialId) ?: throw notAccepted()
+    val credentialRecord =
+        CredentialRecordImpl(
+            null,
+            null,
+            null,
+            null,
+            credential.signCount,
+            attestedCredentialDataConverter.convert(credential.attestedCredentialData),
+            null,
+            null,
+            null,
+            null,
+        )
+
+    try {
+      webAuthnManager.verify(
+          authenticationData,
+          AuthenticationParameters(serverProperty(challenge), credentialRecord, null, false, false),
+      )
+    } catch (e: VerificationException) {
+      throw notAccepted()
+    }
+
+    // Issue the ticket first so the credential isn't lost if issuing fails.
+    val ticket = zeroTapTicketIssuer.issueTicket(credential.authId)
+
+    if (!restoreCredentialStore.deleteCredential(credentialId)) {
+      throw notAccepted()
+    }
+
+    return ticket
+  }
+
   private fun generateRandomBytes(): ByteArray = ByteArray(32).also { secureRandom.nextBytes(it) }
 
   private fun serverProperty(challenge: ByteArray): ServerProperty {
@@ -131,6 +214,9 @@ class RestoreCredentialService(
   }
 
   private fun rpId(): String = config.zeroTap.rpId ?: config.webAppUrl.host
+
+  private fun notAccepted() =
+      ResponseStatusException(HttpStatus.UNAUTHORIZED, "Restore credential not accepted")
 
   private fun invalidCredential() = IllegalArgumentException("Invalid restore credential")
 }
