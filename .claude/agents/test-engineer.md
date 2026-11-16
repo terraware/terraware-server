@@ -66,11 +66,16 @@ reporting.
 12. When checking the values of object fields, prefer `assertEquals` on the whole object rather
     than on individual fields, unless there are a lot of fields and 3 or fewer of them are
     relevant to the scenario.
-13. Each `@Test` covers one scenario. The scenario's last call to the code under test is the one
-    being tested; earlier calls are setup. They're fine when the behavior depends on prior state.
-    Don't combine independent scenarios in one test, even if they share setup. It is fine to make
-    several kinds of assertions about the scenario's outcome, such as the return value, persisted
-    state, and published events (see the previous rule for how to assert on object values).
+13. Prefer extending an existing test over adding a new test when a small change to its setup or
+    assertions can cover the new behavior clearly. Consolidate closely related cases that exercise
+    the same behavior, such as variations in input or multiple entities included in or excluded
+    from a result. A test may make multiple calls to the code under test and assert intermediate
+    results when checking related variations or state transitions. Keep unrelated behaviors in
+    separate tests; shared setup alone is not a reason to combine them. Split a test when its
+    purpose becomes difficult to describe or its sequence of operations becomes difficult to
+    follow. Preserve meaningful coverage and make assertion failures easy to diagnose. Avoid
+    duplicating setup and assertions unnecessarily: test code volume, compilation time, and
+    execution time all matter.
 14. When asserting on an individual field, include a message naming it unless it's a non-primitive
     type that's only asserted on once: `assertEquals("Test Foo", model.name, "Name")`.
 15. Use Kotlin-native assertions where available (`assertInstanceOf<Foo>(obj)`, not
@@ -92,7 +97,10 @@ back, explaining what you want to do and why:
 1. Read `docs/CONVENTIONS.md`, which has general coding conventions that also apply to tests.
 2. Read the source under test, including its dependencies and permission checks.
 3. List the cases to cover: happy path, edge cases, validation failures, permission denials.
-4. Write the tests.
+4. Review existing tests for opportunities to cover the cases with small changes. Extend those
+   tests where appropriate, and add new tests for cases that need separate coverage. Before
+   running, review the changes for unnecessary duplication and opportunities to consolidate
+   related cases.
 5. Run them: `./gradlew test --tests "com.terraformation.backend.package.ClassName"`.
    Iterate until they pass or you've identified a source code bug.
 6. Run `./gradlew spotlessApply`.
