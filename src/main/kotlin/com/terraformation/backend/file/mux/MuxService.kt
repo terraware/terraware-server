@@ -1,5 +1,8 @@
 package com.terraformation.backend.file.mux
 
+import com.nimbusds.jose.jwk.JWKSet
+import com.nimbusds.jose.jwk.RSAKey
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.FileNotFoundException
@@ -14,7 +17,6 @@ import com.terraformation.backend.file.VideoStreamNotFoundException
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.log.perClassLogger
-import io.jsonwebtoken.Jwts
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -32,10 +34,12 @@ import java.io.StringReader
 import java.net.URI
 import java.security.KeyFactory
 import java.security.PrivateKey
+import java.security.interfaces.RSAPrivateCrtKey
+import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.RSAPublicKeySpec
 import java.time.Duration
 import java.time.InstantSource
-import java.util.Date
 import kotlin.io.encoding.Base64
 import kotlinx.coroutines.runBlocking
 import org.bouncycastle.openssl.PEMKeyPair
@@ -44,6 +48,10 @@ import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
+import org.springframework.security.oauth2.jwt.JwtClaimsSet
+import org.springframework.security.oauth2.jwt.JwtEncoder
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 
 @Named
 class MuxService(
@@ -77,17 +85,17 @@ class MuxService(
   // Non-null copies of config values.
   private lateinit var tokenId: String
   private lateinit var tokenSecret: String
-  private lateinit var signingKey: PrivateKey
   private lateinit var signingKeyId: String
+  private lateinit var jwtEncoder: JwtEncoder
   private lateinit var baseUrl: URI
 
   init {
     if (config.mux.enabled) {
       baseUrl = config.mux.externalUrl ?: config.webAppUrl
-      signingKey = parseSigningKey()
       signingKeyId = config.mux.signingKeyId!!
       tokenId = config.mux.tokenId!!
       tokenSecret = config.mux.tokenSecret!!
+      jwtEncoder = createJwtEncoder()
     }
   }
 
@@ -216,14 +224,14 @@ class MuxService(
         dslContext.fetchValue(MUX_ASSETS.PLAYBACK_ID, MUX_ASSETS.FILE_ID.eq(fileId))
             ?: throw VideoStreamNotFoundException(fileId)
 
-    val token =
-        Jwts.builder()
+    val claims =
+        JwtClaimsSet.builder()
             .subject(playbackId)
             .claim("kid", signingKeyId)
-            .claim("aud", tokenType.audience)
-            .expiration(Date(clock.instant().plus(effectiveExpiration).toEpochMilli()))
-            .signWith(signingKey)
-            .compact()
+            .audience(listOf(tokenType.audience))
+            .expiresAt(clock.instant().plus(effectiveExpiration))
+            .build()
+    val token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).tokenValue
 
     return MuxStreamModel(fileId = fileId, playbackId = playbackId, playbackToken = token)
   }
@@ -305,6 +313,21 @@ class MuxService(
         throw e
       }
     }
+  }
+
+  /**
+   * Creates the JWT encoder for Mux playback tokens. Mux only provides the private key of the
+   * signing key pair, but the PKCS8-encoded key has the CRT parameters needed to derive the
+   * corresponding public key, which the encoder requires.
+   */
+  private fun createJwtEncoder(): JwtEncoder {
+    val privateKey = parseSigningKey() as RSAPrivateCrtKey
+    val publicKey =
+        KeyFactory.getInstance("RSA")
+            .generatePublic(RSAPublicKeySpec(privateKey.modulus, privateKey.publicExponent))
+            as RSAPublicKey
+    val jwk = RSAKey.Builder(publicKey).privateKey(privateKey).keyID(signingKeyId).build()
+    return NimbusJwtEncoder(ImmutableJWKSet(JWKSet(jwk)))
   }
 
   /**

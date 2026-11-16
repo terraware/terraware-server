@@ -68,7 +68,6 @@ dependencies {
   val awsSdkVersion = providers.gradleProperty("awsSdkVersion").get()
   val flywayVersion = providers.gradleProperty("flywayVersion").get()
   val geoToolsVersion = providers.gradleProperty("geoToolsVersion").get()
-  val jjwtVersion = providers.gradleProperty("jjwtVersion").get()
   val jooqVersion = providers.gradleProperty("jooqVersion").get()
   val jtsVersion = providers.gradleProperty("jtsVersion").get()
   val ktorVersion = providers.gradleProperty("ktorVersion").get()
@@ -113,7 +112,6 @@ dependencies {
   implementation("commons-codec:commons-codec:1.23.0")
   implementation("commons-validator:commons-validator:1.11.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:5.1.0")
-  implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
@@ -151,9 +149,6 @@ dependencies {
   implementation("tools.jackson.dataformat:jackson-dataformat-xml")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
-
-  runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
-  runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
   testImplementation("io.mockk:mockk:1.14.12")
