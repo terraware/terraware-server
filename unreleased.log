@@ -1,3 +1,5 @@
+a462b490 Use stratum_plot_selection_parameters and drop legacy strata plot count columns (#5434)
+7bebec00 Add stratum_plot_selection_parameters table (#5433)
 674d4cb9 SW-9286 Allow deleting projects with draft planting sites (#5407)
 a97c40c7 SW-9268 Use Baseline Survey wording in observation started notifications (#5413)
 f5ec26f3 SW-9305 Add latest Baseline Survey fields to substrata (#5412)
