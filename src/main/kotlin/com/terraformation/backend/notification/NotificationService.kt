@@ -488,7 +488,7 @@ class NotificationService(
 
   @EventListener
   fun on(event: ObservationStartedEvent) {
-    if (event.observation.observationType != ObservationType.Monitoring) {
+    if (event.observation.observationType == ObservationType.BiomassMeasurements) {
       return
     }
 
@@ -500,13 +500,17 @@ class NotificationService(
         AppContent(
             notificationType = NotificationType.ObservationStarted,
             localUrl = webAppUrls.observations(plantingSite.organizationId, plantingSite.id),
-            renderMessage = { messages.observationStarted() },
+            renderMessage = {
+              messages.observationStarted(event.observation.observationType, plantingSite.name)
+            },
         )
 
     val emailContent =
         ObservationStarted(
             config,
             webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
+            event.observation.observationType,
+            plantingSite.name,
         )
 
     sendToOrganization(plantingSite.organizationId, appContent, emailContent)

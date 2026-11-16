@@ -215,7 +215,17 @@ class SeedFundReportCreated(
 class ObservationStarted(
     config: TerrawareServerConfig,
     val observationsUrl: String,
+    val observationType: ObservationType,
+    val plantingSiteName: String,
 ) : EmailTemplateModel(config) {
+  val stringsPrefix: String
+    get() =
+        if (observationType == ObservationType.BaselineSurvey) {
+          "notification.observation.started.baseline"
+        } else {
+          "notification.observation.started"
+        }
+
   override val templateDir: String
     get() = "observation/started"
 

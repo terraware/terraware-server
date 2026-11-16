@@ -197,6 +197,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.mail.javamail.JavaMailSenderImpl
 
 internal class NotificationServiceEmailTest {
@@ -808,15 +810,18 @@ internal class NotificationServiceEmailTest {
     assertRecipientsEqual(admins.toSet())
   }
 
-  @Test
-  fun observationStarted() {
+  @ParameterizedTest
+  @EnumSource(ObservationType::class, names = ["Monitoring", "BaselineSurvey"])
+  fun `observation started uses wording for the observation type`(
+      observationType: ObservationType
+  ) {
     val event =
         ObservationStartedEvent(
             ExistingObservationModel(
                 endDate = LocalDate.of(2023, 9, 30),
                 id = ObservationId(1),
                 isAdHoc = false,
-                observationType = ObservationType.Monitoring,
+                observationType = observationType,
                 plantingSiteId = plantingSite.id,
                 startDate = LocalDate.of(2023, 9, 1),
                 state = ObservationState.InProgress,
@@ -825,7 +830,19 @@ internal class NotificationServiceEmailTest {
 
     service.on(event)
 
-    assertBodyContains("Observation", "Text")
+    if (observationType == ObservationType.BaselineSurvey) {
+      assertSubjectContains("It is time to conduct the Baseline Survey of My Site.")
+      assertBodyContains("It is time to conduct the Baseline Survey of Planting Site My Site!")
+      assertBodyContains(
+          "The Baseline Survey should be done now, ideally before you start planting."
+      )
+    } else {
+      assertSubjectContains("It is time to monitor your plantings!")
+      assertBodyContains("It is time to monitor your plantings!")
+      assertBodyContains("Observations of your plantings need to be completed this month.")
+    }
+    assertRecipientsEqual(organizationRecipients)
+    assertBodyContains("Go to Terraware", "Button label")
     assertBodyContains(webAppUrls.fullObservations(organization.id, plantingSite.id), "Link URL")
     assertIsEventListener<ObservationStartedEvent>(service)
   }
