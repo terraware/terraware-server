@@ -687,7 +687,7 @@ COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum pe
 COMMENT ON TABLE tracking.strata IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.';
 COMMENT ON TABLE tracking.stratum_plot_selection_parameters IS 'Plot selection parameters for each observation type in a stratum.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.error_margin IS 'Error margin for the plot count statistical formula.';
-COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_permanent_plots IS 'Number of permanent plots to assign to the next observation, typically derived from a statistical formula. Null for baseline surveys.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_permanent_plots IS 'Number of permanent plots to assign to the next observation, typically derived from a statistical formula. Zero for baseline surveys.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_temporary_plots IS 'Number of temporary plots to assign to the next observation. For baseline surveys, includes any permanent plots from the statistical formula.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.students_t IS 'Student''s t value for the plot count statistical formula.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.variance IS 'Variance for the plot count statistical formula.';
