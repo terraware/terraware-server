@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 
@@ -95,29 +96,37 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to read module`() {
+    fun `throws exception if no permission to read module or module does not exist`() {
       val moduleId = insertModule()
-      every { user.canReadModule(any()) } returns false
-      assertThrows<ModuleNotFoundException> { store.fetchOneById(moduleId) }
-    }
 
-    @Test
-    fun `throws exception if no module found`() {
-      assertThrows<ModuleNotFoundException> { store.fetchOneById(ModuleId(-1)) }
+      assertAll(
+          {
+            assertThrows<ModuleNotFoundException>("No such module") {
+              store.fetchOneById(ModuleId(-1))
+            }
+          },
+          {
+            every { user.canReadModule(any()) } returns false
+            assertThrows<ModuleNotFoundException>("No read permission") {
+              store.fetchOneById(moduleId)
+            }
+          },
+      )
     }
   }
 
   @Nested
   inner class FetchAllModules {
     @Test
-    fun `returns empty list of module if no module added`() {
-      assertEquals(emptyList<ModuleModel>(), store.fetchAllModules())
-    }
-
-    @Test
-    fun `returns empty list of module if no permission to read any module`() {
-      every { user.canReadModule(any()) } returns false
-      assertEquals(emptyList<ModuleModel>(), store.fetchAllModules())
+    fun `returns empty list of module if no module added or no read permission`() {
+      assertAll(
+          { assertEquals(emptyList<ModuleModel>(), store.fetchAllModules(), "No modules") },
+          {
+            insertModule()
+            every { user.canReadModule(any()) } returns false
+            assertEquals(emptyList<ModuleModel>(), store.fetchAllModules(), "No read permission")
+          },
+      )
     }
 
     @Test
@@ -183,15 +192,22 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to read module`() {
+    fun `throws exception if no permission to read module or module does not exist`() {
       val moduleId = insertModule()
-      every { user.canReadModule(any()) } returns false
-      assertThrows<ModuleNotFoundException> { store.fetchAcceleratorPhase(moduleId) }
-    }
 
-    @Test
-    fun `throws exception if no module found`() {
-      assertThrows<ModuleNotFoundException> { store.fetchAcceleratorPhase(ModuleId(-1)) }
+      assertAll(
+          {
+            assertThrows<ModuleNotFoundException>("No such module") {
+              store.fetchAcceleratorPhase(ModuleId(-1))
+            }
+          },
+          {
+            every { user.canReadModule(any()) } returns false
+            assertThrows<ModuleNotFoundException>("No read permission") {
+              store.fetchAcceleratorPhase(moduleId)
+            }
+          },
+      )
     }
   }
 }

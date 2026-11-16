@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
@@ -535,7 +536,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if reassigning a delivery whose withdrawal has been undone`() {
+    fun `throws exception if reassigning an undone or undo delivery`() {
       // Insert the original delivery and planting.
       assertNotNull(species1PlantingId)
 
@@ -555,35 +556,20 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               toSubstratumId = otherSubstratumId,
           )
 
-      assertThrows<ReassignmentOfUndoneWithdrawalNotAllowedException> {
-        store.reassignDelivery(deliveryId, listOf(reassignment))
-      }
-    }
-
-    @Test
-    fun `throws exception if reassigning an undo delivery`() {
-      // Insert the original delivery and planting.
-      assertNotNull(species1PlantingId)
-
-      insertNurseryWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
-      insertDelivery(plantingSiteId = plantingSiteId)
-      insertPlanting(
-          speciesId = speciesId1,
-          numPlants = -1,
-          plantingSiteId = plantingSiteId,
-          plantingTypeId = PlantingType.Undo,
+      assertAll(
+          {
+            assertThrows<ReassignmentOfUndoneWithdrawalNotAllowedException>(
+                "Reassigning delivery whose withdrawal was undone"
+            ) {
+              store.reassignDelivery(deliveryId, listOf(reassignment))
+            }
+          },
+          {
+            assertThrows<ReassignmentOfUndoNotAllowedException>("Reassigning undo delivery") {
+              store.reassignDelivery(inserted.deliveryId, listOf(reassignment))
+            }
+          },
       )
-
-      val reassignment =
-          DeliveryStore.Reassignment(
-              fromPlantingId = species1PlantingId,
-              numPlants = 1,
-              toSubstratumId = otherSubstratumId,
-          )
-
-      assertThrows<ReassignmentOfUndoNotAllowedException> {
-        store.reassignDelivery(inserted.deliveryId, listOf(reassignment))
-      }
     }
 
     @Test
