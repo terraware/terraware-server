@@ -345,7 +345,13 @@ val ENUM_TABLES =
                     listOf("observations\\.state_id"),
                     isLocalizable = false,
                 ),
-                EnumTable("observation_types", listOf("observations\\.observation_type_id")),
+                EnumTable(
+                    "observation_types",
+                    listOf(
+                        "observations\\.observation_type_id",
+                        "stratum_plot_counts\\.observation_type_id",
+                    ),
+                ),
                 EnumTable(
                     "planting_date_request_statuses",
                     listOf("planting_date_requests\\.status_id"),
@@ -850,6 +856,10 @@ val EMBEDDABLES =
             .withName("species_plant_material_sourcing_method_id")
             .withTables("public.species_plant_material_sourcing_methods")
             .withColumns("species_id", "plant_material_sourcing_method_id"),
+        EmbeddableDefinitionType()
+            .withName("stratum_plot_count_id")
+            .withTables("tracking.stratum_plot_counts")
+            .withColumns("stratum_id", "observation_type_id"),
         EmbeddableDefinitionType()
             .withName("stratum_species_target_id")
             .withTables("tracking.stratum_species_targets")
