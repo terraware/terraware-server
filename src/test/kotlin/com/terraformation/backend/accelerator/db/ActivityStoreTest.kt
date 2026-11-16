@@ -651,6 +651,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityStatus = ActivityStatus.Verified,
               activityType = ActivityType.SeedCollection,
               description = "Original description",
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(50),
               projectId = projectId,
               verifiedBy = otherUserId,
               verifiedTime = Instant.ofEpochSecond(50),
@@ -659,6 +661,29 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
+      // A no-op update leaves status, modifiedBy, and modifiedTime unchanged
+      store.update(activityId) { it }
+
+      assertTableEquals(
+          ActivitiesRecord(
+              activityDate = LocalDate.of(2024, 1, 1),
+              activityStatusId = ActivityStatus.Verified,
+              activityTypeId = ActivityType.SeedCollection,
+              createdBy = otherUserId,
+              createdTime = Instant.EPOCH,
+              description = "Original description",
+              id = activityId,
+              isHighlight = false,
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(50),
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          ),
+          "Unchanged activity",
+      )
+
+      // A real update resets the status and updates modifiedBy/modifiedTime
       store.update(activityId) { existing ->
         existing.copy(
             activityType = ActivityType.Planting,
@@ -683,48 +708,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               verifiedBy = otherUserId,
               verifiedTime = Instant.ofEpochSecond(50),
           ),
-      )
-    }
-
-    @Test
-    fun `does not update status, modifiedBy or modifiedTime if unchanged`() {
-      insertOrganizationUser(role = Role.Admin)
-      val otherUserId = insertUser()
-
-      val activityId =
-          insertActivity(
-              activityDate = LocalDate.of(2024, 1, 1),
-              activityStatus = ActivityStatus.Verified,
-              activityType = ActivityType.SeedCollection,
-              description = "Original description",
-              modifiedBy = otherUserId,
-              modifiedTime = Instant.ofEpochSecond(50),
-              projectId = projectId,
-              verifiedBy = otherUserId,
-              verifiedTime = Instant.ofEpochSecond(50),
-          )
-
-      val updateTime = Instant.ofEpochSecond(100)
-      clock.instant = updateTime
-
-      store.update(activityId) { it }
-
-      assertTableEquals(
-          ActivitiesRecord(
-              activityDate = LocalDate.of(2024, 1, 1),
-              activityStatusId = ActivityStatus.Verified,
-              activityTypeId = ActivityType.SeedCollection,
-              createdBy = otherUserId,
-              createdTime = Instant.EPOCH,
-              description = "Original description",
-              id = activityId,
-              isHighlight = false,
-              modifiedBy = otherUserId,
-              modifiedTime = Instant.ofEpochSecond(50),
-              projectId = projectId,
-              verifiedBy = otherUserId,
-              verifiedTime = Instant.ofEpochSecond(50),
-          ),
+          "Updated activity",
       )
     }
 
@@ -818,47 +802,37 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `clears verifiedBy and verifiedTime if status goes from Verified to NotVerified`() {
+    fun `clears verifiedBy and verifiedTime if status goes from Verified to unverified`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
-      val activityId = insertActivity(verifiedBy = user.userId, verifiedTime = Instant.EPOCH)
-      val record = dslContext.fetchOne(ACTIVITIES)!!
+      val activityIdNotVerified =
+          insertActivity(verifiedBy = user.userId, verifiedTime = Instant.EPOCH)
+      val activityIdDoNotUse =
+          insertActivity(verifiedBy = user.userId, verifiedTime = Instant.EPOCH)
+
+      val records = dslContext.fetch(ACTIVITIES).sortedBy { it.id }
 
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.updateForAdmin(activityId) { model ->
+      store.updateForAdmin(activityIdNotVerified) { model ->
         model.copy(activityStatus = ActivityStatus.NotVerified)
       }
-
-      record.activityStatusId = ActivityStatus.NotVerified
-      record.modifiedTime = updateTime
-      record.verifiedBy = null
-      record.verifiedTime = null
-
-      assertTableEquals(record)
-    }
-
-    @Test
-    fun `clears verifiedBy and verifiedTime if status goes from Verified to DoNotUse`() {
-      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-
-      val activityId = insertActivity(verifiedBy = user.userId, verifiedTime = Instant.EPOCH)
-      val record = dslContext.fetchOne(ACTIVITIES)!!
-
-      val updateTime = Instant.ofEpochSecond(100)
-      clock.instant = updateTime
-
-      store.updateForAdmin(activityId) { model ->
+      store.updateForAdmin(activityIdDoNotUse) { model ->
         model.copy(activityStatus = ActivityStatus.DoNotUse)
       }
 
-      record.activityStatusId = ActivityStatus.DoNotUse
-      record.modifiedTime = updateTime
-      record.verifiedBy = null
-      record.verifiedTime = null
+      records[0].activityStatusId = ActivityStatus.NotVerified
+      records[0].modifiedTime = updateTime
+      records[0].verifiedBy = null
+      records[0].verifiedTime = null
 
-      assertTableEquals(record)
+      records[1].activityStatusId = ActivityStatus.DoNotUse
+      records[1].modifiedTime = updateTime
+      records[1].verifiedBy = null
+      records[1].verifiedTime = null
+
+      assertTableEquals(records)
     }
 
     @Test

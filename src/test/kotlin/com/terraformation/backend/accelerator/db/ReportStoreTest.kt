@@ -6745,63 +6745,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class UpdateProjectIndicatorTarget {
     @Test
-    fun `inserts new target`() {
-      val projectIndicatorId =
-          insertProjectIndicator(
-              category = IndicatorCategory.ProjectObjectives,
-              description = "Test indicator",
-              name = "Test Indicator",
-              refId = "1.0",
-              level = IndicatorLevel.Process,
-          )
-
-      store.updateProjectIndicatorTarget(
-          projectId = projectId,
-          year = 2024,
-          indicatorId = projectIndicatorId,
-          target = BigDecimal(100),
-      )
-
-      val targets = reportProjectIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertEquals(projectId, targets[0].projectId)
-      assertEquals(projectIndicatorId, targets[0].projectIndicatorId)
-      assertEquals(2024, targets[0].year)
-      assertEquals(BigDecimal(100), targets[0].target)
-    }
-
-    @Test
-    fun `updates existing target`() {
-      val projectIndicatorId =
-          insertProjectIndicator(
-              category = IndicatorCategory.ProjectObjectives,
-              description = "Test indicator",
-              name = "Test Indicator",
-              refId = "1.0",
-              level = IndicatorLevel.Process,
-          )
-
-      insertReportProjectIndicatorTarget(
-          projectId = projectId,
-          projectIndicatorId = projectIndicatorId,
-          year = 2024,
-          target = BigDecimal(100),
-      )
-
-      store.updateProjectIndicatorTarget(
-          projectId = projectId,
-          year = 2024,
-          indicatorId = projectIndicatorId,
-          target = BigDecimal(150),
-      )
-
-      val targets = reportProjectIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertEquals(BigDecimal(150), targets[0].target)
-    }
-
-    @Test
-    fun `allows null target`() {
+    fun `upserts target`() {
       val projectIndicatorId =
           insertProjectIndicator(
               category = IndicatorCategory.ProjectObjectives,
@@ -6818,9 +6762,54 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = null,
       )
 
+      assertNull(
+          reportProjectIndicatorTargetsDao.findAll().single().target,
+          "Null target after insert",
+      )
+
+      store.updateProjectIndicatorTarget(
+          projectId = projectId,
+          year = 2024,
+          indicatorId = projectIndicatorId,
+          target = BigDecimal(100),
+      )
+
       val targets = reportProjectIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertNull(targets[0].target)
+      assertEquals(1, targets.size, "Number of targets after insert")
+      assertEquals(projectId, targets[0].projectId, "Project ID")
+      assertEquals(projectIndicatorId, targets[0].projectIndicatorId, "Indicator ID")
+      assertEquals(2024, targets[0].year, "Year")
+      assertEquals(BigDecimal(100), targets[0].target, "Target after insert")
+
+      store.updateProjectIndicatorTarget(
+          projectId = projectId,
+          year = 2024,
+          indicatorId = projectIndicatorId,
+          target = BigDecimal(150),
+      )
+
+      assertEquals(
+          1,
+          reportProjectIndicatorTargetsDao.findAll().size,
+          "Number of targets after update",
+      )
+      assertEquals(
+          BigDecimal(150),
+          reportProjectIndicatorTargetsDao.findAll()[0].target,
+          "Target after update",
+      )
+
+      store.updateProjectIndicatorTarget(
+          projectId = projectId,
+          year = 2024,
+          indicatorId = projectIndicatorId,
+          target = null,
+      )
+
+      assertNull(
+          reportProjectIndicatorTargetsDao.findAll().single().target,
+          "Null target after update",
+      )
     }
 
     @Test
@@ -6852,63 +6841,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class UpdateCommonIndicatorTarget {
     @Test
-    fun `inserts new target`() {
-      val commonIndicatorId =
-          insertCommonIndicator(
-              category = IndicatorCategory.Climate,
-              description = "Test indicator",
-              name = "Test Indicator",
-              refId = "1.0",
-              level = IndicatorLevel.Process,
-          )
-
-      store.updateCommonIndicatorTarget(
-          projectId = projectId,
-          year = 2024,
-          indicatorId = commonIndicatorId,
-          target = BigDecimal(200),
-      )
-
-      val targets = reportCommonIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertEquals(projectId, targets[0].projectId)
-      assertEquals(commonIndicatorId, targets[0].commonIndicatorId)
-      assertEquals(2024, targets[0].year)
-      assertEquals(BigDecimal(200), targets[0].target)
-    }
-
-    @Test
-    fun `updates existing target`() {
-      val commonIndicatorId =
-          insertCommonIndicator(
-              category = IndicatorCategory.Climate,
-              description = "Test indicator",
-              name = "Test Indicator",
-              refId = "1.0",
-              level = IndicatorLevel.Process,
-          )
-
-      insertReportCommonIndicatorTarget(
-          projectId = projectId,
-          commonIndicatorId = commonIndicatorId,
-          year = 2024,
-          target = BigDecimal(200),
-      )
-
-      store.updateCommonIndicatorTarget(
-          projectId = projectId,
-          year = 2024,
-          indicatorId = commonIndicatorId,
-          target = BigDecimal(250),
-      )
-
-      val targets = reportCommonIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertEquals(BigDecimal(250), targets[0].target)
-    }
-
-    @Test
-    fun `allows null target`() {
+    fun `upserts target`() {
       val commonIndicatorId =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
@@ -6925,9 +6858,54 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = null,
       )
 
+      assertNull(
+          reportCommonIndicatorTargetsDao.findAll().single().target,
+          "Null target after insert",
+      )
+
+      store.updateCommonIndicatorTarget(
+          projectId = projectId,
+          year = 2024,
+          indicatorId = commonIndicatorId,
+          target = BigDecimal(200),
+      )
+
       val targets = reportCommonIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertNull(targets[0].target)
+      assertEquals(1, targets.size, "Number of targets after insert")
+      assertEquals(projectId, targets[0].projectId, "Project ID")
+      assertEquals(commonIndicatorId, targets[0].commonIndicatorId, "Indicator ID")
+      assertEquals(2024, targets[0].year, "Year")
+      assertEquals(BigDecimal(200), targets[0].target, "Target after insert")
+
+      store.updateCommonIndicatorTarget(
+          projectId = projectId,
+          year = 2024,
+          indicatorId = commonIndicatorId,
+          target = BigDecimal(250),
+      )
+
+      assertEquals(
+          1,
+          reportCommonIndicatorTargetsDao.findAll().size,
+          "Number of targets after update",
+      )
+      assertEquals(
+          BigDecimal(250),
+          reportCommonIndicatorTargetsDao.findAll()[0].target,
+          "Target after update",
+      )
+
+      store.updateCommonIndicatorTarget(
+          projectId = projectId,
+          year = 2024,
+          indicatorId = commonIndicatorId,
+          target = null,
+      )
+
+      assertNull(
+          reportCommonIndicatorTargetsDao.findAll().single().target,
+          "Null target after update",
+      )
     }
 
     @Test
@@ -6959,7 +6937,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class UpdateAutoCalculatedIndicatorTarget {
     @Test
-    fun `inserts new target`() {
+    fun `upserts target`() {
+      store.updateAutoCalculatedIndicatorTarget(
+          projectId = projectId,
+          year = 2024,
+          indicatorId = AutoCalculatedIndicator.TreesPlanted,
+          target = null,
+      )
+
+      assertNull(
+          reportAutoCalculatedIndicatorTargetsDao.findAll().single().target,
+          "Null target after insert",
+      )
+
       store.updateAutoCalculatedIndicatorTarget(
           projectId = projectId,
           year = 2024,
@@ -6968,21 +6958,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       val targets = reportAutoCalculatedIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertEquals(projectId, targets[0].projectId)
-      assertEquals(AutoCalculatedIndicator.TreesPlanted, targets[0].autoCalculatedIndicatorId)
-      assertEquals(2024, targets[0].year)
-      assertEquals(BigDecimal(500), targets[0].target)
-    }
-
-    @Test
-    fun `updates existing target`() {
-      insertReportAutoCalculatedIndicatorTarget(
-          projectId = projectId,
-          indicator = AutoCalculatedIndicator.TreesPlanted,
-          year = 2024,
-          target = BigDecimal(500),
+      assertEquals(1, targets.size, "Number of targets after insert")
+      assertEquals(projectId, targets[0].projectId, "Project ID")
+      assertEquals(
+          AutoCalculatedIndicator.TreesPlanted,
+          targets[0].autoCalculatedIndicatorId,
+          "Indicator ID",
       )
+      assertEquals(2024, targets[0].year, "Year")
+      assertEquals(BigDecimal(500), targets[0].target, "Target after insert")
 
       store.updateAutoCalculatedIndicatorTarget(
           projectId = projectId,
@@ -6991,13 +6975,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = BigDecimal(600),
       )
 
-      val targets = reportAutoCalculatedIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertEquals(BigDecimal(600), targets[0].target)
-    }
+      assertEquals(
+          listOf(BigDecimal(600)),
+          reportAutoCalculatedIndicatorTargetsDao.findAll().map { it.target },
+          "Target after update",
+      )
 
-    @Test
-    fun `allows null target`() {
       store.updateAutoCalculatedIndicatorTarget(
           projectId = projectId,
           year = 2024,
@@ -7005,9 +6988,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = null,
       )
 
-      val targets = reportAutoCalculatedIndicatorTargetsDao.findAll()
-      assertEquals(1, targets.size)
-      assertNull(targets[0].target)
+      assertNull(
+          reportAutoCalculatedIndicatorTargetsDao.findAll().single().target,
+          "Null target after update",
+      )
     }
 
     @Test
