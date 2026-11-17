@@ -21,6 +21,7 @@ import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
@@ -40,6 +41,32 @@ import org.springframework.security.access.AccessDeniedException
 internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class CreatePlantingSite {
+    @Test
+    fun `stores explicit stratum precision levels independently of the site default`() {
+      val initial = newSite().copy(organizationId = organizationId)
+      val stratum = initial.strata.single()
+      val requested =
+          initial.copy(
+              strata =
+                  listOf(
+                      stratum.copy(
+                          plantPlotCounts =
+                              stratum.plantPlotCounts.copy(
+                                  plotPrecisionLevel = PlotPrecisionLevel.High
+                              ),
+                          biomassPlotCounts =
+                              stratum.biomassPlotCounts.copy(
+                                  plotPrecisionLevel = PlotPrecisionLevel.Low
+                              ),
+                      )
+                  )
+          )
+
+      val created = store.createPlantingSite(requested)
+
+      assertEquals(requested, store.fetchSiteById(created.id, PlantingSiteDepth.Substratum).toNew())
+    }
+
     @ParameterizedTest
     @ValueSource(ints = [0, 16])
     fun `stores baseline temporary total unchanged on create`(temporaryTotal: Int) {
@@ -303,6 +330,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   .apply {
                     stratumId = actualStrata.getValue(stratum.name).id
                     observationTypeId = type
+                    plotPrecisionLevelId = stratum.plotCounts(type).plotPrecisionLevel
+                    plotSelectionModeId = stratum.plotCounts(type).mode
                   }
             }
           }

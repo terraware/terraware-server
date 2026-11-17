@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.rectangle
@@ -18,8 +19,57 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class PlantingSiteMapEditModelTest {
+  @ParameterizedTest
+  @CsvSource("VeryLow,22.5,4,1", "Low,20,5,2", "Medium,15,8,3", "High,10,19,6", "VeryHigh,7,38,12")
+  fun `new strata inherit site precision while existing strata keep raw parameters`(
+      level: PlotPrecisionLevel,
+      margin: BigDecimal,
+      permanent: Int,
+      temporary: Int,
+  ) {
+    val existing = existingSite().copy(defaultPlotPrecisionLevel = level)
+    val edit = PlantingSiteMapEditModel.of(existing)
+    val desired =
+        edit
+            .copy(
+                strata =
+                    edit.strata +
+                        StratumMapEditModel(
+                            null,
+                            "Added",
+                            listOf(SubstratumMapEditModel(null, "A", rectangle(100, 100, x = 600))),
+                        )
+            )
+            .toDesiredModel(existing)
+    val expected =
+        StratumPlotCounts(
+            plotPrecisionLevel = level,
+            errorMargin = margin,
+            studentsT = BigDecimal("1.645"),
+            variance = BigDecimal(900),
+            numPermanentPlots = permanent,
+            numTemporaryPlots = temporary,
+        )
+    val added = desired.strata.single { it.name == "Added" }
+    assertEquals(
+        listOf(
+            expected,
+            expected,
+            expected.copy(numPermanentPlots = 0, numTemporaryPlots = permanent + temporary),
+        ),
+        listOf(added.plantPlotCounts, added.biomassPlotCounts, added.baselinePlotCounts),
+    )
+    assertEquals(
+        existing.strata.map { it.toNew() },
+        desired.strata.filter { it.name != "Added" },
+        "$level existing strata",
+    )
+  }
+
   @Test
   fun `unchanged map results in no-op edit`() {
     // No permanent plots, so the edit calculator doesn't add plots to fill out the strata.

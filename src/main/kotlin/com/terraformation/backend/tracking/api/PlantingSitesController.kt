@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -954,8 +955,12 @@ data class NewStratumPayload(
         )
       }
 
-  fun toModel(exclusion: MultiPolygon?): NewStratumModel {
+  fun toModel(
+      exclusion: MultiPolygon?,
+      plotPrecisionLevel: PlotPrecisionLevel = PlotPrecisionLevel.Medium,
+  ): NewStratumModel {
     return StratumModel.create(
+        plotPrecisionLevel = plotPrecisionLevel,
         boundary = boundary.toMultiPolygon(),
         exclusion = exclusion,
         name = name,
@@ -1071,15 +1076,20 @@ data class CreatePlantingSiteRequestPayload(
   fun toModel(): NewPlantingSiteModel {
     val exclusionMultiPolygon = exclusion?.toMultiPolygon()
 
-    return PlantingSiteModel.create(
-        boundary = boundary?.toMultiPolygon(),
-        description = description,
-        exclusion = exclusionMultiPolygon,
-        name = name,
-        organizationId = organizationId,
-        strata = strata?.map { it.toModel(exclusionMultiPolygon) } ?: emptyList(),
-        projectId = projectId,
-        timeZone = timeZone,
+    val site =
+        PlantingSiteModel.create(
+            boundary = boundary?.toMultiPolygon(),
+            description = description,
+            exclusion = exclusionMultiPolygon,
+            name = name,
+            organizationId = organizationId,
+            projectId = projectId,
+            timeZone = timeZone,
+        )
+    return site.copy(
+        strata =
+            strata?.map { it.toModel(exclusionMultiPolygon, site.defaultPlotPrecisionLevel) }
+                ?: emptyList()
     )
   }
 }

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.tables.records.StratumPlotSelectionParametersRecord
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.mockUser
@@ -243,6 +244,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             StratumPlotSelectionParametersRecord(
                 stratumId = stratumId,
                 observationTypeId = type,
+                plotSelectionModeId = PlotSelectionMode.Custom,
                 errorMargin = BigDecimal(70),
                 numPermanentPlots = if (type == ObservationType.BaselineSurvey) 0 else 15,
                 numTemporaryPlots = if (type == ObservationType.BaselineSurvey) 19 else 4,

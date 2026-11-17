@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.useAndDelete
@@ -535,6 +536,7 @@ class AdminPlantingSitesController(
           mapOf(
               ObservationType.BaselineSurvey to
                   StratumPlotCounts(
+                      mode = PlotSelectionMode.Custom,
                       errorMargin = baselineErrorMargin,
                       numPermanentPlots = 0,
                       numTemporaryPlots = baselineNumTemporary,
@@ -543,6 +545,7 @@ class AdminPlantingSitesController(
                   ),
               ObservationType.BiomassMeasurements to
                   StratumPlotCounts(
+                      mode = PlotSelectionMode.Custom,
                       errorMargin = biomassErrorMargin,
                       numPermanentPlots = biomassNumPermanent,
                       numTemporaryPlots = biomassNumTemporary,
@@ -551,6 +554,7 @@ class AdminPlantingSitesController(
                   ),
               ObservationType.Monitoring to
                   StratumPlotCounts(
+                      mode = PlotSelectionMode.Custom,
                       errorMargin = plantErrorMargin,
                       numPermanentPlots = plantNumPermanent,
                       numTemporaryPlots = plantNumTemporary,

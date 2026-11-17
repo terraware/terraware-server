@@ -55,7 +55,7 @@ class StratumModelTest : BaseStratumModelTest() {
         )
 
     assertEquals(
-        model.plantPlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = 16),
+        model.plantPlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = 17),
         model.baselinePlotCounts,
         "Baseline counts from plant statistical settings",
     )
@@ -81,11 +81,11 @@ class StratumModelTest : BaseStratumModelTest() {
         )
 
     assertEquals(
-        StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 24),
+        StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 11),
         model.baselinePlotCounts,
     )
-    assertEquals(18, model.maxPermanentPlots, "Maximum permanent plots")
-    assertEquals(6, model.maxTemporaryPlots, "Maximum temporary plots")
+    assertEquals(8, model.maxPermanentPlots, "Maximum permanent plots")
+    assertEquals(3, model.maxTemporaryPlots, "Maximum temporary plots")
   }
 
   @Test

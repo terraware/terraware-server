@@ -2,6 +2,8 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
@@ -11,6 +13,7 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.DensityChangedEventModel
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import io.mockk.every
 import java.math.BigDecimal
@@ -19,12 +22,37 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() {
 
   @Nested
   inner class UpdateStratum {
+    @ParameterizedTest
+    @CsvSource("PrecisionLevel,", "Custom,High", "Direct,Medium")
+    fun `rejects precision levels inconsistent with selection mode`(
+        mode: PlotSelectionMode,
+        level: PlotPrecisionLevel?,
+    ) {
+      insertPlantingSite()
+      insertStratum()
+
+      assertThrows<DataIntegrityViolationException> {
+        store.updateStratum(
+            inserted.stratumId,
+            mapOf(
+                ObservationType.Monitoring to
+                    StratumPlotCounts(mode = mode, plotPrecisionLevel = level)
+            ),
+        ) {
+          it
+        }
+      }
+    }
+
     @Test
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)
@@ -62,6 +90,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
           mapOf(
               ObservationType.BaselineSurvey to
                   StratumPlotCounts(
+                      mode = PlotSelectionMode.Custom,
                       errorMargin = BigDecimal(21),
                       numPermanentPlots = 0,
                       numTemporaryPlots = 45,
@@ -70,6 +99,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
                   ),
               ObservationType.BiomassMeasurements to
                   StratumPlotCounts(
+                      plotPrecisionLevel = PlotPrecisionLevel.High,
                       errorMargin = newBiomassErrorMargin,
                       numPermanentPlots = newBiomassNumPermanentPlots,
                       numTemporaryPlots = newBiomassNumTemporaryPlots,
@@ -78,6 +108,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
                   ),
               ObservationType.Monitoring to
                   StratumPlotCounts(
+                      mode = PlotSelectionMode.Direct,
                       errorMargin = newPlantErrorMargin,
                       numPermanentPlots = newPlantNumPermanentPlots,
                       numTemporaryPlots = newPlantNumTemporaryPlots,
@@ -126,9 +157,13 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
             dslContext.newRecord(STRATUM_PLOT_SELECTION_PARAMETERS, counts).apply {
               this.stratumId = stratumId
               observationTypeId = type
+              plotPrecisionLevelId = counts.plotPrecisionLevel
+              plotSelectionModeId = counts.mode
             }
           }
       )
+      val stratum = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Stratum).strata.single()
+      assertEquals(expectedCounts, ObservationType.entries.associateWith { stratum.plotCounts(it) })
     }
 
     @Test
