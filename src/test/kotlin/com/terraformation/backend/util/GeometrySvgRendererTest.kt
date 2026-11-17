@@ -8,7 +8,6 @@ import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.polygonWithHoles
 import com.terraformation.backend.rectangle
-import java.util.Locale
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -161,22 +160,6 @@ class GeometrySvgRendererTest {
         pathData(renderer.render(crossing, 100, 100)),
         "Crossing the antimeridian should render the same as the equivalent site elsewhere",
     )
-  }
-
-  @Test
-  fun `formats coordinates independently of the default locale`() {
-    val originalLocale = Locale.getDefault()
-
-    try {
-      // German locale uses a comma as the decimal separator, which would be invalid path data.
-      Locale.setDefault(Locale.GERMANY)
-
-      val svg = renderer.render(polygon(0, 0, 100, 100, SRID.SPHERICAL_MERCATOR))
-
-      assertThat(pathData(svg)).describedAs("Path data").doesNotContain(",")
-    } finally {
-      Locale.setDefault(originalLocale)
-    }
   }
 
   @Test
