@@ -101,10 +101,22 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `only returns accelerator category for funders`() {
+    fun `only returns accelerator category for funders who belong to an accelerator organization`() {
       switchToUser(insertUser(type = UserType.Funder))
       insertUserEmailNotificationCategory(EmailNotificationCategory.Accelerator)
       insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank)
+      insertOrganization()
+      insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
+
+      assertEquals(
+          EmailNotificationSettingsModel(
+              categories = emptyMap(),
+              emailNotificationsEnabled = false,
+          ),
+          store.fetchForCurrentUser(),
+      )
+
+      insertOrganizationUser()
 
       assertEquals(
           EmailNotificationSettingsModel(

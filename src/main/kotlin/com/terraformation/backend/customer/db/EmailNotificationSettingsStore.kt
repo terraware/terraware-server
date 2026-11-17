@@ -111,15 +111,20 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
   }
 
   private fun fetchApplicableCategories(user: TerrawareUser): List<EmailNotificationCategory> {
-    return when (user.userType) {
-      UserType.Funder -> listOf(EmailNotificationCategory.Accelerator)
-      UserType.Individual ->
-          if (isMemberOfAcceleratorOrganization(user.userId)) {
-            EmailNotificationCategory.entries
-          } else {
-            EmailNotificationCategory.entries - EmailNotificationCategory.Accelerator
-          }
-      else -> emptyList()
+    val categories =
+        when (user.userType) {
+          UserType.Funder -> listOf(EmailNotificationCategory.Accelerator)
+          UserType.Individual -> EmailNotificationCategory.entries
+          else -> emptyList()
+        }
+
+    return if (
+        EmailNotificationCategory.Accelerator in categories &&
+            !isMemberOfAcceleratorOrganization(user.userId)
+    ) {
+      categories - EmailNotificationCategory.Accelerator
+    } else {
+      categories
     }
   }
 
