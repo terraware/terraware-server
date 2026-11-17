@@ -1,3 +1,5 @@
+859b5d2e Delete funder email notification category settings (#5452)
+eb57a4e9 Use a single email notification opt-in for funders (#5451)
 73b62029 Allow funder users to submit support requests (#5450)
 5b9a8b8c SW-9358 Add endpoint to preview effects of replacing a plot (#5439)
 f122b1e4 SW-9358 Update upcoming observations when a plot is replaced long-term (#5438)
