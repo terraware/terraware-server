@@ -21,7 +21,9 @@ import org.jooq.impl.DSL
 class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
   fun fetchForCurrentUser(): EmailNotificationSettingsModel {
     val user = currentUser()
-    val optedInCategories = fetchOptedInCategories(user.userId)
+    val categories = fetchApplicableCategories(user)
+    val optedInCategories =
+        if (categories.isEmpty()) emptySet() else fetchOptedInCategories(user.userId)
 
     val emailNotificationsEnabled =
         dslContext
@@ -32,7 +34,7 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
             .value1()
 
     return EmailNotificationSettingsModel(
-        categories = fetchApplicableCategories(user).associateWith { it in optedInCategories },
+        categories = categories.associateWith { it in optedInCategories },
         emailNotificationsEnabled = emailNotificationsEnabled,
     )
   }
@@ -41,9 +43,11 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
       categories: Map<EmailNotificationCategory, Boolean>,
       emailNotificationsEnabled: Boolean? = null,
   ) {
-    val userId = currentUser().userId
-    val categoriesToOptIn = categories.filterValues { it }.keys
-    val categoriesToOptOut = categories.filterValues { !it }.keys
+    val user = currentUser()
+    val userId = user.userId
+    val categoryUpdates = if (user.userType == UserType.Funder) emptyMap() else categories
+    val categoriesToOptIn = categoryUpdates.filterValues { it }.keys
+    val categoriesToOptOut = categoryUpdates.filterValues { !it }.keys
 
     dslContext.transaction { _ ->
       if (emailNotificationsEnabled != null) {
@@ -76,20 +80,25 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
 
   /**
    * Returns true if a user has enabled email notifications and, if [category] is non-null, has
-   * opted into that category. This doesn't check permissions; it's for use by code that decides who
-   * should receive notifications.
+   * opted into that category. Funders only need to enable email notifications. This doesn't check
+   * permissions; it's for use by code that decides who should receive notifications.
    */
   fun isOptedIn(userId: UserId, category: EmailNotificationCategory?): Boolean {
     val categoryCondition =
         if (category != null) {
-          DSL.exists(
-              DSL.selectOne()
-                  .from(USER_EMAIL_NOTIFICATION_CATEGORIES)
-                  .where(USER_EMAIL_NOTIFICATION_CATEGORIES.USER_ID.eq(userId))
-                  .and(
-                      USER_EMAIL_NOTIFICATION_CATEGORIES.EMAIL_NOTIFICATION_CATEGORY_ID.eq(category)
+          USERS.USER_TYPE_ID.eq(UserType.Funder)
+              .or(
+                  DSL.exists(
+                      DSL.selectOne()
+                          .from(USER_EMAIL_NOTIFICATION_CATEGORIES)
+                          .where(USER_EMAIL_NOTIFICATION_CATEGORIES.USER_ID.eq(userId))
+                          .and(
+                              USER_EMAIL_NOTIFICATION_CATEGORIES.EMAIL_NOTIFICATION_CATEGORY_ID.eq(
+                                  category
+                              )
+                          )
                   )
-          )
+              )
         } else {
           DSL.trueCondition()
         }
@@ -112,7 +121,6 @@ class EmailNotificationSettingsStore(private val dslContext: DSLContext) {
 
   private fun fetchApplicableCategories(user: TerrawareUser): List<EmailNotificationCategory> {
     return when (user.userType) {
-      UserType.Funder -> listOf(EmailNotificationCategory.Accelerator)
       UserType.Individual ->
           if (isMemberOfAcceleratorOrganization(user.userId)) {
             EmailNotificationCategory.entries

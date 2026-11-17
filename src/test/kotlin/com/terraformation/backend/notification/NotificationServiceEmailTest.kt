@@ -1954,6 +1954,13 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun `acceleratorReportPublishedEvent should notify funders`() {
+    every { emailNotificationSettingsStore.isOptedIn(funderUser.userId, any()) } returns
+        false andThen
+        true
+
+    service.on(AcceleratorReportPublishedEvent(acceleratorReportId))
+    assertNoMessageSent()
+
     service.on(AcceleratorReportPublishedEvent(acceleratorReportId))
 
     val message = sentMessageFor("funder@terraformation.com")
