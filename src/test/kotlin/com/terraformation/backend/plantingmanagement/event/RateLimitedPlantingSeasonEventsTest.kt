@@ -4,8 +4,10 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -85,6 +87,21 @@ class RateLimitedPlantingSeasonEventsTest {
           event(change(2, 1, 1, 2)),
           event(change(1, 1, 10, 5)).combine(event(change(1, 1, 5, 10), change(2, 1, 1, 2))),
       )
+    }
+  }
+
+  @Nested
+  inner class PlantingDateRequestSubmitted {
+    private fun event(scheduledPlantingDateId: Long) =
+        RateLimitedPlantingDateRequestSubmittedEvent(
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            scheduledPlantingDateId = ScheduledPlantingDateId(scheduledPlantingDateId),
+        )
+
+    @Test
+    fun `uses separate rate limit keys for different planting dates`() {
+      assertNotEquals(event(1).getRateLimitKey(), event(2).getRateLimitKey())
     }
   }
 }
