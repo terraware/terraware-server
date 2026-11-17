@@ -11,8 +11,10 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.EmailService
+import com.terraformation.backend.email.model.SupportRequestSubmitted
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.use
@@ -21,8 +23,11 @@ import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.support.atlassian.request.PostServiceDeskRequestResponse
 import io.mockk.Called
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -65,6 +70,37 @@ class SupportServiceTest : DatabaseTest() {
     every { config.atlassian.enabled } returns true
     every { atlassianHttpClient.createServiceDeskRequest(any(), any(), any(), any()) } returns
         PostServiceDeskRequestResponse("123", "SUP-123")
+  }
+
+  @Test
+  fun `funder users can submit support requests`() {
+    every { emailService.sendUserNotification(any(), any(), any()) } just runs
+    val funderUserId = insertUser(email = "funder@example.com", type = UserType.Funder)
+
+    val issueKey =
+        service.submitServiceRequest(
+            requestType = SupportRequestType.BugReport,
+            summary = "Summary",
+            description = "Description",
+            userId = funderUserId,
+        )
+
+    assertEquals("SUP-123", issueKey, "Issue key")
+    verify(exactly = 1) {
+      atlassianHttpClient.createServiceDeskRequest(
+          "Description",
+          "Summary",
+          SupportRequestType.BugReport,
+          "funder@example.com",
+      )
+    }
+    verify(exactly = 1) {
+      emailService.sendUserNotification(
+          match { it.userId == funderUserId },
+          any<SupportRequestSubmitted>(),
+          false,
+      )
+    }
   }
 
   @Test

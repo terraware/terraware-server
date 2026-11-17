@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.default_schema.UserId
@@ -72,8 +73,10 @@ class SupportService(
       userId: UserId = currentUser().userId,
   ): String {
     val user = userStore.fetchOneById(userId)
-    if (user !is IndividualUser && user !is SystemUser) {
-      throw AccessDeniedException("Only individual and system users may submit support requests")
+    if (user !is IndividualUser && user !is FunderUser && user !is SystemUser) {
+      throw AccessDeniedException(
+          "Only individual, funder, and system users may submit support requests"
+      )
     }
     val response =
         atlassianHttpClient.createServiceDeskRequest(description, summary, requestType, user.email)
