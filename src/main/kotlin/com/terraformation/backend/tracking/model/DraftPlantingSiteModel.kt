@@ -179,9 +179,20 @@ data class DraftPlantingSiteModel(
   fun validate(): List<PlantingSiteValidationFailure>? = toPlantingSiteModel().validate()
 
   fun toPlantingSiteModel(): NewPlantingSiteModel {
+    val site =
+        PlantingSiteModel.create(
+            boundary = map.boundary,
+            description = description,
+            exclusion = map.exclusion,
+            name = name,
+            organizationId = organizationId,
+            projectId = projectId,
+            timeZone = timeZone,
+        )
     val strata =
         map.strata.map { stratum ->
           StratumModel.create(
+              plotPrecisionLevel = site.defaultPlotPrecisionLevel,
               boundary = stratum.boundary,
               exclusion = map.exclusion,
               initialPlantingDensity = stratum.initialPlantingDensity,
@@ -198,15 +209,6 @@ data class DraftPlantingSiteModel(
           )
         }
 
-    return PlantingSiteModel.create(
-        boundary = map.boundary,
-        description = description,
-        exclusion = map.exclusion,
-        name = name,
-        organizationId = organizationId,
-        projectId = projectId,
-        strata = strata,
-        timeZone = timeZone,
-    )
+    return site.copy(strata = strata)
   }
 }

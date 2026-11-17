@@ -4,6 +4,8 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.gis.convertToXY
 import com.terraformation.backend.gis.extractPolygons
 import com.terraformation.backend.gis.mergeToMultiPolygon
@@ -113,12 +115,19 @@ class PlantingSiteImporter(
       exclusionsFile: Shapefile?,
       gridOrigin: Point? = null,
       requireStableIds: Boolean = false,
+      defaultPlotPrecisionLevel: PlotPrecisionLevel = PlotPrecisionLevel.Medium,
   ): NewPlantingSiteModel {
     val problems = Collections.synchronizedList(mutableListOf<String>())
 
     val exclusion = getExclusion(exclusionsFile, problems)
     val strataWithSubstrata =
-        getStrataWithSubstrata(substrataFile, exclusion, problems, requireStableIds)
+        getStrataWithSubstrata(
+            substrataFile,
+            exclusion,
+            problems,
+            requireStableIds,
+            defaultPlotPrecisionLevel,
+        )
 
     if (problems.isNotEmpty()) {
       throw ShapefilesInvalidException(problems)
@@ -138,6 +147,7 @@ class PlantingSiteImporter(
             name = name,
             organizationId = organizationId,
             strata = strataWithSubstrata,
+            defaultPlotPrecisionLevel = defaultPlotPrecisionLevel,
         )
     return newModel
   }
@@ -175,6 +185,7 @@ class PlantingSiteImporter(
       exclusion: MultiPolygon?,
       problems: MutableList<String>,
       requireStableIds: Boolean,
+      plotPrecisionLevel: PlotPrecisionLevel,
   ): List<NewStratumModel> {
     val validSubstrata =
         substrataFile.features.filter { feature ->
@@ -312,6 +323,8 @@ class PlantingSiteImporter(
                 val (defaultPermanentPlots, defaultTemporaryPlots) =
                     StratumModel.calculatePlotCounts(errorMargin, studentsT, variance)
                 StratumModel.create(
+                    plotPrecisionLevel = plotPrecisionLevel,
+                    mode = PlotSelectionMode.Custom,
                     baselineErrorMargin = errorMargin,
                     // Baseline temporary counts sum other types' permanent and temporary counts.
                     baselineNumTemporaryPlots =

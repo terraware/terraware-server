@@ -131,7 +131,7 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
                           desiredModel = desired.strata[0],
                           existingModel = existing.strata[0],
                           monitoringPlotEdits =
-                              (1..18).map { MonitoringPlotEdit.Create(desired.boundary!!, it) },
+                              (1..8).map { MonitoringPlotEdit.Create(desired.boundary!!, it) },
                           substratumEdits =
                               listOf(
                                   SubstratumEdit.Update(
@@ -289,6 +289,8 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
                       .apply {
                         stratumId = id
                         observationTypeId = type
+                        plotPrecisionLevelId = stratum.plotCounts(type).plotPrecisionLevel
+                        plotSelectionModeId = stratum.plotCounts(type).mode
                       }
                 }
               }

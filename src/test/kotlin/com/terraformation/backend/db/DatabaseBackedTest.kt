@@ -474,6 +474,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -3002,6 +3003,20 @@ abstract class DatabaseBackedTest {
       insertHistory: Boolean = true,
       boundaryModifiedBy: UserId = modifiedBy,
       boundaryModifiedTime: Instant = modifiedTime,
+      plantPlotSelectionMode: PlotSelectionMode = PlotSelectionMode.PrecisionLevel,
+      biomassPlotSelectionMode: PlotSelectionMode = plantPlotSelectionMode,
+      baselinePlotSelectionMode: PlotSelectionMode = plantPlotSelectionMode,
+      plantPlotPrecisionLevel: PlotPrecisionLevel? =
+          if (plantPlotSelectionMode == PlotSelectionMode.PrecisionLevel) PlotPrecisionLevel.Medium
+          else null,
+      biomassPlotPrecisionLevel: PlotPrecisionLevel? =
+          if (biomassPlotSelectionMode == PlotSelectionMode.PrecisionLevel)
+              plantPlotPrecisionLevel ?: PlotPrecisionLevel.Medium
+          else null,
+      baselinePlotPrecisionLevel: PlotPrecisionLevel? =
+          if (baselinePlotSelectionMode == PlotSelectionMode.PrecisionLevel)
+              plantPlotPrecisionLevel ?: PlotPrecisionLevel.Medium
+          else null,
   ): StratumId {
     val row =
         StrataRow(
@@ -3029,6 +3044,8 @@ abstract class DatabaseBackedTest {
             StratumPlotSelectionParametersRecord(
                 stratumId = stratumId,
                 observationTypeId = ObservationType.Monitoring,
+                plotSelectionModeId = plantPlotSelectionMode,
+                plotPrecisionLevelId = plantPlotPrecisionLevel,
                 errorMargin = plantErrorMargin,
                 numPermanentPlots = plantNumPermanentPlots,
                 numTemporaryPlots = plantNumTemporaryPlots,
@@ -3038,6 +3055,8 @@ abstract class DatabaseBackedTest {
             StratumPlotSelectionParametersRecord(
                 stratumId = stratumId,
                 observationTypeId = ObservationType.BiomassMeasurements,
+                plotSelectionModeId = biomassPlotSelectionMode,
+                plotPrecisionLevelId = biomassPlotPrecisionLevel,
                 errorMargin = biomassErrorMargin,
                 numPermanentPlots = biomassNumPermanentPlots,
                 numTemporaryPlots = biomassNumTemporaryPlots,
@@ -3047,6 +3066,8 @@ abstract class DatabaseBackedTest {
             StratumPlotSelectionParametersRecord(
                 stratumId = stratumId,
                 observationTypeId = ObservationType.BaselineSurvey,
+                plotSelectionModeId = baselinePlotSelectionMode,
+                plotPrecisionLevelId = baselinePlotPrecisionLevel,
                 errorMargin = baselineErrorMargin,
                 numPermanentPlots = 0,
                 numTemporaryPlots = baselineNumTemporaryPlots,
