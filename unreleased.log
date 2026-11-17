@@ -1,3 +1,4 @@
+f7201ade Remove GeometrySvgRendererTest's default-locale test (#5437)
 86e0cfc8 SW-9106 Email when withdrawal requests are submitted (#5431)
 b276103d SW-9106 Email when species target quantities change (#5430)
 419511e0 SW-9106 Publish event when species target quantities change (#5429)
