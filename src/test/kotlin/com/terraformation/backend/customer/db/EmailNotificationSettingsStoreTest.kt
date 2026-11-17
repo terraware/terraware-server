@@ -8,6 +8,7 @@ import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.EmailNotificationCategory
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.records.UserEmailNotificationCategoriesRecord
+import com.terraformation.backend.db.default_schema.tables.references.USER_EMAIL_NOTIFICATION_CATEGORIES
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -101,14 +102,14 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `only returns accelerator category for funders`() {
+    fun `only returns the master switch for funders regardless of saved categories`() {
       switchToUser(insertUser(type = UserType.Funder))
       insertUserEmailNotificationCategory(EmailNotificationCategory.Accelerator)
       insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank)
 
       assertEquals(
           EmailNotificationSettingsModel(
-              categories = mapOf(EmailNotificationCategory.Accelerator to true),
+              categories = emptyMap(),
               emailNotificationsEnabled = false,
           ),
           store.fetchForCurrentUser(),
@@ -165,6 +166,15 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.updateForCurrentUser(emptyMap(), emailNotificationsEnabled = false)
 
       assertFalse(store.fetchForCurrentUser().emailNotificationsEnabled, "After disabling")
+
+      switchToUser(insertUser(type = UserType.Funder))
+      store.updateForCurrentUser(
+          mapOf(EmailNotificationCategory.Accelerator to true),
+          emailNotificationsEnabled = true,
+      )
+
+      assertTrue(store.fetchForCurrentUser().emailNotificationsEnabled, "After enabling for funder")
+      assertTableEmpty(USER_EMAIL_NOTIFICATION_CATEGORIES)
     }
 
     @Test
@@ -204,6 +214,13 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertFalse(store.isOptedIn(userId, EmailNotificationCategory.Nursery), "Categorized")
       assertFalse(store.isOptedIn(userId, null), "Uncategorized")
+
+      val funderUserId = insertUser(type = UserType.Funder, emailNotificationsEnabled = false)
+      insertUserEmailNotificationCategory(EmailNotificationCategory.Accelerator, funderUserId)
+      assertFalse(
+          store.isOptedIn(funderUserId, EmailNotificationCategory.Accelerator),
+          "Funder, categorized",
+      )
     }
 
     @Test
@@ -211,6 +228,12 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val userId = insertUser(emailNotificationsEnabled = true)
 
       assertTrue(store.isOptedIn(userId, null))
+
+      val funderUserId = insertUser(type = UserType.Funder, emailNotificationsEnabled = true)
+      assertTrue(
+          store.isOptedIn(funderUserId, EmailNotificationCategory.Accelerator),
+          "Funder, categorized",
+      )
     }
   }
 }

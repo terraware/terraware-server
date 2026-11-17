@@ -83,7 +83,7 @@ data class UpdateEmailNotificationSettingsRequestPayload(
             Schema(
                 description =
                     "Categories to opt into or out of. Categories that aren't included here are " +
-                        "left as-is."
+                        "left as-is. Category settings are ignored for funders."
             )
     )
     val categories: List<EmailNotificationCategorySettingPayload> = emptyList(),
