@@ -222,6 +222,29 @@ class ObservationPlotStore(
     )
   }
 
+  /**
+   * Returns the IDs of upcoming observations, other than [excludeObservationId], that include a
+   * monitoring plot. Upcoming observations can include plots if they were assigned when the
+   * observation was scheduled.
+   */
+  fun fetchUpcomingObservationIdsWithPlot(
+      monitoringPlotId: MonitoringPlotId,
+      excludeObservationId: ObservationId,
+  ): List<ObservationId> {
+    requirePermissions { readMonitoringPlot(monitoringPlotId) }
+
+    return dslContext
+        .select(OBSERVATIONS.ID)
+        .from(OBSERVATIONS)
+        .join(OBSERVATION_PLOTS)
+        .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+        .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+        .and(OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming))
+        .and(OBSERVATIONS.ID.ne(excludeObservationId))
+        .orderBy(OBSERVATIONS.ID)
+        .fetch(OBSERVATIONS.ID.asNonNullable())
+  }
+
   fun hasCompletedPlots(observationId: ObservationId): Boolean {
     fetchObservationSiteInfo(observationId)
 
@@ -545,9 +568,10 @@ class ObservationPlotStore(
 
   /**
    * Deletes temporary monitoring plots that aren't included in any observation. Only plots in
-   * [plotIds] are considered; plots with permanent indexes, ad-hoc plots, and plots that are still
-   * in any observation are never deleted. This is meant to clean up temporary plots that were
-   * allocated to observations that never observed them.
+   * [plotIds] are considered; plots with permanent indexes, ad-hoc plots, unavailable plots, and
+   * plots that are still in any observation are never deleted. This is meant to clean up temporary
+   * plots that were allocated to observations that never observed them. Unavailable plots are kept
+   * because they record that their locations shouldn't be used for new plots.
    */
   fun deleteOrphanedTemporaryPlots(plotIds: Collection<MonitoringPlotId>) {
     if (plotIds.isEmpty()) {
@@ -568,6 +592,7 @@ class ObservationPlotStore(
           .where(ID.`in`(plotIds))
           .and(PERMANENT_INDEX.isNull)
           .and(IS_AD_HOC.isFalse)
+          .and(IS_AVAILABLE.isTrue)
           .andNotExists(
               DSL.selectOne()
                   .from(OBSERVATION_PLOTS)

@@ -16,17 +16,24 @@ class ObservationPlotStoreDeleteOrphanedTemporaryPlotsTest : BaseObservationPlot
     val referencedPlotId = insertMonitoringPlot()
     val permanentPlotId = insertMonitoringPlot(permanentIndex = 1)
     val adHocPlotId = insertMonitoringPlot(isAdHoc = true)
+    val unavailablePlotId = insertMonitoringPlot(isAvailable = false)
     val unlistedOrphanedPlotId = insertMonitoringPlot()
 
     insertObservation(state = ObservationState.Upcoming)
     insertObservationPlot(monitoringPlotId = referencedPlotId)
 
     store.deleteOrphanedTemporaryPlots(
-        listOf(orphanedPlotId, referencedPlotId, permanentPlotId, adHocPlotId)
+        listOf(orphanedPlotId, referencedPlotId, permanentPlotId, adHocPlotId, unavailablePlotId)
     )
 
     assertEquals(
-        setOf(referencedPlotId, permanentPlotId, adHocPlotId, unlistedOrphanedPlotId),
+        setOf(
+            referencedPlotId,
+            permanentPlotId,
+            adHocPlotId,
+            unavailablePlotId,
+            unlistedOrphanedPlotId,
+        ),
         monitoringPlotsDao.findAll().map { it.id }.toSet(),
     )
   }
