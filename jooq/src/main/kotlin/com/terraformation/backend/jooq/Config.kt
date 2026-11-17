@@ -361,6 +361,14 @@ val ENUM_TABLES =
                 EnumTable("planting_season_statuses", listOf("planting_seasons\\.status_id")),
                 EnumTable("planting_types"),
                 EnumTable(
+                    "plot_precision_levels",
+                    listOf(".*\\.default_plot_precision_level_id"),
+                    additionalColumns =
+                        listOf(
+                            EnumTableColumnInfo("target_margin_of_error", "java.math.BigDecimal")
+                        ),
+                ),
+                EnumTable(
                     "recorded_plant_statuses",
                     listOf("recorded_plants\\.status_id"),
                     isLocalizable = false,

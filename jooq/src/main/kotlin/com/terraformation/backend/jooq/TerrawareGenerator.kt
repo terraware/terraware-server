@@ -1,6 +1,7 @@
 package com.terraformation.backend.jooq
 
 import java.io.File
+import java.math.BigDecimal
 import java.sql.Connection
 import kotlin.io.encoding.Base64
 import org.jooq.codegen.JavaWriter
@@ -85,6 +86,7 @@ class TerrawareGenerator : KotlinGenerator() {
                           val obj = rs.getObject(2 + i + 1)
                           when {
                             obj is String -> "\"$obj\""
+                            obj is BigDecimal -> "java.math.BigDecimal(\"$obj\")"
                             columnInfo.isTableEnum ->
                                 if (columnInfo.columnDataType.endsWith("?") && "$obj" == "null")
                                     "null"

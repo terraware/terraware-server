@@ -629,6 +629,7 @@ COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants o
 COMMENT ON TABLE tracking.planting_site_species_targets IS 'Which species are intended to be planted at each planting site.';
 
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one stratum.';
+COMMENT ON COLUMN tracking.planting_sites.default_plot_precision_level_id IS 'Default precision level copied to each observation type in new strata. Changing this does not change existing strata.';
 COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. strata will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_sites.exclusion IS 'Optional area to exclude from a site. No monitoring plots will be located in this area.';
 COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
@@ -715,6 +716,9 @@ COMMENT ON COLUMN tracking.plantings.planting_site_id IS 'Which planting site ha
 COMMENT ON COLUMN tracking.plantings.planting_type_id IS 'Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.';
 COMMENT ON COLUMN tracking.plantings.substratum_id IS 'Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive.';
 COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
+
+COMMENT ON TABLE tracking.plot_precision_levels IS '(Enum) Precision levels for plot selection.';
+COMMENT ON COLUMN tracking.plot_precision_levels.target_margin_of_error IS 'Target margin of error as a percentage for this precision level.';
 
 COMMENT ON TABLE tracking.plot_t0_densities IS 'Density for a plot per species, in plants per hectare.';
 

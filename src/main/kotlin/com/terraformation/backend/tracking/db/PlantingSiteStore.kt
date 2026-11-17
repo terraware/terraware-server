@@ -523,6 +523,7 @@ class PlantingSiteStore(
             modifiedTime = now,
             name = newModel.name,
             organizationId = newModel.organizationId,
+            defaultPlotPrecisionLevelId = newModel.defaultPlotPrecisionLevel,
             projectId = newModel.projectId,
             timeZone = newModel.timeZone,
         )
@@ -586,6 +587,7 @@ class PlantingSiteStore(
             .set(MODIFIED_TIME, now)
             .set(NAME, edited.name)
             .set(PROJECT_ID, edited.projectId)
+            .set(DEFAULT_PLOT_PRECISION_LEVEL_ID, edited.defaultPlotPrecisionLevel)
             .set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, edited.survivalRateIncludesTempPlots)
             .set(TIME_ZONE, edited.timeZone)
             .apply {

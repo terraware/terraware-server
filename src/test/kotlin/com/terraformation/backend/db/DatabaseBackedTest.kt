@@ -473,6 +473,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -2779,6 +2780,7 @@ abstract class DatabaseBackedTest {
       countryCode: String? = null,
       insertHistory: Boolean = true,
       survivalRateIncludesTempPlots: Boolean = false,
+      defaultPlotPrecisionLevel: PlotPrecisionLevel = PlotPrecisionLevel.Medium,
   ): PlantingSiteId {
     val effectiveBoundary =
         when {
@@ -2809,6 +2811,7 @@ abstract class DatabaseBackedTest {
             projectId = projectId,
             timeZone = timeZone,
             survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
+            defaultPlotPrecisionLevelId = defaultPlotPrecisionLevel,
         )
 
     plantingSitesDao.insert(row)

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -55,6 +56,7 @@ data class PlantingSiteModel<
     val latestObservationId: ObservationId? = null,
     val name: String,
     val organizationId: OrganizationId,
+    val defaultPlotPrecisionLevel: PlotPrecisionLevel = PlotPrecisionLevel.Medium,
     val strata: List<StratumModel<SID, SSID, TIMESTAMP>> = emptyList(),
     val projectId: ProjectId? = null,
     val survivalRateIncludesTempPlots: Boolean = false,
@@ -145,6 +147,7 @@ data class PlantingSiteModel<
         name == other.name &&
         timeZone == other.timeZone &&
         projectId == other.projectId &&
+        defaultPlotPrecisionLevel == other.defaultPlotPrecisionLevel &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
         boundary.equalsOrBothNull(other.boundary) &&
         exclusion.equalsOrBothNull(other.exclusion) &&
@@ -166,6 +169,7 @@ data class PlantingSiteModel<
           id = null,
           name = name,
           organizationId = organizationId,
+          defaultPlotPrecisionLevel = defaultPlotPrecisionLevel,
           strata = strata.map { it.toNew() },
           projectId = projectId,
           survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
@@ -204,6 +208,7 @@ data class PlantingSiteModel<
             id = record[PLANTING_SITES.ID]!!,
             name = record[PLANTING_SITES.NAME]!!,
             organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
+            defaultPlotPrecisionLevel = record[PLANTING_SITES.DEFAULT_PLOT_PRECISION_LEVEL_ID]!!,
             strata = strataMultiset?.let { record[it] } ?: emptyList(),
             projectId = record[PLANTING_SITES.PROJECT_ID],
             survivalRateIncludesTempPlots =
@@ -219,6 +224,7 @@ data class PlantingSiteModel<
         gridOrigin: Point? = null,
         name: String,
         organizationId: OrganizationId,
+        defaultPlotPrecisionLevel: PlotPrecisionLevel = PlotPrecisionLevel.Medium,
         strata: List<NewStratumModel> = emptyList(),
         projectId: ProjectId? = null,
         timeZone: ZoneId? = null,
@@ -257,6 +263,7 @@ data class PlantingSiteModel<
           name = name,
           organizationId = organizationId,
           strata = strata,
+          defaultPlotPrecisionLevel = defaultPlotPrecisionLevel,
           projectId = projectId,
           timeZone = timeZone,
       )
