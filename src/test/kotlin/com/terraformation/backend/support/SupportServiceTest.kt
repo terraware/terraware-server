@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
 
 class SupportServiceTest : DatabaseTest() {
@@ -72,17 +73,18 @@ class SupportServiceTest : DatabaseTest() {
         PostServiceDeskRequestResponse("123", "SUP-123")
   }
 
-  @Test
-  fun `funder users can submit support requests`() {
+  @ParameterizedTest
+  @EnumSource(names = ["Individual", "Funder"])
+  fun `individual and funder users can submit support requests`(userType: UserType) {
     every { emailService.sendUserNotification(any(), any(), any()) } just runs
-    val funderUserId = insertUser(email = "funder@example.com", type = UserType.Funder)
+    val userId = insertUser(email = "user@example.com", type = userType)
 
     val issueKey =
         service.submitServiceRequest(
             requestType = SupportRequestType.BugReport,
             summary = "Summary",
             description = "Description",
-            userId = funderUserId,
+            userId = userId,
         )
 
     assertEquals("SUP-123", issueKey, "Issue key")
@@ -91,41 +93,16 @@ class SupportServiceTest : DatabaseTest() {
           "Description",
           "Summary",
           SupportRequestType.BugReport,
-          "funder@example.com",
+          "user@example.com",
       )
     }
     verify(exactly = 1) {
       emailService.sendUserNotification(
-          match { it.userId == funderUserId },
+          match { it.userId == userId },
           any<SupportRequestSubmitted>(),
           false,
       )
     }
-  }
-
-  @Test
-  fun `missing contact event creates one English ticket as the system user without a receipt`() {
-    val event =
-        TerraformationContactMissingEvent(
-            inserted.organizationId,
-            "Test Organization",
-            "Original notification subject",
-            "Original notification body",
-        )
-
-    Locales.GIBBERISH.use { service.on(event) }
-
-    verify(exactly = 1) {
-      atlassianHttpClient.createServiceDeskRequest(
-          "There is currently no assigned Terraformation primary project contact for organization Test Organization (${inserted.organizationId}). Please assign one.\n\n" +
-              "Original notification subject\n\nOriginal notification body",
-          "Organization Test Organization has no primary project contact",
-          SupportRequestType.MissingContact,
-          systemUser.email,
-      )
-    }
-    verify { emailService wasNot Called }
-    assertIsEventListener<TerraformationContactMissingEvent>(service)
   }
 
   @Test
@@ -147,7 +124,9 @@ class SupportServiceTest : DatabaseTest() {
 
   @ParameterizedTest
   @ValueSource(ints = [-1, 0, 1])
-  fun `missing contact tickets respect Jira field limits`(lengthOffset: Int) {
+  fun `missing contact event creates English ticket as system user within Jira field limits`(
+      lengthOffset: Int
+  ) {
     val organizationName =
         "x".repeat(255 + lengthOffset - "Organization  has no primary project contact".length)
     val missingContact = messages.missingContact(organizationName, inserted.organizationId)
@@ -156,14 +135,16 @@ class SupportServiceTest : DatabaseTest() {
     val body = "x".repeat(32767 + lengthOffset - descriptionPrefix.length)
     val description = descriptionPrefix + body
 
-    service.on(
-        TerraformationContactMissingEvent(
-            inserted.organizationId,
-            organizationName,
-            subject,
-            body,
-        )
-    )
+    Locales.GIBBERISH.use {
+      service.on(
+          TerraformationContactMissingEvent(
+              inserted.organizationId,
+              organizationName,
+              subject,
+              body,
+          )
+      )
+    }
 
     val expectedSummary =
         if (lengthOffset > 0) missingContact.title.take(252) + "..." else missingContact.title
@@ -177,5 +158,6 @@ class SupportServiceTest : DatabaseTest() {
       )
     }
     verify { emailService wasNot Called }
+    assertIsEventListener<TerraformationContactMissingEvent>(service)
   }
 }
