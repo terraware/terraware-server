@@ -15,8 +15,21 @@ data class NewPlantingSeasonModel(
     val fromPlantingSeasonId: PlantingSeasonId? = null,
     val name: String,
     val plantingSiteId: PlantingSiteId,
+    val speciesTargets: List<PlantingSeasonSpeciesTargetModel> = emptyList(),
     val startDate: LocalDate,
-)
+) {
+  init {
+    require(fromPlantingSeasonId == null || speciesTargets.isEmpty()) {
+      "Can't specify species targets when copying from another planting season"
+    }
+    require(speciesTargets.all { it.quantity >= 0 }) { "All quantities must be >= 0" }
+    require(
+        speciesTargets.size == speciesTargets.distinctBy { it.substratumId to it.speciesId }.size
+    ) {
+      "Species listed multiple times for substratum"
+    }
+  }
+}
 
 data class ExistingPlantingSeasonModel(
     val endDate: LocalDate,

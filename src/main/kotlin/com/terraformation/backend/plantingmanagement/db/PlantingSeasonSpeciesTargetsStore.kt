@@ -2,16 +2,20 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -105,6 +109,88 @@ class PlantingSeasonSpeciesTargetsStore(
                   stratumName = substratumInfo.stratumName,
                   substratumHistoryId = substratumInfo.substratumHistoryId,
                   substratumId = substratumId,
+                  substratumName = substratumInfo.substratumName,
+              )
+          )
+        }
+      }
+    }
+  }
+
+  /**
+   * Inserts the initial species targets for a newly-created planting season. Unlike [upsert], this
+   * isn't treated as the user editing the season's targets.
+   */
+  fun createInitialTargets(
+      plantingSeasonId: PlantingSeasonId,
+      targets: Collection<PlantingSeasonSpeciesTargetModel>,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    val (plantingSiteId, organizationId) =
+        seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
+
+    val substratumIdsInSite =
+        dslContext
+            .select(SUBSTRATA.ID)
+            .from(SUBSTRATA)
+            .where(SUBSTRATA.ID.`in`(targets.map { it.substratumId }))
+            .and(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
+            .fetchSet(SUBSTRATA.ID.asNonNullable())
+
+    targets.forEach { target ->
+      if (target.substratumId !in substratumIdsInSite) {
+        throw SubstratumNotFoundException(target.substratumId)
+      }
+    }
+
+    val substrataInfo = seasonHelper.fetchSubstrataInfo(targets.map { it.substratumId })
+
+    val validSpeciesIds =
+        dslContext
+            .select(SPECIES.ID)
+            .from(SPECIES)
+            .where(SPECIES.ID.`in`(targets.map { it.speciesId }))
+            .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
+            .and(SPECIES.DELETED_TIME.isNull)
+            .fetchSet(SPECIES.ID.asNonNullable())
+
+    targets.forEach { target ->
+      if (target.speciesId !in validSpeciesIds) {
+        throw SpeciesNotFoundException(target.speciesId)
+      }
+    }
+
+    seasonHelper.withLockedPlantingSeason(plantingSeasonId) {
+      with(PLANTING_SEASON_SPECIES_TARGETS) {
+        targets.forEach { target ->
+          dslContext
+              .insertInto(PLANTING_SEASON_SPECIES_TARGETS)
+              .set(CREATED_BY, userId)
+              .set(CREATED_TIME, now)
+              .set(MODIFIED_BY, userId)
+              .set(MODIFIED_TIME, now)
+              .set(PLANTING_SEASON_ID, plantingSeasonId)
+              .set(QUANTITY, target.quantity)
+              .set(SPECIES_ID, target.speciesId)
+              .set(SUBSTRATUM_ID, target.substratumId)
+              .execute()
+
+          val substratumInfo = substrataInfo[target.substratumId]!!
+
+          eventPublisher.publishEvent(
+              PlantingSeasonSpeciesTargetCreatedEvent(
+                  organizationId = organizationId,
+                  plantingSeasonId = plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  quantity = target.quantity,
+                  speciesId = target.speciesId,
+                  stratumName = substratumInfo.stratumName,
+                  substratumHistoryId = substratumInfo.substratumHistoryId,
+                  substratumId = target.substratumId,
                   substratumName = substratumInfo.substratumName,
               )
           )

@@ -95,4 +95,11 @@ data class SpeciesTargetPayload(
       speciesId = model.speciesId,
       substratumId = model.substratumId,
   )
+
+  fun toModel() =
+      PlantingSeasonSpeciesTargetModel(
+          quantity = quantity,
+          speciesId = speciesId,
+          substratumId = substratumId,
+      )
 }
