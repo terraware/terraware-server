@@ -112,6 +112,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotCompletedException
+import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
@@ -137,6 +138,8 @@ import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEven
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
+import com.terraformation.backend.tracking.model.AffectedUpcomingObservation
+import com.terraformation.backend.tracking.model.AffectedUpcomingObservationOutcome
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -5347,6 +5350,125 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             statusId = ObservationPlotStatus.Unclaimed,
         )
+  }
+
+  @Nested
+  inner class PreviewReplaceMonitoringPlot {
+    @Test
+    fun `predicts long-term replacement reassigns plots in upcoming observations`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      val upcomingObservationId = insertObservationWithPlots(ObservationState.Upcoming)
+      insertObservationWithPlots(ObservationState.InProgress)
+      val plotId = fetchPermanentPlotId(observationId, editedStratumId)
+
+      assertEquals(
+          listOf(
+              AffectedUpcomingObservation(
+                  observationId = upcomingObservationId,
+                  observationType = ObservationType.Monitoring,
+                  outcome = AffectedUpcomingObservationOutcome.PlotsReassigned,
+                  startDate = LocalDate.of(2023, 1, 1),
+              )
+          ),
+          service.previewReplaceMonitoringPlot(observationId, plotId, ReplacementDuration.LongTerm),
+      )
+    }
+
+    @Test
+    fun `predicts long-term replacement deletes upcoming observation that can't be given new plots`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      val upcomingObservationId = insertObservationWithPlots(ObservationState.Upcoming)
+      val plotId = fetchPermanentPlotId(observationId, editedStratumId)
+
+      excludeEntireSite()
+
+      assertEquals(
+          listOf(
+              AffectedUpcomingObservation(
+                  observationId = upcomingObservationId,
+                  observationType = ObservationType.Monitoring,
+                  outcome = AffectedUpcomingObservationOutcome.ObservationDeleted,
+                  startDate = LocalDate.of(2023, 1, 1),
+              )
+          ),
+          service.previewReplaceMonitoringPlot(observationId, plotId, ReplacementDuration.LongTerm),
+      )
+    }
+
+    @Test
+    fun `temporary replacement does not affect other observations`() {
+      insertTwoStrata()
+      val observationId = insertObservationWithPlots(ObservationState.InProgress)
+      insertObservationWithPlots(ObservationState.Upcoming)
+      val plotId = fetchPermanentPlotId(observationId, editedStratumId)
+
+      assertEquals(
+          emptyList<AffectedUpcomingObservation>(),
+          service.previewReplaceMonitoringPlot(
+              observationId,
+              plotId,
+              ReplacementDuration.Temporary,
+          ),
+      )
+    }
+
+    @Test
+    fun `throws exception if plot is already completed`() {
+      helper.insertPlantedSite(width = 2, height = 7, substratumCompletedTime = Instant.EPOCH)
+      val observationId = insertObservation()
+      insertObservationRequestedSubstratum()
+      val monitoringPlotId = insertMonitoringPlot()
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          completedBy = user.userId,
+          completedTime = Instant.EPOCH,
+      )
+
+      assertThrows<PlotAlreadyCompletedException> {
+        service.previewReplaceMonitoringPlot(
+            observationId,
+            monitoringPlotId,
+            ReplacementDuration.LongTerm,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if plot is no longer in a substratum`() {
+      helper.insertPlantedSite(width = 2, height = 7, substratumCompletedTime = Instant.EPOCH)
+      val observationId = insertObservation()
+      insertObservationRequestedSubstratum()
+      val monitoringPlotId = insertMonitoringPlot(substratumId = null)
+      insertObservationPlot()
+
+      assertThrows<PlotNotFoundException> {
+        service.previewReplaceMonitoringPlot(
+            observationId,
+            monitoringPlotId,
+            ReplacementDuration.Temporary,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if plot size is different from the size of newly-created plots`() {
+      helper.insertPlantedSite(width = 2, height = 7, substratumCompletedTime = Instant.EPOCH)
+      val observationId = insertObservation()
+      insertObservationRequestedSubstratum()
+      val monitoringPlotId = insertMonitoringPlot(sizeMeters = MONITORING_PLOT_SIZE_INT - 1)
+      insertObservationPlot()
+
+      assertThrows<PlotSizeNotReplaceableException> {
+        service.previewReplaceMonitoringPlot(
+            observationId,
+            monitoringPlotId,
+            ReplacementDuration.LongTerm,
+        )
+      }
+    }
   }
 
   private fun fetchPermanentPlotId(observationId: ObservationId, stratumId: StratumId) =
