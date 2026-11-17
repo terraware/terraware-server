@@ -5,6 +5,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
@@ -108,6 +109,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSitesRow(
+                  defaultPlotPrecisionLevelId = PlotPrecisionLevel.Medium,
                   id = model.id,
                   organizationId = organizationId,
                   name = "name",
@@ -146,6 +148,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSitesRow(
+                  defaultPlotPrecisionLevelId = PlotPrecisionLevel.Medium,
                   areaHa = BigDecimal("2.250"),
                   boundary = boundary,
                   createdBy = user.userId,
@@ -262,6 +265,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertGeometryEquals(gridOrigin, plantingSitesRow.gridOrigin, "Planting site grid origin")
       assertEquals(
           PlantingSitesRow(
+              defaultPlotPrecisionLevelId = PlotPrecisionLevel.Medium,
               areaHa = BigDecimal("3.000"),
               countryCode = "GB",
               createdBy = user.userId,
