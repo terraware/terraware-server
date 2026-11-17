@@ -78,6 +78,9 @@ import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.AffectedStrata
+import com.terraformation.backend.tracking.model.AffectedUpcomingObservation
+import com.terraformation.backend.tracking.model.AffectedUpcomingObservationOutcome
+import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
@@ -799,18 +802,7 @@ class ObservationService(
       val observationPlots = observationPlotStore.fetchObservationPlotDetails(observationId)
       val observationPlotIds = observationPlots.map { it.model.monitoringPlotId }.toSet()
       val observationPlot =
-          observationPlots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
-              ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
-      val monitoringPlotsRow =
-          monitoringPlotsDao.fetchOneById(observationPlot.model.monitoringPlotId)
-
-      if (monitoringPlotsRow?.sizeMeters != MONITORING_PLOT_SIZE_INT) {
-        throw PlotSizeNotReplaceableException(observationId, monitoringPlotId)
-      }
-
-      if (!allowCompleted && observationPlot.model.completedTime != null) {
-        throw PlotAlreadyCompletedException(monitoringPlotId)
-      }
+          requireReplaceablePlot(observationId, monitoringPlotId, observationPlots, allowCompleted)
 
       log.info("Replacing monitoring plot $monitoringPlotId in observation $observationId")
 
@@ -957,6 +949,141 @@ class ObservationService(
               upcomingOutcomes.filterValues { it == ReassignmentOutcome.Abandoned }.keys,
       )
     }
+  }
+
+  /**
+   * Returns the upcoming observations that would be affected if a plot in an observation were
+   * replaced, and what would happen to each of them. Only long-term replacements affect other
+   * observations.
+   *
+   * The outcomes are predicted by running the plot allocator against the stratum as it would look
+   * once the plot was unavailable, without changing anything. This is an approximation that doesn't
+   * account for the replacement permanent plot the replacement itself may create or reuse. In rare
+   * cases, e.g., if an existing never-used permanent plot would take over the replaced plot's
+   * permanent index, or the replacement plot could be placed somewhere the allocator wouldn't place
+   * a new plot, an observation predicted to be deleted would get new plots instead.
+   */
+  fun previewReplaceMonitoringPlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      duration: ReplacementDuration,
+  ): List<AffectedUpcomingObservation> {
+    requirePermissions { replaceObservationPlot(observationId) }
+
+    val observation = observationStore.fetchObservationById(observationId)
+    if (observation.isAdHoc) {
+      throw IllegalStateException("Ad-hoc observation plot cannot be replaced.")
+    }
+
+    // Do the same validation as replaceMonitoringPlot before returning any predictions, so the
+    // preview doesn't succeed for a replacement that would fail.
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
+    val gridOrigin =
+        plantingSite.gridOrigin
+            ?: throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
+    val stratum = plantingSite.findStratumWithMonitoringPlot(monitoringPlotId)
+    if (stratum?.findSubstratumWithMonitoringPlot(monitoringPlotId) == null) {
+      throw PlotNotFoundException(monitoringPlotId)
+    }
+    requireReplaceablePlot(
+        observationId,
+        monitoringPlotId,
+        observationPlotStore.fetchObservationPlotDetails(observationId),
+        allowCompleted = false,
+    )
+
+    if (duration != ReplacementDuration.LongTerm) {
+      return emptyList()
+    }
+
+    val upcomingObservationIds =
+        observationPlotStore.fetchUpcomingObservationIdsWithPlot(monitoringPlotId, observationId)
+    if (upcomingObservationIds.isEmpty()) {
+      return emptyList()
+    }
+
+    val stratumAfterReplacement =
+        stratum.copy(
+            substrata =
+                stratum.substrata.map { substratum ->
+                  substratum.copy(
+                      monitoringPlots =
+                          substratum.monitoringPlots.map { plot ->
+                            if (plot.id == monitoringPlotId) {
+                              plot.copy(isAvailable = false, permanentIndex = null)
+                            } else {
+                              plot
+                            }
+                          }
+                  )
+                }
+        )
+
+    return upcomingObservationIds.map { upcomingObservationId ->
+      val upcomingObservation = observationStore.fetchObservationById(upcomingObservationId)
+
+      // Reassignment fails, and the observation is deleted, if the allocator can't find any plots
+      // for it in the stratum. See assignPlots.
+      val allocation =
+          try {
+            StratumPlotAllocator(
+                    stratumAfterReplacement,
+                    upcomingObservation.observationType,
+                    gridOrigin,
+                    plantingSite.exclusion,
+                    observationPlotStore.fetchObservedPermanentPlotIds(
+                        plantingSite.id,
+                        excludeObservationId = upcomingObservationId,
+                    ),
+                )
+                .allocate(upcomingObservation.requestedSubstratumIds)
+          } catch (e: StratumFullException) {
+            null
+          }
+      val canReassign =
+          allocation != null &&
+              (allocation.permanentPlotIds.isNotEmpty() ||
+                  allocation.temporaryPlotBoundaries.isNotEmpty())
+
+      AffectedUpcomingObservation(
+          observationId = upcomingObservationId,
+          observationType = upcomingObservation.observationType,
+          startDate = upcomingObservation.startDate,
+          outcome =
+              if (canReassign) {
+                AffectedUpcomingObservationOutcome.PlotsReassigned
+              } else {
+                AffectedUpcomingObservationOutcome.ObservationDeleted
+              },
+      )
+    }
+  }
+
+  /**
+   * Returns the details of a plot in an observation if the plot can be replaced, or throws an
+   * exception if it can't.
+   */
+  private fun requireReplaceablePlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      observationPlots: List<AssignedPlotDetails>,
+      allowCompleted: Boolean,
+  ): AssignedPlotDetails {
+    val observationPlot =
+        observationPlots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
+            ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+    val monitoringPlotsRow = monitoringPlotsDao.fetchOneById(monitoringPlotId)
+
+    if (monitoringPlotsRow?.sizeMeters != MONITORING_PLOT_SIZE_INT) {
+      throw PlotSizeNotReplaceableException(observationId, monitoringPlotId)
+    }
+
+    if (!allowCompleted && observationPlot.model.completedTime != null) {
+      throw PlotAlreadyCompletedException(monitoringPlotId)
+    }
+
+    return observationPlot
   }
 
   /**
