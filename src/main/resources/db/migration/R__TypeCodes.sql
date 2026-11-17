@@ -528,6 +528,10 @@ INSERT INTO tracking.plot_precision_levels (id, name, target_margin_of_error)
 VALUES (1, 'Very Low', 22.5), (2, 'Low', 20), (3, 'Medium', 15), (4, 'High', 10), (5, 'Very High', 7)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name, target_margin_of_error = excluded.target_margin_of_error;
 
+INSERT INTO tracking.plot_selection_modes (id, name)
+VALUES (1, 'Precision Level'), (2, 'Custom'), (3, 'Direct')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.recorded_plant_statuses (id, name)
 VALUES (1, 'Live'),
        (2, 'Dead'),

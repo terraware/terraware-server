@@ -4,6 +4,8 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_ERROR_MARGIN
@@ -42,6 +44,9 @@ data class PermanentPlotPlacement(
 )
 
 data class StratumPlotCounts(
+    val mode: PlotSelectionMode = PlotSelectionMode.PrecisionLevel,
+    val plotPrecisionLevel: PlotPrecisionLevel? =
+        if (mode == PlotSelectionMode.PrecisionLevel) PlotPrecisionLevel.Medium else null,
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
     val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
     val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
@@ -50,6 +55,8 @@ data class StratumPlotCounts(
 ) {
   override fun equals(other: Any?) =
       other is StratumPlotCounts &&
+          plotPrecisionLevel == other.plotPrecisionLevel &&
+          mode == other.mode &&
           numPermanentPlots == other.numPermanentPlots &&
           numTemporaryPlots == other.numTemporaryPlots &&
           errorMargin.equalsIgnoreScale(other.errorMargin) &&
@@ -58,6 +65,8 @@ data class StratumPlotCounts(
 
   override fun hashCode() =
       Objects.hash(
+          plotPrecisionLevel,
+          mode,
           errorMargin.stripTrailingZeros(),
           numPermanentPlots,
           numTemporaryPlots,

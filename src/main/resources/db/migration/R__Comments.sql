@@ -680,6 +680,8 @@ COMMENT ON COLUMN tracking.substrata.stable_id IS 'Substratum identifier that do
 COMMENT ON TABLE tracking.stratum_histories IS 'Versions of stratum maps over time. Each time a planting site map changes, its strata'' maps are inserted into this table.';
 
 COMMENT ON TABLE tracking.stratum_plot_selection_parameters IS 'Plot selection parameters for each observation type in a stratum.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.plot_selection_mode_id IS 'How the plot selection parameters are configured: precision level, custom statistical inputs, or direct plot counts.';
+COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.plot_precision_level_id IS 'Precision level for this observation type in Precision Level mode. Null for Custom and Direct modes.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.error_margin IS 'Error margin for the plot count statistical formula.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_permanent_plots IS 'Number of permanent plots to assign to the next observation, typically derived from a statistical formula. Zero for baseline surveys.';
 COMMENT ON COLUMN tracking.stratum_plot_selection_parameters.num_temporary_plots IS 'Number of temporary plots to assign to the next observation. For baseline surveys, includes any permanent plots from the statistical formula.';
@@ -719,6 +721,8 @@ COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
 COMMENT ON TABLE tracking.plot_precision_levels IS '(Enum) Precision levels for plot selection.';
 COMMENT ON COLUMN tracking.plot_precision_levels.target_margin_of_error IS 'Target margin of error as a percentage for this precision level.';
+
+COMMENT ON TABLE tracking.plot_selection_modes IS '(Enum) Ways to configure plot selection parameters.';
 
 COMMENT ON TABLE tracking.plot_t0_densities IS 'Density for a plot per species, in plants per hectare.';
 
