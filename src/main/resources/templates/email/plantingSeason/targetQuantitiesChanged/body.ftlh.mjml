@@ -1,0 +1,47 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.PlantingSeasonTargetQuantitiesChanged" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.plantingSeason.targetQuantitiesChanged.email.body", plantingSeasonName, plantingSiteName)}
+                </mj-text>
+
+                <mj-table>
+                    <tr>
+                        <th>${strings("notification.plantingSeason.targetQuantitiesChanged.email.species")}</th>
+                        <th>${strings("notification.plantingSeason.targetQuantitiesChanged.email.stratum")}</th>
+                        <th>${strings("notification.plantingSeason.targetQuantitiesChanged.email.substratum")}</th>
+                        <th class="number">${strings("notification.plantingSeason.targetQuantitiesChanged.email.previousQuantity")}</th>
+                        <th class="number">${strings("notification.plantingSeason.targetQuantitiesChanged.email.newQuantity")}</th>
+                    </tr>
+                    <mj-raw>
+                        <#list changes as change>
+                    </mj-raw>
+                            <tr>
+                                <td>${change.speciesName}</td>
+                                <td>${change.stratumName}</td>
+                                <td>${change.substratumName}</td>
+                                <td class="number">${change.oldQuantity}</td>
+                                <td class="number">${change.newQuantity}</td>
+                            </tr>
+                    <mj-raw>
+                        </#list>
+                    </mj-raw>
+                </mj-table>
+
+                <mj-button mj-class="btn-productive-primary-md" href="${plantingSeasonUrl}">
+                    ${strings("notification.plantingSeason.targetQuantitiesChanged.email.buttonLabel")}
+                </mj-button>
+
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>
