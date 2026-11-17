@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.zerotap.model.RestoreCredentialModel
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.db.default_schema.RestoreCredentialId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.records.RestoreCredentialChallengesRecord
 import com.terraformation.backend.db.default_schema.tables.references.RESTORE_CREDENTIALS
 import com.terraformation.backend.db.default_schema.tables.references.RESTORE_CREDENTIAL_CHALLENGES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
@@ -49,6 +50,14 @@ class RestoreCredentialStore(
           .and(EXPIRES_TIME.gt(clock.instant()))
           .execute() == 1
     }
+  }
+
+  /** Returns a challenge regardless of whether it has expired. Used to diagnose failures. */
+  fun fetchChallenge(challenge: ByteArray): RestoreCredentialChallengesRecord? {
+    return dslContext
+        .selectFrom(RESTORE_CREDENTIAL_CHALLENGES)
+        .where(RESTORE_CREDENTIAL_CHALLENGES.CHALLENGE.eq(challenge))
+        .fetchOne()
   }
 
   @EventListener
@@ -123,6 +132,15 @@ class RestoreCredentialStore(
               userId = record[RESTORE_CREDENTIALS.USER_ID]!!,
           )
         }
+  }
+
+  /** Returns a credential's user ID even if the user is deleted. Used to diagnose failures. */
+  fun fetchUserIdByCredentialId(credentialId: ByteArray): UserId? {
+    return dslContext
+        .select(RESTORE_CREDENTIALS.USER_ID)
+        .from(RESTORE_CREDENTIALS)
+        .where(RESTORE_CREDENTIALS.CREDENTIAL_ID.eq(credentialId))
+        .fetchOne(RESTORE_CREDENTIALS.USER_ID)
   }
 
   /** @return true if the credential existed. */

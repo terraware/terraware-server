@@ -5,8 +5,10 @@ import com.nimbusds.jose.jwk.ECKey
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.security.KeyFactory
+import java.security.MessageDigest
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECPoint
@@ -34,6 +36,8 @@ class ZeroTapTicketIssuer(
     private val clock: InstantSource,
     private val config: TerrawareServerConfig,
 ) {
+  private val log = perClassLogger()
+
   /** Must exactly match the issuer configured in Keycloak's zero-tap authenticator. */
   private val issuer = config.webAppUrl.toString().trimEnd('/')
   private val jwtEncoder: JwtEncoder by lazy { createJwtEncoder() }
@@ -57,6 +61,11 @@ class ZeroTapTicketIssuer(
             .subject(authId)
             .build()
     val header = JwsHeader.with(SignatureAlgorithm.ES256).build()
+
+    log.debug(
+        "Issuing zero-tap ticket ${claims.id} for subject $authId: issuer $issuer, audience " +
+            "${config.zeroTap.audience}, expires ${claims.expiresAt}"
+    )
 
     return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).tokenValue
   }
@@ -89,6 +98,11 @@ class ZeroTapTicketIssuer(
         ) as ECPublicKey
 
     val jwk = ECKey.Builder(Curve.P_256, publicKey).privateKey(privateKey).build()
+    val fingerprint = Base64.encode(MessageDigest.getInstance("SHA-256").digest(publicKey.encoded))
+    log.debug(
+        "Zero-tap tickets will be signed for issuer $issuer with the private key for public key " +
+            "${Base64.encode(publicKey.encoded)} (spkiSha256=$fingerprint)"
+    )
     return NimbusJwtEncoder(ImmutableJWKSet(JWKSet(jwk)))
   }
 }
