@@ -3,10 +3,13 @@ package com.terraformation.backend.auth.zerotap.api
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.auth.zerotap.RestoreCredentialService
+import com.terraformation.backend.auth.zerotap.db.RestoreCredentialStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.ServiceUnavailableException
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class RestoreCredentialsController(
     private val restoreCredentialServiceDependency: RestoreCredentialService?,
+    private val restoreCredentialStore: RestoreCredentialStore,
 ) {
   private val restoreCredentialService: RestoreCredentialService
     get() =
@@ -31,6 +35,19 @@ class RestoreCredentialsController(
     return GetRestoreCredentialCreationOptionsResponsePayload(
         restoreCredentialService.createRegistrationOptions()
     )
+  }
+
+  @Operation(
+      summary = "Deletes the current user's Android restore credentials.",
+      description =
+          "The app calls this when the user signs out, so the next person to restore the app on " +
+              "a new device isn't signed in as them. Succeeds even if zero-tap sign-in is " +
+              "disabled.",
+  )
+  @DeleteMapping
+  fun deleteRestoreCredentials(): SimpleSuccessResponsePayload {
+    restoreCredentialStore.deleteByUserId(currentUser().userId)
+    return SimpleSuccessResponsePayload()
   }
 
   @Operation(summary = "Registers an Android restore credential for the current user.")
