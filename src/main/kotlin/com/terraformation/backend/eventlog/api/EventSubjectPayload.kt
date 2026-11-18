@@ -20,8 +20,11 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.StratumId
@@ -80,8 +83,17 @@ import com.terraformation.backend.tracking.event.PlotT0ObservationPersistentEven
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsPersistentEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityPersistentEvent
+import com.terraformation.backend.tracking.model.ConfidenceLevel
+import com.terraformation.backend.tracking.model.PlotCountCalculator
+import com.terraformation.backend.util.equalsIgnoreScale
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
+import java.math.MathContext
 import java.time.LocalDate
 import kotlin.reflect.KClass
 
@@ -981,6 +993,83 @@ data class PlotT0DensitySubjectPayload(
   }
 }
 
+@JsonTypeName("StratumPlotSelectionSettings")
+data class StratumPlotSelectionSettingsSubjectPayload(
+    override val fullText: String,
+    override val shortText: String,
+    val plantingSiteId: PlantingSiteId,
+    val stratumId: StratumId,
+    val stratumName: String,
+    val source: StratumPlotSelectionSettingsChangedEventSource,
+    val settings: List<StratumPlotSelectionSettingsPayload>,
+    val observationId: ObservationId?,
+    val measuredVariability: BigDecimal?,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(event: StratumPlotSelectionSettingsChangedEvent, context: EventLogPayloadContext) =
+        StratumPlotSelectionSettingsSubjectPayload(
+            fullText =
+                context.subjectFullText<StratumPlotSelectionSettingsSubjectPayload>(
+                    event.stratumName
+                ),
+            shortText = context.subjectShortText<StratumPlotSelectionSettingsSubjectPayload>(),
+            plantingSiteId = event.plantingSiteId,
+            stratumId = event.stratumId,
+            stratumName = event.stratumName,
+            source = event.source,
+            settings = event.settings.map { StratumPlotSelectionSettingsPayload.of(it) },
+            observationId = event.observationId,
+            measuredVariability = event.measuredVariability,
+        )
+  }
+}
+
+data class StratumPlotSelectionSettingsPayload(
+    val observationType: ObservationType,
+    val mode: PlotSelectionMode,
+    val plotPrecisionLevel: PlotPrecisionLevel?,
+    val variance: BigDecimal,
+    val studentsT: BigDecimal,
+    val errorMargin: BigDecimal,
+    val numPermanentPlots: Int,
+    val numTemporaryPlots: Int,
+    val confidenceLevel: Int?,
+    val variability: BigDecimal,
+    val expectedPrecision: Double?,
+) {
+  companion object {
+    fun of(
+        settings: StratumPlotSelectionSettingsChangedEventSettings
+    ): StratumPlotSelectionSettingsPayload {
+      val confidenceLevel =
+          ConfidenceLevel.entries.firstOrNull {
+            it.plotCountStudentsT.equalsIgnoreScale(settings.studentsT)
+          }
+      val variability = settings.variance.sqrt(MathContext.DECIMAL128)
+      val numPlots =
+          if (settings.observationType == ObservationType.BaselineSurvey) settings.numTemporaryPlots
+          else settings.numPermanentPlots + settings.numTemporaryPlots
+
+      return StratumPlotSelectionSettingsPayload(
+          observationType = settings.observationType,
+          mode = settings.mode,
+          plotPrecisionLevel = settings.plotPrecisionLevel,
+          variance = settings.variance,
+          studentsT = settings.studentsT,
+          errorMargin = settings.errorMargin,
+          numPermanentPlots = settings.numPermanentPlots,
+          numTemporaryPlots = settings.numTemporaryPlots,
+          confidenceLevel = confidenceLevel?.percent,
+          variability = variability,
+          expectedPrecision =
+              confidenceLevel?.let {
+                PlotCountCalculator.expectedPrecision(it, numPlots, variability)
+              },
+      )
+    }
+  }
+}
+
 @JsonTypeName("StratumT0Density")
 data class StratumT0DensitySubjectPayload(
     override val fullText: String,
@@ -1200,6 +1289,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlotT0Observation(PlotT0ObservationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
+  StratumPlotSelectionSettings(StratumPlotSelectionSettingsPersistentEvent::class),
   StratumT0Density(StratumT0DensityPersistentEvent::class),
   ViabilityTest(ViabilityTestPersistentEvent::class),
   Withdrawal(WithdrawalPersistentEvent::class),
