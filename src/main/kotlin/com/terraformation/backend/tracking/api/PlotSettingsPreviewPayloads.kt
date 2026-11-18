@@ -8,8 +8,6 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
 import com.terraformation.backend.tracking.model.StratumPlotCounts
-import com.terraformation.backend.tracking.model.applySetting
-import com.terraformation.backend.tracking.model.recalculatePlotCounts
 
 data class PlotSettingsPreviewResponsePayload(val strata: List<StratumPlotSettingsPreviewPayload>) :
     SuccessResponsePayload {
