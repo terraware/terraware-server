@@ -80,7 +80,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         projectsDao,
         SeasonHelper(dslContext),
         subLocationsDao,
-        WithdrawalCustomPurposeHelper(clock, dslContext),
+        WithdrawalCustomPurposeHelper(clock, dslContext, ParentFetcher(dslContext)),
         nurseryWithdrawalsDao,
     )
   }
