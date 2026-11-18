@@ -1,5 +1,6 @@
 package com.terraformation.backend.auth.zerotap
 
+import com.nimbusds.jwt.SignedJWT
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.auth.zerotap.db.RestoreCredentialStore
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -14,6 +15,7 @@ import com.webauthn4j.converter.AttestationObjectConverter
 import com.webauthn4j.converter.AttestedCredentialDataConverter
 import com.webauthn4j.converter.util.ObjectConverter
 import com.webauthn4j.data.PublicKeyCredentialCreationOptions
+import com.webauthn4j.data.PublicKeyCredentialRequestOptions
 import com.webauthn4j.data.ResidentKeyRequirement
 import com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier
 import com.webauthn4j.data.client.Origin
@@ -23,24 +25,34 @@ import com.webauthn4j.test.client.ClientPlatform
 import io.mockk.every
 import io.mockk.mockk
 import java.net.URI
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.spec.ECGenParameterSpec
 import kotlin.io.encoding.Base64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.web.server.ResponseStatusException
 
 class RestoreCredentialServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val config: TerrawareServerConfig = mockk()
   private val service: RestoreCredentialService by lazy {
-    RestoreCredentialService(config, RestoreCredentialStore(clock, dslContext))
+    RestoreCredentialService(
+        config,
+        RestoreCredentialStore(clock, dslContext),
+        ZeroTapTicketIssuer(clock, config),
+    )
   }
 
   private val base64Url = Base64.UrlSafe.withPadding(Base64.PaddingOption.ABSENT)
   private val objectConverter = ObjectConverter()
   private val origin = "android:apk-key-hash:test"
+  private val clientPlatform =
+      ClientPlatform(Origin(origin), WebAuthnAuthenticatorAdaptor(NoneAttestationAuthenticator()))
 
   @BeforeEach
   fun setUp() {
@@ -48,7 +60,7 @@ class RestoreCredentialServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     every { config.zeroTap } returns
         ZeroTapConfig(
             enabled = true,
-            signingKeyPrivate = "unused",
+            signingKeyPrivate = Base64.encode(generateKeyPair().private.encoded),
         )
   }
 
@@ -115,23 +127,109 @@ class RestoreCredentialServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `rejects responses from non-Android origins`() {
-      val responseJson = createRegistrationResponse("https://terraware.io").json
+      clientPlatform.origin = Origin("https://terraware.io")
+      val responseJson = createRegistrationResponse().json
 
       assertThrows<IllegalArgumentException> { service.register(responseJson) }
       assertTableEmpty(RESTORE_CREDENTIALS)
     }
   }
 
+  @Nested
+  inner class Authenticate {
+    @BeforeEach
+    fun registerCredential() {
+      service.register(createRegistrationResponse().json)
+    }
+
+    @Test
+    fun `returns ticket for credential's user and deletes credential`() {
+      val ticket = SignedJWT.parse(service.authenticate(createAuthenticationResponse()))
+
+      assertEquals(user.authId, ticket.jwtClaimsSet.subject, "Ticket subject")
+      assertTableEmpty(RESTORE_CREDENTIALS)
+    }
+
+    @Test
+    fun `keeps credential if ticket can't be issued`() {
+      val generator = KeyPairGenerator.getInstance("EC")
+      generator.initialize(ECGenParameterSpec("secp384r1"))
+      every { config.zeroTap } returns
+          ZeroTapConfig(
+              enabled = true,
+              signingKeyPrivate = Base64.encode(generator.generateKeyPair().private.encoded),
+          )
+      val expected = dslContext.fetch(RESTORE_CREDENTIALS)
+
+      assertThrows<IllegalArgumentException> {
+        service.authenticate(createAuthenticationResponse())
+      }
+
+      assertTableEquals(expected)
+    }
+
+    @Test
+    fun `rejects malformed JSON`() {
+      assertThrows<ResponseStatusException> { service.authenticate("{") }
+    }
+
+    @Test
+    fun `rejects reused responses`() {
+      val responseJson = createAuthenticationResponse()
+
+      service.authenticate(responseJson)
+
+      assertThrows<ResponseStatusException> { service.authenticate(responseJson) }
+    }
+
+    @Test
+    fun `rejects responses from non-Android origins`() {
+      clientPlatform.origin = Origin("https://terraware.io")
+
+      assertThrows<ResponseStatusException> {
+        service.authenticate(createAuthenticationResponse())
+      }
+    }
+  }
+
+  private fun generateKeyPair(): KeyPair {
+    val generator = KeyPairGenerator.getInstance("EC")
+    generator.initialize(ECGenParameterSpec("secp256r1"))
+    return generator.generateKeyPair()
+  }
+
+  /** Returns authentication response JSON from the emulated authenticator. */
+  private fun createAuthenticationResponse(): String {
+    val options =
+        objectConverter.jsonMapper.readValue(
+            service.createAuthenticationOptions(),
+            PublicKeyCredentialRequestOptions::class.java,
+        )
+    val credential = clientPlatform.get(options)
+    val response = credential.response!!
+
+    return objectConverter.jsonMapper.writeValueAsString(
+        mapOf(
+            "clientExtensionResults" to emptyMap<String, Any>(),
+            "id" to base64Url.encode(credential.rawId),
+            "rawId" to base64Url.encode(credential.rawId),
+            "response" to
+                mapOf(
+                    "authenticatorData" to base64Url.encode(response.authenticatorData),
+                    "clientDataJSON" to base64Url.encode(response.clientDataJSON),
+                    "signature" to base64Url.encode(response.signature),
+                    "userHandle" to response.userHandle?.let { base64Url.encode(it) },
+                ),
+            "type" to "public-key",
+        )
+    )
+  }
+
   private fun parseOptions(json: String): PublicKeyCredentialCreationOptions =
       objectConverter.jsonMapper.readValue(json, PublicKeyCredentialCreationOptions::class.java)
 
   /** Returns a registration response from an emulated authenticator. */
-  private fun createRegistrationResponse(clientOrigin: String = origin): RegistrationResponse {
-    val clientPlatform =
-        ClientPlatform(
-            Origin(clientOrigin),
-            WebAuthnAuthenticatorAdaptor(NoneAttestationAuthenticator()),
-        )
+  private fun createRegistrationResponse(): RegistrationResponse {
     val credential = clientPlatform.create(parseOptions(service.createRegistrationOptions()))
     val response = credential.response!!
     val responseJson =
