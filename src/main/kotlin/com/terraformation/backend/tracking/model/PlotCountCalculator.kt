@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.sqrt
@@ -23,17 +24,6 @@ enum class ConfidenceLevel(val percent: Int, val plotCountStudentsT: BigDecimal)
     return TDistribution.of(numPlots.toDouble() - 1)
         .inverseCumulativeProbability(0.5 + percent / 200.0)
   }
-}
-
-enum class PrecisionLevel(val targetMarginOfError: BigDecimal) {
-  VeryLow(BigDecimal("22.5")),
-  Low(BigDecimal("20")),
-  Medium(BigDecimal("15")),
-  High(BigDecimal("10")),
-  VeryHigh(BigDecimal("7"));
-
-  val confidenceLevel: ConfidenceLevel
-    get() = ConfidenceLevel.Ninety
 }
 
 data class CalculatedPlotCounts(val total: Int, val permanent: Int, val temporary: Int)
@@ -70,11 +60,11 @@ object PlotCountCalculator {
   }
 
   fun calculatePlotCounts(
-      precisionLevel: PrecisionLevel,
+      precisionLevel: PlotPrecisionLevel,
       variability: BigDecimal,
   ): CalculatedPlotCounts =
       calculatePlotCounts(
-          studentsT = precisionLevel.confidenceLevel.plotCountStudentsT,
+          studentsT = ConfidenceLevel.Ninety.plotCountStudentsT,
           targetMarginOfError = precisionLevel.targetMarginOfError,
           variability = variability,
       )
