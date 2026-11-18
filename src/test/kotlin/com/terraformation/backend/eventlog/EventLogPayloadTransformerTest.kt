@@ -24,8 +24,10 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -44,6 +46,8 @@ import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSub
 import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0ObservationSubjectPayload
+import com.terraformation.backend.eventlog.api.StratumPlotSelectionSettingsPayload
+import com.terraformation.backend.eventlog.api.StratumPlotSelectionSettingsSubjectPayload
 import com.terraformation.backend.eventlog.api.StratumT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
@@ -88,11 +92,17 @@ import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventVa
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumT0DensityCreatedEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
+import com.terraformation.backend.tracking.model.ConfidenceLevel
+import com.terraformation.backend.tracking.model.PlotCountCalculator
+import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -100,6 +110,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -1339,6 +1351,107 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     assertEquals(expected, payloads)
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      "1.0360,Seventy,Monitoring,8,3,11,900,30",
+      "1.282,Eighty,BiomassMeasurements,8,3,11,900,30",
+      "1.645,Ninety,Monitoring,8,3,11,900,30",
+      "1.960,NinetyFive,Monitoring,8,3,11,900,30",
+      "2.576,NinetyNine,BaselineSurvey,0,11,11,900,30",
+      "1.5,,Monitoring,8,3,11,900,30",
+      "1.645,Ninety,Monitoring,0,1,1,900,30",
+      "1.645,Ninety,BaselineSurvey,0,0,0,0,0",
+      "1.645,Ninety,Monitoring,8,3,11,0,0",
+  )
+  fun `maps plot selection settings history including derived precision and recommendation measurements`(
+      studentsT: BigDecimal,
+      confidenceLevel: ConfidenceLevel?,
+      observationType: ObservationType,
+      numPermanentPlots: Int,
+      numTemporaryPlots: Int,
+      expectedTotalPlots: Int,
+      variance: BigDecimal,
+      variability: BigDecimal,
+  ) {
+    val event =
+        StratumPlotSelectionSettingsChangedEvent(
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            stratumId = StratumId(7),
+            stratumName = "S1",
+            source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
+            settings =
+                listOf(
+                    StratumPlotSelectionSettingsChangedEventSettings.of(
+                        observationType,
+                        StratumPlotCounts(
+                            mode = PlotSelectionMode.Custom,
+                            plotPrecisionLevel = null,
+                            variance = variance,
+                            studentsT = studentsT,
+                            errorMargin = BigDecimal(21),
+                            numPermanentPlots = numPermanentPlots,
+                            numTemporaryPlots = numTemporaryPlots,
+                        ),
+                    )
+                ),
+            observationId = observationId,
+            measuredVariability = BigDecimal("32.5"),
+        )
+    val entry = eventLogEntry(knownUserId, event)
+
+    assertEquals(
+        listOf(
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        "plot selection settings",
+                        null,
+                        listOf(observationType.jsonValue),
+                    ),
+                subject =
+                    StratumPlotSelectionSettingsSubjectPayload(
+                        fullText = "Stratum S1 plot selection settings",
+                        shortText = "Plot selection settings",
+                        plantingSiteId = plantingSiteId,
+                        stratumId = event.stratumId,
+                        stratumName = "S1",
+                        source = event.source,
+                        settings =
+                            listOf(
+                                StratumPlotSelectionSettingsPayload(
+                                    observationType = observationType,
+                                    mode = PlotSelectionMode.Custom,
+                                    plotPrecisionLevel = null,
+                                    variance = variance,
+                                    studentsT = studentsT,
+                                    errorMargin = BigDecimal(21),
+                                    numPermanentPlots = numPermanentPlots,
+                                    numTemporaryPlots = numTemporaryPlots,
+                                    confidenceLevel = confidenceLevel?.percent,
+                                    variability = variability,
+                                    expectedPrecision =
+                                        confidenceLevel?.let {
+                                          PlotCountCalculator.expectedPrecision(
+                                              it,
+                                              expectedTotalPlots,
+                                              variability,
+                                          )
+                                        },
+                                )
+                            ),
+                        observationId = observationId,
+                        measuredVariability = BigDecimal("32.5"),
+                    ),
+                timestamp = entry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            )
+        ),
+        transformer.eventsToPayloads(listOf(entry)),
+    )
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =
