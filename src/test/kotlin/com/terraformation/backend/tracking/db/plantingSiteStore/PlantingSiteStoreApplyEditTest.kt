@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -30,6 +31,9 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -73,6 +77,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val requested =
           initial.baselinePlotCounts.copy(numPermanentPlots = 0, numTemporaryPlots = temporaryTotal)
       val desired = existing.copy(strata = listOf(initial.copy(baselinePlotCounts = requested)))
+      eventPublisher.clear()
 
       store.applyPlantingSiteEdit(calculateSiteEdit(existing, desired))
 
@@ -81,6 +86,22 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(initial.plantPlotCounts, actual.plantPlotCounts, "Plant counts")
       assertEquals(initial.biomassPlotCounts, actual.biomassPlotCounts, "Biomass counts")
       eventPublisher.assertEventPublished { it is PlantingSiteMapEditedEvent }
+      eventPublisher.assertEventPublished(
+          StratumPlotSelectionSettingsChangedEvent(
+              organizationId = organizationId,
+              plantingSiteId = existing.id,
+              stratumId = initial.id,
+              stratumName = initial.name,
+              source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+              settings =
+                  listOf(
+                      StratumPlotSelectionSettingsChangedEventSettings.of(
+                          ObservationType.BaselineSurvey,
+                          requested,
+                      )
+                  ),
+          )
+      )
     }
 
     @Test
@@ -204,12 +225,27 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
     @Test
     fun `creates new strata`() {
-      runScenario(
-          newSite(width = 500),
-          newSite(width = 750) {
-            stratum(width = 500)
-            stratum()
-          },
+      val (edited, existing) =
+          runScenario(
+              newSite(width = 500),
+              newSite(width = 750) {
+                stratum(width = 500)
+                stratum()
+              },
+          )
+      val added = edited.strata.single { stratum -> existing.strata.none { it.id == stratum.id } }
+      eventPublisher.assertEventPublished(
+          StratumPlotSelectionSettingsChangedEvent(
+              organizationId = organizationId,
+              plantingSiteId = edited.id,
+              stratumId = added.id,
+              stratumName = added.name,
+              source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+              settings =
+                  ObservationType.entries.map {
+                    StratumPlotSelectionSettingsChangedEventSettings.of(it, added.plotCounts(it))
+                  },
+          )
       )
     }
 
@@ -443,6 +479,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               ReplacementResult(monitoringPlotIds, emptySet()),
           )
       )
+    }
+
+    @Test
+    fun `reshaping a stratum without changing settings does not record settings history`() {
+      val existing = createSite(newSite())
+      eventPublisher.clear()
+
+      store.applyPlantingSiteEdit(calculateSiteEdit(existing, newSite(width = 600)))
+
+      eventPublisher.assertEventPublished { it is PlantingSiteMapEditedEvent }
+      eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>()
     }
 
     @Test

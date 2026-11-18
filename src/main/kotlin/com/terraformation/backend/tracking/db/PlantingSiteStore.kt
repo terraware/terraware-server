@@ -78,6 +78,9 @@ import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
@@ -997,6 +1000,13 @@ class PlantingSiteStore(
             edit.existingModel.id,
             ObservationType.entries.associateWith { edit.desiredModel.plotCounts(it) },
         )
+        publishPlotSelectionSettingsChanged(
+            edit.existingModel.id,
+            plantingSiteId,
+            edit.desiredModel.name,
+            ObservationType.entries.associateWith { edit.desiredModel.plotCounts(it) },
+            ObservationType.entries.associateWith { edit.existingModel.plotCounts(it) },
+        )
         val stratumHistoryId =
             insertStratumHistory(
                 edit.desiredModel,
@@ -1237,16 +1247,17 @@ class PlantingSiteStore(
 
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
-    val plotParametersField = plotParametersMultiset
-    val initialPlotParameters =
-        dslContext
-            .select(plotParametersField)
-            .from(STRATA)
-            .where(STRATA.ID.eq(stratumId))
-            .fetchSingle(plotParametersField)!!
-    val editedPlotParameters = initialPlotParameters + plotParameters
 
     entityLocker.withLockedPlantingSite(initial.plantingSiteId!!) {
+      val plotParametersField = plotParametersMultiset
+      val initialPlotParameters =
+          dslContext
+              .select(plotParametersField)
+              .from(STRATA)
+              .where(STRATA.ID.eq(stratumId))
+              .fetchSingle(plotParametersField)!!
+      val editedPlotParameters = initialPlotParameters + plotParameters
+
       with(STRATA) {
         dslContext
             .update(STRATA)
@@ -1260,6 +1271,13 @@ class PlantingSiteStore(
       }
 
       writePlotParameters(stratumId, editedPlotParameters)
+      publishPlotSelectionSettingsChanged(
+          stratumId,
+          initial.plantingSiteId!!,
+          edited.name!!,
+          editedPlotParameters,
+          initialPlotParameters,
+      )
 
       if (initial.name != edited.name) {
         with(SUBSTRATA) {
@@ -1427,6 +1445,12 @@ class PlantingSiteStore(
         strataRow.id!!,
         ObservationType.entries.associateWith { stratum.plotCounts(it) },
     )
+    publishPlotSelectionSettingsChanged(
+        strataRow.id!!,
+        plantingSiteId,
+        stratum.name,
+        ObservationType.entries.associateWith { stratum.plotCounts(it) },
+    )
 
     return strataRow.id!!
   }
@@ -1461,6 +1485,34 @@ class PlantingSiteStore(
             }
         )
         .execute()
+  }
+
+  private fun publishPlotSelectionSettingsChanged(
+      stratumId: StratumId,
+      plantingSiteId: PlantingSiteId,
+      stratumName: String,
+      settings: Map<ObservationType, StratumPlotCounts>,
+      previous: Map<ObservationType, StratumPlotCounts> = emptyMap(),
+  ) {
+    val changed = settings.filter { (type, counts) -> counts != previous[type] }
+    if (changed.isEmpty()) {
+      return
+    }
+    eventPublisher.publishEvent(
+        StratumPlotSelectionSettingsChangedEvent(
+            organizationId = parentStore.getOrganizationId(plantingSiteId)!!,
+            plantingSiteId = plantingSiteId,
+            stratumId = stratumId,
+            stratumName = stratumName,
+            source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+            settings =
+                changed.entries
+                    .sortedBy { it.key.id }
+                    .map { (type, counts) ->
+                      StratumPlotSelectionSettingsChangedEventSettings.of(type, counts)
+                    },
+        )
+    )
   }
 
   private fun createSubstratum(

@@ -12,6 +12,9 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTO
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.StratumPlotCounts
@@ -31,6 +34,62 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
   @Nested
   inner class UpdateStratum {
+    @Test
+    fun `records only changed settings including mode and level without requiring count changes`() {
+      insertPlantingSite()
+      insertStratum()
+      val initial =
+          store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata.single()
+      val counts = initial.plantPlotCounts
+      val changes =
+          listOf(
+              counts.copy(mode = PlotSelectionMode.Custom, plotPrecisionLevel = null),
+              counts.copy(mode = PlotSelectionMode.Direct, plotPrecisionLevel = null),
+              counts,
+              counts.copy(plotPrecisionLevel = PlotPrecisionLevel.High),
+              counts.copy(
+                  plotPrecisionLevel = PlotPrecisionLevel.High,
+                  errorMargin = BigDecimal(21),
+                  studentsT = BigDecimal("1.96"),
+                  variance = BigDecimal(625),
+              ),
+          )
+      for (changed in changes) {
+        eventPublisher.clear()
+        store.updateStratum(inserted.stratumId, mapOf(ObservationType.Monitoring to changed)) { it }
+        eventPublisher.assertEventPublished(
+            StratumPlotSelectionSettingsChangedEvent(
+                organizationId = organizationId,
+                plantingSiteId = inserted.plantingSiteId,
+                stratumId = inserted.stratumId,
+                stratumName = initial.name,
+                source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+                settings =
+                    listOf(
+                        StratumPlotSelectionSettingsChangedEventSettings.of(
+                            ObservationType.Monitoring,
+                            changed,
+                        )
+                    ),
+            )
+        )
+        val persisted =
+            store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata.single()
+        assertEquals(initial.copy(plantPlotCounts = changed), persisted)
+        eventPublisher.clear()
+        store.updateStratum(
+            inserted.stratumId,
+            mapOf(
+                ObservationType.Monitoring to changed.copy(variance = changed.variance.setScale(3))
+            ),
+        ) {
+          it
+        }
+        store.updateStratum(inserted.stratumId) { it }
+        eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>()
+      }
+    }
+
     @ParameterizedTest
     @CsvSource("PrecisionLevel,", "Custom,High", "Direct,Medium")
     fun `rejects precision levels inconsistent with selection mode`(
