@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.api
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.nursery.BatchService
@@ -25,6 +26,47 @@ class BatchesHistoryControllerTest : ControllerIntegrationTest() {
 
   @Nested
   inner class GetBatchHistory {
+    @Test
+    fun `returns current custom purpose names for outgoing withdrawals`() {
+      insertOrganization()
+      insertOrganizationUser()
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertBatch()
+      insertWithdrawalCustomPurpose(isArchived = true)
+      val withdrawalId =
+          insertNurseryWithdrawal(customPurposeId = inserted.withdrawalCustomPurposeId)
+      insertBatchWithdrawal(activeGrowthQuantityWithdrawn = 1)
+      insertBatchQuantityHistory(
+          historyType = BatchQuantityHistoryType.Computed,
+          withdrawalId = withdrawalId,
+      )
+
+      dslContext
+          .update(WITHDRAWAL_CUSTOM_PURPOSES)
+          .set(WITHDRAWAL_CUSTOM_PURPOSES.NAME, "Renamed sale")
+          .where(WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(inserted.withdrawalCustomPurposeId))
+          .execute()
+
+      mockMvc
+          .get("/api/v1/nursery/batches/${inserted.batchId}/history")
+          .andExpectJson(
+              """
+                {
+                  "history": [
+                    {
+                      "customPurpose": "Renamed sale",
+                      "purpose": "Other",
+                      "type": "OutgoingWithdrawal",
+                      "withdrawalId": $withdrawalId
+                    }
+                  ]
+                }
+              """
+                  .trimIndent()
+          )
+    }
+
     @Test
     fun `returns history entries for backdated withdrawals`() {
       clock.instant = Instant.parse("2026-01-01T00:00:00Z")

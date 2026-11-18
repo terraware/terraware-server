@@ -237,6 +237,8 @@ data class BatchWithdrawalPayload(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class NurseryWithdrawalPayload(
     val batchWithdrawals: List<BatchWithdrawalPayload>,
+    @Schema(description = "If purpose is Other, an optional custom purpose.")
+    val customPurpose: String?,
     @Schema(
         description =
             "If purpose is \"Nursery Transfer\", the ID of the facility to which the seedlings " +
@@ -259,6 +261,7 @@ data class NurseryWithdrawalPayload(
       model: ExistingWithdrawalModel
   ) : this(
       model.batchWithdrawals.map { BatchWithdrawalPayload(it) },
+      model.customPurpose,
       model.destinationFacilityId,
       model.facilityId,
       model.id,

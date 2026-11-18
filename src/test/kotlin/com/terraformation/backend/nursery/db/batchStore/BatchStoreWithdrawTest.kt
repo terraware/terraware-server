@@ -116,6 +116,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
         nurseryWithdrawalsDao.fetchOneById(withdrawal.id)!!.customPurposeId,
         "Custom purpose ID",
     )
+    assertEquals(
+        "Sale" to "Sale",
+        withdrawal.customPurpose to store.fetchWithdrawalById(withdrawal.id).customPurpose,
+        "Created and fetched withdrawal custom purpose names",
+    )
   }
 
   @Test

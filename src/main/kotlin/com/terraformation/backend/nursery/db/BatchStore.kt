@@ -28,6 +28,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchStage
@@ -177,6 +178,31 @@ class BatchStore(
         accessionNumbers,
         quantities,
     )
+  }
+
+  data class OutgoingWithdrawal(
+      val customPurpose: String?,
+      val withdrawal: WithdrawalsRow,
+  )
+
+  fun fetchWithdrawalsWithCustomPurposes(
+      batchId: BatchId,
+      withdrawalIds: Collection<WithdrawalId>,
+  ): List<OutgoingWithdrawal> {
+    requirePermissions { readBatch(batchId) }
+
+    return dslContext
+        .select(WITHDRAWALS.asterisk(), WITHDRAWAL_CUSTOM_PURPOSES.NAME)
+        .from(WITHDRAWALS)
+        .leftJoin(WITHDRAWAL_CUSTOM_PURPOSES)
+        .on(WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(WITHDRAWALS.CUSTOM_PURPOSE_ID))
+        .where(WITHDRAWALS.ID.`in`(withdrawalIds))
+        .fetch {
+          OutgoingWithdrawal(
+              customPurpose = it[WITHDRAWAL_CUSTOM_PURPOSES.NAME],
+              withdrawal = it.into(WITHDRAWALS).into(WithdrawalsRow::class.java),
+          )
+        }
   }
 
   fun fetchWithdrawalById(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
