@@ -19,7 +19,6 @@ import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
 import com.terraformation.backend.tracking.model.StratumPlotCounts
-import com.terraformation.backend.tracking.model.applySetting
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
