@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
@@ -696,6 +697,50 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       val actual = searchService.search(prefix, fields, mapOf(prefix to filter), orderBy)
 
       assertJsonEquals(expected, actual)
+    }
+
+    @Test
+    fun `withdrawals expose custom purposes`() {
+      val salePurposeId =
+          insertWithdrawalCustomPurpose(name = "Sále", organizationId = organizationId)
+      val giftPurposeId =
+          insertWithdrawalCustomPurpose(name = "Gift", organizationId = organizationId)
+      val saleWithdrawalId =
+          insertNurseryWithdrawal(customPurposeId = salePurposeId, facilityId = facilityId)
+      insertBatchWithdrawal(batchId = batchId1, germinatingQuantityWithdrawn = 1)
+      insertNurseryWithdrawal(customPurposeId = giftPurposeId, facilityId = facilityId)
+      insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawals)
+      val fields = listOf("id", "customPurpose").map { prefix.resolve(it) }
+      val saleResult =
+          SearchResults(listOf(mapOf("id" to "$saleWithdrawalId", "customPurpose" to "Sále")))
+
+      assertAll(
+          *listOf(
+                  FieldNode(
+                      prefix.resolve("customPurpose"),
+                      listOf("SALE"),
+                      SearchFilterType.Exact,
+                  ),
+                  FieldNode(
+                      prefix.resolve("customPurpose"),
+                      listOf("sale"),
+                      SearchFilterType.Fuzzy,
+                  ),
+                  FieldNode(prefix.resolve("customPurpose"), listOf("S"), SearchFilterType.Fuzzy),
+              )
+              .map { filter ->
+                {
+                  assertEquals(
+                      saleResult,
+                      searchService.search(prefix, fields, mapOf(prefix to filter)),
+                      "Custom purpose filter $filter",
+                  )
+                }
+              }
+              .toTypedArray(),
+      )
     }
 
     @Test
