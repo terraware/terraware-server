@@ -21,6 +21,7 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
+import java.math.MathContext
 import java.math.RoundingMode
 import java.time.Instant
 import java.util.Objects
@@ -53,6 +54,18 @@ data class StratumPlotCounts(
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
     val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
+  val variability: BigDecimal
+    get() = variance.sqrt(MathContext.DECIMAL128)
+
+  val confidenceLevel: ConfidenceLevel?
+    get() =
+        ConfidenceLevel.entries.firstOrNull { it.plotCountStudentsT.equalsIgnoreScale(studentsT) }
+
+  val expectedPrecision: Double?
+    get() = confidenceLevel?.let {
+      PlotCountCalculator.expectedPrecision(it, numPermanentPlots + numTemporaryPlots, variability)
+    }
+
   override fun equals(other: Any?) =
       other is StratumPlotCounts &&
           plotPrecisionLevel == other.plotPrecisionLevel &&
