@@ -131,6 +131,9 @@ class TerrawareServerConfig(
 
     /** Terraware support email config */
     val support: SupportConfig = SupportConfig(),
+
+    /** Configures Android zero-tap sign-in using restore credentials. */
+    val zeroTap: ZeroTapConfig = ZeroTapConfig(),
 ) {
   class AcceleratorConfig(
       /** File ID of parent folder to use when creating new folders for application documents. */
@@ -438,6 +441,29 @@ class TerrawareServerConfig(
     }
   }
 
+  class ZeroTapConfig(
+      @DefaultValue("false") val enabled: Boolean = false,
+      /** Keycloak client ID that exchanges zero-tap tickets for tokens. */
+      @DefaultValue("terraformation-mobile-app-v2")
+      val audience: String = "terraformation-mobile-app-v2",
+      /**
+       * EC P-256 private key for signing zero-tap tickets: the base64-encoded PKCS#8 body of a PEM
+       * file, without the BEGIN/END lines.
+       */
+      val signingKeyPrivate: String? = null,
+      /** How long a ticket is valid. Keycloak rejects tickets valid for more than 120 seconds. */
+      @DefaultValue("60") val ticketLifetimeSeconds: Long = 60,
+  ) {
+    init {
+      if (enabled && signingKeyPrivate == null) {
+        throw IllegalArgumentException("Signing key is required for zero-tap sign-in")
+      }
+      if (ticketLifetimeSeconds !in 1..120) {
+        throw IllegalArgumentException("Zero-tap ticket lifetime must be 1 to 120 seconds")
+      }
+    }
+  }
+
   class SupportConfig(
       /** Support email address to use */
       val email: String? = null,
@@ -488,5 +514,6 @@ class TerrawareServerConfig(
     const val BALENA_ENABLED_PROPERTY = "terraware.balena.enabled"
     const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"
     const val NOTIFICATIONS_CLEANUP_ENABLED_PROPERTY = "terraware.notifications.cleanup-enabled"
+    const val ZERO_TAP_ENABLED_PROPERTY = "terraware.zero-tap.enabled"
   }
 }
