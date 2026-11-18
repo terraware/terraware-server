@@ -117,6 +117,7 @@ dependencies {
   implementation("com.pgvector:pgvector:0.1.6")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.16.0")
   implementation("commons-codec:commons-codec:1.23.0")
+  implementation("com.webauthn4j:webauthn4j-core:0.32.0.RELEASE")
   implementation("commons-validator:commons-validator:1.11.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:5.1.0")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
@@ -157,6 +158,7 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
+  testImplementation("com.webauthn4j:webauthn4j-test:0.32.0.RELEASE")
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
   testImplementation("io.mockk:mockk:1.14.12")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
