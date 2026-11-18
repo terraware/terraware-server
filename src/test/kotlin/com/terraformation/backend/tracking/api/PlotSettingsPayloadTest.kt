@@ -1,0 +1,139 @@
+package com.terraformation.backend.tracking.api
+
+import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.tracking.db.StratumNotFoundException
+import com.terraformation.backend.tracking.model.ConfidenceLevel
+import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
+import com.terraformation.backend.tracking.model.PlotSelectionSetting
+import com.terraformation.backend.tracking.model.StratumPlotCounts
+import java.math.BigDecimal
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+
+class PlotSettingsPayloadTest {
+  private val site = existingSite()
+  private val entry =
+      UpdateStratumPlotSettingPayload(
+          site.strata.single().id,
+          ObservationType.Monitoring,
+          PlotSelectionMode.Custom,
+          confidenceLevel = 80,
+          targetMarginOfError = BigDecimal("25"),
+          variability = BigDecimal("5"),
+      )
+
+  @Test
+  fun `converts mode specific inputs and rejects missing or invalid fields`() {
+    assertEquals(
+        PlotSelectionSetting.Custom(ConfidenceLevel.Eighty, BigDecimal("25"), BigDecimal("5")),
+        entry.toSetting(),
+    )
+    listOf(
+            entry.copy(confidenceLevel = null),
+            entry.copy(confidenceLevel = 85),
+            entry.copy(targetMarginOfError = null),
+            entry.copy(variability = null),
+            entry.copy(mode = PlotSelectionMode.PrecisionLevel),
+            entry.copy(mode = PlotSelectionMode.Direct, numPermanentPlots = 1),
+            entry.copy(mode = PlotSelectionMode.Direct, numTemporaryPlots = 1),
+        )
+        .forEach { invalid -> assertThrows<IllegalArgumentException> { invalid.toSetting() } }
+  }
+
+  @Test
+  fun `groups entries calculates counts and rejects duplicate or foreign strata`() {
+    val request = UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(entry))
+    val expected =
+        site.strata
+            .single()
+            .plantPlotCounts
+            .copy(
+                mode = PlotSelectionMode.Custom,
+                plotPrecisionLevel = null,
+                studentsT = BigDecimal("1.282"),
+                errorMargin = BigDecimal("25"),
+                variance = BigDecimal("25"),
+                numPermanentPlots = 1,
+                numTemporaryPlots = 1,
+            )
+    assertEquals(
+        mapOf(entry.stratumId to mapOf(ObservationType.Monitoring to expected)),
+        request.toSettings(site),
+    )
+    assertEquals(
+        emptyMap<StratumId, Any>(),
+        UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High).toSettings(site),
+    )
+    assertThrows<IllegalArgumentException> {
+      request.copy(strata = listOf(entry, entry)).toSettings(site)
+    }
+    assertThrows<StratumNotFoundException> {
+      request.copy(strata = listOf(entry.copy(stratumId = StratumId(-1)))).toSettings(site)
+    }
+    assertThrows<IllegalArgumentException> {
+      request.copy(strata = listOf(entry.copy(variability = BigDecimal.ZERO))).toSettings(site)
+    }
+  }
+
+  @Test
+  fun `response maps all observation types and rounds only variability`() {
+    val counts =
+        StratumPlotCounts(
+            mode = PlotSelectionMode.Custom,
+            studentsT = BigDecimal("1.6450"),
+            errorMargin = BigDecimal("15"),
+            variance = BigDecimal("909.0225"),
+            numPermanentPlots = 8,
+            numTemporaryPlots = 3,
+        )
+    val stratum =
+        site.strata
+            .single()
+            .copy(
+                plantPlotCounts = counts,
+                biomassPlotCounts = counts.copy(studentsT = BigDecimal("1.5")),
+                baselinePlotCounts = counts.copy(numPermanentPlots = 0, numTemporaryPlots = 1),
+            )
+    val expected =
+        PlotSelectionSettingPayload(
+            ObservationType.Monitoring,
+            PlotSelectionMode.Custom,
+            null,
+            90,
+            BigDecimal("15"),
+            BigDecimal("30.2"),
+            8,
+            3,
+            ConfidenceLevel.Ninety.studentsTForPlotCount(11)!! * 30.15 / kotlin.math.sqrt(11.0),
+        )
+    val expectedStratum =
+        StratumPlotSettingsPayload(
+            stratum.id,
+            stratum.name,
+            listOf(
+                expected,
+                expected.copy(
+                    observationType = ObservationType.BiomassMeasurements,
+                    confidenceLevel = null,
+                    expectedPrecision = null,
+                ),
+                expected.copy(
+                    observationType = ObservationType.BaselineSurvey,
+                    numPermanentPlots = 0,
+                    numTemporaryPlots = 1,
+                    expectedPrecision = null,
+                ),
+            ),
+        )
+    assertEquals(
+        PlotSettingsResponsePayload(PlotPrecisionLevel.High, listOf(expectedStratum)),
+        PlotSettingsResponsePayload(
+            site.copy(defaultPlotPrecisionLevel = PlotPrecisionLevel.High, strata = listOf(stratum))
+        ),
+    )
+  }
+}
