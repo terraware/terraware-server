@@ -1034,7 +1034,7 @@ data class StratumPlotSelectionSettingsPayload(
     val numPermanentPlots: Int,
     val numTemporaryPlots: Int,
     val confidenceLevel: Int?,
-    val variability: BigDecimal,
+    val variability: BigDecimal?,
     val expectedPrecision: Double?,
 ) {
   companion object {
@@ -1045,7 +1045,7 @@ data class StratumPlotSelectionSettingsPayload(
           ConfidenceLevel.entries.firstOrNull {
             it.plotCountStudentsT.equalsIgnoreScale(settings.studentsT)
           }
-      val variability = settings.variance.sqrt(MathContext.DECIMAL128)
+      val variability = settings.variance.takeIf { it.signum() >= 0 }?.sqrt(MathContext.DECIMAL128)
       val numPlots =
           if (settings.observationType == ObservationType.BaselineSurvey) settings.numTemporaryPlots
           else settings.numPermanentPlots + settings.numTemporaryPlots
@@ -1062,8 +1062,10 @@ data class StratumPlotSelectionSettingsPayload(
           confidenceLevel = confidenceLevel?.percent,
           variability = variability,
           expectedPrecision =
-              confidenceLevel?.let {
-                PlotCountCalculator.expectedPrecision(it, numPlots, variability)
+              if (confidenceLevel != null && variability != null) {
+                PlotCountCalculator.expectedPrecision(confidenceLevel, numPlots, variability)
+              } else {
+                null
               },
       )
     }

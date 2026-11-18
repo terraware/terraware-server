@@ -44,6 +44,7 @@ import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesPersistentEvent
@@ -188,7 +189,7 @@ class EventLogPayloadTransformer(
               FieldUpdatedActionPayload(
                   "settings",
                   null,
-                  event.settings.map { it.observationType.jsonValue },
+                  event.settings.map { it.observationType.getDisplayName(currentLocale()) },
               )
           )
 

@@ -108,6 +108,7 @@ import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -1389,15 +1390,19 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @ParameterizedTest
   @CsvSource(
-      "1.0360,Seventy,Monitoring,8,3,11,900,30",
-      "1.282,Eighty,BiomassMeasurements,8,3,11,900,30",
-      "1.645,Ninety,Monitoring,8,3,11,900,30",
-      "1.960,NinetyFive,Monitoring,8,3,11,900,30",
-      "2.576,NinetyNine,BaselineSurvey,0,11,11,900,30",
-      "1.5,,Monitoring,8,3,11,900,30",
-      "1.645,Ninety,Monitoring,0,1,1,900,30",
-      "1.645,Ninety,BaselineSurvey,0,0,0,0,0",
-      "1.645,Ninety,Monitoring,8,3,11,0,0",
+      "1.0360,Seventy,Monitoring,8,3,11,900,30,en,Monitoring",
+      "1.282,Eighty,BiomassMeasurements,8,3,11,900,30,en,Biomass Measurements",
+      "1.645,Ninety,Monitoring,8,3,11,900,30,en,Monitoring",
+      "1.960,NinetyFive,Monitoring,8,3,11,900,30,en,Monitoring",
+      "2.576,NinetyNine,BaselineSurvey,0,11,11,900,30,en,Baseline Survey",
+      "1.5,,Monitoring,8,3,11,900,30,en,Monitoring",
+      "1.645,Ninety,Monitoring,0,1,1,900,30,en,Monitoring",
+      "1.645,Ninety,BaselineSurvey,0,0,0,0,0,en,Baseline Survey",
+      "1.645,Ninety,Monitoring,8,3,11,0,0,en,Monitoring",
+      "1.645,Ninety,Monitoring,8,3,11,-900,,en,Monitoring",
+      "1.645,Ninety,Monitoring,8,3,11,900,30,es,Seguimiento",
+      "1.645,Ninety,BiomassMeasurements,8,3,11,900,30,es,Mediciones de biomasa",
+      "1.645,Ninety,BaselineSurvey,0,11,11,900,30,es,Encuesta de Línea Base",
   )
   fun `maps plot selection settings history including derived precision and recommendation measurements`(
       studentsT: BigDecimal,
@@ -1407,7 +1412,9 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
       numTemporaryPlots: Int,
       expectedTotalPlots: Int,
       variance: BigDecimal,
-      variability: BigDecimal,
+      variability: BigDecimal?,
+      locale: String,
+      observationTypeName: String,
   ) {
     val event =
         StratumPlotSelectionSettingsChangedEvent(
@@ -1441,14 +1448,20 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             EventLogEntryPayload(
                 action =
                     FieldUpdatedActionPayload(
-                        "plot selection settings",
+                        if (locale == "es") "configuración de selección de parcelas"
+                        else "plot selection settings",
                         null,
-                        listOf(observationType.jsonValue),
+                        listOf(observationTypeName),
                     ),
                 subject =
                     StratumPlotSelectionSettingsSubjectPayload(
-                        fullText = "Stratum S1 plot selection settings",
-                        shortText = "Plot selection settings",
+                        fullText =
+                            if (locale == "es")
+                                "Configuración de selección de parcelas del estrato S1"
+                            else "Stratum S1 plot selection settings",
+                        shortText =
+                            if (locale == "es") "Configuración de selección de parcelas"
+                            else "Plot selection settings",
                         plantingSiteId = plantingSiteId,
                         stratumId = event.stratumId,
                         stratumName = "S1",
@@ -1467,12 +1480,14 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                                     confidenceLevel = confidenceLevel?.percent,
                                     variability = variability,
                                     expectedPrecision =
-                                        confidenceLevel?.let {
+                                        if (confidenceLevel != null && variability != null) {
                                           PlotCountCalculator.expectedPrecision(
-                                              it,
+                                              confidenceLevel,
                                               expectedTotalPlots,
                                               variability,
                                           )
+                                        } else {
+                                          null
                                         },
                                 )
                             ),
@@ -1484,7 +1499,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 userName = "Known User",
             )
         ),
-        transformer.eventsToPayloads(listOf(entry)),
+        Locale.forLanguageTag(locale).use { transformer.eventsToPayloads(listOf(entry)) },
     )
   }
 
