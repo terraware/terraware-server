@@ -38,6 +38,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
@@ -152,6 +153,7 @@ import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.StratumPlotCounts
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
 import io.mockk.confirmVerified
@@ -291,11 +293,65 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     plantingSiteId = insertPlantingSite(width = 11, gridOrigin = point(1))
   }
 
+  @Test
+  fun `manager cannot edit plot selection settings`() {
+    insertOrganizationUser(role = Role.Manager)
+    assertThrows<AccessDeniedException> {
+      plantingSiteStore.updatePlotSelectionSettings(
+          plantingSiteId,
+          PlotPrecisionLevel.High,
+          emptyMap(),
+      )
+    }
+  }
+
   @Nested
   inner class StartObservation {
     @BeforeEach
     fun setUp() {
       insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+    }
+
+    @Test
+    fun `settings edit preserves in progress plots and affects subsequently started observation`() {
+      val stratumId = insertStratum(width = 8, height = 1, baselineNumTemporaryPlots = 1)
+      insertSubstratum(width = 8, height = 1)
+      val activeId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum()
+      service.startObservation(activeId)
+      val activePlots = observationPlotsDao.fetchByObservationId(activeId)
+      assertEquals(1, activePlots.size, "Initial assigned plots")
+      val scheduledId =
+          insertObservation(
+              observationType = ObservationType.BaselineSurvey,
+              state = ObservationState.Upcoming,
+          )
+      insertObservationRequestedSubstratum()
+
+      plantingSiteStore.updatePlotSelectionSettings(
+          plantingSiteId,
+          PlotPrecisionLevel.High,
+          mapOf(
+              stratumId to
+                  mapOf(
+                      ObservationType.BaselineSurvey to
+                          StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 3)
+                  )
+          ),
+      )
+
+      assertEquals(activePlots, observationPlotsDao.fetchByObservationId(activeId))
+      service.startObservation(scheduledId)
+      assertEquals(
+          3,
+          observationPlotsDao.fetchByObservationId(scheduledId).size,
+          "New assigned plots",
+      )
+      assertEquals(activePlots, observationPlotsDao.fetchByObservationId(activeId))
     }
 
     @ParameterizedTest

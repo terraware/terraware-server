@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -1000,6 +1001,7 @@ class PlantingSiteStore(
             ObservationType.entries.associateWith { edit.desiredModel.plotCounts(it) },
         )
         publishPlotSelectionSettingsChanged(
+            source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
             edit.existingModel.id,
             plantingSiteId,
             edit.desiredModel.name,
@@ -1232,6 +1234,51 @@ class PlantingSiteStore(
     }
   }
 
+  fun requirePlotSettingsEditable(plantingSiteId: PlantingSiteId) {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+    val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+    if (parentStore.isProjectInAccelerator(site.projectId)) {
+      throw AcceleratorPlotSettingsNotEditableException(plantingSiteId)
+    }
+  }
+
+  fun updatePlotSelectionSettings(
+      plantingSiteId: PlantingSiteId,
+      defaultPlotPrecisionLevel: PlotPrecisionLevel,
+      settings: Map<StratumId, Map<ObservationType, StratumPlotCounts>>,
+  ) {
+    entityLocker.withLockedPlantingSite(plantingSiteId) {
+      requirePlotSettingsEditable(plantingSiteId)
+      val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Stratum)
+      val strata = site.strata.associateBy { it.id }
+      settings.keys.forEach { if (it !in strata) throw StratumNotFoundException(it) }
+
+      with(PLANTING_SITES) {
+        dslContext
+            .update(PLANTING_SITES)
+            .set(DEFAULT_PLOT_PRECISION_LEVEL_ID, defaultPlotPrecisionLevel)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .where(ID.eq(plantingSiteId))
+            .execute()
+      }
+      settings.forEach { (stratumId, parameters) ->
+        val stratum = strata.getValue(stratumId)
+        val previous = ObservationType.entries.associateWith { stratum.plotCounts(it) }
+        val edited = previous + parameters
+        writePlotParameters(stratumId, edited)
+        publishPlotSelectionSettingsChanged(
+            StratumPlotSelectionSettingsChangedEventSource.UserEdit,
+            stratumId,
+            plantingSiteId,
+            stratum.name,
+            edited,
+            previous,
+        )
+      }
+    }
+  }
+
   fun updateStratum(
       stratumId: StratumId,
       editFunc: (StrataRow) -> StrataRow,
@@ -1271,6 +1318,7 @@ class PlantingSiteStore(
 
       writePlotParameters(stratumId, editedPlotParameters)
       publishPlotSelectionSettingsChanged(
+          source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
           stratumId,
           initial.plantingSiteId!!,
           edited.name!!,
@@ -1445,6 +1493,7 @@ class PlantingSiteStore(
         ObservationType.entries.associateWith { stratum.plotCounts(it) },
     )
     publishPlotSelectionSettingsChanged(
+        source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
         strataRow.id!!,
         plantingSiteId,
         stratum.name,
@@ -1487,6 +1536,7 @@ class PlantingSiteStore(
   }
 
   private fun publishPlotSelectionSettingsChanged(
+      source: StratumPlotSelectionSettingsChangedEventSource,
       stratumId: StratumId,
       plantingSiteId: PlantingSiteId,
       stratumName: String,
@@ -1507,7 +1557,7 @@ class PlantingSiteStore(
                   plantingSiteId = plantingSiteId,
                   stratumId = stratumId,
                   stratumName = stratumName,
-                  source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+                  source = source,
                   observationType = type,
                   counts = counts,
                   previous = previous[type],
