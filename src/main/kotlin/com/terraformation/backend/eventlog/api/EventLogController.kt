@@ -2,6 +2,7 @@ package com.terraformation.backend.eventlog.api
 
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
@@ -12,8 +13,10 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.eventlog.EventLogPayloadTransformer
 import com.terraformation.backend.eventlog.db.EventLogStore
+import com.terraformation.backend.tracking.db.StratumNotFoundException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.PostMapping
@@ -27,13 +30,21 @@ import org.springframework.web.bind.annotation.RestController
 class EventLogController(
     private val eventLogStore: EventLogStore,
     private val eventLogPayloadTransformer: EventLogPayloadTransformer,
+    private val parentStore: ParentStore,
 ) {
   @Operation(summary = "Lists the entries from the event log that relate to a particular entity.")
   @PostMapping("/list")
   fun listEventLogEntries(
       @RequestBody payload: ListEventLogEntriesRequestPayload
   ): ListEventLogEntriesResponsePayload {
-    requirePermissions { readOrganization(payload.organizationId) }
+    if (payload.stratumId != null) {
+      val plantingSiteId =
+          parentStore.getPlantingSiteId(payload.stratumId)
+              ?: throw StratumNotFoundException(payload.stratumId)
+      requirePermissions { readPlantingSite(plantingSiteId) }
+    } else {
+      requirePermissions { readOrganization(payload.organizationId) }
+    }
 
     val eventLogEntries =
         eventLogStore.fetchByIds(
@@ -47,6 +58,7 @@ class EventLogController(
                 payload.plantingSeasonId,
                 payload.plantingSiteId,
                 payload.projectId,
+                payload.stratumId,
             ),
             requestedClasses = payload.subjects?.map { it.eventInterface }?.ifEmpty { null },
         )
@@ -64,7 +76,9 @@ class EventLogController(
             "For example, if you specify observationId and monitoringPlotId, you will only get " +
             "events related to one monitoring plot in one observation, whereas if you specify " +
             "just observationId, you will get events related to all monitoring plots in that " +
-            "observation. The subjects property may be used to narrow the search further."
+            "observation. The subjects property may be used to narrow the search further. " +
+            "Requests with stratumId require permission to read the stratum's planting site; " +
+            "other requests require permission to read the organization."
 )
 data class ListEventLogEntriesRequestPayload(
     val accessionId: AccessionId? = null,
@@ -76,6 +90,7 @@ data class ListEventLogEntriesRequestPayload(
     val plantingSeasonId: PlantingSeasonId? = null,
     val plantingSiteId: PlantingSiteId? = null,
     val projectId: ProjectId? = null,
+    val stratumId: StratumId? = null,
     @Schema(
         description =
             "If specified, only return event log entries for specific subject types. This can be " +
