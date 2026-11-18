@@ -159,6 +159,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
+import com.terraformation.backend.db.default_schema.RestoreCredentialId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SavedTableViewId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
@@ -271,6 +272,8 @@ import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.RESTORE_CREDENTIALS
+import com.terraformation.backend.db.default_schema.tables.references.RESTORE_CREDENTIAL_CHALLENGES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
@@ -622,6 +625,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.roundToInt
+import kotlin.random.Random
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Condition
@@ -2107,6 +2111,41 @@ abstract class DatabaseBackedTest {
           .returning(ID)
           .fetchOne(ID)!!
           .also { inserted.notificationIds.add(it) }
+    }
+  }
+
+  fun insertRestoreCredential(
+      credentialId: ByteArray = Random.nextBytes(16),
+      attestedCredentialData: ByteArray = byteArrayOf(1, 2, 3),
+      signCount: Long = 0,
+      userId: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+  ): RestoreCredentialId {
+    return with(RESTORE_CREDENTIALS) {
+      dslContext
+          .insertInto(RESTORE_CREDENTIALS)
+          .set(ATTESTED_CREDENTIAL_DATA, attestedCredentialData)
+          .set(CREATED_TIME, createdTime)
+          .set(CREDENTIAL_ID, credentialId)
+          .set(SIGN_COUNT, signCount)
+          .set(USER_ID, userId)
+          .returning(ID)
+          .fetchOne(ID)!!
+    }
+  }
+
+  fun insertRestoreCredentialChallenge(
+      challenge: ByteArray = Random.nextBytes(32),
+      userId: UserId? = null,
+      expiresTime: Instant = clock.instant().plusSeconds(60),
+  ) {
+    with(RESTORE_CREDENTIAL_CHALLENGES) {
+      dslContext
+          .insertInto(RESTORE_CREDENTIAL_CHALLENGES)
+          .set(CHALLENGE, challenge)
+          .set(EXPIRES_TIME, expiresTime)
+          .set(USER_ID, userId)
+          .execute()
     }
   }
 
