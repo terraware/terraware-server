@@ -390,6 +390,8 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "user_preferences" to setOf(ALL, CUSTOMER),
                   "user_types" to setOf(ALL, CUSTOMER),
                   "users" to setOf(ALL, CUSTOMER),
+                  "withdrawal_custom_purpose_types" to setOf(ALL, CUSTOMER, NURSERY, SEEDBANK),
+                  "withdrawal_custom_purposes" to setOf(ALL, CUSTOMER, NURSERY, SEEDBANK),
                   "user_disclaimers" to setOf(ALL, CUSTOMER),
                   "vector_store" to setOf(ALL, ACCELERATOR),
                   "wcvp_distributions" to setOf(ALL, SPECIES),

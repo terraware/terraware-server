@@ -352,6 +352,12 @@ COMMENT ON COLUMN wcvp_distributions.level3_code IS 'Original TDWG level 3 regio
 COMMENT ON TABLE wcvp_taxa IS 'World Checklist of Vascular Plants species taxonomy.';
 COMMENT ON COLUMN wcvp_taxa.taxon_id IS 'WCVP-defined ID of the taxon. WCVP taxon IDs are unrelated to the GBIF taxon IDs for the same species.';
 
+COMMENT ON TABLE withdrawal_custom_purpose_types IS '(Enum) Types of withdrawals that use custom purposes.';
+
+COMMENT ON TABLE withdrawal_custom_purposes IS 'Organization-wide saved custom withdrawal purposes, shared across facilities for each withdrawal type.';
+COMMENT ON COLUMN withdrawal_custom_purposes.is_archived IS 'Whether the purpose is hidden from the withdrawal form. Archived purposes are kept on past withdrawals and restored when reused.';
+COMMENT ON COLUMN withdrawal_custom_purposes.name IS 'User-supplied name, matched case- and accent-insensitively within the organization and type after trimming leading and trailing whitespace.';
+
 COMMENT ON TABLE wood_density_levels IS 'The taxonomic level in the at which a wood density measurement is known';
 
 COMMENT ON TABLE vector_store IS 'Content snippets and embeddings for use as context in Ask Terraware LLM prompts. This table is used by the Spring AI vector store library, and its structure needs to match what the library expects.';
@@ -453,6 +459,7 @@ COMMENT ON TABLE nursery.withdrawal_purposes IS '(Enum) Reasons that someone can
 COMMENT ON TABLE nursery.withdrawals IS 'Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table.';
 COMMENT ON COLUMN nursery.withdrawals.created_by IS 'Which user created the withdrawal.';
 COMMENT ON COLUMN nursery.withdrawals.created_time IS 'When the withdrawal was created.';
+COMMENT ON COLUMN nursery.withdrawals.custom_purpose_id IS 'Optional organization-wide custom purpose, only allowed when purpose_id is Other.';
 COMMENT ON COLUMN nursery.withdrawals.destination_facility_id IS 'If the withdrawal was a nursery transfer, the facility where the seedlings were sent. May be null if the facility was subsequently deleted.';
 COMMENT ON COLUMN nursery.withdrawals.facility_id IS 'Nursery from which the seedlings were withdrawn.';
 COMMENT ON COLUMN nursery.withdrawals.modified_by IS 'Which user most recently modified the withdrawal.';

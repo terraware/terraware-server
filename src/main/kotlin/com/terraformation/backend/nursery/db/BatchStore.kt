@@ -2,6 +2,7 @@ package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentFetcher
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
@@ -19,6 +20,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeType
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
@@ -118,6 +120,7 @@ class BatchStore(
     private val projectsDao: ProjectsDao,
     private val seasonHelper: SeasonHelper,
     private val subLocationsDao: SubLocationsDao,
+    private val withdrawalCustomPurposeHelper: WithdrawalCustomPurposeHelper,
     private val withdrawalsDao: WithdrawalsDao,
 ) {
   companion object {
@@ -189,7 +192,11 @@ class BatchStore(
             .where(WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(withdrawalId))
             .fetchOne(WITHDRAWALS.ID)
 
-    return withdrawalsRow.toModel(batchWithdrawalsRows, undoneByWithdrawalId)
+    return withdrawalsRow.toModel(
+        batchWithdrawalsRows,
+        undoneByWithdrawalId,
+        withdrawalsRow.customPurposeId?.let { withdrawalCustomPurposeHelper.fetchNameById(it) },
+    )
   }
 
   /**
@@ -866,6 +873,14 @@ class BatchStore(
           WithdrawalsRow(
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
+              customPurposeId =
+                  withdrawal.customPurpose?.let {
+                    withdrawalCustomPurposeHelper.findOrCreate(
+                        parentFetcher.getOrganizationId(withdrawal.facilityId)!!,
+                        WithdrawalCustomPurposeType.Nursery,
+                        it,
+                    )
+                  },
               destinationFacilityId = withdrawal.destinationFacilityId,
               facilityId = withdrawal.facilityId,
               modifiedBy = currentUser().userId,
@@ -989,7 +1004,13 @@ class BatchStore(
         )
       }
 
-      withdrawalsRow.toModel(batchWithdrawalsRows)
+      withdrawalsRow.toModel(
+          batchWithdrawalsRows,
+          customPurpose =
+              withdrawalsRow.customPurposeId?.let {
+                withdrawalCustomPurposeHelper.fetchNameById(it)
+              },
+      )
     }
   }
 

@@ -5,6 +5,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -79,6 +80,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         projectsDao,
         SeasonHelper(dslContext),
         subLocationsDao,
+        WithdrawalCustomPurposeHelper(clock, dslContext),
         nurseryWithdrawalsDao,
     )
   }
