@@ -66,6 +66,27 @@ class RestoreCredentialStoreTest : DatabaseTest() {
     }
 
     @Test
+    fun `fetchChallenge returns expired challenges and null for unknown ones`() {
+      insertRestoreCredentialChallenge(
+          challenge = challenge,
+          expiresTime = clock.instant(),
+          userId = inserted.userId,
+      )
+
+      assertAll(
+          {
+            val record = store.fetchChallenge(challenge)
+            assertEquals(
+                listOf(clock.instant(), inserted.userId),
+                listOf(record?.expiresTime, record?.userId),
+                "Expired challenge",
+            )
+          },
+          { assertNull(store.fetchChallenge(byteArrayOf(9)), "Unknown challenge") },
+      )
+    }
+
+    @Test
     fun `deleteExpiredChallenges only deletes expired challenges`() {
       insertRestoreCredentialChallenge(expiresTime = clock.instant())
       insertRestoreCredentialChallenge(challenge = challenge)
@@ -164,6 +185,17 @@ class RestoreCredentialStoreTest : DatabaseTest() {
       assertAll(
           { assertNull(store.fetchByCredentialId(credentialId), "Unknown credential") },
           { assertNull(store.fetchByCredentialId(deletedUserCredentialId), "Deleted user") },
+      )
+    }
+
+    @Test
+    fun `fetchUserIdByCredentialId returns user ID even if user is deleted`() {
+      val deletedUserId = insertUser(deletedTime = clock.instant())
+      insertRestoreCredential(credentialId = credentialId)
+
+      assertAll(
+          { assertEquals(deletedUserId, store.fetchUserIdByCredentialId(credentialId), "Known") },
+          { assertNull(store.fetchUserIdByCredentialId(byteArrayOf(11)), "Unknown credential") },
       )
     }
 
