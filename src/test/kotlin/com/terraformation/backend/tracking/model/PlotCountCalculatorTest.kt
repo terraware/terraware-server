@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -32,7 +33,7 @@ class PlotCountCalculatorTest {
       "VeryHigh,50,38,12",
   )
   fun `precision levels determine plot counts at thirty percent variability`(
-      precision: PrecisionLevel,
+      precision: PlotPrecisionLevel,
       total: Int,
       permanent: Int,
       temporary: Int,
