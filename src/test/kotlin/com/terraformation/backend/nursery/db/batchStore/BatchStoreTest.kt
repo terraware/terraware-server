@@ -58,6 +58,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadProject(any()) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateBatch(any()) } returns true
+    every { user.canCreateWithdrawalCustomPurpose(any()) } returns true
   }
 
   protected fun makeNewBatchModel() =

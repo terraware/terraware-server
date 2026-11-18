@@ -29,6 +29,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
@@ -214,6 +215,9 @@ data class IndividualUser(
       isAdminOrHigher(parentFetcher.getFacilityId(deviceId))
 
   override fun canCreateVariableManifest() = isAcceleratorAdmin()
+
+  override fun canCreateWithdrawalCustomPurpose(organizationId: OrganizationId) =
+      isMember(organizationId)
 
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId) =
       isMember(parentFetcher.getFacilityId(withdrawalId))
@@ -555,6 +559,9 @@ data class IndividualUser(
     return isMember(facilityId) || isGlobalReader(parentFetcher.getOrganizationId(facilityId))
   }
 
+  override fun canReadWithdrawalCustomPurposes(organizationId: OrganizationId) =
+      isMember(organizationId) || isGlobalReader(organizationId)
+
   override fun canRegenerateAllDeviceManagerTokens() = isSuperAdmin()
 
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
@@ -761,6 +768,9 @@ data class IndividualUser(
   override fun canUpdateUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
   override fun canUpdateUserInternalInterests(userId: UserId) = isAcceleratorAdmin()
+
+  override fun canUpdateWithdrawalCustomPurpose(customPurposeId: WithdrawalCustomPurposeId) =
+      isAdminOrHigher(parentFetcher.getOrganizationId(customPurposeId))
 
   override fun canUploadPhoto(accessionId: AccessionId) =
       isMember(parentFetcher.getFacilityId(accessionId))

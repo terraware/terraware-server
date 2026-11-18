@@ -25,6 +25,7 @@ import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
+import com.terraformation.backend.db.WithdrawalCustomPurposeNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -49,6 +50,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
@@ -425,6 +427,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canCreateVariableManifest()) {
         throw AccessDeniedException("No permission to create Variable Manifests")
+      }
+    }
+  }
+
+  fun createWithdrawalCustomPurpose(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canCreateWithdrawalCustomPurpose(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to create withdrawal custom purpose")
       }
     }
   }
@@ -1368,6 +1379,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readWithdrawalCustomPurposes(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canReadWithdrawalCustomPurposes(organizationId)) {
+        throw OrganizationNotFoundException(organizationId)
+      }
+    }
+  }
+
   fun regenerateAllDeviceManagerTokens() {
     user.recordPermissionChecks {
       if (!user.canRegenerateAllDeviceManagerTokens()) {
@@ -2017,6 +2036,20 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateUserInternalInterests(userId)) {
         readUser(userId)
         throw AccessDeniedException("No permission to update internal interests for user $userId")
+      }
+    }
+  }
+
+  fun updateWithdrawalCustomPurpose(
+      customPurposeId: WithdrawalCustomPurposeId,
+      organizationId: OrganizationId,
+  ) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateWithdrawalCustomPurpose(customPurposeId)) {
+        if (!user.canReadWithdrawalCustomPurposes(organizationId)) {
+          throw WithdrawalCustomPurposeNotFoundException(customPurposeId)
+        }
+        throw AccessDeniedException("No permission to update custom purpose $customPurposeId")
       }
     }
   }

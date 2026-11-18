@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeType
 import com.terraformation.backend.db.default_schema.tables.records.WithdrawalCustomPurposesRecord
 import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -19,6 +20,7 @@ class WithdrawalCustomPurposeHelperTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
+    every { user.canCreateWithdrawalCustomPurpose(any()) } returns true
   }
 
   @Nested
