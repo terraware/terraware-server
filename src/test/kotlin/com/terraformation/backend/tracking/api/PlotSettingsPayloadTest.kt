@@ -80,6 +80,32 @@ class PlotSettingsPayloadTest {
   }
 
   @Test
+  fun `direct edit preserves values supplied after request conversion`() {
+    val direct =
+        entry.copy(mode = PlotSelectionMode.Direct, numPermanentPlots = 7, numTemporaryPlots = 2)
+    val edit =
+        UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(direct))
+            .toEdits(site)
+            .getValue(entry.stratumId)
+            .getValue(ObservationType.Monitoring)
+    val latest =
+        StratumPlotCounts(
+            variance = BigDecimal("75"),
+            studentsT = BigDecimal("1.96"),
+            errorMargin = BigDecimal("9.8"),
+        )
+    assertEquals(
+        latest.copy(
+            mode = PlotSelectionMode.Direct,
+            plotPrecisionLevel = null,
+            numPermanentPlots = 7,
+            numTemporaryPlots = 2,
+        ),
+        edit(latest),
+    )
+  }
+
+  @Test
   fun `response maps all observation types and rounds only variability`() {
     val counts =
         StratumPlotCounts(

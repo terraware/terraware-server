@@ -55,7 +55,7 @@ class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
     plantingSiteStore.updatePlotSelectionSettings(
         id,
         payload.defaultPlotPrecisionLevel,
-        payload.toSettings(site),
+        payload.toEdits(site),
     )
     return getPlotSettings(id)
   }
@@ -72,20 +72,28 @@ data class UpdatePlotSettingsRequestPayload(
 ) {
   fun toSettings(
       site: ExistingPlantingSiteModel
-  ): Map<StratumId, Map<ObservationType, StratumPlotCounts>> {
+  ): Map<StratumId, Map<ObservationType, StratumPlotCounts>> =
+      toEdits(site).mapValues { (id, edits) ->
+        val stratum = site.strata.first { it.id == id }
+        edits.mapValues { (type, edit) -> edit(stratum.plotCounts(type)) }
+      }
+
+  fun toEdits(
+      site: ExistingPlantingSiteModel
+  ): Map<StratumId, Map<ObservationType, (StratumPlotCounts) -> StratumPlotCounts>> {
     require(strata.map { it.stratumId to it.observationType }.distinct().size == strata.size) {
       "Duplicate stratum and observation type"
     }
     return strata
         .groupBy { it.stratumId }
         .mapValues { (id, entries) ->
-          val stratum =
-              site.strata.firstOrNull { it.id == id } ?: throw StratumNotFoundException(id)
-          entries.associate {
-            it.observationType to
-                stratum
-                    .plotCounts(it.observationType)
-                    .applySetting(it.observationType, it.toSetting())
+          if (site.strata.none { it.id == id }) throw StratumNotFoundException(id)
+          entries.associate { entry ->
+            val setting = entry.toSetting()
+            entry.observationType to
+                { current: StratumPlotCounts ->
+                  current.applySetting(entry.observationType, setting)
+                }
           }
         }
   }
