@@ -125,9 +125,9 @@ data class StratumPlotCounts(
   fun recalculatePlotCounts(observationType: ObservationType): StratumPlotCounts {
     val baseline = observationType == ObservationType.BaselineSurvey
     val counts =
-        PlotCountCalculator.calculatePlotCounts(
+        PlotCountCalculator.calculatePlotCountsFromVariance(
             studentsT = studentsT,
-            variability = variability,
+            variance = variance,
             targetMarginOfError = errorMargin,
         )
     return copy(
