@@ -2451,6 +2451,7 @@ class PlantingSiteStore(
                     STRATA.INITIAL_PLANTING_DENSITY,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
+                    latestStratumVariabilityField,
                     STRATA.NAME,
                     STRATA.STABLE_ID,
                     substrataField,
@@ -2479,6 +2480,7 @@ class PlantingSiteStore(
                 initialPlantingDensity = record[STRATA.INITIAL_PLANTING_DENSITY]!!,
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
+                latestObservationVariability = record[latestStratumVariabilityField],
                 name = record[STRATA.NAME]!!,
                 plantPlotCounts =
                     record[plotParametersField]!!.getValue(ObservationType.Monitoring),

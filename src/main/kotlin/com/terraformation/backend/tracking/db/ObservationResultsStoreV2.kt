@@ -706,6 +706,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY,
                     OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV,
                     OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY,
+                    observationStratumVariabilityField,
                 )
                 .from(STRATUM_HISTORIES)
                 .leftJoin(OBSERVATION_STRATUM_RESULTS)
@@ -805,6 +806,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 survivalRateStdDev = survivalRateStdDev,
                 totalSpecies = totalLiveSpeciesExceptUnknown,
                 totalPlants = totalPlants,
+                variability = record[observationStratumVariabilityField],
             )
           }
         }
