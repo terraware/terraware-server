@@ -132,21 +132,35 @@ class VariabilityCalculatorTest {
 
   @ParameterizedTest
   @CsvSource(
-      "10,11,12,",
-      "10,8,9,",
-      "30,32,33,",
-      "30,27,28,",
-      "20,22,23,Increase",
-      "20,17,18,Decrease",
+      "10,11,1,10,12,1,11,",
+      "10,8,1,7,9,1,8,",
+      "30,32,1,31,33,1,32,",
+      "30,27,1,26,28,1,27,",
+      "20,22,1,21,23,1,22,Increase",
+      "20,17,1,16,18,1,17,Decrease",
+      "3,1,1,1,1,1,1,",
+      "4,2,2,1,2,2,1,",
+      "1,2,2,1,2,2,1,Increase",
+      "0,1,1,1,1,1,1,Increase",
+      "0,0,1,1,0,1,1,Increase",
+      "1,2,0,2,2,0,2,",
+      "4,2,0,2,2,0,2,Decrease",
+      "0,0,0,0,0,0,0,",
   )
   fun `recommendations require at least two plots and ten percent`(
       currentTotal: Int,
       bestTotal: Int,
+      bestPermanent: Int,
+      bestTemporary: Int,
       highTotal: Int,
+      highPermanent: Int,
+      highTemporary: Int,
       expectedType: PlotCountRecommendationType?,
   ) {
-    val best = PlotCountEstimate(30.0, CalculatedPlotCounts(bestTotal, 1, bestTotal - 1))
-    val high = PlotCountEstimate(40.0, CalculatedPlotCounts(highTotal, 1, highTotal - 1))
+    val best =
+        PlotCountEstimate(30.0, CalculatedPlotCounts(bestTotal, bestPermanent, bestTemporary))
+    val high =
+        PlotCountEstimate(40.0, CalculatedPlotCounts(highTotal, highPermanent, highTemporary))
     val range = RecommendedPlotCountRange(best, best, high)
 
     val result = VariabilityCalculator.recommendation(currentTotal, range)

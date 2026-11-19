@@ -96,8 +96,10 @@ object VariabilityCalculator {
       currentTotal: Int,
       range: RecommendedPlotCountRange,
   ): PlotCountRecommendation? {
-    val increase = range.best.plotCounts.total.toLong() - currentTotal
-    val decrease = currentTotal.toLong() - range.high.plotCounts.total
+    val bestTotal = range.best.plotCounts.permanent.toLong() + range.best.plotCounts.temporary
+    val highTotal = range.high.plotCounts.permanent.toLong() + range.high.plotCounts.temporary
+    val increase = bestTotal - currentTotal
+    val decrease = currentTotal - highTotal
     if (increase >= 2 && increase * 10 >= currentTotal) {
       return PlotCountRecommendation(PlotCountRecommendationType.Increase, range.best)
     }
