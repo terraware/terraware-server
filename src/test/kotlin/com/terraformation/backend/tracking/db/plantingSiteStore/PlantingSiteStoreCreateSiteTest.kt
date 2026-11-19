@@ -205,38 +205,50 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               strata =
                   listOf(
                       StratumModel.create(
-                          baselineErrorMargin = BigDecimal(31),
-                          baselineNumTemporaryPlots = 65,
-                          baselineStudentsT = BigDecimal(34),
-                          baselineVariance = BigDecimal(35),
-                          biomassErrorMargin = BigDecimal(21),
-                          biomassNumPermanentPlots = 22,
-                          biomassNumTemporaryPlots = 23,
-                          biomassStudentsT = BigDecimal(24),
-                          biomassVariance = BigDecimal(25),
-                          boundary = stratum1Boundary,
-                          initialPlantingDensity = BigDecimal(6),
-                          name = "Stratum 1",
-                          plantErrorMargin = BigDecimal(1),
-                          plantNumPermanentPlots = 3,
-                          plantNumTemporaryPlots = 4,
-                          plantStudentsT = BigDecimal(5),
-                          plantVariance = BigDecimal(7),
-                          substrata =
-                              listOf(
-                                  SubstratumModel.create(
-                                      boundary = substratum11Boundary,
-                                      fullName = "Stratum 1-Substratum 1",
-                                      name = "Substratum 1",
+                              baselineErrorMargin = BigDecimal(31),
+                              baselineNumTemporaryPlots = 65,
+                              baselineStudentsT = BigDecimal(34),
+                              baselineVariance = BigDecimal(35),
+                              biomassErrorMargin = BigDecimal(21),
+                              biomassNumPermanentPlots = 22,
+                              biomassNumTemporaryPlots = 23,
+                              biomassStudentsT = BigDecimal(24),
+                              biomassVariance = BigDecimal(25),
+                              boundary = stratum1Boundary,
+                              initialPlantingDensity = BigDecimal(6),
+                              name = "Stratum 1",
+                              plantErrorMargin = BigDecimal(1),
+                              plantNumPermanentPlots = 3,
+                              plantNumTemporaryPlots = 4,
+                              plantStudentsT = BigDecimal(5),
+                              plantVariance = BigDecimal(7),
+                              substrata =
+                                  listOf(
+                                      SubstratumModel.create(
+                                          boundary = substratum11Boundary,
+                                          fullName = "Stratum 1-Substratum 1",
+                                          name = "Substratum 1",
+                                      ),
+                                      SubstratumModel.create(
+                                          boundary = substratum12Boundary,
+                                          fullName = "Stratum 1-Substratum 2",
+                                          name = "Substratum 2",
+                                      ),
                                   ),
-                                  SubstratumModel.create(
-                                      boundary = substratum12Boundary,
-                                      fullName = "Stratum 1-Substratum 2",
-                                      name = "Substratum 2",
-                                  ),
-                              ),
-                          targetPlantDensity = BigDecimal(8),
-                      ),
+                              targetPlantDensity = BigDecimal(8),
+                          )
+                          .let { stratum ->
+                            stratum.copy(
+                                biomassPlotCounts =
+                                    stratum.biomassPlotCounts.copy(
+                                        plotPrecisionLevel = PlotPrecisionLevel.Low
+                                    ),
+                                plantPlotCounts =
+                                    stratum.plantPlotCounts.copy(
+                                        plotPrecisionLevel = PlotPrecisionLevel.High
+                                    ),
+                            )
+                          },
                       StratumModel.create(
                           boundary = stratum2Boundary,
                           name = "Stratum 2",
@@ -303,6 +315,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   .apply {
                     stratumId = actualStrata.getValue(stratum.name).id
                     observationTypeId = type
+                    plotPrecisionLevelId = stratum.plotCounts(type).plotPrecisionLevel
+                    plotSelectionModeId = stratum.plotCounts(type).mode
                   }
             }
           }

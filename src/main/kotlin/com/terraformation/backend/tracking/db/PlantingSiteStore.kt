@@ -1445,6 +1445,8 @@ class PlantingSiteStore(
                   StratumPlotSelectionParametersRecord(
                       stratumId = stratumId,
                       observationTypeId = type,
+                      plotSelectionModeId = parameters.mode,
+                      plotPrecisionLevelId = parameters.plotPrecisionLevel,
                       errorMargin = parameters.errorMargin,
                       numPermanentPlots = parameters.numPermanentPlots,
                       numTemporaryPlots = parameters.numTemporaryPlots,
@@ -2443,6 +2445,8 @@ class PlantingSiteStore(
                         NUM_PERMANENT_PLOTS,
                         NUM_TEMPORARY_PLOTS,
                         OBSERVATION_TYPE_ID,
+                        PLOT_SELECTION_MODE_ID,
+                        PLOT_PRECISION_LEVEL_ID,
                         STUDENTS_T,
                         VARIANCE,
                     )
@@ -2454,6 +2458,8 @@ class PlantingSiteStore(
                 record[OBSERVATION_TYPE_ID]!! to
                     StratumPlotCounts(
                         errorMargin = record[ERROR_MARGIN]!!,
+                        mode = record[PLOT_SELECTION_MODE_ID]!!,
+                        plotPrecisionLevel = record[PLOT_PRECISION_LEVEL_ID],
                         numPermanentPlots = record[NUM_PERMANENT_PLOTS]!!,
                         numTemporaryPlots = record[NUM_TEMPORARY_PLOTS]!!,
                         studentsT = record[STUDENTS_T]!!,

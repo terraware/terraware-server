@@ -129,6 +129,7 @@ data class PlantingSiteMapEditModel(
                   exclusion = exclusion,
                   name = stratum.name,
                   stableId = stableIdAllocator.allocate(stratum.name),
+                  plotPrecisionLevel = existing.defaultPlotPrecisionLevel,
                   substrata = substrata,
               )
             } else {

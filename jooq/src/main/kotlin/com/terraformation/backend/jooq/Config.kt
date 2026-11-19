@@ -362,12 +362,13 @@ val ENUM_TABLES =
                 EnumTable("planting_types"),
                 EnumTable(
                     "plot_precision_levels",
-                    listOf(".*\\.default_plot_precision_level_id"),
+                    listOf(".*\\.plot_precision_level_id", ".*\\.default_plot_precision_level_id"),
                     additionalColumns =
                         listOf(
                             EnumTableColumnInfo("target_margin_of_error", "java.math.BigDecimal")
                         ),
                 ),
+                EnumTable("plot_selection_modes"),
                 EnumTable(
                     "recorded_plant_statuses",
                     listOf("recorded_plants\\.status_id"),

@@ -4,6 +4,8 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.StratumModel.Companion.DEFAULT_ERROR_MARGIN
@@ -43,13 +45,18 @@ data class PermanentPlotPlacement(
 
 data class StratumPlotCounts(
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+    val mode: PlotSelectionMode = PlotSelectionMode.PrecisionLevel,
     val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
     val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
+    val plotPrecisionLevel: PlotPrecisionLevel? =
+        if (mode == PlotSelectionMode.PrecisionLevel) PlotPrecisionLevel.Medium else null,
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
     val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
   override fun equals(other: Any?) =
       other is StratumPlotCounts &&
+          plotPrecisionLevel == other.plotPrecisionLevel &&
+          mode == other.mode &&
           numPermanentPlots == other.numPermanentPlots &&
           numTemporaryPlots == other.numTemporaryPlots &&
           errorMargin.equalsIgnoreScale(other.errorMargin) &&
@@ -58,6 +65,8 @@ data class StratumPlotCounts(
 
   override fun hashCode() =
       Objects.hash(
+          plotPrecisionLevel,
+          mode,
           errorMargin.stripTrailingZeros(),
           numPermanentPlots,
           numTemporaryPlots,
@@ -655,16 +664,11 @@ data class StratumModel<
       )
 
   companion object {
-    // Default values of the three parameters that determine how many monitoring plots should be
-    // required in each observation. The "Student's t" value is a constant based on a 90%
-    // confidence level and should rarely need to change, but the other two will be adjusted by
-    // admins based on the conditions at the planting site. These defaults mean that strata
-    // will have 18 permanent plots and 6 temporary plots.
-    val DEFAULT_ERROR_MARGIN = BigDecimal(10)
+    val DEFAULT_ERROR_MARGIN = BigDecimal(15)
     val DEFAULT_STUDENTS_T = BigDecimal("1.645")
-    val DEFAULT_VARIANCE = BigDecimal(850)
-    const val DEFAULT_NUM_PERMANENT_PLOTS = 18
-    const val DEFAULT_NUM_TEMPORARY_PLOTS = 6
+    val DEFAULT_VARIANCE = BigDecimal(900)
+    const val DEFAULT_NUM_PERMANENT_PLOTS = 8
+    const val DEFAULT_NUM_TEMPORARY_PLOTS = 3
 
     /** Initial planting density to use if not included in stratum properties. */
     val DEFAULT_INITIAL_PLANTING_DENSITY = BigDecimal(1500)
@@ -675,7 +679,10 @@ data class StratumModel<
         substrata: List<NewSubstratumModel>,
         exclusion: MultiPolygon? = null,
         initialPlantingDensity: BigDecimal = DEFAULT_INITIAL_PLANTING_DENSITY,
-        plantErrorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+        mode: PlotSelectionMode = PlotSelectionMode.PrecisionLevel,
+        plotPrecisionLevel: PlotPrecisionLevel? = null,
+        plantErrorMargin: BigDecimal =
+            (plotPrecisionLevel ?: PlotPrecisionLevel.Medium).targetMarginOfError,
         plantNumPermanentPlots: Int? = null,
         plantNumTemporaryPlots: Int? = null,
         plantStudentsT: BigDecimal = DEFAULT_STUDENTS_T,
@@ -692,6 +699,10 @@ data class StratumModel<
         biomassStudentsT: BigDecimal = plantStudentsT,
         biomassVariance: BigDecimal = plantVariance,
     ): NewStratumModel {
+      val selectedPlotPrecisionLevel =
+          if (mode == PlotSelectionMode.PrecisionLevel)
+              plotPrecisionLevel ?: PlotPrecisionLevel.Medium
+          else null
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
       val (defaultBaselinePermanentPlots, defaultBaselineTemporaryPlots) =
           calculatePlotCounts(baselineErrorMargin, baselineStudentsT, baselineVariance)
@@ -705,18 +716,22 @@ data class StratumModel<
           baselinePlotCounts =
               StratumPlotCounts(
                   errorMargin = baselineErrorMargin,
+                  mode = mode,
                   numPermanentPlots = 0,
                   numTemporaryPlots =
                       baselineNumTemporaryPlots
                           ?: (defaultBaselinePermanentPlots + defaultBaselineTemporaryPlots),
+                  plotPrecisionLevel = selectedPlotPrecisionLevel,
                   studentsT = baselineStudentsT,
                   variance = baselineVariance,
               ),
           biomassPlotCounts =
               StratumPlotCounts(
                   errorMargin = biomassErrorMargin,
+                  mode = mode,
                   numPermanentPlots = biomassNumPermanentPlots ?: defaultBiomassPermanentPlots,
                   numTemporaryPlots = biomassNumTemporaryPlots ?: defaultBiomassTemporaryPlots,
+                  plotPrecisionLevel = selectedPlotPrecisionLevel,
                   studentsT = biomassStudentsT,
                   variance = biomassVariance,
               ),
@@ -728,8 +743,10 @@ data class StratumModel<
           plantPlotCounts =
               StratumPlotCounts(
                   errorMargin = plantErrorMargin,
+                  mode = mode,
                   numPermanentPlots = plantNumPermanentPlots ?: defaultPlantPermanentPlots,
                   numTemporaryPlots = plantNumTemporaryPlots ?: defaultPlantTemporaryPlots,
+                  plotPrecisionLevel = selectedPlotPrecisionLevel,
                   studentsT = plantStudentsT,
                   variance = plantVariance,
               ),
