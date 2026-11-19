@@ -102,13 +102,37 @@ data class UpdatePlotSettingsRequestPayload(
 data class UpdateStratumPlotSettingPayload(
     val stratumId: StratumId,
     val observationType: ObservationType,
+    @Schema(
+        description =
+            "Selects required fields: PrecisionLevel requires plotPrecisionLevel; Custom requires confidenceLevel, targetMarginOfError, and variability; Direct requires numPermanentPlots and numTemporaryPlots. Fields for other modes are ignored."
+    )
     val mode: PlotSelectionMode,
+    @Schema(description = "Required in PrecisionLevel mode; ignored otherwise.")
     val plotPrecisionLevel: PlotPrecisionLevel? = null,
-    @Schema(description = "Confidence percentage: 70, 80, 90, 95, or 99.")
+    @Schema(
+        description =
+            "Required in Custom mode; ignored otherwise. Confidence percentage: 70, 80, 90, 95, or 99."
+    )
     val confidenceLevel: Int? = null,
+    @Schema(
+        description =
+            "Required in Custom mode; ignored otherwise. Range 5–25, with at most one decimal place."
+    )
     val targetMarginOfError: BigDecimal? = null,
+    @Schema(
+        description =
+            "Required in Custom mode; ignored otherwise. Range 1–200, with at most one decimal place."
+    )
     val variability: BigDecimal? = null,
+    @Schema(
+        description =
+            "Required in Direct mode; ignored otherwise. At least one, except BaselineSurvey requires zero."
+    )
     val numPermanentPlots: Int? = null,
+    @Schema(
+        description =
+            "Required in Direct mode; ignored otherwise. Nonnegative, except BaselineSurvey requires at least one."
+    )
     val numTemporaryPlots: Int? = null,
 ) {
   fun toSetting(): PlotSelectionSetting =
