@@ -17,6 +17,7 @@ import com.terraformation.backend.db.accelerator.IndicatorFrequency
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -463,6 +464,15 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     inner class CommonIndicators {
       @Test
       fun `inserts new record`() {
+        insertOrganization()
+        val configuredProjects =
+            List(2) {
+              val projectId = insertProject()
+              insertProjectReportConfig()
+              projectId
+            }
+        insertProject()
+
         val existingIndicatorId =
             insertCommonIndicator(
                 category = IndicatorCategory.Climate,
@@ -477,22 +487,36 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val model =
             NewCommonIndicatorModel(
                 id = null,
+                active = false,
                 category = IndicatorCategory.ProjectObjectives,
                 classId = IndicatorClass.NotCumulative,
                 description = "Project objectives indicator description",
                 frequency = IndicatorFrequency.MRVCycle,
-                isPublishable = false,
+                isPublishable = true,
                 level = IndicatorLevel.Goal,
                 name = "Project Objectives Indicator",
                 notes = "Creation notes",
                 precision = 2,
                 primaryDataSource = "Creation source",
-                refId = null,
+                refId = "creation",
                 tfOwner = "Biodiversity",
                 unit = "meters",
             )
 
         val newIndicatorId = store.createCommonIndicator(model)
+        assertTableEquals(
+            configuredProjects.map { projectId ->
+              ProjectCommonIndicatorsRecord(
+                  active = false,
+                  commonIndicatorId = newIndicatorId,
+                  isPublishable = true,
+                  notes = "Creation notes",
+                  primaryDataSource = "Creation source",
+                  projectId = projectId,
+                  refId = "creation",
+              )
+            }
+        )
 
         assertTableEquals(
             listOf(
@@ -511,19 +535,19 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     unit = "%",
                 ),
                 CommonIndicatorsRecord(
-                    id = newIndicatorId,
-                    active = true,
+                    active = false,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     classId = IndicatorClass.NotCumulative,
                     description = "Project objectives indicator description",
                     frequencyId = IndicatorFrequency.MRVCycle,
-                    isPublishable = false,
+                    id = newIndicatorId,
+                    isPublishable = true,
                     levelId = IndicatorLevel.Goal,
                     name = "Project Objectives Indicator",
                     notes = "Creation notes",
                     precision = 2,
                     primaryDataSource = "Creation source",
-                    refId = null,
+                    refId = "creation",
                     tfOwner = "Biodiversity",
                     unit = "meters",
                 ),
@@ -796,6 +820,64 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 )
             )
         )
+        insertOrganization()
+        val otherIndicatorId = insertCommonIndicator()
+        val projectIds =
+            List(2) {
+              val projectId = insertProject()
+              insertProjectCommonIndicator(commonIndicatorId = existingIndicatorId, refId = "old")
+              projectId
+            }
+        insertProjectCommonIndicator(commonIndicatorId = otherIndicatorId, refId = "other")
+
+        val expected =
+            projectIds.map { projectId ->
+              ProjectCommonIndicatorsRecord(
+                  active = false,
+                  commonIndicatorId = existingIndicatorId,
+                  isPublishable = true,
+                  notes = "Notes",
+                  primaryDataSource = "Source",
+                  projectId = projectId,
+                  refId = "2.0",
+              )
+            } +
+                ProjectCommonIndicatorsRecord(
+                    active = true,
+                    commonIndicatorId = otherIndicatorId,
+                    isPublishable = false,
+                    projectId = inserted.projectId,
+                    refId = "other",
+                )
+        store.updateCommonIndicator(existingIndicatorId) {
+          it.copy(
+              active = false,
+              isPublishable = true,
+              notes = "Notes",
+              primaryDataSource = "Source",
+              refId = "2.0",
+          )
+        }
+        assertTableEquals(expected)
+        store.updateCommonIndicator(existingIndicatorId) {
+          it.copy(
+              active = true,
+              isPublishable = false,
+              notes = null,
+              primaryDataSource = null,
+              refId = null,
+          )
+        }
+        expected
+            .filter { it.commonIndicatorId == existingIndicatorId }
+            .forEach {
+              it.active = true
+              it.isPublishable = false
+              it.notes = null
+              it.primaryDataSource = null
+              it.refId = null
+            }
+        assertTableEquals(expected)
       }
 
       @Test
