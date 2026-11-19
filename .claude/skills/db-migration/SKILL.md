@@ -14,7 +14,7 @@ Steps:
 
 1. Determine the migration's version timestamp.
 2. Create the migration file.
-3. Add enum values to R__TypeCodes.sql (if any enum tables).
+3. Add enum values to R__TypeCodes.sql (if any enum tables), and insert any codes added since the latest release in migrations that use them.
 4. Add schema documentation to R__Comments.sql.
 5. Update Config.kt (EnumTable, IdWrapper, and/or Embeddable entries as needed).
 6. Add tables to SchemaDocsGenerator.kt.
@@ -141,6 +141,21 @@ VALUES (1, 'Active Status', TRUE),
 ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
                                active = excluded.active;
 ```
+
+### Insert recently added type codes in migrations that use them
+
+If a versioned migration uses specific type codes (e.g., in a backfill) that were added to `R__TypeCodes.sql` after the latest release, it must insert those codes with `INSERT ... ON CONFLICT` before using them.
+
+Flyway runs repeatable migrations like `R__TypeCodes.sql` only after all pending versioned migrations, so on a database that was last migrated by the previous release, the new codes don't exist yet while versioned migrations run. A migration that depends on them would fail and break deployment.
+
+Release tags are named `v<YYYYMMDD>.<N>`, e.g., `v20261119.1`. To see what changed since the latest release:
+
+```
+LAST_TAG=$(git tag --list --sort=creatordate 'v[0-9]*' | tail -n1)
+git diff "$LAST_TAG" -- src/main/resources/db/migration/R__TypeCodes.sql
+```
+
+Local dev databases that are further behind can still hit this; if a migration fails locally because of a missing type code, insert the missing values by hand.
 
 ## Step 4: Add Schema Documentation to R__Comments.sql
 
