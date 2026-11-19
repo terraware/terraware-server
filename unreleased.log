@@ -1,1 +1,2 @@
+cd1cdb88 Require migrations to insert type codes added since the last release (#5466)
 b5f78fdd Document requiring a password on Keycloak registration (#5465)
