@@ -51,7 +51,7 @@ class ProjectIndicatorsTable(tables: SearchTables) : SearchTable() {
       )
 
   override val defaultOrderFields: List<OrderField<*>>
-    get() = listOf(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
+    get() = listOf(PROJECT_INDICATORS.REF_ID.asc().nullsLast(), PROJECT_INDICATORS.ID)
 
   override fun conditionForVisibility(table: Table<*>): Condition {
     return if (currentUser().canReadAllAcceleratorDetails()) {

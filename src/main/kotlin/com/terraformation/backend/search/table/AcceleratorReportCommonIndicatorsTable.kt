@@ -67,7 +67,11 @@ class AcceleratorReportCommonIndicatorsTable(tables: SearchTables) : SearchTable
 
   override val defaultOrderFields: List<OrderField<*>>
     get() =
-        listOf(indicatorsForOrder.REF_ID, indicatorsForOrder.ID, REPORT_COMMON_INDICATORS.REPORT_ID)
+        listOf(
+            indicatorsForOrder.REF_ID.asc().nullsLast(),
+            indicatorsForOrder.ID,
+            REPORT_COMMON_INDICATORS.REPORT_ID,
+        )
 
   // Not inherited from the reports table because these rows are also reachable as sublists of the
   // indicators, which aren't restricted to an organization, and sublists only apply a table's own

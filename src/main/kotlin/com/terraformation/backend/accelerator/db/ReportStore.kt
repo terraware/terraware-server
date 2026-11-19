@@ -1771,7 +1771,7 @@ class ReportStore(
                         .and(COMMON_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 )
                 .where(COMMON_INDICATORS.ACTIVE.isTrue)
-                .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
+                .orderBy(COMMON_INDICATORS.REF_ID.asc().nullsLast(), COMMON_INDICATORS.ID)
         )
         .convertFrom { results ->
           results.map {
@@ -1861,7 +1861,7 @@ class ReportStore(
                 )
                 .where(PROJECT_INDICATORS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 .and(PROJECT_INDICATORS.ACTIVE.isTrue)
-                .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
+                .orderBy(PROJECT_INDICATORS.REF_ID.asc().nullsLast(), PROJECT_INDICATORS.ID)
         )
         .convertFrom { results ->
           results.map {
@@ -2272,7 +2272,10 @@ class ReportStore(
                         .and(AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 )
                 .where(AUTO_CALCULATED_INDICATORS.ACTIVE.isTrue)
-                .orderBy(AUTO_CALCULATED_INDICATORS.REF_ID, AUTO_CALCULATED_INDICATORS.ID)
+                .orderBy(
+                    AUTO_CALCULATED_INDICATORS.REF_ID.asc().nullsLast(),
+                    AUTO_CALCULATED_INDICATORS.ID,
+                )
         )
         .convertFrom { results ->
           results.map {

@@ -95,7 +95,7 @@ class ReportIndicatorStore(
     return dslContext
         .selectFrom(COMMON_INDICATORS)
         .where(condition)
-        .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
+        .orderBy(COMMON_INDICATORS.REF_ID.asc().nullsLast(), COMMON_INDICATORS.ID)
         .fetch { CommonIndicatorModel.of(it) }
   }
 
@@ -178,15 +178,19 @@ class ReportIndicatorStore(
     return dslContext
         .selectFrom(PROJECT_INDICATORS)
         .where(condition)
-        .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
+        .orderBy(PROJECT_INDICATORS.REF_ID.asc().nullsLast(), PROJECT_INDICATORS.ID)
         .fetch { ProjectIndicatorModel.of(it) }
   }
 
   // all users can access auto calculated indicators
   fun fetchAutoCalculatedIndicators(): List<AutoCalculatedIndicator> =
       with(AUTO_CALCULATED_INDICATORS) {
-        dslContext.select(ID).from(AUTO_CALCULATED_INDICATORS).orderBy(REF_ID).fetch {
-          it[ID.asNonNullable()]
-        }
+        dslContext
+            .select(ID)
+            .from(AUTO_CALCULATED_INDICATORS)
+            .orderBy(REF_ID.asc().nullsLast(), ID)
+            .fetch {
+              it[ID.asNonNullable()]
+            }
       }
 }

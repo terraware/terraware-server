@@ -138,6 +138,31 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class Fetch {
     @Test
+    fun `orders missing reference IDs last with indicator ID tiebreaks`() {
+      insertProjectReportConfig()
+      val reportId = insertReport()
+      val commonIds =
+          listOf(null, "2.0", null, "1.0", "1.0").map { refId ->
+            insertCommonIndicator(refId = refId)
+          }
+      val projectIds =
+          listOf(null, "2.0", null, "1.0", "1.0").map { refId ->
+            insertProjectIndicator(refId = refId)
+          }
+      val report = store.fetchOne(reportId, includeIndicators = true)
+      assertEquals(
+          listOf(commonIds[3], commonIds[4], commonIds[1], commonIds[0], commonIds[2]),
+          report.commonIndicators.map { it.indicator.id },
+          "Common indicator order",
+      )
+      assertEquals(
+          listOf(projectIds[3], projectIds[4], projectIds[1], projectIds[0], projectIds[2]),
+          report.projectIndicators.map { it.indicator.id },
+          "Project indicator order",
+      )
+    }
+
+    @Test
     fun `returns report details`() {
       val configId = insertProjectReportConfig()
       val tfUser = insertUser()

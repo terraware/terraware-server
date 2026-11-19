@@ -68,7 +68,7 @@ class AcceleratorReportProjectIndicatorsTable(tables: SearchTables) : SearchTabl
   override val defaultOrderFields: List<OrderField<*>>
     get() =
         listOf(
-            indicatorsForOrder.REF_ID,
+            indicatorsForOrder.REF_ID.asc().nullsLast(),
             indicatorsForOrder.ID,
             REPORT_PROJECT_INDICATORS.REPORT_ID,
         )

@@ -335,7 +335,7 @@ class PublishedReportStore(
                         .and(baselineProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
                 )
                 .where(publishedIndicatorIdField.isNotNull)
-                .orderBy(indicatorReferenceField)
+                .orderBy(indicatorReferenceField.asc().nullsLast(), indicatorTableIdField)
         )
         .convertFrom { result ->
           result.map { record ->

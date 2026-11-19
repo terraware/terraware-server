@@ -23,7 +23,7 @@ data class ProjectIndicatorModel<ID : ProjectIndicatorId?>(
     val primaryDataSource: String? = null,
     val precision: Int,
     val projectId: ProjectId,
-    val refId: String,
+    val refId: String?,
     val tfOwner: String? = null,
     val unit: String? = null,
 ) {
@@ -44,7 +44,7 @@ data class ProjectIndicatorModel<ID : ProjectIndicatorId?>(
             primaryDataSource = record[PRIMARY_DATA_SOURCE],
             precision = record[PRECISION]!!,
             projectId = record[PROJECT_ID]!!,
-            refId = record[REF_ID]!!,
+            refId = record[REF_ID],
             tfOwner = record[TF_OWNER],
             unit = record[UNIT],
         )
