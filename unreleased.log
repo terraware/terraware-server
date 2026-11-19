@@ -1,2 +1,5 @@
+a694abc6 SW-9353 Add plot count and expected precision calculations (#5411)
+b22a4cd1 SW-9352 Add plot selection modes and per-stratum precision levels (#5442)
+14a1de3c SW-9352 Add default plot precision level to planting sites (#5454)
 cd1cdb88 Require migrations to insert type codes added since the last release (#5466)
 b5f78fdd Document requiring a password on Keycloak registration (#5465)
