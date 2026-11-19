@@ -13,6 +13,24 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 
 class PlotSelectionSettingTest {
+  @Test
+  fun `recalculation preserves exact integer totals from variance`() {
+    val counts =
+        StratumPlotCounts(
+            studentsT = BigDecimal("1.96"),
+            variance = BigDecimal("75"),
+            errorMargin = BigDecimal("9.8"),
+        )
+    assertEquals(
+        counts.copy(numPermanentPlots = 2, numTemporaryPlots = 1),
+        counts.recalculatePlotCounts(ObservationType.Monitoring),
+    )
+    assertEquals(
+        counts.copy(numPermanentPlots = 0, numTemporaryPlots = 3),
+        counts.recalculatePlotCounts(ObservationType.BaselineSurvey),
+    )
+  }
+
   private val initial =
       StratumPlotCounts(
           mode = PlotSelectionMode.Direct,
