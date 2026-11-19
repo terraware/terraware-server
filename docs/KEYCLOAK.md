@@ -42,6 +42,12 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
       - Remember me
       - Email as username
       - Login with email
+   6. Click "Authentication" in the left navbar.
+   7. On the "Flows" tab, click "registration."
+   8. Click the gear icon on the "Password Validation" line.
+   9. Set "Alias" to `registration-password-config`.
+   10. Enable "Always set password on register form."
+   11. Click "Save."
 3. Create a client for terraware-server to use for its Keycloak admin API requests.
    1. Click "Clients" in the left navbar.
    2. Click "Create client."
