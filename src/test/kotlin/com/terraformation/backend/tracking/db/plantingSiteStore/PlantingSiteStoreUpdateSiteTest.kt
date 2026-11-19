@@ -3,8 +3,10 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.records.PlantingSitesRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
@@ -24,6 +26,37 @@ import org.springframework.security.access.AccessDeniedException
 internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class UpdatePlantingSite {
+    @Test
+    fun `updates default plot precision level without changing existing strata`() {
+      insertPlantingSite(x = null, defaultPlotPrecisionLevel = PlotPrecisionLevel.Medium)
+      insertStratum()
+      val initialStrata =
+          store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata
+
+      store.updatePlantingSite(inserted.plantingSiteId) {
+        it.copy(defaultPlotPrecisionLevel = PlotPrecisionLevel.High)
+      }
+
+      assertTableEquals(
+          PlantingSitesRecord(
+              id = inserted.plantingSiteId,
+              organizationId = inserted.organizationId,
+              name = "Site 1",
+              createdBy = inserted.userId,
+              createdTime = clock.instant,
+              modifiedBy = inserted.userId,
+              modifiedTime = clock.instant,
+              survivalRateIncludesTempPlots = false,
+              defaultPlotPrecisionLevelId = PlotPrecisionLevel.High,
+          )
+      )
+      assertEquals(
+          initialStrata,
+          store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata,
+          "Existing strata",
+      )
+    }
+
     @Test
     fun `updates values`() {
       val initialModel =
@@ -56,6 +89,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSitesRow(
+                  defaultPlotPrecisionLevelId = initialModel.defaultPlotPrecisionLevel,
                   areaHa = BigDecimal("4.000"),
                   boundary = newBoundary,
                   gridOrigin = initialModel.gridOrigin,

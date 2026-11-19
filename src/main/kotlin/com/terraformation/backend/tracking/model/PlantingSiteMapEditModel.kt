@@ -159,6 +159,7 @@ data class PlantingSiteMapEditModel(
         gridOrigin = existing.gridOrigin,
         name = existing.name,
         organizationId = existing.organizationId,
+        defaultPlotPrecisionLevel = existing.defaultPlotPrecisionLevel,
         projectId = existing.projectId,
         strata = desiredStrata,
         timeZone = existing.timeZone,
