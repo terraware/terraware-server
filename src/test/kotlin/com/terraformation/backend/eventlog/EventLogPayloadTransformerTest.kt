@@ -34,12 +34,14 @@ import com.terraformation.backend.eventlog.api.AccessionSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassAdditionalSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
+import com.terraformation.backend.eventlog.api.CalculatedValuePayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
 import com.terraformation.backend.eventlog.api.EventLogEntryPayload
 import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
+import com.terraformation.backend.eventlog.api.ObservationPlotSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0DensitySubjectPayload
@@ -244,6 +246,39 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         "Field name",
     )
     assertEquals("Usuario anterior", payloads[1].userName, "Username of deleted user")
+  }
+
+  @Test
+  fun `keeps calculated values with their field change and localizes both labels`() {
+    val subject =
+        ObservationPlotSubjectPayload(
+            "Observation plot 1",
+            monitoringPlotId,
+            observationId,
+            plantingSiteId,
+            "Observation plot",
+        )
+    val field =
+        FieldsUpdatedPersistentEvent.UpdatedField(
+            fieldName = "notes",
+            changedFrom = listOf("before"),
+            changedTo = listOf("after"),
+            group = "Survey",
+            calculatedValues =
+                listOf(FieldsUpdatedPersistentEvent.CalculatedValue("conditions", listOf("4"))),
+        )
+
+    assertEquals(
+        FieldUpdatedActionPayload(
+            fieldName = "notas de campo",
+            changedFrom = listOf("before"),
+            changedTo = listOf("after"),
+            group = "Survey",
+            calculatedValues =
+                listOf(CalculatedValuePayload("condiciones de la parcela", listOf("4"))),
+        ),
+        Locales.SPANISH.use { transformer.toFieldUpdatedAction(subject, field) },
+    )
   }
 
   @Test

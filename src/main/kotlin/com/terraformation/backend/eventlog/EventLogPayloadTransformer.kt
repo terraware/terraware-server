@@ -10,6 +10,7 @@ import com.terraformation.backend.eventlog.api.BiomassDetailsSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassQuadratSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
+import com.terraformation.backend.eventlog.api.CalculatedValuePayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
@@ -100,13 +101,12 @@ class EventLogPayloadTransformer(
     val users = simpleUserStore.fetchSimpleUsersById(entries.map { it.createdBy }.distinct())
 
     return entries.flatMap { entry ->
-      val actions = getActions(entry.event, context)
       val subject = getSubject(entry.event, context)
 
-      if (actions.isNotEmpty() && subject != null) {
-        actions.map { action ->
+      if (subject != null) {
+        getActions(entry.event, subject).map { action ->
           EventLogEntryPayload(
-              action = localizeFieldName(subject, action),
+              action = action,
               subject = subject,
               timestamp = entry.createdTime,
               userId = entry.createdBy,
@@ -174,7 +174,7 @@ class EventLogPayloadTransformer(
 
   private fun getActions(
       event: PersistentEvent,
-      context: EventLogPayloadContext,
+      subject: EventSubjectPayload,
   ): List<EventActionPayload> {
     return when (event) {
       // Any fields-updated events that don't implement FieldsUpdatedPersistentEvent should be
@@ -184,17 +184,20 @@ class EventLogPayloadTransformer(
       // update of the photo from the old file to the new one.
       is AccessionPhotoReplacedEvent ->
           listOf(
-              FieldUpdatedActionPayload(
-                  "photo",
-                  listOf(event.replacedFileId.toString()),
-                  listOf(event.fileId.toString()),
+              toFieldUpdatedAction(
+                  subject,
+                  FieldsUpdatedPersistentEvent.UpdatedField(
+                      "photo",
+                      listOf(event.replacedFileId.toString()),
+                      listOf(event.fileId.toString()),
+                  ),
               )
           )
 
       // Events that can self-describe which fields were updated can be transformed generically.
       is FieldsUpdatedPersistentEvent ->
           event.listUpdatedFields(messages).map {
-            FieldUpdatedActionPayload(it.fieldName, it.changedFrom, it.changedTo)
+            toFieldUpdatedAction(subject, it)
           }
 
       // Create and delete actions don't need any event-type-specific arguments because the details
@@ -218,13 +221,23 @@ class EventLogPayloadTransformer(
     }
   }
 
-  private fun localizeFieldName(
+  internal fun toFieldUpdatedAction(
       subject: EventSubjectPayload,
-      action: EventActionPayload,
-  ): EventActionPayload =
-      if (action is FieldUpdatedActionPayload) {
-        action.copy(fieldName = messages.eventSubjectFieldName(subject::class, action.fieldName))
-      } else {
-        action
-      }
+      field: FieldsUpdatedPersistentEvent.UpdatedField,
+  ): FieldUpdatedActionPayload =
+      FieldUpdatedActionPayload(
+          fieldName = messages.eventSubjectFieldName(subject::class, field.fieldName),
+          changedFrom = field.changedFrom,
+          changedTo = field.changedTo,
+          group = field.group,
+          calculatedValues =
+              field.calculatedValues
+                  .takeIf { it.isNotEmpty() }
+                  ?.map {
+                    CalculatedValuePayload(
+                        messages.eventSubjectFieldName(subject::class, it.fieldName),
+                        it.value,
+                    )
+                  },
+      )
 }
