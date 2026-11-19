@@ -14,7 +14,7 @@ Steps:
 
 1. Determine the migration's version timestamp.
 2. Create the migration file.
-3. Add enum values to R__TypeCodes.sql (if any enum tables).
+3. Add enum values to R__TypeCodes.sql and to a versioned migration (if any enum values are added).
 4. Add schema documentation to R__Comments.sql.
 5. Update Config.kt (EnumTable, IdWrapper, and/or Embeddable entries as needed).
 6. Add tables to SchemaDocsGenerator.kt.
@@ -141,6 +141,12 @@ VALUES (1, 'Active Status', TRUE),
 ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
                                active = excluded.active;
 ```
+
+### Also insert new enum values in a versioned migration
+
+Every change to `R__TypeCodes.sql` must also go in a versioned migration, even if that's the only thing in the migration file. Copy the same `INSERT ... ON CONFLICT` statements into it.
+
+Flyway runs repeatable migrations like `R__TypeCodes.sql` only after all pending versioned migrations. If a versioned migration uses an enum value that exists only in `R__TypeCodes.sql`, it fails on any database that hasn't yet rerun `R__TypeCodes.sql`, which breaks deployment. Adding the values to a versioned migration makes them available to it and to any later migrations in the same deploy.
 
 ## Step 4: Add Schema Documentation to R__Comments.sql
 
