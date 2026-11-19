@@ -2,15 +2,15 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotSelectionMode
-import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.tables.records.ObservationStratumVariabilityRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
-import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -29,13 +29,14 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
   fun recordVariability(observationId: ObservationId) {
     val parameters = STRATUM_PLOT_SELECTION_PARAMETERS
     val liveCount =
-        DSL.field(
-            DSL.selectCount()
-                .from(RECORDED_PLANTS)
-                .where(RECORDED_PLANTS.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
-                .and(RECORDED_PLANTS.MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
-                .and(RECORDED_PLANTS.STATUS_ID.eq(RecordedPlantStatus.Live))
-        )
+        with(OBSERVED_PLOT_SPECIES_TOTALS) {
+          DSL.field(
+              DSL.select(DSL.coalesce(DSL.sum(TOTAL_LIVE), DSL.inline(BigDecimal.ZERO)))
+                  .from(this)
+                  .where(OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                  .and(MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+          )
+        }
 
     val plotsByStratum =
         dslContext
@@ -72,6 +73,7 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
                 parameters.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring),
             )
             .where(OBSERVATIONS.ID.eq(observationId))
+            .and(OBSERVATIONS.STATE_ID.`in`(ObservationState.InProgress, ObservationState.Overdue))
             .and(OBSERVATIONS.IS_AD_HOC.isFalse)
             .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
             .fetchGroups(STRATUM_HISTORIES.ID)
@@ -84,7 +86,6 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
         } else {
           val plotArea = plot[MONITORING_PLOTS.SIZE_METERS]!!.toBigDecimal().pow(2)
           plot[liveCount]!!
-              .toBigDecimal()
               .multiply(SQUARE_METERS_PER_HECTARE.toBigDecimal())
               .divide(plotArea, MathContext.DECIMAL128)
         }

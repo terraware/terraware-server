@@ -68,6 +68,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     plotId = insertMonitoringPlot()
     observationId = insertObservation()
     insertObservationRequestedSubstratum()
+    every { user.canUpdateObservationQuantities(any()) } returns true
   }
 
   @ParameterizedTest
@@ -1114,14 +1115,28 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     val emptyPlot = insertMonitoringPlot(sizeMeters = 10)
     val previousObservation = insertObservation(completedTime = Instant.EPOCH.minusSeconds(1))
     insertObservationPlot(monitoringPlotId = permanentPlot, completedBy = user.userId)
-    insertRecordedPlant(monitoringPlotId = permanentPlot, observationId = previousObservation)
+    insertObservedPlotSpeciesTotals(
+        monitoringPlotId = permanentPlot,
+        observationId = previousObservation,
+        certainty = RecordedSpeciesCertainty.Unknown,
+        totalLive = 3,
+    )
     insertObservationPlot(
+        claimedBy = user.userId,
         observationId = observationId,
         monitoringPlotId = permanentPlot,
         isPermanent = true,
     )
-    insertObservationPlot(observationId = observationId, monitoringPlotId = temporaryPlot)
-    insertObservationPlot(observationId = observationId, monitoringPlotId = emptyPlot)
+    insertObservationPlot(
+        claimedBy = user.userId,
+        observationId = observationId,
+        monitoringPlotId = temporaryPlot,
+    )
+    insertObservationPlot(
+        claimedBy = user.userId,
+        observationId = observationId,
+        monitoringPlotId = emptyPlot,
+    )
 
     val livePlant =
         RecordedPlantsRow(
@@ -1135,8 +1150,17 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         emptySet(),
         null,
         Instant.EPOCH,
-        listOf(livePlant),
+        listOf(livePlant, livePlant),
     )
+    store.updateMonitoringSpecies(
+        observationId,
+        permanentPlot,
+        RecordedSpeciesCertainty.Unknown,
+        null,
+        null,
+    ) {
+      it.copy(totalLive = 1)
+    }
     store.completePlot(
         observationId,
         temporaryPlot,
