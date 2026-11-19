@@ -1245,13 +1245,16 @@ class PlantingSiteStore(
   fun updatePlotSelectionSettings(
       plantingSiteId: PlantingSiteId,
       defaultPlotPrecisionLevel: PlotPrecisionLevel,
-      settings: Map<StratumId, Map<ObservationType, StratumPlotCounts>>,
+      settings: Map<StratumId, Map<ObservationType, (StratumPlotCounts) -> StratumPlotCounts>>,
   ) {
     entityLocker.withLockedPlantingSite(plantingSiteId) {
       requirePlotSettingsEditable(plantingSiteId)
       val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Stratum)
       val strata = site.strata.associateBy { it.id }
       settings.keys.forEach { if (it !in strata) throw StratumNotFoundException(it) }
+      val updated = settings.mapValues { (id, edits) ->
+        edits.mapValues { (type, edit) -> edit(strata.getValue(id).plotCounts(type)) }
+      }
 
       with(PLANTING_SITES) {
         dslContext
@@ -1262,7 +1265,7 @@ class PlantingSiteStore(
             .where(ID.eq(plantingSiteId))
             .execute()
       }
-      settings.forEach { (stratumId, parameters) ->
+      updated.forEach { (stratumId, parameters) ->
         val stratum = strata.getValue(stratumId)
         val previous = ObservationType.entries.associateWith { stratum.plotCounts(it) }
         val edited = previous + parameters

@@ -153,7 +153,6 @@ import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
-import com.terraformation.backend.tracking.model.StratumPlotCounts
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
 import io.mockk.confirmVerified
@@ -339,7 +338,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               stratumId to
                   mapOf(
                       ObservationType.BaselineSurvey to
-                          StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 3)
+                          {
+                            it.copy(numPermanentPlots = 0, numTemporaryPlots = 3)
+                          }
                   )
           ),
       )

@@ -17,6 +17,55 @@ import org.junit.jupiter.api.assertThrows
 
 internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSiteStoreTest() {
   @Test
+  fun `applies edits to latest stored parameters and validates before saving`() {
+    val siteId = insertPlantingSite()
+    val stratumId = insertStratum()
+    val initial =
+        store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts
+    store.updatePlotSelectionSettings(
+        siteId,
+        PlotPrecisionLevel.High,
+        mapOf(
+            stratumId to
+                mapOf(
+                    ObservationType.Monitoring to { it.copy(variance = java.math.BigDecimal("75")) }
+                )
+        ),
+    )
+    store.updatePlotSelectionSettings(
+        siteId,
+        PlotPrecisionLevel.High,
+        mapOf(stratumId to mapOf(ObservationType.Monitoring to { it.copy(numPermanentPlots = 7) })),
+    )
+    val expected = initial.copy(variance = java.math.BigDecimal("75"), numPermanentPlots = 7)
+    assertEquals(
+        expected,
+        store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts,
+    )
+    val siteBefore = plantingSitesDao.fetchOneById(siteId)
+    assertThrows<IllegalArgumentException> {
+      store.updatePlotSelectionSettings(
+          siteId,
+          PlotPrecisionLevel.Low,
+          mapOf(
+              stratumId to
+                  mapOf(
+                      ObservationType.Monitoring to
+                          {
+                            throw IllegalArgumentException("Invalid edit")
+                          }
+                  )
+          ),
+      )
+    }
+    assertEquals(siteBefore, plantingSitesDao.fetchOneById(siteId))
+    assertEquals(
+        expected,
+        store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts,
+    )
+  }
+
+  @Test
   fun `merges parameters and publishes only changed types and strata`() {
     val siteId = insertPlantingSite()
     val changedId = insertStratum(name = "Changed")
@@ -50,15 +99,13 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
         mapOf(
             changedId to
                 mapOf(
-                    ObservationType.BaselineSurvey to counts,
-                    ObservationType.Monitoring to
-                        initial.strata.first { it.id == changedId }.plantPlotCounts,
-                ),
-            unchangedId to
-                mapOf(
                     ObservationType.BaselineSurvey to
-                        initial.strata.first { it.id == unchangedId }.baselinePlotCounts
+                        {
+                          it.copy(numTemporaryPlots = it.numTemporaryPlots + 3)
+                        },
+                    ObservationType.Monitoring to { it },
                 ),
+            unchangedId to mapOf(ObservationType.BaselineSurvey to { it }),
         ),
     )
 
