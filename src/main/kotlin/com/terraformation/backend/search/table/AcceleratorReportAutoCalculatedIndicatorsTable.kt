@@ -2,6 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.default_schema.Role
@@ -21,21 +22,29 @@ class AcceleratorReportAutoCalculatedIndicatorsTable(tables: SearchTables) : Sea
   override val primaryKey: TableField<out Record, out Any?>
     get() = REPORT_AUTO_CALCULATED_INDICATORS.REPORT_AUTO_CALCULATED_INDICATOR_ID
 
-  /**
-   * Aliased because the unaliased table is used by the "indicator" sublist, and because a reverse
-   * sublist from the indicators needs to refer to the outer indicator rather than this one.
-   */
-  private val indicatorsForOrder =
-      AUTO_CALCULATED_INDICATORS.`as`("auto_calculated_indicators_for_order")
+  private val reportsForSettings = REPORTS.`as`("reports_for_indicator_settings")
+  private val settings =
+      PROJECT_AUTO_CALCULATED_INDICATORS.`as`("project_auto_calculated_indicators_for_search")
 
   override val fromTable
     get() =
-        REPORT_AUTO_CALCULATED_INDICATORS.join(indicatorsForOrder)
-            .on(
-                REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.eq(
-                    indicatorsForOrder.ID
+        DSL.select(
+                REPORT_AUTO_CALCULATED_INDICATORS.asterisk(),
+                settings.ACTIVE,
+                settings.IS_PUBLISHABLE,
+                settings.REF_ID,
+            )
+            .from(REPORT_AUTO_CALCULATED_INDICATORS)
+            .join(reportsForSettings)
+            .on(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID.eq(reportsForSettings.ID))
+            .leftJoin(settings)
+            .on(settings.PROJECT_ID.eq(reportsForSettings.PROJECT_ID))
+            .and(
+                settings.AUTO_CALCULATED_INDICATOR_ID.eq(
+                    REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID
                 )
             )
+            .asTable("report_auto_calculated_indicators_with_settings")
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
@@ -56,6 +65,7 @@ class AcceleratorReportAutoCalculatedIndicatorsTable(tables: SearchTables) : Sea
 
   override val fields: List<SearchField> =
       listOf(
+          booleanField("active", settings.ACTIVE),
           nonLocalizableEnumField(
               "indicator",
               REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
@@ -63,6 +73,8 @@ class AcceleratorReportAutoCalculatedIndicatorsTable(tables: SearchTables) : Sea
           timestampField("modifiedTime", REPORT_AUTO_CALCULATED_INDICATORS.MODIFIED_TIME),
           bigDecimalField("overrideValue", REPORT_AUTO_CALCULATED_INDICATORS.OVERRIDE_VALUE),
           textField("projectsComments", REPORT_AUTO_CALCULATED_INDICATORS.PROJECTS_COMMENTS),
+          booleanField("publishable", settings.IS_PUBLISHABLE),
+          textField("refId", settings.REF_ID),
           enumField("status", REPORT_AUTO_CALCULATED_INDICATORS.STATUS_ID),
           uriField(
               "supportingDocumentUrl",
@@ -75,8 +87,8 @@ class AcceleratorReportAutoCalculatedIndicatorsTable(tables: SearchTables) : Sea
   override val defaultOrderFields: List<OrderField<*>>
     get() =
         listOf(
-            indicatorsForOrder.REF_ID.asc().nullsLast(),
-            indicatorsForOrder.ID,
+            settings.REF_ID.asc().nullsLast(),
+            REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
             REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID,
         )
 
