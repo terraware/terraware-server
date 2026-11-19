@@ -21,7 +21,6 @@ import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
-import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
@@ -41,32 +40,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class CreatePlantingSite {
-    @Test
-    fun `stores explicit stratum precision levels independently of the site default`() {
-      val initial = newSite().copy(organizationId = organizationId)
-      val stratum = initial.strata.single()
-      val requested =
-          initial.copy(
-              strata =
-                  listOf(
-                      stratum.copy(
-                          plantPlotCounts =
-                              stratum.plantPlotCounts.copy(
-                                  plotPrecisionLevel = PlotPrecisionLevel.High
-                              ),
-                          biomassPlotCounts =
-                              stratum.biomassPlotCounts.copy(
-                                  plotPrecisionLevel = PlotPrecisionLevel.Low
-                              ),
-                      )
-                  )
-          )
-
-      val created = store.createPlantingSite(requested)
-
-      assertEquals(requested, store.fetchSiteById(created.id, PlantingSiteDepth.Substratum).toNew())
-    }
-
     @ParameterizedTest
     @ValueSource(ints = [0, 16])
     fun `stores baseline temporary total unchanged on create`(temporaryTotal: Int) {
@@ -232,38 +205,50 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               strata =
                   listOf(
                       StratumModel.create(
-                          baselineErrorMargin = BigDecimal(31),
-                          baselineNumTemporaryPlots = 65,
-                          baselineStudentsT = BigDecimal(34),
-                          baselineVariance = BigDecimal(35),
-                          biomassErrorMargin = BigDecimal(21),
-                          biomassNumPermanentPlots = 22,
-                          biomassNumTemporaryPlots = 23,
-                          biomassStudentsT = BigDecimal(24),
-                          biomassVariance = BigDecimal(25),
-                          boundary = stratum1Boundary,
-                          initialPlantingDensity = BigDecimal(6),
-                          name = "Stratum 1",
-                          plantErrorMargin = BigDecimal(1),
-                          plantNumPermanentPlots = 3,
-                          plantNumTemporaryPlots = 4,
-                          plantStudentsT = BigDecimal(5),
-                          plantVariance = BigDecimal(7),
-                          substrata =
-                              listOf(
-                                  SubstratumModel.create(
-                                      boundary = substratum11Boundary,
-                                      fullName = "Stratum 1-Substratum 1",
-                                      name = "Substratum 1",
+                              baselineErrorMargin = BigDecimal(31),
+                              baselineNumTemporaryPlots = 65,
+                              baselineStudentsT = BigDecimal(34),
+                              baselineVariance = BigDecimal(35),
+                              biomassErrorMargin = BigDecimal(21),
+                              biomassNumPermanentPlots = 22,
+                              biomassNumTemporaryPlots = 23,
+                              biomassStudentsT = BigDecimal(24),
+                              biomassVariance = BigDecimal(25),
+                              boundary = stratum1Boundary,
+                              initialPlantingDensity = BigDecimal(6),
+                              name = "Stratum 1",
+                              plantErrorMargin = BigDecimal(1),
+                              plantNumPermanentPlots = 3,
+                              plantNumTemporaryPlots = 4,
+                              plantStudentsT = BigDecimal(5),
+                              plantVariance = BigDecimal(7),
+                              substrata =
+                                  listOf(
+                                      SubstratumModel.create(
+                                          boundary = substratum11Boundary,
+                                          fullName = "Stratum 1-Substratum 1",
+                                          name = "Substratum 1",
+                                      ),
+                                      SubstratumModel.create(
+                                          boundary = substratum12Boundary,
+                                          fullName = "Stratum 1-Substratum 2",
+                                          name = "Substratum 2",
+                                      ),
                                   ),
-                                  SubstratumModel.create(
-                                      boundary = substratum12Boundary,
-                                      fullName = "Stratum 1-Substratum 2",
-                                      name = "Substratum 2",
-                                  ),
-                              ),
-                          targetPlantDensity = BigDecimal(8),
-                      ),
+                              targetPlantDensity = BigDecimal(8),
+                          )
+                          .let { stratum ->
+                            stratum.copy(
+                                biomassPlotCounts =
+                                    stratum.biomassPlotCounts.copy(
+                                        plotPrecisionLevel = PlotPrecisionLevel.Low
+                                    ),
+                                plantPlotCounts =
+                                    stratum.plantPlotCounts.copy(
+                                        plotPrecisionLevel = PlotPrecisionLevel.High
+                                    ),
+                            )
+                          },
                       StratumModel.create(
                           boundary = stratum2Boundary,
                           name = "Stratum 2",
