@@ -167,6 +167,47 @@ class ReportIndicatorStore(
         }
   }
 
+  fun updateCommonIndicatorForProject(
+      projectId: ProjectId,
+      indicatorId: CommonIndicatorId,
+      model: ExistingCommonIndicatorModel,
+  ) {
+    requirePermissions { manageProjectReportConfigs() }
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(PROJECT_COMMON_INDICATORS) {
+            dslContext
+                .update(this)
+                .set(ACTIVE, model.active)
+                .set(IS_PUBLISHABLE, model.isPublishable)
+                .set(NOTES, model.notes)
+                .set(PRIMARY_DATA_SOURCE, model.primaryDataSource)
+                .set(REF_ID, model.refId)
+                .where(PROJECT_ID.eq(projectId))
+                .and(COMMON_INDICATOR_ID.eq(indicatorId))
+                .execute()
+          }
+      if (rowsUpdated == 0) throw CommonIndicatorNotFoundException(indicatorId)
+
+      with(COMMON_INDICATORS) {
+        dslContext
+            .update(this)
+            .set(CATEGORY_ID, model.category)
+            .set(CLASS_ID, model.classId)
+            .set(DESCRIPTION, model.description)
+            .set(FREQUENCY_ID, model.frequency)
+            .set(LEVEL_ID, model.level)
+            .set(NAME, model.name)
+            .set(PRECISION, model.precision)
+            .set(TF_OWNER, model.tfOwner)
+            .set(UNIT, model.unit)
+            .where(ID.eq(indicatorId))
+            .execute()
+      }
+    }
+  }
+
   fun fetchOneProjectIndicator(indicatorId: ProjectIndicatorId): ExistingProjectIndicatorModel {
     val indicator = fetchProjectIndicators(PROJECT_INDICATORS.ID.eq(indicatorId)).firstOrNull()
 

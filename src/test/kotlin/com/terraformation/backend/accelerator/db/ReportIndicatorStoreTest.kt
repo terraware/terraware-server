@@ -19,6 +19,7 @@ import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
+import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -1144,6 +1145,125 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           },
           store.fetchCommonIndicatorsForProject(otherProjectId),
       )
+    }
+
+    @Test
+    fun `updates shared common fields and only one project's settings`() {
+      insertCommonIndicator(
+          active = false,
+          isPublishable = true,
+          notes = "global",
+          primaryDataSource = "global",
+          refId = "global",
+      )
+      insertProjectCommonIndicator(
+          active = false,
+          commonIndicatorId = inserted.commonIndicatorId,
+          isPublishable = true,
+          projectId = projectId,
+          refId = "old",
+      )
+      insertProjectCommonIndicator(
+          commonIndicatorId = inserted.commonIndicatorId,
+          projectId = otherProjectId,
+          refId = "other",
+      )
+      val expectedGlobal =
+          dslContext
+              .selectFrom(COMMON_INDICATORS)
+              .where(COMMON_INDICATORS.ID.eq(inserted.commonIndicatorId))
+              .fetchSingle()
+      val model =
+          ExistingCommonIndicatorModel(
+              active = true,
+              category = IndicatorCategory.Climate,
+              classId = IndicatorClass.LifetimeCumulative,
+              description = "New description",
+              frequency = IndicatorFrequency.Annual,
+              id = inserted.commonIndicatorId,
+              isPublishable = false,
+              level = IndicatorLevel.Output,
+              name = "New name",
+              notes = "New notes",
+              precision = 2,
+              primaryDataSource = "New source",
+              refId = null,
+              tfOwner = "Owner",
+              unit = "%",
+          )
+      store.updateCommonIndicatorForProject(projectId, inserted.commonIndicatorId, model)
+      val unconfiguredProjectId = insertProject()
+      listOf(inserted.commonIndicatorId, CommonIndicatorId(-1)).forEach { missingId ->
+        assertThrows<CommonIndicatorNotFoundException> {
+          store.updateCommonIndicatorForProject(
+              unconfiguredProjectId,
+              missingId,
+              model.copy(name = "Must not change"),
+          )
+        }
+      }
+
+      expectedGlobal.apply {
+        categoryId = model.category
+        classId = model.classId
+        description = model.description
+        frequencyId = model.frequency
+        levelId = model.level
+        name = model.name
+        precision = model.precision
+        tfOwner = model.tfOwner
+        unit = model.unit
+      }
+      assertTableEquals(expectedGlobal)
+      assertTableEquals(
+          listOf(
+              ProjectCommonIndicatorsRecord(
+                  active = true,
+                  commonIndicatorId = inserted.commonIndicatorId,
+                  isPublishable = false,
+                  notes = "New notes",
+                  primaryDataSource = "New source",
+                  projectId = projectId,
+                  refId = null,
+              ),
+              ProjectCommonIndicatorsRecord(
+                  active = true,
+                  commonIndicatorId = inserted.commonIndicatorId,
+                  isPublishable = false,
+                  projectId = otherProjectId,
+                  refId = "other",
+              ),
+          )
+      )
+      assertEquals(
+          listOf(model.copy(refId = null)),
+          store.fetchCommonIndicatorsForProject(projectId),
+      )
+      assertEquals(
+          listOf(model.copy(notes = null, primaryDataSource = null, refId = "other")),
+          store.fetchCommonIndicatorsForProject(otherProjectId),
+      )
+    }
+
+    @Test
+    fun `requires read permission for project lists and manage permission for updates`() {
+      insertCommonIndicator()
+      val model = store.fetchOneCommonIndicator(inserted.commonIndicatorId)
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+      assertThrows<AccessDeniedException> { store.fetchCommonIndicatorsForProject(projectId) }
+
+      assertThrows<AccessDeniedException> {
+        store.updateCommonIndicatorForProject(projectId, inserted.commonIndicatorId, model)
+      }
+
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Admin)
+      assertEquals(emptyList<Any>(), store.fetchCommonIndicatorsForProject(projectId))
+      assertThrows<AccessDeniedException> {
+        store.updateCommonIndicatorForProject(projectId, inserted.commonIndicatorId, model)
+      }
     }
   }
 }
