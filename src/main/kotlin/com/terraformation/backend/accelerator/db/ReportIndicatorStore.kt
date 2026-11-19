@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.model.ExistingCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.NewCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.NewProjectIndicatorModel
+import com.terraformation.backend.accelerator.model.ProjectAutoCalculatedIndicatorModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.CommonIndicatorNotFoundException
@@ -14,6 +15,7 @@ import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
@@ -206,6 +208,55 @@ class ReportIndicatorStore(
             .execute()
       }
     }
+  }
+
+  fun fetchAutoCalculatedIndicatorsForProject(
+      projectId: ProjectId
+  ): List<ProjectAutoCalculatedIndicatorModel> {
+    requirePermissions { readProjectIndicators(projectId) }
+
+    return with(PROJECT_AUTO_CALCULATED_INDICATORS) {
+      dslContext
+          .selectFrom(this)
+          .where(PROJECT_ID.eq(projectId))
+          .orderBy(REF_ID.asc().nullsLast(), AUTO_CALCULATED_INDICATOR_ID)
+          .fetch { record ->
+            ProjectAutoCalculatedIndicatorModel(
+                active = record[ACTIVE]!!,
+                indicator = record[AUTO_CALCULATED_INDICATOR_ID]!!,
+                isPublishable = record[IS_PUBLISHABLE]!!,
+                notes = record[NOTES],
+                primaryDataSource = record[PRIMARY_DATA_SOURCE],
+                refId = record[REF_ID],
+            )
+          }
+    }
+  }
+
+  fun updateAutoCalculatedIndicatorForProject(
+      projectId: ProjectId,
+      indicatorId: AutoCalculatedIndicator,
+      active: Boolean,
+      isPublishable: Boolean,
+      notes: String?,
+      refId: String?,
+  ) {
+    requirePermissions { manageProjectReportConfigs() }
+
+    val rowsUpdated =
+        with(PROJECT_AUTO_CALCULATED_INDICATORS) {
+          dslContext
+              .update(this)
+              .set(ACTIVE, active)
+              .set(IS_PUBLISHABLE, isPublishable)
+              .set(NOTES, notes)
+              .set(REF_ID, refId)
+              .where(PROJECT_ID.eq(projectId))
+              .and(AUTO_CALCULATED_INDICATOR_ID.eq(indicatorId))
+              .execute()
+        }
+    if (rowsUpdated == 0)
+        throw ProjectAutoCalculatedIndicatorNotFoundException(projectId, indicatorId)
   }
 
   fun fetchOneProjectIndicator(indicatorId: ProjectIndicatorId): ExistingProjectIndicatorModel {

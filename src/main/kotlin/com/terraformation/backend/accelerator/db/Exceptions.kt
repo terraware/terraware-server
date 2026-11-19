@@ -5,6 +5,7 @@ import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
@@ -12,6 +13,14 @@ import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+
+class ProjectAutoCalculatedIndicatorNotFoundException(
+    projectId: ProjectId,
+    indicatorId: AutoCalculatedIndicator,
+) :
+    EntityNotFoundException(
+        "Auto-calculated indicator $indicatorId not found for project $projectId"
+    )
 
 class ActivityNotFoundException(id: ActivityId) : EntityNotFoundException("Activity $id not found")
 

@@ -2,7 +2,9 @@ package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.model.ExistingCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.NewCommonIndicatorModel
+import com.terraformation.backend.accelerator.model.ProjectAutoCalculatedIndicatorModel
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorClass
@@ -67,6 +69,42 @@ data class NewCommonIndicatorDefinitionPayload(
       )
 }
 
+data class ProjectAutoCalculatedIndicatorPayload(
+    val active: Boolean,
+    val indicator: AutoCalculatedIndicator,
+    val isPublishable: Boolean,
+    val notes: String?,
+    val primaryDataSource: String?,
+    val refId: String?,
+    val category: IndicatorCategory = indicator.categoryId,
+    val classId: IndicatorClass = indicator.classId,
+    val description: String = indicator.description,
+    val frequency: IndicatorFrequency? = indicator.frequencyId,
+    val level: IndicatorLevel = indicator.levelId,
+    val name: String = indicator.jsonValue,
+    val precision: Int = indicator.precision,
+    val tfOwner: String? = indicator.tfOwner,
+    val unit: String? = indicator.unit,
+) {
+  constructor(
+      model: ProjectAutoCalculatedIndicatorModel
+  ) : this(
+      active = model.active,
+      indicator = model.indicator,
+      isPublishable = model.isPublishable,
+      notes = model.notes,
+      primaryDataSource = model.primaryDataSource,
+      refId = model.refId,
+  )
+}
+
+data class ProjectAutoCalculatedIndicatorSettingsPayload(
+    val active: Boolean,
+    val isPublishable: Boolean,
+    val notes: String?,
+    val refId: String?,
+)
+
 data class ListCommonIndicatorDefinitionsResponsePayload(
     val indicators: List<CommonIndicatorDefinitionPayload>
 ) : SuccessResponsePayload
@@ -77,3 +115,11 @@ data class CreateCommonIndicatorDefinitionRequestPayload(
 
 data class CreateCommonIndicatorDefinitionResponsePayload(val indicatorId: CommonIndicatorId) :
     SuccessResponsePayload
+
+data class ListProjectAutoCalculatedIndicatorsResponsePayload(
+    val indicators: List<ProjectAutoCalculatedIndicatorPayload>
+) : SuccessResponsePayload
+
+data class UpdateProjectAutoCalculatedIndicatorRequestPayload(
+    @field:Valid val indicator: ProjectAutoCalculatedIndicatorSettingsPayload
+)

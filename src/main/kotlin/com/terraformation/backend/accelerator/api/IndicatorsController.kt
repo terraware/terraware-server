@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.ReportIndicatorStore
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -64,6 +65,39 @@ class IndicatorsController(private val indicatorStore: ReportIndicatorStore) {
         indicatorId,
         payload.indicator.toModel(),
     )
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @GetMapping("/projects/{projectId}/autoCalculated")
+  @Operation(summary = "List auto-calculated indicators with project settings.")
+  fun listProjectAutoCalculatedIndicators(
+      @PathVariable projectId: ProjectId
+  ): ListProjectAutoCalculatedIndicatorsResponsePayload =
+      ListProjectAutoCalculatedIndicatorsResponsePayload(
+          indicatorStore.fetchAutoCalculatedIndicatorsForProject(projectId).map {
+            ProjectAutoCalculatedIndicatorPayload(it)
+          }
+      )
+
+  @ApiResponse200
+  @PutMapping("/projects/{projectId}/autoCalculated/{indicatorId}")
+  @Operation(summary = "Update one project's auto-calculated indicator settings.")
+  fun updateProjectAutoCalculatedIndicator(
+      @PathVariable projectId: ProjectId,
+      @PathVariable indicatorId: AutoCalculatedIndicator,
+      @RequestBody @Valid payload: UpdateProjectAutoCalculatedIndicatorRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    with(payload.indicator) {
+      indicatorStore.updateAutoCalculatedIndicatorForProject(
+          active = active,
+          indicatorId = indicatorId,
+          isPublishable = isPublishable,
+          notes = notes,
+          projectId = projectId,
+          refId = refId,
+      )
+    }
     return SimpleSuccessResponsePayload()
   }
 
