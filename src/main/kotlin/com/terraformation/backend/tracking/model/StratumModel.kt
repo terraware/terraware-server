@@ -44,12 +44,12 @@ data class PermanentPlotPlacement(
 )
 
 data class StratumPlotCounts(
-    val mode: PlotSelectionMode = PlotSelectionMode.PrecisionLevel,
-    val plotPrecisionLevel: PlotPrecisionLevel? =
-        if (mode == PlotSelectionMode.PrecisionLevel) PlotPrecisionLevel.Medium else null,
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+    val mode: PlotSelectionMode = PlotSelectionMode.PrecisionLevel,
     val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
     val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
+    val plotPrecisionLevel: PlotPrecisionLevel? =
+        if (mode == PlotSelectionMode.PrecisionLevel) PlotPrecisionLevel.Medium else null,
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
     val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
@@ -679,9 +679,10 @@ data class StratumModel<
         substrata: List<NewSubstratumModel>,
         exclusion: MultiPolygon? = null,
         initialPlantingDensity: BigDecimal = DEFAULT_INITIAL_PLANTING_DENSITY,
-        plotPrecisionLevel: PlotPrecisionLevel = PlotPrecisionLevel.Medium,
         mode: PlotSelectionMode = PlotSelectionMode.PrecisionLevel,
-        plantErrorMargin: BigDecimal = plotPrecisionLevel.targetMarginOfError,
+        plotPrecisionLevel: PlotPrecisionLevel? = null,
+        plantErrorMargin: BigDecimal =
+            (plotPrecisionLevel ?: PlotPrecisionLevel.Medium).targetMarginOfError,
         plantNumPermanentPlots: Int? = null,
         plantNumTemporaryPlots: Int? = null,
         plantStudentsT: BigDecimal = DEFAULT_STUDENTS_T,
@@ -698,6 +699,10 @@ data class StratumModel<
         biomassStudentsT: BigDecimal = plantStudentsT,
         biomassVariance: BigDecimal = plantVariance,
     ): NewStratumModel {
+      val selectedPlotPrecisionLevel =
+          if (mode == PlotSelectionMode.PrecisionLevel)
+              plotPrecisionLevel ?: PlotPrecisionLevel.Medium
+          else null
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
       val (defaultBaselinePermanentPlots, defaultBaselineTemporaryPlots) =
           calculatePlotCounts(baselineErrorMargin, baselineStudentsT, baselineVariance)
@@ -711,24 +716,22 @@ data class StratumModel<
           baselinePlotCounts =
               StratumPlotCounts(
                   errorMargin = baselineErrorMargin,
-                  plotPrecisionLevel =
-                      if (mode == PlotSelectionMode.PrecisionLevel) plotPrecisionLevel else null,
                   mode = mode,
                   numPermanentPlots = 0,
                   numTemporaryPlots =
                       baselineNumTemporaryPlots
                           ?: (defaultBaselinePermanentPlots + defaultBaselineTemporaryPlots),
+                  plotPrecisionLevel = selectedPlotPrecisionLevel,
                   studentsT = baselineStudentsT,
                   variance = baselineVariance,
               ),
           biomassPlotCounts =
               StratumPlotCounts(
                   errorMargin = biomassErrorMargin,
-                  plotPrecisionLevel =
-                      if (mode == PlotSelectionMode.PrecisionLevel) plotPrecisionLevel else null,
                   mode = mode,
                   numPermanentPlots = biomassNumPermanentPlots ?: defaultBiomassPermanentPlots,
                   numTemporaryPlots = biomassNumTemporaryPlots ?: defaultBiomassTemporaryPlots,
+                  plotPrecisionLevel = selectedPlotPrecisionLevel,
                   studentsT = biomassStudentsT,
                   variance = biomassVariance,
               ),
@@ -740,11 +743,10 @@ data class StratumModel<
           plantPlotCounts =
               StratumPlotCounts(
                   errorMargin = plantErrorMargin,
-                  plotPrecisionLevel =
-                      if (mode == PlotSelectionMode.PrecisionLevel) plotPrecisionLevel else null,
                   mode = mode,
                   numPermanentPlots = plantNumPermanentPlots ?: defaultPlantPermanentPlots,
                   numTemporaryPlots = plantNumTemporaryPlots ?: defaultPlantTemporaryPlots,
+                  plotPrecisionLevel = selectedPlotPrecisionLevel,
                   studentsT = plantStudentsT,
                   variance = plantVariance,
               ),

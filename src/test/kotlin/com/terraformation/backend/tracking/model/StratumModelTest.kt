@@ -5,6 +5,8 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.tracking.api.StratumResponsePayload
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.projectTo
@@ -19,12 +21,59 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 class StratumModelTest : BaseStratumModelTest() {
+  @ParameterizedTest
+  @CsvSource(
+      "PrecisionLevel,,Medium,15,8,3",
+      "PrecisionLevel,High,High,10,19,6",
+      "Custom,,,15,8,3",
+      "Direct,,,15,8,3",
+      "Custom,High,,10,19,6",
+      "Direct,High,,10,19,6",
+  )
+  fun `factory retains a precision level only in precision level mode`(
+      mode: PlotSelectionMode,
+      level: PlotPrecisionLevel?,
+      expectedLevel: PlotPrecisionLevel?,
+      errorMargin: BigDecimal,
+      permanent: Int,
+      temporary: Int,
+  ) {
+    val model =
+        StratumModel.create(
+            boundary = Turtle(siteOrigin).makeMultiPolygon { square(100) },
+            mode = mode,
+            name = "Stratum",
+            plotPrecisionLevel = level,
+            substrata = emptyList(),
+        )
+    val expected =
+        StratumPlotCounts(
+            errorMargin = errorMargin,
+            mode = mode,
+            numPermanentPlots = permanent,
+            numTemporaryPlots = temporary,
+            plotPrecisionLevel = expectedLevel,
+        )
+
+    assertEquals(
+        mapOf(
+            ObservationType.BaselineSurvey to
+                expected.copy(numPermanentPlots = 0, numTemporaryPlots = permanent + temporary),
+            ObservationType.BiomassMeasurements to expected,
+            ObservationType.Monitoring to expected,
+        ),
+        ObservationType.entries.associateWith { model.plotCounts(it) },
+    )
+  }
+
   @Test
   fun `stratum payload includes baseline plot counts`() {
     val model =
