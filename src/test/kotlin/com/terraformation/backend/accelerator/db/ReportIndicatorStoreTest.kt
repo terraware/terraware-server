@@ -19,6 +19,7 @@ import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
@@ -974,7 +975,17 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               unit = "inches",
           )
 
-      store.updateProjectIndicator(existingIndicatorId) { updated }
+      val original = dslContext.selectFrom(PROJECT_INDICATORS).fetchSingle()
+      val otherProjectId = insertProject()
+      assertThrows<ProjectIndicatorNotFoundException> {
+        store.updateProjectIndicator(existingIndicatorId, otherProjectId) { updated }
+      }
+      assertTableEquals(listOf(original))
+
+      assertThrows<ProjectIndicatorNotFoundException> {
+        store.updateProjectIndicator(ProjectIndicatorId(-1), projectId) { updated }
+      }
+      store.updateProjectIndicator(existingIndicatorId, projectId) { updated }
 
       assertTableEquals(
           listOf(

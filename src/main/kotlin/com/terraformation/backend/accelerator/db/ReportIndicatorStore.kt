@@ -190,11 +190,15 @@ class ReportIndicatorStore(
 
   fun updateProjectIndicator(
       indicatorId: ProjectIndicatorId,
+      projectId: ProjectId? = null,
       updateFunc: (ExistingProjectIndicatorModel) -> ExistingProjectIndicatorModel,
   ) {
     requirePermissions { manageProjectReportConfigs() }
 
     val existing = fetchOneProjectIndicator(indicatorId)
+    if (projectId != null && existing.projectId != projectId) {
+      throw ProjectIndicatorNotFoundException(indicatorId)
+    }
     val new = updateFunc(existing)
 
     // Cannot update projectId of an indicator
