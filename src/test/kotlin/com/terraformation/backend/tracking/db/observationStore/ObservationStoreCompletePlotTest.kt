@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
@@ -20,6 +21,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationPlotResu
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationSiteResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationStratumResultsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationStratumVariabilityRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationSubstratumResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSitePopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsRecord
@@ -28,6 +30,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_VARIABILITY
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
@@ -38,6 +41,9 @@ import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
+import com.terraformation.backend.tracking.model.ConfidenceLevel
+import com.terraformation.backend.tracking.model.MeasuredVariability
+import com.terraformation.backend.tracking.model.VariabilityCalculator
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
@@ -1081,7 +1087,93 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertEquals(ObservationState.Completed, observation.state, "Observation state")
     assertEquals(clock.instant, observation.completedTime, "Completed time")
 
+    assertTableEquals(
+        ObservationStratumVariabilityRecord(
+            observationId = observationId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            numPlots = 1,
+            currentPlotCount = 11,
+        )
+    )
+
     eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
+  }
+
+  @ParameterizedTest
+  @EnumSource(PlotSelectionMode::class, names = ["Direct", "PrecisionLevel"])
+  fun `measures live plant density of plots observed at completion`(mode: PlotSelectionMode) {
+    insertStratum(
+        plantPlotSelectionMode = mode,
+        plantNumPermanentPlots = 119,
+        plantNumTemporaryPlots = 2,
+        plantErrorMargin = BigDecimal.TEN,
+    )
+    insertSubstratum()
+    val permanentPlot = insertMonitoringPlot(sizeMeters = 10)
+    val temporaryPlot = insertMonitoringPlot(sizeMeters = 20)
+    val emptyPlot = insertMonitoringPlot(sizeMeters = 10)
+    val previousObservation = insertObservation(completedTime = Instant.EPOCH.minusSeconds(1))
+    insertObservationPlot(monitoringPlotId = permanentPlot, completedBy = user.userId)
+    insertRecordedPlant(monitoringPlotId = permanentPlot, observationId = previousObservation)
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = permanentPlot,
+        isPermanent = true,
+    )
+    insertObservationPlot(observationId = observationId, monitoringPlotId = temporaryPlot)
+    insertObservationPlot(observationId = observationId, monitoringPlotId = emptyPlot)
+
+    val livePlant =
+        RecordedPlantsRow(
+            certaintyId = RecordedSpeciesCertainty.Unknown,
+            gpsCoordinates = point(1),
+            statusId = RecordedPlantStatus.Live,
+        )
+    store.completePlot(
+        observationId,
+        permanentPlot,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(livePlant),
+    )
+    store.completePlot(
+        observationId,
+        temporaryPlot,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(livePlant, livePlant),
+    )
+    assertTableEmpty(OBSERVATION_STRATUM_VARIABILITY)
+
+    val deadPlant = livePlant.copy(statusId = RecordedPlantStatus.Dead)
+    store.completePlot(observationId, emptyPlot, emptySet(), null, Instant.EPOCH, listOf(deadPlant))
+
+    // The three densities are 100, 50, and 0 plants per hectare.
+    val measurement = MeasuredVariability(100.0, 3)
+    val plausibleRange = VariabilityCalculator.plausibleRange(measurement)
+    val plotCountRange =
+        VariabilityCalculator.recommendedPlotCountRange(
+            measurement,
+            ConfidenceLevel.Ninety,
+            BigDecimal.TEN,
+        )
+    assertTableEquals(
+        ObservationStratumVariabilityRecord(
+            observationId = observationId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            numPlots = 3,
+            measuredVariability = 100.0,
+            plausibleVariabilityLow = plausibleRange.low,
+            plausibleVariabilityHigh = plausibleRange.high,
+            currentPlotCount = 121,
+            plotCountLow = plotCountRange.low.plotCounts.deployableTotal,
+            plotCountBest = 271,
+            plotCountHigh = plotCountRange.high.plotCounts.deployableTotal,
+            recommendedPlotCount = if (mode == PlotSelectionMode.Direct) null else 271,
+        )
+    )
   }
 
   @Test

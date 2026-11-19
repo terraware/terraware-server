@@ -122,6 +122,8 @@ class ObservationStore(
     private val log = perClassLogger()
   }
 
+  private val variabilityStore = ObservationVariabilityStore(dslContext)
+
   fun fetchObservationById(observationId: ObservationId): ExistingObservationModel {
     requirePermissions { readObservation(observationId) }
 
@@ -728,6 +730,13 @@ class ObservationStore(
               .isEmpty()
 
       if (allPlotsCompleted) {
+        if (
+            observationType == ObservationType.Monitoring &&
+                !isAdHoc &&
+                !parentStore.isProjectInAccelerator(plantingSite.projectId)
+        ) {
+          variabilityStore.recordVariability(observationId)
+        }
         completeObservation(observationId, isAdHoc)
       }
     }

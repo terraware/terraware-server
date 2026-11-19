@@ -4,9 +4,11 @@ import java.math.BigDecimal
 import kotlin.math.sqrt
 import org.apache.commons.statistics.distribution.ChiSquaredDistribution
 
+internal const val MIN_VARIABILITY_PLOTS = 5
+
 data class MeasuredVariability(val variability: Double, val numPlots: Int) {
   val hasSmallSample: Boolean
-    get() = numPlots < 5
+    get() = numPlots < MIN_VARIABILITY_PLOTS
 }
 
 data class PlausibleVariabilityRange(val low: Double, val high: Double)
@@ -68,14 +70,25 @@ object VariabilityCalculator {
       measurement: MeasuredVariability,
       confidenceLevel: ConfidenceLevel,
       targetMarginOfError: BigDecimal,
-  ): RecommendedPlotCountRange {
-    val range = plausibleRange(measurement)
+  ): RecommendedPlotCountRange =
+      recommendedPlotCountRange(
+          measurement,
+          plausibleRange(measurement),
+          confidenceLevel.plotCountStudentsT,
+          targetMarginOfError,
+      )
 
+  fun recommendedPlotCountRange(
+      measurement: MeasuredVariability,
+      range: PlausibleVariabilityRange,
+      studentsT: BigDecimal,
+      targetMarginOfError: BigDecimal,
+  ): RecommendedPlotCountRange {
     fun estimate(variability: Double): PlotCountEstimate =
         PlotCountEstimate(
             variability,
             PlotCountCalculator.calculatePlotCounts(
-                studentsT = confidenceLevel.plotCountStudentsT,
+                studentsT = studentsT,
                 targetMarginOfError = targetMarginOfError,
                 variability = BigDecimal.valueOf(variability),
             ),
@@ -93,11 +106,11 @@ object VariabilityCalculator {
    * cutting too many plots. Both require at least two plots and 10% of the caller's current total.
    */
   fun recommendation(
-      currentTotal: Int,
+      currentTotal: Long,
       range: RecommendedPlotCountRange,
   ): PlotCountRecommendation? {
-    val bestTotal = range.best.plotCounts.permanent.toLong() + range.best.plotCounts.temporary
-    val highTotal = range.high.plotCounts.permanent.toLong() + range.high.plotCounts.temporary
+    val bestTotal = range.best.plotCounts.deployableTotal
+    val highTotal = range.high.plotCounts.deployableTotal
     val increase = bestTotal - currentTotal
     val decrease = currentTotal - highTotal
     if (increase >= 2 && increase * 10 >= currentTotal) {
