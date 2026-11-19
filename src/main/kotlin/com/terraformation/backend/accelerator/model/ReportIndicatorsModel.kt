@@ -7,7 +7,9 @@ import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATOR_TARGETS
+import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATOR_TARGETS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATOR_TARGETS
@@ -69,7 +71,24 @@ data class ReportCommonIndicatorModel(
         previousYearTotalField: Field<BigDecimal?>,
         currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>>,
     ): ReportCommonIndicatorModel {
-      val indicator = ExistingCommonIndicatorModel.of(record)
+      val indicator =
+          ExistingCommonIndicatorModel(
+              active = record[PROJECT_COMMON_INDICATORS.ACTIVE]!!,
+              category = record[COMMON_INDICATORS.CATEGORY_ID]!!,
+              classId = record[COMMON_INDICATORS.CLASS_ID]!!,
+              description = record[COMMON_INDICATORS.DESCRIPTION],
+              frequency = record[COMMON_INDICATORS.FREQUENCY_ID],
+              id = record[COMMON_INDICATORS.ID]!!,
+              isPublishable = record[PROJECT_COMMON_INDICATORS.IS_PUBLISHABLE]!!,
+              level = record[COMMON_INDICATORS.LEVEL_ID]!!,
+              name = record[COMMON_INDICATORS.NAME]!!,
+              notes = record[PROJECT_COMMON_INDICATORS.NOTES],
+              precision = record[COMMON_INDICATORS.PRECISION]!!,
+              primaryDataSource = record[PROJECT_COMMON_INDICATORS.PRIMARY_DATA_SOURCE],
+              refId = record[PROJECT_COMMON_INDICATORS.REF_ID],
+              tfOwner = record[COMMON_INDICATORS.TF_OWNER],
+              unit = record[COMMON_INDICATORS.UNIT],
+          )
       return ReportCommonIndicatorModel(
           baseline = record[COMMON_INDICATOR_TARGETS.BASELINE],
           currentYearProgress =

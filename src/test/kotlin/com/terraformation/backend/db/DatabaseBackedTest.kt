@@ -3689,6 +3689,47 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.seedFundReportIds.add(it) }
   }
 
+  fun insertCommonIndicatorForProject(
+      active: Boolean = true,
+      category: IndicatorCategory = IndicatorCategory.ProjectObjectives,
+      classId: IndicatorClass = IndicatorClass.NotCumulative,
+      description: String? = null,
+      frequency: IndicatorFrequency? = null,
+      isPublishable: Boolean = true,
+      level: IndicatorLevel = IndicatorLevel.Goal,
+      name: String = "Indicator name",
+      notes: String? = null,
+      precision: Int = 0,
+      primaryDataSource: String? = null,
+      projectId: ProjectId = inserted.projectId,
+      refId: String? = "1.1",
+      tfOwner: String? = "Carbon",
+      unit: String? = null,
+  ): CommonIndicatorId {
+    val id =
+        insertCommonIndicator(
+            category = category,
+            classId = classId,
+            description = description,
+            frequency = frequency,
+            level = level,
+            name = name,
+            precision = precision,
+            tfOwner = tfOwner,
+            unit = unit,
+        )
+    insertProjectCommonIndicator(
+        active = active,
+        commonIndicatorId = id,
+        isPublishable = isPublishable,
+        notes = notes,
+        primaryDataSource = primaryDataSource,
+        projectId = projectId,
+        refId = refId,
+    )
+    return id
+  }
+
   fun insertCommonIndicator(
       active: Boolean = true,
       category: IndicatorCategory = IndicatorCategory.ProjectObjectives,

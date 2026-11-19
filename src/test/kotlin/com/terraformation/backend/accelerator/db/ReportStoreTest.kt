@@ -9,6 +9,7 @@ import com.terraformation.backend.accelerator.model.AutoCalculatedIndicatorTarge
 import com.terraformation.backend.accelerator.model.CommonIndicatorModel
 import com.terraformation.backend.accelerator.model.CommonIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.CumulativeIndicatorProgressModel
+import com.terraformation.backend.accelerator.model.ExistingCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorModel
@@ -137,6 +138,131 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
   }
 
+  @Test
+  fun `report settings and membership are specific to each project`() {
+    val commonId = insertCommonIndicator(active = false, isPublishable = false, refId = "global")
+    insertCommonIndicator()
+    val reportIds =
+        listOf(projectId, otherProjectId).map { id ->
+          insertProjectReportConfig(projectId = id)
+          insertReport(projectId = id)
+        }
+    insertProjectCommonIndicator(
+        commonIndicatorId = commonId,
+        isPublishable = true,
+        notes = "Project notes",
+        primaryDataSource = "Project source",
+        projectId = projectId,
+        refId = null,
+    )
+    insertProjectCommonIndicator(
+        active = false,
+        commonIndicatorId = commonId,
+        isPublishable = true,
+        projectId = otherProjectId,
+        refId = "other",
+    )
+    val report = store.fetchOne(reportIds[0], includeIndicators = true)
+    assertEquals(
+        ExistingCommonIndicatorModel(
+            active = true,
+            category = IndicatorCategory.ProjectObjectives,
+            classId = IndicatorClass.NotCumulative,
+            description = null,
+            id = commonId,
+            isPublishable = true,
+            level = IndicatorLevel.Goal,
+            name = "Indicator name",
+            notes = "Project notes",
+            precision = 0,
+            primaryDataSource = "Project source",
+            refId = null,
+            tfOwner = "Carbon",
+        ),
+        report.commonIndicators.single().indicator,
+    )
+    val otherReport = store.fetchOne(reportIds[1], includeIndicators = true)
+    assertEquals(
+        emptyList<ReportCommonIndicatorModel>(),
+        otherReport.commonIndicators,
+        "Inactive and unconfigured common indicators are excluded",
+    )
+  }
+
+  @Test
+  fun `publishes values and targets only for active publishable project settings`() {
+    insertCommonIndicator(active = false, isPublishable = false)
+    val inactiveProjectId = insertProject()
+    val missingProjectId = insertProject()
+    var publishedReportId: ReportId? = null
+    listOf(projectId, otherProjectId, inactiveProjectId, missingProjectId).forEach { id ->
+      insertProjectReportConfig(projectId = id)
+      val reportId =
+          insertReport(
+              projectId = id,
+              status = ReportStatus.Approved,
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+          )
+      if (id != missingProjectId) {
+        insertProjectCommonIndicator(
+            active = id != inactiveProjectId,
+            commonIndicatorId = inserted.commonIndicatorId,
+            isPublishable = id != otherProjectId,
+            projectId = id,
+        )
+      }
+      insertReportCommonIndicator(
+          reportId = reportId,
+          indicatorId = inserted.commonIndicatorId,
+          value = BigDecimal.TEN,
+      )
+
+      insertReportCommonIndicatorTarget(
+          projectId = id,
+          commonIndicatorId = inserted.commonIndicatorId,
+          year = 2025,
+          target = BigDecimal.TEN,
+      )
+
+      insertCommonIndicatorBaselineTarget(
+          projectId = id,
+          commonIndicatorId = inserted.commonIndicatorId,
+          baseline = 1,
+          endTarget = 100,
+      )
+
+      store.publishReport(reportId)
+      eventPublisher.assertEventPublished(AcceleratorReportPublishedEvent(reportId))
+      if (id == projectId) publishedReportId = reportId
+    }
+    assertTableEquals(
+        PublishedReportCommonIndicatorsRecord(
+            commonIndicatorId = inserted.commonIndicatorId,
+            reportId = publishedReportId,
+            value = BigDecimal.TEN,
+        )
+    )
+
+    assertTableEquals(
+        PublishedCommonIndicatorTargetsRecord(
+            commonIndicatorId = inserted.commonIndicatorId,
+            projectId = projectId,
+            target = BigDecimal.TEN,
+            year = 2025,
+        )
+    )
+
+    assertTableEquals(
+        PublishedCommonIndicatorBaselinesRecord(
+            baseline = BigDecimal.ONE,
+            commonIndicatorId = inserted.commonIndicatorId,
+            endTarget = BigDecimal(100),
+            projectId = projectId,
+        )
+    )
+  }
+
   @Nested
   inner class Fetch {
     @Test
@@ -145,7 +271,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val reportId = insertReport()
       val commonIds =
           listOf(null, "2.0", null, "1.0", "1.0").map { refId ->
-            insertCommonIndicator(refId = refId)
+            insertCommonIndicatorForProject(
+                projectId = projectId,
+                refId = refId,
+            )
           }
       val projectIds =
           listOf(null, "2.0", null, "1.0", "1.0").map { refId ->
@@ -370,7 +499,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       val commonIndicatorId1 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.NotCumulative,
               description = "Climate common indicator description",
@@ -379,24 +508,27 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Climate Common Indicator",
               notes = "Common indicator notes",
               primaryDataSource = "Common data source",
+              projectId = projectId,
               refId = "2.1",
           )
 
       val commonIndicatorId2 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Community,
               description = "Community indicator description",
               level = IndicatorLevel.Outcome,
               name = "Community Indicator",
+              projectId = projectId,
               refId = "10.0",
           )
 
       val commonIndicatorId3 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               level = IndicatorLevel.Goal,
               name = "Project Objectives Indicator",
+              projectId = projectId,
               refId = "2.0",
           )
 
@@ -1123,7 +1255,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReport(
           endDate = LocalDate.of(2024, Month.DECEMBER, 31),
       )
-      val commonIndicatorId = insertCommonIndicator()
+      val commonIndicatorId =
+          insertCommonIndicatorForProject(
+              projectId = projectId,
+          )
 
       // Target for the report's year (2024) - should be included
       insertReportCommonIndicatorTarget(
@@ -1223,8 +1358,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       insertReport(status = ReportStatus.NotSubmitted)
 
-      val activeCommonId = insertCommonIndicator(name = "Active Common Indicator")
-      insertCommonIndicator(name = "Inactive Common Indicator", active = false)
+      val activeCommonId =
+          insertCommonIndicatorForProject(
+              name = "Active Common Indicator",
+              projectId = projectId,
+          )
+      insertCommonIndicatorForProject(
+          active = false,
+          name = "Inactive Common Indicator",
+          projectId = projectId,
+      )
 
       val activeProjectId = insertProjectIndicator(name = "Active Project Indicator")
       insertProjectIndicator(name = "Inactive Project Indicator", active = false)
@@ -1313,14 +1456,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Other Project's Indicator",
           )
       val commonIndicatorId1 =
-          insertCommonIndicator(
-              name = "Common Indicator Name 1",
+          insertCommonIndicatorForProject(
               classId = IndicatorClass.LifetimeCumulative,
+              name = "Common Indicator Name 1",
+              projectId = projectId,
           )
       val commonIndicatorId2 =
-          insertCommonIndicator(
-              name = "Common Indicator Name 2",
+          insertCommonIndicatorForProject(
               classId = IndicatorClass.LifetimeCumulative,
+              name = "Common Indicator Name 2",
+              projectId = projectId,
           )
 
       // other project's indicators shouldn't affect total
@@ -1567,14 +1712,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
 
       val lifetimeCumulativeCommonIndicatorId =
-          insertCommonIndicator(
-              name = "Lifetime Cumulative Common Indicator",
+          insertCommonIndicatorForProject(
               classId = IndicatorClass.LifetimeCumulative,
+              name = "Lifetime Cumulative Common Indicator",
+              projectId = projectId,
           )
       val notCumulativeCommonIndicatorId =
-          insertCommonIndicator(
-              name = "Not Cumulative Common Indicator",
+          insertCommonIndicatorForProject(
               classId = IndicatorClass.NotCumulative,
+              name = "Not Cumulative Common Indicator",
+              projectId = projectId,
           )
       val lifetimeCumulativeProjectIndicatorId =
           insertProjectIndicator(
@@ -1964,9 +2111,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
 
       val commonIndicatorId =
-          insertCommonIndicator(
-              name = "Yearly Cumulative Common Indicator",
+          insertCommonIndicatorForProject(
               classId = IndicatorClass.YearlyCumulative,
+              name = "Yearly Cumulative Common Indicator",
+              projectId = projectId,
           )
       val projectIndicatorId =
           insertProjectIndicator(
@@ -2089,7 +2237,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       val commonIndicatorId1 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.LifetimeCumulative,
               description = "Climate common indicator description",
@@ -2098,25 +2246,28 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Climate Common Indicator",
               notes = "Common indicator notes",
               primaryDataSource = "Common data source",
+              projectId = projectId,
               refId = "2.1",
           )
 
       val commonIndicatorId2 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Community,
               description = "Community indicator description",
               isPublishable = false,
               level = IndicatorLevel.Outcome,
               name = "Community Indicator",
+              projectId = projectId,
               refId = "10.0",
           )
 
       val commonIndicatorId3 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               level = IndicatorLevel.Goal,
               name = "Project Objectives Indicator",
+              projectId = projectId,
               refId = "2.0",
           )
 
@@ -2384,8 +2535,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
 
-      val activeCommonId = insertCommonIndicator(name = "Active Common Indicator")
-      insertCommonIndicator(name = "Inactive Common Indicator", active = false)
+      val activeCommonId =
+          insertCommonIndicatorForProject(
+              name = "Active Common Indicator",
+              projectId = projectId,
+          )
+      insertCommonIndicatorForProject(
+          active = false,
+          name = "Inactive Common Indicator",
+          projectId = projectId,
+      )
 
       val activeProjectId = insertProjectIndicator(name = "Active Project Indicator")
       insertProjectIndicator(name = "Inactive Project Indicator", active = false)
@@ -2685,39 +2844,43 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherUserId = insertUser()
 
       val commonIndicatorId1 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
-              name = "Climate Common Indicator",
-              refId = "2.1",
               level = IndicatorLevel.Process,
+              name = "Climate Common Indicator",
+              projectId = projectId,
+              refId = "2.1",
           )
 
       val commonIndicatorId2 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Community,
               description = "Community indicator description",
-              name = "Community Indicator",
-              refId = "10.0",
               level = IndicatorLevel.Outcome,
+              name = "Community Indicator",
+              projectId = projectId,
+              refId = "10.0",
           )
 
       val commonIndicatorId3 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
-              name = "Project Objectives Indicator",
-              refId = "2.0",
               level = IndicatorLevel.Goal,
+              name = "Project Objectives Indicator",
+              projectId = projectId,
+              refId = "2.0",
           )
 
       // This has no entry and will not have any updates
-      insertCommonIndicator(
+      insertCommonIndicatorForProject(
           category = IndicatorCategory.Biodiversity,
           description = "Biodiversity indicator description",
-          name = "Biodiversity Indicator",
-          refId = "7.0",
           level = IndicatorLevel.Goal,
+          name = "Biodiversity Indicator",
+          projectId = projectId,
+          refId = "7.0",
       )
 
       val projectIndicatorId =
@@ -3188,39 +3351,43 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `upserts values and targets for existing and non-existing report indicator rows`() {
       val otherUserId = insertUser()
       val commonIndicatorId1 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
-              name = "Climate Common Indicator",
-              refId = "2.1",
               level = IndicatorLevel.Process,
+              name = "Climate Common Indicator",
+              projectId = projectId,
+              refId = "2.1",
           )
 
       val commonIndicatorId2 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Community,
               description = "Community indicator description",
-              name = "Community Indicator",
-              refId = "10.0",
               level = IndicatorLevel.Outcome,
+              name = "Community Indicator",
+              projectId = projectId,
+              refId = "10.0",
           )
 
       val commonIndicatorId3 =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
-              name = "Project Objectives Indicator",
-              refId = "2.0",
               level = IndicatorLevel.Goal,
+              name = "Project Objectives Indicator",
+              projectId = projectId,
+              refId = "2.0",
           )
 
       // This has no entry and will not have any updates
-      insertCommonIndicator(
+      insertCommonIndicatorForProject(
           category = IndicatorCategory.Biodiversity,
           description = "Biodiversity indicator description",
-          name = "Biodiversity Indicator",
-          refId = "7.0",
           level = IndicatorLevel.Goal,
+          name = "Biodiversity Indicator",
+          projectId = projectId,
+          refId = "7.0",
       )
 
       val projectIndicatorId =
@@ -3927,22 +4094,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       val existingIndicatorId = insertCommonIndicator()
       insertProjectCommonIndicator(
-          projectId = projectId,
-          commonIndicatorId = existingIndicatorId,
           active = false,
+          commonIndicatorId = existingIndicatorId,
           isPublishable = true,
-          refId = "custom",
           notes = "Notes",
           primaryDataSource = "Source",
+          projectId = projectId,
+          refId = "custom",
       )
       insertProjectAutoCalculatedIndicator(
-          projectId = projectId,
-          autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
           active = false,
+          autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
           isPublishable = true,
-          refId = null,
           notes = "Notes",
           primaryDataSource = "Source",
+          projectId = projectId,
+          refId = null,
       )
 
       clock.instant = Instant.ofEpochSecond(9000)
@@ -4650,11 +4817,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class PublishReport {
     private lateinit var reportId: ReportId
-    private val commonIndicatorId1 by lazy { insertCommonIndicator() }
-    private val commonIndicatorId2 by lazy { insertCommonIndicator() }
-    private val commonIndicatorNullValueId by lazy { insertCommonIndicator() }
+    private val commonIndicatorId1 by lazy {
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
+    }
+    private val commonIndicatorId2 by lazy {
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
+    }
+    private val commonIndicatorNullValueId by lazy {
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
+    }
     private val commonIndicatorNotPublishableId by lazy {
-      insertCommonIndicator(isPublishable = false)
+      insertCommonIndicatorForProject(
+          isPublishable = false,
+          projectId = projectId,
+      )
     }
 
     private val projectIndicatorId1 by lazy { insertProjectIndicator() }
@@ -5069,7 +5251,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `only publishes active indicators and deletes inactive indicators`() {
       // Insert inactive common and project indicators that have values so they would be published
       // if they were active.
-      val inactiveCommonIndicatorId = insertCommonIndicator(active = false, isPublishable = true)
+      val inactiveCommonIndicatorId =
+          insertCommonIndicatorForProject(
+              active = false,
+              projectId = projectId,
+          )
       val inactiveProjectIndicatorId = insertProjectIndicator(active = false, isPublishable = true)
 
       insertReportCommonIndicatorTarget(
@@ -5156,7 +5342,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `does not publish targets for inactive common indicator`() {
-      val inactiveCommonIndicatorId = insertCommonIndicator(active = false, isPublishable = true)
+      val inactiveCommonIndicatorId =
+          insertCommonIndicatorForProject(
+              active = false,
+              projectId = projectId,
+          )
 
       insertReportCommonIndicatorTarget(
           commonIndicatorId = inactiveCommonIndicatorId,
