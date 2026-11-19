@@ -17,6 +17,7 @@ observation_dependent_substrata
 observation_substratum_results
 observation_stratum_results
 observation_site_results
+stratum_plot_selection_parameters
 scheduled_planting_date_species
 planting_season_species_targets
 planting_season_notifications
@@ -63,13 +64,13 @@ planting_types
 planting_season_statuses
 planting_season_notification_pages
 planting_date_request_statuses
-observation_types
 observation_states
 observation_plot_statuses
 observable_conditions
 mangrove_tides
 draft_planting_site_types
 biomass_forest_types
+observation_types
 observation_media_types
 recorded_species_certainties
 observation_plot_positions

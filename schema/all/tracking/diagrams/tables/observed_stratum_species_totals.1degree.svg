@@ -313,60 +313,60 @@
 <g id="node7" class="node">
 <title>strata</title>
 <g id="a_node7"><a xlink:href="../../tables/strata.html" xlink:title="strata" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="12,-37 12,-249 222,-249 222,-37 12,-37"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="12,-227 12,-249 222,-249 222,-227 12,-227"/>
-<polygon fill="none" stroke="black" points="12,-227 12,-249 222,-249 222,-227 12,-227"/>
-<text text-anchor="start" x="16" y="-236.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">strata</text>
-<text text-anchor="start" x="183" y="-235.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="12,-205 12,-227 222,-227 222,-205 12,-205"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="17" y="-222"/>
-<text text-anchor="start" x="32" y="-213.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="12,-183 12,-205 222,-205 222,-183 12,-183"/>
-<polygon fill="none" stroke="black" points="12,-183 12,-205 222,-205 222,-183 12,-183"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="17" y="-200"/>
-<text text-anchor="start" x="32" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="12,-161 12,-183 222,-183 222,-161 12,-161"/>
-<polygon fill="none" stroke="black" points="12,-161 12,-183 222,-183 222,-161 12,-161"/>
-<text text-anchor="start" x="32" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="none" stroke="black" points="12,-139 12,-161 222,-161 222,-139 12,-139"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="17" y="-156"/>
-<text text-anchor="start" x="32" y="-147.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
-<polygon fill="none" stroke="black" points="12,-117 12,-139 222,-139 222,-117 12,-117"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="17" y="-134"/>
-<text text-anchor="start" x="32" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="none" stroke="black" points="12,-95 12,-117 222,-117 222,-95 12,-95"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="17" y="-112"/>
-<text text-anchor="start" x="32" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_by</text>
-<polygon fill="#ffffff" stroke="transparent" points="12,-73 12,-95 222,-95 222,-73 12,-73"/>
-<polygon fill="none" stroke="black" points="12,-73 12,-95 222,-95 222,-73 12,-73"/>
-<text text-anchor="start" x="32" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">stable_id</text>
-<polygon fill="none" stroke="black" points="12,-55 12,-73 222,-73 222,-55 12,-55"/>
-<text text-anchor="start" x="15" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="12,-37 12,-55 107,-55 107,-37 12,-37"/>
-<polygon fill="none" stroke="black" points="12,-37 12,-55 107,-55 107,-37 12,-37"/>
-<text text-anchor="start" x="15" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="107,-37 107,-55 157,-55 157,-37 107,-37"/>
-<polygon fill="none" stroke="black" points="107,-37 107,-55 157,-55 157,-37 107,-37"/>
-<text text-anchor="start" x="147" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="157,-37 157,-55 222,-55 222,-37 157,-37"/>
-<polygon fill="none" stroke="black" points="157,-37 157,-55 222,-55 222,-37 157,-37"/>
-<text text-anchor="start" x="197" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="32.5,-37 32.5,-249 201.5,-249 201.5,-37 32.5,-37"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="33,-227 33,-249 202,-249 202,-227 33,-227"/>
+<polygon fill="none" stroke="black" points="33,-227 33,-249 202,-249 202,-227 33,-227"/>
+<text text-anchor="start" x="37" y="-236.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">strata</text>
+<text text-anchor="start" x="163" y="-235.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="33,-205 33,-227 202,-227 202,-205 33,-205"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="38" y="-222"/>
+<text text-anchor="start" x="53" y="-213.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="33,-183 33,-205 202,-205 202,-183 33,-183"/>
+<polygon fill="none" stroke="black" points="33,-183 33,-205 202,-205 202,-183 33,-183"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="38" y="-200"/>
+<text text-anchor="start" x="53" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="33,-161 33,-183 202,-183 202,-161 33,-161"/>
+<polygon fill="none" stroke="black" points="33,-161 33,-183 202,-183 202,-161 33,-161"/>
+<text text-anchor="start" x="53" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="none" stroke="black" points="33,-139 33,-161 202,-161 202,-139 33,-139"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="38" y="-156"/>
+<text text-anchor="start" x="53" y="-147.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<polygon fill="none" stroke="black" points="33,-117 33,-139 202,-139 202,-117 33,-117"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="38" y="-134"/>
+<text text-anchor="start" x="53" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<polygon fill="none" stroke="black" points="33,-95 33,-117 202,-117 202,-95 33,-95"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="38" y="-112"/>
+<text text-anchor="start" x="53" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_by</text>
+<polygon fill="#ffffff" stroke="transparent" points="33,-73 33,-95 202,-95 202,-73 33,-73"/>
+<polygon fill="none" stroke="black" points="33,-73 33,-95 202,-95 202,-73 33,-73"/>
+<text text-anchor="start" x="53" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">stable_id</text>
+<polygon fill="none" stroke="black" points="33,-55 33,-73 202,-73 202,-55 33,-55"/>
+<text text-anchor="start" x="36" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="33,-37 33,-55 108,-55 108,-37 33,-37"/>
+<polygon fill="none" stroke="black" points="33,-37 33,-55 108,-55 108,-37 33,-37"/>
+<text text-anchor="start" x="36" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="108,-37 108,-55 147,-55 147,-37 108,-37"/>
+<polygon fill="none" stroke="black" points="108,-37 108,-55 147,-55 147,-37 108,-37"/>
+<text text-anchor="start" x="137" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="147,-37 147,-55 202,-55 202,-37 147,-37"/>
+<polygon fill="none" stroke="black" points="147,-37 147,-55 202,-55 202,-37 147,-37"/>
+<text text-anchor="start" x="177" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">11 &gt;</text>
 </a>
 </g>
 </g>
 <!-- observed_stratum_species_totals&#45;&gt;strata -->
 <g id="edge9" class="edge">
 <title>observed_stratum_species_totals:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M528.88,-377.85C458.35,-376.53 311.84,-365.81 267,-329 225.35,-294.8 276.9,-216 223,-216"/>
-<polygon fill="black" stroke="black" points="535.5,-377.92 543.46,-381.6 539.5,-377.96 543.5,-378 543.5,-378 543.5,-378 539.5,-377.96 543.54,-374.4 535.5,-377.92 535.5,-377.92"/>
-<ellipse fill="none" stroke="black" cx="532.3" cy="-377.89" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M528.86,-378.1C414.63,-379.69 364.82,-398.17 267,-329 219.87,-295.68 260.72,-216 203,-216"/>
+<polygon fill="black" stroke="black" points="535.5,-378.06 543.53,-381.6 539.5,-378.03 543.5,-378 543.5,-378 543.5,-378 539.5,-378.03 543.47,-374.4 535.5,-378.06 535.5,-378.06"/>
+<ellipse fill="none" stroke="black" cx="532.3" cy="-378.08" rx="3.2" ry="3.2"/>
 </g>
 <!-- stratum_histories&#45;&gt;strata -->
 <g id="edge10" class="edge">
 <title>stratum_histories:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M288.43,-138.85C256.47,-153.1 267.59,-216 223,-216"/>
-<polygon fill="black" stroke="black" points="295.15,-137.53 303.69,-139.53 299.07,-136.77 303,-136 303,-136 303,-136 299.07,-136.77 302.31,-132.47 295.15,-137.53 295.15,-137.53"/>
-<ellipse fill="none" stroke="black" cx="292.01" cy="-138.15" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M288.48,-138.06C248.08,-150.58 254.47,-216 203,-216"/>
+<polygon fill="black" stroke="black" points="295.08,-137.12 303.51,-139.56 299.04,-136.56 303,-136 303,-136 303,-136 299.04,-136.56 302.49,-132.44 295.08,-137.12 295.08,-137.12"/>
+<ellipse fill="none" stroke="black" cx="291.91" cy="-137.57" rx="3.2" ry="3.2"/>
 </g>
 </g>
 </svg>

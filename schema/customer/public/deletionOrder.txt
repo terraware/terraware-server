@@ -15,6 +15,8 @@ project_land_use_model_types
 organization_media_files
 organization_managed_location_types
 device_managers
+restore_credentials
+restore_credential_challenges
 project_report_settings
 organization_report_settings
 uploads

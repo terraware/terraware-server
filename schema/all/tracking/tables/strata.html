@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>strata - terraware_045577cc_2c057118f580.tracking</title>
+        <title>strata - terraware_c37c3497_becd0279ee81.tracking</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware_045577cc_2c057118f580</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_c37c3497_becd0279ee81</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -149,6 +149,11 @@
                                                 <td title="stratum_histories.stratum_id references strata.id via stratum_histories_stratum_id_fkey"><a href='stratum_histories.html'>stratum_histories</a><span class='relatedKey'>.stratum_id</span></td>
                                                 <td class="constraint detail">stratum_histories_stratum_id_fkey</td>
                                                 <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="stratum_plot_selection_parameters.stratum_id references strata.id via stratum_plot_selection_parameters_stratum_id_fkey"><a href='stratum_plot_selection_parameters.html'>stratum_plot_selection_parameters</a><span class='relatedKey'>.stratum_id</span></td>
+                                                <td class="constraint detail">stratum_plot_selection_parameters_stratum_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="stratum_populations.stratum_id references strata.id via stratum_populations_stratum_id_fkey"><a href='stratum_populations.html'>stratum_populations</a><span class='relatedKey'>.stratum_id</span></td>
@@ -323,91 +328,6 @@
                                     <td><p>When the stratum was most recently modified.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="plant_variance">plant_variance</span></td>
-                                    <td>numeric</td>
-                                    <td>0</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="plant_students_t">plant_students_t</span></td>
-                                    <td>numeric</td>
-                                    <td>0</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="plant_error_margin">plant_error_margin</span></td>
-                                    <td>numeric</td>
-                                    <td>0</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="plant_num_permanent_plots">plant_num_permanent_plots</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Number of permanent plots to assign to the next plant monitoring observation. This is typically derived from a statistical formula.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="plant_num_temporary_plots">plant_num_temporary_plots</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
                                     <td><span id="area_ha">area_ha</span></td>
                                     <td>numeric</td>
                                     <td>0</td>
@@ -514,91 +434,6 @@
                                     </td>
                                     <td><p>Number of plants per hectare that the stratum should have after planting is fully completed. This may be less than the initial planting density to account for seedlings not surviving.</p></td>
                                 </tr>
-                                <tr>
-                                    <td><span id="biomass_error_margin">biomass_error_margin</span></td>
-                                    <td>numeric</td>
-                                    <td>0</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="biomass_num_permanent_plots">biomass_num_permanent_plots</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>Number of permanent plots to assign to the next biomass monitoring observation. This is typically derived from a statistical formula.</p></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="biomass_num_temporary_plots">biomass_num_temporary_plots</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="biomass_students_t">biomass_students_t</span></td>
-                                    <td>numeric</td>
-                                    <td>0</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="biomass_variance">biomass_variance</span></td>
-                                    <td>numeric</td>
-                                    <td>0</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -682,24 +517,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>target_plant_density_positive</td>
-                                    <td>(target_plant_density &gt; (0)::numeric)</td>
-                                </tr>
-                                <tr>
-                                    <td>must_have_permanent_clusters</td>
-                                    <td>(plant_num_permanent_plots &gt; 0)</td>
-                                </tr>
-                                <tr>
                                     <td>area_positive</td>
                                     <td>(area_ha &gt; (0)::numeric)</td>
                                 </tr>
                                 <tr>
-                                    <td>positive_target_density</td>
-                                    <td>(initial_planting_density &gt; (0)::numeric)</td>
+                                    <td>target_plant_density_positive</td>
+                                    <td>(target_plant_density &gt; (0)::numeric)</td>
                                 </tr>
                                 <tr>
-                                    <td>no_negative_temporary_plots</td>
-                                    <td>(plant_num_temporary_plots &gt;&#61; 0)</td>
+                                    <td>positive_target_density</td>
+                                    <td>(initial_planting_density &gt; (0)::numeric)</td>
                                 </tr>
                                 </tbody>
                             </table>

@@ -28,6 +28,8 @@ internal_tags
 uploads
 organization_report_settings
 project_report_settings
+restore_credential_challenges
+restore_credentials
 device_managers
 organization_managed_location_types
 organization_media_files

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>observation_types - terraware_045577cc_2c057118f580.tracking</title>
+        <title>observation_types - terraware_c37c3497_becd0279ee81.tracking</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware_045577cc_2c057118f580</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware_c37c3497_becd0279ee81</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -133,6 +133,11 @@
                                             <tr>
                                                 <td title="observations.observation_type_id references observation_types.id via observations_observation_type_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.observation_type_id</span></td>
                                                 <td class="constraint detail">observations_observation_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="stratum_plot_selection_parameters.observation_type_id references observation_types.id via stratum_plot_selection_parameters_observation_type_id_fkey"><a href='stratum_plot_selection_parameters.html'>stratum_plot_selection_parameters</a><span class='relatedKey'>.observation_type_id</span></td>
+                                                <td class="constraint detail">stratum_plot_selection_parameters_observation_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>

@@ -63,6 +63,8 @@ external_dataset_imports
 identifier_sequences
 organization_report_settings
 project_report_settings
+restore_credential_challenges
+restore_credentials
 thumbnails
 timeseries_values
 chat_memory_messages

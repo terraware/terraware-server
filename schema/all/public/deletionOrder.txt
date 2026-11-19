@@ -36,6 +36,8 @@ country_botanical_countries
 chat_memory_messages
 timeseries_values
 thumbnails
+restore_credentials
+restore_credential_challenges
 project_report_settings
 organization_report_settings
 identifier_sequences
