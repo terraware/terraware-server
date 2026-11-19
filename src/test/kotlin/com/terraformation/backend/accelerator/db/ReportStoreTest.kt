@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.api.ReportAutoCalculatedIndicatorPayload
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
@@ -55,7 +56,7 @@ import com.terraformation.backend.db.accelerator.tables.records.ReportChallenges
 import com.terraformation.backend.db.accelerator.tables.records.ReportCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportProjectIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
-import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -162,6 +163,27 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         projectId = otherProjectId,
         refId = "other",
     )
+    insertProjectAutoCalculatedIndicator(
+        autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
+        isPublishable = true,
+        notes = "Auto notes",
+        primaryDataSource = "Auto source",
+        projectId = projectId,
+        refId = null,
+    )
+    insertProjectAutoCalculatedIndicator(
+        autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
+        isPublishable = true,
+        projectId = projectId,
+        refId = "1",
+    )
+    insertProjectAutoCalculatedIndicator(
+        active = false,
+        autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
+        isPublishable = true,
+        projectId = otherProjectId,
+        refId = "other",
+    )
     val report = store.fetchOne(reportIds[0], includeIndicators = true)
     assertEquals(
         ExistingCommonIndicatorModel(
@@ -181,17 +203,44 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         ),
         report.commonIndicators.single().indicator,
     )
+    assertEquals(
+        listOf(AutoCalculatedIndicator.Seedlings, AutoCalculatedIndicator.SeedsCollected),
+        report.autoCalculatedIndicators.map { it.indicator },
+        "Project reference ID order",
+    )
+    assertEquals(
+        ReportAutoCalculatedIndicatorModel(
+            indicator = AutoCalculatedIndicator.SeedsCollected,
+            entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal.ZERO),
+            active = true,
+            isPublishable = true,
+            refId = null,
+            notes = "Auto notes",
+            primaryDataSource = "Auto source",
+            currentYearProgress = emptyList(),
+        ),
+        report.autoCalculatedIndicators.last(),
+        "Project auto-calculated indicator settings",
+    )
+    val payload = ReportAutoCalculatedIndicatorPayload(report.autoCalculatedIndicators.last())
+    assertEquals(null to true, payload.refId to payload.isPublishable, "Project payload settings")
     val otherReport = store.fetchOne(reportIds[1], includeIndicators = true)
     assertEquals(
         emptyList<ReportCommonIndicatorModel>(),
         otherReport.commonIndicators,
         "Inactive and unconfigured common indicators are excluded",
     )
+    assertEquals(
+        emptyList<ReportAutoCalculatedIndicatorModel>(),
+        otherReport.autoCalculatedIndicators,
+        "Inactive and unconfigured auto-calculated indicators are excluded",
+    )
   }
 
   @Test
   fun `publishes values and targets only for active publishable project settings`() {
     insertCommonIndicator(active = false, isPublishable = false)
+    val autoId = AutoCalculatedIndicator.SeedsCollected
     val inactiveProjectId = insertProject()
     val missingProjectId = insertProject()
     var publishedReportId: ReportId? = null
@@ -211,27 +260,47 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             isPublishable = id != otherProjectId,
             projectId = id,
         )
+        insertProjectAutoCalculatedIndicator(
+            active = id != inactiveProjectId,
+            autoCalculatedIndicatorId = autoId,
+            isPublishable = id != otherProjectId,
+            projectId = id,
+        )
       }
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = inserted.commonIndicatorId,
           value = BigDecimal.TEN,
       )
-
+      insertReportAutoCalculatedIndicator(
+          reportId = reportId,
+          indicator = autoId,
+          systemValue = BigDecimal.TEN,
+      )
       insertReportCommonIndicatorTarget(
           projectId = id,
           commonIndicatorId = inserted.commonIndicatorId,
           year = 2025,
           target = BigDecimal.TEN,
       )
-
+      insertReportAutoCalculatedIndicatorTarget(
+          projectId = id,
+          indicator = autoId,
+          year = 2025,
+          target = BigDecimal.TEN,
+      )
       insertCommonIndicatorBaselineTarget(
           projectId = id,
           commonIndicatorId = inserted.commonIndicatorId,
           baseline = 1,
           endTarget = 100,
       )
-
+      insertAutoCalculatedIndicatorBaselineTarget(
+          projectId = id,
+          indicator = autoId,
+          baseline = 1,
+          endTarget = 100,
+      )
       store.publishReport(reportId)
       eventPublisher.assertEventPublished(AcceleratorReportPublishedEvent(reportId))
       if (id == projectId) publishedReportId = reportId
@@ -243,7 +312,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             value = BigDecimal.TEN,
         )
     )
-
+    assertTableEquals(
+        PublishedReportAutoCalculatedIndicatorsRecord(
+            autoCalculatedIndicatorId = autoId,
+            reportId = publishedReportId,
+            value = BigDecimal.TEN,
+        )
+    )
     assertTableEquals(
         PublishedCommonIndicatorTargetsRecord(
             commonIndicatorId = inserted.commonIndicatorId,
@@ -252,7 +327,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             year = 2025,
         )
     )
-
+    assertTableEquals(
+        PublishedAutoCalculatedIndicatorTargetsRecord(
+            autoCalculatedIndicatorId = autoId,
+            projectId = projectId,
+            target = BigDecimal.TEN,
+            year = 2025,
+        )
+    )
     assertTableEquals(
         PublishedCommonIndicatorBaselinesRecord(
             baseline = BigDecimal.ONE,
@@ -261,10 +343,30 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             projectId = projectId,
         )
     )
+    assertTableEquals(
+        PublishedAutoCalculatedIndicatorBaselinesRecord(
+            autoCalculatedIndicatorId = autoId,
+            baseline = BigDecimal.ONE,
+            endTarget = BigDecimal(100),
+            projectId = projectId,
+        )
+    )
   }
 
   @Nested
   inner class Fetch {
+    @BeforeEach
+    fun initializeAutoCalculatedIndicators() {
+      AutoCalculatedIndicator.entries.forEach {
+        insertProjectAutoCalculatedIndicator(
+            autoCalculatedIndicatorId = it,
+            isPublishable = it != AutoCalculatedIndicator.SeedsCollected,
+            projectId = projectId,
+            refId = it.refId,
+        )
+      }
+    }
+
     @Test
     fun `orders missing reference IDs last with indicator ID tiebreaks`() {
       insertProjectReportConfig()
@@ -703,6 +805,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SeedsCollected,
+                  active = true,
+                  isPublishable = false,
+                  refId = AutoCalculatedIndicator.SeedsCollected.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           target = BigDecimal(2000),
@@ -717,6 +824,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.HectaresPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(0),
@@ -725,6 +837,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.Seedlings.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           target = BigDecimal(1000),
@@ -736,6 +853,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.TreesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           target = BigDecimal(600),
@@ -754,6 +876,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SpeciesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(0),
@@ -761,6 +888,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SurvivalRate,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SurvivalRate.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = null),
               ),
           )
@@ -808,6 +940,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SeedsCollected,
+                  active = true,
+                  isPublishable = false,
+                  refId = AutoCalculatedIndicator.SeedsCollected.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(98),
@@ -816,6 +953,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.HectaresPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(40),
@@ -824,6 +966,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.Seedlings.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(93),
@@ -832,6 +979,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.TreesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(27),
@@ -840,6 +992,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SpeciesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(1),
@@ -847,6 +1004,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SurvivalRate,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SurvivalRate.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(50)),
               ),
           ),
@@ -884,6 +1046,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           ReportAutoCalculatedIndicatorModel(
               indicator = AutoCalculatedIndicator.SurvivalRate,
+              active = true,
+              isPublishable = true,
+              refId = AutoCalculatedIndicator.SurvivalRate.refId,
+              notes = null,
+              primaryDataSource = null,
               entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(50)),
           ),
           autoCalculatedIndicators.find { it.indicator == AutoCalculatedIndicator.SurvivalRate },
@@ -1337,6 +1504,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           ReportAutoCalculatedIndicatorModel(
               indicator = AutoCalculatedIndicator.SeedsCollected,
+              active = true,
+              isPublishable = false,
+              refId = AutoCalculatedIndicator.SeedsCollected.refId,
+              notes = null,
+              primaryDataSource = null,
               entry =
                   ReportAutoCalculatedIndicatorEntryModel(
                       target = BigDecimal(300),
@@ -1372,11 +1544,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val activeProjectId = insertProjectIndicator(name = "Active Project Indicator")
       insertProjectIndicator(name = "Inactive Project Indicator", active = false)
 
-      // Mark SeedsCollected inactive via direct DB update
+      // Mark SeedsCollected inactive for this project.
       dslContext
-          .update(AUTO_CALCULATED_INDICATORS)
-          .set(AUTO_CALCULATED_INDICATORS.ACTIVE, false)
-          .where(AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SeedsCollected))
+          .update(PROJECT_AUTO_CALCULATED_INDICATORS)
+          .set(PROJECT_AUTO_CALCULATED_INDICATORS.ACTIVE, false)
+          .where(
+              PROJECT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.eq(
+                  AutoCalculatedIndicator.SeedsCollected
+              )
+          )
           .execute()
 
       val report = store.fetch(includeIndicators = true).single()
@@ -1402,6 +1578,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class FetchOne {
+    @BeforeEach
+    fun initializeAutoCalculatedIndicators() {
+      AutoCalculatedIndicator.entries.forEach {
+        insertProjectAutoCalculatedIndicator(
+            autoCalculatedIndicatorId = it,
+            isPublishable = it != AutoCalculatedIndicator.SeedsCollected,
+            projectId = projectId,
+            refId = it.refId,
+        )
+      }
+    }
+
     @Test
     fun `throws exception if user is not an organization manager, or global role user`() {
       deleteOrganizationUser(organizationId = organizationId)
@@ -1633,6 +1821,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SeedsCollected,
+                  active = true,
+                  isPublishable = false,
+                  refId = AutoCalculatedIndicator.SeedsCollected.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           modifiedBy = user.userId,
@@ -1646,6 +1839,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.HectaresPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           modifiedBy = user.userId,
@@ -1659,20 +1857,40 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.Seedlings.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(0)),
                   currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.TreesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(0)),
                   currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SpeciesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(0)),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SurvivalRate,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SurvivalRate.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = null),
               ),
           )
@@ -2027,6 +2245,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   listOf(
                       ReportAutoCalculatedIndicatorModel(
                           indicator = AutoCalculatedIndicator.SeedsCollected,
+                          active = true,
+                          isPublishable = false,
+                          refId = AutoCalculatedIndicator.SeedsCollected.refId,
+                          notes = null,
+                          primaryDataSource =
+                              AutoCalculatedIndicator.SeedsCollected.primaryDataSource,
                           entry =
                               ReportAutoCalculatedIndicatorEntryModel(
                                   modifiedBy = user.userId,
@@ -2052,6 +2276,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                       ReportAutoCalculatedIndicatorModel(
                           indicator = AutoCalculatedIndicator.HectaresPlanted,
+                          active = true,
+                          isPublishable = true,
+                          refId = AutoCalculatedIndicator.HectaresPlanted.refId,
+                          notes = null,
+                          primaryDataSource =
+                              AutoCalculatedIndicator.HectaresPlanted.primaryDataSource,
                           entry =
                               ReportAutoCalculatedIndicatorEntryModel(
                                   modifiedBy = user.userId,
@@ -2077,23 +2307,46 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                       ReportAutoCalculatedIndicatorModel(
                           indicator = AutoCalculatedIndicator.Seedlings,
+                          active = true,
+                          isPublishable = true,
+                          refId = AutoCalculatedIndicator.Seedlings.refId,
+                          notes = null,
+                          primaryDataSource = null,
                           entry =
                               ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(0)),
                           currentYearProgress = emptyList(),
                       ),
                       ReportAutoCalculatedIndicatorModel(
                           indicator = AutoCalculatedIndicator.TreesPlanted,
+                          active = true,
+                          isPublishable = true,
+                          refId = AutoCalculatedIndicator.TreesPlanted.refId,
+                          notes = null,
+                          primaryDataSource =
+                              AutoCalculatedIndicator.TreesPlanted.primaryDataSource,
                           entry =
                               ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(0)),
                           currentYearProgress = emptyList(),
                       ),
                       ReportAutoCalculatedIndicatorModel(
                           indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                          active = true,
+                          isPublishable = true,
+                          refId = AutoCalculatedIndicator.SpeciesPlanted.refId,
+                          notes = null,
+                          primaryDataSource =
+                              AutoCalculatedIndicator.SpeciesPlanted.primaryDataSource,
                           entry =
                               ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(0)),
                       ),
                       ReportAutoCalculatedIndicatorModel(
                           indicator = AutoCalculatedIndicator.SurvivalRate,
+                          active = true,
+                          isPublishable = true,
+                          refId = AutoCalculatedIndicator.SurvivalRate.refId,
+                          notes = null,
+                          primaryDataSource =
+                              AutoCalculatedIndicator.SurvivalRate.primaryDataSource,
                           entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = null),
                       ),
                   ),
@@ -2428,6 +2681,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SeedsCollected,
+                  active = true,
+                  isPublishable = false,
+                  refId = AutoCalculatedIndicator.SeedsCollected.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           target = BigDecimal(2000),
@@ -2441,6 +2699,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.HectaresPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(0),
@@ -2449,6 +2712,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.Seedlings.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           target = BigDecimal(1000),
@@ -2460,6 +2728,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.TreesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           target = BigDecimal(600),
@@ -2475,6 +2748,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SpeciesPlanted.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = BigDecimal(0),
@@ -2482,6 +2760,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SurvivalRate,
+                  active = true,
+                  isPublishable = true,
+                  refId = AutoCalculatedIndicator.SurvivalRate.refId,
+                  notes = null,
+                  primaryDataSource = null,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = null,
@@ -2549,11 +2832,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val activeProjectId = insertProjectIndicator(name = "Active Project Indicator")
       insertProjectIndicator(name = "Inactive Project Indicator", active = false)
 
-      // Mark SeedsCollected inactive via direct DB update
+      // Mark SeedsCollected inactive for this project.
       dslContext
-          .update(AUTO_CALCULATED_INDICATORS)
-          .set(AUTO_CALCULATED_INDICATORS.ACTIVE, false)
-          .where(AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SeedsCollected))
+          .update(PROJECT_AUTO_CALCULATED_INDICATORS)
+          .set(PROJECT_AUTO_CALCULATED_INDICATORS.ACTIVE, false)
+          .where(
+              PROJECT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.eq(
+                  AutoCalculatedIndicator.SeedsCollected
+              )
+          )
           .execute()
 
       val report = store.fetchOne(reportId, includeIndicators = true)
@@ -4816,6 +5103,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class PublishReport {
+    @BeforeEach
+    fun initializeAutoCalculatedIndicators() {
+      AutoCalculatedIndicator.entries.forEach {
+        insertProjectAutoCalculatedIndicator(
+            autoCalculatedIndicatorId = it,
+            isPublishable = it != AutoCalculatedIndicator.SeedsCollected,
+            projectId = projectId,
+            refId = it.refId,
+        )
+      }
+    }
+
     private lateinit var reportId: ReportId
     private val commonIndicatorId1 by lazy {
       insertCommonIndicatorForProject(
