@@ -380,7 +380,17 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 .leftJoin(SUBSTRATA)
                 .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                 .leftJoin(plotSubstratumHistories)
-                .on(observedPlotHistories.SUBSTRATUM_HISTORY_ID.eq(plotSubstratumHistories.ID))
+                .on(
+                    plotSubstratumHistories.ID.eq(
+                        // Upcoming observations' plots can still point at plot histories from an
+                        // earlier map (e.g., after a name-only edit), so use the current map's.
+                        DSL.`when`(
+                                OBSERVATIONS.PLANTING_SITE_HISTORY_ID.isNull,
+                                MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
+                            )
+                            .otherwise(observedPlotHistories.SUBSTRATUM_HISTORY_ID)
+                    )
+                )
                 .leftJoin(plotStratumHistories)
                 .on(plotSubstratumHistories.STRATUM_HISTORY_ID.eq(plotStratumHistories.ID))
                 .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))

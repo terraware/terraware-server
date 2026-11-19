@@ -15,22 +15,23 @@ import org.locationtech.jts.geom.Polygon
 class ObservationResultsStoreV2UpcomingTest : ObservationScenarioTest() {
   @Test
   fun `returns plots assigned to an upcoming observation under their current strata and substrata`() {
-    insertStratum(name = "Stratum A")
-    insertSubstratum(name = "Substratum A1")
+    insertStratum(name = "Old stratum")
+    insertSubstratum(name = "Old substratum")
     val permanentPlotId = insertMonitoringPlot(permanentIndex = 1, plotNumber = 11)
     val temporaryPlotId = insertMonitoringPlot(plotNumber = 12)
-
-    // A second map version after the plots were created, so the "current history" fallback has to
-    // pick the latest site history rather than any matching one.
-    insertPlantingSiteHistory()
-    insertStratumHistory()
-    insertSubstratumHistory()
-    insertMonitoringPlotHistory(monitoringPlotId = permanentPlotId)
-    insertMonitoringPlotHistory(monitoringPlotId = temporaryPlotId)
 
     insertObservation(state = ObservationState.Upcoming)
     insertObservationPlot(monitoringPlotId = permanentPlotId, isPermanent = true)
     insertObservationPlot(monitoringPlotId = temporaryPlotId, isPermanent = false)
+
+    // A name-only map edit after the plots were assigned. It doesn't reassign plots, so the
+    // observation plots keep pointing at the plot histories from the old map, and the "current
+    // history" fallback has to pick the latest site history rather than any matching one.
+    insertPlantingSiteHistory()
+    insertStratumHistory(name = "New stratum")
+    insertSubstratumHistory(name = "New substratum")
+    insertMonitoringPlotHistory(monitoringPlotId = permanentPlotId)
+    insertMonitoringPlotHistory(monitoringPlotId = temporaryPlotId)
 
     fun expectedPlot(monitoringPlotId: MonitoringPlotId, plotNumber: Long, isPermanent: Boolean) =
         ObservationMonitoringPlotResultsModel(
@@ -59,9 +60,9 @@ class ObservationResultsStoreV2UpcomingTest : ObservationScenarioTest() {
             species = emptyList(),
             status = ObservationPlotStatus.Unclaimed,
             stratumId = inserted.stratumId,
-            stratumName = "Stratum A",
+            stratumName = "New stratum",
             substratumId = inserted.substratumId,
-            substratumName = "Substratum A1",
+            substratumName = "New substratum",
             survivalRate = null,
             totalPlants = null,
             totalSpecies = null,
@@ -80,11 +81,11 @@ class ObservationResultsStoreV2UpcomingTest : ObservationScenarioTest() {
 
     val stratum = results.strata.single()
     assertEquals(inserted.stratumId, stratum.stratumId, "Stratum ID")
-    assertEquals("Stratum A", stratum.name, "Stratum name")
+    assertEquals("New stratum", stratum.name, "Stratum name")
 
     val substratum = stratum.substrata.single()
     assertEquals(inserted.substratumId, substratum.substratumId, "Substratum ID")
-    assertEquals("Substratum A1", substratum.name, "Substratum name")
+    assertEquals("New substratum", substratum.name, "Substratum name")
 
     assertEquals(expectedPlots, substratum.monitoringPlots, "Plots from observation results")
 
