@@ -800,6 +800,14 @@ val EMBEDDABLES =
             .withTables("tracking.substratum_populations")
             .withColumns("substratum_id", "species_id"),
         EmbeddableDefinitionType()
+            .withName("project_auto_calculated_indicator_id")
+            .withTables("accelerator.project_auto_calculated_indicators")
+            .withColumns("project_id", "auto_calculated_indicator_id"),
+        EmbeddableDefinitionType()
+            .withName("project_common_indicator_id")
+            .withTables("accelerator.project_common_indicators")
+            .withColumns("project_id", "common_indicator_id"),
+        EmbeddableDefinitionType()
             .withName("project_deliverable_id")
             .withTables("project_deliverables")
             .withColumns("project_id", "deliverable_id"),
