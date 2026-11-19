@@ -2,7 +2,6 @@ package com.terraformation.backend.eventlog.api
 
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
@@ -16,7 +15,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.eventlog.EventLogPayloadTransformer
 import com.terraformation.backend.eventlog.db.EventLogStore
-import com.terraformation.backend.tracking.db.StratumNotFoundException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.PostMapping
@@ -30,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController
 class EventLogController(
     private val eventLogStore: EventLogStore,
     private val eventLogPayloadTransformer: EventLogPayloadTransformer,
-    private val parentStore: ParentStore,
 ) {
   @Operation(summary = "Lists the entries from the event log that relate to a particular entity.")
   @PostMapping("/list")
@@ -38,12 +35,6 @@ class EventLogController(
       @RequestBody payload: ListEventLogEntriesRequestPayload
   ): ListEventLogEntriesResponsePayload {
     requirePermissions { readOrganization(payload.organizationId) }
-    if (payload.stratumId != null) {
-      val plantingSiteId =
-          parentStore.getPlantingSiteId(payload.stratumId)
-              ?: throw StratumNotFoundException(payload.stratumId)
-      requirePermissions { readPlantingSite(plantingSiteId) }
-    }
 
     val eventLogEntries =
         eventLogStore.fetchByIds(
@@ -75,8 +66,7 @@ class EventLogController(
             "For example, if you specify observationId and monitoringPlotId, you will only get " +
             "events related to one monitoring plot in one observation, whereas if you specify " +
             "just observationId, you will get events related to all monitoring plots in that " +
-            "observation. The subjects property may be used to narrow the search further. " +
-            "Requests with stratumId also require permission to read the stratum's planting site."
+            "observation. The subjects property may be used to narrow the search further."
 )
 data class ListEventLogEntriesRequestPayload(
     val accessionId: AccessionId? = null,
