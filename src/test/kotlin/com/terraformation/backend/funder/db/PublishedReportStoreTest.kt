@@ -58,6 +58,15 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertFundingEntityUser()
     insertOrganization()
     projectId = insertProject()
+    AutoCalculatedIndicator.entries.forEach {
+      insertProjectAutoCalculatedIndicator(
+          autoCalculatedIndicatorId = it,
+          isPublishable = it != AutoCalculatedIndicator.SeedsCollected,
+          projectId = projectId,
+          refId = it.refId,
+      )
+    }
+
     dealName = UUID.randomUUID().toString()
   }
 
@@ -71,7 +80,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReport()
       val commonIds =
           listOf(null, "2.0", null, "1.0", "1.0").map { refId ->
-            val id = insertCommonIndicator(refId = refId)
+            val id = insertCommonIndicatorForProject(projectId = projectId, refId = refId)
             insertPublishedReportCommonIndicator(indicatorId = id)
             id
           }
@@ -91,6 +100,64 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(projectIds[3], projectIds[4], projectIds[1], projectIds[0], projectIds[2]),
           report.projectIndicators.map { it.indicatorId },
           "Project indicator order",
+      )
+    }
+
+    @Test
+    fun `uses Ref IDs from the report's project`() {
+      val commonId = insertCommonIndicator(refId = "global")
+      val autoId = AutoCalculatedIndicator.Seedlings
+      insertProjectCommonIndicator(
+          commonIndicatorId = commonId,
+          projectId = projectId,
+          refId = "first-common",
+      )
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+      insertReport()
+      insertPublishedReport()
+      insertPublishedReportCommonIndicator(indicatorId = commonId)
+      insertPublishedReportAutoCalculatedIndicator(indicator = autoId)
+
+      val otherProjectId = insertProject()
+      insertProjectCommonIndicator(
+          commonIndicatorId = commonId,
+          projectId = otherProjectId,
+          refId = "second-common",
+      )
+      insertProjectAutoCalculatedIndicator(
+          autoCalculatedIndicatorId = autoId,
+          projectId = otherProjectId,
+          refId = "second-auto",
+      )
+      insertFundingEntityProject(projectId = otherProjectId)
+      insertProjectReportConfig(projectId = otherProjectId)
+      val otherReportId = insertReport(projectId = otherProjectId)
+      insertPublishedReport(projectId = otherProjectId, reportId = otherReportId)
+      insertPublishedReportCommonIndicator(indicatorId = commonId, reportId = otherReportId)
+      insertPublishedReportAutoCalculatedIndicator(indicator = autoId, reportId = otherReportId)
+
+      val first = store.fetchPublishedReports(projectId).single()
+      val other = store.fetchPublishedReports(otherProjectId).single()
+      assertEquals(
+          "first-common",
+          first.commonIndicators.single().refId,
+          "First project common Ref ID",
+      )
+      assertEquals(
+          "second-common",
+          other.commonIndicators.single().refId,
+          "Second project common Ref ID",
+      )
+      assertEquals(
+          autoId.refId,
+          first.autoCalculatedIndicators.single().refId,
+          "First project auto Ref ID",
+      )
+      assertEquals(
+          "second-auto",
+          other.autoCalculatedIndicators.single().refId,
+          "Second project auto Ref ID",
       )
     }
 
@@ -195,13 +262,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
 
       val commonIndicatorId =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.LifetimeCumulative,
               description = "Common Indicator Description",
-              name = "Common Indicator",
-              refId = "1.1.1",
               level = IndicatorLevel.Output,
+              name = "Common Indicator",
+              projectId = projectId,
+              refId = "1.1.1",
           )
 
       val reportId =
@@ -352,13 +420,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
 
       val commonIndicatorId =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.LifetimeCumulative,
               description = "Cumulative Indicator Description",
-              name = "Cumulative Indicator",
-              refId = "1.1.1",
               level = IndicatorLevel.Output,
+              name = "Cumulative Indicator",
+              projectId = projectId,
+              refId = "1.1.1",
           )
 
       // Prior year report — must NOT appear in currentYearProgress
@@ -484,13 +553,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
 
       val commonIndicatorId =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.LifetimeCumulative,
               description = "Cumulative Indicator Description",
-              name = "Cumulative Indicator",
-              refId = "1.1.1",
               level = IndicatorLevel.Output,
+              name = "Cumulative Indicator",
+              projectId = projectId,
+              refId = "1.1.1",
           )
 
       val q1ReportId =
@@ -571,13 +641,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
 
       val notCumulativeIndicatorId =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.NotCumulative,
               description = "Not Cumulative Indicator Description",
-              name = "Not Cumulative Indicator",
-              refId = "1.1.1",
               level = IndicatorLevel.Output,
+              name = "Not Cumulative Indicator",
+              projectId = projectId,
+              refId = "1.1.1",
           )
 
       val q1ReportId =
@@ -637,13 +708,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
 
       val indicatorId =
-          insertCommonIndicator(
+          insertCommonIndicatorForProject(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.YearlyCumulative,
               description = "Yearly Cumulative Indicator Description",
-              name = "Yearly Cumulative Indicator",
-              refId = "1.1.1",
               level = IndicatorLevel.Output,
+              name = "Yearly Cumulative Indicator",
+              projectId = projectId,
+              refId = "1.1.1",
           )
 
       // Previous year's value is only included in previousYearCumulativeTotal for lifetime
@@ -809,23 +881,25 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertFundingEntityProject()
 
     commonIndicatorId1 =
-        insertCommonIndicator(
+        insertCommonIndicatorForProject(
             category = IndicatorCategory.Climate,
             classId = IndicatorClass.LifetimeCumulative,
             description = "Common Indicator Description 1",
-            name = "Common Indicator 1",
-            refId = "1.1.2",
             level = IndicatorLevel.Output,
+            name = "Common Indicator 1",
+            projectId = projectId,
+            refId = "1.1.2",
         )
 
     commonIndicatorId2 =
-        insertCommonIndicator(
+        insertCommonIndicatorForProject(
             category = IndicatorCategory.Community,
             classId = IndicatorClass.LifetimeCumulative,
             description = "Common Indicator Description 2",
-            name = "Common Indicator 2",
-            refId = "1.1.1",
             level = IndicatorLevel.Outcome,
+            name = "Common Indicator 2",
+            projectId = projectId,
+            refId = "1.1.1",
         )
 
     projectIndicatorId1 =
