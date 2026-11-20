@@ -324,7 +324,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       service.startObservation(activeId)
       val activePlots = observationPlotsDao.fetchByObservationId(activeId)
       assertEquals(1, activePlots.size, "Initial assigned plots")
-      val scheduledId =
+      val upcomingId =
           insertObservation(
               observationType = ObservationType.BaselineSurvey,
               state = ObservationState.Upcoming,
@@ -345,14 +345,22 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
       )
 
-      assertEquals(activePlots, observationPlotsDao.fetchByObservationId(activeId))
-      service.startObservation(scheduledId)
+      assertEquals(
+          activePlots,
+          observationPlotsDao.fetchByObservationId(activeId),
+          "settings edit preserves in progress plots and affects subsequently started observation",
+      )
+      service.startObservation(upcomingId)
       assertEquals(
           3,
-          observationPlotsDao.fetchByObservationId(scheduledId).size,
+          observationPlotsDao.fetchByObservationId(upcomingId).size,
           "New assigned plots",
       )
-      assertEquals(activePlots, observationPlotsDao.fetchByObservationId(activeId))
+      assertEquals(
+          activePlots,
+          observationPlotsDao.fetchByObservationId(activeId),
+          "settings edit preserves in progress plots and affects subsequently started observation",
+      )
     }
 
     @ParameterizedTest

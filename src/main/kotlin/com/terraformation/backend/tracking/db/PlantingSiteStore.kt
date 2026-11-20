@@ -1236,6 +1236,7 @@ class PlantingSiteStore(
 
   fun requirePlotSettingsEditable(plantingSiteId: PlantingSiteId) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
+
     val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
     if (parentStore.isProjectInAccelerator(site.projectId)) {
       throw AcceleratorPlotSettingsNotEditableException(plantingSiteId)
@@ -1249,6 +1250,7 @@ class PlantingSiteStore(
   ) {
     entityLocker.withLockedPlantingSite(plantingSiteId) {
       requirePlotSettingsEditable(plantingSiteId)
+
       val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Stratum)
       val strata = site.strata.associateBy { it.id }
       settings.keys.forEach { if (it !in strata) throw StratumNotFoundException(it) }
@@ -1256,15 +1258,16 @@ class PlantingSiteStore(
         edits.mapValues { (type, edit) -> edit(strata.getValue(id).plotCounts(type)) }
       }
 
-      with(PLANTING_SITES) {
-        dslContext
-            .update(PLANTING_SITES)
-            .set(DEFAULT_PLOT_PRECISION_LEVEL_ID, defaultPlotPrecisionLevel)
-            .set(MODIFIED_BY, currentUser().userId)
-            .set(MODIFIED_TIME, clock.instant())
-            .where(ID.eq(plantingSiteId))
-            .execute()
-      }
+      if (defaultPlotPrecisionLevel != site.defaultPlotPrecisionLevel)
+          with(PLANTING_SITES) {
+            dslContext
+                .update(PLANTING_SITES)
+                .set(DEFAULT_PLOT_PRECISION_LEVEL_ID, defaultPlotPrecisionLevel)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .where(ID.eq(plantingSiteId))
+                .execute()
+          }
       updated.forEach { (stratumId, parameters) ->
         val stratum = strata.getValue(stratumId)
         val previous = ObservationType.entries.associateWith { stratum.plotCounts(it) }

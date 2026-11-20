@@ -23,9 +23,14 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
     val stratumId = insertStratum()
     val initial =
         store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts
+    val unchangedDefault = plantingSitesDao.fetchOneById(siteId)!!.defaultPlotPrecisionLevelId!!
+    val siteBeforeEdits = plantingSitesDao.fetchOneById(siteId)
+    clock.instant = Instant.ofEpochSecond(100)
+    // Separate updates require the count edit to retain the saved variance;
+    // a combined copy would not detect an edit based on stale values.
     store.updatePlotSelectionSettings(
         siteId,
-        PlotPrecisionLevel.High,
+        unchangedDefault,
         mapOf(
             stratumId to
                 mapOf(
@@ -35,13 +40,20 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
     )
     store.updatePlotSelectionSettings(
         siteId,
-        PlotPrecisionLevel.High,
+        unchangedDefault,
         mapOf(stratumId to mapOf(ObservationType.Monitoring to { it.copy(numPermanentPlots = 7) })),
     )
-    val expected = initial.copy(variance = java.math.BigDecimal("75"), numPermanentPlots = 7)
     assertEquals(
-        expected,
+        siteBeforeEdits,
+        plantingSitesDao.fetchOneById(siteId),
+        "Unchanged default preserves site metadata",
+    )
+    val expectedPlotCounts =
+        initial.copy(variance = java.math.BigDecimal("75"), numPermanentPlots = 7)
+    assertEquals(
+        expectedPlotCounts,
         store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts,
+        "applies edits to latest stored parameters and validates before saving",
     )
     val siteBefore = plantingSitesDao.fetchOneById(siteId)
     assertThrows<IllegalArgumentException> {
@@ -59,10 +71,15 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
           ),
       )
     }
-    assertEquals(siteBefore, plantingSitesDao.fetchOneById(siteId))
     assertEquals(
-        expected,
+        siteBefore,
+        plantingSitesDao.fetchOneById(siteId),
+        "applies edits to latest stored parameters and validates before saving",
+    )
+    assertEquals(
+        expectedPlotCounts,
         store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts,
+        "applies edits to latest stored parameters and validates before saving",
     )
   }
 
@@ -91,8 +108,6 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
                 modifiedBy = user.userId,
             )
     clock.instant = expectedSite.modifiedTime!!
-    val events = mutableListOf<StratumPlotSelectionSettingsChangedEvent>()
-    eventPublisher.register<StratumPlotSelectionSettingsChangedEvent> { events.add(it) }
 
     store.updatePlotSelectionSettings(
         siteId,
@@ -110,7 +125,11 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
         ),
     )
 
-    assertEquals(expectedSite, plantingSitesDao.fetchOneById(siteId))
+    assertEquals(
+        expectedSite,
+        plantingSitesDao.fetchOneById(siteId),
+        "merges parameters and publishes only changed types and strata",
+    )
     assertTableEquals(expectedParameters)
     assertTableEquals(expectedStrata)
     val expectedEvent =
@@ -137,8 +156,7 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
                     )
                 ),
         )
-    eventPublisher.assertEventPublished(expectedEvent)
-    assertEquals(listOf(expectedEvent), events)
+    eventPublisher.assertEventsPublished(listOf(expectedEvent))
   }
 
   @Test
@@ -150,6 +168,7 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
     assertEquals(
         initial.copy(defaultPlotPrecisionLevel = PlotPrecisionLevel.High),
         store.fetchSiteById(siteId, PlantingSiteDepth.Stratum),
+        "changing only default leaves all stratum settings unchanged",
     )
     eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>()
   }
@@ -163,7 +182,11 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
     assertThrows<AcceleratorPlotSettingsNotEditableException> {
       store.updatePlotSelectionSettings(siteId, PlotPrecisionLevel.High, emptyMap())
     }
-    assertEquals(initial, plantingSitesDao.fetchOneById(siteId))
+    assertEquals(
+        initial,
+        plantingSitesDao.fetchOneById(siteId),
+        "rejects accelerator site",
+    )
   }
 
   @Test
@@ -179,7 +202,11 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
           mapOf(foreignId to emptyMap()),
       )
     }
-    assertEquals(initial, plantingSitesDao.fetchOneById(siteId))
+    assertEquals(
+        initial,
+        plantingSitesDao.fetchOneById(siteId),
+        "rejects stratum from another site before saving changes",
+    )
     eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>()
   }
 }
