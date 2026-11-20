@@ -229,7 +229,6 @@ class EventLogPayloadTransformer(
           fieldName = messages.eventSubjectFieldName(subject::class, field.fieldName),
           changedFrom = field.changedFrom,
           changedTo = field.changedTo,
-          group = field.group,
           calculatedValues =
               field.calculatedValues
                   .takeIf { it.isNotEmpty() }

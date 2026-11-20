@@ -263,7 +263,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             fieldName = "notes",
             changedFrom = listOf("before"),
             changedTo = listOf("after"),
-            group = "Survey",
             calculatedValues =
                 listOf(FieldsUpdatedPersistentEvent.CalculatedValue("conditions", listOf("4"))),
         )
@@ -274,7 +273,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             fieldName = "notas de campo",
             changedFrom = listOf("before"),
             changedTo = listOf("after"),
-            group = "Survey",
             calculatedValues =
                 listOf(CalculatedValuePayload("condiciones de la parcela", listOf("4"))),
         ),
