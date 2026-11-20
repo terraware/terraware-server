@@ -43,5 +43,5 @@ class CommonIndicatorsTable(tables: SearchTables) : SearchTable() {
       )
 
   override val defaultOrderFields: List<OrderField<*>>
-    get() = listOf(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
+    get() = listOf(COMMON_INDICATORS.REF_ID.asc().nullsLast(), COMMON_INDICATORS.ID)
 }

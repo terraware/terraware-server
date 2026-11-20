@@ -21,7 +21,7 @@ data class CommonIndicatorModel<ID : CommonIndicatorId?>(
     val notes: String? = null,
     val precision: Int,
     val primaryDataSource: String? = null,
-    val refId: String,
+    val refId: String?,
     val tfOwner: String? = null,
     val unit: String? = null,
 ) {
@@ -41,7 +41,7 @@ data class CommonIndicatorModel<ID : CommonIndicatorId?>(
             notes = record[NOTES],
             precision = record[PRECISION]!!,
             primaryDataSource = record[PRIMARY_DATA_SOURCE],
-            refId = record[REF_ID]!!,
+            refId = record[REF_ID],
             tfOwner = record[TF_OWNER],
             unit = record[UNIT],
         )

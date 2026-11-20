@@ -27,7 +27,7 @@ data class PublishedReportIndicatorModel<ID : Any>(
     val previousYearCumulativeTotal: BigDecimal? = null,
     val progressNotes: String?,
     val projectsComments: String?,
-    val refId: String,
+    val refId: String?,
     val status: ReportIndicatorStatus?,
     val supportingDocumentUrl: URI? = null,
     val target: BigDecimal?,

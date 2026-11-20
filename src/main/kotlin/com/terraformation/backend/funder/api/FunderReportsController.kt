@@ -131,7 +131,7 @@ data class PublishedReportIndicatorPayload(
     val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,
     val projectsComments: String?,
-    val refId: String,
+    val refId: String?,
     val status: ReportIndicatorStatus?,
     val supportingDocumentUrl: URI?,
     val target: BigDecimal?,
