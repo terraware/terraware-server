@@ -21,7 +21,6 @@ import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
-import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -419,21 +418,18 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       )
 
       newModel.strata.forEach { stratum ->
-        eventPublisher.assertEventPublished(
-            StratumPlotSelectionSettingsChangedEvent(
-                organizationId = organizationId,
-                plantingSiteId = model.id,
-                stratumId = actualStrata.getValue(stratum.name).id!!,
-                stratumName = stratum.name,
-                source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
-                settings =
-                    ObservationType.entries.map {
-                      StratumPlotSelectionSettingsChangedEventSettings.of(
-                          it,
-                          stratum.plotCounts(it),
-                      )
-                    },
-            )
+        eventPublisher.assertEventsPublished(
+            ObservationType.entries.map { type ->
+              StratumPlotSelectionSettingsChangedEvent.of(
+                  organizationId = organizationId,
+                  plantingSiteId = model.id,
+                  stratumId = actualStrata.getValue(stratum.name).id!!,
+                  stratumName = stratum.name,
+                  source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+                  observationType = type,
+                  counts = stratum.plotCounts(type),
+              )
+            }
         )
       }
     }

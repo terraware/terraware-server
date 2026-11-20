@@ -32,7 +32,6 @@ import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
-import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
@@ -94,22 +93,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               stratumId = initial.id,
               stratumName = initial.name,
               source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
-              settings =
-                  listOf(
-                      StratumPlotSelectionSettingsChangedEventSettings(
-                          observationType = ObservationType.BaselineSurvey,
-                          changedFrom =
-                              StratumPlotSelectionSettingsChangedEventValues(
-                                  numTemporaryPlots = initial.baselinePlotCounts.numTemporaryPlots
-                              ),
-                          changedTo =
-                              StratumPlotSelectionSettingsChangedEventValues(
-                                  numTemporaryPlots = temporaryTotal
-                              ),
-                          numPermanentPlots = 0,
-                          numTemporaryPlots = temporaryTotal,
-                      )
+              observationType = ObservationType.BaselineSurvey,
+              changedFrom =
+                  StratumPlotSelectionSettingsChangedEventValues(
+                      numTemporaryPlots = initial.baselinePlotCounts.numTemporaryPlots
                   ),
+              changedTo =
+                  StratumPlotSelectionSettingsChangedEventValues(
+                      numTemporaryPlots = temporaryTotal
+                  ),
+              numPermanentPlots = 0,
+              numTemporaryPlots = temporaryTotal,
           )
       )
     }
@@ -244,18 +238,18 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           )
       val added = edited.strata.single { stratum -> existing.strata.none { it.id == stratum.id } }
-      eventPublisher.assertEventPublished(
-          StratumPlotSelectionSettingsChangedEvent(
-              organizationId = organizationId,
-              plantingSiteId = edited.id,
-              stratumId = added.id,
-              stratumName = added.name,
-              source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
-              settings =
-                  ObservationType.entries.map {
-                    StratumPlotSelectionSettingsChangedEventSettings.of(it, added.plotCounts(it))
-                  },
-          )
+      eventPublisher.assertEventsPublished(
+          ObservationType.entries.map { type ->
+            StratumPlotSelectionSettingsChangedEvent.of(
+                organizationId = organizationId,
+                plantingSiteId = edited.id,
+                stratumId = added.id,
+                stratumName = added.name,
+                source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+                observationType = type,
+                counts = added.plotCounts(type),
+            )
+          }
       )
     }
 

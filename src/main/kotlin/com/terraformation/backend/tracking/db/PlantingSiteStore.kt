@@ -79,7 +79,6 @@ import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
-import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
@@ -1498,25 +1497,23 @@ class PlantingSiteStore(
     if (changed.isEmpty()) {
       return
     }
-    eventPublisher.publishEvent(
-        StratumPlotSelectionSettingsChangedEvent(
-            organizationId = parentStore.getOrganizationId(plantingSiteId)!!,
-            plantingSiteId = plantingSiteId,
-            stratumId = stratumId,
-            stratumName = stratumName,
-            source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
-            settings =
-                changed.entries
-                    .sortedBy { it.key.id }
-                    .map { (type, counts) ->
-                      StratumPlotSelectionSettingsChangedEventSettings.of(
-                          type,
-                          counts,
-                          previous[type],
-                      )
-                    },
-        )
-    )
+    val organizationId = parentStore.getOrganizationId(plantingSiteId)!!
+    changed.entries
+        .sortedBy { it.key.id }
+        .forEach { (type, counts) ->
+          eventPublisher.publishEvent(
+              StratumPlotSelectionSettingsChangedEvent.of(
+                  organizationId = organizationId,
+                  plantingSiteId = plantingSiteId,
+                  stratumId = stratumId,
+                  stratumName = stratumName,
+                  source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+                  observationType = type,
+                  counts = counts,
+                  previous = previous[type],
+              )
+          )
+        }
   }
 
   private fun createSubstratum(

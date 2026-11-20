@@ -13,7 +13,6 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
-import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues as Values
 import com.terraformation.backend.tracking.model.DensityChangedEventModel
@@ -85,16 +84,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
                 stratumId = inserted.stratumId,
                 stratumName = initial.name,
                 source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
-                settings =
-                    listOf(
-                        StratumPlotSelectionSettingsChangedEventSettings(
-                            observationType = ObservationType.Monitoring,
-                            changedFrom = delta.first,
-                            changedTo = delta.second,
-                            numPermanentPlots = changed.numPermanentPlots,
-                            numTemporaryPlots = changed.numTemporaryPlots,
-                        )
-                    ),
+                observationType = ObservationType.Monitoring,
+                changedFrom = delta.first,
+                changedTo = delta.second,
+                numPermanentPlots = changed.numPermanentPlots,
+                numTemporaryPlots = changed.numTemporaryPlots,
             )
         )
         val persisted =
