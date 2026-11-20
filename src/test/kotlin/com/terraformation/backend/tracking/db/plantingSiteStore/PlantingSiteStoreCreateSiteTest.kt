@@ -20,6 +20,8 @@ import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SEL
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.StratumModel
@@ -414,6 +416,22 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           actualSubstrata.map { it.copy(boundary = null) }.toSet(),
           "Substrata",
       )
+
+      newModel.strata.forEach { stratum ->
+        eventPublisher.assertEventsPublished(
+            ObservationType.entries.map { type ->
+              StratumPlotSelectionSettingsChangedEvent.of(
+                  organizationId = organizationId,
+                  plantingSiteId = model.id,
+                  stratumId = actualStrata.getValue(stratum.name).id!!,
+                  stratumName = stratum.name,
+                  source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+                  observationType = type,
+                  counts = stratum.plotCounts(type),
+              )
+            }
+        )
+      }
     }
 
     @Test

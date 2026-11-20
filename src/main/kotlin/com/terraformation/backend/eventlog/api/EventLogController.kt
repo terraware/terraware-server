@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.eventlog.EventLogPayloadTransformer
 import com.terraformation.backend.eventlog.db.EventLogStore
 import io.swagger.v3.oas.annotations.Operation
@@ -47,6 +48,7 @@ class EventLogController(
                 payload.plantingSeasonId,
                 payload.plantingSiteId,
                 payload.projectId,
+                payload.stratumId,
             ),
             requestedClasses = payload.subjects?.map { it.eventInterface }?.ifEmpty { null },
         )
@@ -76,6 +78,7 @@ data class ListEventLogEntriesRequestPayload(
     val plantingSeasonId: PlantingSeasonId? = null,
     val plantingSiteId: PlantingSiteId? = null,
     val projectId: ProjectId? = null,
+    val stratumId: StratumId? = null,
     @Schema(
         description =
             "If specified, only return event log entries for specific subject types. This can be " +
