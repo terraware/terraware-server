@@ -13,44 +13,8 @@ private val plantingSeasonNotificationInitialDelay: Duration = Duration.ofMinute
 private val plantingSeasonNotificationMinimumInterval: Duration = Duration.ofHours(24)
 
 /**
- * Published when species are added to or removed from a planting season's species targets by a user
- * edit. A species is added when it gets its first target in any substratum, and removed when its
- * last target is deleted.
- */
-data class RateLimitedPlantingSeasonSpeciesChangedEvent(
-    val addedSpeciesIds: Set<SpeciesId> = emptySet(),
-    val organizationId: OrganizationId,
-    val plantingSeasonId: PlantingSeasonId,
-    val removedSpeciesIds: Set<SpeciesId> = emptySet(),
-) : RateLimitedEvent<RateLimitedPlantingSeasonSpeciesChangedEvent> {
-  override fun getRateLimitKey() = mapOf("plantingSeasonId" to plantingSeasonId)
-
-  override fun getMinimumInterval(): Duration = plantingSeasonNotificationMinimumInterval
-
-  override fun getInitialDelay(): Duration = plantingSeasonNotificationInitialDelay
-
-  override fun combine(
-      existing: RateLimitedPlantingSeasonSpeciesChangedEvent
-  ): RateLimitedPlantingSeasonSpeciesChangedEvent {
-    require(existing.plantingSeasonId == plantingSeasonId) {
-      "Cannot combine events for different plantingSeasonIds"
-    }
-
-    return existing.copy(
-        addedSpeciesIds =
-            (existing.addedSpeciesIds - removedSpeciesIds) +
-                (addedSpeciesIds - existing.removedSpeciesIds),
-        removedSpeciesIds =
-            (existing.removedSpeciesIds - addedSpeciesIds) +
-                (removedSpeciesIds - existing.addedSpeciesIds),
-    )
-  }
-}
-
-/**
- * Published when a user edit changes the target quantity of a species that remains in a planting
- * season. Adding a target for a species in a new substratum, or deleting one of several targets for
- * a species, is treated as a change from or to 0.
+ * Published when a user edit changes a species target quantity in a planting season. Adding or
+ * deleting a target is treated as a change from or to 0.
  */
 data class RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
     val changes: List<Change>,
