@@ -59,6 +59,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
     val returnedModel = store.create(inputModel)
 
+    val startOfAddedDate = addedDate.atStartOfDay(ZoneOffset.UTC).toInstant()
+
     val expectedRow =
         BatchesRow(
             addedDate = addedDate,
@@ -68,7 +70,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             facilityId = facilityId,
             germinationStartedDate = LocalDate.of(2022, 2, 20),
             id = returnedModel.id,
-            latestObservedTime = addedDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
+            latestObservedTime = startOfAddedDate,
             lossRate = 0,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
@@ -95,7 +97,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             stage = stage,
             timeInStage =
                 StageTimeStats(
-                    asOfTime = clock.instant(),
+                    asOfTime = startOfAddedDate,
                     cleared = false,
                     countedDays = 0.0,
                     countedQuantity = countedQuantity,
@@ -132,7 +134,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 readyQuantity = 2,
                 hardeningOffQuantity = 4,
                 version = 1,
-                effectiveTime = clock.instant(),
+                effectiveTime = startOfAddedDate,
             ),
         )
 
@@ -189,7 +191,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
               openSeedlingDays = 0.0,
               quantity = it.quantity,
               stageId = it.stage,
-              timeInStageAsOf = clock.instant,
+              timeInStageAsOf = startOfAddedDate,
               timeInStageCleared = false,
           )
         },
@@ -255,7 +257,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   }
 
   @Test
-  fun `uses added date midnight at facility as latest observed time if it is in the past`() {
+  fun `uses added date midnight at facility as latest observed time and initial effective time if it is in the past`() {
     val timeZone = ZoneId.of("America/New_York")
     val newYorkFacilityId = insertFacility(type = FacilityType.Nursery, timeZone = timeZone)
     val addedDate = LocalDate.of(2022, 1, 2)
@@ -279,10 +281,15 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val batch = store.create(inputModel)
 
     assertEquals(startOfAddedDate, batch.latestObservedTime)
+    assertEquals(
+        startOfAddedDate,
+        batchQuantityHistoryDao.fetchByBatchId(batch.id).single().effectiveTime,
+        "Quantity history effective time",
+    )
   }
 
   @Test
-  fun `uses current time as latest observed time if added date is today at facility`() {
+  fun `uses current time as latest observed time and initial effective time if added date is today at facility`() {
     val timeZone = ZoneId.of("America/New_York")
     val newYorkFacilityId = insertFacility(type = FacilityType.Nursery, timeZone = timeZone)
     val addedDate = LocalDate.of(2022, 1, 2)
@@ -305,6 +312,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val batch = store.create(inputModel)
 
     assertEquals(now, batch.latestObservedTime)
+    assertEquals(
+        now,
+        batchQuantityHistoryDao.fetchByBatchId(batch.id).single().effectiveTime,
+        "Quantity history effective time",
+    )
   }
 
   @Test

@@ -528,7 +528,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     )
 
     assertTableEquals(
-        expectedBatches.flatMap { (_, quantities) ->
+        expectedBatches.flatMap { (batch, quantities) ->
           quantities.map {
             BatchStageDetailsRecord(
                 it.copy(
@@ -538,7 +538,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                     finishedQuantity = 0.0,
                     finishedSeedlingDays = 0.0,
                     openSeedlingDays = 0.0,
-                    timeInStageAsOf = clock.instant,
+                    timeInStageAsOf = batch.addedDate!!.atStartOfDay(ZoneOffset.UTC).toInstant(),
                     timeInStageCleared = false,
                 )
             )
