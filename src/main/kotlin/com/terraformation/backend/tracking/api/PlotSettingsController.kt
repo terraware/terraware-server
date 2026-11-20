@@ -81,18 +81,24 @@ data class UpdatePlotSettingsRequestPayload(
   fun toEdits(
       site: ExistingPlantingSiteModel
   ): Map<StratumId, Map<ObservationType, (StratumPlotCounts) -> StratumPlotCounts>> {
-    require(strata.map { it.stratumId to it.observationType }.distinct().size == strata.size) {
+    val expanded = strata.flatMap { entry ->
+      (entry.observationType?.let { listOf(it) } ?: ObservationType.entries).map { type ->
+        entry.copy(observationType = type)
+      }
+    }
+    require(expanded.map { it.stratumId to it.observationType }.distinct().size == expanded.size) {
       "Duplicate stratum and observation type"
     }
-    return strata
+    return expanded
         .groupBy { it.stratumId }
         .mapValues { (id, entries) ->
           if (site.strata.none { it.id == id }) throw StratumNotFoundException(id)
           entries.associate { entry ->
             val setting = entry.toSetting()
-            entry.observationType to
+            val type = requireNotNull(entry.observationType)
+            type to
                 { current: StratumPlotCounts ->
-                  current.applySetting(entry.observationType, setting)
+                  current.applySetting(type, setting)
                 }
           }
         }
@@ -101,37 +107,56 @@ data class UpdatePlotSettingsRequestPayload(
 
 data class UpdateStratumPlotSettingPayload(
     val stratumId: StratumId,
-    val observationType: ObservationType,
     @Schema(
         description =
-            "Selects required fields: PrecisionLevel requires plotPrecisionLevel; Custom requires confidenceLevel, targetMarginOfError, and variability; Direct requires numPermanentPlots and numTemporaryPlots. Fields for other modes are ignored."
+            "Observation type to update. Omit or set null to apply to all three types. Overlapping entries for the same stratum and type, including an all-types entry plus an explicit type, are rejected.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+    )
+    val observationType: ObservationType? = null,
+    @Schema(
+        description =
+            "Selects required fields: PrecisionLevel requires plotPrecisionLevel; " +
+                "Custom requires confidenceLevel, targetMarginOfError, and variability; " +
+                "Direct requires numPermanentPlots and numTemporaryPlots. " +
+                "Fields for other modes are ignored."
     )
     val mode: PlotSelectionMode,
     @Schema(description = "Required in PrecisionLevel mode; ignored otherwise.")
     val plotPrecisionLevel: PlotPrecisionLevel? = null,
     @Schema(
         description =
-            "Required in Custom mode; ignored otherwise. Confidence percentage: 70, 80, 90, 95, or 99."
+            "Required in Custom mode; ignored otherwise. Confidence percentage: 70, 80, 90, 95, or 99.",
+        minimum = "70",
+        maximum = "99",
     )
     val confidenceLevel: Int? = null,
     @Schema(
         description =
-            "Required in Custom mode; ignored otherwise. Range 5–25, with at most one decimal place."
+            "Required in Custom mode; ignored otherwise. Range 5–25, with at most one decimal place.",
+        minimum = "5",
+        maximum = "25",
+        multipleOf = 0.1,
     )
     val targetMarginOfError: BigDecimal? = null,
     @Schema(
         description =
-            "Required in Custom mode; ignored otherwise. Range 1–200, with at most one decimal place."
+            "Required in Custom mode; ignored otherwise. Range 1–200, with at most one decimal place.",
+        minimum = "1",
+        maximum = "200",
+        multipleOf = 0.1,
     )
     val variability: BigDecimal? = null,
     @Schema(
         description =
-            "Required in Direct mode; ignored otherwise. At least one, except BaselineSurvey requires zero."
+            "Required in Direct mode; ignored otherwise. At least one, except BaselineSurvey requires zero.",
+        minimum = "0",
     )
     val numPermanentPlots: Int? = null,
     @Schema(
         description =
-            "Required in Direct mode; ignored otherwise. Nonnegative, except BaselineSurvey requires at least one."
+            "Required in Direct mode; ignored otherwise. Nonnegative, except BaselineSurvey requires at least one.",
+        minimum = "0",
     )
     val numTemporaryPlots: Int? = null,
 ) {

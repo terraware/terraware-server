@@ -31,6 +31,7 @@ class PlotSettingsPayloadTest {
     assertEquals(
         PlotSelectionSetting.Custom(ConfidenceLevel.Eighty, BigDecimal("25"), BigDecimal("5")),
         entry.toSetting(),
+        "converts mode specific inputs and rejects missing or invalid fields",
     )
     listOf(
             entry.copy(confidenceLevel = null),
@@ -45,7 +46,7 @@ class PlotSettingsPayloadTest {
   }
 
   @Test
-  fun `groups entries calculates counts and rejects duplicate or foreign strata`() {
+  fun `converts stratum edits and rejects duplicate pairs and unknown strata`() {
     val request = UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(entry))
     val expected =
         site.strata
@@ -63,10 +64,12 @@ class PlotSettingsPayloadTest {
     assertEquals(
         mapOf(entry.stratumId to mapOf(ObservationType.Monitoring to expected)),
         request.toSettings(site),
+        "converts stratum edits and rejects duplicate pairs and unknown strata",
     )
     assertEquals(
         emptyMap<StratumId, Any>(),
         UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High).toSettings(site),
+        "converts stratum edits and rejects duplicate pairs and unknown strata",
     )
     assertThrows<IllegalArgumentException> {
       request.copy(strata = listOf(entry, entry)).toSettings(site)
@@ -76,6 +79,71 @@ class PlotSettingsPayloadTest {
     }
     assertThrows<IllegalArgumentException> {
       request.copy(strata = listOf(entry.copy(variability = BigDecimal.ZERO))).toSettings(site)
+    }
+  }
+
+  @Test
+  fun `omitted observation type applies settings to all types and rejects overlaps`() {
+    val allTypes =
+        UpdateStratumPlotSettingPayload(
+            stratumId = entry.stratumId,
+            mode = PlotSelectionMode.Custom,
+            confidenceLevel = 80,
+            targetMarginOfError = BigDecimal("25"),
+            variability = BigDecimal("5"),
+        )
+    val request = UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(allTypes))
+    val expected =
+        ObservationType.entries.associateWith { type ->
+          site.strata
+              .single()
+              .plotCounts(type)
+              .copy(
+                  mode = PlotSelectionMode.Custom,
+                  plotPrecisionLevel = null,
+                  studentsT = BigDecimal("1.282"),
+                  errorMargin = BigDecimal("25"),
+                  variance = BigDecimal("25"),
+                  numPermanentPlots = if (type == ObservationType.BaselineSurvey) 0 else 1,
+                  numTemporaryPlots = 1,
+              )
+        }
+    assertEquals(
+        mapOf(entry.stratumId to expected),
+        request.toSettings(site),
+        "All observation types receive the custom setting",
+    )
+    val precision =
+        allTypes.copy(
+            mode = PlotSelectionMode.PrecisionLevel,
+            plotPrecisionLevel = PlotPrecisionLevel.High,
+        )
+    assertEquals(
+        UpdatePlotSettingsRequestPayload(
+                PlotPrecisionLevel.High,
+                ObservationType.entries.map { precision.copy(observationType = it) },
+            )
+            .toSettings(site),
+        request.copy(strata = listOf(precision)).toSettings(site),
+        "All-types precision edit matches three explicit edits",
+    )
+    listOf(listOf(allTypes, entry), listOf(entry, allTypes), listOf(allTypes, allTypes)).forEach {
+        entries ->
+      assertThrows<IllegalArgumentException> { request.copy(strata = entries).toEdits(site) }
+    }
+    assertThrows<IllegalArgumentException> {
+      request
+          .copy(
+              strata =
+                  listOf(
+                      allTypes.copy(
+                          mode = PlotSelectionMode.Direct,
+                          numPermanentPlots = 1,
+                          numTemporaryPlots = 1,
+                      )
+                  )
+          )
+          .toSettings(site)
     }
   }
 
@@ -102,6 +170,7 @@ class PlotSettingsPayloadTest {
             numTemporaryPlots = 2,
         ),
         edit(latest),
+        "direct edit preserves values supplied after request conversion",
     )
   }
 
@@ -160,6 +229,7 @@ class PlotSettingsPayloadTest {
         PlotSettingsResponsePayload(
             site.copy(defaultPlotPrecisionLevel = PlotPrecisionLevel.High, strata = listOf(stratum))
         ),
+        "response maps all observation types and rounds only variability",
     )
   }
 }
