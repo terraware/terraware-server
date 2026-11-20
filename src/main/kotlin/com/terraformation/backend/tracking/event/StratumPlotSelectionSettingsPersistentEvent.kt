@@ -19,6 +19,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 
 sealed interface StratumPlotSelectionSettingsPersistentEvent : EntityUpdatedPersistentEvent {
+  val observationType: ObservationType
   val organizationId: OrganizationId
   val plantingSiteId: PlantingSiteId
   val stratumId: StratumId
@@ -31,7 +32,7 @@ data class StratumPlotSelectionSettingsChangedEventV1(
     override val stratumId: StratumId,
     override val stratumName: String,
     val source: Source,
-    val observationType: ObservationType,
+    override val observationType: ObservationType,
     val changedFrom: Values,
     val changedTo: Values,
     val numPermanentPlots: Int,
