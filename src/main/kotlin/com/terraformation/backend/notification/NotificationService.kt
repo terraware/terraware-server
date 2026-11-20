@@ -98,7 +98,6 @@ import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduledSupport
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
 import com.terraformation.backend.email.model.PlantingSeasonScheduled
-import com.terraformation.backend.email.model.PlantingSeasonSpeciesUpdated
 import com.terraformation.backend.email.model.PlantingSeasonStarted
 import com.terraformation.backend.email.model.PlantingSeasonTargetQuantitiesChanged
 import com.terraformation.backend.email.model.PlantingSiteMapEdited
@@ -127,7 +126,6 @@ import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledD
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingDateRequestSubmittedEvent
-import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
@@ -1440,42 +1438,6 @@ class NotificationService(
   }
 
   @EventListener
-  fun on(event: RateLimitedPlantingSeasonSpeciesChangedEvent) {
-    if (event.addedSpeciesIds.isEmpty() && event.removedSpeciesIds.isEmpty()) {
-      return
-    }
-
-    systemUser.run {
-      val plantingSeason = fetchPlantingSeasonOrNull(event.plantingSeasonId) ?: return@run
-      val speciesNames =
-          speciesStore.fetchScientificNames(
-              event.organizationId,
-              event.addedSpeciesIds + event.removedSpeciesIds,
-          )
-      val addedSpeciesNames = event.addedSpeciesIds.mapNotNull { speciesNames[it] }.sorted()
-      val removedSpeciesNames = event.removedSpeciesIds.mapNotNull { speciesNames[it] }.sorted()
-
-      if (addedSpeciesNames.isEmpty() && removedSpeciesNames.isEmpty()) {
-        return@run
-      }
-
-      val emailContent =
-          PlantingSeasonSpeciesUpdated(
-              config = config,
-              addedSpeciesNames = addedSpeciesNames,
-              plantingSeasonName = plantingSeason.name,
-              plantingSeasonUrl =
-                  webAppUrls
-                      .fullPlantingSeason(event.organizationId, event.plantingSeasonId)
-                      .toString(),
-              removedSpeciesNames = removedSpeciesNames,
-          )
-
-      sendToOrganization(event.organizationId, emailContent = emailContent)
-    }
-  }
-
-  @EventListener
   fun on(event: RateLimitedPlantingDateRequestSubmittedEvent) {
     systemUser.run {
       val scheduledDate =
@@ -1521,7 +1483,6 @@ class NotificationService(
           plantingSeasonSpeciesTargetsStore.fetchList(event.plantingSeasonId).associate {
             (it.speciesId to it.substratumId) to it.quantity
           }
-      // Species that were removed from the season are covered by the species-updated email.
       val speciesInSeason = currentQuantities.keys.map { it.first }.toSet()
       val speciesNames =
           speciesStore.fetchScientificNames(

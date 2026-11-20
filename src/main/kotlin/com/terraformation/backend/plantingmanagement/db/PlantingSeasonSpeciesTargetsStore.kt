@@ -15,7 +15,6 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
-import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
@@ -104,16 +103,6 @@ class PlantingSeasonSpeciesTargetsStore(
                   organizationId = organizationId,
                   plantingSeasonId = plantingSeasonId,
                   plantingSiteId = plantingSiteId,
-              )
-          )
-        }
-
-        if (isNewSpecies) {
-          rateLimitedEventPublisher.publishEvent(
-              RateLimitedPlantingSeasonSpeciesChangedEvent(
-                  addedSpeciesIds = setOf(speciesId),
-                  organizationId = organizationId,
-                  plantingSeasonId = plantingSeasonId,
               )
           )
         }
@@ -364,14 +353,6 @@ class PlantingSeasonSpeciesTargetsStore(
                   )
               )
             }
-          } else {
-            rateLimitedEventPublisher.publishEvent(
-                RateLimitedPlantingSeasonSpeciesChangedEvent(
-                    organizationId = organizationId,
-                    plantingSeasonId = plantingSeasonId,
-                    removedSpeciesIds = setOf(speciesId),
-                )
-            )
           }
         }
       }

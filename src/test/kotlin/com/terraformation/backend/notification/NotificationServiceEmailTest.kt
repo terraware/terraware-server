@@ -127,13 +127,11 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
-import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDateNotFoundException
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingDateRequestSubmittedEvent
-import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.polygon
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
@@ -1490,98 +1488,6 @@ internal class NotificationServiceEmailTest {
     assertBodyContains("Planting season", "Text")
     assertBodyContains(webAppUrls.fullNurseryInventory(organization.id), "Link URL")
     assertIsEventListener<PlantingSeasonStartedEvent>(service)
-  }
-
-  @Test
-  fun `rateLimitedPlantingSeasonSpeciesChangedEvent omits deleted species`() {
-    val deletedSpeciesId = SpeciesId(2)
-
-    service.on(
-        RateLimitedPlantingSeasonSpeciesChangedEvent(
-            addedSpeciesIds = setOf(species.id),
-            organizationId = organization.id,
-            plantingSeasonId = plantingSeason.id,
-            removedSpeciesIds = setOf(deletedSpeciesId),
-        )
-    )
-
-    assertBodyContains(species.scientificName, "Added species")
-    assertBodyNotContains("Species removed", "Removed species heading")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun `rateLimitedPlantingSeasonSpeciesChangedEvent does not send email if all species were deleted`() {
-    val deletedSpeciesId = SpeciesId(2)
-
-    service.on(
-        RateLimitedPlantingSeasonSpeciesChangedEvent(
-            addedSpeciesIds = setOf(deletedSpeciesId),
-            organizationId = organization.id,
-            plantingSeasonId = plantingSeason.id,
-        )
-    )
-
-    assertNoMessageSent()
-  }
-
-  @Test
-  fun `rateLimitedPlantingSeasonSpeciesChangedEvent does not send email if planting season was deleted`() {
-    every { plantingSeasonStore.fetchById(plantingSeason.id) } throws
-        PlantingSeasonNotFoundException(plantingSeason.id)
-
-    service.on(
-        RateLimitedPlantingSeasonSpeciesChangedEvent(
-            addedSpeciesIds = setOf(species.id),
-            organizationId = organization.id,
-            plantingSeasonId = plantingSeason.id,
-        )
-    )
-
-    assertNoMessageSent()
-  }
-
-  @Test
-  fun `rateLimitedPlantingSeasonSpeciesChangedEvent lists added and removed species`() {
-    val removedSpecies = species.copy(id = SpeciesId(2), scientificName = "Removed species")
-    every { speciesStore.fetchScientificNames(organization.id, any()) } returns
-        mapOf(
-            species.id to species.scientificName,
-            removedSpecies.id to removedSpecies.scientificName,
-        )
-
-    service.on(
-        RateLimitedPlantingSeasonSpeciesChangedEvent(
-            addedSpeciesIds = setOf(species.id),
-            organizationId = organization.id,
-            plantingSeasonId = plantingSeason.id,
-            removedSpeciesIds = setOf(removedSpecies.id),
-        )
-    )
-
-    assertSubjectContains("Species were updated in ${plantingSeason.name}")
-    assertBodyContains("Species added", "Text")
-    assertBodyContains(species.scientificName, "Added species")
-    assertBodyContains("Species removed", "Text")
-    assertBodyContains(removedSpecies.scientificName, "Removed species")
-    assertBodyContains(
-        webAppUrls.fullPlantingSeason(organization.id, plantingSeason.id),
-        "Link URL",
-    )
-    assertRecipientsEqual(organizationRecipients)
-    assertIsEventListener<RateLimitedPlantingSeasonSpeciesChangedEvent>(service)
-  }
-
-  @Test
-  fun `rateLimitedPlantingSeasonSpeciesChangedEvent does not send email if no net changes`() {
-    service.on(
-        RateLimitedPlantingSeasonSpeciesChangedEvent(
-            organizationId = organization.id,
-            plantingSeasonId = plantingSeason.id,
-        )
-    )
-
-    assertNoMessageSent()
   }
 
   @Test
