@@ -209,6 +209,7 @@ import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.mail.javamail.JavaMailSenderImpl
 
@@ -1490,8 +1491,19 @@ internal class NotificationServiceEmailTest {
     assertIsEventListener<PlantingSeasonStartedEvent>(service)
   }
 
-  @Test
-  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent lists quantity changes including removed species`() {
+  @ParameterizedTest
+  @CsvSource("false, false, 0", "true, false, 1", "false, true, 1", "true, true, 1")
+  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent lists quantity changes including removed species`(
+      nurseryOptIn: Boolean,
+      plantingOptIn: Boolean,
+      expectedCount: Int,
+  ) {
+    every { emailNotificationSettingsStore.isOptedIn(any(), any()) } answers
+        {
+          val categories = secondArg<Set<EmailNotificationCategory>>()
+          (nurseryOptIn && EmailNotificationCategory.Nursery in categories) ||
+              (plantingOptIn && EmailNotificationCategory.PlantingAndObservations in categories)
+        }
     every { speciesStore.fetchScientificNames(organization.id, any()) } returns
         mapOf(species.id to species.scientificName, SpeciesId(2) to "Removed species")
     every { plantingSeasonSpeciesTargetsStore.fetchList(plantingSeason.id) } returns
@@ -1523,6 +1535,14 @@ internal class NotificationServiceEmailTest {
             plantingSiteId = plantingSite.id,
         )
     )
+
+    for (recipient in organizationRecipients) {
+      assertEquals(expectedCount, sentMessages[recipient]?.size ?: 0, "Email count for $recipient")
+    }
+    if (expectedCount == 0) {
+      assertNoMessageSent()
+      return
+    }
 
     assertSubjectContains(
         "Species target quantities were changed in ${plantingSeason.name} for ${plantingSite.name}"
@@ -1640,8 +1660,19 @@ internal class NotificationServiceEmailTest {
     assertNoMessageSent()
   }
 
-  @Test
-  fun `rateLimitedPlantingDateRequestSubmittedEvent links to withdrawal requests`() {
+  @ParameterizedTest
+  @CsvSource("false, false, 0", "true, false, 1", "false, true, 1", "true, true, 1")
+  fun `rateLimitedPlantingDateRequestSubmittedEvent links to withdrawal requests`(
+      nurseryOptIn: Boolean,
+      plantingOptIn: Boolean,
+      expectedCount: Int,
+  ) {
+    every { emailNotificationSettingsStore.isOptedIn(any(), any()) } answers
+        {
+          val categories = secondArg<Set<EmailNotificationCategory>>()
+          (nurseryOptIn && EmailNotificationCategory.Nursery in categories) ||
+              (plantingOptIn && EmailNotificationCategory.PlantingAndObservations in categories)
+        }
     val date = LocalDate.of(2026, 4, 15)
     val scheduledPlantingDateId = ScheduledPlantingDateId(1)
     every {
@@ -1660,6 +1691,14 @@ internal class NotificationServiceEmailTest {
             scheduledPlantingDateId = scheduledPlantingDateId,
         )
     )
+
+    for (recipient in organizationRecipients) {
+      assertEquals(expectedCount, sentMessages[recipient]?.size ?: 0, "Email count for $recipient")
+    }
+    if (expectedCount == 0) {
+      assertNoMessageSent()
+      return
+    }
 
     assertSubjectContains("Withdrawal request was submitted for $date for ${plantingSeason.name}")
     assertBodyContains(
@@ -2495,7 +2534,7 @@ internal class NotificationServiceEmailTest {
     every {
       emailNotificationSettingsStore.isOptedIn(
           optedOutUserId,
-          EmailNotificationCategory.SeedBank,
+          setOf(EmailNotificationCategory.SeedBank),
       )
     } returns false
 
@@ -2514,7 +2553,7 @@ internal class NotificationServiceEmailTest {
     every {
       emailNotificationSettingsStore.isOptedIn(
           optedOutUserId,
-          EmailNotificationCategory.SeedBank,
+          setOf(EmailNotificationCategory.SeedBank),
       )
     } returns false
 
@@ -2540,7 +2579,7 @@ internal class NotificationServiceEmailTest {
   @Test
   fun `uncategorized emails are sent regardless of category opt-ins`() {
     every { emailNotificationSettingsStore.isOptedIn(any(), any()) } returns false
-    every { emailNotificationSettingsStore.isOptedIn(any(), isNull()) } returns true
+    every { emailNotificationSettingsStore.isOptedIn(any(), emptySet()) } returns true
 
     emailService.sendUserNotification(user, ObservationNotScheduled(config, "org", "site"))
 
@@ -2549,7 +2588,7 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun `uncategorized emails are not sent to users who disabled email notifications`() {
-    every { emailNotificationSettingsStore.isOptedIn(any(), isNull()) } returns false
+    every { emailNotificationSettingsStore.isOptedIn(any(), emptySet()) } returns false
 
     emailService.sendUserNotification(user, ObservationNotScheduled(config, "org", "site"))
 
