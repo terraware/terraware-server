@@ -1110,8 +1110,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         plantErrorMargin = BigDecimal.TEN,
     )
     insertSubstratum()
+    val stratumHistoryId = inserted.stratumHistoryId
     val permanentPlot = insertMonitoringPlot(sizeMeters = 10)
-    val temporaryPlot = insertMonitoringPlot(sizeMeters = 20)
     val emptyPlot = insertMonitoringPlot(sizeMeters = 10)
     val previousObservation = insertObservation(completedTime = Instant.EPOCH.minusSeconds(1))
     insertObservationPlot(monitoringPlotId = permanentPlot, completedBy = user.userId)
@@ -1126,11 +1126,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         observationId = observationId,
         monitoringPlotId = permanentPlot,
         isPermanent = true,
-    )
-    insertObservationPlot(
-        claimedBy = user.userId,
-        observationId = observationId,
-        monitoringPlotId = temporaryPlot,
     )
     insertObservationPlot(
         claimedBy = user.userId,
@@ -1161,6 +1156,17 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     ) {
       it.copy(totalLive = 1)
     }
+
+    // A replacement is assigned after the map changes, while the observation uses the old map.
+    insertPlantingSiteHistory()
+    insertStratumHistory()
+    insertSubstratumHistory()
+    val temporaryPlot = insertMonitoringPlot(sizeMeters = 20)
+    insertObservationPlot(
+        claimedBy = user.userId,
+        observationId = observationId,
+        monitoringPlotId = temporaryPlot,
+    )
     store.completePlot(
         observationId,
         temporaryPlot,
@@ -1186,7 +1192,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         ObservationStratumVariabilityRecord(
             observationId = observationId,
-            stratumHistoryId = inserted.stratumHistoryId,
+            stratumHistoryId = stratumHistoryId,
             numPlots = 3,
             measuredVariability = 100.0,
             plausibleVariabilityLow = plausibleRange.low,

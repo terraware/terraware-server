@@ -28,6 +28,7 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
   /** Record results while the completing transaction still holds the planting site lock. */
   fun recordVariability(observationId: ObservationId) {
     val parameters = STRATUM_PLOT_SELECTION_PARAMETERS
+    val plotStratum = STRATUM_HISTORIES.`as`("plot_stratum")
     val liveCount =
         with(OBSERVED_PLOT_SPECIES_TOTALS) {
           DSL.field(
@@ -57,16 +58,19 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
             .join(MONITORING_PLOTS)
             .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
             .join(MONITORING_PLOT_HISTORIES)
+            .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
+            .join(SUBSTRATUM_HISTORIES)
+            .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+            .join(plotStratum)
+            .on(plotStratum.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
+            // Replacement plots can have been added under a newer map.
+            .join(STRATUM_HISTORIES)
             .on(
-                MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
-                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                STRATUM_HISTORIES.STABLE_ID.eq(plotStratum.STABLE_ID),
+                STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
                     OBSERVATIONS.PLANTING_SITE_HISTORY_ID
                 ),
             )
-            .join(SUBSTRATUM_HISTORIES)
-            .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-            .join(STRATUM_HISTORIES)
-            .on(STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
             .leftJoin(parameters)
             .on(
                 parameters.STRATUM_ID.eq(STRATUM_HISTORIES.STRATUM_ID),
