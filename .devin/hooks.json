@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "post_setup_worktree": [
+      {
+        "command": "\"$ROOT_WORKSPACE_PATH/.devin/jj-workspace-hook.sh\""
+      }
+    ]
+  }
+}
