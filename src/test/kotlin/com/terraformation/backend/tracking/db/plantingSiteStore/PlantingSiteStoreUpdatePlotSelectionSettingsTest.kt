@@ -7,7 +7,6 @@ import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SEL
 import com.terraformation.backend.tracking.db.AcceleratorPlotSettingsNotEditableException
 import com.terraformation.backend.tracking.db.StratumNotFoundException
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
-import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -139,22 +138,17 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
             stratumId = changedId,
             stratumName = "Changed",
             source = StratumPlotSelectionSettingsChangedEventSource.UserEdit,
-            settings =
-                listOf(
-                    StratumPlotSelectionSettingsChangedEventSettings(
-                        observationType = ObservationType.BaselineSurvey,
-                        changedFrom =
-                            StratumPlotSelectionSettingsChangedEventValues(
-                                numTemporaryPlots = previous.numTemporaryPlots
-                            ),
-                        changedTo =
-                            StratumPlotSelectionSettingsChangedEventValues(
-                                numTemporaryPlots = counts.numTemporaryPlots
-                            ),
-                        numPermanentPlots = counts.numPermanentPlots,
-                        numTemporaryPlots = counts.numTemporaryPlots,
-                    )
+            observationType = ObservationType.BaselineSurvey,
+            changedFrom =
+                StratumPlotSelectionSettingsChangedEventValues(
+                    numTemporaryPlots = previous.numTemporaryPlots
                 ),
+            changedTo =
+                StratumPlotSelectionSettingsChangedEventValues(
+                    numTemporaryPlots = counts.numTemporaryPlots
+                ),
+            numPermanentPlots = counts.numPermanentPlots,
+            numTemporaryPlots = counts.numTemporaryPlots,
         )
     eventPublisher.assertEventsPublished(listOf(expectedEvent))
   }
