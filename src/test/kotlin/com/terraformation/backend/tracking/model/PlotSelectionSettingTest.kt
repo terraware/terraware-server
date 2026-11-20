@@ -24,22 +24,14 @@ class PlotSelectionSettingTest {
     assertEquals(
         counts.copy(numPermanentPlots = 2, numTemporaryPlots = 1),
         counts.recalculatePlotCounts(ObservationType.Monitoring),
+        "recalculation preserves exact integer totals from variance",
     )
     assertEquals(
         counts.copy(numPermanentPlots = 0, numTemporaryPlots = 3),
         counts.recalculatePlotCounts(ObservationType.BaselineSurvey),
+        "recalculation preserves exact integer totals from variance",
     )
   }
-
-  private val initial =
-      StratumPlotCounts(
-          mode = PlotSelectionMode.Direct,
-          studentsT = BigDecimal("1.282"),
-          errorMargin = BigDecimal("12"),
-          variance = BigDecimal("900"),
-          numPermanentPlots = 2,
-          numTemporaryPlots = 3,
-      )
 
   @ParameterizedTest
   @CsvSource("VeryLow,22.5,4,1", "Medium,15,8,3", "High,10,19,6", "VeryHigh,7,38,12")
@@ -59,7 +51,8 @@ class PlotSelectionSettingTest {
               numPermanentPlots = permanent,
               numTemporaryPlots = temporary,
           ),
-          initial.applySetting(type, PlotSelectionSetting.PrecisionLevel(level)),
+          initial.applySetting(type, PlotSelectionSetting.PrecisionLevel(level = level)),
+          "precision setting preserves variance and recalculates counts",
       )
     }
   }
@@ -86,8 +79,13 @@ class PlotSelectionSettingTest {
             .copy(studentsT = BigDecimal("2.576"))
             .applySetting(
                 ObservationType.Monitoring,
-                PlotSelectionSetting.Custom(ConfidenceLevel.Eighty, margin, variability),
+                PlotSelectionSetting.Custom(
+                    confidenceLevel = ConfidenceLevel.Eighty,
+                    targetMarginOfError = margin,
+                    variability = variability,
+                ),
             ),
+        "custom setting updates parameters and counts including boundary values",
     )
   }
 
@@ -108,7 +106,14 @@ class PlotSelectionSettingTest {
             numPermanentPlots = permanent,
             numTemporaryPlots = temporary,
         ),
-        current.applySetting(type, PlotSelectionSetting.Direct(permanent, temporary)),
+        current.applySetting(
+            type,
+            PlotSelectionSetting.Direct(
+                numPermanentPlots = permanent,
+                numTemporaryPlots = temporary,
+            ),
+        ),
+        "direct setting changes only mode level and counts",
     )
   }
 
@@ -125,11 +130,16 @@ class PlotSelectionSettingTest {
         ),
         initial.applySetting(
             ObservationType.BaselineSurvey,
-            PlotSelectionSetting.PrecisionLevel(PlotPrecisionLevel.Medium),
+            PlotSelectionSetting.PrecisionLevel(level = PlotPrecisionLevel.Medium),
         ),
+        "baseline calculated counts are all temporary with a minimum of one",
     )
     val custom =
-        PlotSelectionSetting.Custom(ConfidenceLevel.Eighty, BigDecimal("25"), BigDecimal.ONE)
+        PlotSelectionSetting.Custom(
+            confidenceLevel = ConfidenceLevel.Eighty,
+            targetMarginOfError = BigDecimal("25"),
+            variability = BigDecimal.ONE,
+        )
     assertEquals(
         initial.copy(
             mode = PlotSelectionMode.Custom,
@@ -140,6 +150,7 @@ class PlotSelectionSettingTest {
             numTemporaryPlots = 1,
         ),
         initial.applySetting(ObservationType.BaselineSurvey, custom),
+        "baseline calculated counts are all temporary with a minimum of one",
     )
     val zero = initial.copy(variance = BigDecimal.ZERO)
     assertEquals(
@@ -153,8 +164,9 @@ class PlotSelectionSettingTest {
         ),
         zero.applySetting(
             ObservationType.BaselineSurvey,
-            PlotSelectionSetting.PrecisionLevel(PlotPrecisionLevel.Medium),
+            PlotSelectionSetting.PrecisionLevel(level = PlotPrecisionLevel.Medium),
         ),
+        "baseline calculated counts are all temporary with a minimum of one",
     )
   }
 
@@ -167,7 +179,11 @@ class PlotSelectionSettingTest {
     assertThrows<IllegalArgumentException> {
       initial.applySetting(
           ObservationType.Monitoring,
-          PlotSelectionSetting.Custom(ConfidenceLevel.Ninety, margin, variability),
+          PlotSelectionSetting.Custom(
+              confidenceLevel = ConfidenceLevel.Ninety,
+              targetMarginOfError = margin,
+              variability = variability,
+          ),
       )
     }
   }
@@ -184,7 +200,10 @@ class PlotSelectionSettingTest {
   )
   fun `rejects invalid direct counts`(type: ObservationType, permanent: Int, temporary: Int) {
     assertThrows<IllegalArgumentException> {
-      initial.applySetting(type, PlotSelectionSetting.Direct(permanent, temporary))
+      initial.applySetting(
+          type,
+          PlotSelectionSetting.Direct(numPermanentPlots = permanent, numTemporaryPlots = temporary),
+      )
     }
   }
 
@@ -202,7 +221,11 @@ class PlotSelectionSettingTest {
             numTemporaryPlots = temporary,
         )
     assertEquals(0, BigDecimal("30").compareTo(counts.variability), "Variability")
-    assertEquals(ConfidenceLevel.Ninety, counts.confidenceLevel)
+    assertEquals(
+        ConfidenceLevel.Ninety,
+        counts.confidenceLevel,
+        "derives variability confidence and finite sample expected precision",
+    )
     assertEquals(expected, counts.expectedPrecision!!, 0.05, "Expected precision")
   }
 
@@ -218,4 +241,14 @@ class PlotSelectionSettingTest {
       )
     }
   }
+
+  private val initial =
+      StratumPlotCounts(
+          mode = PlotSelectionMode.Direct,
+          studentsT = BigDecimal("1.282"),
+          errorMargin = BigDecimal("12"),
+          variance = BigDecimal("900"),
+          numPermanentPlots = 2,
+          numTemporaryPlots = 3,
+      )
 }
