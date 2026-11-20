@@ -31,21 +31,27 @@ data class StratumPlotSelectionSettingsChangedEventV1(
     override val stratumId: StratumId,
     override val stratumName: String,
     val source: Source,
-    val settings: List<Settings>,
+    val observationType: ObservationType,
+    val changedFrom: Values,
+    val changedTo: Values,
+    val numPermanentPlots: Int,
+    val numTemporaryPlots: Int,
     val observationId: ObservationId? = null,
     val measuredVariability: BigDecimal? = null,
 ) : StratumPlotSelectionSettingsPersistentEvent, FieldsUpdatedPersistentEvent {
-  override fun listUpdatedFields(messages: Messages) = settings.flatMap { setting ->
-    val from = setting.changedFrom
-    val to = setting.changedTo
+  override fun listUpdatedFields(
+      messages: Messages
+  ): List<FieldsUpdatedPersistentEvent.UpdatedField> {
+    val from = changedFrom
+    val to = changedTo
     val locale = currentLocale()
     val calculatedValues =
         listOf(
-            CalculatedValue("numPermanentPlots", listOf(setting.numPermanentPlots.toString())),
-            CalculatedValue("numTemporaryPlots", listOf(setting.numTemporaryPlots.toString())),
+            CalculatedValue("numPermanentPlots", listOf(numPermanentPlots.toString())),
+            CalculatedValue("numTemporaryPlots", listOf(numTemporaryPlots.toString())),
         )
 
-    listOfNotNull(
+    return listOfNotNull(
             createUpdatedField(
                 "mode",
                 from.mode?.getDisplayName(locale),
@@ -90,9 +96,7 @@ data class StratumPlotSelectionSettingsChangedEventV1(
                 to.numTemporaryPlots?.toString(),
             ),
         )
-        .map {
-          it.copy(group = setting.observationType.jsonValue, calculatedValues = calculatedValues)
-        }
+        .map { it.copy(calculatedValues = calculatedValues) }
   }
 
   private fun createDerivedField(
@@ -122,64 +126,70 @@ data class StratumPlotSelectionSettingsChangedEventV1(
     Terraformation,
   }
 
-  data class Settings(
-      val observationType: ObservationType,
-      val changedFrom: Values,
-      val changedTo: Values,
-      val numPermanentPlots: Int,
-      val numTemporaryPlots: Int,
-  ) {
-    companion object {
-      fun of(
-          type: ObservationType,
-          counts: StratumPlotCounts,
-          previous: StratumPlotCounts? = null,
-      ): Settings {
-        val from = previous?.let { changedValues(it, counts) } ?: Values()
-        val to = changedValues(counts, previous)
-        val includeCountChanges =
-            counts.mode == PlotSelectionMode.Direct ||
-                previous?.mode == PlotSelectionMode.Direct ||
-                (from == Values() && to == Values())
+  companion object {
+    fun of(
+        organizationId: OrganizationId,
+        plantingSiteId: PlantingSiteId,
+        stratumId: StratumId,
+        stratumName: String,
+        source: Source,
+        observationType: ObservationType,
+        counts: StratumPlotCounts,
+        previous: StratumPlotCounts? = null,
+        observationId: ObservationId? = null,
+        measuredVariability: BigDecimal? = null,
+    ): StratumPlotSelectionSettingsChangedEventV1 {
+      val from = previous?.let { changedValues(it, counts) } ?: Values()
+      val to = changedValues(counts, previous)
+      val includeCountChanges =
+          counts.mode == PlotSelectionMode.Direct ||
+              previous?.mode == PlotSelectionMode.Direct ||
+              (from == Values() && to == Values())
 
-        return Settings(
-            observationType = type,
-            changedFrom =
-                if (includeCountChanges && previous != null) from.withCountChanges(previous, counts)
-                else from,
-            changedTo = if (includeCountChanges) to.withCountChanges(counts, previous) else to,
-            numPermanentPlots = counts.numPermanentPlots,
-            numTemporaryPlots = counts.numTemporaryPlots,
-        )
-      }
-
-      private fun changedValues(counts: StratumPlotCounts, other: StratumPlotCounts?) =
-          Values(
-              mode = counts.mode.takeUnless { it == other?.mode },
-              plotPrecisionLevel =
-                  counts.plotPrecisionLevel.takeUnless { it == other?.plotPrecisionLevel },
-              variance =
-                  counts.variance.takeUnless {
-                    other != null && it.equalsIgnoreScale(other.variance)
-                  },
-              studentsT =
-                  counts.studentsT.takeUnless {
-                    other != null && it.equalsIgnoreScale(other.studentsT)
-                  },
-              errorMargin =
-                  counts.errorMargin.takeUnless {
-                    other != null && it.equalsIgnoreScale(other.errorMargin)
-                  },
-          )
-
-      private fun Values.withCountChanges(counts: StratumPlotCounts, other: StratumPlotCounts?) =
-          copy(
-              numPermanentPlots =
-                  counts.numPermanentPlots.takeUnless { it == other?.numPermanentPlots },
-              numTemporaryPlots =
-                  counts.numTemporaryPlots.takeUnless { it == other?.numTemporaryPlots },
-          )
+      return StratumPlotSelectionSettingsChangedEventV1(
+          organizationId = organizationId,
+          plantingSiteId = plantingSiteId,
+          stratumId = stratumId,
+          stratumName = stratumName,
+          source = source,
+          observationType = observationType,
+          changedFrom =
+              if (includeCountChanges && previous != null) from.withCountChanges(previous, counts)
+              else from,
+          changedTo = if (includeCountChanges) to.withCountChanges(counts, previous) else to,
+          numPermanentPlots = counts.numPermanentPlots,
+          numTemporaryPlots = counts.numTemporaryPlots,
+          observationId = observationId,
+          measuredVariability = measuredVariability,
+      )
     }
+
+    private fun changedValues(counts: StratumPlotCounts, other: StratumPlotCounts?) =
+        Values(
+            mode = counts.mode.takeUnless { it == other?.mode },
+            plotPrecisionLevel =
+                counts.plotPrecisionLevel.takeUnless { it == other?.plotPrecisionLevel },
+            variance =
+                counts.variance.takeUnless {
+                  other != null && it.equalsIgnoreScale(other.variance)
+                },
+            studentsT =
+                counts.studentsT.takeUnless {
+                  other != null && it.equalsIgnoreScale(other.studentsT)
+                },
+            errorMargin =
+                counts.errorMargin.takeUnless {
+                  other != null && it.equalsIgnoreScale(other.errorMargin)
+                },
+        )
+
+    private fun Values.withCountChanges(counts: StratumPlotCounts, other: StratumPlotCounts?) =
+        copy(
+            numPermanentPlots =
+                counts.numPermanentPlots.takeUnless { it == other?.numPermanentPlots },
+            numTemporaryPlots =
+                counts.numTemporaryPlots.takeUnless { it == other?.numTemporaryPlots },
+        )
   }
 
   data class Values(
@@ -197,9 +207,6 @@ typealias StratumPlotSelectionSettingsChangedEvent = StratumPlotSelectionSetting
 
 typealias StratumPlotSelectionSettingsChangedEventSource =
     StratumPlotSelectionSettingsChangedEventV1.Source
-
-typealias StratumPlotSelectionSettingsChangedEventSettings =
-    StratumPlotSelectionSettingsChangedEventV1.Settings
 
 typealias StratumPlotSelectionSettingsChangedEventValues =
     StratumPlotSelectionSettingsChangedEventV1.Values

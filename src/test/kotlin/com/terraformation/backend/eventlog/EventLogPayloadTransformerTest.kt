@@ -49,7 +49,6 @@ import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSub
 import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0ObservationSubjectPayload
-import com.terraformation.backend.eventlog.api.StratumPlotSelectionSettingsPayload
 import com.terraformation.backend.eventlog.api.StratumPlotSelectionSettingsSubjectPayload
 import com.terraformation.backend.eventlog.api.StratumT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
@@ -96,7 +95,6 @@ import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
-import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumT0DensityCreatedEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEvent
@@ -1396,7 +1394,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
       "BiomassMeasurements,8,3,es,Mediciones de biomasa",
       "BaselineSurvey,0,11,es,Encuesta de Línea Base",
   )
-  fun `maps plot selection history with localized group names and calculated plot counts`(
+  fun `maps plot selection history with localized observation types and calculated plot counts`(
       observationType: ObservationType,
       numPermanentPlots: Int,
       numTemporaryPlots: Int,
@@ -1412,20 +1410,15 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             numTemporaryPlots = numTemporaryPlots,
         )
     val event =
-        StratumPlotSelectionSettingsChangedEvent(
+        StratumPlotSelectionSettingsChangedEvent.of(
             organizationId = organizationId,
             plantingSiteId = plantingSiteId,
             stratumId = StratumId(7),
             stratumName = "S1",
             source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
-            settings =
-                listOf(
-                    StratumPlotSelectionSettingsChangedEventSettings.of(
-                        observationType,
-                        counts,
-                        counts.copy(plotPrecisionLevel = PlotPrecisionLevel.Low),
-                    )
-                ),
+            observationType = observationType,
+            counts = counts,
+            previous = counts.copy(plotPrecisionLevel = PlotPrecisionLevel.Low),
             observationId = observationId,
             measuredVariability = BigDecimal("32.5"),
         )
@@ -1439,7 +1432,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         fieldName = if (locale == "es") "nivel de precisión" else "precision level",
                         changedFrom = listOf(if (locale == "es") "Baja" else "Low"),
                         changedTo = listOf(if (locale == "es") "Media" else "Medium"),
-                        group = observationType.jsonValue,
                         calculatedValues =
                             listOf(
                                 CalculatedValuePayload(
@@ -1467,13 +1459,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         stratumId = event.stratumId,
                         stratumName = "S1",
                         source = event.source,
-                        settings =
-                            listOf(
-                                StratumPlotSelectionSettingsPayload(
-                                    observationType = observationType,
-                                    observationTypeName = observationTypeName,
-                                )
-                            ),
+                        observationType = observationType,
+                        observationTypeName = observationTypeName,
                         observationId = observationId,
                         measuredVariability = BigDecimal("32.5"),
                     ),
