@@ -20,6 +20,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
@@ -31,6 +32,7 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.file.api.MediaKind
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesPersistentEvent
@@ -80,8 +82,12 @@ import com.terraformation.backend.tracking.event.PlotT0ObservationPersistentEven
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsPersistentEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityPersistentEvent
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.time.LocalDate
 import kotlin.reflect.KClass
 
@@ -981,6 +987,38 @@ data class PlotT0DensitySubjectPayload(
   }
 }
 
+@JsonTypeName("StratumPlotSelectionSettings")
+data class StratumPlotSelectionSettingsSubjectPayload(
+    override val fullText: String,
+    override val shortText: String,
+    val plantingSiteId: PlantingSiteId,
+    val stratumId: StratumId,
+    val stratumName: String,
+    val source: StratumPlotSelectionSettingsChangedEventSource,
+    val observationType: ObservationType,
+    val observationId: ObservationId?,
+    val measuredVariability: BigDecimal?,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(event: StratumPlotSelectionSettingsChangedEvent, context: EventLogPayloadContext) =
+        StratumPlotSelectionSettingsSubjectPayload(
+            fullText =
+                context.subjectFullText<StratumPlotSelectionSettingsSubjectPayload>(
+                    event.stratumName,
+                    event.observationType.getDisplayName(currentLocale()),
+                ),
+            shortText = context.subjectShortText<StratumPlotSelectionSettingsSubjectPayload>(),
+            plantingSiteId = event.plantingSiteId,
+            stratumId = event.stratumId,
+            stratumName = event.stratumName,
+            source = event.source,
+            observationType = event.observationType,
+            observationId = event.observationId,
+            measuredVariability = event.measuredVariability,
+        )
+  }
+}
+
 @JsonTypeName("StratumT0Density")
 data class StratumT0DensitySubjectPayload(
     override val fullText: String,
@@ -1200,6 +1238,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlotT0Observation(PlotT0ObservationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
+  StratumPlotSelectionSettings(StratumPlotSelectionSettingsPersistentEvent::class),
   StratumT0Density(StratumT0DensityPersistentEvent::class),
   ViabilityTest(ViabilityTestPersistentEvent::class),
   Withdrawal(WithdrawalPersistentEvent::class),

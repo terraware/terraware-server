@@ -24,8 +24,11 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -46,6 +49,7 @@ import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSub
 import com.terraformation.backend.eventlog.api.PlantingSiteSubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.PlotT0ObservationSubjectPayload
+import com.terraformation.backend.eventlog.api.StratumPlotSelectionSettingsSubjectPayload
 import com.terraformation.backend.eventlog.api.StratumT0DensitySubjectPayload
 import com.terraformation.backend.eventlog.api.ViabilityTestSubjectPayload
 import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
@@ -90,18 +94,24 @@ import com.terraformation.backend.tracking.event.PlotT0ObservationUpdatedEventVa
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumT0DensityCreatedEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
+import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -1373,6 +1383,93 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     assertEquals(expected, payloads)
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      "Monitoring,8,3,en,Monitoring",
+      "BiomassMeasurements,8,3,en,Biomass Measurements",
+      "BaselineSurvey,0,11,en,Baseline Survey",
+      "Monitoring,8,3,es,Seguimiento",
+      "BiomassMeasurements,8,3,es,Mediciones de biomasa",
+      "BaselineSurvey,0,11,es,Encuesta de Línea Base",
+  )
+  fun `maps plot selection history with localized observation types and calculated plot counts`(
+      observationType: ObservationType,
+      numPermanentPlots: Int,
+      numTemporaryPlots: Int,
+      locale: String,
+      observationTypeName: String,
+  ) {
+    val counts =
+        StratumPlotCounts(
+            mode = PlotSelectionMode.PrecisionLevel,
+            plotPrecisionLevel = PlotPrecisionLevel.Medium,
+            errorMargin = BigDecimal(21),
+            numPermanentPlots = numPermanentPlots,
+            numTemporaryPlots = numTemporaryPlots,
+        )
+    val event =
+        StratumPlotSelectionSettingsChangedEvent.of(
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            stratumId = StratumId(7),
+            stratumName = "S1",
+            source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
+            observationType = observationType,
+            counts = counts,
+            previous = counts.copy(plotPrecisionLevel = PlotPrecisionLevel.Low),
+            observationId = observationId,
+            measuredVariability = BigDecimal("32.5"),
+        )
+    val entry = eventLogEntry(knownUserId, event)
+
+    assertEquals(
+        listOf(
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = if (locale == "es") "nivel de precisión" else "precision level",
+                        changedFrom = listOf(if (locale == "es") "Baja" else "Low"),
+                        changedTo = listOf(if (locale == "es") "Media" else "Medium"),
+                        calculatedValues =
+                            listOf(
+                                CalculatedValuePayload(
+                                    if (locale == "es") "parcelas permanentes"
+                                    else "permanent plots",
+                                    listOf(numPermanentPlots.toString()),
+                                ),
+                                CalculatedValuePayload(
+                                    if (locale == "es") "parcelas temporales"
+                                    else "temporary plots",
+                                    listOf(numTemporaryPlots.toString()),
+                                ),
+                            ),
+                    ),
+                subject =
+                    StratumPlotSelectionSettingsSubjectPayload(
+                        fullText =
+                            if (locale == "es")
+                                "Configuración de selección de parcelas del estrato S1 ($observationTypeName)"
+                            else "Stratum S1 plot selection settings ($observationTypeName)",
+                        shortText =
+                            if (locale == "es") "Configuración de selección de parcelas"
+                            else "Plot selection settings",
+                        plantingSiteId = plantingSiteId,
+                        stratumId = event.stratumId,
+                        stratumName = "S1",
+                        source = event.source,
+                        observationType = observationType,
+                        observationId = observationId,
+                        measuredVariability = BigDecimal("32.5"),
+                    ),
+                timestamp = entry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            )
+        ),
+        Locale.forLanguageTag(locale).use { transformer.eventsToPayloads(listOf(entry)) },
+    )
   }
 
   private fun uploadedEvent(fileId: FileId = this.fileId): ObservationMediaFileUploadedEvent =
