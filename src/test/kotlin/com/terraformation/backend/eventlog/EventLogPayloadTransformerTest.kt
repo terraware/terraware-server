@@ -1455,7 +1455,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         fieldName = if (locale == "es") "nivel de precisión" else "precision level",
                         changedFrom = listOf(if (locale == "es") "Baja" else "Low"),
                         changedTo = listOf(if (locale == "es") "Media" else "Medium"),
-                        group = observationType.name,
+                        group = observationType.jsonValue,
                         calculatedValues =
                             listOf(
                                 CalculatedValuePayload(

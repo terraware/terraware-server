@@ -90,7 +90,9 @@ data class StratumPlotSelectionSettingsChangedEventV1(
                 to.numTemporaryPlots?.toString(),
             ),
         )
-        .map { it.copy(group = setting.observationType.name, calculatedValues = calculatedValues) }
+        .map {
+          it.copy(group = setting.observationType.jsonValue, calculatedValues = calculatedValues)
+        }
   }
 
   private fun createDerivedField(
