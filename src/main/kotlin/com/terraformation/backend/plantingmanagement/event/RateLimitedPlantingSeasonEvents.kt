@@ -13,9 +13,8 @@ private val plantingSeasonNotificationInitialDelay: Duration = Duration.ofMinute
 private val plantingSeasonNotificationMinimumInterval: Duration = Duration.ofHours(24)
 
 /**
- * Published when a user edit changes the target quantity of a species that remains in a planting
- * season. Adding a target for a species in a new substratum, or deleting one of several targets for
- * a species, is treated as a change from or to 0.
+ * Published when a user edit changes a species target quantity in a planting season. Adding or
+ * deleting a target is treated as a change from or to 0.
  */
 data class RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
     val changes: List<Change>,

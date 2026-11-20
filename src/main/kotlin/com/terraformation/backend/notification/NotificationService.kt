@@ -1483,11 +1483,10 @@ class NotificationService(
           plantingSeasonSpeciesTargetsStore.fetchList(event.plantingSeasonId).associate {
             (it.speciesId to it.substratumId) to it.quantity
           }
-      val speciesInSeason = currentQuantities.keys.map { it.first }.toSet()
       val speciesNames =
           speciesStore.fetchScientificNames(
               event.organizationId,
-              event.changes.map { it.speciesId }.filter { it in speciesInSeason },
+              event.changes.map { it.speciesId },
           )
 
       val changes =

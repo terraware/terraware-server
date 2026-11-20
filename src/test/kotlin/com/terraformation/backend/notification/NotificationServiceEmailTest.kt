@@ -1491,7 +1491,9 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
-  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent lists quantity changes for species still in season`() {
+  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent lists quantity changes including removed species`() {
+    every { speciesStore.fetchScientificNames(organization.id, any()) } returns
+        mapOf(species.id to species.scientificName, SpeciesId(2) to "Removed species")
     every { plantingSeasonSpeciesTargetsStore.fetchList(plantingSeason.id) } returns
         listOf(PlantingSeasonSpeciesTargetModel(25, species.id, SubstratumId(1)))
 
@@ -1530,7 +1532,9 @@ internal class NotificationServiceEmailTest {
     assertBodyContains("North-1", "Substratum name")
     assertBodyContains(">12<", "Old quantity")
     assertBodyContains(">25<", "New quantity")
-    assertBodyNotContains("South-1", "Substratum of species no longer in season")
+    assertBodyContains("South-1", "Substratum of species no longer in season")
+    assertBodyContains("Removed species", "Removed species name")
+    assertBodyContains(">0<", "Removed target quantity")
     assertBodyContains(
         webAppUrls.fullPlantingSeason(organization.id, plantingSeason.id),
         "Link URL",
@@ -1590,7 +1594,7 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
-  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent does not send email if no species remain in season`() {
+  fun `rateLimitedPlantingSeasonTargetQuantitiesChangedEvent sends removal email if no species remain in season`() {
     every { plantingSeasonSpeciesTargetsStore.fetchList(plantingSeason.id) } returns emptyList()
 
     service.on(
@@ -1612,7 +1616,10 @@ internal class NotificationServiceEmailTest {
         )
     )
 
-    assertNoMessageSent()
+    assertBodyContains(species.scientificName, "Removed species")
+    assertBodyContains(">12<", "Old quantity")
+    assertBodyContains(">0<", "Removed target quantity")
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test

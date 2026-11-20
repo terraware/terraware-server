@@ -401,12 +401,10 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
         )
 
     @Test
-    fun `upsert of species new to the season does not publish quantity change`() {
+    fun `upsert of species new to the season publishes change from 0`() {
       store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
 
-      eventPublisher.assertEventNotPublished<
-          RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
-      >()
+      eventPublisher.assertEventPublished(quantitiesChangedEvent(0, 5))
     }
 
     @Test
@@ -442,14 +440,12 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
-    fun `delete of last target for species does not publish quantity change`() {
+    fun `delete of last target for species publishes change to 0`() {
       insertPlantingSeasonSpeciesTarget(quantity = 5)
 
       store.delete(plantingSeasonId, substratumId, speciesId)
 
-      eventPublisher.assertEventNotPublished<
-          RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
-      >()
+      eventPublisher.assertEventPublished(quantitiesChangedEvent(5, 0))
     }
 
     @Test
