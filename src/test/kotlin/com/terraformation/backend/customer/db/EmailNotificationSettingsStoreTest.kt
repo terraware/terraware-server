@@ -196,14 +196,29 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserEmailNotificationCategory(EmailNotificationCategory.SeedBank, otherUserId)
       insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, userId)
 
+      val categories =
+          setOf(
+              EmailNotificationCategory.Nursery,
+              EmailNotificationCategory.PlantingAndObservations,
+          )
+      assertTrue(store.isOptedIn(userId, categories), "Nursery only")
+      assertFalse(store.isOptedIn(otherUserId, categories), "Neither category")
+      insertUserEmailNotificationCategory(
+          EmailNotificationCategory.PlantingAndObservations,
+          otherUserId,
+      )
+      assertTrue(store.isOptedIn(otherUserId, categories), "Planting only")
+      insertUserEmailNotificationCategory(EmailNotificationCategory.PlantingAndObservations, userId)
+      assertTrue(store.isOptedIn(userId, categories), "Both categories")
+
       assertEquals(
           mapOf(
               EmailNotificationCategory.SeedBank to false,
               EmailNotificationCategory.Nursery to true,
-              EmailNotificationCategory.PlantingAndObservations to false,
+              EmailNotificationCategory.PlantingAndObservations to true,
               EmailNotificationCategory.Accelerator to false,
           ),
-          EmailNotificationCategory.entries.associateWith { store.isOptedIn(userId, it) },
+          EmailNotificationCategory.entries.associateWith { store.isOptedIn(userId, setOf(it)) },
       )
     }
 
@@ -212,13 +227,23 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val userId = insertUser(emailNotificationsEnabled = false)
       insertUserEmailNotificationCategory(EmailNotificationCategory.Nursery, userId)
 
-      assertFalse(store.isOptedIn(userId, EmailNotificationCategory.Nursery), "Categorized")
-      assertFalse(store.isOptedIn(userId, null), "Uncategorized")
+      assertFalse(store.isOptedIn(userId, setOf(EmailNotificationCategory.Nursery)), "Categorized")
+      assertFalse(store.isOptedIn(userId, emptySet()), "Uncategorized")
+      assertFalse(
+          store.isOptedIn(
+              userId,
+              setOf(
+                  EmailNotificationCategory.Nursery,
+                  EmailNotificationCategory.PlantingAndObservations,
+              ),
+          ),
+          "Multiple categories",
+      )
 
       val funderUserId = insertUser(type = UserType.Funder, emailNotificationsEnabled = false)
       insertUserEmailNotificationCategory(EmailNotificationCategory.Accelerator, funderUserId)
       assertFalse(
-          store.isOptedIn(funderUserId, EmailNotificationCategory.Accelerator),
+          store.isOptedIn(funderUserId, setOf(EmailNotificationCategory.Accelerator)),
           "Funder, categorized",
       )
     }
@@ -227,11 +252,11 @@ class EmailNotificationSettingsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns true for uncategorized emails if user enabled email notifications`() {
       val userId = insertUser(emailNotificationsEnabled = true)
 
-      assertTrue(store.isOptedIn(userId, null))
+      assertTrue(store.isOptedIn(userId, emptySet()))
 
       val funderUserId = insertUser(type = UserType.Funder, emailNotificationsEnabled = true)
       assertTrue(
-          store.isOptedIn(funderUserId, EmailNotificationCategory.Accelerator),
+          store.isOptedIn(funderUserId, setOf(EmailNotificationCategory.Accelerator)),
           "Funder, categorized",
       )
     }

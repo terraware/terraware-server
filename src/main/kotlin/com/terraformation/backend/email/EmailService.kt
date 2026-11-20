@@ -184,18 +184,18 @@ class EmailService(
   }
 
   /**
-   * Returns true if a user has enabled email notifications and, if the email has a notification
-   * category, has opted into that category.
+   * Returns true if a user has enabled email notifications and, if the email has notification
+   * categories, has opted into any of those categories.
    */
   private fun isOptedIn(user: TerrawareUser, model: EmailTemplateModel): Boolean {
-    val category = model.emailNotificationCategory
-    val optedIn = emailNotificationSettingsStore.isOptedIn(user.userId, category)
+    val categories = model.emailNotificationCategories
+    val optedIn = emailNotificationSettingsStore.isOptedIn(user.userId, categories)
 
     if (!optedIn) {
-      if (category != null) {
+      if (categories.isNotEmpty()) {
         log.info(
             "Skipping email notification for user ${user.userId} because they didn't enable " +
-                "email notifications or opt into category $category"
+                "email notifications or opt into any category in $categories"
         )
       } else {
         log.info(
