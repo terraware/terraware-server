@@ -1258,16 +1258,17 @@ class PlantingSiteStore(
         edits.mapValues { (type, edit) -> edit(strata.getValue(id).plotCounts(type)) }
       }
 
-      if (defaultPlotPrecisionLevel != site.defaultPlotPrecisionLevel)
-          with(PLANTING_SITES) {
-            dslContext
-                .update(PLANTING_SITES)
-                .set(DEFAULT_PLOT_PRECISION_LEVEL_ID, defaultPlotPrecisionLevel)
-                .set(MODIFIED_BY, currentUser().userId)
-                .set(MODIFIED_TIME, clock.instant())
-                .where(ID.eq(plantingSiteId))
-                .execute()
-          }
+      if (defaultPlotPrecisionLevel != site.defaultPlotPrecisionLevel) {
+        with(PLANTING_SITES) {
+          dslContext
+              .update(PLANTING_SITES)
+              .set(DEFAULT_PLOT_PRECISION_LEVEL_ID, defaultPlotPrecisionLevel)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .where(ID.eq(plantingSiteId))
+              .execute()
+        }
+      }
       updated.forEach { (stratumId, parameters) ->
         val stratum = strata.getValue(stratumId)
         val previous = ObservationType.entries.associateWith { stratum.plotCounts(it) }
