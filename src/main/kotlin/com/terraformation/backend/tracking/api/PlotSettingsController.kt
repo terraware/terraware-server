@@ -46,6 +46,7 @@ class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
       @RequestBody payload: UpdatePlotSettingsRequestPayload,
   ): PlotSettingsPreviewResponsePayload {
     plantingSiteStore.requirePlotSettingsEditable(id)
+
     val site = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Stratum)
     return PlotSettingsPreviewResponsePayload(site, payload.toSettings(site))
   }

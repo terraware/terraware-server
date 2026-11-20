@@ -122,10 +122,12 @@ class PlotSettingsPreviewPayloadTest {
             )
         ),
         PlotSettingsPreviewResponsePayload(model, request.toSettings(model)),
+        "Changed and unchanged settings include proposed-variance alternatives",
     )
     assertEquals(
         PlotSettingsPreviewResponsePayload(emptyList()),
         PlotSettingsPreviewResponsePayload(site.copy(strata = emptyList()), emptyMap()),
+        "An empty site has no preview strata",
     )
   }
 }
