@@ -996,7 +996,6 @@ data class StratumPlotSelectionSettingsSubjectPayload(
     val stratumName: String,
     val source: StratumPlotSelectionSettingsChangedEventSource,
     val observationType: ObservationType,
-    val observationTypeName: String,
     val observationId: ObservationId?,
     val measuredVariability: BigDecimal?,
 ) : EventSubjectPayload {
@@ -1005,7 +1004,8 @@ data class StratumPlotSelectionSettingsSubjectPayload(
         StratumPlotSelectionSettingsSubjectPayload(
             fullText =
                 context.subjectFullText<StratumPlotSelectionSettingsSubjectPayload>(
-                    event.stratumName
+                    event.stratumName,
+                    event.observationType.getDisplayName(currentLocale()),
                 ),
             shortText = context.subjectShortText<StratumPlotSelectionSettingsSubjectPayload>(),
             plantingSiteId = event.plantingSiteId,
@@ -1013,7 +1013,6 @@ data class StratumPlotSelectionSettingsSubjectPayload(
             stratumName = event.stratumName,
             source = event.source,
             observationType = event.observationType,
-            observationTypeName = event.observationType.getDisplayName(currentLocale()),
             observationId = event.observationId,
             measuredVariability = event.measuredVariability,
         )

@@ -1450,8 +1450,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                     StratumPlotSelectionSettingsSubjectPayload(
                         fullText =
                             if (locale == "es")
-                                "Configuración de selección de parcelas del estrato S1"
-                            else "Stratum S1 plot selection settings",
+                                "Configuración de selección de parcelas del estrato S1 ($observationTypeName)"
+                            else "Stratum S1 plot selection settings ($observationTypeName)",
                         shortText =
                             if (locale == "es") "Configuración de selección de parcelas"
                             else "Plot selection settings",
@@ -1460,7 +1460,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                         stratumName = "S1",
                         source = event.source,
                         observationType = observationType,
-                        observationTypeName = observationTypeName,
                         observationId = observationId,
                         measuredVariability = BigDecimal("32.5"),
                     ),
