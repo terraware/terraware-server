@@ -26,8 +26,6 @@ SELECT
                     'numTemporaryPlots' VALUE CASE WHEN modes.name = 'Direct' THEN parameters.num_temporary_plots END
                     ABSENT ON NULL
                 ),
-                'variance' VALUE parameters.variance,
-                'studentsT' VALUE parameters.students_t,
                 'numPermanentPlots' VALUE parameters.num_permanent_plots,
                 'numTemporaryPlots' VALUE parameters.num_temporary_plots
             )::JSONB ORDER BY parameters.observation_type_id

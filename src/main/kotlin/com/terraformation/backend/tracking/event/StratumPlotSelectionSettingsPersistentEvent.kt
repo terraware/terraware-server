@@ -126,8 +126,6 @@ data class StratumPlotSelectionSettingsChangedEventV1(
       val observationType: ObservationType,
       val changedFrom: Values,
       val changedTo: Values,
-      val variance: BigDecimal,
-      val studentsT: BigDecimal,
       val numPermanentPlots: Int,
       val numTemporaryPlots: Int,
   ) {
@@ -150,8 +148,6 @@ data class StratumPlotSelectionSettingsChangedEventV1(
                 if (includeCountChanges && previous != null) from.withCountChanges(previous, counts)
                 else from,
             changedTo = if (includeCountChanges) to.withCountChanges(counts, previous) else to,
-            variance = counts.variance,
-            studentsT = counts.studentsT,
             numPermanentPlots = counts.numPermanentPlots,
             numTemporaryPlots = counts.numTemporaryPlots,
         )
@@ -208,8 +204,8 @@ typealias StratumPlotSelectionSettingsChangedEventSettings =
 typealias StratumPlotSelectionSettingsChangedEventValues =
     StratumPlotSelectionSettingsChangedEventV1.Values
 
-internal fun plotSettingsConfidence(studentsT: BigDecimal) =
+private fun plotSettingsConfidence(studentsT: BigDecimal) =
     ConfidenceLevel.entries.firstOrNull { it.plotCountStudentsT.equalsIgnoreScale(studentsT) }
 
-internal fun plotSettingsVariability(variance: BigDecimal) =
+private fun plotSettingsVariability(variance: BigDecimal) =
     variance.takeIf { it.signum() >= 0 }?.sqrt(MathContext.DECIMAL128)

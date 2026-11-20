@@ -83,13 +83,9 @@ import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeDeletedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
-import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsPersistentEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityPersistentEvent
-import com.terraformation.backend.tracking.event.plotSettingsConfidence
-import com.terraformation.backend.tracking.event.plotSettingsVariability
-import com.terraformation.backend.tracking.model.PlotCountCalculator
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -1015,7 +1011,13 @@ data class StratumPlotSelectionSettingsSubjectPayload(
             stratumId = event.stratumId,
             stratumName = event.stratumName,
             source = event.source,
-            settings = event.settings.map { StratumPlotSelectionSettingsPayload.of(it) },
+            settings =
+                event.settings.map {
+                  StratumPlotSelectionSettingsPayload(
+                      observationType = it.observationType,
+                      observationTypeName = it.observationType.getDisplayName(currentLocale()),
+                  )
+                },
             observationId = event.observationId,
             measuredVariability = event.measuredVariability,
         )
@@ -1025,35 +1027,7 @@ data class StratumPlotSelectionSettingsSubjectPayload(
 data class StratumPlotSelectionSettingsPayload(
     val observationType: ObservationType,
     val observationTypeName: String,
-    val confidenceLevel: Int?,
-    val variability: BigDecimal?,
-    val expectedPrecision: Double?,
-) {
-  companion object {
-    fun of(
-        settings: StratumPlotSelectionSettingsChangedEventSettings
-    ): StratumPlotSelectionSettingsPayload {
-      val confidenceLevel = plotSettingsConfidence(settings.studentsT)
-      val variability = plotSettingsVariability(settings.variance)
-      val numPlots =
-          if (settings.observationType == ObservationType.BaselineSurvey) settings.numTemporaryPlots
-          else settings.numPermanentPlots + settings.numTemporaryPlots
-
-      return StratumPlotSelectionSettingsPayload(
-          observationType = settings.observationType,
-          observationTypeName = settings.observationType.getDisplayName(currentLocale()),
-          confidenceLevel = confidenceLevel?.percent,
-          variability = variability,
-          expectedPrecision =
-              if (confidenceLevel != null && variability != null) {
-                PlotCountCalculator.expectedPrecision(confidenceLevel, numPlots, variability)
-              } else {
-                null
-              },
-      )
-    }
-  }
-}
+)
 
 @JsonTypeName("StratumT0Density")
 data class StratumT0DensitySubjectPayload(

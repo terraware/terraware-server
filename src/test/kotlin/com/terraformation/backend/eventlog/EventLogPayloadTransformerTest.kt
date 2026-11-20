@@ -103,8 +103,6 @@ import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityUpdatedEventValues
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEvent
 import com.terraformation.backend.tracking.event.SurvivalRateIncludesTempPlotsChangedEventValues
-import com.terraformation.backend.tracking.model.ConfidenceLevel
-import com.terraformation.backend.tracking.model.PlotCountCalculator
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import java.time.Instant
@@ -1391,29 +1389,17 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @ParameterizedTest
   @CsvSource(
-      "1.0360,Seventy,Monitoring,8,3,11,900,30,en,Monitoring",
-      "1.282,Eighty,BiomassMeasurements,8,3,11,900,30,en,Biomass Measurements",
-      "1.645,Ninety,Monitoring,8,3,11,900,30,en,Monitoring",
-      "1.960,NinetyFive,Monitoring,8,3,11,900,30,en,Monitoring",
-      "2.576,NinetyNine,BaselineSurvey,0,11,11,900,30,en,Baseline Survey",
-      "1.5,,Monitoring,8,3,11,900,30,en,Monitoring",
-      "1.645,Ninety,Monitoring,0,1,1,900,30,en,Monitoring",
-      "1.645,Ninety,BaselineSurvey,0,0,0,0,0,en,Baseline Survey",
-      "1.645,Ninety,Monitoring,8,3,11,0,0,en,Monitoring",
-      "1.645,Ninety,Monitoring,8,3,11,-900,,en,Monitoring",
-      "1.645,Ninety,Monitoring,8,3,11,900,30,es,Seguimiento",
-      "1.645,Ninety,BiomassMeasurements,8,3,11,900,30,es,Mediciones de biomasa",
-      "1.645,Ninety,BaselineSurvey,0,11,11,900,30,es,Encuesta de Línea Base",
+      "Monitoring,8,3,en,Monitoring",
+      "BiomassMeasurements,8,3,en,Biomass Measurements",
+      "BaselineSurvey,0,11,en,Baseline Survey",
+      "Monitoring,8,3,es,Seguimiento",
+      "BiomassMeasurements,8,3,es,Mediciones de biomasa",
+      "BaselineSurvey,0,11,es,Encuesta de Línea Base",
   )
-  fun `maps plot selection settings history including derived precision and recommendation measurements`(
-      studentsT: BigDecimal,
-      confidenceLevel: ConfidenceLevel?,
+  fun `maps plot selection history with localized group names and calculated plot counts`(
       observationType: ObservationType,
       numPermanentPlots: Int,
       numTemporaryPlots: Int,
-      expectedTotalPlots: Int,
-      variance: BigDecimal,
-      variability: BigDecimal?,
       locale: String,
       observationTypeName: String,
   ) {
@@ -1421,8 +1407,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         StratumPlotCounts(
             mode = PlotSelectionMode.PrecisionLevel,
             plotPrecisionLevel = PlotPrecisionLevel.Medium,
-            variance = variance,
-            studentsT = studentsT,
             errorMargin = BigDecimal(21),
             numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
@@ -1488,18 +1472,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                                 StratumPlotSelectionSettingsPayload(
                                     observationType = observationType,
                                     observationTypeName = observationTypeName,
-                                    confidenceLevel = confidenceLevel?.percent,
-                                    variability = variability,
-                                    expectedPrecision =
-                                        if (confidenceLevel != null && variability != null) {
-                                          PlotCountCalculator.expectedPrecision(
-                                              confidenceLevel,
-                                              expectedTotalPlots,
-                                              variability,
-                                          )
-                                        } else {
-                                          null
-                                        },
                                 )
                             ),
                         observationId = observationId,
