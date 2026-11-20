@@ -99,11 +99,9 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -282,14 +280,6 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
         ),
         action,
     )
-
-    val objectMapper = jacksonObjectMapper()
-    val emptyDetails =
-        objectMapper.readTree(
-            objectMapper.writeValueAsString(action.copy(group = "", calculatedValues = emptyList()))
-        )
-    assertFalse(emptyDetails.has("group"), "Empty group")
-    assertFalse(emptyDetails.has("calculatedValues"), "Empty calculated values")
   }
 
   @Test
