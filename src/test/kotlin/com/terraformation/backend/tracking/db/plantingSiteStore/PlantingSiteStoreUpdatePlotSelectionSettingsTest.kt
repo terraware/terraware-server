@@ -132,8 +132,6 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
                             StratumPlotSelectionSettingsChangedEventValues(
                                 numTemporaryPlots = counts.numTemporaryPlots
                             ),
-                        variance = counts.variance,
-                        studentsT = counts.studentsT,
                         numPermanentPlots = counts.numPermanentPlots,
                         numTemporaryPlots = counts.numTemporaryPlots,
                     )
