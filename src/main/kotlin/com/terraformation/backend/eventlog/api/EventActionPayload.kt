@@ -29,7 +29,7 @@ data class FieldUpdatedActionPayload(
     val fieldName: String,
     val changedFrom: List<String>?,
     val changedTo: List<String>?,
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) //
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     val calculatedValues: List<CalculatedValuePayload>? = null,
 ) : EventActionPayload
 
