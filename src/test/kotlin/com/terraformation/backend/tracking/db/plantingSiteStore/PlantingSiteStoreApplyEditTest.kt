@@ -34,6 +34,7 @@ import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues
 import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -95,9 +96,20 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
               settings =
                   listOf(
-                      StratumPlotSelectionSettingsChangedEventSettings.of(
-                          ObservationType.BaselineSurvey,
-                          requested,
+                      StratumPlotSelectionSettingsChangedEventSettings(
+                          observationType = ObservationType.BaselineSurvey,
+                          changedFrom =
+                              StratumPlotSelectionSettingsChangedEventValues(
+                                  numTemporaryPlots = initial.baselinePlotCounts.numTemporaryPlots
+                              ),
+                          changedTo =
+                              StratumPlotSelectionSettingsChangedEventValues(
+                                  numTemporaryPlots = temporaryTotal
+                              ),
+                          variance = requested.variance,
+                          studentsT = requested.studentsT,
+                          numPermanentPlots = 0,
+                          numTemporaryPlots = temporaryTotal,
                       )
                   ),
           )

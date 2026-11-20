@@ -1509,7 +1509,11 @@ class PlantingSiteStore(
                 changed.entries
                     .sortedBy { it.key.id }
                     .map { (type, counts) ->
-                      StratumPlotSelectionSettingsChangedEventSettings.of(type, counts)
+                      StratumPlotSelectionSettingsChangedEventSettings.of(
+                          type,
+                          counts,
+                          previous[type],
+                      )
                     },
         )
     )

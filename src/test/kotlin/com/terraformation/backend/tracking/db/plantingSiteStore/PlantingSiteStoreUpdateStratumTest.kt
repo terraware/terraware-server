@@ -15,6 +15,7 @@ import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues as Values
 import com.terraformation.backend.tracking.model.DensityChangedEventModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.StratumPlotCounts
@@ -54,7 +55,27 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
                   variance = BigDecimal(625),
               ),
           )
-      for (changed in changes) {
+      val expectedDeltas =
+          listOf(
+              Values(mode = counts.mode, plotPrecisionLevel = counts.plotPrecisionLevel) to
+                  Values(mode = PlotSelectionMode.Custom),
+              Values(mode = PlotSelectionMode.Custom) to Values(mode = PlotSelectionMode.Direct),
+              Values(mode = PlotSelectionMode.Direct) to
+                  Values(mode = counts.mode, plotPrecisionLevel = counts.plotPrecisionLevel),
+              Values(plotPrecisionLevel = counts.plotPrecisionLevel) to
+                  Values(plotPrecisionLevel = PlotPrecisionLevel.High),
+              Values(
+                  errorMargin = counts.errorMargin,
+                  studentsT = counts.studentsT,
+                  variance = counts.variance.setScale(3),
+              ) to
+                  Values(
+                      errorMargin = BigDecimal(21),
+                      studentsT = BigDecimal("1.96"),
+                      variance = BigDecimal(625),
+                  ),
+          )
+      for ((changed, delta) in changes.zip(expectedDeltas)) {
         eventPublisher.clear()
         store.updateStratum(inserted.stratumId, mapOf(ObservationType.Monitoring to changed)) { it }
         eventPublisher.assertEventPublished(
@@ -66,9 +87,14 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
                 source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
                 settings =
                     listOf(
-                        StratumPlotSelectionSettingsChangedEventSettings.of(
-                            ObservationType.Monitoring,
-                            changed,
+                        StratumPlotSelectionSettingsChangedEventSettings(
+                            observationType = ObservationType.Monitoring,
+                            changedFrom = delta.first,
+                            changedTo = delta.second,
+                            variance = changed.variance,
+                            studentsT = changed.studentsT,
+                            numPermanentPlots = changed.numPermanentPlots,
+                            numTemporaryPlots = changed.numTemporaryPlots,
                         )
                     ),
             )
