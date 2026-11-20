@@ -1,3 +1,7 @@
+bd1d6b32 SW-9355 Add measured variability and plot count recommendation calculations (#5414)
+cee8f177 SW-9350 Publish stratum plot selection settings history (#5457)
+d70a0a03 SW-9350 Add stratum plot selection settings history event (#5458)
+d2ddb98c SW-9350 Add calculated values to event log field updates (#5467)
 182d2570 Make Devin Desktop use jj workspaces (#5469)
 3c2ba00c SW-9188 Return assigned plots in results for upcoming observations (#5460)
 a694abc6 SW-9353 Add plot count and expected precision calculations (#5411)
