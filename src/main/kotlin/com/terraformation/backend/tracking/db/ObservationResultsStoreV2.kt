@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -71,6 +72,24 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   .and(OBSERVATIONS.IS_AD_HOC.isFalse)
           )
           .`as`("scheduled_biomass")
+
+  /**
+   * The planting site history whose map an observation's plots are reported against. Upcoming
+   * observations don't have a history ID yet (it's assigned when they start) but can already have
+   * plots assigned to them; for those, use the site's current map, which is the one
+   * [ObservationStore] will choose when the observation starts.
+   */
+  private val effectivePlantingSiteHistoryIdField: Field<PlantingSiteHistoryId?> =
+      PLANTING_SITE_HISTORIES.`as`("current_site_histories").let { currentSiteHistories ->
+        DSL.coalesce(
+            OBSERVATIONS.PLANTING_SITE_HISTORY_ID,
+            DSL.field(
+                DSL.select(DSL.max(currentSiteHistories.ID))
+                    .from(currentSiteHistories)
+                    .where(currentSiteHistories.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
+            ),
+        )
+      }
 
   fun fetchOneById(
       observationId: ObservationId,
@@ -361,13 +380,23 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 .leftJoin(SUBSTRATA)
                 .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                 .leftJoin(plotSubstratumHistories)
-                .on(observedPlotHistories.SUBSTRATUM_HISTORY_ID.eq(plotSubstratumHistories.ID))
+                .on(
+                    plotSubstratumHistories.ID.eq(
+                        // Upcoming observations' plots can still point at plot histories from an
+                        // earlier map (e.g., after a name-only edit), so use the current map's.
+                        DSL.`when`(
+                                OBSERVATIONS.PLANTING_SITE_HISTORY_ID.isNull,
+                                MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
+                            )
+                            .otherwise(observedPlotHistories.SUBSTRATUM_HISTORY_ID)
+                    )
+                )
                 .leftJoin(plotStratumHistories)
                 .on(plotSubstratumHistories.STRATUM_HISTORY_ID.eq(plotStratumHistories.ID))
                 .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 .and(
                     MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                        OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                        effectivePlantingSiteHistoryIdField
                     )
                 )
                 .and(condition)
@@ -538,7 +567,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                             .and(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
                             .and(
                                 MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                    OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                                    effectivePlantingSiteHistoryIdField
                                 )
                             )
                     )
@@ -686,7 +715,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 )
                 .where(
                     STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                        OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                        effectivePlantingSiteHistoryIdField
                     )
                 )
                 .and(
@@ -708,7 +737,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                             .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                             .and(
                                 MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                    OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                                    effectivePlantingSiteHistoryIdField
                                 )
                             )
                     )
