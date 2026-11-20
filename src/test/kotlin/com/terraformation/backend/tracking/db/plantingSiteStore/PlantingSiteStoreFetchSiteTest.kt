@@ -67,10 +67,25 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           )
       )
 
-      val newerObservation = insertObservation(completedTime = Instant.ofEpochSecond(20))
+      val originalMap = inserted.plantingSiteHistoryId
+      val originalStratum = inserted.stratumHistoryId
+      // The only plot in the newer observation was assigned after a map edit.
+      insertPlantingSiteHistory()
+      insertStratumHistory()
+      insertSubstratumHistory()
+      insertMonitoringPlot()
+      val newerObservation =
+          insertObservation(
+              completedTime = Instant.ofEpochSecond(20),
+              plantingSiteHistoryId = originalMap,
+          )
       insertObservationPlot(completedBy = user.userId)
       insertObservationStratumVariability(
-          ObservationStratumVariabilityRow(numPlots = 1, currentPlotCount = 10)
+          ObservationStratumVariabilityRow(
+              stratumHistoryId = originalStratum,
+              numPlots = 1,
+              currentPlotCount = 10,
+          )
       )
 
       val site = store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
@@ -80,6 +95,14 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           latest,
       )
       assertEquals(true, latest.hasSmallSample, "Has small sample")
+      assertEquals(
+          latest,
+          observationResultsStore
+              .fetchOneById(newerObservation, ObservationResultsDepth.Stratum)
+              .strata
+              .single()
+              .variability,
+      )
 
       val results =
           observationResultsStore.fetchOneById(olderObservation, ObservationResultsDepth.Stratum)

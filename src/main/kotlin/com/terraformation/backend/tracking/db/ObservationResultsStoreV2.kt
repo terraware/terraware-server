@@ -721,27 +721,28 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 )
                 .and(
                     STRATUM_HISTORIES.ID.`in`(
-                        DSL.select(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
-                            .from(OBSERVATION_PLOTS)
-                            .join(MONITORING_PLOT_HISTORIES)
-                            .on(
-                                OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                                    MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                            DSL.select(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
+                                .from(OBSERVATION_PLOTS)
+                                .join(MONITORING_PLOT_HISTORIES)
+                                .on(
+                                    OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
+                                        MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                                    )
                                 )
-                            )
-                            .join(SUBSTRATUM_HISTORIES)
-                            .on(
-                                MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
-                                    SUBSTRATUM_HISTORIES.ID
+                                .join(SUBSTRATUM_HISTORIES)
+                                .on(
+                                    MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
+                                        SUBSTRATUM_HISTORIES.ID
+                                    )
                                 )
-                            )
-                            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                            .and(
-                                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                    effectivePlantingSiteHistoryIdField
+                                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                                .and(
+                                    MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                                        effectivePlantingSiteHistoryIdField
+                                    )
                                 )
-                            )
-                    )
+                        )
+                        .or(hasObservationStratumVariability)
                 )
                 .orderBy(STRATUM_HISTORIES.STRATUM_ID, STRATUM_HISTORIES.ID)
         )

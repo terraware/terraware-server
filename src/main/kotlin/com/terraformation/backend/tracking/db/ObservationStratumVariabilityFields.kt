@@ -13,15 +13,17 @@ import com.terraformation.backend.tracking.model.PlotCountRecommendationType
 import org.jooq.Field
 import org.jooq.impl.DSL
 
-internal val observationStratumVariabilityField: Field<ObservationStratumVariabilityModel?> =
+private val observationStratumVariabilitySelect =
     with(OBSERVATION_STRATUM_VARIABILITY) {
-      DSL.multiset(
-              DSL.selectFrom(this)
-                  .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .and(STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
-          )
-          .convertFrom { it.firstOrNull()?.toModel() }
+      DSL.selectFrom(this)
+          .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+          .and(STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
     }
+
+internal val observationStratumVariabilityField: Field<ObservationStratumVariabilityModel?> =
+    DSL.multiset(observationStratumVariabilitySelect).convertFrom { it.firstOrNull()?.toModel() }
+
+internal val hasObservationStratumVariability = DSL.exists(observationStratumVariabilitySelect)
 
 internal val latestStratumVariabilityField: Field<ObservationStratumVariabilityModel?> =
     with(OBSERVATION_STRATUM_VARIABILITY) {
