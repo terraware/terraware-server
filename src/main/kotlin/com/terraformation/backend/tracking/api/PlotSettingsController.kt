@@ -83,7 +83,20 @@ data class UpdatePlotSettingsRequestPayload(
   ): Map<StratumId, Map<ObservationType, (StratumPlotCounts) -> StratumPlotCounts>> {
     val expanded = strata.flatMap { entry ->
       (entry.observationType?.let { listOf(it) } ?: ObservationType.entries).map { type ->
-        entry.copy(observationType = type)
+        if (
+            entry.observationType == null &&
+                entry.mode == PlotSelectionMode.Direct &&
+                type == ObservationType.BaselineSurvey
+        ) {
+          val setting = entry.toSetting() as PlotSelectionSetting.Direct
+          entry.copy(
+              observationType = type,
+              numPermanentPlots = 0,
+              numTemporaryPlots = setting.numPermanentPlots + setting.numTemporaryPlots,
+          )
+        } else {
+          entry.copy(observationType = type)
+        }
       }
     }
     require(expanded.map { it.stratumId to it.observationType }.distinct().size == expanded.size) {
@@ -109,7 +122,13 @@ data class UpdateStratumPlotSettingPayload(
     val stratumId: StratumId,
     @Schema(
         description =
-            "Observation type to update. Omit or set null to apply to all three types. Overlapping entries for the same stratum and type, including an all-types entry plus an explicit type, are rejected.",
+            "Observation type to update. Omit or set null to apply to all three types. " +
+                "In Direct mode, an all-types entry preserves the supplied counts for Monitoring " +
+                "and Biomass Measurements and assigns their sum as temporary plots with zero " +
+                "permanent plots for Baseline Survey. Explicit Baseline Survey entries retain " +
+                "the zero-permanent and positive-temporary requirements. " +
+                "Overlapping entries for the same stratum and type, including an all-types " +
+                "entry plus an explicit type, are rejected.",
         nullable = true,
         requiredMode = Schema.RequiredMode.NOT_REQUIRED,
     )
@@ -127,8 +146,7 @@ data class UpdateStratumPlotSettingPayload(
     @Schema(
         description =
             "Required in Custom mode; ignored otherwise. Confidence percentage: 70, 80, 90, 95, or 99.",
-        minimum = "70",
-        maximum = "99",
+        allowableValues = ["70", "80", "90", "95", "99"],
     )
     val confidenceLevel: Int? = null,
     @Schema(

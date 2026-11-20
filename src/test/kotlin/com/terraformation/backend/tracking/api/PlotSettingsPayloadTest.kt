@@ -131,20 +131,58 @@ class PlotSettingsPayloadTest {
         entries ->
       assertThrows<IllegalArgumentException> { request.copy(strata = entries).toEdits(site) }
     }
+  }
+
+  @Test
+  fun `all-types direct edits allocate baseline plots as temporary plots`() {
+    val direct =
+        entry.copy(
+            observationType = null,
+            mode = PlotSelectionMode.Direct,
+            numPermanentPlots = 7,
+            numTemporaryPlots = 3,
+        )
+    val request = UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(direct))
+    val expected =
+        ObservationType.entries.associateWith { type ->
+          site.strata
+              .single()
+              .plotCounts(type)
+              .copy(
+                  mode = PlotSelectionMode.Direct,
+                  plotPrecisionLevel = null,
+                  numPermanentPlots = if (type == ObservationType.BaselineSurvey) 0 else 7,
+                  numTemporaryPlots = if (type == ObservationType.BaselineSurvey) 10 else 3,
+              )
+        }
+    val edits = request.toEdits(site).getValue(entry.stratumId)
+    assertEquals(
+        expected,
+        edits.mapValues { (type, edit) -> edit(site.strata.single().plotCounts(type)) },
+        "PUT edits preserve monitoring and biomass counts and combine baseline counts",
+    )
+    assertEquals(
+        mapOf(entry.stratumId to expected),
+        request.toSettings(site),
+        "Preview uses the same all-types Direct allocation as PUT",
+    )
     assertThrows<IllegalArgumentException> {
       request
-          .copy(
-              strata =
-                  listOf(
-                      allTypes.copy(
-                          mode = PlotSelectionMode.Direct,
-                          numPermanentPlots = 1,
-                          numTemporaryPlots = 1,
-                      )
-                  )
-          )
+          .copy(strata = listOf(direct.copy(observationType = ObservationType.BaselineSurvey)))
           .toSettings(site)
     }
+    listOf(
+            direct.copy(numPermanentPlots = 0, numTemporaryPlots = 0),
+            direct.copy(numPermanentPlots = -1),
+            direct.copy(numTemporaryPlots = -1),
+            direct.copy(numPermanentPlots = null),
+            direct.copy(numTemporaryPlots = null),
+        )
+        .forEach { invalid ->
+          assertThrows<IllegalArgumentException> {
+            request.copy(strata = listOf(invalid)).toSettings(site)
+          }
+        }
   }
 
   @Test
