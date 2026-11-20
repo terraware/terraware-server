@@ -106,8 +106,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                               StratumPlotSelectionSettingsChangedEventValues(
                                   numTemporaryPlots = temporaryTotal
                               ),
-                          variance = requested.variance,
-                          studentsT = requested.studentsT,
                           numPermanentPlots = 0,
                           numTemporaryPlots = temporaryTotal,
                       )

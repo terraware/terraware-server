@@ -91,8 +91,6 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
                             observationType = ObservationType.Monitoring,
                             changedFrom = delta.first,
                             changedTo = delta.second,
-                            variance = changed.variance,
-                            studentsT = changed.studentsT,
                             numPermanentPlots = changed.numPermanentPlots,
                             numTemporaryPlots = changed.numTemporaryPlots,
                         )
