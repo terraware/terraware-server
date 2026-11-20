@@ -72,7 +72,11 @@ interface FieldsUpdatedPersistentEvent : EntityUpdatedPersistentEvent {
        * field is, e.g., a set of enum values. This value should be localized if applicable.
        */
       val changedTo: List<String>?,
+      val calculatedValues: List<CalculatedValue> = emptyList(),
   )
+
+  /** A resulting value to display alongside a field change. */
+  data class CalculatedValue(val fieldName: String, val value: List<String>)
 
   /**
    * Returns an [UpdatedField] if either or both of [changedFrom] and [changedTo] are non-null, null
