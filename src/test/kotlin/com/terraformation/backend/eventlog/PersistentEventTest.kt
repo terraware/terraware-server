@@ -125,15 +125,18 @@ class PersistentEventTest {
     assumeTrue(valuesClasses.isNotEmpty())
 
     val stringKeyPrefix = "eventSubject.${subjectName!!.name}.field"
+    val additionalDisplayFields =
+        when (subjectName) {
+          EventSubjectName.StratumPlotSelectionSettings -> listOf("confidenceLevel", "variability")
+          else -> emptyList()
+        }
 
     val expected =
-        valuesClasses
-            .flatMap { valuesClass ->
-              valuesClass.memberProperties.map { "$stringKeyPrefix.${it.name}" }
-            }
+        (valuesClasses.flatMap { valuesClass -> valuesClass.memberProperties.map { it.name } } +
+                additionalDisplayFields)
             .sorted()
             .distinct()
-            .joinToString("\n") { "$it=" }
+            .joinToString("\n") { "$stringKeyPrefix.$it=" }
 
     val actual =
         eventSubjectFieldNames
