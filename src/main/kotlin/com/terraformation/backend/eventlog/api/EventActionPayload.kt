@@ -30,7 +30,7 @@ data class FieldUpdatedActionPayload(
     val changedFrom: List<String>?,
     val changedTo: List<String>?,
     /** Identifies the part of the subject this field belongs to when an event updates several. */
-    @JsonInclude(JsonInclude.Include.NON_NULL) val group: String? = null,
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) val group: String? = null,
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     val calculatedValues: List<CalculatedValuePayload>? = null,
 ) : EventActionPayload
