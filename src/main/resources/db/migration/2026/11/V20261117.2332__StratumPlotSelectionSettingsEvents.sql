@@ -15,11 +15,19 @@ SELECT
         'settings' VALUE jsonb_agg(
             json_object(
                 'observationType' VALUE types.name,
-                'mode' VALUE modes.name,
-                'plotPrecisionLevel' VALUE levels.name,
+                'changedFrom' VALUE '{}'::JSONB,
+                'changedTo' VALUE json_object(
+                    'mode' VALUE modes.name,
+                    'plotPrecisionLevel' VALUE levels.name,
+                    'variance' VALUE parameters.variance,
+                    'studentsT' VALUE parameters.students_t,
+                    'errorMargin' VALUE parameters.error_margin,
+                    'numPermanentPlots' VALUE CASE WHEN modes.name = 'Direct' THEN parameters.num_permanent_plots END,
+                    'numTemporaryPlots' VALUE CASE WHEN modes.name = 'Direct' THEN parameters.num_temporary_plots END
+                    ABSENT ON NULL
+                ),
                 'variance' VALUE parameters.variance,
                 'studentsT' VALUE parameters.students_t,
-                'errorMargin' VALUE parameters.error_margin,
                 'numPermanentPlots' VALUE parameters.num_permanent_plots,
                 'numTemporaryPlots' VALUE parameters.num_temporary_plots
             )::JSONB ORDER BY parameters.observation_type_id

@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.StratumId
@@ -1416,6 +1417,16 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
       locale: String,
       observationTypeName: String,
   ) {
+    val counts =
+        StratumPlotCounts(
+            mode = PlotSelectionMode.PrecisionLevel,
+            plotPrecisionLevel = PlotPrecisionLevel.Medium,
+            variance = variance,
+            studentsT = studentsT,
+            errorMargin = BigDecimal(21),
+            numPermanentPlots = numPermanentPlots,
+            numTemporaryPlots = numTemporaryPlots,
+        )
     val event =
         StratumPlotSelectionSettingsChangedEvent(
             organizationId = organizationId,
@@ -1427,15 +1438,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 listOf(
                     StratumPlotSelectionSettingsChangedEventSettings.of(
                         observationType,
-                        StratumPlotCounts(
-                            mode = PlotSelectionMode.Custom,
-                            plotPrecisionLevel = null,
-                            variance = variance,
-                            studentsT = studentsT,
-                            errorMargin = BigDecimal(21),
-                            numPermanentPlots = numPermanentPlots,
-                            numTemporaryPlots = numTemporaryPlots,
-                        ),
+                        counts,
+                        counts.copy(plotPrecisionLevel = PlotPrecisionLevel.Low),
                     )
                 ),
             observationId = observationId,
@@ -1448,10 +1452,23 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             EventLogEntryPayload(
                 action =
                     FieldUpdatedActionPayload(
-                        if (locale == "es") "configuración de selección de parcelas"
-                        else "plot selection settings",
-                        null,
-                        listOf(observationTypeName),
+                        fieldName = if (locale == "es") "nivel de precisión" else "precision level",
+                        changedFrom = listOf(if (locale == "es") "Baja" else "Low"),
+                        changedTo = listOf(if (locale == "es") "Media" else "Medium"),
+                        group = observationType.name,
+                        calculatedValues =
+                            listOf(
+                                CalculatedValuePayload(
+                                    if (locale == "es") "parcelas permanentes"
+                                    else "permanent plots",
+                                    listOf(numPermanentPlots.toString()),
+                                ),
+                                CalculatedValuePayload(
+                                    if (locale == "es") "parcelas temporales"
+                                    else "temporary plots",
+                                    listOf(numTemporaryPlots.toString()),
+                                ),
+                            ),
                     ),
                 subject =
                     StratumPlotSelectionSettingsSubjectPayload(
@@ -1470,13 +1487,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                             listOf(
                                 StratumPlotSelectionSettingsPayload(
                                     observationType = observationType,
-                                    mode = PlotSelectionMode.Custom,
-                                    plotPrecisionLevel = null,
-                                    variance = variance,
-                                    studentsT = studentsT,
-                                    errorMargin = BigDecimal(21),
-                                    numPermanentPlots = numPermanentPlots,
-                                    numTemporaryPlots = numTemporaryPlots,
+                                    observationTypeName = observationTypeName,
                                     confidenceLevel = confidenceLevel?.percent,
                                     variability = variability,
                                     expectedPrecision =

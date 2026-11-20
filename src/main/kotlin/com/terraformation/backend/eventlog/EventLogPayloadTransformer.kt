@@ -44,7 +44,6 @@ import com.terraformation.backend.eventlog.api.WithdrawalSubjectPayload
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesPersistentEvent
@@ -184,15 +183,6 @@ class EventLogPayloadTransformer(
     return when (event) {
       // Any fields-updated events that don't implement FieldsUpdatedPersistentEvent should be
       // handled here.
-      is StratumPlotSelectionSettingsChangedEvent ->
-          listOf(
-              FieldUpdatedActionPayload(
-                  "settings",
-                  null,
-                  event.settings.map { it.observationType.getDisplayName(currentLocale()) },
-              )
-          )
-
       // Replacing a photo creates a new file and deletes the one it replaced, so we render it as an
       // update of the photo from the old file to the new one.
       is AccessionPhotoReplacedEvent ->

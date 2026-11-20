@@ -23,8 +23,6 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlotPrecisionLevel
-import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.StratumId
@@ -34,6 +32,7 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.file.api.MediaKind
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesPersistentEvent
@@ -88,12 +87,11 @@ import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsCha
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsPersistentEvent
 import com.terraformation.backend.tracking.event.StratumT0DensityPersistentEvent
-import com.terraformation.backend.tracking.model.ConfidenceLevel
+import com.terraformation.backend.tracking.event.plotSettingsConfidence
+import com.terraformation.backend.tracking.event.plotSettingsVariability
 import com.terraformation.backend.tracking.model.PlotCountCalculator
-import com.terraformation.backend.util.equalsIgnoreScale
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
-import java.math.MathContext
 import java.time.LocalDate
 import kotlin.reflect.KClass
 
@@ -1026,13 +1024,7 @@ data class StratumPlotSelectionSettingsSubjectPayload(
 
 data class StratumPlotSelectionSettingsPayload(
     val observationType: ObservationType,
-    val mode: PlotSelectionMode,
-    val plotPrecisionLevel: PlotPrecisionLevel?,
-    val variance: BigDecimal,
-    val studentsT: BigDecimal,
-    val errorMargin: BigDecimal,
-    val numPermanentPlots: Int,
-    val numTemporaryPlots: Int,
+    val observationTypeName: String,
     val confidenceLevel: Int?,
     val variability: BigDecimal?,
     val expectedPrecision: Double?,
@@ -1041,24 +1033,15 @@ data class StratumPlotSelectionSettingsPayload(
     fun of(
         settings: StratumPlotSelectionSettingsChangedEventSettings
     ): StratumPlotSelectionSettingsPayload {
-      val confidenceLevel =
-          ConfidenceLevel.entries.firstOrNull {
-            it.plotCountStudentsT.equalsIgnoreScale(settings.studentsT)
-          }
-      val variability = settings.variance.takeIf { it.signum() >= 0 }?.sqrt(MathContext.DECIMAL128)
+      val confidenceLevel = plotSettingsConfidence(settings.studentsT)
+      val variability = plotSettingsVariability(settings.variance)
       val numPlots =
           if (settings.observationType == ObservationType.BaselineSurvey) settings.numTemporaryPlots
           else settings.numPermanentPlots + settings.numTemporaryPlots
 
       return StratumPlotSelectionSettingsPayload(
           observationType = settings.observationType,
-          mode = settings.mode,
-          plotPrecisionLevel = settings.plotPrecisionLevel,
-          variance = settings.variance,
-          studentsT = settings.studentsT,
-          errorMargin = settings.errorMargin,
-          numPermanentPlots = settings.numPermanentPlots,
-          numTemporaryPlots = settings.numTemporaryPlots,
+          observationTypeName = settings.observationType.getDisplayName(currentLocale()),
           confidenceLevel = confidenceLevel?.percent,
           variability = variability,
           expectedPrecision =
