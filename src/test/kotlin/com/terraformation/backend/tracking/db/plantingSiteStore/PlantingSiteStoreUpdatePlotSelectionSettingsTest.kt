@@ -9,6 +9,7 @@ import com.terraformation.backend.tracking.db.StratumNotFoundException
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSettings
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
+import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -121,9 +122,20 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
             source = StratumPlotSelectionSettingsChangedEventSource.UserEdit,
             settings =
                 listOf(
-                    StratumPlotSelectionSettingsChangedEventSettings.of(
-                        ObservationType.BaselineSurvey,
-                        counts,
+                    StratumPlotSelectionSettingsChangedEventSettings(
+                        observationType = ObservationType.BaselineSurvey,
+                        changedFrom =
+                            StratumPlotSelectionSettingsChangedEventValues(
+                                numTemporaryPlots = previous.numTemporaryPlots
+                            ),
+                        changedTo =
+                            StratumPlotSelectionSettingsChangedEventValues(
+                                numTemporaryPlots = counts.numTemporaryPlots
+                            ),
+                        variance = counts.variance,
+                        studentsT = counts.studentsT,
+                        numPermanentPlots = counts.numPermanentPlots,
+                        numTemporaryPlots = counts.numTemporaryPlots,
                     )
                 ),
         )
