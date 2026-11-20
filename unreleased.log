@@ -1,3 +1,4 @@
+3c2ba00c SW-9188 Return assigned plots in results for upcoming observations (#5460)
 a694abc6 SW-9353 Add plot count and expected precision calculations (#5411)
 b22a4cd1 SW-9352 Add plot selection modes and per-stratum precision levels (#5442)
 14a1de3c SW-9352 Add default plot precision level to planting sites (#5454)
