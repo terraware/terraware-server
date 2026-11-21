@@ -552,13 +552,13 @@ COMMENT ON COLUMN tracking.observation_stratum_results.observed_density IS 'Plan
 COMMENT ON COLUMN tracking.observation_stratum_results.survival_rate_area IS 'Total area in hectares of substrata whose observation results contributed to the survival rate.';
 
 COMMENT ON TABLE tracking.observation_stratum_variability IS 'Measured variability and plot count estimates for a stratum as of completion of a plant monitoring observation.';
-COMMENT ON COLUMN tracking.observation_stratum_variability.current_plot_count IS 'Configured permanent plus temporary plot count when the observation completed.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.configured_plot_count_at_completion IS 'Configured permanent plus temporary plot count when the observation completed.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.estimated_plot_count_best IS 'Deployable plot count estimated from the measured variability.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.measured_variability IS 'Sample standard deviation of live plant density divided by its mean, as a percentage. Null for fewer than two measured plots or mean density zero.';
-COMMENT ON COLUMN tracking.observation_stratum_variability.num_plots IS 'Number of completed assigned plots included in the measurement, including those with zero live plants.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.plausible_variability_high IS 'Upper endpoint of the 90% interval for true variability, as a percentage.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.plausible_variability_low IS 'Lower endpoint of the 90% interval for true variability, as a percentage.';
-COMMENT ON COLUMN tracking.observation_stratum_variability.plot_count_best IS 'Deployable plot count estimated from the measured variability.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.recommended_plot_count IS 'Recommended deployable plot count, or null if there is no recommendation.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.sampled_plot_count IS 'Number of completed assigned plots included in the measurement, including those with zero live plants.';
 
 COMMENT ON TABLE tracking.observation_substratum_results IS 'Observation results for a substratum.';
 COMMENT ON COLUMN tracking.observation_substratum_results.needs_recalculation IS 'If true, this row and the species totals for the same observation and scope are stale and will be rebuilt by the observation results recalculation job. Existing values are the last computed ones.';

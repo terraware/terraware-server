@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_VARIABILITY
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
@@ -42,6 +43,7 @@ import com.terraformation.backend.tracking.model.ObservationSiteStatsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumStatsModel
+import com.terraformation.backend.tracking.model.ObservationStratumVariabilityModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumStatsModel
 import jakarta.inject.Named
@@ -663,6 +665,18 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
           )
           .convertFrom { result -> result.map { AreaCompletionResults.of(it) } }
+
+  private val observationStratumVariabilitySelect =
+      with(OBSERVATION_STRATUM_VARIABILITY) {
+        DSL.selectFrom(this)
+            .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+            .and(STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+      }
+
+  private val observationStratumVariabilityField: Field<ObservationStratumVariabilityModel?> =
+      DSL.multiset(observationStratumVariabilitySelect).convertFrom { it.firstOrNull()?.toModel() }
+
+  private val hasObservationStratumVariability = DSL.exists(observationStratumVariabilitySelect)
 
   /**
    * Stratum results. Plant density, plant density std dev, survival rate, and survival rate std dev

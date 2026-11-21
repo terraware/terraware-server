@@ -55,14 +55,14 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       insertObservationPlot(completedBy = user.userId)
       insertObservationStratumVariability(
           ObservationStratumVariabilityRow(
-              numPlots = 5,
+              sampledPlotCount = 5,
               measuredVariability = 40.0,
               plausibleVariabilityLow = 30.0,
               plausibleVariabilityHigh = 80.0,
-              currentPlotCount = 8,
-              plotCountLow = 10,
-              plotCountBest = 20,
-              plotCountHigh = 75,
+              configuredPlotCountAtCompletion = 8,
+              estimatedPlotCountLow = 10,
+              estimatedPlotCountBest = 20,
+              estimatedPlotCountHigh = 75,
               recommendedPlotCount = 20,
           )
       )
@@ -83,8 +83,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       insertObservationStratumVariability(
           ObservationStratumVariabilityRow(
               stratumHistoryId = originalStratum,
-              numPlots = 1,
-              currentPlotCount = 10,
+              sampledPlotCount = 1,
+              configuredPlotCountAtCompletion = 10,
           )
       )
 
@@ -109,11 +109,11 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           ObservationStratumVariabilityModel(
               observationId = olderObservation,
-              numPlots = 5,
+              sampledPlotCount = 5,
               measuredVariability = 40.0,
-              plausibleRange = PlausibleVariabilityRange(30.0, 80.0),
-              currentPlotCount = 8,
-              plotCountRange = ObservationPlotCountRange(10, 20, 75),
+              plausibleVariabilityRange = PlausibleVariabilityRange(30.0, 80.0),
+              configuredPlotCountAtCompletion = 8,
+              estimatedPlotCountRange = ObservationPlotCountRange(10, 20, 75),
               recommendation =
                   ObservationPlotCountRecommendation(PlotCountRecommendationType.Increase, 20),
           ),

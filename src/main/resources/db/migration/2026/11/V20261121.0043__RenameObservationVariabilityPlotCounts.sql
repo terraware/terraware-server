@@ -1,0 +1,5 @@
+ALTER TABLE tracking.observation_stratum_variability RENAME COLUMN num_plots TO sampled_plot_count;
+ALTER TABLE tracking.observation_stratum_variability RENAME COLUMN current_plot_count TO configured_plot_count_at_completion;
+ALTER TABLE tracking.observation_stratum_variability RENAME COLUMN plot_count_low TO estimated_plot_count_low;
+ALTER TABLE tracking.observation_stratum_variability RENAME COLUMN plot_count_best TO estimated_plot_count_best;
+ALTER TABLE tracking.observation_stratum_variability RENAME COLUMN plot_count_high TO estimated_plot_count_high;

@@ -448,7 +448,7 @@ data class ObservationStratumVariabilityPayload(
         description =
             "Number of completed assigned plots measured, including plots with zero live plants."
     )
-    val numPlots: Int,
+    val sampledPlotCount: Int,
     @Schema(description = "True if fewer than five plots were measured.") //
     val hasSmallSample: Boolean,
     @Schema(
@@ -457,13 +457,13 @@ data class ObservationStratumVariabilityPayload(
     )
     val measuredVariability: Double?,
     @Schema(description = "90% plausible range of the true variability, as percentages.") //
-    val plausibleRange: PlausibleVariabilityRangePayload?,
+    val plausibleVariabilityRange: PlausibleVariabilityRangePayload?,
     @Schema(description = "Configured permanent plus temporary plot count at completion.") //
-    val currentPlotCount: Long?,
+    val configuredPlotCountAtCompletion: Long?,
     @Schema(
         description = "Low, best, and high estimates of the required deployable plot count."
     ) //
-    val plotCountRange: ObservationPlotCountRangePayload?,
+    val estimatedPlotCountRange: ObservationPlotCountRangePayload?,
     @Schema(description = "Increase or decrease recommended at completion, if any.") //
     val recommendation: ObservationPlotCountRecommendationPayload?,
 ) {
@@ -471,12 +471,14 @@ data class ObservationStratumVariabilityPayload(
       model: ObservationStratumVariabilityModel
   ) : this(
       observationId = model.observationId,
-      numPlots = model.numPlots,
+      sampledPlotCount = model.sampledPlotCount,
       hasSmallSample = model.hasSmallSample,
       measuredVariability = model.measuredVariability,
-      plausibleRange = model.plausibleRange?.let(::PlausibleVariabilityRangePayload),
-      currentPlotCount = model.currentPlotCount,
-      plotCountRange = model.plotCountRange?.let(::ObservationPlotCountRangePayload),
+      plausibleVariabilityRange =
+          model.plausibleVariabilityRange?.let(::PlausibleVariabilityRangePayload),
+      configuredPlotCountAtCompletion = model.configuredPlotCountAtCompletion,
+      estimatedPlotCountRange =
+          model.estimatedPlotCountRange?.let(::ObservationPlotCountRangePayload),
       recommendation = model.recommendation?.let(::ObservationPlotCountRecommendationPayload),
   )
 }
@@ -491,9 +493,11 @@ data class ObservationPlotCountRangePayload(val low: Long, val best: Long, val h
 
 data class ObservationPlotCountRecommendationPayload(
     val type: PlotCountRecommendationType,
-    val plotCount: Long,
+    val recommendedPlotCount: Long,
 ) {
-  constructor(model: ObservationPlotCountRecommendation) : this(model.type, model.plotCount)
+  constructor(
+      model: ObservationPlotCountRecommendation
+  ) : this(model.type, model.recommendedPlotCount)
 }
 
 data class ObservationResultsPayload(
