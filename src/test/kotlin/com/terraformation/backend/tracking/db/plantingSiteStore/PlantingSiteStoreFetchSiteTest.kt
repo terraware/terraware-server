@@ -5,14 +5,22 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumVariabilityRow
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
+import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.ObservationPlotCountRange
+import com.terraformation.backend.tracking.model.ObservationPlotCountRecommendation
+import com.terraformation.backend.tracking.model.ObservationResultsDepth
+import com.terraformation.backend.tracking.model.ObservationStratumVariabilityModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlausibleVariabilityRange
+import com.terraformation.backend.tracking.model.PlotCountRecommendationType
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import io.mockk.every
@@ -32,8 +40,87 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.locationtech.jts.geom.Geometry
 
 internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
+  private val observationResultsStore by lazy { ObservationResultsStoreV2(dslContext) }
+
   @Nested
   inner class FetchSiteById {
+    @Test
+    fun `latest variability supersedes the recommendation while its observation retains it`() {
+      every { user.canReadObservation(any()) } returns true
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      val olderObservation = insertObservation(completedTime = Instant.ofEpochSecond(10))
+      insertObservationPlot(completedBy = user.userId)
+      insertObservationStratumVariability(
+          ObservationStratumVariabilityRow(
+              sampledPlotCount = 5,
+              measuredVariability = 40.0,
+              plausibleVariabilityLow = 30.0,
+              plausibleVariabilityHigh = 80.0,
+              configuredPlotCountAtCompletion = 8,
+              estimatedPlotCountLow = 10,
+              estimatedPlotCountBest = 20,
+              estimatedPlotCountHigh = 75,
+              recommendedPlotCount = 20,
+          )
+      )
+
+      val originalMap = inserted.plantingSiteHistoryId
+      val originalStratum = inserted.stratumHistoryId
+      // The only plot in the newer observation was assigned after a map edit.
+      insertPlantingSiteHistory()
+      insertStratumHistory()
+      insertSubstratumHistory()
+      insertMonitoringPlot()
+      val newerObservation =
+          insertObservation(
+              completedTime = Instant.ofEpochSecond(20),
+              plantingSiteHistoryId = originalMap,
+          )
+      insertObservationPlot(completedBy = user.userId)
+      insertObservationStratumVariability(
+          ObservationStratumVariabilityRow(
+              stratumHistoryId = originalStratum,
+              sampledPlotCount = 1,
+              configuredPlotCountAtCompletion = 10,
+          )
+      )
+
+      val site = store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+      val latest = site.strata.single().latestObservationVariability!!
+      assertEquals(
+          ObservationStratumVariabilityModel(newerObservation, 1, null, null, 10, null, null),
+          latest,
+      )
+      assertEquals(true, latest.hasSmallSample, "Has small sample")
+      assertEquals(
+          latest,
+          observationResultsStore
+              .fetchOneById(newerObservation, ObservationResultsDepth.Stratum)
+              .strata
+              .single()
+              .variability,
+      )
+
+      val results =
+          observationResultsStore.fetchOneById(olderObservation, ObservationResultsDepth.Stratum)
+      assertEquals(
+          ObservationStratumVariabilityModel(
+              observationId = olderObservation,
+              sampledPlotCount = 5,
+              measuredVariability = 40.0,
+              plausibleVariabilityRange = PlausibleVariabilityRange(30.0, 80.0),
+              configuredPlotCountAtCompletion = 8,
+              estimatedPlotCountRange = ObservationPlotCountRange(10, 20, 75),
+              recommendation =
+                  ObservationPlotCountRecommendation(PlotCountRecommendationType.Increase, 20),
+          ),
+          results.strata.single().variability,
+      )
+    }
+
     @ParameterizedTest
     @EnumSource(ObservationState::class, names = ["Upcoming", "InProgress", "Overdue"])
     fun `honors depth`(baselineState: ObservationState) {

@@ -127,14 +127,14 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
       ObservationStratumVariabilityRecord(
           observationId = observationId,
           stratumHistoryId = stratumHistoryId!!,
-          numPlots = densities.size,
+          sampledPlotCount = densities.size,
           measuredVariability = measurement?.variability,
           plausibleVariabilityLow = plausibleRange?.low,
           plausibleVariabilityHigh = plausibleRange?.high,
-          currentPlotCount = currentPlotCount,
-          plotCountLow = plotCountRange?.low?.plotCounts?.deployableTotal,
-          plotCountBest = plotCountRange?.best?.plotCounts?.deployableTotal,
-          plotCountHigh = plotCountRange?.high?.plotCounts?.deployableTotal,
+          configuredPlotCountAtCompletion = currentPlotCount,
+          estimatedPlotCountLow = plotCountRange?.low?.plotCounts?.deployableTotal,
+          estimatedPlotCountBest = plotCountRange?.best?.plotCounts?.deployableTotal,
+          estimatedPlotCountHigh = plotCountRange?.high?.plotCounts?.deployableTotal,
           recommendedPlotCount = recommendation?.estimate?.plotCounts?.deployableTotal,
       )
     }

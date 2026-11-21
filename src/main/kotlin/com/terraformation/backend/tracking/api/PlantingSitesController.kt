@@ -645,6 +645,11 @@ data class StratumResponsePayload(
             "Number of plants per hectare that the stratum should have after planting is completed."
     )
     val targetPlantDensity: BigDecimal?,
+    @Schema(
+        description =
+            "Variability snapshot from the most recent completed observation that recorded one."
+    )
+    val latestObservationVariability: ObservationStratumVariabilityPayload? = null,
 ) {
   constructor(
       model: ExistingStratumModel
@@ -673,6 +678,8 @@ data class StratumResponsePayload(
           ),
       substrata = model.substrata.map { SubstratumResponsePayload(it) },
       targetPlantDensity = model.targetPlantDensity,
+      latestObservationVariability =
+          model.latestObservationVariability?.let(::ObservationStratumVariabilityPayload),
   )
 }
 

@@ -1092,8 +1092,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ObservationStratumVariabilityRecord(
             observationId = observationId,
             stratumHistoryId = inserted.stratumHistoryId,
-            numPlots = 1,
-            currentPlotCount = 11,
+            sampledPlotCount = 1,
+            configuredPlotCountAtCompletion = 11,
         )
     )
 
@@ -1187,14 +1187,14 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ObservationStratumVariabilityRecord(
             observationId = observationId,
             stratumHistoryId = inserted.stratumHistoryId,
-            numPlots = 3,
+            sampledPlotCount = 3,
             measuredVariability = 100.0,
             plausibleVariabilityLow = plausibleRange.low,
             plausibleVariabilityHigh = plausibleRange.high,
-            currentPlotCount = 121,
-            plotCountLow = plotCountRange.low.plotCounts.deployableTotal,
-            plotCountBest = 271,
-            plotCountHigh = plotCountRange.high.plotCounts.deployableTotal,
+            configuredPlotCountAtCompletion = 121,
+            estimatedPlotCountLow = plotCountRange.low.plotCounts.deployableTotal,
+            estimatedPlotCountBest = 271,
+            estimatedPlotCountHigh = plotCountRange.high.plotCounts.deployableTotal,
             recommendedPlotCount = if (mode == PlotSelectionMode.Direct) null else 271,
         )
     )
