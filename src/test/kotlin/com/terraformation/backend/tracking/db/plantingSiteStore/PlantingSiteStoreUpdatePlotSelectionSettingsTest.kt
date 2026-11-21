@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.tracking.db.AcceleratorPlotSettingsNotEditableException
 import com.terraformation.backend.tracking.db.StratumNotFoundException
+import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues
@@ -37,6 +38,7 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
                 )
         ),
     )
+    eventPublisher.assertEventNotPublished<StratumPlotCountsUpdatedEvent>()
     store.updatePlotSelectionSettings(
         siteId,
         unchangedDefault,
@@ -151,6 +153,14 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
             numTemporaryPlots = counts.numTemporaryPlots,
         )
     eventPublisher.assertEventsPublished(listOf(expectedEvent))
+    eventPublisher.assertEventPublished(
+        StratumPlotCountsUpdatedEvent(
+            siteId,
+            changedId,
+            setOf(ObservationType.BaselineSurvey),
+            upcomingOnly = true,
+        )
+    )
   }
 
   @Test

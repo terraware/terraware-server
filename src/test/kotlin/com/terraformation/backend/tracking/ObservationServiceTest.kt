@@ -195,6 +195,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
+  private val plantingSiteEventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val fileStore = InMemoryFileStore()
   private val muxService: MuxService = mockk()
@@ -242,7 +243,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         TestSingletons.countryDetector,
         dslContext,
         entityLocker,
-        TestEventPublisher(),
+        plantingSiteEventPublisher,
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
@@ -311,8 +312,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.SuperAdmin)
     }
 
-    @Test
-    fun `settings edit preserves in progress plots and affects subsequently started observation`() {
+    @ParameterizedTest
+    @CsvSource("InProgress", "Overdue")
+    fun `settings edit reassigns upcoming plots and preserves started observations`(
+        activeState: ObservationState
+    ) {
+      plantingSiteEventPublisher.register<StratumPlotCountsUpdatedEvent> { service.on(it) }
       val stratumId = insertStratum(width = 8, height = 1, baselineNumTemporaryPlots = 1)
       insertSubstratum(width = 8, height = 1)
       val activeId =
@@ -322,14 +327,38 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertObservationRequestedSubstratum()
       service.startObservation(activeId)
+      if (activeState == ObservationState.Overdue) {
+        observationStore.updateObservationState(activeId, activeState)
+      }
       val activePlots = observationPlotsDao.fetchByObservationId(activeId)
       assertEquals(1, activePlots.size, "Initial assigned plots")
+      assertEquals(false, observationPlotStore.hasCompletedPlots(activeId), "No completed plots")
       val upcomingId =
           insertObservation(
               observationType = ObservationType.BaselineSurvey,
               state = ObservationState.Upcoming,
           )
       insertObservationRequestedSubstratum()
+      service.assignPlotsToNewObservation(upcomingId)
+      val upcomingPlots = observationPlotsDao.fetchByObservationId(upcomingId)
+      assertEquals(1, upcomingPlots.size, "Upcoming observation is preassigned before the edit")
+
+      eventPublisher.clear()
+      plantingSiteStore.updatePlotSelectionSettings(
+          plantingSiteId,
+          PlotPrecisionLevel.High,
+          mapOf(
+              stratumId to
+                  mapOf(ObservationType.BaselineSurvey to { it.copy(variance = BigDecimal("75")) })
+          ),
+      )
+      assertEquals(
+          upcomingPlots,
+          observationPlotsDao.fetchByObservationId(upcomingId),
+          "An edit with unchanged counts preserves upcoming assignments",
+      )
+      plantingSiteEventPublisher.assertEventNotPublished<StratumPlotCountsUpdatedEvent>()
+      eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
 
       plantingSiteStore.updatePlotSelectionSettings(
           plantingSiteId,
@@ -348,7 +377,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           activePlots,
           observationPlotsDao.fetchByObservationId(activeId),
-          "settings edit preserves in progress plots and affects subsequently started observation",
+          "Started observation assignments are unchanged after editing counts",
+      )
+      assertEquals(
+          3,
+          observationPlotsDao.fetchByObservationId(upcomingId).size,
+          "Preassigned upcoming observation gets new counts before starting",
+      )
+      eventPublisher.assertEventPublished(
+          ObservationPlotsReassignedEvent(
+              upcomingId,
+              ObservationType.BaselineSurvey,
+              plantingSiteId,
+          )
       )
       service.startObservation(upcomingId)
       assertEquals(
@@ -359,7 +400,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           activePlots,
           observationPlotsDao.fetchByObservationId(activeId),
-          "settings edit preserves in progress plots and affects subsequently started observation",
+          "Started observation assignments remain unchanged after starting the upcoming observation",
       )
     }
 
@@ -5001,8 +5042,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class OnStratumPlotCountsUpdatedEvent {
-    @Test
-    fun `reassigns upcoming observation when plot counts change`() {
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `reassigns upcoming observation when plot counts change`(upcomingOnly: Boolean) {
       insertTwoStrata()
       val observationId = insertObservationWithPlots()
       val plotsBefore = fetchPlotIdsByStratum(observationId)
@@ -5020,6 +5062,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               inserted.plantingSiteId,
               editedStratumId,
               setOf(ObservationType.Monitoring),
+              upcomingOnly = upcomingOnly,
           )
       )
 
@@ -5039,8 +5082,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
-    @Test
-    fun `does not reassign observations of other types`() {
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `does not reassign observations of other types`(upcomingOnly: Boolean) {
       insertTwoStrata()
       val observationId = insertObservationWithPlots()
       val plotsBefore = fetchPlotIdsByStratum(observationId)
@@ -5051,6 +5095,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               inserted.plantingSiteId,
               editedStratumId,
               setOf(ObservationType.BiomassMeasurements),
+              upcomingOnly = upcomingOnly,
           )
       )
 

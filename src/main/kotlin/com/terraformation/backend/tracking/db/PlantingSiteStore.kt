@@ -1282,6 +1282,25 @@ class PlantingSiteStore(
             edited,
             previous,
         )
+        val changedTypes =
+            parameters.keys
+                .filter { type ->
+                  val before = previous.getValue(type)
+                  val after = edited.getValue(type)
+                  before.numPermanentPlots != after.numPermanentPlots ||
+                      before.numTemporaryPlots != after.numTemporaryPlots
+                }
+                .toSet()
+        if (changedTypes.isNotEmpty()) {
+          eventPublisher.publishEvent(
+              StratumPlotCountsUpdatedEvent(
+                  plantingSiteId,
+                  stratumId,
+                  changedTypes,
+                  upcomingOnly = true,
+              )
+          )
+        }
       }
     }
   }

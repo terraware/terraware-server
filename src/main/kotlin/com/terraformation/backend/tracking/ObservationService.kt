@@ -1409,6 +1409,7 @@ class ObservationService(
         AffectedStrata(setOf(event.stratumId)),
         isPlotCountChange = true,
         event.observationTypes,
+        upcomingOnly = event.upcomingOnly,
     )
   }
 
@@ -1434,6 +1435,7 @@ class ObservationService(
       strata: AffectedStrata,
       isPlotCountChange: Boolean,
       observationTypes: Set<ObservationType>? = null,
+      upcomingOnly: Boolean = false,
   ) {
     if (strata.isEmpty()) {
       return
@@ -1464,7 +1466,12 @@ class ObservationService(
         }
 
         affected.toReassign.forEach { observationId ->
-          reassignPlots(observationId, strata, keepPlotsIfUnstartable = isPlotCountChange)
+          reassignPlots(
+              observationId,
+              strata,
+              keepPlotsIfUnstartable = isPlotCountChange,
+              upcomingOnly = upcomingOnly,
+          )
         }
       }
     }
@@ -1487,10 +1494,11 @@ class ObservationService(
       observationId: ObservationId,
       strata: AffectedStrata,
       keepPlotsIfUnstartable: Boolean,
+      upcomingOnly: Boolean = false,
   ): ReassignmentOutcome {
     return log.withMDC("observationId" to observationId) {
       try {
-        reassignPlotsWithLocks(observationId, strata, keepPlotsIfUnstartable)
+        reassignPlotsWithLocks(observationId, strata, keepPlotsIfUnstartable, upcomingOnly)
       } catch (e: ReassignmentRolledBackException) {
         log.warn(
             "Unable to reassign plots in strata ${strata.stratumIds}; observation keeps its " +
@@ -1517,10 +1525,15 @@ class ObservationService(
       observationId: ObservationId,
       strata: AffectedStrata,
       keepPlotsIfUnstartable: Boolean,
+      upcomingOnly: Boolean,
   ): ReassignmentOutcome {
     // This runs in a nested transaction, so throwing an exception rolls back only this
     // observation's changes.
     return entityLocker.withLockedPlantingSiteAndObservation(observationId) { observation ->
+      if (upcomingOnly && observation.state != ObservationState.Upcoming) {
+        return@withLockedPlantingSiteAndObservation ReassignmentOutcome.Unchanged
+      }
+
       if (
           observation.state == ObservationState.Completed ||
               observation.state == ObservationState.Abandoned

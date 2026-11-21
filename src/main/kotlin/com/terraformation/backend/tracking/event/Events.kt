@@ -220,6 +220,7 @@ data class StratumPlotCountsUpdatedEvent(
      * counts and [ObservationType.BiomassMeasurements] for biomass plot counts.
      */
     val observationTypes: Set<ObservationType>,
+    val upcomingOnly: Boolean = false,
 )
 
 /**
