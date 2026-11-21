@@ -197,6 +197,11 @@ class PlotSelectionSettingTest {
       "BaselineSurvey,-1,1",
       "BaselineSurvey,0,0",
       "BaselineSurvey,0,-1",
+      "Monitoring,10001,1",
+      "Monitoring,1,10001",
+      "BiomassMeasurements,10001,1",
+      "BiomassMeasurements,1,10001",
+      "BaselineSurvey,0,10001",
   )
   fun `rejects invalid direct counts`(type: ObservationType, permanent: Int, temporary: Int) {
     assertThrows<IllegalArgumentException> {
@@ -204,6 +209,51 @@ class PlotSelectionSettingTest {
           type,
           PlotSelectionSetting.Direct(numPermanentPlots = permanent, numTemporaryPlots = temporary),
       )
+    }
+  }
+
+  @ParameterizedTest
+  @EnumSource(ObservationType::class)
+  fun `accepts direct counts at the per-count limit`(type: ObservationType) {
+    val permanent = if (type == ObservationType.BaselineSurvey) 0 else 10000
+    assertEquals(
+        initial.copy(
+            mode = PlotSelectionMode.Direct,
+            plotPrecisionLevel = null,
+            numPermanentPlots = permanent,
+            numTemporaryPlots = 10000,
+        ),
+        initial.applySetting(
+            type,
+            PlotSelectionSetting.Direct(numPermanentPlots = permanent, numTemporaryPlots = 10000),
+        ),
+        "Each resulting count may equal 10000 independently",
+    )
+  }
+
+  @Test
+  fun `rejects calculated counts over the per-count limit`() {
+    assertThrows<IllegalArgumentException> {
+      initial.applySetting(
+          ObservationType.BaselineSurvey,
+          PlotSelectionSetting.Custom(
+              confidenceLevel = ConfidenceLevel.NinetyNine,
+              targetMarginOfError = BigDecimal("5"),
+              variability = BigDecimal("200"),
+          ),
+      )
+    }
+    ObservationType.entries.forEach { type ->
+      listOf(BigDecimal("1000000"), BigDecimal("1E30")).forEach { variance ->
+        assertThrows<IllegalArgumentException> {
+          initial
+              .copy(variance = variance)
+              .applySetting(
+                  type,
+                  PlotSelectionSetting.PrecisionLevel(level = PlotPrecisionLevel.VeryHigh),
+              )
+        }
+      }
     }
   }
 
