@@ -111,7 +111,7 @@ data class StratumPlotCounts(
             require(setting.numTemporaryPlots >= if (baseline) 1 else 0) {
               "Temporary plot count must be at least ${if (baseline) "one" else "zero"}"
             }
-            return copy(
+            copy(
                 mode = PlotSelectionMode.Direct,
                 plotPrecisionLevel = null,
                 numPermanentPlots = setting.numPermanentPlots,
@@ -119,7 +119,19 @@ data class StratumPlotCounts(
             )
           }
         }
-    return parameters.recalculatePlotCounts(observationType)
+    val result =
+        if (setting is PlotSelectionSetting.Direct) {
+          parameters
+        } else {
+          try {
+            parameters.recalculatePlotCounts(observationType)
+          } catch (e: ArithmeticException) {
+            throw IllegalArgumentException("Calculated plot counts exceed supported limits", e)
+          }
+        }
+    require(result.numPermanentPlots <= 10000) { "Permanent plot count must not exceed 10000" }
+    require(result.numTemporaryPlots <= 10000) { "Temporary plot count must not exceed 10000" }
+    return result
   }
 
   fun recalculatePlotCounts(observationType: ObservationType): StratumPlotCounts {
