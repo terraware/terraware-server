@@ -117,6 +117,11 @@ class PlantingSiteNotDetailedException(val plantingSiteId: PlantingSiteId) :
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")
 
+class AcceleratorPlotSettingsNotEditableException(val plantingSiteId: PlantingSiteId) :
+    MismatchedStateException(
+        "Plot settings for accelerator planting site $plantingSiteId cannot be edited"
+    )
+
 class PlantingSiteMapInvalidException(val problems: List<PlantingSiteValidationFailure>) :
     RuntimeException("Found problems in planting site edit")
 
