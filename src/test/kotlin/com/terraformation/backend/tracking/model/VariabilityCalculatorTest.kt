@@ -114,7 +114,7 @@ class VariabilityCalculatorTest {
         }
     assertEquals(
         PlotCountRecommendation(type, expectedEstimate),
-        VariabilityCalculator.recommendation(currentTotal, range),
+        VariabilityCalculator.recommendation(currentTotal.toLong(), range),
     )
   }
 
@@ -163,7 +163,7 @@ class VariabilityCalculatorTest {
         PlotCountEstimate(40.0, CalculatedPlotCounts(highTotal, highPermanent, highTemporary))
     val range = RecommendedPlotCountRange(best, best, high)
 
-    val result = VariabilityCalculator.recommendation(currentTotal, range)
+    val result = VariabilityCalculator.recommendation(currentTotal.toLong(), range)
 
     val expected =
         when (expectedType) {
