@@ -213,6 +213,52 @@ class PlotSettingsPayloadTest {
   }
 
   @Test
+  fun `PUT and preview reject resulting counts above the limit including all-types baseline sums`() {
+    val direct =
+        entry.copy(mode = PlotSelectionMode.Direct, numPermanentPlots = 7, numTemporaryPlots = 3)
+    val invalidEntries =
+        listOf(
+            direct.copy(numPermanentPlots = 10001),
+            direct.copy(numTemporaryPlots = 10001),
+            direct.copy(observationType = null, numPermanentPlots = 7000, numTemporaryPlots = 3001),
+            entry.copy(
+                observationType = ObservationType.BaselineSurvey,
+                confidenceLevel = 99,
+                targetMarginOfError = BigDecimal("5"),
+                variability = BigDecimal("200"),
+            ),
+        )
+    invalidEntries.forEach { invalid ->
+      val request = UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(invalid))
+      assertThrows<IllegalArgumentException> { request.toSettings(site) }
+      assertThrows<IllegalArgumentException> {
+        request.toEdits(site).forEach { (id, edits) ->
+          val stratum = site.strata.first { it.id == id }
+          edits.forEach { (type, edit) -> edit(stratum.plotCounts(type)) }
+        }
+      }
+    }
+    val boundary =
+        UpdatePlotSettingsRequestPayload(
+                PlotPrecisionLevel.High,
+                listOf(
+                    direct.copy(
+                        observationType = null,
+                        numPermanentPlots = 7000,
+                        numTemporaryPlots = 3000,
+                    )
+                ),
+            )
+            .toSettings(site)
+            .getValue(entry.stratumId)
+    assertEquals(
+        10000,
+        boundary.getValue(ObservationType.BaselineSurvey).numTemporaryPlots,
+        "An all-types Direct edit accepts a baseline sum exactly at the limit",
+    )
+  }
+
+  @Test
   fun `response maps all observation types and rounds only variability`() {
     val counts =
         StratumPlotCounts(

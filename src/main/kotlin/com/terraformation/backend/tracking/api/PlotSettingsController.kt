@@ -169,12 +169,14 @@ data class UpdateStratumPlotSettingPayload(
         description =
             "Required in Direct mode; ignored otherwise. At least one, except BaselineSurvey requires zero.",
         minimum = "0",
+        maximum = "10000",
     )
     val numPermanentPlots: Int? = null,
     @Schema(
         description =
             "Required in Direct mode; ignored otherwise. Nonnegative, except BaselineSurvey requires at least one.",
         minimum = "0",
+        maximum = "10000",
     )
     val numTemporaryPlots: Int? = null,
 ) {
