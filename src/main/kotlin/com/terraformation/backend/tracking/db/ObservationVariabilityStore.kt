@@ -84,6 +84,7 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
 
     val snapshots = plotsByStratum.map { (stratumHistoryId, plots) ->
       val settings = plots.first()
+      // Filter after grouping so strata with only skipped plots still get a zero-sample snapshot.
       val densities = plots.mapNotNull { plot ->
         if (plot[OBSERVATION_PLOTS.STATUS_ID] != ObservationPlotStatus.Completed) {
           null
