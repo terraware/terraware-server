@@ -38,6 +38,7 @@ class CountriesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
+          textField("canonicalName", COUNTRIES.NAME),
           textField("code", COUNTRIES.CODE),
           localizedTextField("name", COUNTRIES.CODE, "i18n.Countries"),
           enumField("region", COUNTRIES.REGION_ID),
