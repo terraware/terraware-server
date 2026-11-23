@@ -27,7 +27,7 @@ data class ExistingProjectIndicatorPayload(
     val precision: Int,
     val primaryDataSource: String?,
     val projectId: ProjectId,
-    val refId: String,
+    val refId: String?,
     val tfOwner: String?,
     @field:Size(max = 25) val unit: String? = null,
 ) {
@@ -87,7 +87,7 @@ data class ExistingCommonIndicatorPayload(
     val notes: String?,
     val precision: Int,
     val primaryDataSource: String?,
-    val refId: String,
+    val refId: String?,
     val tfOwner: String?,
     @field:Size(max = 25) val unit: String? = null,
 ) {
@@ -144,7 +144,7 @@ data class NewIndicatorPayload(
     val notes: String?,
     val precision: Int,
     val primaryDataSource: String?,
-    val refId: String,
+    val refId: String?,
     val tfOwner: String?,
     @field:Size(max = 25) val unit: String? = null,
 ) {

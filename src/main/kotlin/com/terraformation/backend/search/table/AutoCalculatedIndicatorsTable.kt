@@ -42,5 +42,6 @@ class AutoCalculatedIndicatorsTable(tables: SearchTables) : SearchTable() {
       )
 
   override val defaultOrderFields: List<OrderField<*>>
-    get() = listOf(AUTO_CALCULATED_INDICATORS.REF_ID, AUTO_CALCULATED_INDICATORS.ID)
+    get() =
+        listOf(AUTO_CALCULATED_INDICATORS.REF_ID.asc().nullsLast(), AUTO_CALCULATED_INDICATORS.ID)
 }

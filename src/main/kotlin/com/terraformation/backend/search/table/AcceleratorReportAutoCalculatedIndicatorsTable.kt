@@ -75,7 +75,7 @@ class AcceleratorReportAutoCalculatedIndicatorsTable(tables: SearchTables) : Sea
   override val defaultOrderFields: List<OrderField<*>>
     get() =
         listOf(
-            indicatorsForOrder.REF_ID,
+            indicatorsForOrder.REF_ID.asc().nullsLast(),
             indicatorsForOrder.ID,
             REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID,
         )

@@ -1281,7 +1281,7 @@ abstract class DatabaseBackedTest {
       precision: Int = 0,
       primaryDataSource: String? = null,
       projectId: ProjectId = inserted.projectId,
-      refId: String = "1.1",
+      refId: String? = "1.1",
       tfOwner: String? = "Carbon",
       unit: String? = null,
   ): ProjectIndicatorId {
@@ -3651,7 +3651,7 @@ abstract class DatabaseBackedTest {
       notes: String? = null,
       precision: Int = 0,
       primaryDataSource: String? = null,
-      refId: String = "1.1",
+      refId: String? = "1.1",
       tfOwner: String? = "Carbon",
       unit: String? = null,
   ): CommonIndicatorId {

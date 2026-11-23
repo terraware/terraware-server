@@ -176,7 +176,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       @Test
       fun `sorted by reference correctly`() {
+        val nullId1 = insertCommonIndicator(refId = null)
         val indicatorId1 = insertCommonIndicator(refId = "2.0.2")
+        val nullId2 = insertCommonIndicator(refId = null)
+        val duplicateId = insertCommonIndicator(refId = "1.0")
         val indicatorId2 = insertCommonIndicator(refId = "10.0")
         val indicatorId3 = insertCommonIndicator(refId = "1.0")
         val indicatorId4 = insertCommonIndicator(refId = "2.0")
@@ -186,6 +189,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertEquals(
             listOf(
+                duplicateId, // 1.0
                 indicatorId3, // 1.0
                 indicatorId5, // 1.1
                 indicatorId6, // 1.1.1
@@ -193,6 +197,8 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 indicatorId4, // 2.0
                 indicatorId1, // 2.0.2
                 indicatorId2, // 10.0
+                nullId1,
+                nullId2,
             ),
             store.fetchAllCommonIndicators().map { it.id },
         )
@@ -257,7 +263,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertOrganization()
         val projectId = insertProject()
 
+        val nullId1 = insertProjectIndicator(refId = null)
         val indicatorId1 = insertProjectIndicator(refId = "2.0.2")
+        val nullId2 = insertProjectIndicator(refId = null)
+        val duplicateId = insertProjectIndicator(refId = "1.0")
         val indicatorId2 = insertProjectIndicator(refId = "10.0")
         val indicatorId3 = insertProjectIndicator(refId = "1.0")
         val indicatorId4 = insertProjectIndicator(refId = "2.0")
@@ -267,6 +276,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertEquals(
             listOf(
+                duplicateId, // 1.0
                 indicatorId3, // 1.0
                 indicatorId5, // 1.1
                 indicatorId6, // 1.1.1
@@ -274,6 +284,8 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 indicatorId4, // 2.0
                 indicatorId1, // 2.0.2
                 indicatorId2, // 10.0
+                nullId1,
+                nullId2,
             ),
             store.fetchProjectIndicatorsForProject(projectId).map { it.id },
         )
@@ -475,7 +487,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 notes = "Creation notes",
                 precision = 2,
                 primaryDataSource = "Creation source",
-                refId = "1.0",
+                refId = null,
                 tfOwner = "Biodiversity",
                 unit = "meters",
             )
@@ -511,7 +523,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     notes = "Creation notes",
                     precision = 2,
                     primaryDataSource = "Creation source",
-                    refId = "1.0",
+                    refId = null,
                     tfOwner = "Biodiversity",
                     unit = "meters",
                 ),
@@ -612,7 +624,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 notes = "Project creation notes",
                 precision = 2,
                 primaryDataSource = "Project creation source",
-                refId = "1.0",
+                refId = null,
                 tfOwner = "Biodiversity",
                 unit = "%",
             )
@@ -650,7 +662,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     precision = 2,
                     primaryDataSource = "Project creation source",
                     projectId = projectId,
-                    refId = "1.0",
+                    refId = null,
                     tfOwner = "Biodiversity",
                     unit = "%",
                 ),
@@ -756,7 +768,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 notes = "Updated notes",
                 precision = 2,
                 primaryDataSource = "Updated source",
-                refId = "1.0",
+                refId = null,
                 tfOwner = "Biodiversity",
                 unit = "meters",
             )
@@ -778,7 +790,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     notes = "Updated notes",
                     precision = 2,
                     primaryDataSource = "Updated source",
-                    refId = "1.0",
+                    refId = null,
                     tfOwner = "Biodiversity",
                     unit = "meters",
                 )
@@ -875,7 +887,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               precision = 2,
               primaryDataSource = "Project updated source",
               projectId = ProjectId(99), // this field is ignored
-              refId = "1.0",
+              refId = null,
               tfOwner = "Biodiversity",
               unit = "inches",
           )
@@ -898,7 +910,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   precision = 2,
                   primaryDataSource = "Project updated source",
                   projectId = projectId,
-                  refId = "1.0",
+                  refId = null,
                   tfOwner = "Biodiversity",
                   unit = "inches",
               )

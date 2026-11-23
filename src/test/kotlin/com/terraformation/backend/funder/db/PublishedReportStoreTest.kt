@@ -64,6 +64,37 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class FetchPublishedReports {
     @Test
+    fun `orders missing reference IDs last with indicator ID tiebreaks`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+      insertReport()
+      insertPublishedReport()
+      val commonIds =
+          listOf(null, "2.0", null, "1.0", "1.0").map { refId ->
+            val id = insertCommonIndicator(refId = refId)
+            insertPublishedReportCommonIndicator(indicatorId = id)
+            id
+          }
+      val projectIds =
+          listOf(null, "2.0", null, "1.0", "1.0").map { refId ->
+            val id = insertProjectIndicator(refId = refId)
+            insertPublishedReportProjectIndicator(indicatorId = id)
+            id
+          }
+      val report = store.fetchPublishedReports(projectId).single()
+      assertEquals(
+          listOf(commonIds[3], commonIds[4], commonIds[1], commonIds[0], commonIds[2]),
+          report.commonIndicators.map { it.indicatorId },
+          "Common indicator order",
+      )
+      assertEquals(
+          listOf(projectIds[3], projectIds[4], projectIds[1], projectIds[0], projectIds[2]),
+          report.projectIndicators.map { it.indicatorId },
+          "Project indicator order",
+      )
+    }
+
+    @Test
     fun `returns all published report data`() {
       insertFullReportData()
 
