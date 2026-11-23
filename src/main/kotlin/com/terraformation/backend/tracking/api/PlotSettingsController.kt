@@ -81,16 +81,34 @@ data class UpdatePlotSettingsRequestPayload(
   fun toEdits(
       site: ExistingPlantingSiteModel
   ): Map<StratumId, Map<ObservationType, (StratumPlotCounts) -> StratumPlotCounts>> {
-    require(strata.map { it.stratumId to it.observationType }.distinct().size == strata.size) {
+    val expanded = strata.flatMap { entry ->
+      (entry.observationType?.let { listOf(it) } ?: ObservationType.entries).map { type ->
+        if (
+            entry.observationType == null &&
+                entry.mode == PlotSelectionMode.Direct &&
+                type == ObservationType.BaselineSurvey
+        ) {
+          val setting = entry.toSetting() as PlotSelectionSetting.Direct
+          entry.copy(
+              observationType = type,
+              numPermanentPlots = 0,
+              numTemporaryPlots = setting.numPermanentPlots + setting.numTemporaryPlots,
+          )
+        } else {
+          entry.copy(observationType = type)
+        }
+      }
+    }
+    require(expanded.map { it.stratumId to it.observationType }.distinct().size == expanded.size) {
       "Duplicate stratum and observation type"
     }
-    return strata
+    return expanded
         .groupBy { it.stratumId }
         .mapValues { (id, entries) ->
           if (site.strata.none { it.id == id }) throw StratumNotFoundException(id)
           entries.associate { entry ->
             val setting = entry.toSetting()
-            val type = entry.observationType
+            val type = entry.observationType!!
             type to
                 { current: StratumPlotCounts ->
                   current.applySetting(type, setting)
@@ -102,7 +120,19 @@ data class UpdatePlotSettingsRequestPayload(
 
 data class UpdateStratumPlotSettingPayload(
     val stratumId: StratumId,
-    val observationType: ObservationType,
+    @Schema(
+        description =
+            "Observation type to update. Omit or set null to apply to all three types. " +
+                "In Direct mode, an all-types entry preserves the supplied counts for Monitoring " +
+                "and Biomass Measurements and assigns their sum as temporary plots with zero " +
+                "permanent plots for Baseline Survey. Explicit Baseline Survey entries retain " +
+                "the zero-permanent and positive-temporary requirements. " +
+                "Overlapping entries for the same stratum and type, including an all-types " +
+                "entry plus an explicit type, are rejected.",
+        nullable = true,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+    )
+    val observationType: ObservationType? = null,
     @Schema(
         description =
             "Selects required fields: PrecisionLevel requires plotPrecisionLevel; " +
