@@ -314,9 +314,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @ParameterizedTest
-    @CsvSource("InProgress", "Overdue")
+    @CsvSource(
+        "InProgress,0",
+        "InProgress,1",
+        "InProgress,2",
+        "InProgress,3",
+        "Overdue,0",
+        "Overdue,1",
+        "Overdue,2",
+        "Overdue,3",
+    )
     fun `settings edit reassigns upcoming plots and preserves started observations`(
-        activeState: ObservationState
+        activeState: ObservationState,
+        unavailableStrata: Int,
     ) {
       plantingSiteEventPublisher.register<PlantingSitePlotCountsUpdatedEvent> { service.on(it) }
       val stratumId = insertStratum(width = 8, height = 1, baselineNumTemporaryPlots = 1)
@@ -366,6 +376,37 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       plantingSiteEventPublisher.assertEventNotPublished<PlantingSitePlotCountsUpdatedEvent>()
       eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
 
+      val unavailableStratumIds =
+          when (unavailableStrata) {
+            1 -> setOf(stratumId)
+            2 -> setOf(secondStratumId)
+            3 -> setOf(stratumId, secondStratumId)
+            else -> emptySet()
+          }
+      val keptPlotIds =
+          fetchPlotIdsByStratum(upcomingId)
+              .filterKeys { it in unavailableStratumIds }
+              .values
+              .flatten()
+      val keptPlots =
+          dslContext.fetch(OBSERVATION_PLOTS).filter {
+            it.observationId == upcomingId && it.monitoringPlotId in keptPlotIds
+          }
+      if (unavailableStratumIds.isNotEmpty()) {
+        dslContext
+            .update(PLANTING_SITES)
+            .set(
+                PLANTING_SITES.EXCLUSION,
+                boundaryInPlotUnits(
+                    width = if (unavailableStrata == 3) 16 else 8,
+                    height = 1,
+                    x = if (unavailableStrata == 2) 8 else 0,
+                ),
+            )
+            .where(PLANTING_SITES.ID.eq(plantingSiteId))
+            .execute()
+      }
+
       plantingSiteStore.updatePlotSelectionSettings(
           plantingSiteId,
           PlotPrecisionLevel.High,
@@ -387,11 +428,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           "Started observation assignments are unchanged after editing counts",
           where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(activeId),
       )
+      val expectedCount =
+          (if (stratumId in unavailableStratumIds) 1 else 3) +
+              (if (secondStratumId in unavailableStratumIds) 1 else 2)
       assertEquals(
-          5,
+          expectedCount,
           observationPlotsDao.fetchByObservationId(upcomingId).size,
           "Preassigned upcoming observation gets new counts before starting",
       )
+      if (keptPlots.isNotEmpty()) {
+        assertTableEquals(
+            keptPlots,
+            "Unavailable strata keep their assigned plots while eligible strata are updated",
+            where =
+                OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingId)
+                    .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(keptPlotIds)),
+        )
+      }
       plantingSiteEventPublisher.assertEventsPublished(
           listOf(
               PlantingSitePlotCountsUpdatedEvent(
@@ -403,18 +456,22 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               )
           )
       )
-      eventPublisher.assertEventsPublished(
-          listOf(
-              ObservationPlotsReassignedEvent(
-                  upcomingId,
-                  ObservationType.BaselineSurvey,
-                  plantingSiteId,
-              )
-          )
-      )
+      if (unavailableStrata == 3) {
+        eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
+      } else {
+        eventPublisher.assertEventsPublished(
+            listOf(
+                ObservationPlotsReassignedEvent(
+                    upcomingId,
+                    ObservationType.BaselineSurvey,
+                    plantingSiteId,
+                )
+            )
+        )
+      }
       service.startObservation(upcomingId)
       assertEquals(
-          5,
+          expectedCount,
           observationPlotsDao.fetchByObservationId(upcomingId).size,
           "New assigned plots",
       )

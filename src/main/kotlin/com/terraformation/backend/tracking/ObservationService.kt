@@ -1568,11 +1568,16 @@ class ObservationService(
         }
       }
 
-      log.info("Reassigning plots in strata ${strata.stratumIds}")
+      val strataToReassign = if (upcomingOnly) reassignableStrata(observation, strata) else strata
+      if (strataToReassign.isEmpty()) {
+        return@withLockedPlantingSiteAndObservation ReassignmentOutcome.Unchanged
+      }
 
-      observationPlotStore.removeUnobservedPlots(observationId, strata)
+      log.info("Reassigning plots in strata ${strataToReassign.stratumIds}")
 
-      val assignmentResult = assignPlots(observation, strata.allocationStratumIds)
+      observationPlotStore.removeUnobservedPlots(observationId, strataToReassign)
+
+      val assignmentResult = assignPlots(observation, strataToReassign.allocationStratumIds)
 
       // Allocation only covers the changed strata, so it can succeed without assigning anything,
       // e.g., if a changed stratum's plot count is now zero. If that removed the observation's last
@@ -1615,6 +1620,58 @@ class ObservationService(
         }
       }
     }
+  }
+
+  private fun reassignableStrata(
+      observation: ExistingObservationModel,
+      strata: AffectedStrata,
+  ): AffectedStrata {
+    plantingSiteStore.ensurePermanentPlotsExist(
+        observation.plantingSiteId,
+        observation.observationType,
+    )
+    val site = plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
+    val gridOrigin =
+        site.gridOrigin ?: throw IllegalStateException("Planting site has no grid origin")
+    val observedPermanentPlotIds =
+        observationPlotStore.fetchObservedPermanentPlotIds(
+            observation.plantingSiteId,
+            excludeObservationId = observation.id,
+        )
+    val unavailableStratumIds =
+        site.strata
+            .filter { it.id in strata.allocationStratumIds }
+            .filter { stratum ->
+              val counts = stratum.plotCounts(observation.observationType)
+              if (
+                  counts.numPermanentPlots + counts.numTemporaryPlots == 0 ||
+                      stratum.substrata.none { it.id in observation.requestedSubstratumIds }
+              ) {
+                false
+              } else {
+                try {
+                  val allocation =
+                      StratumPlotAllocator(
+                              stratum,
+                              observation.observationType,
+                              gridOrigin,
+                              site.exclusion,
+                              observedPermanentPlotIds,
+                          )
+                          .allocate(observation.requestedSubstratumIds)
+                  allocation.permanentPlotIds.isEmpty() &&
+                      allocation.temporaryPlotBoundaries.isEmpty()
+                } catch (_: StratumFullException) {
+                  true
+                }
+              }
+            }
+            .map { it.id }
+            .toSet()
+    return strata.copy(
+        stratumIds = strata.stratumIds - unavailableStratumIds,
+        createdStratumIds = strata.createdStratumIds - unavailableStratumIds,
+    )
   }
 
   private fun publishEventIfUnderallocated(
