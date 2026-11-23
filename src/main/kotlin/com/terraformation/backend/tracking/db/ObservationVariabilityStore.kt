@@ -1,10 +1,12 @@
 package com.terraformation.backend.tracking.db
 
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotSelectionMode
+import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.tables.records.ObservationStratumVariabilityRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
@@ -14,6 +16,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MeasuredVariability
 import com.terraformation.backend.tracking.model.PlausibleVariabilityRange
 import com.terraformation.backend.tracking.model.RecommendedPlotCountRange
@@ -23,10 +26,15 @@ import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
+/**
+ * Instantiated by [ObservationStore] to record variability in the observation completion
+ * transaction.
+ */
 internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
+  private val log = perClassLogger()
+
   /** Record results while the completing transaction still holds the planting site lock. */
   fun recordVariability(observationId: ObservationId) {
-    val parameters = STRATUM_PLOT_SELECTION_PARAMETERS
     val plotStratum = STRATUM_HISTORIES.`as`("plot_stratum")
     val liveCount =
         with(OBSERVED_PLOT_SPECIES_TOTALS) {
@@ -45,11 +53,11 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
                 OBSERVATION_PLOTS.STATUS_ID,
                 MONITORING_PLOTS.SIZE_METERS,
                 liveCount,
-                parameters.PLOT_SELECTION_MODE_ID,
-                parameters.STUDENTS_T,
-                parameters.ERROR_MARGIN,
-                parameters.NUM_PERMANENT_PLOTS,
-                parameters.NUM_TEMPORARY_PLOTS,
+                STRATUM_PLOT_SELECTION_PARAMETERS.PLOT_SELECTION_MODE_ID,
+                STRATUM_PLOT_SELECTION_PARAMETERS.STUDENTS_T,
+                STRATUM_PLOT_SELECTION_PARAMETERS.ERROR_MARGIN,
+                STRATUM_PLOT_SELECTION_PARAMETERS.NUM_PERMANENT_PLOTS,
+                STRATUM_PLOT_SELECTION_PARAMETERS.NUM_TEMPORARY_PLOTS,
             )
             .from(OBSERVATIONS)
             .join(OBSERVATION_PLOTS)
@@ -70,16 +78,18 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
                     OBSERVATIONS.PLANTING_SITE_HISTORY_ID
                 ),
             )
-            .leftJoin(parameters)
+            .leftJoin(STRATUM_PLOT_SELECTION_PARAMETERS)
             .on(
-                parameters.STRATUM_ID.eq(STRATUM_HISTORIES.STRATUM_ID),
-                parameters.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring),
+                STRATUM_PLOT_SELECTION_PARAMETERS.STRATUM_ID.eq(STRATUM_HISTORIES.STRATUM_ID),
+                STRATUM_PLOT_SELECTION_PARAMETERS.OBSERVATION_TYPE_ID.eq(
+                    ObservationType.Monitoring
+                ),
             )
             .where(OBSERVATIONS.ID.eq(observationId))
             .and(OBSERVATIONS.STATE_ID.`in`(ObservationState.InProgress, ObservationState.Overdue))
             .and(OBSERVATIONS.IS_AD_HOC.isFalse)
             .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
-            .fetchGroups(STRATUM_HISTORIES.ID)
+            .fetchGroups(STRATUM_HISTORIES.ID.asNonNullable())
 
     val snapshots = plotsByStratum.map { (stratumHistoryId, plots) ->
       val settings = plots.first()
@@ -95,18 +105,20 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
       }
 
       val currentPlotCount =
-          settings[parameters.NUM_PERMANENT_PLOTS]
+          settings[STRATUM_PLOT_SELECTION_PARAMETERS.NUM_PERMANENT_PLOTS]
               ?.toLong()
-              ?.plus(settings[parameters.NUM_TEMPORARY_PLOTS]!!)
+              ?.plus(settings[STRATUM_PLOT_SELECTION_PARAMETERS.NUM_TEMPORARY_PLOTS]!!)
       val measurement = VariabilityCalculator.measuredVariability(densities)
       val plausibleRange = measurement?.let(VariabilityCalculator::plausibleRange)
       val plotCountRange =
           if (measurement != null && plausibleRange != null) {
             estimatePlotCounts(
+                observationId,
+                stratumHistoryId,
                 measurement,
                 plausibleRange,
-                settings[parameters.STUDENTS_T],
-                settings[parameters.ERROR_MARGIN],
+                settings[STRATUM_PLOT_SELECTION_PARAMETERS.STUDENTS_T],
+                settings[STRATUM_PLOT_SELECTION_PARAMETERS.ERROR_MARGIN],
             )
           } else {
             null
@@ -115,7 +127,8 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
           if (
               plotCountRange != null &&
                   currentPlotCount != null &&
-                  settings[parameters.PLOT_SELECTION_MODE_ID] != PlotSelectionMode.Direct
+                  settings[STRATUM_PLOT_SELECTION_PARAMETERS.PLOT_SELECTION_MODE_ID] !=
+                      PlotSelectionMode.Direct
           ) {
             VariabilityCalculator.recommendation(currentPlotCount, plotCountRange)
           } else {
@@ -124,7 +137,7 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
 
       ObservationStratumVariabilityRecord(
           observationId = observationId,
-          stratumHistoryId = stratumHistoryId!!,
+          stratumHistoryId = stratumHistoryId,
           sampledPlotCount = densities.size,
           measuredVariability = measurement?.variability,
           plausibleVariabilityLow = plausibleRange?.low,
@@ -140,6 +153,8 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
   }
 
   private fun estimatePlotCounts(
+      observationId: ObservationId,
+      stratumHistoryId: StratumHistoryId,
       measurement: MeasuredVariability,
       plausibleRange: PlausibleVariabilityRange,
       studentsT: BigDecimal?,
@@ -161,8 +176,12 @@ internal class ObservationVariabilityStore(private val dslContext: DSLContext) {
           studentsT,
           errorMargin,
       )
-    } catch (_: ArithmeticException) {
-      // Plot count estimates that exceed the supported range cannot be deployed.
+    } catch (e: ArithmeticException) {
+      log.warn(
+          "Plot count estimate is out of range for observation $observationId " +
+              "and stratum history $stratumHistoryId",
+          e,
+      )
       null
     }
   }
