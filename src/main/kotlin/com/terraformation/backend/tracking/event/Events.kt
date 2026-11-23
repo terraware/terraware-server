@@ -223,6 +223,11 @@ data class StratumPlotCountsUpdatedEvent(
     val upcomingOnly: Boolean = false,
 )
 
+data class PlantingSitePlotCountsUpdatedEvent(
+    val plantingSiteId: PlantingSiteId,
+    val observationTypesByStratum: Map<StratumId, Set<ObservationType>>,
+)
+
 /**
  * Published when a stratum's initial planting density or target plant density is changed to a
  * different value. The change fields are null for densities that didn't change.

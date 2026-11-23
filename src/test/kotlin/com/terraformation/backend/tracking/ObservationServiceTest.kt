@@ -137,6 +137,7 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.PlantingSitePlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.AffectedUpcomingObservation
@@ -313,35 +314,52 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @ParameterizedTest
-    @CsvSource("InProgress", "Overdue")
+    @CsvSource(
+        "InProgress,0,3",
+        "Overdue,1,3",
+        "InProgress,2,3",
+        "InProgress,3,3",
+        "InProgress,2,0",
+    )
     fun `settings edit reassigns upcoming plots and preserves started observations`(
-        activeState: ObservationState
+        activeState: ObservationState,
+        unavailableStrata: Int,
+        firstStratumPlotCount: Int,
     ) {
-      plantingSiteEventPublisher.register<StratumPlotCountsUpdatedEvent> { service.on(it) }
+      plantingSiteEventPublisher.register<PlantingSitePlotCountsUpdatedEvent> { service.on(it) }
       val stratumId = insertStratum(width = 8, height = 1, baselineNumTemporaryPlots = 1)
-      insertSubstratum(width = 8, height = 1)
+      val substratumId = insertSubstratum(width = 8, height = 1)
+      val secondStratumId =
+          insertStratum(x = 8, width = 8, height = 1, baselineNumTemporaryPlots = 1)
+      val secondSubstratumId = insertSubstratum(x = 8, width = 8, height = 1)
+      val unrequestedStratumId =
+          insertStratum(x = 16, width = 8, height = 1, baselineNumTemporaryPlots = 1)
+      insertSubstratum(x = 16, width = 8, height = 1)
       val activeId =
           insertObservation(
               observationType = ObservationType.BaselineSurvey,
               state = ObservationState.Upcoming,
           )
-      insertObservationRequestedSubstratum()
+      insertObservationRequestedSubstratum(substratumId = substratumId)
+      insertObservationRequestedSubstratum(substratumId = secondSubstratumId)
       service.startObservation(activeId)
       if (activeState == ObservationState.Overdue) {
         observationStore.updateObservationState(activeId, activeState)
       }
-      val activePlots = observationPlotsDao.fetchByObservationId(activeId)
-      assertEquals(1, activePlots.size, "Initial assigned plots")
+      val activePlots =
+          dslContext.fetch(OBSERVATION_PLOTS, OBSERVATION_PLOTS.OBSERVATION_ID.eq(activeId))
+      assertEquals(2, activePlots.size, "Initial assigned plots across both strata")
       assertFalse(observationPlotStore.hasCompletedPlots(activeId), "No completed plots")
       val upcomingId =
           insertObservation(
               observationType = ObservationType.BaselineSurvey,
               state = ObservationState.Upcoming,
           )
-      insertObservationRequestedSubstratum()
+      insertObservationRequestedSubstratum(substratumId = substratumId)
+      insertObservationRequestedSubstratum(substratumId = secondSubstratumId)
       service.assignPlotsToNewObservation(upcomingId)
       val upcomingPlots = observationPlotsDao.fetchByObservationId(upcomingId)
-      assertEquals(1, upcomingPlots.size, "Upcoming observation is preassigned before the edit")
+      assertEquals(2, upcomingPlots.size, "Upcoming observation is preassigned in both strata")
 
       eventPublisher.clear()
       plantingSiteStore.updatePlotSelectionSettings(
@@ -357,9 +375,45 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           observationPlotsDao.fetchByObservationId(upcomingId),
           "An edit with unchanged counts preserves upcoming assignments",
       )
-      plantingSiteEventPublisher.assertEventNotPublished<StratumPlotCountsUpdatedEvent>()
+      plantingSiteEventPublisher.assertEventNotPublished<PlantingSitePlotCountsUpdatedEvent>()
       eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
 
+      val unavailableStratumIds =
+          when (unavailableStrata) {
+            1 -> setOf(stratumId)
+            2 -> setOf(secondStratumId)
+            3 -> setOf(stratumId, secondStratumId)
+            else -> emptySet()
+          }
+      val keptPlotIds =
+          fetchPlotIdsByStratum(upcomingId)
+              .filterKeys { it in unavailableStratumIds }
+              .values
+              .flatten()
+      val keptPlots =
+          dslContext.fetch(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingId)
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(keptPlotIds)),
+          )
+      if (unavailableStratumIds.isNotEmpty()) {
+        dslContext
+            .update(PLANTING_SITES)
+            .set(
+                PLANTING_SITES.EXCLUSION,
+                boundaryInPlotUnits(
+                    width = if (unavailableStrata == 3) 16 else 8,
+                    height = 1,
+                    x = if (unavailableStrata == 2) 8 else 0,
+                ),
+            )
+            .where(PLANTING_SITES.ID.eq(plantingSiteId))
+            .execute()
+      }
+
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+      val observationPlotsBefore = dslContext.fetch(OBSERVATION_PLOTS)
+      val monitoringPlotsBefore = dslContext.fetch(MONITORING_PLOTS)
       plantingSiteStore.updatePlotSelectionSettings(
           plantingSiteId,
           PlotPrecisionLevel.High,
@@ -368,39 +422,79 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   mapOf(
                       ObservationType.BaselineSurvey to
                           {
-                            it.copy(numPermanentPlots = 0, numTemporaryPlots = 3)
+                            it.copy(
+                                numPermanentPlots = 0,
+                                numTemporaryPlots = firstStratumPlotCount,
+                            )
                           }
-                  )
+                  ),
+              secondStratumId to
+                  mapOf(ObservationType.BaselineSurvey to { it.copy(numTemporaryPlots = 2) }),
+              unrequestedStratumId to
+                  mapOf(ObservationType.BaselineSurvey to { it.copy(numTemporaryPlots = 2) }),
           ),
       )
 
-      assertEquals(
+      assertTableEquals(
           activePlots,
-          observationPlotsDao.fetchByObservationId(activeId),
           "Started observation assignments are unchanged after editing counts",
+          where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(activeId),
       )
+      val expectedCount =
+          (if (stratumId in unavailableStratumIds) 1 else firstStratumPlotCount) +
+              (if (secondStratumId in unavailableStratumIds) 1 else 2)
       assertEquals(
-          3,
+          expectedCount,
           observationPlotsDao.fetchByObservationId(upcomingId).size,
           "Preassigned upcoming observation gets new counts before starting",
       )
-      eventPublisher.assertEventPublished(
-          ObservationPlotsReassignedEvent(
-              upcomingId,
-              ObservationType.BaselineSurvey,
-              plantingSiteId,
+      if (keptPlots.isNotEmpty()) {
+        assertTableEquals(
+            keptPlots,
+            "Unavailable strata keep their assigned plots while eligible strata are updated",
+            where =
+                OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingId)
+                    .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(keptPlotIds)),
+        )
+      }
+      plantingSiteEventPublisher.assertEventsPublished(
+          listOf(
+              PlantingSitePlotCountsUpdatedEvent(
+                  plantingSiteId,
+                  mapOf(
+                      stratumId to setOf(ObservationType.BaselineSurvey),
+                      secondStratumId to setOf(ObservationType.BaselineSurvey),
+                      unrequestedStratumId to setOf(ObservationType.BaselineSurvey),
+                  ),
+              )
           )
       )
+      if (unavailableStrata == 3) {
+        assertTableEquals(observationsBefore, "Skipped reassignment preserves observations")
+        assertTableEquals(observationPlotsBefore, "Skipped reassignment preserves plot assignments")
+        assertTableEquals(monitoringPlotsBefore, "Skipped reassignment preserves monitoring plots")
+        eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
+      } else {
+        eventPublisher.assertEventsPublished(
+            listOf(
+                ObservationPlotsReassignedEvent(
+                    upcomingId,
+                    ObservationType.BaselineSurvey,
+                    plantingSiteId,
+                )
+            )
+        )
+      }
       service.startObservation(upcomingId)
       assertEquals(
-          3,
+          expectedCount,
           observationPlotsDao.fetchByObservationId(upcomingId).size,
           "New assigned plots",
       )
-      assertEquals(
+      assertTableEquals(
           activePlots,
-          observationPlotsDao.fetchByObservationId(activeId),
           "Started observation assignments remain unchanged after starting the upcoming observation",
+          where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(activeId),
       )
     }
 

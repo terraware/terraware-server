@@ -77,6 +77,7 @@ import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.PlantingSitePlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumDensityUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEvent
@@ -1269,6 +1270,7 @@ class PlantingSiteStore(
               .execute()
         }
       }
+      val changedStrata = mutableMapOf<StratumId, Set<ObservationType>>()
       updated.forEach { (stratumId, parameters) ->
         val stratum = strata.getValue(stratumId)
         val previous = ObservationType.entries.associateWith { stratum.plotCounts(it) }
@@ -1292,15 +1294,13 @@ class PlantingSiteStore(
                 }
                 .toSet()
         if (changedTypes.isNotEmpty()) {
-          eventPublisher.publishEvent(
-              StratumPlotCountsUpdatedEvent(
-                  plantingSiteId,
-                  stratumId,
-                  changedTypes,
-                  upcomingOnly = true,
-              )
-          )
+          changedStrata[stratumId] = changedTypes
         }
+      }
+      if (changedStrata.isNotEmpty()) {
+        eventPublisher.publishEvent(
+            PlantingSitePlotCountsUpdatedEvent(plantingSiteId, changedStrata)
+        )
       }
     }
   }
