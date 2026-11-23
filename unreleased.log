@@ -1,3 +1,4 @@
+3746808f Use email sender as missing-contact Jira reporter (#5497)
 6bb85930 SW-9357 Reassign each observation once per plot settings save (#5483)
 264d9e03 SW-9357 Preview planting site plot settings without saving changes (#5464)
 ed5b2afc SW-9357 Apply plot settings without an observation type to all types (#5481)
