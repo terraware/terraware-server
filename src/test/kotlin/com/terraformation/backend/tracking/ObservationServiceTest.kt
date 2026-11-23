@@ -332,7 +332,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
       val activePlots = observationPlotsDao.fetchByObservationId(activeId)
       assertEquals(1, activePlots.size, "Initial assigned plots")
-      assertEquals(false, observationPlotStore.hasCompletedPlots(activeId), "No completed plots")
+      assertFalse(observationPlotStore.hasCompletedPlots(activeId), "No completed plots")
       val upcomingId =
           insertObservation(
               observationType = ObservationType.BaselineSurvey,

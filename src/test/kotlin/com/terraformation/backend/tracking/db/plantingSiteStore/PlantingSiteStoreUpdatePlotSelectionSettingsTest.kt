@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_PLOT_SELECTION_PARAMETERS
 import com.terraformation.backend.tracking.db.AcceleratorPlotSettingsNotEditableException
@@ -11,6 +12,7 @@ import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsCha
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventSource
 import com.terraformation.backend.tracking.event.StratumPlotSelectionSettingsChangedEventValues
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -23,8 +25,8 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
     val stratumId = insertStratum()
     val initial =
         store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts
-    val unchangedDefault = plantingSitesDao.fetchOneById(siteId)!!.defaultPlotPrecisionLevelId!!
-    val siteBeforeEdits = plantingSitesDao.fetchOneById(siteId)
+    val unchangedDefault = PlotPrecisionLevel.Medium
+    val siteBeforeEdits = dslContext.fetch(PLANTING_SITES)
     clock.instant = Instant.ofEpochSecond(100)
     // Separate updates require the count edit to retain the saved variance;
     // a combined copy would not detect an edit based on stale values.
@@ -33,9 +35,7 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
         unchangedDefault,
         mapOf(
             stratumId to
-                mapOf(
-                    ObservationType.Monitoring to { it.copy(variance = java.math.BigDecimal("75")) }
-                )
+                mapOf(ObservationType.Monitoring to { it.copy(variance = BigDecimal("75")) })
         ),
     )
     eventPublisher.assertEventNotPublished<StratumPlotCountsUpdatedEvent>()
@@ -44,19 +44,17 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
         unchangedDefault,
         mapOf(stratumId to mapOf(ObservationType.Monitoring to { it.copy(numPermanentPlots = 7) })),
     )
-    assertEquals(
+    assertTableEquals(
         siteBeforeEdits,
-        plantingSitesDao.fetchOneById(siteId),
         "Unchanged default preserves site metadata",
     )
-    val expectedPlotCounts =
-        initial.copy(variance = java.math.BigDecimal("75"), numPermanentPlots = 7)
+    val expectedPlotCounts = initial.copy(variance = BigDecimal("75"), numPermanentPlots = 7)
     assertEquals(
         expectedPlotCounts,
         store.fetchSiteById(siteId, PlantingSiteDepth.Stratum).strata.single().plantPlotCounts,
         "applies edits to latest stored parameters and validates before saving",
     )
-    val siteBefore = plantingSitesDao.fetchOneById(siteId)
+    val siteBefore = dslContext.fetch(PLANTING_SITES)
     assertThrows<IllegalArgumentException> {
       store.updatePlotSelectionSettings(
           siteId,
@@ -72,9 +70,8 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
           ),
       )
     }
-    assertEquals(
+    assertTableEquals(
         siteBefore,
-        plantingSitesDao.fetchOneById(siteId),
         "applies edits to latest stored parameters and validates before saving",
     )
     assertEquals(
@@ -100,15 +97,13 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
           }
         }
     val expectedStrata = dslContext.fetch(STRATA)
+    clock.instant = Instant.ofEpochSecond(100)
     val expectedSite =
-        plantingSitesDao
-            .fetchOneById(siteId)!!
-            .copy(
-                defaultPlotPrecisionLevelId = PlotPrecisionLevel.High,
-                modifiedTime = Instant.ofEpochSecond(100),
-                modifiedBy = user.userId,
-            )
-    clock.instant = expectedSite.modifiedTime!!
+        dslContext.fetch(PLANTING_SITES).onEach {
+          it.defaultPlotPrecisionLevelId = PlotPrecisionLevel.High
+          it.modifiedTime = clock.instant()
+          it.modifiedBy = user.userId
+        }
 
     store.updatePlotSelectionSettings(
         siteId,
@@ -126,9 +121,8 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
         ),
     )
 
-    assertEquals(
+    assertTableEquals(
         expectedSite,
-        plantingSitesDao.fetchOneById(siteId),
         "merges parameters and publishes only changed types and strata",
     )
     assertTableEquals(expectedParameters)
@@ -152,13 +146,15 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
             numPermanentPlots = counts.numPermanentPlots,
             numTemporaryPlots = counts.numTemporaryPlots,
         )
-    eventPublisher.assertEventsPublished(listOf(expectedEvent))
-    eventPublisher.assertEventPublished(
-        StratumPlotCountsUpdatedEvent(
-            siteId,
-            changedId,
-            setOf(ObservationType.BaselineSurvey),
-            upcomingOnly = true,
+    eventPublisher.assertEventsPublished(
+        listOf(
+            expectedEvent,
+            StratumPlotCountsUpdatedEvent(
+                siteId,
+                changedId,
+                setOf(ObservationType.BaselineSurvey),
+                upcomingOnly = true,
+            ),
         )
     )
   }
@@ -182,13 +178,12 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
     insertProject()
     insertProjectAcceleratorDetails()
     val siteId = insertPlantingSite(projectId = inserted.projectId)
-    val initial = plantingSitesDao.fetchOneById(siteId)
+    val initial = dslContext.fetch(PLANTING_SITES)
     assertThrows<AcceleratorPlotSettingsNotEditableException> {
       store.updatePlotSelectionSettings(siteId, PlotPrecisionLevel.High, emptyMap())
     }
-    assertEquals(
+    assertTableEquals(
         initial,
-        plantingSitesDao.fetchOneById(siteId),
         "rejects accelerator site",
     )
   }
@@ -198,7 +193,7 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
     val siteId = insertPlantingSite()
     insertPlantingSite()
     val foreignId = insertStratum()
-    val initial = plantingSitesDao.fetchOneById(siteId)
+    val initial = dslContext.fetch(PLANTING_SITES)
     assertThrows<StratumNotFoundException> {
       store.updatePlotSelectionSettings(
           siteId,
@@ -206,9 +201,8 @@ internal class PlantingSiteStoreUpdatePlotSelectionSettingsTest : BasePlantingSi
           mapOf(foreignId to emptyMap()),
       )
     }
-    assertEquals(
+    assertTableEquals(
         initial,
-        plantingSitesDao.fetchOneById(siteId),
         "rejects stratum from another site before saving changes",
     )
     eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>()
