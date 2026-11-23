@@ -1,3 +1,4 @@
+aadd3714 SW-9387 Make indicator Ref IDs optional (#5473)
 15641a86 Update server dependencies (#5478)
 bd1d6b32 SW-9355 Add measured variability and plot count recommendation calculations (#5414)
 cee8f177 SW-9350 Publish stratum plot selection settings history (#5457)
