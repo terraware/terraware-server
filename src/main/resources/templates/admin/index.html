@@ -332,11 +332,11 @@
     </th:block>
 </details>
 
-<details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
-    <summary>Send Test Email</summary>
+<details id="sendTestEmail" class="section" th:if="${canSendTestEmailOrNotification}">
+    <summary>Send Test Email/Notification</summary>
 
     <p>
-        <a href="/admin/email">Send Test Email Form</a>
+        <a href="/admin/email">Send Test Email/Notification Form</a>
     </p>
 </details>
 

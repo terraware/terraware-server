@@ -38,9 +38,13 @@ class SupportService(
 
   @EventListener
   fun on(event: TerraformationContactMissingEvent) {
+    fileMissingContactRequest(event)
+  }
+
+  fun fileMissingContactRequest(event: TerraformationContactMissingEvent): String? {
     if (!config.atlassian.enabled) {
       log.info("Atlassian integration disabled; not filing missing-contact support request")
-      return
+      return null
     }
 
     val senderAddress = config.email.senderAddress
@@ -48,26 +52,29 @@ class SupportService(
       log.error(
           "Unable to file missing-contact support request for organization ${event.organizationId}: email sender address is not configured"
       )
-      return
+      return null
     }
 
-    try {
+    return try {
       Locale.ENGLISH.use {
         val missingContact = messages.missingContact(event.organizationName, event.organizationId)
-        atlassianHttpClient.createServiceDeskRequest(
-            requestType = SupportRequestType.MissingContact,
-            summary = missingContact.title.truncateForJira(MAX_JIRA_SUMMARY_LENGTH),
-            description =
-                "${missingContact.body}\n\n${event.subject}\n\n${event.body}"
-                    .truncateForJira(MAX_JIRA_DESCRIPTION_LENGTH),
-            reporter = InternetAddress(senderAddress).address,
-        )
+        atlassianHttpClient
+            .createServiceDeskRequest(
+                requestType = SupportRequestType.MissingContact,
+                summary = missingContact.title.truncateForJira(MAX_JIRA_SUMMARY_LENGTH),
+                description =
+                    "${missingContact.body}\n\n${event.subject}\n\n${event.body}"
+                        .truncateForJira(MAX_JIRA_DESCRIPTION_LENGTH),
+                reporter = InternetAddress(senderAddress).address,
+            )
+            .issueKey
       }
     } catch (e: Exception) {
       log.error(
           "Unable to file missing-contact support request for organization ${event.organizationId}",
           e,
       )
+      null
     }
   }
 

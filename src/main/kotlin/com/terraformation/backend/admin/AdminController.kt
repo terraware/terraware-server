@@ -101,8 +101,9 @@ class AdminController(
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
     model.addAttribute(
-        "canSendTestEmail",
-        config.email.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles,
+        "canSendTestEmailOrNotification",
+        (config.email.enabled || config.atlassian.enabled) &&
+            GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
