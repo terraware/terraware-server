@@ -75,6 +75,7 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.PlantingSitePlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.StratumPlotCountsUpdatedEvent
 import com.terraformation.backend.tracking.model.AffectedStrata
@@ -1402,6 +1403,20 @@ class ObservationService(
    * Unlike map edits, plot count changes never abandon observations: observations with completed
    * plots are left alone, and observations that can't be given new plots keep their existing ones.
    */
+  @EventListener
+  fun on(event: PlantingSitePlotCountsUpdatedEvent) {
+    ObservationType.entries.forEach { type ->
+      val strata = event.observationTypesByStratum.filterValues { type in it }.keys
+      updateObservationsForChangedStrata(
+          event.plantingSiteId,
+          AffectedStrata(strata),
+          isPlotCountChange = true,
+          observationTypes = setOf(type),
+          upcomingOnly = true,
+      )
+    }
+  }
+
   @EventListener
   fun on(event: StratumPlotCountsUpdatedEvent) {
     updateObservationsForChangedStrata(
