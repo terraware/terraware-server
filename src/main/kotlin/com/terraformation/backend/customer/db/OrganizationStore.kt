@@ -79,6 +79,25 @@ class OrganizationStore(
         ?: throw OrganizationNotFoundException(organizationId)
   }
 
+  fun fetchWithMissingTerraformationContact(
+      organizationId: OrganizationId? = null
+  ): List<OrganizationModel> {
+    val user = currentUser()
+    val condition =
+        DSL.exists(acceleratorOrApplicationProjects(ORGANIZATIONS.ID))
+            .andNotExists(
+                DSL.selectOne()
+                    .from(ORGANIZATION_USERS)
+                    .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                    .and(ORGANIZATION_USERS.ROLE_ID.eq(Role.TerraformationContact))
+            )
+            .and(organizationId?.let { ORGANIZATIONS.ID.eq(it) } ?: DSL.noCondition())
+
+    return selectForDepth(FetchDepth.Organization, condition).filter {
+      user.canListOrganizationUsers(it.id)
+    }
+  }
+
   private fun selectForDepth(depth: FetchDepth, condition: Condition): List<OrganizationModel> {
     val user = currentUser()
 

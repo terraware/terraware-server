@@ -19,6 +19,7 @@ import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -650,6 +651,16 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchTerraformationContacts returns the user id of Terraformation Contact`() {
+    insertProject(organizationId = organizationId, phase = AcceleratorPhase.Phase0DueDiligence)
+    val applicantOrganizationId = insertOrganization()
+    insertApplication(projectId = insertProject(organizationId = applicantOrganizationId))
+    insertOrganization()
+    assertEquals(
+        setOf(organizationId, applicantOrganizationId),
+        store.fetchWithMissingTerraformationContact().map { it.id }.toSet(),
+        "Accelerator and applicant organizations without a Terraformation Contact",
+    )
+
     assertEquals(
         emptyList<UserId>(),
         store.fetchTerraformationContacts(organizationId),
@@ -662,6 +673,11 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         listOf(tfContact.userId),
         store.fetchTerraformationContacts(organizationId),
         "Should find the Terraformation Contact",
+    )
+    assertEquals(
+        emptyList<OrganizationModel>(),
+        store.fetchWithMissingTerraformationContact(organizationId),
+        "Should not find an organization that now has a Terraformation Contact",
     )
   }
 
