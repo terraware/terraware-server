@@ -117,6 +117,27 @@
     <p th:if="${canViewSqlMap}">
         <a href="/admin/sqlMap">SQL query map</a>
     </p>
+
+    <th:block th:if="${canSendTestMissingContactNotification}">
+        <h3>Test Missing-Contact Notification</h3>
+
+        <p>Creates a Jira test ticket for an accelerator or applicant organization without a Terraformation Contact.</p>
+
+        <p th:if="${#lists.isEmpty(organizationsMissingContact)}">
+            No eligible organizations are missing a Terraformation Contact.
+        </p>
+        <form method="POST" action="/admin/sendMissingContactNotification"
+              th:unless="${#lists.isEmpty(organizationsMissingContact)}"
+              onsubmit="return confirm('Create a real Jira ticket for this test?');">
+            <label for="missingContactOrganizationId">Organization</label>
+            <select id="missingContactOrganizationId" name="organizationId" required>
+                <option value="">Select an organization</option>
+                <option th:each="organization : ${organizationsMissingContact}"
+                        th:value="${organization.id}" th:text="${organization.name}">Organization</option>
+            </select>
+            <input type="submit" value="Send Test Notification"/>
+        </form>
+    </th:block>
 </details>
 
 <details id="organizationManagement" class="section">
@@ -332,11 +353,11 @@
     </th:block>
 </details>
 
-<details id="sendTestEmail" class="section" th:if="${canSendTestEmailOrNotification}">
-    <summary>Send Test Email/Notification</summary>
+<details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
+    <summary>Send Test Email</summary>
 
     <p>
-        <a href="/admin/email">Send Test Email/Notification Form</a>
+        <a href="/admin/email">Send Test Email Form</a>
     </p>
 </details>
 

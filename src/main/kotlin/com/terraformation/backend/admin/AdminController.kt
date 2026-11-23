@@ -4,10 +4,14 @@ import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.file.GoogleDriveWriter
+import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.support.SupportService
 import java.net.URI
 import java.util.Locale
 import org.springframework.stereotype.Controller
@@ -28,7 +32,10 @@ class AdminController(
     private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
     private val googleDriveWriter: GoogleDriveWriter,
+    private val supportService: SupportService,
 ) {
+  private val log = perClassLogger()
+
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
   fun redirectToTrailingSlash(): String {
@@ -101,10 +108,23 @@ class AdminController(
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
     model.addAttribute(
-        "canSendTestEmailOrNotification",
-        (config.email.enabled || config.atlassian.enabled) &&
-            GlobalRole.SuperAdmin in currentUser().globalRoles,
+        "canSendTestEmail",
+        config.email.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
+    val canSendTestMissingContactNotification =
+        config.atlassian.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles
+    model.addAttribute(
+        "canSendTestMissingContactNotification",
+        canSendTestMissingContactNotification,
+    )
+    if (canSendTestMissingContactNotification) {
+      model.addAttribute(
+          "organizationsMissingContact",
+          organizationStore.fetchWithMissingTerraformationContact().sortedBy {
+            it.name.lowercase()
+          },
+      )
+    }
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
     model.addAttribute("canUpdateDefaultVoters", currentUser().canUpdateDefaultVoters())
@@ -116,6 +136,50 @@ class AdminController(
     model.addAttribute("splatterEnabled", config.splatter.enabled)
 
     return "/admin/index"
+  }
+
+  @PostMapping("/sendMissingContactNotification")
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
+  fun sendMissingContactNotification(
+      @RequestParam organizationId: OrganizationId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    if (!config.atlassian.enabled) {
+      redirectAttributes.failureMessage = "Jira integration is not enabled."
+      return redirectToTrailingSlash()
+    }
+
+    try {
+      val organization =
+          organizationStore.fetchWithMissingTerraformationContact(organizationId).singleOrNull()
+      if (organization == null) {
+        redirectAttributes.failureMessage = "This organization is no longer eligible for the test."
+      } else {
+        val issueKey =
+            supportService.fileMissingContactRequest(
+                TerraformationContactMissingEvent(
+                    organization.id,
+                    organization.name,
+                    "Test missing-contact notification",
+                    "This is a test notification sent from the Terraware admin console.",
+                )
+            )
+        if (issueKey == null) {
+          redirectAttributes.failureMessage =
+              "Could not create the test Jira ticket. Check the server logs for details."
+        } else {
+          redirectAttributes.successMessage = "Created test Jira ticket $issueKey."
+        }
+      }
+    } catch (e: Exception) {
+      log.error(
+          "Failed to send test missing-contact notification for organization $organizationId",
+          e,
+      )
+      redirectAttributes.failureMessage = "Could not send the test notification."
+    }
+
+    return redirectToTrailingSlash()
   }
 
   @PostMapping("/google")

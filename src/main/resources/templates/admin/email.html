@@ -15,10 +15,9 @@
 <span th:replace="~{/admin/header :: top}"/>
 <a href="/admin/">Home</a>
 
-<h2>Send Test Email/Notification</h2>
+<h2>Send Test Email</h2>
 
-<h3>Test Email</h3>
-<form id="testEmailForm" method="POST" action="/admin/sendEmail" th:if="${isEmailEnabled}">
+<form method="POST" action="/admin/sendEmail" th:if="${isEmailEnabled}">
     <label for="recipient">Recipient</label>
     <input type="email" name="recipient" id="recipient" required/>
     <input type="checkbox" id="sendToAll" name="sendToAll">
@@ -44,26 +43,8 @@
 </form>
 
 <div th:if="${!isEmailEnabled}">
-    <p>The system is not configured to send emails.</p>
+    <h3>The system is not configured to send emails.</h3>
 </div>
-
-<h3>Test Missing-Contact Notification</h3>
-<p th:if="${!isAtlassianEnabled}">The system is not configured to create Jira tickets.</p>
-<th:block th:if="${isAtlassianEnabled}">
-    <p th:if="${#lists.isEmpty(organizationsMissingContact)}">No accelerator or applicant organizations are missing a Terraformation Contact.</p>
-    <form method="POST" action="/admin/sendMissingContactNotification"
-          th:unless="${#lists.isEmpty(organizationsMissingContact)}"
-          onsubmit="return confirm('Create a real Jira ticket for this test?');">
-        <p>Creates a real Jira test ticket for an accelerator or applicant organization without a Terraformation Contact.</p>
-        <label for="organizationId">Organization</label>
-        <select id="organizationId" name="organizationId" required>
-            <option value="">Select an organization</option>
-            <option th:each="organization : ${organizationsMissingContact}"
-                    th:value="${organization.id}" th:text="${organization.name}">Organization</option>
-        </select>
-        <input type="submit" value="Send Test Missing-Contact Notification"/>
-    </form>
-</th:block>
 
 <script>
     const sendToAllCheckbox = document.getElementById('sendToAll');
@@ -72,7 +53,7 @@
     const genericEmailFields = document.getElementById('genericEmailFields');
     let quillEditor = null;
 
-    sendToAllCheckbox?.addEventListener('change', function () {
+    sendToAllCheckbox.addEventListener('change', function () {
         if (sendToAllCheckbox.checked) {
             recipientInput.removeAttribute('required');
             recipientInput.disabled = true;
@@ -82,7 +63,7 @@
         }
     });
 
-    emailNameSelect?.addEventListener('change', function () {
+    emailNameSelect.addEventListener('change', function () {
         if (emailNameSelect.value === 'GenericEmail') {
             genericEmailFields.style.display = 'block';
             if (!quillEditor) {
@@ -103,7 +84,7 @@
                 });
 
                 // Update the hidden textarea when form is submitted
-                document.getElementById('testEmailForm').addEventListener('submit', function (e) {
+                document.querySelector('form').addEventListener('submit', function (e) {
                     document.querySelector('#emailBody').value = quillEditor.getSemanticHTML();
                 });
             }
