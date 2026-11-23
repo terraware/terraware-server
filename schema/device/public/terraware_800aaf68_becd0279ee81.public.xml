@@ -1,211 +1,298 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="terraware_c37c3497_becd0279ee81" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_800aaf68_becd0279ee81" schema="public" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
    <tables>
-      <table name="chat_memory_conversations" remarks="Information about Ask Terraware conversations." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111">
-            <child column="conversation_id" foreignKey="chat_memory_messages_conversation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="chat_memory_messages"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="chat_memory_conversations_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="chat_memory_message_types" remarks="(Enum) Message types that can be stored as part of the memory of an LLM chat conversation." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="message_type_id" foreignKey="chat_memory_messages_message_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="chat_memory_messages"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="chat_memory_message_types_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="chat_memory_message_types_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="chat_memory_messages" remarks="Messages from Ask Terraware conversations. Both questions (prompts to the LLM) and answers (responses from the LLM) are recorded." schema="public" type="TABLE">
+      <table name="automations" remarks="Configuration of automatic processes run by the device manager." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="conversation_id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111">
-            <parent column="id" foreignKey="chat_memory_messages_conversation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="chat_memory_conversations"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="message_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="chat_memory_messages_message_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="chat_memory_message_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="content" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="chat_memory_messages_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="chat_memory_messages_conversation_id_idx" unique="false">
-            <column ascending="true" name="conversation_id"/>
-         </index>
-      </table>
-      <table name="files" remarks="Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="file_id" foreignKey="activity_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activity_media_files"/>
-            <child column="file_id" foreignKey="report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_photos"/>
-            <child column="file_id" foreignKey="submission_snapshots_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submission_snapshots"/>
-            <child column="file_id" foreignKey="variable_image_values_file_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
-            <child column="file_id" foreignKey="published_activity_media_files_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activity_media_files"/>
-            <child column="file_id" foreignKey="published_activity_observation_media_files_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activity_observation_media_files"/>
-            <child column="file_id" foreignKey="published_report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_photos"/>
-            <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
-            <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
-            <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
-            <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_media_files"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="size" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="settings" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="captured_local_time" nullable="true" remarks="If applicable, the date and time in the local time zone of wherever the file's data was captured. For example, the time a photo was taken. This may differ from `created_time`, which represents when the file was stored in Terraware. This is typically extracted from the file itself, e.g., EXIF metadata." size="29" type="timestamp" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="geolocation" nullable="true" remarks="If applicable, the location where the file was created. For photos, typically extracted from EXIF metadata." size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="file_batch_id" nullable="true" remarks="If this file was uploaded as part of a batch, the ID of the batch." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="device_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="timeseries_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="verbosity" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="13" name="lower_threshold" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="14" name="upper_threshold" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="photos_pkey" unique="true">
+         <index name="automations_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="files_file_batch_id_idx" unique="false">
-            <column ascending="true" name="file_batch_id"/>
+         <index name="automations_device_id_timeseries_name_idx" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="timeseries_name"/>
          </index>
-         <index name="photos_storage_url_key" unique="true">
-            <column ascending="true" name="storage_url"/>
+         <index name="automations_facility_id_name_idx" unique="false">
+            <column ascending="true" name="facility_id"/>
+            <column ascending="true" name="name"/>
          </index>
-         <checkConstraint constraint="(length(content_type) &gt; 0)" name="content_type_cannot_be_empty_string"/>
-         <checkConstraint constraint="(length(file_name) &gt; 0)" name="file_name_cannot_be_empty_string"/>
+         <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="automations_description_check"/>
+         <checkConstraint constraint="(timeseries_name !~ similar_to_escape(' *'::text))" name="automations_timeseries_name_check"/>
       </table>
-      <table name="land_use_model_types" remarks="(Enum) Types of ways a project's land can be used." schema="public" type="TABLE">
+      <table name="device_managers" remarks="Information about device managers. This is a combination of information from the Balena API and locally-generated values." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="balena_id" nullable="false" remarks="Balena-assigned device identifier." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="balena_modified_time" nullable="false" remarks="Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_online" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="last_connectivity_event" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="update_progress" nullable="true" remarks="Percent complete of software download and installation (0-100). Null if no software update is in progress." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="sensor_kit_id" nullable="false" remarks="ID code that is physically printed on the sensor kit and set as a tag value in the Balena device configuration." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="created_time" nullable="false" remarks="When this device manager was added to the local database. The Balena device may have been created earlier." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="refreshed_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="balena_uuid" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="device_managers_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="device_managers_balena_id_unique" unique="true">
+            <column ascending="true" name="balena_id"/>
+         </index>
+         <index name="device_managers_balena_uuid_unique" unique="true">
+            <column ascending="true" name="balena_uuid"/>
+         </index>
+         <index name="device_managers_facility_id_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+         </index>
+         <index name="device_managers_short_code_key" unique="true">
+            <column ascending="true" name="sensor_kit_id"/>
+         </index>
+         <index name="device_managers_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+         <checkConstraint constraint="(((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL)))" name="device_managers_user_iff_facility"/>
+      </table>
+      <table name="device_template_categories" remarks="(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="land_use_model_type_id" foreignKey="published_project_land_use_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_land_use"/>
-            <child column="land_use_model_type_id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_land_use_model_types"/>
+            <child column="category_id" foreignKey="device_templates_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_templates"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="land_use_model_types_pkey" unique="true">
+         <index name="device_template_categories_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="land_use_model_types_name_key" unique="true">
+      </table>
+      <table name="device_templates" remarks="Canned device configurations for use in cases where we want to show a list of possible devices to the user and create the selected device with the correct settings so that the device manager can talk to it." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="category_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="device_templates_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_template_categories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="device_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="make" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="model" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="protocol" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="address" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="port" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="settings" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="verbosity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="device_templates_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="device_templates_category_id_name_key" unique="true">
+            <column ascending="true" name="category_id"/>
             <column ascending="true" name="name"/>
          </index>
+         <checkConstraint constraint="(address !~ similar_to_escape(' *'::text))" name="device_templates_address_check"/>
+         <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="device_templates_description_check"/>
+         <checkConstraint constraint="(protocol !~ similar_to_escape(' *'::text))" name="device_templates_protocol_check"/>
       </table>
-      <table name="project_land_use_model_types" remarks="Which projects have which types of land use models." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="land_use_model_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="land_use_model_types"/>
-         </column>
-         <primaryKey column="project_id" sequenceNumberInPK="1"/>
-         <primaryKey column="land_use_model_type_id" sequenceNumberInPK="2"/>
-         <index name="project_land_use_model_types_pkey" unique="true">
-            <column ascending="true" name="project_id"/>
-            <column ascending="true" name="land_use_model_type_id"/>
-         </index>
-      </table>
-      <table name="projects" remarks="Distinguishes among an organization's projects." schema="public" type="TABLE">
+      <table name="devices" remarks="Hardware devices managed by the device manager at a facility." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="project_id" foreignKey="activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activities"/>
-            <child column="project_id" foreignKey="applications_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
-            <child column="project_id" foreignKey="auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicator_targets"/>
-            <child column="project_id" foreignKey="common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicator_targets"/>
-            <child column="project_id" foreignKey="deliverable_project_due_dates_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_project_due_dates"/>
-            <child column="project_id" foreignKey="event_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="event_projects"/>
-            <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
-            <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
-            <child column="project_id" foreignKey="project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicator_targets"/>
-            <child column="project_id" foreignKey="project_indicators_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicators"/>
-            <child column="project_id" foreignKey="project_modules_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_modules"/>
-            <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>
-            <child column="project_id" foreignKey="project_report_configs_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_report_configs"/>
-            <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
-            <child column="project_id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_vote_decisions"/>
-            <child column="project_id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
-            <child column="project_id" foreignKey="report_auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_auto_calculated_indicator_targets"/>
-            <child column="project_id" foreignKey="report_common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_common_indicator_targets"/>
-            <child column="project_id" foreignKey="report_project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_indicator_targets"/>
-            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
-            <child column="project_id" foreignKey="submission_documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
-            <child column="project_id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submissions"/>
-            <child column="project_id" foreignKey="documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
-            <child column="project_id" foreignKey="variable_owners_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_owners"/>
-            <child column="project_id" foreignKey="variable_values_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
-            <child column="project_id" foreignKey="variable_workflow_history_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_workflow_history"/>
-            <child column="project_id" foreignKey="funding_entity_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_projects"/>
-            <child column="project_id" foreignKey="published_activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_activities"/>
-            <child column="project_id" foreignKey="published_auto_calculated_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_baselines"/>
-            <child column="project_id" foreignKey="published_auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_targets"/>
-            <child column="project_id" foreignKey="published_common_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_baselines"/>
-            <child column="project_id" foreignKey="published_common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_targets"/>
-            <child column="project_id" foreignKey="published_project_carbon_certs_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_carbon_certs"/>
-            <child column="project_id" foreignKey="published_project_details_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_details"/>
-            <child column="project_id" foreignKey="published_project_indicator_baselines_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_baselines"/>
-            <child column="project_id" foreignKey="published_project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_targets"/>
-            <child column="project_id" foreignKey="published_project_land_use_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_land_use"/>
-            <child column="project_id" foreignKey="published_project_sdg_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_sdg"/>
-            <child column="project_id" foreignKey="published_reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
-            <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
-            <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
-            <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
-            <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
-            <child column="project_id" foreignKey="draft_planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
-            <child column="project_id" foreignKey="planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
+            <child column="device_id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="automations"/>
+            <child column="parent_id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <child column="device_id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries"/>
          </column>
-         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="3" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="devices_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="projects_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="accelerator_phases"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="make" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="model" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="protocol" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="address" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="port" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="true" digits="0" id="9" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="settings" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="parent_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="verbosity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="projects_pkey" unique="true">
+         <index name="device_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="projects_botanical_country_code_idx" unique="false">
+         <checkConstraint constraint="(address !~ similar_to_escape(' *'::text))" name="devices_address_check"/>
+         <checkConstraint constraint="(protocol !~ similar_to_escape(' *'::text))" name="devices_protocol_check"/>
+      </table>
+      <table name="facilities" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="facility_id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_sub_locations"/>
+            <child column="facility_id" foreignKey="batches_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
+            <child column="destination_facility_id" foreignKey="withdrawals_destination_facility_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
+            <child column="facility_id" foreignKey="withdrawals_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
+            <child column="facility_id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="automations"/>
+            <child column="facility_id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
+            <child column="facility_id" foreignKey="devices_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
+            <child column="facility_id" foreignKey="accessions_facility_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="30" digits="0" id="7" name="max_idle_minutes" nullable="false" remarks="Send an alert if this many minutes pass without new timeseries data from a facility's device manager." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="last_timeseries_time" nullable="true" remarks="When the most recent timeseries data was received from the facility." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="idle_after_time" nullable="true" remarks="Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="idle_since_time" nullable="true" remarks="Time at which the facility became idle. Null if the facility is not currently considered idle." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="12" name="connection_state_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_connection_states"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="last_notification_date" nullable="true" remarks="Local date on which facility-related notifications were last generated." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="'1970-01-01 00:00:00+00'::timestamp with time zone" digits="6" id="16" name="next_notification_time" nullable="false" remarks="Time at which the server should next generate notifications for the facility if any are needed." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="build_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="build_completed_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="operation_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="capacity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="facility_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="location" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="site_module_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="facilities_idle_after_time_idx" unique="false">
+            <column ascending="true" name="idle_after_time"/>
+         </index>
+         <index name="facilities_next_notification_time_idx" unique="false">
+            <column ascending="true" name="next_notification_time"/>
+         </index>
+         <index name="facilities_organization_id_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
+         </index>
+         <index name="facilities_organization_id_type_id_facility_number_key" unique="true">
+            <column ascending="true" name="organization_id"/>
+            <column ascending="true" name="type_id"/>
+            <column ascending="true" name="facility_number"/>
+         </index>
+         <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="facilities_description_check"/>
+      </table>
+      <table name="facility_connection_states" remarks="(Enum) Progress of the configuration of a device manager for a facility." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="connection_state_id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_connection_states_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="organizations" remarks="Top-level information about organizations." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
+            <child column="organization_id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
+            <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+            <child column="organization_id" foreignKey="accession_collectors_organization_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accession_collectors"/>
+            <child column="organization_id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="draft_planting_sites"/>
+            <child column="organization_id" foreignKey="monitoring_plots_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <child column="organization_id" foreignKey="planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="disabled_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="country_subdivision_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="time_zone" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="organization_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="organization_type_details" nullable="true" remarks="User provided information on the organization when type is Other, limited to 100 characters." size="100" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="website" nullable="true" remarks="Website information for the organization with no formatting restrictions." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="organization_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="organizations_botanical_country_code_idx" unique="false">
             <column ascending="true" name="botanical_country_code"/>
          </index>
-         <index name="projects_created_by_idx" unique="false">
-            <column ascending="true" name="created_by"/>
-         </index>
-         <index name="projects_modified_by_idx" unique="false">
-            <column ascending="true" name="modified_by"/>
-         </index>
-         <index name="projects_organization_id_id_key" unique="true">
-            <column ascending="true" name="organization_id"/>
+         <checkConstraint constraint="((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code))" name="country_code_matches_subdivision"/>
+         <checkConstraint constraint="(country_code !~ similar_to_escape(' *'::text))" name="organizations_country_code_check"/>
+         <checkConstraint constraint="(country_subdivision_code !~ similar_to_escape(' *'::text))" name="organizations_country_subdivision_code_check"/>
+         <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="organizations_description_check"/>
+         <checkConstraint constraint="((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text))" name="other_type_details_null_or_not_empty"/>
+         <checkConstraint constraint="(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6)))" name="other_type_details_only_for_other"/>
+      </table>
+      <table name="timeseries" remarks="Properties of a series of values collected from a device. Each device metric is represented as a timeseries." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="timeseries_id" foreignKey="timeseries_values_timeseries_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="timeseries_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="device_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="units" nullable="true" remarks="For numeric timeseries, the units represented by the values; unit names should be short (possibly abbreviations) and in the default language of the site." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="decimal_places" nullable="true" remarks="For numeric timeseries, the number of digits after the decimal point to display." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="retention_days" nullable="true" remarks="If non-null, only retain values for this many days. If null, do not expire old timeseries values." size="10" type="int4" typeCode="4"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="timeseries_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="projects_organization_id_name_key" unique="true">
-            <column ascending="true" name="organization_id"/>
+         <index name="timeseries_unique_name_per_device" unique="true">
+            <column ascending="true" name="device_id"/>
             <column ascending="true" name="name"/>
          </index>
+         <checkConstraint constraint="(decimal_places &gt;= 0)" name="timeseries_decimal_places_check"/>
+         <checkConstraint constraint="(units !~ similar_to_escape(' *'::text))" name="timeseries_units_check"/>
       </table>
-      <table name="vector_store" remarks="Content snippets and embeddings for use as context in Ask Terraware LLM prompts. This table is used by the Spring AI vector store library, and its structure needs to match what the library expects." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="uuid_generate_v4()" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="content" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="metadata" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="embedding" nullable="false" remarks="" size="2147483647" type="halfvec" typeCode="1111"/>
+      <table name="timeseries_types" remarks="(Enum) Data formats of the values of a timeseries." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="timeseries_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="vector_store_pkey" unique="true">
+         <index name="timeseries_type_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="vector_store_embedding_idx" unique="false">
-            <column ascending="true" name="embedding"/>
+      </table>
+      <table name="timeseries_values" remarks="Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="timeseries_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="timeseries_values_timeseries_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="timeseries_value_timeseries_id_created_time_idx" unique="true">
+            <column ascending="true" name="timeseries_id"/>
+            <column ascending="false" name="created_time"/>
          </index>
-         <index name="vector_store_expr_idx" unique="false"/>
       </table>
    </tables>
    <routines>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="terraware_c37c3497_becd0279ee81" schema="seedbank" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware_800aaf68_becd0279ee81" schema="seedbank" type="PostgreSQL - 17.11 (Debian 17.11-1.pgdg13+2)">
    <tables>
       <table name="accession_collectors" remarks="Names of people who collected each accession." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -43,7 +43,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="history_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_quantity_history_types"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accession_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="remaining_quantity" nullable="false" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="remaining_units_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -80,7 +82,9 @@
             <parent column="id" foreignKey="accession_state_history_new_state_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_states"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="reason" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="updated_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="updated_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accession_state_history_updated_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <index name="accession_state_history_accession_id_idx" unique="false">
             <column ascending="true" name="accession_id"/>
          </index>
@@ -149,13 +153,19 @@
             <parent column="id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
          <column autoUpdated="false" defaultValue="now()" digits="6" id="24" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accessions_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accessions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="collection_site_city" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="collection_site_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="collection_site_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="accessions_collection_site_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="collection_site_country_subdivision" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="collection_site_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="collection_source_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
@@ -180,7 +190,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="43" name="total_withdrawn_weight_units_id" nullable="true" remarks="Measurement units of `total_withdrawn_weight_quantity`." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_total_withdrawn_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="44" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="44" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="45" name="collected_time" nullable="true" remarks="Date and time the seeds were collected, stored at midnight UTC when only a date is known." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
@@ -420,9 +432,15 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="estimated_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="withdrawn_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="batch_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="withdrawn_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_withdrawn_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="batch_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="withdrawal_pkey" unique="true">
             <column ascending="true" name="id"/>
