@@ -195,6 +195,8 @@ data class StratumModel<
     val substrata: List<SubstratumModel<SSID>>,
     val stableId: StableId,
     val targetPlantDensity: BigDecimal? = null,
+    /** The variability snapshot from the most recent completed plant monitoring observation. */
+    val latestObservationVariability: ObservationStratumVariabilityModel? = null,
 ) {
   /** The larger of the plant and biomass permanent plot counts. */
   val maxPermanentPlots: Int

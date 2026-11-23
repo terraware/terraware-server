@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_VARIABILITY
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
@@ -42,6 +43,7 @@ import com.terraformation.backend.tracking.model.ObservationSiteStatsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumStatsModel
+import com.terraformation.backend.tracking.model.ObservationStratumVariabilityModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumStatsModel
 import jakarta.inject.Named
@@ -664,6 +666,20 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
           )
           .convertFrom { result -> result.map { AreaCompletionResults.of(it) } }
 
+  private val observationStratumVariabilitySelect =
+      with(OBSERVATION_STRATUM_VARIABILITY) {
+        DSL.selectFrom(this)
+            .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+            .and(STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+      }
+
+  private val observationStratumVariabilityField: Field<ObservationStratumVariabilityModel?> =
+      DSL.multiset(observationStratumVariabilitySelect).convertFrom {
+        it.firstOrNull()?.let(ObservationStratumVariabilityModel::of)
+      }
+
+  private val hasObservationStratumVariability = DSL.exists(observationStratumVariabilitySelect)
+
   /**
    * Stratum results. Plant density, plant density std dev, survival rate, and survival rate std dev
    * are read from [OBSERVATION_STRATUM_RESULTS].
@@ -706,6 +722,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY,
                     OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV,
                     OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY,
+                    observationStratumVariabilityField,
                 )
                 .from(STRATUM_HISTORIES)
                 .leftJoin(OBSERVATION_STRATUM_RESULTS)
@@ -720,27 +737,28 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 )
                 .and(
                     STRATUM_HISTORIES.ID.`in`(
-                        DSL.select(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
-                            .from(OBSERVATION_PLOTS)
-                            .join(MONITORING_PLOT_HISTORIES)
-                            .on(
-                                OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                                    MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                            DSL.select(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
+                                .from(OBSERVATION_PLOTS)
+                                .join(MONITORING_PLOT_HISTORIES)
+                                .on(
+                                    OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
+                                        MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                                    )
                                 )
-                            )
-                            .join(SUBSTRATUM_HISTORIES)
-                            .on(
-                                MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
-                                    SUBSTRATUM_HISTORIES.ID
+                                .join(SUBSTRATUM_HISTORIES)
+                                .on(
+                                    MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
+                                        SUBSTRATUM_HISTORIES.ID
+                                    )
                                 )
-                            )
-                            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                            .and(
-                                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                    effectivePlantingSiteHistoryIdField
+                                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                                .and(
+                                    MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                                        effectivePlantingSiteHistoryIdField
+                                    )
                                 )
-                            )
-                    )
+                        )
+                        .or(hasObservationStratumVariability)
                 )
                 .orderBy(STRATUM_HISTORIES.STRATUM_ID, STRATUM_HISTORIES.ID)
         )
@@ -805,6 +823,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 survivalRateStdDev = survivalRateStdDev,
                 totalSpecies = totalLiveSpeciesExceptUnknown,
                 totalPlants = totalPlants,
+                variability = record[observationStratumVariabilityField],
             )
           }
         }

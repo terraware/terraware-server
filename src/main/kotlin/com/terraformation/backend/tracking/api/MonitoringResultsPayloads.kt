@@ -19,10 +19,15 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
+import com.terraformation.backend.tracking.model.ObservationPlotCountRange
+import com.terraformation.backend.tracking.model.ObservationPlotCountRecommendation
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
+import com.terraformation.backend.tracking.model.ObservationStratumVariabilityModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
+import com.terraformation.backend.tracking.model.PlausibleVariabilityRange
+import com.terraformation.backend.tracking.model.PlotCountRecommendationType
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -403,6 +408,11 @@ data class ObservationStratumResultsPayload(
                 "species name is counted as a separate species for purposes of this total."
     )
     val totalSpecies: Int?,
+    @Schema(
+        description =
+            "Variability and plot count estimates recorded when this observation completed."
+    )
+    val variability: ObservationStratumVariabilityPayload? = null,
 ) {
   constructor(
       model: ObservationStratumResultsModel
@@ -425,7 +435,67 @@ data class ObservationStratumResultsPayload(
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
+      variability = model.variability?.let(::ObservationStratumVariabilityPayload),
   )
+}
+
+@Schema(
+    description = "Variability and plot count estimates for a stratum at observation completion."
+)
+data class ObservationStratumVariabilityPayload(
+    val observationId: ObservationId,
+    @Schema(
+        description =
+            "Number of completed assigned plots measured, including plots with zero live plants."
+    )
+    val sampledPlotCount: Int,
+    @Schema(description = "True if fewer than five plots were measured.")
+    val hasSmallSample: Boolean,
+    @Schema(
+        description =
+            "Unrounded variability percentage. Absent if fewer than two plots were measured or the mean live plant density was zero."
+    )
+    val measuredVariability: Double?,
+    @Schema(description = "90% plausible range of the true variability, as percentages.")
+    val plausibleVariabilityRange: PlausibleVariabilityRangePayload?,
+    @Schema(description = "Configured permanent plus temporary plot count at completion.")
+    val configuredPlotCountAtCompletion: Long?,
+    @Schema(description = "Low, best, and high estimates of the required deployable plot count.")
+    val estimatedPlotCountRange: ObservationPlotCountRangePayload?,
+    @Schema(description = "Increase or decrease recommended at completion, if any.")
+    val recommendation: ObservationPlotCountRecommendationPayload?,
+) {
+  constructor(
+      model: ObservationStratumVariabilityModel
+  ) : this(
+      observationId = model.observationId,
+      sampledPlotCount = model.sampledPlotCount,
+      hasSmallSample = model.hasSmallSample,
+      measuredVariability = model.measuredVariability,
+      plausibleVariabilityRange =
+          model.plausibleVariabilityRange?.let(::PlausibleVariabilityRangePayload),
+      configuredPlotCountAtCompletion = model.configuredPlotCountAtCompletion,
+      estimatedPlotCountRange =
+          model.estimatedPlotCountRange?.let(::ObservationPlotCountRangePayload),
+      recommendation = model.recommendation?.let(::ObservationPlotCountRecommendationPayload),
+  )
+}
+
+data class PlausibleVariabilityRangePayload(val low: Double, val high: Double) {
+  constructor(model: PlausibleVariabilityRange) : this(model.low, model.high)
+}
+
+data class ObservationPlotCountRangePayload(val low: Long, val best: Long, val high: Long) {
+  constructor(model: ObservationPlotCountRange) : this(model.low, model.best, model.high)
+}
+
+data class ObservationPlotCountRecommendationPayload(
+    val type: PlotCountRecommendationType,
+    val recommendedPlotCount: Long,
+) {
+  constructor(
+      model: ObservationPlotCountRecommendation
+  ) : this(model.type, model.recommendedPlotCount)
 }
 
 data class ObservationResultsPayload(

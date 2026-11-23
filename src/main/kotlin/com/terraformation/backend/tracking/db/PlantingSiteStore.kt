@@ -50,6 +50,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_VARIABILITY
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
@@ -98,6 +99,7 @@ import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.NewSubstratumModel
+import com.terraformation.backend.tracking.model.ObservationStratumVariabilityModel
 import com.terraformation.backend.tracking.model.PermanentPlotPlacementRequest
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryEventModel
@@ -2486,6 +2488,17 @@ class PlantingSiteStore(
         }
   }
 
+  private val latestStratumVariabilityField: Field<ObservationStratumVariabilityModel?> =
+      with(OBSERVATION_STRATUM_VARIABILITY) {
+        DSL.multiset(
+                DSL.selectFrom(this)
+                    .where(stratumHistories.STRATUM_ID.eq(STRATA.ID))
+                    .orderBy(observations.COMPLETED_TIME.desc(), OBSERVATION_ID.desc())
+                    .limit(1)
+            )
+            .convertFrom { it.firstOrNull()?.let(ObservationStratumVariabilityModel::of) }
+      }
+
   private fun strataMultiset(
       depth: PlantingSiteDepth,
       simplified: Boolean,
@@ -2527,6 +2540,7 @@ class PlantingSiteStore(
                     STRATA.INITIAL_PLANTING_DENSITY,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
+                    latestStratumVariabilityField,
                     STRATA.NAME,
                     STRATA.STABLE_ID,
                     substrataField,
@@ -2555,6 +2569,7 @@ class PlantingSiteStore(
                 initialPlantingDensity = record[STRATA.INITIAL_PLANTING_DENSITY]!!,
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
+                latestObservationVariability = record[latestStratumVariabilityField],
                 name = record[STRATA.NAME]!!,
                 plantPlotCounts =
                     record[plotParametersField]!!.getValue(ObservationType.Monitoring),
