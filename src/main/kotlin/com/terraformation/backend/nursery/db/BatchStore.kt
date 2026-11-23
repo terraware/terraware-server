@@ -1762,7 +1762,12 @@ class BatchStore(
                       batchDateRow[BATCHES.GERMINATION_STARTED_DATE],
                   )
                   .minOrNull()
-          earliestDate?.atStartOfDay(parentStore.getEffectiveTimeZone(batchId))?.toInstant()
+          earliestDate?.let {
+            minOf(
+                it.atStartOfDay(parentStore.getEffectiveTimeZone(batchId)).toInstant(),
+                createdTime,
+            )
+          }
         } else {
           null
         }

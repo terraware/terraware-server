@@ -34,6 +34,7 @@ internal class BatchStoreBackfillTimeInStageTest : BatchStoreTest() {
     val accessionId = insertAccession()
     val batchA =
         insertBatch(
+            createdTime = firstCreatedTime,
             facilityId = backfillFacilityId,
             germinatingQuantity = 15,
             seedsSownDate = LocalDate.of(2023, 1, 10),
@@ -217,7 +218,9 @@ internal class BatchStoreBackfillTimeInStageTest : BatchStoreTest() {
         message = "Backfilled effective times",
     )
 
-    // The corrected history through Feb 10 yields 315.1667 germinating days.
+    // The corrected history through Feb 10 yields 315.1667 germinating days, including timing
+    // the initial seedlings from the start of the seeds-sown date, 4 hours before the first
+    // history row.
     fun calculatedStage(batchId: BatchId, stage: BatchStage, quantity: Int, days: Double) =
         BatchStageDetailsRecord(
             batchId = batchId,
