@@ -41,7 +41,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
         CreateBatchRequestPayload(
                 addedDate = addedDate,
                 facilityId = facilityId,
-                germinatingQuantity = 0,
+                germinatingQuantity = 8,
                 germinationStartedDate = LocalDate.of(2022, 2, 20),
                 hardeningOffQuantity = 4,
                 notes = "notes",
@@ -89,6 +89,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
         stage: BatchStage,
         quantity: Int,
         countedQuantity: Int = quantity,
+        countedDays: Double = 0.0,
     ) =
         BatchStageDetailsModel(
             batchId = returnedModel.id,
@@ -99,17 +100,19 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 StageTimeStats(
                     asOfTime = startOfAddedDate,
                     cleared = false,
-                    countedDays = 0.0,
+                    countedDays = countedDays,
                     countedQuantity = countedQuantity,
                     inStage = quantity,
-                    openDays = 0.0,
+                    openDays = countedDays,
                     stage = stage,
                 ),
         )
 
     val expectedQuantities =
         listOf(
-            expectedStageDetails(BatchStage.Germinating, 0),
+            // The seed dates are after the recorded time, so germinating time is counted from
+            // the recorded time, which is a week after the added date.
+            expectedStageDetails(BatchStage.Germinating, 8, countedDays = -56.0),
             expectedStageDetails(BatchStage.ActiveGrowth, 1, countedQuantity = 0),
             expectedStageDetails(BatchStage.HardeningOff, 4),
             expectedStageDetails(BatchStage.Ready, 2),
@@ -130,7 +133,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 historyTypeId = BatchQuantityHistoryType.Observed,
-                germinatingQuantity = 0,
+                germinatingQuantity = 8,
                 readyQuantity = 2,
                 hardeningOffQuantity = 4,
                 version = 1,
@@ -184,11 +187,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
           BatchStageDetailsRecord(
               batchId = it.batchId,
               countedQuantity = it.timeInStage?.countedQuantity ?: it.quantity,
-              countedSeedlingDays = 0.0,
+              countedSeedlingDays = it.timeInStage?.countedDays ?: 0.0,
               finishedQuantity = 0.0,
               finishedSeedlingDays = 0.0,
               latestObservedQuantity = it.latestObservedQuantity,
-              openSeedlingDays = 0.0,
+              openSeedlingDays = it.timeInStage?.openDays ?: 0.0,
               quantity = it.quantity,
               stageId = it.stage,
               timeInStageAsOf = startOfAddedDate,

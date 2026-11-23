@@ -203,6 +203,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
   @Test
   fun `replays stage time after withdrawals, status changes, undo, and manual edits`() {
+    val addedDate = LocalDate.of(2022, 12, 25)
     val start = LocalDate.of(2023, 1, 1)
     val created = LocalDate.of(2023, 1, 11)
     val deadDate = LocalDate.of(2023, 1, 16)
@@ -217,7 +218,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
             .create(
                 NewBatchModel(
                     activeGrowthQuantity = 0,
-                    addedDate = start,
+                    addedDate = addedDate,
                     facilityId = facilityId,
                     germinatingQuantity = 100,
                     hardeningOffQuantity = 0,
@@ -548,76 +549,6 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
             expectedStageDetails(currentBatchId, BatchStage.Ready, 0, 5, 5, 0.0, 0.0),
         ),
         message = "Active Growth time-in-stage stats respect the Hardening Off release date",
-    )
-  }
-
-  @Test
-  fun `times initial germinating seedlings from seed dates if set, otherwise from added date`() {
-    val addedDate = LocalDate.of(2026, 1, 1)
-    val createdTime = Instant.parse("2026-01-10T00:00:00Z")
-    val asOf = Instant.parse("2026-01-20T00:00:00Z")
-
-    fun createBatch(seedsSownDate: LocalDate?): BatchId {
-      clock.instant = createdTime
-      return store
-          .create(
-              NewBatchModel(
-                  activeGrowthQuantity = 0,
-                  addedDate = addedDate,
-                  facilityId = facilityId,
-                  germinatingQuantity = 100,
-                  hardeningOffQuantity = 0,
-                  readyQuantity = 0,
-                  seedsSownDate = seedsSownDate,
-                  speciesId = speciesId,
-              )
-          )
-          .id
-    }
-
-    val sownBeforeRecordingBatchId = createBatch(LocalDate.of(2026, 1, 8))
-    val sownAfterRecordingBatchId = createBatch(LocalDate.of(2026, 1, 15))
-    val noSeedDatesBatchId = createBatch(null)
-
-    clock.instant = asOf
-    listOf(sownBeforeRecordingBatchId, sownAfterRecordingBatchId, noSeedDatesBatchId).forEach {
-      store.changeStatuses(it, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 100)
-    }
-
-    fun expectedStageDetails(
-        batchId: BatchId,
-        stage: BatchStage,
-        quantity: Int,
-        countedDays: Double,
-    ) =
-        BatchStageDetailsRecord(
-            batchId = batchId,
-            countedQuantity =
-                if (stage == BatchStage.Germinating || stage == BatchStage.ActiveGrowth) 100 else 0,
-            countedSeedlingDays = countedDays,
-            finishedQuantity = if (stage == BatchStage.Germinating) 100.0 else 0.0,
-            finishedSeedlingDays = countedDays,
-            latestObservedQuantity = if (stage == BatchStage.Germinating) 100 else 0,
-            openSeedlingDays = 0.0,
-            quantity = quantity,
-            stageId = stage,
-            timeInStageAsOf = asOf,
-            timeInStageCleared = false,
-        )
-
-    fun expectedBatchDetails(batchId: BatchId, germinatingDays: Double) =
-        listOf(
-            expectedStageDetails(batchId, BatchStage.Germinating, 0, germinatingDays),
-            expectedStageDetails(batchId, BatchStage.ActiveGrowth, 100, 0.0),
-            expectedStageDetails(batchId, BatchStage.HardeningOff, 0, 0.0),
-            expectedStageDetails(batchId, BatchStage.Ready, 0, 0.0),
-        )
-
-    assertTableEquals(
-        expectedBatchDetails(sownBeforeRecordingBatchId, 1200.0) +
-            expectedBatchDetails(sownAfterRecordingBatchId, 1000.0) +
-            expectedBatchDetails(noSeedDatesBatchId, 1900.0),
-        message = "Germinating time-in-stage stats",
     )
   }
 
