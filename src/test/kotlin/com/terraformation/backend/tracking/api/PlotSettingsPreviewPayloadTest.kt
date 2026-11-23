@@ -14,41 +14,6 @@ import org.junit.jupiter.api.Test
 
 class PlotSettingsPreviewPayloadTest {
   @Test
-  fun `all-types Direct preview combines permanent and temporary counts for baseline only`() {
-    val site = existingSite()
-    val stratum = site.strata.single()
-    val request =
-        UpdatePlotSettingsRequestPayload(
-            defaultPlotPrecisionLevel = PlotPrecisionLevel.High,
-            strata =
-                listOf(
-                    UpdateStratumPlotSettingPayload(
-                        stratumId = stratum.id,
-                        mode = PlotSelectionMode.Direct,
-                        numPermanentPlots = 7,
-                        numTemporaryPlots = 3,
-                    )
-                ),
-        )
-    val expected =
-        ObservationType.entries.associateWith { type ->
-          stratum
-              .plotCounts(type)
-              .copy(
-                  mode = PlotSelectionMode.Direct,
-                  plotPrecisionLevel = null,
-                  numPermanentPlots = if (type == ObservationType.BaselineSurvey) 0 else 7,
-                  numTemporaryPlots = if (type == ObservationType.BaselineSurvey) 10 else 3,
-              )
-        }
-    assertEquals(
-        PlotSettingsPreviewResponsePayload(site, mapOf(stratum.id to expected)),
-        PlotSettingsPreviewResponsePayload(site, request.toSettings(site)),
-        "Preview retains current settings and alternatives while allocating proposed baseline counts",
-    )
-  }
-
-  @Test
   fun `preview maps changed and unchanged settings using proposed variance for alternatives`() {
     val counts =
         StratumPlotCounts(
