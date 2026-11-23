@@ -1406,7 +1406,7 @@ class ObservationService(
   @EventListener
   fun on(event: PlantingSitePlotCountsUpdatedEvent) {
     ObservationType.entries.forEach { type ->
-      val strata = event.observationTypesByStratum.filterValues { type in it }.keys
+      val strata = event.observationTypesByStratum.filterValues { types -> type in types }.keys
       updateObservationsForChangedStrata(
           event.plantingSiteId,
           AffectedStrata(strata),
@@ -1638,7 +1638,8 @@ class ObservationService(
             observation.plantingSiteId,
             excludeObservationId = observation.id,
         )
-    val unavailableStratumIds =
+    val assignedPlotIds = observationPlotStore.fetchUnobservedPlotIds(observation.id).toSet()
+    val reassignableStratumIds =
         site.strata
             .filter { it.id in strata.allocationStratumIds }
             .filter { stratum ->
@@ -1647,7 +1648,9 @@ class ObservationService(
                   counts.numPermanentPlots + counts.numTemporaryPlots == 0 ||
                       stratum.substrata.none { it.id in observation.requestedSubstratumIds }
               ) {
-                false
+                stratum.substrata.any { substratum ->
+                  substratum.monitoringPlots.any { it.id in assignedPlotIds }
+                }
               } else {
                 try {
                   val allocation =
@@ -1659,18 +1662,18 @@ class ObservationService(
                               observedPermanentPlotIds,
                           )
                           .allocate(observation.requestedSubstratumIds)
-                  allocation.permanentPlotIds.isEmpty() &&
-                      allocation.temporaryPlotBoundaries.isEmpty()
+                  allocation.permanentPlotIds.isNotEmpty() ||
+                      allocation.temporaryPlotBoundaries.isNotEmpty()
                 } catch (_: StratumFullException) {
-                  true
+                  false
                 }
               }
             }
             .map { it.id }
             .toSet()
     return strata.copy(
-        stratumIds = strata.stratumIds - unavailableStratumIds,
-        createdStratumIds = strata.createdStratumIds - unavailableStratumIds,
+        stratumIds = strata.stratumIds.intersect(reassignableStratumIds),
+        createdStratumIds = strata.createdStratumIds.intersect(reassignableStratumIds),
     )
   }
 

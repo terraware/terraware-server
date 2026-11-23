@@ -315,18 +315,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @ParameterizedTest
     @CsvSource(
-        "InProgress,0",
-        "InProgress,1",
-        "InProgress,2",
-        "InProgress,3",
-        "Overdue,0",
-        "Overdue,1",
-        "Overdue,2",
-        "Overdue,3",
+        "InProgress,0,3",
+        "Overdue,1,3",
+        "InProgress,2,3",
+        "InProgress,3,3",
+        "InProgress,2,0",
     )
     fun `settings edit reassigns upcoming plots and preserves started observations`(
         activeState: ObservationState,
         unavailableStrata: Int,
+        firstStratumPlotCount: Int,
     ) {
       plantingSiteEventPublisher.register<PlantingSitePlotCountsUpdatedEvent> { service.on(it) }
       val stratumId = insertStratum(width = 8, height = 1, baselineNumTemporaryPlots = 1)
@@ -334,6 +332,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val secondStratumId =
           insertStratum(x = 8, width = 8, height = 1, baselineNumTemporaryPlots = 1)
       val secondSubstratumId = insertSubstratum(x = 8, width = 8, height = 1)
+      val unrequestedStratumId =
+          insertStratum(x = 16, width = 8, height = 1, baselineNumTemporaryPlots = 1)
+      insertSubstratum(x = 16, width = 8, height = 1)
       val activeId =
           insertObservation(
               observationType = ObservationType.BaselineSurvey,
@@ -345,7 +346,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       if (activeState == ObservationState.Overdue) {
         observationStore.updateObservationState(activeId, activeState)
       }
-      val activePlots = dslContext.fetch(OBSERVATION_PLOTS).filter { it.observationId == activeId }
+      val activePlots =
+          dslContext.fetch(OBSERVATION_PLOTS, OBSERVATION_PLOTS.OBSERVATION_ID.eq(activeId))
       assertEquals(2, activePlots.size, "Initial assigned plots across both strata")
       assertFalse(observationPlotStore.hasCompletedPlots(activeId), "No completed plots")
       val upcomingId =
@@ -389,9 +391,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               .values
               .flatten()
       val keptPlots =
-          dslContext.fetch(OBSERVATION_PLOTS).filter {
-            it.observationId == upcomingId && it.monitoringPlotId in keptPlotIds
-          }
+          dslContext.fetch(
+              OBSERVATION_PLOTS,
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(upcomingId)
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(keptPlotIds)),
+          )
       if (unavailableStratumIds.isNotEmpty()) {
         dslContext
             .update(PLANTING_SITES)
@@ -407,6 +411,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             .execute()
       }
 
+      val observationsBefore = dslContext.fetch(OBSERVATIONS)
+      val observationPlotsBefore = dslContext.fetch(OBSERVATION_PLOTS)
+      val monitoringPlotsBefore = dslContext.fetch(MONITORING_PLOTS)
       plantingSiteStore.updatePlotSelectionSettings(
           plantingSiteId,
           PlotPrecisionLevel.High,
@@ -415,10 +422,15 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   mapOf(
                       ObservationType.BaselineSurvey to
                           {
-                            it.copy(numPermanentPlots = 0, numTemporaryPlots = 3)
+                            it.copy(
+                                numPermanentPlots = 0,
+                                numTemporaryPlots = firstStratumPlotCount,
+                            )
                           }
                   ),
               secondStratumId to
+                  mapOf(ObservationType.BaselineSurvey to { it.copy(numTemporaryPlots = 2) }),
+              unrequestedStratumId to
                   mapOf(ObservationType.BaselineSurvey to { it.copy(numTemporaryPlots = 2) }),
           ),
       )
@@ -429,7 +441,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(activeId),
       )
       val expectedCount =
-          (if (stratumId in unavailableStratumIds) 1 else 3) +
+          (if (stratumId in unavailableStratumIds) 1 else firstStratumPlotCount) +
               (if (secondStratumId in unavailableStratumIds) 1 else 2)
       assertEquals(
           expectedCount,
@@ -452,11 +464,15 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   mapOf(
                       stratumId to setOf(ObservationType.BaselineSurvey),
                       secondStratumId to setOf(ObservationType.BaselineSurvey),
+                      unrequestedStratumId to setOf(ObservationType.BaselineSurvey),
                   ),
               )
           )
       )
       if (unavailableStrata == 3) {
+        assertTableEquals(observationsBefore, "Skipped reassignment preserves observations")
+        assertTableEquals(observationPlotsBefore, "Skipped reassignment preserves plot assignments")
+        assertTableEquals(monitoringPlotsBefore, "Skipped reassignment preserves monitoring plots")
         eventPublisher.assertEventNotPublished<ObservationPlotsReassignedEvent>()
       } else {
         eventPublisher.assertEventsPublished(
