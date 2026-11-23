@@ -17,7 +17,6 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
-import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -402,23 +401,14 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
         )
 
     @Test
-    fun `upsert of species new to the season publishes species added event but not quantity change`() {
+    fun `upsert of species new to the season publishes change from 0`() {
       store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
 
-      eventPublisher.assertEventPublished(
-          RateLimitedPlantingSeasonSpeciesChangedEvent(
-              addedSpeciesIds = setOf(speciesId),
-              organizationId = organizationId,
-              plantingSeasonId = plantingSeasonId,
-          )
-      )
-      eventPublisher.assertEventNotPublished<
-          RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
-      >()
+      eventPublisher.assertEventPublished(quantitiesChangedEvent(0, 5))
     }
 
     @Test
-    fun `upsert of species with target in another substratum publishes change from 0 but not species added event`() {
+    fun `upsert of species with target in another substratum publishes change from 0`() {
       insertPlantingSeasonSpeciesTarget(substratumId = substratumId, quantity = 5)
       val otherSubstratumId = insertSubstratum(name = "2")
 
@@ -427,7 +417,6 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
       eventPublisher.assertEventPublished(
           quantitiesChangedEvent(0, 7, substratumId = otherSubstratumId, substratumName = "2")
       )
-      eventPublisher.assertEventNotPublished<RateLimitedPlantingSeasonSpeciesChangedEvent>()
     }
 
     @Test
@@ -451,25 +440,16 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
-    fun `delete of last target for species publishes species removed event but not quantity change`() {
+    fun `delete of last target for species publishes change to 0`() {
       insertPlantingSeasonSpeciesTarget(quantity = 5)
 
       store.delete(plantingSeasonId, substratumId, speciesId)
 
-      eventPublisher.assertEventPublished(
-          RateLimitedPlantingSeasonSpeciesChangedEvent(
-              organizationId = organizationId,
-              plantingSeasonId = plantingSeasonId,
-              removedSpeciesIds = setOf(speciesId),
-          )
-      )
-      eventPublisher.assertEventNotPublished<
-          RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
-      >()
+      eventPublisher.assertEventPublished(quantitiesChangedEvent(5, 0))
     }
 
     @Test
-    fun `delete of target for species with target in another substratum publishes change to 0 but not species removed event`() {
+    fun `delete of target for species with target in another substratum publishes change to 0`() {
       insertPlantingSeasonSpeciesTarget(substratumId = substratumId, quantity = 5)
       val otherSubstratumId = insertSubstratum()
       insertPlantingSeasonSpeciesTarget(substratumId = otherSubstratumId, quantity = 3)
@@ -477,27 +457,6 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
       store.delete(plantingSeasonId, substratumId, speciesId)
 
       eventPublisher.assertEventPublished(quantitiesChangedEvent(5, 0))
-      eventPublisher.assertEventNotPublished<RateLimitedPlantingSeasonSpeciesChangedEvent>()
-    }
-
-    @Test
-    fun `createInitialTargets does not publish species added event`() {
-      store.createInitialTargets(
-          plantingSeasonId,
-          listOf(PlantingSeasonSpeciesTargetModel(5, speciesId, substratumId)),
-      )
-
-      eventPublisher.assertEventNotPublished<RateLimitedPlantingSeasonSpeciesChangedEvent>()
-    }
-
-    @Test
-    fun `copySpeciesTargets does not publish species added event`() {
-      insertPlantingSeasonSpeciesTarget(quantity = 5)
-      val newSeasonId = insertPlantingSeason()
-
-      store.copySpeciesTargets(plantingSeasonId, newSeasonId)
-
-      eventPublisher.assertEventNotPublished<RateLimitedPlantingSeasonSpeciesChangedEvent>()
     }
   }
 }

@@ -15,7 +15,6 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
-import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonSpeciesChangedEvent
 import com.terraformation.backend.plantingmanagement.event.RateLimitedPlantingSeasonTargetQuantitiesChangedEvent
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
@@ -68,7 +67,6 @@ class PlantingSeasonSpeciesTargetsStore(
                 .and(SUBSTRATUM_ID.eq(substratumId))
                 .and(SPECIES_ID.eq(speciesId))
                 .fetchOne(QUANTITY)
-        val isNewSpecies = oldQuantity == null && !speciesHasTargets(plantingSeasonId, speciesId)
 
         dslContext
             .insertInto(PLANTING_SEASON_SPECIES_TARGETS)
@@ -87,7 +85,7 @@ class PlantingSeasonSpeciesTargetsStore(
             .set(MODIFIED_TIME, now)
             .execute()
 
-        if (!isNewSpecies && (oldQuantity ?: 0) != quantity) {
+        if ((oldQuantity ?: 0) != quantity) {
           rateLimitedEventPublisher.publishEvent(
               RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
                   changes =
@@ -104,16 +102,6 @@ class PlantingSeasonSpeciesTargetsStore(
                   organizationId = organizationId,
                   plantingSeasonId = plantingSeasonId,
                   plantingSiteId = plantingSiteId,
-              )
-          )
-        }
-
-        if (isNewSpecies) {
-          rateLimitedEventPublisher.publishEvent(
-              RateLimitedPlantingSeasonSpeciesChangedEvent(
-                  addedSpeciesIds = setOf(speciesId),
-                  organizationId = organizationId,
-                  plantingSeasonId = plantingSeasonId,
               )
           )
         }
@@ -343,33 +331,23 @@ class PlantingSeasonSpeciesTargetsStore(
               )
           )
 
-          if (speciesHasTargets(plantingSeasonId, speciesId)) {
-            if (deletedQuantity != 0) {
-              rateLimitedEventPublisher.publishEvent(
-                  RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
-                      changes =
-                          listOf(
-                              RateLimitedPlantingSeasonTargetQuantitiesChangedEvent.Change(
-                                  newQuantity = 0,
-                                  oldQuantity = deletedQuantity,
-                                  speciesId = speciesId,
-                                  stratumName = substratumInfo.stratumName,
-                                  substratumId = substratumId,
-                                  substratumName = substratumInfo.substratumName,
-                              )
-                          ),
-                      organizationId = organizationId,
-                      plantingSeasonId = plantingSeasonId,
-                      plantingSiteId = plantingSiteId,
-                  )
-              )
-            }
-          } else {
+          if (deletedQuantity != 0) {
             rateLimitedEventPublisher.publishEvent(
-                RateLimitedPlantingSeasonSpeciesChangedEvent(
+                RateLimitedPlantingSeasonTargetQuantitiesChangedEvent(
+                    changes =
+                        listOf(
+                            RateLimitedPlantingSeasonTargetQuantitiesChangedEvent.Change(
+                                newQuantity = 0,
+                                oldQuantity = deletedQuantity,
+                                speciesId = speciesId,
+                                stratumName = substratumInfo.stratumName,
+                                substratumId = substratumId,
+                                substratumName = substratumInfo.substratumName,
+                            )
+                        ),
                     organizationId = organizationId,
                     plantingSeasonId = plantingSeasonId,
-                    removedSpeciesIds = setOf(speciesId),
+                    plantingSiteId = plantingSiteId,
                 )
             )
           }
@@ -377,13 +355,6 @@ class PlantingSeasonSpeciesTargetsStore(
       }
     }
   }
-
-  private fun speciesHasTargets(plantingSeasonId: PlantingSeasonId, speciesId: SpeciesId) =
-      dslContext.fetchExists(
-          PLANTING_SEASON_SPECIES_TARGETS,
-          PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID.eq(plantingSeasonId)
-              .and(PLANTING_SEASON_SPECIES_TARGETS.SPECIES_ID.eq(speciesId)),
-      )
 
   private fun fetchByCondition(condition: Condition): List<PlantingSeasonSpeciesTargetModel> {
     return with(PLANTING_SEASON_SPECIES_TARGETS) {
