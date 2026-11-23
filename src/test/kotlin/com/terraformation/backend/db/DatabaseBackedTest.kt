@@ -508,6 +508,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationSiteResultsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationStratumResultsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationStratumVariabilityDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationSubstratumResultsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
@@ -558,6 +559,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumResultsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumVariabilityRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
@@ -799,6 +801,7 @@ abstract class DatabaseBackedTest {
   protected val observationsDao: ObservationsDao by lazyDao()
   protected val observationSiteResultsDao: ObservationSiteResultsDao by lazyDao()
   protected val observationStratumResultsDao: ObservationStratumResultsDao by lazyDao()
+  protected val observationStratumVariabilityDao: ObservationStratumVariabilityDao by lazyDao()
   protected val observationSubstratumResultsDao: ObservationSubstratumResultsDao by lazyDao()
   protected val observedPlotCoordinatesDao: ObservedPlotCoordinatesDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
@@ -4219,6 +4222,36 @@ abstract class DatabaseBackedTest {
             totalDead = totalDead,
             totalExisting = totalExisting,
             totalLive = totalLive,
+        )
+    )
+  }
+
+  fun insertObservationStratumVariability(
+      observationId: ObservationId = inserted.observationId,
+      stratumHistoryId: StratumHistoryId = inserted.stratumHistoryId,
+      sampledPlotCount: Int = 0,
+      measuredVariability: Double? = null,
+      plausibleVariabilityLow: Double? = null,
+      plausibleVariabilityHigh: Double? = null,
+      configuredPlotCountAtCompletion: Long? = null,
+      estimatedPlotCountLow: Long? = null,
+      estimatedPlotCountBest: Long? = null,
+      estimatedPlotCountHigh: Long? = null,
+      recommendedPlotCount: Long? = null,
+  ) {
+    observationStratumVariabilityDao.insert(
+        ObservationStratumVariabilityRow(
+            configuredPlotCountAtCompletion = configuredPlotCountAtCompletion,
+            estimatedPlotCountBest = estimatedPlotCountBest,
+            estimatedPlotCountHigh = estimatedPlotCountHigh,
+            estimatedPlotCountLow = estimatedPlotCountLow,
+            measuredVariability = measuredVariability,
+            observationId = observationId,
+            plausibleVariabilityHigh = plausibleVariabilityHigh,
+            plausibleVariabilityLow = plausibleVariabilityLow,
+            recommendedPlotCount = recommendedPlotCount,
+            sampledPlotCount = sampledPlotCount,
+            stratumHistoryId = stratumHistoryId,
         )
     )
   }

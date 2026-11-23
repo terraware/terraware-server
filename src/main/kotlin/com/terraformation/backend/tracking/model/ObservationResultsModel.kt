@@ -245,6 +245,7 @@ data class ObservationStratumResultsModel(
     override val survivalRateStdDev: Int?,
     override val totalPlants: Int?,
     override val totalSpecies: Int?,
+    val variability: ObservationStratumVariabilityModel? = null,
 ) : BaseAggregatedMonitoringResult
 
 data class ObservationResultsModel(

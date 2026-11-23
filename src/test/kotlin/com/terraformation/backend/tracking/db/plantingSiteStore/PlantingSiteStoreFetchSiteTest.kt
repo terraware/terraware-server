@@ -12,6 +12,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.ObservationStratumVariabilityModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
@@ -337,6 +338,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               initialPlantingDensity = BigDecimal.TWO,
               targetPlantDensity = BigDecimal.ONE,
           )
+      val stratumHistoryId1 = inserted.stratumHistoryId
       val substratumId11 = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId111 = insertMonitoringPlot(boundary = polygon(0.1))
       val monitoringPlotId112 = insertMonitoringPlot(boundary = polygon(0.1))
@@ -389,6 +391,18 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           monitoringPlotId = monitoringPlotId122,
           monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId122]!!,
       )
+      insertObservationStratumVariability(
+          stratumHistoryId = stratumHistoryId1,
+          sampledPlotCount = 3,
+          measuredVariability = 40.0,
+          plausibleVariabilityLow = 30.0,
+          plausibleVariabilityHigh = 80.0,
+          configuredPlotCountAtCompletion = 8,
+          estimatedPlotCountLow = 10,
+          estimatedPlotCountBest = 20,
+          estimatedPlotCountHigh = 75,
+          recommendedPlotCount = 20,
+      )
 
       val observationId2 =
           insertObservation(
@@ -412,6 +426,13 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           monitoringPlotId = monitoringPlotId2,
           monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId2]!!,
       )
+      // Supersedes the older snapshot even though it has no recommendation.
+      insertObservationStratumVariability(
+          stratumHistoryId = stratumHistoryId1,
+          sampledPlotCount = 1,
+          configuredPlotCountAtCompletion = 4,
+      )
+
       // Claimed but not completed in the latest observation; must not be counted.
       insertObservationPlot(
           monitoringPlotId = monitoringPlotId121,
@@ -536,6 +557,16 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           initialPlantingDensity = BigDecimal.TWO,
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
+                          latestObservationVariability =
+                              ObservationStratumVariabilityModel(
+                                  observationId = observationId2,
+                                  sampledPlotCount = 1,
+                                  measuredVariability = null,
+                                  plausibleVariabilityRange = null,
+                                  configuredPlotCountAtCompletion = 4,
+                                  estimatedPlotCountRange = null,
+                                  recommendation = null,
+                              ),
                           name = "S1",
                           substrata =
                               listOf(
