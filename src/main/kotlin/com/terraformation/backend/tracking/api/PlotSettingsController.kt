@@ -58,9 +58,7 @@ data class StratumPlotSettingsPayload(
       stratumId = model.id,
       name = model.name,
       settings =
-          ObservationType.entries
-              .sortedBy { it.id }
-              .map { PlotSelectionSettingPayload(it, model.plotCounts(it)) },
+          ObservationType.entries.map { PlotSelectionSettingPayload(it, model.plotCounts(it)) },
   )
 }
 
