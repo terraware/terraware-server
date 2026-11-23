@@ -20,11 +20,13 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.math.RoundingMode
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -34,6 +36,22 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
+  @PostMapping("/{id}/plotSettings/preview")
+  @Operation(summary = "Previews plot settings and precision levels without saving changes.")
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
+  @ApiResponse409
+  fun previewPlotSettings(
+      @PathVariable id: PlantingSiteId,
+      @RequestBody payload: UpdatePlotSettingsRequestPayload,
+  ): PlotSettingsPreviewResponsePayload {
+    plantingSiteStore.requirePlotSettingsEditable(id)
+
+    val site = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Stratum)
+    return PlotSettingsPreviewResponsePayload(site, payload.toSettings(site))
+  }
+
   @GetMapping("/{id}/plotSettings")
   @Operation(summary = "Gets a planting site's plot selection settings.")
   @ApiResponse200
@@ -63,10 +81,13 @@ class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
 
 data class UpdatePlotSettingsRequestPayload(
     val defaultPlotPrecisionLevel: PlotPrecisionLevel,
-    @Schema(
-        description =
-            "Settings to merge into existing strata. Omit to update only the site default.",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "Settings to merge into existing strata. Omit to update only the site default.",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            )
     )
     val strata: List<UpdateStratumPlotSettingPayload> = emptyList(),
 ) {
