@@ -28,7 +28,6 @@ import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -103,9 +102,20 @@ class SupportServiceTest : DatabaseTest() {
     }
   }
 
-  @Test
-  fun `missing contact event does not create a ticket when Atlassian is disabled`() {
-    every { config.atlassian.enabled } returns false
+  enum class MissingContactFailure {
+    AtlassianDisabled,
+    SenderNotConfigured,
+    JiraRejectedRequest,
+  }
+
+  @ParameterizedTest
+  @EnumSource(MissingContactFailure::class)
+  fun `missing contact event handles inability to create a ticket`(failure: MissingContactFailure) {
+    every { config.atlassian.enabled } returns (failure != MissingContactFailure.AtlassianDisabled)
+    every { config.email.senderAddress } returns
+        if (failure == MissingContactFailure.SenderNotConfigured) null else "sender@example.com"
+    every { atlassianHttpClient.createServiceDeskRequest(any(), any(), any(), any()) } throws
+        IllegalStateException("Jira rejected the request")
 
     service.on(
         TerraformationContactMissingEvent(
@@ -116,7 +126,18 @@ class SupportServiceTest : DatabaseTest() {
         )
     )
 
-    verify { atlassianHttpClient wasNot Called }
+    if (failure == MissingContactFailure.JiraRejectedRequest) {
+      verify(exactly = 1) {
+        atlassianHttpClient.createServiceDeskRequest(
+            any(),
+            any(),
+            SupportRequestType.MissingContact,
+            "sender@example.com",
+        )
+      }
+    } else {
+      verify { atlassianHttpClient wasNot Called }
+    }
     verify { emailService wasNot Called }
   }
 

@@ -43,19 +43,30 @@ class SupportService(
       return
     }
 
-    Locale.ENGLISH.use {
-      val missingContact = messages.missingContact(event.organizationName, event.organizationId)
-      val senderAddress =
-          checkNotNull(config.email.senderAddress) {
-            "Email sender address is required to file a missing-contact support request"
-          }
-      atlassianHttpClient.createServiceDeskRequest(
-          requestType = SupportRequestType.MissingContact,
-          summary = missingContact.title.truncateForJira(MAX_JIRA_SUMMARY_LENGTH),
-          description =
-              "${missingContact.body}\n\n${event.subject}\n\n${event.body}"
-                  .truncateForJira(MAX_JIRA_DESCRIPTION_LENGTH),
-          reporter = InternetAddress(senderAddress).address,
+    val senderAddress = config.email.senderAddress
+    if (senderAddress == null) {
+      log.error(
+          "Unable to file missing-contact support request for organization ${event.organizationId}: email sender address is not configured"
+      )
+      return
+    }
+
+    try {
+      Locale.ENGLISH.use {
+        val missingContact = messages.missingContact(event.organizationName, event.organizationId)
+        atlassianHttpClient.createServiceDeskRequest(
+            requestType = SupportRequestType.MissingContact,
+            summary = missingContact.title.truncateForJira(MAX_JIRA_SUMMARY_LENGTH),
+            description =
+                "${missingContact.body}\n\n${event.subject}\n\n${event.body}"
+                    .truncateForJira(MAX_JIRA_DESCRIPTION_LENGTH),
+            reporter = InternetAddress(senderAddress).address,
+        )
+      }
+    } catch (e: Exception) {
+      log.error(
+          "Unable to file missing-contact support request for organization ${event.organizationId}",
+          e,
       )
     }
   }
