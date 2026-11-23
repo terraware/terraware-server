@@ -8,6 +8,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
 import com.terraformation.backend.tracking.model.StratumPlotCounts
+import io.swagger.v3.oas.annotations.media.Schema
 
 data class PlotSettingsPreviewResponsePayload(val strata: List<StratumPlotSettingsPreviewPayload>) :
     SuccessResponsePayload {
@@ -42,7 +43,18 @@ data class PlotSettingPreviewPayload(
     val observationType: ObservationType,
     val current: PlotCountsPreviewPayload,
     val proposed: PlotCountsPreviewPayload,
+    @Schema(
+        description =
+            "Alternatives for every precision level. Counts and expected precision are null " +
+                "when an alternative exceeds the supported plot count limit."
+    )
     val precisionLevels: List<PrecisionLevelPlotCountsPreviewPayload>,
+    @Schema(
+        description =
+            "Custom alternative using the proposed parameters, or null for nonstandard confidence. " +
+                "Counts and expected precision are null when the alternative exceeds the " +
+                "supported plot count limit. Requested settings must still satisfy the limit."
+    )
     val custom: PlotCountsPreviewPayload?,
 ) {
   constructor(
@@ -59,14 +71,14 @@ data class PlotSettingPreviewPayload(
               .map {
                 PrecisionLevelPlotCountsPreviewPayload(
                     it,
-                    PlotCountsPreviewPayload(
-                        proposed.applySetting(type, PlotSelectionSetting.PrecisionLevel(it))
-                    ),
+                    previewAlternative {
+                      proposed.applySetting(type, PlotSelectionSetting.PrecisionLevel(it))
+                    },
                 )
               },
       custom =
           proposed.confidenceLevel?.let {
-            PlotCountsPreviewPayload(proposed.recalculatePlotCounts(type))
+            previewAlternative { proposed.recalculatePlotCounts(type) }
           },
   )
 }
@@ -77,8 +89,8 @@ data class PrecisionLevelPlotCountsPreviewPayload(
 )
 
 data class PlotCountsPreviewPayload(
-    val numPermanentPlots: Int,
-    val numTemporaryPlots: Int,
+    val numPermanentPlots: Int?,
+    val numTemporaryPlots: Int?,
     val expectedPrecision: Double?,
 ) {
   constructor(
@@ -88,4 +100,20 @@ data class PlotCountsPreviewPayload(
       numTemporaryPlots = counts.numTemporaryPlots,
       expectedPrecision = counts.expectedPrecision,
   )
+}
+
+private fun previewAlternative(calculate: () -> StratumPlotCounts): PlotCountsPreviewPayload {
+  val counts =
+      try {
+        calculate()
+      } catch (_: IllegalArgumentException) {
+        return PlotCountsPreviewPayload(null, null, null)
+      } catch (_: ArithmeticException) {
+        return PlotCountsPreviewPayload(null, null, null)
+      }
+  return if (counts.numPermanentPlots > 10000 || counts.numTemporaryPlots > 10000) {
+    PlotCountsPreviewPayload(null, null, null)
+  } else {
+    PlotCountsPreviewPayload(counts)
+  }
 }

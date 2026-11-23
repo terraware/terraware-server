@@ -11,6 +11,7 @@ import java.math.BigDecimal
 import kotlin.math.sqrt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PlotSettingsPreviewPayloadTest {
   @Test
@@ -129,5 +130,94 @@ class PlotSettingsPreviewPayloadTest {
         PlotSettingsPreviewResponsePayload(site.copy(strata = emptyList()), emptyMap()),
         "An empty site has no preview strata",
     )
+    listOf(BigDecimal("250000"), BigDecimal("1E30")).forEach { variance ->
+      val largeStratum =
+          stratum.copy(
+              plantPlotCounts = counts.copy(variance = variance, errorMargin = BigDecimal("5"))
+          )
+      val largeSite = site.copy(strata = listOf(largeStratum))
+      val direct =
+          request.copy(
+              strata =
+                  listOf(
+                      request.strata
+                          .single()
+                          .copy(
+                              mode = PlotSelectionMode.Direct,
+                              numPermanentPlots = 7,
+                              numTemporaryPlots = 3,
+                          )
+                  )
+          )
+      val actual =
+          PlotSettingsPreviewResponsePayload(largeSite, direct.toSettings(largeSite))
+              .strata
+              .single()
+              .settings
+              .first { it.observationType == ObservationType.Monitoring }
+      assertEquals(
+          PlotPrecisionLevel.entries.sortedBy { it.id },
+          actual.precisionLevels.map { it.plotPrecisionLevel },
+          "Large variance $variance preserves every alternative level",
+      )
+      assertEquals(
+          PlotCountsPreviewPayload(null, null, null),
+          actual.precisionLevels
+              .single { it.plotPrecisionLevel == PlotPrecisionLevel.VeryHigh }
+              .counts,
+          "Oversized precision alternative has null counts and precision for variance $variance",
+      )
+      assertEquals(
+          PlotCountsPreviewPayload(null, null, null),
+          actual.custom,
+          "Oversized custom alternative has null counts and precision for variance $variance",
+      )
+      assertEquals(
+          preview(7, 3, sqrt(variance.toDouble())),
+          actual.proposed,
+          "Valid Direct proposal remains available for variance $variance",
+      )
+      if (variance == BigDecimal("250000")) {
+        assertEquals(
+            preview(2255, 752, 500.0),
+            actual.precisionLevels
+                .single { it.plotPrecisionLevel == PlotPrecisionLevel.Medium }
+                .counts,
+            "An alternative below the count limit remains available",
+        )
+      }
+      assertThrows<IllegalArgumentException> {
+        direct
+            .copy(
+                strata =
+                    listOf(
+                        direct.strata
+                            .single()
+                            .copy(
+                                mode = PlotSelectionMode.PrecisionLevel,
+                                plotPrecisionLevel = PlotPrecisionLevel.VeryHigh,
+                            )
+                    )
+            )
+            .toSettings(largeSite)
+      }
+      assertThrows<IllegalArgumentException> {
+        request
+            .copy(
+                strata =
+                    listOf(
+                        request.strata
+                            .single()
+                            .copy(
+                                observationType = ObservationType.BaselineSurvey,
+                                confidenceLevel = 99,
+                                targetMarginOfError = BigDecimal("5"),
+                                variability = BigDecimal("200"),
+                            )
+                    )
+            )
+            .toSettings(largeSite)
+      }
+    }
   }
 }
