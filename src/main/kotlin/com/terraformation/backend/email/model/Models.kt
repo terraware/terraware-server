@@ -78,11 +78,11 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
   abstract val templateDir: String
 
   /**
-   * Category of email notifications that users can opt out of to stop receiving this email. Null if
-   * the email is only subject to the user's overall email notification setting.
+   * Categories of email notifications; opting into any one enables this email. Empty if the email
+   * is only subject to the user's overall email notification setting.
    */
-  open val emailNotificationCategory: EmailNotificationCategory?
-    get() = null
+  open val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = emptySet()
 
   /** Renders a localizable string that contains embedded links. */
   fun link(key: String, vararg urls: String): TemplateModel {
@@ -126,8 +126,8 @@ class FacilityAlertRequested(
   override val templateDir: String
     get() = "facility/alert"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.SeedBank
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.SeedBank)
 }
 
 class FacilityIdle(
@@ -138,8 +138,8 @@ class FacilityIdle(
   override val templateDir: String
     get() = "facility/idle"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.SeedBank
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.SeedBank)
 }
 
 class UserAddedToOrganization(
@@ -175,8 +175,8 @@ class AccessionDryingEnd(
   override val templateDir: String
     get() = "accession/dryingEnd"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.SeedBank
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.SeedBank)
 }
 
 class NurserySeedlingBatchReady(
@@ -188,8 +188,8 @@ class NurserySeedlingBatchReady(
   override val templateDir: String
     get() = "nursery/seedlingBatchReady"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.Nursery
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.Nursery)
 }
 
 class SeedFundReportCreated(
@@ -208,8 +208,8 @@ class SeedFundReportCreated(
   override val templateDir: String
     get() = "seedFundReport/created"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.SeedBank
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.SeedBank)
 }
 
 class ObservationStarted(
@@ -229,8 +229,8 @@ class ObservationStarted(
   override val templateDir: String
     get() = "observation/started"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class ObservationPlotsReassigned(
@@ -256,8 +256,8 @@ class ObservationPlotsReassigned(
             observationType,
         )
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 
   val startDateString: String
     get() = dateString(startDate)
@@ -276,8 +276,8 @@ class ObservationPlotsUnderallocated(
   val stringsPrefix: String
     get() = observationStringsPrefix("notification.observation.underallocated", observationType)
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class ObservationUpcoming(
@@ -295,8 +295,8 @@ class ObservationUpcoming(
   val stringsPrefix: String
     get() = observationStringsPrefix("notification.observation.upcoming", observationType)
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 
   val startDateString: String
     get() = dateString(startDate)
@@ -362,8 +362,8 @@ class ScheduleObservation(
   override val templateDir: String
     get() = "observation/schedule"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class ScheduleObservationReminder(
@@ -376,8 +376,8 @@ class ScheduleObservationReminder(
   override val templateDir: String
     get() = "observation/scheduleReminder"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class ObservationNotScheduled(
@@ -401,8 +401,8 @@ class ObservationNotStarted(
   val stringsPrefix: String
     get() = observationStringsPrefix("notification.observation.notStarted", observationType)
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class ObservationPlotReplaced(
@@ -457,8 +457,8 @@ class PlantingSeasonStarted(
   override val templateDir: String
     get() = "plantingSeason/started"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class PlantingDateWithdrawalRequested(
@@ -470,8 +470,9 @@ class PlantingDateWithdrawalRequested(
   override val templateDir: String
     get() = "plantingSeason/withdrawalRequested"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.Nursery
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() =
+        setOf(EmailNotificationCategory.Nursery, EmailNotificationCategory.PlantingAndObservations)
 }
 
 class PlantingSeasonTargetQuantitiesChanged(
@@ -492,8 +493,9 @@ class PlantingSeasonTargetQuantitiesChanged(
   override val templateDir: String
     get() = "plantingSeason/targetQuantitiesChanged"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.Nursery
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() =
+        setOf(EmailNotificationCategory.Nursery, EmailNotificationCategory.PlantingAndObservations)
 }
 
 class PlantingSeasonNotScheduled(
@@ -505,8 +507,8 @@ class PlantingSeasonNotScheduled(
   override val templateDir: String
     get() = "plantingSeason/notScheduled"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class PlantingSeasonNotScheduledSupport(
@@ -565,8 +567,8 @@ class DeliverableStatusUpdated(
   override val templateDir: String
     get() = "deliverable/statusUpdated"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.Accelerator
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.Accelerator)
 }
 
 class SupportRequestSubmitted(
@@ -638,8 +640,8 @@ class AcceleratorReportUpcoming(
   override val templateDir: String
     get() = "acceleratorReport/upcoming"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.Accelerator
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.Accelerator)
 }
 
 class AcceleratorReportSubmitted(
@@ -661,8 +663,8 @@ class AcceleratorReportPublished(
   override val templateDir: String
     get() = "acceleratorReport/published"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.Accelerator
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.Accelerator)
 }
 
 class ActivityCreated(
@@ -732,8 +734,8 @@ class SplatGenerationCompleted(
   override val templateDir: String
     get() = "splat/generationCompleted"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 }
 
 class SplatGenerationFailed(
@@ -744,8 +746,8 @@ class SplatGenerationFailed(
   override val templateDir: String
     get() = "splat/generationFailed"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 
   val uploadDateString: String
     get() = uploadDate.toString()
@@ -760,8 +762,8 @@ class SplatMarkedNeedsAttention(
   override val templateDir: String
     get() = "splat/markedNeedsAttention"
 
-  override val emailNotificationCategory: EmailNotificationCategory
-    get() = EmailNotificationCategory.PlantingAndObservations
+  override val emailNotificationCategories: Set<EmailNotificationCategory>
+    get() = setOf(EmailNotificationCategory.PlantingAndObservations)
 
   val uploadDateString: String
     get() = uploadDate.toString()
