@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.EnumSource
 
 class PlotSelectionSettingTest {
   @Test
@@ -90,10 +89,19 @@ class PlotSelectionSettingTest {
   }
 
   @ParameterizedTest
-  @EnumSource(ObservationType::class)
-  fun `direct setting changes only mode level and counts`(type: ObservationType) {
-    val permanent = if (type == ObservationType.BaselineSurvey) 0 else 4
-    val temporary = if (type == ObservationType.BaselineSurvey) 4 else 0
+  @CsvSource(
+      "Monitoring,4,0",
+      "BiomassMeasurements,4,0",
+      "BaselineSurvey,0,4",
+      "Monitoring,10000,10000",
+      "BiomassMeasurements,10000,10000",
+      "BaselineSurvey,0,10000",
+  )
+  fun `direct setting changes only mode level and counts`(
+      type: ObservationType,
+      permanent: Int,
+      temporary: Int,
+  ) {
     val current =
         initial.copy(
             mode = PlotSelectionMode.PrecisionLevel,
@@ -210,25 +218,6 @@ class PlotSelectionSettingTest {
           PlotSelectionSetting.Direct(numPermanentPlots = permanent, numTemporaryPlots = temporary),
       )
     }
-  }
-
-  @ParameterizedTest
-  @EnumSource(ObservationType::class)
-  fun `accepts direct counts at the per-count limit`(type: ObservationType) {
-    val permanent = if (type == ObservationType.BaselineSurvey) 0 else 10000
-    assertEquals(
-        initial.copy(
-            mode = PlotSelectionMode.Direct,
-            plotPrecisionLevel = null,
-            numPermanentPlots = permanent,
-            numTemporaryPlots = 10000,
-        ),
-        initial.applySetting(
-            type,
-            PlotSelectionSetting.Direct(numPermanentPlots = permanent, numTemporaryPlots = 10000),
-        ),
-        "Each resulting count may equal 10000 independently",
-    )
   }
 
   @Test
