@@ -82,7 +82,7 @@ import org.testcontainers.utility.DockerImageName
  */
 class SchemaDocsGenerator : DatabaseTest() {
   /** Docker image to use to generate docs. */
-  private val schemaSpyDockerImage = DockerImageName.parse("schemaspy/schemaspy:6.2.4")
+  private val schemaSpyDockerImage = DockerImageName.parse("schemaspy/schemaspy:7.0.2")
 
   /**
    * Name of environment variable specifying where the schema subdirectories should live. If not
@@ -581,6 +581,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "svg",
                   // Disable a useless feature that warns when tables have similar column names
                   "-noimplied",
+                  "--include-routine-definition",
                   // Restrict the doc to the tables that should be shown in this slice
                   "-i",
                   tableRegex,
