@@ -16,7 +16,7 @@ class VariabilityCalculatorTest {
   fun `measured variability uses sample standard deviation of plot densities`() {
     val densities = listOf(1200, 1500, 900, 1800, 1100, 1400, 1300, 1600, 1000, 1200)
 
-    val result = VariabilityCalculator.measuredVariability(densities.map { it.toBigDecimal() })!!
+    val result = VariabilityCalculator.measuredVariability(densities.map { it.toDouble() })!!
 
     assertEquals(
         MeasuredVariability(21.452821193, 10),
@@ -26,8 +26,7 @@ class VariabilityCalculatorTest {
 
   @Test
   fun `empty completed plots contribute zero density to variability`() {
-    val result =
-        VariabilityCalculator.measuredVariability(listOf(BigDecimal.ZERO, BigDecimal.TEN))!!
+    val result = VariabilityCalculator.measuredVariability(listOf(0.0, 10.0))!!
 
     assertEquals(
         MeasuredVariability(141.421356237, 2),
@@ -38,12 +37,16 @@ class VariabilityCalculatorTest {
   @ParameterizedTest
   @ValueSource(ints = [0, 1])
   fun `fewer than two completed plots have no measured variability`(numPlots: Int) {
-    assertNull(VariabilityCalculator.measuredVariability(List(numPlots) { BigDecimal.TEN }))
+    assertNull(VariabilityCalculator.measuredVariability(List(numPlots) { 10.0 }))
   }
 
-  @Test
-  fun `all empty plots have no measured variability`() {
-    assertNull(VariabilityCalculator.measuredVariability(List(12) { BigDecimal.ZERO }))
+  @ParameterizedTest
+  @CsvSource("0,0", "-2,-1", "-1,2")
+  fun `all empty plots or invalid densities have no measured variability`(
+      firstDensity: Double,
+      secondDensity: Double,
+  ) {
+    assertNull(VariabilityCalculator.measuredVariability(listOf(firstDensity, secondDensity)))
   }
 
   @ParameterizedTest
@@ -114,7 +117,7 @@ class VariabilityCalculatorTest {
         }
     assertEquals(
         PlotCountRecommendation(type, expectedEstimate),
-        VariabilityCalculator.recommendation(currentTotal, range),
+        VariabilityCalculator.recommendation(currentTotal.toLong(), range),
     )
   }
 
@@ -163,7 +166,7 @@ class VariabilityCalculatorTest {
         PlotCountEstimate(40.0, CalculatedPlotCounts(highTotal, highPermanent, highTemporary))
     val range = RecommendedPlotCountRange(best, best, high)
 
-    val result = VariabilityCalculator.recommendation(currentTotal, range)
+    val result = VariabilityCalculator.recommendation(currentTotal.toLong(), range)
 
     val expected =
         when (expectedType) {

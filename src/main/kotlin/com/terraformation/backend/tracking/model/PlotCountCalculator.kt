@@ -26,7 +26,10 @@ enum class ConfidenceLevel(val percent: Int, val plotCountStudentsT: BigDecimal)
   }
 }
 
-data class CalculatedPlotCounts(val total: Int, val permanent: Int, val temporary: Int)
+data class CalculatedPlotCounts(val total: Int, val permanent: Int, val temporary: Int) {
+  val deployableTotal: Long
+    get() = permanent.toLong() + temporary
+}
 
 object PlotCountCalculator {
   /**
