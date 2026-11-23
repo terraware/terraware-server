@@ -9,7 +9,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
-import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.dummyKeycloakInfo
@@ -59,9 +58,8 @@ class SupportServiceTest : DatabaseTest() {
         usersDao,
     )
   }
-  private val systemUser by lazy { SystemUser(usersDao) }
   private val service by lazy {
-    SupportService(atlassianHttpClient, config, emailService, messages, systemUser, userStore)
+    SupportService(atlassianHttpClient, config, emailService, messages, userStore)
   }
 
   @BeforeEach
@@ -124,9 +122,11 @@ class SupportServiceTest : DatabaseTest() {
 
   @ParameterizedTest
   @ValueSource(ints = [-1, 0, 1])
-  fun `missing contact event creates English ticket as system user within Jira field limits`(
+  fun `missing contact event creates English ticket as email sender within Jira field limits`(
       lengthOffset: Int
   ) {
+    every { config.email.senderAddress } returns "Terraware <no-reply@terraware.io>"
+
     val organizationName =
         "x".repeat(255 + lengthOffset - "Organization  has no primary project contact".length)
     val missingContact = messages.missingContact(organizationName, inserted.organizationId)
@@ -154,7 +154,7 @@ class SupportServiceTest : DatabaseTest() {
           expectedDescription,
           expectedSummary,
           SupportRequestType.MissingContact,
-          systemUser.email,
+          "no-reply@terraware.io",
       )
     }
     verify { emailService wasNot Called }

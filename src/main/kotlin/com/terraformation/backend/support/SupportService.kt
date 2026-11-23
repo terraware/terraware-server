@@ -5,7 +5,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
-import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.SupportRequestSubmitted
@@ -19,6 +18,7 @@ import com.terraformation.backend.support.atlassian.MAX_JIRA_SUMMARY_LENGTH
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
 import jakarta.inject.Named
+import jakarta.mail.internet.InternetAddress
 import jakarta.ws.rs.NotSupportedException
 import java.util.Locale
 import org.apache.tika.Tika
@@ -32,7 +32,6 @@ class SupportService(
     private val config: TerrawareServerConfig,
     private val emailService: EmailService,
     private val messages: Messages,
-    private val systemUser: SystemUser,
     private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
@@ -46,14 +45,17 @@ class SupportService(
 
     Locale.ENGLISH.use {
       val missingContact = messages.missingContact(event.organizationName, event.organizationId)
-      submitServiceRequest(
+      val senderAddress =
+          checkNotNull(config.email.senderAddress) {
+            "Email sender address is required to file a missing-contact support request"
+          }
+      atlassianHttpClient.createServiceDeskRequest(
           requestType = SupportRequestType.MissingContact,
           summary = missingContact.title.truncateForJira(MAX_JIRA_SUMMARY_LENGTH),
           description =
               "${missingContact.body}\n\n${event.subject}\n\n${event.body}"
                   .truncateForJira(MAX_JIRA_DESCRIPTION_LENGTH),
-          skipReceiptEmail = true,
-          userId = systemUser.userId,
+          reporter = InternetAddress(senderAddress).address,
       )
     }
   }

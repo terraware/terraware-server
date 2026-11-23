@@ -101,7 +101,8 @@ class ObservationScheduler(
         observationService.markSchedulingObservationsNotificationComplete(plantingSiteId, criteria)
       } catch (e: Exception) {
         log.error(
-            "Unable to mark planting site $plantingSiteId scheduling observation notification complete"
+            "Unable to mark planting site $plantingSiteId scheduling observation notification complete",
+            e,
         )
       }
     }
