@@ -39,14 +39,23 @@ object PlotCountCalculator {
       variability: BigDecimal,
       targetMarginOfError: BigDecimal,
   ): CalculatedPlotCounts {
-    require(studentsT.signum() > 0) { "Student's t must be positive" }
     require(variability.signum() >= 0) { "Variability must be nonnegative" }
+    return calculatePlotCountsFromVariance(studentsT, variability.pow(2), targetMarginOfError)
+  }
+
+  fun calculatePlotCountsFromVariance(
+      studentsT: BigDecimal,
+      variance: BigDecimal,
+      targetMarginOfError: BigDecimal,
+  ): CalculatedPlotCounts {
+    require(studentsT.signum() > 0) { "Student's t must be positive" }
+    require(variance.signum() >= 0) { "Variance must be nonnegative" }
     require(targetMarginOfError.signum() > 0) { "Target margin of error must be positive" }
 
     val total =
         studentsT
-            .multiply(variability)
             .pow(2)
+            .multiply(variance)
             .divide(targetMarginOfError.pow(2), 0, RoundingMode.CEILING)
             .intValueExact()
     val permanent =
