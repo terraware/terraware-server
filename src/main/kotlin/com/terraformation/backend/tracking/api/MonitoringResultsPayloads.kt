@@ -453,7 +453,8 @@ data class ObservationStratumVariabilityPayload(
     val hasSmallSample: Boolean,
     @Schema(
         description =
-            "Unrounded variability percentage. Absent if fewer than two plots were measured or the mean live plant density was zero."
+            "Unrounded variability percentage. Absent if fewer than two plots were measured " +
+                "or the mean live plant density was zero."
     )
     val measuredVariability: Double?,
     @Schema(description = "90% plausible range of the true variability, as percentages.")

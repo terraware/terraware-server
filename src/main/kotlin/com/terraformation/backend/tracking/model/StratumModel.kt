@@ -190,13 +190,13 @@ data class StratumModel<
     val latestObservationCompletedTime: Instant? = null,
     /** The ID of the latest observation, if the stratum has completed observations */
     val latestObservationId: ObservationId? = null,
+    /** The variability snapshot from the most recent completed plant monitoring observation. */
+    val latestObservationVariability: ObservationStratumVariabilityModel? = null,
     val name: String,
     val plantPlotCounts: StratumPlotCounts = StratumPlotCounts(),
     val substrata: List<SubstratumModel<SSID>>,
     val stableId: StableId,
     val targetPlantDensity: BigDecimal? = null,
-    /** The variability snapshot from the most recent completed plant monitoring observation. */
-    val latestObservationVariability: ObservationStratumVariabilityModel? = null,
 ) {
   /** The larger of the plant and biomass permanent plot counts. */
   val maxPermanentPlots: Int
