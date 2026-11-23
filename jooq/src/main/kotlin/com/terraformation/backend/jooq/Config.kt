@@ -761,7 +761,10 @@ val EMBEDDABLES =
             .withColumns("observation_id", "planting_site_history_id"),
         EmbeddableDefinitionType()
             .withName("observation_stratum_history_id")
-            .withTables("tracking.observation_stratum_results")
+            .withTables(
+                listOf("observation_stratum_results", "observation_stratum_variability")
+                    .joinToString("|") { "tracking.$it" }
+            )
             .withColumns("observation_id", "stratum_history_id"),
         EmbeddableDefinitionType()
             .withName("observation_substratum_history_id")

@@ -446,6 +446,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "observation_site_results" to setOf(ALL, TRACKING),
                   "observation_states" to setOf(ALL, TRACKING),
                   "observation_stratum_results" to setOf(ALL, TRACKING),
+                  "observation_stratum_variability" to setOf(ALL, TRACKING),
                   "observation_substratum_results" to setOf(ALL, TRACKING),
                   "observation_types" to setOf(ALL, TRACKING),
                   "observations" to setOf(ALL, TRACKING),
