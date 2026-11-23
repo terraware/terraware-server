@@ -8,6 +8,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
 import com.terraformation.backend.tracking.model.StratumPlotCounts
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 
 data class PlotSettingsPreviewResponsePayload(val strata: List<StratumPlotSettingsPreviewPayload>) :
@@ -30,12 +31,10 @@ data class StratumPlotSettingsPreviewPayload(
       stratumId = model.id,
       name = model.name,
       settings =
-          ObservationType.entries
-              .sortedBy { it.id }
-              .map {
-                val current = model.plotCounts(it)
-                PlotSettingPreviewPayload(it, current, proposed[it] ?: current)
-              },
+          ObservationType.entries.map {
+            val current = model.plotCounts(it)
+            PlotSettingPreviewPayload(it, current, proposed[it] ?: current)
+          },
   )
 }
 
@@ -43,10 +42,13 @@ data class PlotSettingPreviewPayload(
     val observationType: ObservationType,
     val current: PlotCountsPreviewPayload,
     val proposed: PlotCountsPreviewPayload,
-    @Schema(
-        description =
-            "Alternatives for every precision level. Counts and expected precision are null " +
-                "when an alternative exceeds the supported plot count limit."
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "Alternatives for every precision level. Counts and expected precision are null " +
+                        "when an alternative exceeds the supported plot count limit."
+            )
     )
     val precisionLevels: List<PrecisionLevelPlotCountsPreviewPayload>,
     @Schema(

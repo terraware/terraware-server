@@ -20,6 +20,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -80,10 +81,13 @@ class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
 
 data class UpdatePlotSettingsRequestPayload(
     val defaultPlotPrecisionLevel: PlotPrecisionLevel,
-    @Schema(
-        description =
-            "Settings to merge into existing strata. Omit to update only the site default.",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "Settings to merge into existing strata. Omit to update only the site default.",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            )
     )
     val strata: List<UpdateStratumPlotSettingPayload> = emptyList(),
 ) {
