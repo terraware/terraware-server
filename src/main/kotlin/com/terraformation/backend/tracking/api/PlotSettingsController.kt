@@ -108,7 +108,7 @@ data class UpdatePlotSettingsRequestPayload(
           if (site.strata.none { it.id == id }) throw StratumNotFoundException(id)
           entries.associate { entry ->
             val setting = entry.toSetting()
-            val type = requireNotNull(entry.observationType)
+            val type = entry.observationType!!
             type to
                 { current: StratumPlotCounts ->
                   current.applySetting(type, setting)

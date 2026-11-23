@@ -70,10 +70,6 @@ class PlotSettingsPayloadTest {
         entries ->
       assertThrows<IllegalArgumentException> { request.copy(strata = entries).toEdits(site) }
     }
-  }
-
-  @Test
-  fun `all-types direct edits allocate baseline plots as temporary plots`() {
     val direct =
         entry.copy(
             observationType = null,
@@ -81,8 +77,8 @@ class PlotSettingsPayloadTest {
             numPermanentPlots = 7,
             numTemporaryPlots = 3,
         )
-    val request = UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(direct))
-    val expected =
+    val directRequest = UpdatePlotSettingsRequestPayload(PlotPrecisionLevel.High, listOf(direct))
+    val expectedDirect =
         ObservationType.entries.associateWith { type ->
           site.strata
               .single()
@@ -94,19 +90,19 @@ class PlotSettingsPayloadTest {
                   numTemporaryPlots = if (type == ObservationType.BaselineSurvey) 10 else 3,
               )
         }
-    val edits = request.toEdits(site).getValue(entry.stratumId)
+    val edits = directRequest.toEdits(site).getValue(entry.stratumId)
     assertEquals(
-        expected,
+        expectedDirect,
         edits.mapValues { (type, edit) -> edit(site.strata.single().plotCounts(type)) },
         "PUT edits preserve monitoring and biomass counts and combine baseline counts",
     )
     assertEquals(
-        mapOf(entry.stratumId to expected),
-        request.toSettings(site),
+        mapOf(entry.stratumId to expectedDirect),
+        directRequest.toSettings(site),
         "Preview uses the same all-types Direct allocation as PUT",
     )
     assertThrows<IllegalArgumentException> {
-      request
+      directRequest
           .copy(strata = listOf(direct.copy(observationType = ObservationType.BaselineSurvey)))
           .toSettings(site)
     }
@@ -119,15 +115,15 @@ class PlotSettingsPayloadTest {
         )
         .forEach { invalid ->
           assertThrows<IllegalArgumentException> {
-            request.copy(strata = listOf(invalid)).toSettings(site)
+            directRequest.copy(strata = listOf(invalid)).toSettings(site)
           }
         }
     val excessive = direct.copy(numPermanentPlots = 7000, numTemporaryPlots = 3001)
     assertThrows<IllegalArgumentException> {
-      request.copy(strata = listOf(excessive)).toSettings(site)
+      directRequest.copy(strata = listOf(excessive)).toSettings(site)
     }
     assertThrows<IllegalArgumentException> {
-      request.copy(strata = listOf(excessive)).toEdits(site).forEach { (id, edits) ->
+      directRequest.copy(strata = listOf(excessive)).toEdits(site).forEach { (id, edits) ->
         val stratum = site.strata.first { it.id == id }
         edits.forEach { (type, edit) -> edit(stratum.plotCounts(type)) }
       }
