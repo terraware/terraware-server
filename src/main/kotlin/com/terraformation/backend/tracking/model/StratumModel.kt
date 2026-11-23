@@ -55,7 +55,7 @@ data class StratumPlotCounts(
     val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
   val variability: BigDecimal
-    get() = variance.sqrt(MathContext.DECIMAL128)
+    get() = variance.sqrt(MathContext.DECIMAL64)
 
   val confidenceLevel: ConfidenceLevel?
     get() =
@@ -135,17 +135,17 @@ data class StratumPlotCounts(
   }
 
   fun recalculatePlotCounts(observationType: ObservationType): StratumPlotCounts {
-    val baseline = observationType == ObservationType.BaselineSurvey
     val counts =
         PlotCountCalculator.calculatePlotCountsFromVariance(
             studentsT = studentsT,
             variance = variance,
             targetMarginOfError = errorMargin,
         )
-    return copy(
-        numPermanentPlots = if (baseline) 0 else counts.permanent,
-        numTemporaryPlots = if (baseline) counts.total.coerceAtLeast(1) else counts.temporary,
-    )
+    return if (observationType == ObservationType.BaselineSurvey) {
+      copy(numPermanentPlots = 0, numTemporaryPlots = counts.total.coerceAtLeast(1))
+    } else {
+      copy(numPermanentPlots = counts.permanent, numTemporaryPlots = counts.temporary)
+    }
   }
 
   override fun equals(other: Any?) =

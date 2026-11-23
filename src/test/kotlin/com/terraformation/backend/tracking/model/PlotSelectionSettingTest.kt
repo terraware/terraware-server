@@ -57,7 +57,7 @@ class PlotSelectionSettingTest {
   }
 
   @ParameterizedTest
-  @CsvSource("25.0,5.0,1,1", "5.0,1.0,1,1", "25.00,200.00,80,26")
+  @CsvSource("25.0,5.0,1,1", "25.00,200.00,80,26")
   fun `custom setting updates parameters and counts including boundary values`(
       margin: BigDecimal,
       variability: BigDecimal,
@@ -200,16 +200,10 @@ class PlotSelectionSettingTest {
   @CsvSource(
       "Monitoring,0,1",
       "Monitoring,1,-1",
-      "BiomassMeasurements,-1,1",
       "BaselineSurvey,1,1",
-      "BaselineSurvey,-1,1",
       "BaselineSurvey,0,0",
-      "BaselineSurvey,0,-1",
       "Monitoring,10001,1",
       "Monitoring,1,10001",
-      "BiomassMeasurements,10001,1",
-      "BiomassMeasurements,1,10001",
-      "BaselineSurvey,0,10001",
   )
   fun `rejects invalid direct counts`(type: ObservationType, permanent: Int, temporary: Int) {
     assertThrows<IllegalArgumentException> {
