@@ -306,7 +306,7 @@ class BatchStore(
           hardeningOffQuantity = newModel.hardeningOffQuantity,
           historyType = BatchQuantityHistoryType.Observed,
           readyQuantity = newModel.readyQuantity,
-          userSuppliedDate = if (withdrawalId != null) newModel.addedDate else null,
+          userSuppliedDate = newModel.addedDate,
           version = 1,
           withdrawalId = withdrawalId,
       )
@@ -1285,9 +1285,9 @@ class BatchStore(
   /**
    * Returns when a quantity change took effect. This is needed by the time-in-stage calculations.
    * The effective time can be earlier than the recorded time if a user backdated a withdrawal, a
-   * transfer, or seeds added from an accession. A user-supplied date means the start of that day in
-   * the nursery's time zone, clamped to no earlier than the previous history row and no later than
-   * the recorded time.
+   * transfer, or seeds added from an accession, or if a batch was created with a past added date. A
+   * user-supplied date means the start of that day in the nursery's time zone, clamped to no
+   * earlier than the previous history row and no later than the recorded time.
    */
   private fun computeEffectiveTime(
       previous: Instant?,
@@ -1762,7 +1762,12 @@ class BatchStore(
                       batchDateRow[BATCHES.GERMINATION_STARTED_DATE],
                   )
                   .minOrNull()
-          earliestDate?.atStartOfDay(parentStore.getEffectiveTimeZone(batchId))?.toInstant()
+          earliestDate?.let {
+            minOf(
+                it.atStartOfDay(parentStore.getEffectiveTimeZone(batchId)).toInstant(),
+                createdTime,
+            )
+          }
         } else {
           null
         }

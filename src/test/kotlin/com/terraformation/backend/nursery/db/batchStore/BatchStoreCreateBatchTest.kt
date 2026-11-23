@@ -41,7 +41,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
         CreateBatchRequestPayload(
                 addedDate = addedDate,
                 facilityId = facilityId,
-                germinatingQuantity = 0,
+                germinatingQuantity = 8,
                 germinationStartedDate = LocalDate.of(2022, 2, 20),
                 hardeningOffQuantity = 4,
                 notes = "notes",
@@ -59,6 +59,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
     val returnedModel = store.create(inputModel)
 
+    val startOfAddedDate = addedDate.atStartOfDay(ZoneOffset.UTC).toInstant()
+
     val expectedRow =
         BatchesRow(
             addedDate = addedDate,
@@ -68,7 +70,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             facilityId = facilityId,
             germinationStartedDate = LocalDate.of(2022, 2, 20),
             id = returnedModel.id,
-            latestObservedTime = addedDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
+            latestObservedTime = startOfAddedDate,
             lossRate = 0,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
@@ -87,6 +89,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
         stage: BatchStage,
         quantity: Int,
         countedQuantity: Int = quantity,
+        countedDays: Double = 0.0,
     ) =
         BatchStageDetailsModel(
             batchId = returnedModel.id,
@@ -95,19 +98,21 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             stage = stage,
             timeInStage =
                 StageTimeStats(
-                    asOfTime = clock.instant(),
+                    asOfTime = startOfAddedDate,
                     cleared = false,
-                    countedDays = 0.0,
+                    countedDays = countedDays,
                     countedQuantity = countedQuantity,
                     inStage = quantity,
-                    openDays = 0.0,
+                    openDays = countedDays,
                     stage = stage,
                 ),
         )
 
     val expectedQuantities =
         listOf(
-            expectedStageDetails(BatchStage.Germinating, 0),
+            // The seed dates are after the recorded time, so germinating time is counted from
+            // the recorded time, which is a week after the added date.
+            expectedStageDetails(BatchStage.Germinating, 8, countedDays = -56.0),
             expectedStageDetails(BatchStage.ActiveGrowth, 1, countedQuantity = 0),
             expectedStageDetails(BatchStage.HardeningOff, 4),
             expectedStageDetails(BatchStage.Ready, 2),
@@ -128,11 +133,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 historyTypeId = BatchQuantityHistoryType.Observed,
-                germinatingQuantity = 0,
+                germinatingQuantity = 8,
                 readyQuantity = 2,
                 hardeningOffQuantity = 4,
                 version = 1,
-                effectiveTime = clock.instant(),
+                effectiveTime = startOfAddedDate,
             ),
         )
 
@@ -182,14 +187,14 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
           BatchStageDetailsRecord(
               batchId = it.batchId,
               countedQuantity = it.timeInStage?.countedQuantity ?: it.quantity,
-              countedSeedlingDays = 0.0,
+              countedSeedlingDays = it.timeInStage?.countedDays ?: 0.0,
               finishedQuantity = 0.0,
               finishedSeedlingDays = 0.0,
               latestObservedQuantity = it.latestObservedQuantity,
-              openSeedlingDays = 0.0,
+              openSeedlingDays = it.timeInStage?.openDays ?: 0.0,
               quantity = it.quantity,
               stageId = it.stage,
-              timeInStageAsOf = clock.instant,
+              timeInStageAsOf = startOfAddedDate,
               timeInStageCleared = false,
           )
         },
@@ -255,7 +260,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   }
 
   @Test
-  fun `uses added date midnight at facility as latest observed time if it is in the past`() {
+  fun `uses added date midnight at facility as latest observed time and initial effective time if it is in the past`() {
     val timeZone = ZoneId.of("America/New_York")
     val newYorkFacilityId = insertFacility(type = FacilityType.Nursery, timeZone = timeZone)
     val addedDate = LocalDate.of(2022, 1, 2)
@@ -279,10 +284,15 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val batch = store.create(inputModel)
 
     assertEquals(startOfAddedDate, batch.latestObservedTime)
+    assertEquals(
+        startOfAddedDate,
+        batchQuantityHistoryDao.fetchByBatchId(batch.id).single().effectiveTime,
+        "Quantity history effective time",
+    )
   }
 
   @Test
-  fun `uses current time as latest observed time if added date is today at facility`() {
+  fun `uses current time as latest observed time and initial effective time if added date is today at facility`() {
     val timeZone = ZoneId.of("America/New_York")
     val newYorkFacilityId = insertFacility(type = FacilityType.Nursery, timeZone = timeZone)
     val addedDate = LocalDate.of(2022, 1, 2)
@@ -305,6 +315,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val batch = store.create(inputModel)
 
     assertEquals(now, batch.latestObservedTime)
+    assertEquals(
+        now,
+        batchQuantityHistoryDao.fetchByBatchId(batch.id).single().effectiveTime,
+        "Quantity history effective time",
+    )
   }
 
   @Test

@@ -203,6 +203,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
   @Test
   fun `replays stage time after withdrawals, status changes, undo, and manual edits`() {
+    val addedDate = LocalDate.of(2022, 12, 25)
     val start = LocalDate.of(2023, 1, 1)
     val created = LocalDate.of(2023, 1, 11)
     val deadDate = LocalDate.of(2023, 1, 16)
@@ -217,7 +218,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
             .create(
                 NewBatchModel(
                     activeGrowthQuantity = 0,
-                    addedDate = start,
+                    addedDate = addedDate,
                     facilityId = facilityId,
                     germinatingQuantity = 100,
                     hardeningOffQuantity = 0,

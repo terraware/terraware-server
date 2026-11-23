@@ -76,13 +76,14 @@ object StageTimeCalculator {
       initialGerminatingStart: Instant?,
   ): Map<BatchStage, StageTimeStats> {
     val created = events.first()
-    val germinatingStart =
-        minOf(created.effectiveTime, initialGerminatingStart ?: created.effectiveTime)
+    // The germinating start may be after the creation event, making prehistoryDays negative; it's
+    // an offset so accrual from the creation event nets out to time since the germinating start.
+    val germinatingStart = initialGerminatingStart ?: created.effectiveTime
     val states =
         BatchStage.entries.associateWith { stage ->
           val quantity = created.quantity(stage)
           val prehistoryDays =
-              if (stage == BatchStage.Germinating) {
+              if (stage == BatchStage.Germinating && quantity > 0) {
                 quantity * daysBetween(germinatingStart, created.effectiveTime)
               } else {
                 0.0
