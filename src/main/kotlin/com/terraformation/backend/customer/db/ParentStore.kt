@@ -83,8 +83,20 @@ import java.time.ZoneOffset
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.Record1
+import org.jooq.Select
 import org.jooq.TableField
 import org.jooq.impl.DSL
+
+internal fun acceleratorOrApplicationProjects(
+    organizationId: Field<OrganizationId?>
+): Select<Record1<Int>> =
+    DSL.selectOne()
+        .from(PROJECTS)
+        .leftJoin(APPLICATIONS)
+        .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
+        .where(PROJECTS.PHASE_ID.isNotNull.or(APPLICATIONS.ID.isNotNull))
+        .and(PROJECTS.ORGANIZATION_ID.eq(organizationId))
 
 /**
  * Lookup methods to get the IDs of the parents of various objects.
@@ -422,14 +434,7 @@ class ParentStore(private val dslContext: DSLContext) {
    */
   fun hasAcceleratorOrApplicationProjects(organizationId: OrganizationId?): Boolean =
       organizationId != null &&
-          dslContext.fetchExists(
-              DSL.selectOne()
-                  .from(PROJECTS)
-                  .leftJoin(APPLICATIONS)
-                  .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
-                  .where(PROJECTS.PHASE_ID.isNotNull.or(APPLICATIONS.ID.isNotNull))
-                  .and(PROJECTS.ORGANIZATION_ID.eq(organizationId))
-          )
+          dslContext.fetchExists(acceleratorOrApplicationProjects(DSL.`val`(organizationId)))
 
   fun isProjectInAccelerator(projectId: ProjectId?): Boolean =
       projectId != null &&

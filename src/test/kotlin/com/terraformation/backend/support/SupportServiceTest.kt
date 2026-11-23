@@ -9,7 +9,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
-import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.dummyKeycloakInfo
@@ -29,7 +28,6 @@ import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -59,9 +57,8 @@ class SupportServiceTest : DatabaseTest() {
         usersDao,
     )
   }
-  private val systemUser by lazy { SystemUser(usersDao) }
   private val service by lazy {
-    SupportService(atlassianHttpClient, config, emailService, messages, systemUser, userStore)
+    SupportService(atlassianHttpClient, config, emailService, messages, userStore)
   }
 
   @BeforeEach
@@ -105,9 +102,20 @@ class SupportServiceTest : DatabaseTest() {
     }
   }
 
-  @Test
-  fun `missing contact event does not create a ticket when Atlassian is disabled`() {
-    every { config.atlassian.enabled } returns false
+  enum class MissingContactFailure {
+    AtlassianDisabled,
+    SenderNotConfigured,
+    JiraRejectedRequest,
+  }
+
+  @ParameterizedTest
+  @EnumSource(MissingContactFailure::class)
+  fun `missing contact event handles inability to create a ticket`(failure: MissingContactFailure) {
+    every { config.atlassian.enabled } returns (failure != MissingContactFailure.AtlassianDisabled)
+    every { config.email.senderAddress } returns
+        if (failure == MissingContactFailure.SenderNotConfigured) null else "sender@example.com"
+    every { atlassianHttpClient.createServiceDeskRequest(any(), any(), any(), any()) } throws
+        IllegalStateException("Jira rejected the request")
 
     service.on(
         TerraformationContactMissingEvent(
@@ -118,15 +126,28 @@ class SupportServiceTest : DatabaseTest() {
         )
     )
 
-    verify { atlassianHttpClient wasNot Called }
+    if (failure == MissingContactFailure.JiraRejectedRequest) {
+      verify(exactly = 1) {
+        atlassianHttpClient.createServiceDeskRequest(
+            any(),
+            any(),
+            SupportRequestType.MissingContact,
+            "sender@example.com",
+        )
+      }
+    } else {
+      verify { atlassianHttpClient wasNot Called }
+    }
     verify { emailService wasNot Called }
   }
 
   @ParameterizedTest
   @ValueSource(ints = [-1, 0, 1])
-  fun `missing contact event creates English ticket as system user within Jira field limits`(
+  fun `missing contact event creates English ticket as email sender within Jira field limits`(
       lengthOffset: Int
   ) {
+    every { config.email.senderAddress } returns "Terraware <no-reply@terraware.io>"
+
     val organizationName =
         "x".repeat(255 + lengthOffset - "Organization  has no primary project contact".length)
     val missingContact = messages.missingContact(organizationName, inserted.organizationId)
@@ -154,7 +175,7 @@ class SupportServiceTest : DatabaseTest() {
           expectedDescription,
           expectedSummary,
           SupportRequestType.MissingContact,
-          systemUser.email,
+          "no-reply@terraware.io",
       )
     }
     verify { emailService wasNot Called }
