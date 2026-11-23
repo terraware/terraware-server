@@ -65,15 +65,23 @@ data class StratumPlotSettingsPayload(
 data class PlotSelectionSettingPayload(
     val observationType: ObservationType,
     val mode: PlotSelectionMode,
+    @Schema(description = "Set when mode is PrecisionLevel; null when mode is Custom or Direct.")
     val plotPrecisionLevel: PlotPrecisionLevel?,
-    @Schema(description = "Confidence percentage, or null for a nonstandard stored Student's t.")
+    @Schema(
+        description =
+            "Confidence percentage in any mode, or null for a nonstandard stored Student's t."
+    )
     val confidenceLevel: Int?,
     val targetMarginOfError: BigDecimal,
     @Schema(description = "Variability percentage rounded to one decimal place.")
     val variability: BigDecimal,
     val numPermanentPlots: Int,
     val numTemporaryPlots: Int,
-    @Schema(description = "Unrounded expected precision percentage, or null if unavailable.")
+    @Schema(
+        description =
+            "Unrounded expected precision percentage in any mode, or null for a nonstandard " +
+                "stored Student's t or fewer than two plots."
+    )
     val expectedPrecision: Double?,
 ) {
   constructor(
