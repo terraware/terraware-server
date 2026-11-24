@@ -30,7 +30,7 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.MEDIA_TYPE_SVG
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.PlantingSiteMapEditService
-import com.terraformation.backend.tracking.PlantingSiteMapExporter
+import com.terraformation.backend.tracking.PlantingSiteMapExportService
 import com.terraformation.backend.tracking.PlantingSiteMapFormat
 import com.terraformation.backend.tracking.PlantingSiteMapLayer
 import com.terraformation.backend.tracking.PlantingSiteService
@@ -115,7 +115,7 @@ class PlantingSitesController(
     private val observationResultsRecalculator: ObservationResultsRecalculator,
     private val observationStore: ObservationStore,
     private val plantingSiteMapEditService: PlantingSiteMapEditService,
-    private val plantingSiteMapExporter: PlantingSiteMapExporter,
+    private val plantingSiteMapExportService: PlantingSiteMapExportService,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteService: PlantingSiteService,
 ) {
@@ -278,7 +278,7 @@ class PlantingSitesController(
       plantingSiteMapDownload(
           "planting-site-$id-version-$historyId",
           format,
-          plantingSiteMapExporter.fetchLayers(id, historyId),
+          plantingSiteMapExportService.fetchLayers(id, historyId),
       )
 
   @ApiResponse(
@@ -305,7 +305,7 @@ class PlantingSitesController(
       plantingSiteMapDownload(
           "planting-site-$id",
           format,
-          plantingSiteMapExporter.fetchCurrentLayers(id),
+          plantingSiteMapExportService.fetchCurrentLayers(id),
       )
 
   private fun plantingSiteMapDownload(
@@ -317,7 +317,7 @@ class PlantingSitesController(
     val contentDisposition = ContentDisposition.attachment().filename(filename).build().toString()
     val contentType = MediaType.parseMediaType(format.mediaType)
     val body = StreamingResponseBody { output ->
-      plantingSiteMapExporter.write(format, layers, output)
+      plantingSiteMapExportService.write(format, layers, output)
     }
     return ResponseEntity.ok()
         .contentType(contentType)

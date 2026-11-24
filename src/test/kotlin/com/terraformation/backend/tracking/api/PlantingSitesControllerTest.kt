@@ -27,6 +27,8 @@ class PlantingSitesControllerTest : ControllerIntegrationTest() {
   fun `downloads a map snapshot with the chosen format and attachment filename`() {
     val siteId = insertPlantingSite(areaHa = BigDecimal.TEN)
     val historyId = inserted.plantingSiteHistoryId
+    insertStratum()
+    insertSubstratum()
     val kmlMediaType = MediaType.valueOf("application/vnd.google-earth.kml+xml")
     val request =
         mockMvc
@@ -53,6 +55,8 @@ class PlantingSitesControllerTest : ControllerIntegrationTest() {
     @Test
     fun `downloads a live map without a history ID`() {
       val siteId = insertPlantingSite(areaHa = BigDecimal.TEN, insertHistory = false)
+      insertStratum(insertHistory = false)
+      insertSubstratum(insertHistory = false)
       val kmlMediaType = MediaType.valueOf("application/vnd.google-earth.kml+xml")
       val request =
           mockMvc
