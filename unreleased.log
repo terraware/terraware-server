@@ -1,3 +1,5 @@
+400a87a3 SW-9351 Expose per-stratum observation variability (#5471)
+aa8ad3a9 SW-9351 Record variability on observation completion (#5470)
 f4b7ca6d Merge tag 'v20261119.2'
 3746808f Use email sender as missing-contact Jira reporter (#5497)
 6bb85930 SW-9357 Reassign each observation once per plot settings save (#5483)
