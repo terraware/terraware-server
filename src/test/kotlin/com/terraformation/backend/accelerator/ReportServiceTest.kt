@@ -98,6 +98,15 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   fun setup() {
     organizationId = insertOrganization(timeZone = ZoneOffset.UTC)
     projectId = insertProject()
+    AutoCalculatedIndicator.entries.forEach {
+      insertProjectAutoCalculatedIndicator(
+          autoCalculatedIndicatorId = it,
+          isPublishable = it != AutoCalculatedIndicator.SeedsCollected,
+          projectId = projectId,
+          refId = it.refId,
+      )
+    }
+
     insertProjectReportConfig()
     reportId =
         insertReport(

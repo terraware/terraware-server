@@ -681,7 +681,7 @@ class ReportStore(
 
       val publishableAutoCalculatedIndicators =
           report.autoCalculatedIndicators
-              .filter { it.indicator.isPublishable && it.indicator.active }
+              .filter { it.isPublishable && it.active }
               .associate { (indicator, entry) ->
                 indicator to
                     ReportIndicatorEntryModel(
@@ -739,7 +739,7 @@ class ReportStore(
           report.projectId,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_BASELINES.AUTO_CALCULATED_INDICATOR_ID,
           AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
-          AUTO_CALCULATED_INDICATORS.ID,
+          PROJECT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
       )
 
       // Publish indicator targets for the report year
@@ -747,7 +747,7 @@ class ReportStore(
 
       val autoCalculatedIndicatorTargets =
           report.autoCalculatedIndicators
-              .filter { (indicator) -> indicator.isPublishable && indicator.active }
+              .filter { it.isPublishable && it.active }
               .associate { (indicator, entry) -> indicator to entry.target }
       val commonIndicatorTargets =
           report.commonIndicators
@@ -1469,7 +1469,7 @@ class ReportStore(
     val isPublishableField = indicatorTable.field("is_publishable", Boolean::class.java)!!
     val activeField = indicatorTable.field("active", Boolean::class.java)!!
     val indicatorProjectIdField =
-        indicatorTable.field("project_id", unpublishedProjectIdField.dataType)
+        indicatorTable.field("project_id", unpublishedProjectIdField.dataType)!!
 
     dslContext.transaction { _ ->
       dslContext
@@ -1486,10 +1486,8 @@ class ReportStore(
                   .on(indicatorIdField.eq(unpublishedIndicatorIdField))
                   .where(unpublishedProjectIdField.eq(projectId))
                   .and(isPublishableField.isTrue)
-                  .and(
-                      if (indicatorProjectIdField == null) DSL.trueCondition()
-                      else activeField.isTrue.and(indicatorProjectIdField.eq(projectId))
-                  ),
+                  .and(activeField.isTrue)
+                  .and(indicatorProjectIdField.eq(projectId)),
           )
           .onConflict(publishedProjectIdField, publishedIndicatorIdField)
           .doUpdate()
@@ -2278,6 +2276,7 @@ class ReportStore(
     return DSL.multiset(
             DSL.select(
                     AUTO_CALCULATED_INDICATORS.ID,
+                    PROJECT_AUTO_CALCULATED_INDICATORS.asterisk(),
                     REPORT_AUTO_CALCULATED_INDICATORS.asterisk(),
                     systemValueField,
                     REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET,
@@ -2286,6 +2285,13 @@ class ReportStore(
                     currentYearProgressField,
                 )
                 .from(AUTO_CALCULATED_INDICATORS)
+                .join(PROJECT_AUTO_CALCULATED_INDICATORS)
+                .on(
+                    PROJECT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.eq(
+                        AUTO_CALCULATED_INDICATORS.ID
+                    )
+                )
+                .and(PROJECT_AUTO_CALCULATED_INDICATORS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 .leftJoin(REPORT_AUTO_CALCULATED_INDICATORS)
                 .on(
                     AUTO_CALCULATED_INDICATORS.ID.eq(
@@ -2308,9 +2314,9 @@ class ReportStore(
                         )
                         .and(AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 )
-                .where(AUTO_CALCULATED_INDICATORS.ACTIVE.isTrue)
+                .where(PROJECT_AUTO_CALCULATED_INDICATORS.ACTIVE.isTrue)
                 .orderBy(
-                    AUTO_CALCULATED_INDICATORS.REF_ID.asc().nullsLast(),
+                    PROJECT_AUTO_CALCULATED_INDICATORS.REF_ID.asc().nullsLast(),
                     AUTO_CALCULATED_INDICATORS.ID,
                 )
         )

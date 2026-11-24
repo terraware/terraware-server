@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULAT
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATOR_TARGETS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
@@ -226,6 +227,11 @@ data class ReportAutoCalculatedIndicatorEntryModel(
 data class ReportAutoCalculatedIndicatorModel(
     val indicator: AutoCalculatedIndicator,
     val entry: ReportAutoCalculatedIndicatorEntryModel,
+    val active: Boolean,
+    val isPublishable: Boolean,
+    val refId: String?,
+    val notes: String?,
+    val primaryDataSource: String?,
     val baseline: BigDecimal? = null,
     val endOfProjectTarget: BigDecimal? = null,
     /**
@@ -256,6 +262,11 @@ data class ReportAutoCalculatedIndicatorModel(
           endOfProjectTarget = record[AUTO_CALCULATED_INDICATOR_TARGETS.END_TARGET],
           entry = ReportAutoCalculatedIndicatorEntryModel.of(record, systemValueField),
           indicator = indicator,
+          active = record[PROJECT_AUTO_CALCULATED_INDICATORS.ACTIVE]!!,
+          isPublishable = record[PROJECT_AUTO_CALCULATED_INDICATORS.IS_PUBLISHABLE]!!,
+          refId = record[PROJECT_AUTO_CALCULATED_INDICATORS.REF_ID],
+          notes = record[PROJECT_AUTO_CALCULATED_INDICATORS.NOTES],
+          primaryDataSource = record[PROJECT_AUTO_CALCULATED_INDICATORS.PRIMARY_DATA_SOURCE],
           previousYearCumulativeTotal = record[previousYearTotalField],
       )
     }
