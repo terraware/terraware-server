@@ -7,31 +7,41 @@ import com.terraformation.backend.tracking.db.PlantingSiteMapIncompleteException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.util.calculateAreaHectares
+import jakarta.inject.Named
 import java.math.BigDecimal
 import org.locationtech.jts.geom.MultiPolygon
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.support.TransactionTemplate
 
 data class PlantingSiteMapFeature(
     val geometry: MultiPolygon,
     val properties: Map<String, Any>,
 ) {
-  companion object {
-    fun named(geometry: MultiPolygon, name: String, areaHa: BigDecimal) =
-        PlantingSiteMapFeature(geometry, mapOf("name" to name, "area_ha" to areaHa))
-  }
+  constructor(
+      geometry: MultiPolygon,
+      name: String,
+      areaHa: BigDecimal,
+  ) : this(geometry, mapOf("name" to name, "area_ha" to areaHa))
 }
 
 data class PlantingSiteMapLayer(val name: String, val features: List<PlantingSiteMapFeature>)
 
-@Service
-class PlantingSiteMapExporter(private val plantingSiteStore: PlantingSiteStore) {
-  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+@Named
+class PlantingSiteMapExportService(
+    private val plantingSiteStore: PlantingSiteStore,
+    transactionManager: PlatformTransactionManager,
+) {
+  private val readTransaction =
+      TransactionTemplate(transactionManager).apply {
+        isReadOnly = true
+        isolationLevel = TransactionDefinition.ISOLATION_REPEATABLE_READ
+      }
+
   fun fetchLayers(
       siteId: PlantingSiteId,
       historyId: PlantingSiteHistoryId,
-  ): List<PlantingSiteMapLayer> {
+  ): List<PlantingSiteMapLayer> = readTransaction.execute {
     val history =
         plantingSiteStore.fetchSiteHistoryById(siteId, historyId, PlantingSiteDepth.Substratum)
     if (history.boundary.isEmpty) {
@@ -46,41 +56,41 @@ class PlantingSiteMapExporter(private val plantingSiteStore: PlantingSiteStore) 
             )
     val site = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Site)
 
-    return layers(
-        boundary = PlantingSiteMapFeature.named(history.boundary, site.name, areaHa),
+    layers(
+        boundary = PlantingSiteMapFeature(history.boundary, site.name, areaHa),
         exclusion = history.exclusion,
-        strata =
-            history.strata.map { PlantingSiteMapFeature.named(it.boundary, it.name, it.areaHa) },
+        strata = history.strata.map { PlantingSiteMapFeature(it.boundary, it.name, it.areaHa) },
         substrata =
             history.strata.flatMap { stratum ->
               stratum.substrata.map {
-                PlantingSiteMapFeature.named(it.boundary, it.name, it.areaHa)
+                PlantingSiteMapFeature(it.boundary, it.name, it.areaHa)
               }
             },
     )
   }
 
-  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-  fun fetchCurrentLayers(siteId: PlantingSiteId): List<PlantingSiteMapLayer> {
-    val site = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Substratum)
-    val boundary =
-        site.boundary?.takeUnless { it.isEmpty }
-            ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no boundary")
-    val areaHa =
-        site.areaHa ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no area")
+  fun fetchCurrentLayers(siteId: PlantingSiteId): List<PlantingSiteMapLayer> =
+      readTransaction.execute {
+        val site = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Substratum)
+        val boundary =
+            site.boundary?.takeUnless { it.isEmpty }
+                ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no boundary")
+        val areaHa =
+            site.areaHa
+                ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no area")
 
-    return layers(
-        boundary = PlantingSiteMapFeature.named(boundary, site.name, areaHa),
-        exclusion = site.exclusion,
-        strata = site.strata.map { PlantingSiteMapFeature.named(it.boundary, it.name, it.areaHa) },
-        substrata =
-            site.strata.flatMap { stratum ->
-              stratum.substrata.map {
-                PlantingSiteMapFeature.named(it.boundary, it.name, it.areaHa)
-              }
-            },
-    )
-  }
+        layers(
+            boundary = PlantingSiteMapFeature(boundary, site.name, areaHa),
+            exclusion = site.exclusion,
+            strata = site.strata.map { PlantingSiteMapFeature(it.boundary, it.name, it.areaHa) },
+            substrata =
+                site.strata.flatMap { stratum ->
+                  stratum.substrata.map {
+                    PlantingSiteMapFeature(it.boundary, it.name, it.areaHa)
+                  }
+                },
+        )
+      }
 
   private fun layers(
       boundary: PlantingSiteMapFeature,

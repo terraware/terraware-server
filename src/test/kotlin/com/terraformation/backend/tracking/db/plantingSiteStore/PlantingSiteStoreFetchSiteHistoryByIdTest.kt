@@ -15,10 +15,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
-import com.terraformation.backend.tracking.PlantingSiteMapExporter
-import com.terraformation.backend.tracking.PlantingSiteMapFeature
-import com.terraformation.backend.tracking.PlantingSiteMapLayer
-import com.terraformation.backend.tracking.db.PlantingSiteHistoryIncompleteException
 import com.terraformation.backend.tracking.db.PlantingSiteHistoryNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -60,7 +56,6 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         substrataDao,
     )
   }
-  private val exporter by lazy { PlantingSiteMapExporter(store) }
 
   @BeforeEach
   fun setUp() {
@@ -289,52 +284,6 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
   }
 
   @Test
-  fun `rejects a map download with a missing boundary or area`() {
-    val siteId = insertPlantingSite(areaHa = BigDecimal.TEN, boundary = multiPolygon(100))
-    val missingSiteAreaId = insertPlantingSiteHistory(areaHa = null)
-    val missingBoundaryId =
-        insertPlantingSiteHistory(boundary = multiPolygon(100).factory.createMultiPolygon())
-
-    listOf(missingSiteAreaId, missingBoundaryId).forEach { historyId ->
-      assertThrows<PlantingSiteHistoryIncompleteException> {
-        exporter.fetchLayers(siteId, historyId)
-      }
-    }
-  }
-
-  @Test
-  fun `exports the live simple map without depending on history`() {
-    val boundary = multiPolygon(100)
-    val siteId =
-        insertPlantingSite(
-            areaHa = BigDecimal.TEN,
-            boundary = boundary,
-            insertHistory = false,
-            name = "Current name",
-        )
-    val expected =
-        listOf(
-            PlantingSiteMapLayer(
-                "site-boundary",
-                listOf(
-                    PlantingSiteMapFeature(
-                        boundary,
-                        mapOf("name" to "Current name", "area_ha" to BigDecimal.TEN),
-                    )
-                ),
-            ),
-            PlantingSiteMapLayer("strata", emptyList()),
-            PlantingSiteMapLayer("substrata", emptyList()),
-        )
-
-    assertEquals(expected, exporter.fetchCurrentLayers(siteId), "Live export without history")
-
-    insertPlantingSiteHistory(boundary = multiPolygon(50))
-
-    assertEquals(expected, exporter.fetchCurrentLayers(siteId), "Live export with an older map")
-  }
-
-  @Test
   fun `throws exception if history ID does not exist`() {
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1), name = "Site 1")
     assertThrows<PlantingSiteHistoryNotFoundException> {
@@ -363,7 +312,6 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
     assertThrows<PlantingSiteNotFoundException> {
       store.fetchSiteHistoryById(plantingSiteId, historyId, PlantingSiteDepth.Site)
     }
-    assertThrows<PlantingSiteNotFoundException> { exporter.fetchCurrentLayers(plantingSiteId) }
   }
 
   @Test
