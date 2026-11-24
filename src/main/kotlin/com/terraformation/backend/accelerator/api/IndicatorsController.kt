@@ -20,6 +20,23 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/indicators")
 @RestController
 class IndicatorsController(private val indicatorStore: ReportIndicatorStore) {
+  @ApiResponse200
+  @GetMapping("/common")
+  @Operation(summary = "List shared common indicator definitions.")
+  fun listCommonDefinitions(): ListCommonIndicatorDefinitionsResponsePayload =
+      ListCommonIndicatorDefinitionsResponsePayload(
+          indicatorStore.fetchAllCommonIndicators().map { CommonIndicatorDefinitionPayload(it) }
+      )
+
+  @ApiResponse200
+  @PostMapping("/common")
+  @Operation(summary = "Create a shared common indicator definition.")
+  fun createCommonDefinition(
+      @RequestBody @Valid payload: CreateCommonIndicatorDefinitionRequestPayload
+  ): CreateCommonIndicatorDefinitionResponsePayload =
+      CreateCommonIndicatorDefinitionResponsePayload(
+          indicatorStore.createCommonIndicator(payload.indicator.toModel())
+      )
 
   @ApiResponse200
   @GetMapping("/projects/{projectId}/project")
