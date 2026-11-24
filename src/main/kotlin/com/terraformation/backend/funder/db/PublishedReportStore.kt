@@ -15,6 +15,8 @@ import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.asNonNullable
@@ -152,6 +154,7 @@ class PublishedReportStore(
       publishedIndicatorIdField: TableField<*, ID?>,
       targetTableIndicatorIdField: TableField<*, ID?>,
       baselineTableIndicatorIdField: TableField<*, ID?>,
+      projectIndicatorIdField: TableField<*, ID?> = indicatorTableIdField,
   ): Field<List<PublishedReportIndicatorModel<ID>>> {
     val publishedIndicatorTable = publishedIndicatorIdField.table!!
     val reportIdField =
@@ -207,7 +210,18 @@ class PublishedReportStore(
     val indicatorDescriptionField = indicatorTable.field("description", String::class.java)!!
     val indicatorNameField = indicatorTable.field("name", String::class.java)!!
     val indicatorPrecisionField = indicatorTable.field("precision", Int::class.java)!!
-    val indicatorReferenceField = indicatorTable.field("ref_id", String::class.java)!!
+    val projectIndicatorTable = projectIndicatorIdField.table!!
+    val projectIdField =
+        projectIndicatorTable.field("project_id", PUBLISHED_REPORTS.PROJECT_ID.dataType)!!
+    val indicatorReferenceField = projectIndicatorTable.field("ref_id", String::class.java)!!
+    val indicators =
+        if (projectIndicatorTable == indicatorTable) {
+          indicatorTable
+        } else {
+          indicatorTable
+              .join(projectIndicatorTable)
+              .on(projectIndicatorIdField.eq(indicatorTableIdField))
+        }
     val indicatorTypeField =
         indicatorTable.field(
             "level_id",
@@ -314,7 +328,7 @@ class PublishedReportStore(
                     sumAtPreviousYearEnd,
                     currentYearProgressField,
                 )
-                .from(indicatorTable)
+                .from(indicators)
                 .leftJoin(publishedIndicatorTable)
                 .on(
                     publishedIndicatorIdField
@@ -335,6 +349,7 @@ class PublishedReportStore(
                         .and(baselineProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
                 )
                 .where(publishedIndicatorIdField.isNotNull)
+                .and(projectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
                 .orderBy(indicatorReferenceField.asc().nullsLast(), indicatorTableIdField)
         )
         .convertFrom { result ->
@@ -393,6 +408,7 @@ class PublishedReportStore(
           PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           PUBLISHED_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
           PUBLISHED_COMMON_INDICATOR_BASELINES.COMMON_INDICATOR_ID,
+          PROJECT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
       )
 
   private val autoCalculatedIndicatorsMultiset =
@@ -401,5 +417,6 @@ class PublishedReportStore(
           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_BASELINES.AUTO_CALCULATED_INDICATOR_ID,
+          PROJECT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
       )
 }
