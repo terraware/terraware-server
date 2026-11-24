@@ -847,6 +847,10 @@ COMMENT ON TABLE accelerator.project_accelerator_details IS 'Details about proje
 COMMENT ON COLUMN accelerator.project_accelerator_details.file_naming IS 'Identifier that is included in generated filenames. This is often, but not necessarily, the same as the project name.';
 COMMENT ON COLUMN accelerator.project_accelerator_details.logframe_url IS 'Link to the project logical framework, monitoring and evaluation plan, and operational work plan.';
 
+COMMENT ON TABLE accelerator.project_auto_calculated_indicators IS 'Per-project settings for auto-calculated indicators.';
+
+COMMENT ON TABLE accelerator.project_common_indicators IS 'Per-project settings for common indicators.';
+
 COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for projects including submission status and due dates.';
 
 COMMENT ON TABLE accelerator.project_indicator_targets IS 'Project-level baseline and end-of-project target values for project-specific indicators.';

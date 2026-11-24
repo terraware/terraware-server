@@ -627,6 +627,15 @@ SET name = excluded.name,
     unit = excluded.unit,
     precision = excluded.precision;
 
+-- If new auto-calculated indicators are added above, we want them to be added to
+-- existing projects automatically.
+INSERT INTO accelerator.project_auto_calculated_indicators (project_id, auto_calculated_indicator_id, ref_id)
+SELECT projects.id, indicators.id, indicators.ref_id
+FROM projects
+         CROSS JOIN accelerator.auto_calculated_indicators indicators
+WHERE EXISTS (SELECT 1 FROM accelerator.project_report_configs configs WHERE configs.project_id = projects.id)
+ON CONFLICT DO NOTHING;
+
 INSERT INTO seed_fund_report_statuses (id, name)
 VALUES (1, 'New'),
        (2, 'In Progress'),

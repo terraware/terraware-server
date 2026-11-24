@@ -67,6 +67,8 @@ import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectAutoCalculatedIndicatorsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectCommonIndicatorsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectIndicatorTargetsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectIndicatorsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectModulesDao
@@ -107,6 +109,8 @@ import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAutoCalculatedIndicatorsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectCommonIndicatorsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectIndicatorTargetsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectIndicatorsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectModulesRow
@@ -825,6 +829,8 @@ abstract class DatabaseBackedTest {
   protected val plantingSiteSpeciesTargetsDao: PlantingSiteSpeciesTargetsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
+  protected val projectCommonIndicatorsDao: ProjectCommonIndicatorsDao by lazyDao()
+  protected val projectAutoCalculatedIndicatorsDao: ProjectAutoCalculatedIndicatorsDao by lazyDao()
   protected val projectIndicatorsDao: ProjectIndicatorsDao by lazyDao()
   protected val projectIndicatorTargetsDao: ProjectIndicatorTargetsDao by lazyDao()
   protected val projectInternalUsersDao: ProjectInternalUsersDao by lazyDao()
@@ -1268,6 +1274,50 @@ abstract class DatabaseBackedTest {
   ) {
     projectLandUseModelTypesDao.insert(
         ProjectLandUseModelTypesRow(landUseModelTypeId = landUseModelType, projectId = projectId)
+    )
+  }
+
+  protected fun insertProjectCommonIndicator(
+      projectId: ProjectId = inserted.projectId,
+      commonIndicatorId: CommonIndicatorId = inserted.commonIndicatorId,
+      refId: String? = null,
+      active: Boolean = true,
+      isPublishable: Boolean = false,
+      notes: String? = null,
+      primaryDataSource: String? = null,
+  ) {
+    projectCommonIndicatorsDao.insert(
+        ProjectCommonIndicatorsRow(
+            projectId = projectId,
+            commonIndicatorId = commonIndicatorId,
+            refId = refId,
+            active = active,
+            isPublishable = isPublishable,
+            notes = notes,
+            primaryDataSource = primaryDataSource,
+        )
+    )
+  }
+
+  protected fun insertProjectAutoCalculatedIndicator(
+      projectId: ProjectId = inserted.projectId,
+      autoCalculatedIndicatorId: AutoCalculatedIndicator = AutoCalculatedIndicator.SeedsCollected,
+      refId: String? = null,
+      active: Boolean = true,
+      isPublishable: Boolean = false,
+      notes: String? = null,
+      primaryDataSource: String? = null,
+  ) {
+    projectAutoCalculatedIndicatorsDao.insert(
+        ProjectAutoCalculatedIndicatorsRow(
+            projectId = projectId,
+            autoCalculatedIndicatorId = autoCalculatedIndicatorId,
+            refId = refId,
+            active = active,
+            isPublishable = isPublishable,
+            notes = notes,
+            primaryDataSource = primaryDataSource,
+        )
     )
   }
 
