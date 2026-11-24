@@ -1,3 +1,6 @@
+680becb6 SW-9354 Clear pending recommendations when Monitoring settings change (#5507)
+255f41b5 SW-9354 Accept current plot count recommendations (#5499)
+ff860ffc SW-9354 Dismiss current plot count recommendations (#5498)
 b6f3830f Search report indicators using project settings (#5494)
 9781df8a Expose project auto-calculated indicator settings (#5487)
 a2967475 Update common indicator settings per project (#5491)
