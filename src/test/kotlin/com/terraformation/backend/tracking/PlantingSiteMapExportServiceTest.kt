@@ -22,13 +22,12 @@ internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
     val stratum = multiPolygon(0.4)
     val substratum = multiPolygon(0.3)
     val exclusion = multiPolygon(0.1)
-    val siteId =
-        insertPlantingSite(
-            areaHa = BigDecimal(100),
-            boundary = multiPolygon(1),
-            insertHistory = false,
-            name = "Current site name",
-        )
+    insertPlantingSite(
+        areaHa = BigDecimal(100),
+        boundary = multiPolygon(1),
+        insertHistory = false,
+        name = "Current site name",
+    )
     insertStratum(insertHistory = false, name = "Live stratum")
     insertSubstratum(insertHistory = false, name = "Live substratum")
 
@@ -60,7 +59,11 @@ internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
             namedLayer("substrata", substratum, "Saved substratum", 30),
             exclusionLayer(exclusion),
         )
-    assertEquals(expected, service.fetchLayers(siteId, historyId), "Unsimplified snapshot layers")
+    assertEquals(
+        expected,
+        service.fetchLayers(inserted.plantingSiteId, historyId),
+        "Unsimplified snapshot layers",
+    )
   }
 
   @Test
@@ -69,14 +72,13 @@ internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
     val stratum = multiPolygon(0.8)
     val substratum = multiPolygon(0.6)
     val exclusion = multiPolygon(0.2)
-    val siteId =
-        insertPlantingSite(
-            areaHa = BigDecimal(100),
-            boundary = boundary,
-            exclusion = exclusion,
-            insertHistory = false,
-            name = "Current site",
-        )
+    insertPlantingSite(
+        areaHa = BigDecimal(100),
+        boundary = boundary,
+        exclusion = exclusion,
+        insertHistory = false,
+        name = "Current site",
+    )
     insertStratum(
         areaHa = BigDecimal(80),
         boundary = stratum,
@@ -101,33 +103,41 @@ internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
             namedLayer("substrata", substratum, "Current substratum", 60),
             exclusionLayer(exclusion),
         )
-    assertEquals(expected, service.fetchCurrentLayers(siteId), "Live layers without history")
+    assertEquals(
+        expected,
+        service.fetchCurrentLayers(inserted.plantingSiteId),
+        "Live layers without history",
+    )
 
     insertPlantingSiteHistory(boundary = savedBoundary)
     insertStratumHistory()
     insertSubstratumHistory()
 
-    assertEquals(expected, service.fetchCurrentLayers(siteId), "Live layers with history")
+    assertEquals(
+        expected,
+        service.fetchCurrentLayers(inserted.plantingSiteId),
+        "Live layers with history",
+    )
   }
 
   @Test
   fun `rejects a snapshot with a missing boundary or area`() {
     val boundary = multiPolygon(1)
-    val siteId = insertPlantingSite(areaHa = BigDecimal.TEN, boundary = boundary)
+    insertPlantingSite(areaHa = BigDecimal.TEN, boundary = boundary)
     val missingSiteAreaId = insertPlantingSiteHistory(areaHa = null)
     val missingBoundaryId =
         insertPlantingSiteHistory(boundary = boundary.factory.createMultiPolygon())
 
     listOf(missingSiteAreaId, missingBoundaryId).forEach { historyId ->
       assertThrows<PlantingSiteHistoryIncompleteException> {
-        service.fetchLayers(siteId, historyId)
+        service.fetchLayers(inserted.plantingSiteId, historyId)
       }
     }
   }
 
   @Test
   fun `rejects a current map with a missing boundary or area`() {
-    val missingBoundaryId = insertPlantingSite(x = null)
+    val missingBoundaryId = insertPlantingSite(areaHa = BigDecimal.TEN, x = null)
     val missingAreaId = insertPlantingSite(areaHa = null)
 
     listOf(missingBoundaryId, missingAreaId).forEach { siteId ->
@@ -137,10 +147,12 @@ internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
 
   @Test
   fun `rejects a current map without permission to read the site`() {
-    val siteId = insertPlantingSite(areaHa = BigDecimal.TEN, boundary = multiPolygon(1))
-    every { user.canReadPlantingSite(siteId) } returns false
+    insertPlantingSite(areaHa = BigDecimal.TEN, boundary = multiPolygon(1))
+    every { user.canReadPlantingSite(inserted.plantingSiteId) } returns false
 
-    assertThrows<PlantingSiteNotFoundException> { service.fetchCurrentLayers(siteId) }
+    assertThrows<PlantingSiteNotFoundException> {
+      service.fetchCurrentLayers(inserted.plantingSiteId)
+    }
   }
 
   private fun namedLayer(layer: String, boundary: MultiPolygon, name: String, areaHa: Int) =

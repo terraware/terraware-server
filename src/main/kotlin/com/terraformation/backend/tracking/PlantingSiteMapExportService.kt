@@ -14,19 +14,6 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.support.TransactionTemplate
 
-data class PlantingSiteMapFeature(
-    val geometry: MultiPolygon,
-    val properties: Map<String, Any>,
-) {
-  constructor(
-      geometry: MultiPolygon,
-      name: String,
-      areaHa: BigDecimal,
-  ) : this(geometry, mapOf("name" to name, "area_ha" to areaHa))
-}
-
-data class PlantingSiteMapLayer(val name: String, val features: List<PlantingSiteMapFeature>)
-
 @Named
 class PlantingSiteMapExportService(
     private val plantingSiteStore: PlantingSiteStore,
@@ -110,3 +97,16 @@ class PlantingSiteMapExportService(
         }
   }
 }
+
+data class PlantingSiteMapFeature(
+    val geometry: MultiPolygon,
+    val properties: Map<String, Any>,
+) {
+  constructor(
+      geometry: MultiPolygon,
+      name: String,
+      areaHa: BigDecimal,
+  ) : this(geometry, mapOf("name" to name, "area_ha" to areaHa))
+}
+
+data class PlantingSiteMapLayer(val name: String, val features: List<PlantingSiteMapFeature>)
