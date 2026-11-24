@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
@@ -34,78 +35,94 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
   @Nested
   inner class UpdateStratum {
-    @Test
-    fun `records only changed settings including mode and level without requiring count changes`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["Custom", "Direct", "Unchanged", "High"])
+    fun `preserves mode-only edits without recording history`(edit: String) {
+      val type = ObservationType.Monitoring
       insertPlantingSite()
       insertStratum()
       val initial =
           store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata.single()
-      val counts = initial.plantPlotCounts
-      val changes =
-          listOf(
-              counts.copy(mode = PlotSelectionMode.Custom, plotPrecisionLevel = null),
-              counts.copy(mode = PlotSelectionMode.Direct, plotPrecisionLevel = null),
-              counts,
-              counts.copy(plotPrecisionLevel = PlotPrecisionLevel.High),
-              counts.copy(
-                  plotPrecisionLevel = PlotPrecisionLevel.High,
-                  errorMargin = BigDecimal(21),
-                  studentsT = BigDecimal("1.96"),
-                  variance = BigDecimal(625),
-              ),
+      val counts = initial.plotCounts(type)
+      val submitted =
+          when (edit) {
+            "Custom" -> counts.copy(mode = PlotSelectionMode.Custom, plotPrecisionLevel = null)
+            "Direct" -> counts.copy(mode = PlotSelectionMode.Direct, plotPrecisionLevel = null)
+            "Unchanged" -> counts
+            "High" -> counts.copy(plotPrecisionLevel = PlotPrecisionLevel.High)
+            else -> error("Unknown mode-only edit: $edit")
+          }
+      val settings = dslContext.fetch(STRATUM_PLOT_SELECTION_PARAMETERS)
+
+      store.updateStratum(inserted.stratumId, mapOf(type to submitted)) { it }
+
+      eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>(
+          "Mode-only edits do not record settings history"
+      )
+      assertTableEquals(settings, "Mode-only edits preserve the stored settings")
+    }
+
+    @Test
+    fun `records changed statistical settings but not equivalent decimal resubmissions`() {
+      val type = ObservationType.Monitoring
+      insertPlantingSite()
+      insertStratum()
+      val initial =
+          store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata.single()
+      val counts = initial.plotCounts(type)
+      val changed =
+          counts.copy(
+              mode = PlotSelectionMode.Custom,
+              plotPrecisionLevel = null,
+              errorMargin = BigDecimal(21),
+              studentsT = BigDecimal("1.96"),
+              variance = BigDecimal(625),
           )
-      val expectedDeltas =
-          listOf(
-              Values(mode = counts.mode, plotPrecisionLevel = counts.plotPrecisionLevel) to
-                  Values(mode = PlotSelectionMode.Custom),
-              Values(mode = PlotSelectionMode.Custom) to Values(mode = PlotSelectionMode.Direct),
-              Values(mode = PlotSelectionMode.Direct) to
-                  Values(mode = counts.mode, plotPrecisionLevel = counts.plotPrecisionLevel),
-              Values(plotPrecisionLevel = counts.plotPrecisionLevel) to
-                  Values(plotPrecisionLevel = PlotPrecisionLevel.High),
-              Values(
-                  errorMargin = counts.errorMargin,
-                  studentsT = counts.studentsT,
-                  variance = counts.variance.setScale(3),
-              ) to
+
+      store.updateStratum(inserted.stratumId, mapOf(type to changed)) { it }
+
+      eventPublisher.assertEventPublished(
+          StratumPlotSelectionSettingsChangedEvent(
+              organizationId = organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              stratumId = inserted.stratumId,
+              stratumName = initial.name,
+              source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+              observationType = type,
+              changedFrom =
                   Values(
+                      mode = counts.mode,
+                      plotPrecisionLevel = counts.plotPrecisionLevel,
+                      errorMargin = counts.errorMargin,
+                      studentsT = counts.studentsT,
+                      variance = counts.variance,
+                  ),
+              changedTo =
+                  Values(
+                      mode = PlotSelectionMode.Custom,
                       errorMargin = BigDecimal(21),
                       studentsT = BigDecimal("1.96"),
                       variance = BigDecimal(625),
                   ),
-          )
-      for ((changed, delta) in changes.zip(expectedDeltas)) {
-        eventPublisher.clear()
-        store.updateStratum(inserted.stratumId, mapOf(ObservationType.Monitoring to changed)) { it }
-        eventPublisher.assertEventPublished(
-            StratumPlotSelectionSettingsChangedEvent(
-                organizationId = organizationId,
-                plantingSiteId = inserted.plantingSiteId,
-                stratumId = inserted.stratumId,
-                stratumName = initial.name,
-                source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
-                observationType = ObservationType.Monitoring,
-                changedFrom = delta.first,
-                changedTo = delta.second,
-                numPermanentPlots = changed.numPermanentPlots,
-                numTemporaryPlots = changed.numTemporaryPlots,
-            )
-        )
-        val persisted =
-            store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata.single()
-        assertEquals(initial.copy(plantPlotCounts = changed), persisted)
-        eventPublisher.clear()
-        store.updateStratum(
-            inserted.stratumId,
-            mapOf(
-                ObservationType.Monitoring to changed.copy(variance = changed.variance.setScale(3))
-            ),
-        ) {
-          it
-        }
-        store.updateStratum(inserted.stratumId) { it }
-        eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>()
+              numPermanentPlots = changed.numPermanentPlots,
+              numTemporaryPlots = changed.numTemporaryPlots,
+          ),
+          "Changed statistical fields record the settings delta",
+      )
+      val persisted =
+          store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum).strata.single()
+      assertEquals(changed, persisted.plotCounts(type), "Changed statistical settings")
+      eventPublisher.clear()
+      store.updateStratum(
+          inserted.stratumId,
+          mapOf(type to changed.copy(variance = changed.variance.setScale(3))),
+      ) {
+        it
       }
+      store.updateStratum(inserted.stratumId) { it }
+      eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>(
+          "Equivalent decimal values do not record settings history"
+      )
     }
 
     @ParameterizedTest
@@ -122,7 +139,11 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
             inserted.stratumId,
             mapOf(
                 ObservationType.Monitoring to
-                    StratumPlotCounts(mode = mode, plotPrecisionLevel = level)
+                    StratumPlotCounts(
+                        mode = mode,
+                        plotPrecisionLevel = level,
+                        variance = BigDecimal("1234"),
+                    )
             ),
         ) {
           it

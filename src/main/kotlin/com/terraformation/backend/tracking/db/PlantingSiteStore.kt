@@ -1285,6 +1285,7 @@ class PlantingSiteStore(
         val previous = ObservationType.entries.associateWith { stratum.plotCounts(it) }
         val edited = previous + parameters
         writePlotParameters(stratumId, edited)
+        clearPlotCountRecommendationOnSettingsChange(stratumId, previous, edited, source)
         publishPlotSelectionSettingsChanged(
             source,
             stratumId,
@@ -1388,15 +1389,7 @@ class PlantingSiteStore(
     ) {
       throw StratumNotFoundException(stratumId)
     }
-    val snapshot =
-        with(OBSERVATION_STRATUM_VARIABILITY) {
-          dslContext
-              .selectFrom(this)
-              .where(stratumHistories.STRATUM_ID.eq(stratumId))
-              .orderBy(observations.COMPLETED_TIME.desc(), OBSERVATION_ID.desc())
-              .limit(1)
-              .fetchOne()
-        }
+    val snapshot = fetchLatestStratumVariability(stratumId)
     if (
         snapshot == null ||
             snapshot.observationId != observationId ||
@@ -1406,6 +1399,42 @@ class PlantingSiteStore(
       throw PlotCountRecommendationNotAvailableException(stratumId, observationId)
     }
     return snapshot
+  }
+
+  private fun fetchLatestStratumVariability(
+      stratumId: StratumId
+  ): ObservationStratumVariabilityRecord? =
+      with(OBSERVATION_STRATUM_VARIABILITY) {
+        dslContext
+            .selectFrom(this)
+            .where(stratumHistories.STRATUM_ID.eq(stratumId))
+            .orderBy(observations.COMPLETED_TIME.desc(), OBSERVATION_ID.desc())
+            .limit(1)
+            .fetchOne()
+      }
+
+  private fun clearPlotCountRecommendationOnSettingsChange(
+      stratumId: StratumId,
+      previous: Map<ObservationType, StratumPlotCounts>,
+      edited: Map<ObservationType, StratumPlotCounts>,
+      source: StratumPlotSelectionSettingsChangedEventSource,
+  ) {
+    if (
+        source != StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation &&
+            edited[ObservationType.Monitoring] != previous[ObservationType.Monitoring]
+    ) {
+      fetchLatestStratumVariability(stratumId)?.let { variability ->
+        if (
+            variability.recommendedPlotCount != null &&
+                variability.recommendationResolutionId == null
+        ) {
+          resolvePlotCountRecommendation(
+              variability,
+              PlotCountRecommendationResolution.SettingsChanged,
+          )
+        }
+      }
+    }
   }
 
   private fun resolvePlotCountRecommendation(
@@ -1447,7 +1476,16 @@ class PlantingSiteStore(
               .from(STRATA)
               .where(STRATA.ID.eq(stratumId))
               .fetchSingle(plotParametersField)!!
-      val editedPlotParameters = initialPlotParameters + plotParameters
+      val editedPlotParameters =
+          initialPlotParameters +
+              plotParameters.mapValues { (type, submitted) ->
+                val current = initialPlotParameters.getValue(type)
+                if (submitted.hasSameCountSettings(current)) {
+                  current
+                } else {
+                  submitted
+                }
+              }
 
       with(STRATA) {
         dslContext
@@ -1462,6 +1500,12 @@ class PlantingSiteStore(
       }
 
       writePlotParameters(stratumId, editedPlotParameters)
+      clearPlotCountRecommendationOnSettingsChange(
+          stratumId,
+          initialPlotParameters,
+          editedPlotParameters,
+          StratumPlotSelectionSettingsChangedEventSource.Terraformation,
+      )
       publishPlotSelectionSettingsChanged(
           source = StratumPlotSelectionSettingsChangedEventSource.Terraformation,
           stratumId,
@@ -1690,11 +1734,7 @@ class PlantingSiteStore(
       observationId: ObservationId? = null,
       measuredVariability: BigDecimal? = null,
   ) {
-    val changed = settings.filter { (type, counts) ->
-      counts != previous[type] ||
-          (source == StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation &&
-              type == ObservationType.Monitoring)
-    }
+    val changed = settings.filter { (type, counts) -> counts != previous[type] }
     if (changed.isEmpty()) {
       return
     }

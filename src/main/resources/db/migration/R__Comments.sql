@@ -557,10 +557,10 @@ COMMENT ON COLUMN tracking.observation_stratum_variability.estimated_plot_count_
 COMMENT ON COLUMN tracking.observation_stratum_variability.measured_variability IS 'Sample standard deviation of live plant density divided by its mean, as a percentage. Null for fewer than two measured plots or mean density zero.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.plausible_variability_high IS 'Upper endpoint of the 90% interval for true variability, as a percentage.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.plausible_variability_low IS 'Lower endpoint of the 90% interval for true variability, as a percentage.';
-COMMENT ON COLUMN tracking.observation_stratum_variability.recommendation_resolution_id IS 'Accepted or dismissed resolution of this snapshot recommendation; null while unresolved.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.recommendation_resolution_id IS 'Resolution of this snapshot recommendation: accepted, dismissed, or cleared by changed settings; null while unresolved.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.recommended_plot_count IS 'Recommended deployable plot count, or null if there is no recommendation.';
-COMMENT ON COLUMN tracking.observation_stratum_variability.resolved_by IS 'User who accepted or dismissed the recommendation.';
-COMMENT ON COLUMN tracking.observation_stratum_variability.resolved_time IS 'Time the recommendation was accepted or dismissed.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.resolved_by IS 'User who accepted or dismissed the recommendation, or changed its Monitoring settings.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.resolved_time IS 'Time the recommendation was accepted, dismissed, or cleared by changed Monitoring settings.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.sampled_plot_count IS 'Number of completed assigned plots included in the measurement, including those with zero live plants.';
 
 COMMENT ON TABLE tracking.observation_substratum_results IS 'Observation results for a substratum.';

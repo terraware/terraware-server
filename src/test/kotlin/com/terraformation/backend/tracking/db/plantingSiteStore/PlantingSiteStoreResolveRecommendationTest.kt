@@ -212,6 +212,273 @@ internal class PlantingSiteStoreResolveRecommendationTest : BasePlantingSiteStor
     }
   }
 
+  @Test
+  fun `Monitoring user edits clear and hide the pending recommendation`() {
+    val expected = dslContext.fetchSingle(OBSERVATION_STRATUM_VARIABILITY)
+    clock.instant = Instant.ofEpochSecond(100)
+    expected.recommendationResolutionId = PlotCountRecommendationResolution.SettingsChanged
+    expected.resolvedBy = user.userId
+    expected.resolvedTime = clock.instant()
+
+    store.updatePlotSelectionSettings(
+        inserted.plantingSiteId,
+        PlotPrecisionLevel.Medium,
+        mapOf(
+            inserted.stratumId to
+                mapOf(ObservationType.Monitoring to { it.copy(variance = BigDecimal("2500")) })
+        ),
+        source = StratumPlotSelectionSettingsChangedEventSource.UserEdit,
+    )
+
+    assertTableEquals(expected, "Monitoring edits record SettingsChanged, the user and time")
+    val recommendation =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .latestObservationVariability!!
+            .recommendation
+    assertNull(recommendation, "SettingsChanged hides the recommendation")
+  }
+
+  @Test
+  fun `acceptance settings updates do not clear the recommendation`() {
+    val expected = dslContext.fetchSingle(OBSERVATION_STRATUM_VARIABILITY)
+    val initialRecommendation =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .latestObservationVariability!!
+            .recommendation
+
+    store.updatePlotSelectionSettings(
+        inserted.plantingSiteId,
+        PlotPrecisionLevel.Medium,
+        mapOf(
+            inserted.stratumId to
+                mapOf(ObservationType.Monitoring to { it.copy(variance = BigDecimal("2500")) })
+        ),
+        source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
+    )
+
+    assertTableEquals(expected, "Settings edit preserves the pending recommendation")
+    val recommendation =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .latestObservationVariability!!
+            .recommendation
+    assertEquals(initialRecommendation, recommendation, "Recommendation remains visible")
+  }
+
+  @Test
+  fun `unchanged Monitoring settings preserve the recommendation`() {
+    val expected = dslContext.fetchSingle(OBSERVATION_STRATUM_VARIABILITY)
+    val initialRecommendation =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .latestObservationVariability!!
+            .recommendation
+
+    store.updatePlotSelectionSettings(
+        inserted.plantingSiteId,
+        PlotPrecisionLevel.Medium,
+        mapOf(inserted.stratumId to mapOf(ObservationType.Monitoring to { it })),
+        source = StratumPlotSelectionSettingsChangedEventSource.UserEdit,
+    )
+
+    assertTableEquals(expected, "Settings edit preserves the pending recommendation")
+    val recommendation =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .latestObservationVariability!!
+            .recommendation
+    assertEquals(initialRecommendation, recommendation, "Recommendation remains visible")
+  }
+
+  @Test
+  fun `non-Monitoring settings edits preserve the recommendation`() {
+    val expected = dslContext.fetchSingle(OBSERVATION_STRATUM_VARIABILITY)
+    val initialRecommendation =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .latestObservationVariability!!
+            .recommendation
+
+    store.updatePlotSelectionSettings(
+        inserted.plantingSiteId,
+        PlotPrecisionLevel.Medium,
+        mapOf(
+            inserted.stratumId to
+                mapOf(
+                    ObservationType.BiomassMeasurements to
+                        {
+                          it.copy(variance = BigDecimal("2500"))
+                        }
+                )
+        ),
+        source = StratumPlotSelectionSettingsChangedEventSource.UserEdit,
+    )
+
+    assertTableEquals(expected, "Settings edit preserves the pending recommendation")
+    val recommendation =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .latestObservationVariability!!
+            .recommendation
+    assertEquals(initialRecommendation, recommendation, "Recommendation remains visible")
+  }
+
+  @Test
+  fun `admin rename preserves precision settings and count changes clear recommendations`() {
+    val expected = dslContext.fetchSingle(OBSERVATION_STRATUM_VARIABILITY)
+    val monitoring =
+        store
+            .fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
+            .strata
+            .single()
+            .plantPlotCounts
+
+    val settings = dslContext.fetch(STRATUM_PLOT_SELECTION_PARAMETERS)
+    val submitted = monitoring.copy(mode = PlotSelectionMode.Custom, plotPrecisionLevel = null)
+    store.updateStratum(inserted.stratumId, mapOf(ObservationType.Monitoring to submitted)) {
+      it.copy(name = "Renamed stratum")
+    }
+
+    assertTableEquals(settings, "Rename-only admin edit preserves mode and precision level")
+    assertEquals(
+        "Renamed stratum",
+        strataDao.fetchOneById(inserted.stratumId)!!.name,
+        "Stratum name",
+    )
+    assertTableEquals(
+        expected,
+        "Unchanged admin Monitoring settings preserve the recommendation",
+    )
+    clock.instant = Instant.ofEpochSecond(100)
+    expected.recommendationResolutionId = PlotCountRecommendationResolution.SettingsChanged
+    expected.resolvedBy = user.userId
+    expected.resolvedTime = clock.instant()
+
+    store.updateStratum(
+        inserted.stratumId,
+        mapOf(
+            ObservationType.Monitoring to
+                submitted.copy(numPermanentPlots = monitoring.numPermanentPlots + 1)
+        ),
+    ) {
+      it
+    }
+
+    assertTableEquals(
+        expected,
+        "Admin Monitoring edits record SettingsChanged, the user and time",
+    )
+    settings
+        .single { it.observationTypeId == ObservationType.Monitoring }
+        .apply {
+          plotSelectionModeId = PlotSelectionMode.Custom
+          plotPrecisionLevelId = null
+          numPermanentPlots = monitoring.numPermanentPlots + 1
+        }
+    assertTableEquals(settings, "Changed counts save the submitted Custom mode")
+  }
+
+  @Test
+  fun `settings edits clear only the latest pending recommendation`() {
+    insertObservation(completedTime = Instant.ofEpochSecond(20))
+    insertObservationStratumVariability(
+        sampledPlotCount = 5,
+        configuredPlotCountAtCompletion = 8,
+        recommendedPlotCount = 20L,
+    )
+    val expected = dslContext.fetch(OBSERVATION_STRATUM_VARIABILITY)
+    clock.instant = Instant.ofEpochSecond(100)
+    expected
+        .single { it.observationId == inserted.observationId }
+        .apply {
+          recommendationResolutionId = PlotCountRecommendationResolution.SettingsChanged
+          resolvedBy = user.userId
+          resolvedTime = clock.instant()
+        }
+
+    store.updatePlotSelectionSettings(
+        inserted.plantingSiteId,
+        PlotPrecisionLevel.Medium,
+        mapOf(
+            inserted.stratumId to
+                mapOf(ObservationType.Monitoring to { it.copy(variance = BigDecimal("2500")) })
+        ),
+    )
+
+    assertTableEquals(expected, "Only the latest pending recommendation is resolved")
+  }
+
+  @Test
+  fun `settings edits preserve an already resolved latest recommendation`() {
+    insertObservation(completedTime = Instant.ofEpochSecond(20))
+    insertObservationStratumVariability(
+        sampledPlotCount = 5,
+        configuredPlotCountAtCompletion = 8,
+        recommendedPlotCount = 20L,
+    )
+    store.dismissPlotCountRecommendation(
+        inserted.plantingSiteId,
+        inserted.stratumId,
+        inserted.observationId,
+    )
+    val expected = dslContext.fetch(OBSERVATION_STRATUM_VARIABILITY)
+
+    store.updatePlotSelectionSettings(
+        inserted.plantingSiteId,
+        PlotPrecisionLevel.Medium,
+        mapOf(
+            inserted.stratumId to
+                mapOf(ObservationType.Monitoring to { it.copy(variance = BigDecimal("2500")) })
+        ),
+    )
+
+    assertTableEquals(
+        expected,
+        "Resolved latest recommendation and historical snapshot remain unchanged",
+    )
+  }
+
+  @Test
+  fun `settings edits leave snapshots unchanged when the latest has no recommendation`() {
+    insertObservation(completedTime = Instant.ofEpochSecond(20))
+    insertObservationStratumVariability(
+        sampledPlotCount = 5,
+        configuredPlotCountAtCompletion = 8,
+        recommendedPlotCount = null,
+    )
+    val expected = dslContext.fetch(OBSERVATION_STRATUM_VARIABILITY)
+
+    store.updatePlotSelectionSettings(
+        inserted.plantingSiteId,
+        PlotPrecisionLevel.Medium,
+        mapOf(
+            inserted.stratumId to
+                mapOf(ObservationType.Monitoring to { it.copy(variance = BigDecimal("2500")) })
+        ),
+    )
+
+    assertTableEquals(
+        expected,
+        "Latest snapshot without a recommendation and historical snapshot remain unchanged",
+    )
+  }
+
   @ParameterizedTest
   @CsvSource(
       "PrecisionLevel, 40.1234, 80, 8, 20, 1.645, 10, 1609.88722756, 33, 11",
@@ -259,6 +526,7 @@ internal class PlantingSiteStoreResolveRecommendationTest : BasePlantingSiteStor
                         }
                 )
         ),
+        source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
     )
     val expectedSettings =
         dslContext.fetch(STRATUM_PLOT_SELECTION_PARAMETERS).onEach { parameters ->
@@ -334,7 +602,7 @@ internal class PlantingSiteStoreResolveRecommendationTest : BasePlantingSiteStor
   }
 
   @Test
-  fun `acceptance records history even when settings already match the recommendation`() {
+  fun `acceptance resolves without history when settings already match the recommendation`() {
     val site = store.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Stratum)
     store.updatePlotSelectionSettings(
         inserted.plantingSiteId,
@@ -354,6 +622,7 @@ internal class PlantingSiteStoreResolveRecommendationTest : BasePlantingSiteStor
                         }
                 )
         ),
+        source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
     )
     val settings = dslContext.fetch(STRATUM_PLOT_SELECTION_PARAMETERS)
     val expectedVariability =
@@ -378,13 +647,9 @@ internal class PlantingSiteStoreResolveRecommendationTest : BasePlantingSiteStor
         expectedVariability,
         "Matching settings still record the acceptance resolution, actor and time",
     )
-    eventPublisher.assertEventPublished("Matching settings still record acceptance history") { event
-      ->
-      event is StratumPlotSelectionSettingsChangedEvent &&
-          event.source == StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation &&
-          event.observationId == inserted.observationId &&
-          event.measuredVariability == BigDecimal("40.0")
-    }
+    eventPublisher.assertEventNotPublished<StratumPlotSelectionSettingsChangedEvent>(
+        "Matching settings do not record settings history"
+    )
   }
 
   @Test
@@ -402,6 +667,7 @@ internal class PlantingSiteStoreResolveRecommendationTest : BasePlantingSiteStor
                         }
                 )
         ),
+        source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
     )
     assertThrows<PlotCountRecommendationNotAvailableException> {
       store.acceptPlotCountRecommendation(
