@@ -474,7 +474,10 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `identifies all changed properties`() {
-      val commonIndicatorId = insertCommonIndicator(isPublishable = true)
+      val commonIndicatorId =
+          insertCommonIndicatorForProject(
+              projectId = projectId,
+          )
       val projectIndicatorId = insertProjectIndicator(isPublishable = true)
 
       // Published version: old values for all properties
@@ -584,15 +587,22 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       // A changed publishable indicator, so a comparison that bails out early or flags an
       // ignored indicator produces the wrong result here
-      insertCommonIndicator(isPublishable = true)
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
       insertPublishedReportCommonIndicator(value = BigDecimal(10))
       insertReportCommonIndicator(value = BigDecimal(11))
 
-      insertCommonIndicator(isPublishable = false)
+      insertCommonIndicatorForProject(
+          isPublishable = false,
+          projectId = projectId,
+      )
       insertReportCommonIndicator(value = BigDecimal(99))
       insertProjectIndicator(isPublishable = false)
       insertReportProjectIndicator(value = BigDecimal(99))
-      insertCommonIndicator(isPublishable = true)
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
       insertReportCommonIndicator(value = null)
       insertProjectIndicator(isPublishable = true)
       insertReportProjectIndicator(value = null)
@@ -684,7 +694,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `does not identify commonIndicators as changed when only projectsComments changed`() {
-      insertCommonIndicator(isPublishable = true)
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
       insertPublishedReport(
           highlights = "highlights",
           additionalComments = "additional comments",
@@ -710,7 +722,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `identifies indicators as changed when progressNotes changed`() {
-      insertCommonIndicator(isPublishable = true)
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
       insertProjectIndicator(isPublishable = true)
       insertPublishedReport(
           highlights = "highlights",
@@ -784,7 +798,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `identifies indicators as changed when supportingDocumentUrl changed`() {
-      insertCommonIndicator(isPublishable = true)
+      insertCommonIndicatorForProject(
+          projectId = projectId,
+      )
       insertProjectIndicator(isPublishable = true)
       insertPublishedReport(
           highlights = "highlights",
