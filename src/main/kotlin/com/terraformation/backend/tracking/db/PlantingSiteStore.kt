@@ -128,6 +128,7 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.TableField
+import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Geometry
@@ -199,13 +200,15 @@ class PlantingSiteStore(
   ): PlantingSiteHistoryModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return fetchSiteHistoriesByCondition(
-            PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)
-                .and(PLANTING_SITE_HISTORIES.ID.eq(plantingSiteHistoryId)),
-            depth,
-            simplified,
-        )
-        .firstOrNull() ?: throw PlantingSiteHistoryNotFoundException(plantingSiteHistoryId)
+    val condition =
+        PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)
+            .and(PLANTING_SITE_HISTORIES.ID.eq(plantingSiteHistoryId))
+    return try {
+      fetchSiteHistoriesByCondition(condition, depth, simplified).firstOrNull()
+          ?: throw PlantingSiteHistoryNotFoundException(plantingSiteHistoryId)
+    } catch (e: DataAccessException) {
+      throw (e.getCause(PlantingSiteHistoryIncompleteException::class.java) ?: e)
+    }
   }
 
   /**
@@ -2474,8 +2477,13 @@ class PlantingSiteStore(
         )
         .convertFrom { result ->
           result.map { record: Record ->
+            val areaHa =
+                record[SUBSTRATUM_HISTORIES.AREA_HA]
+                    ?: throw PlantingSiteHistoryIncompleteException(
+                        "Substratum history ${record[SUBSTRATUM_HISTORIES.ID]} has no area"
+                    )
             SubstratumHistoryModel(
-                record[SUBSTRATUM_HISTORIES.AREA_HA]!!,
+                areaHa,
                 record[boundaryField] as MultiPolygon,
                 record[SUBSTRATUM_HISTORIES.FULL_NAME]!!,
                 record[SUBSTRATUM_HISTORIES.ID]!!,
@@ -2656,8 +2664,13 @@ class PlantingSiteStore(
         )
         .convertFrom { result ->
           result.map { record: Record ->
+            val areaHa =
+                record[STRATUM_HISTORIES.AREA_HA]
+                    ?: throw PlantingSiteHistoryIncompleteException(
+                        "Stratum history ${record[STRATUM_HISTORIES.ID]} has no area"
+                    )
             StratumHistoryModel(
-                record[STRATUM_HISTORIES.AREA_HA]!!,
+                areaHa,
                 record[boundaryField] as MultiPolygon,
                 record[STRATUM_HISTORIES.ID]!!,
                 record[STRATUM_HISTORIES.NAME]!!,
