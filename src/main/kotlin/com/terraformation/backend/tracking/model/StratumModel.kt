@@ -148,15 +148,18 @@ data class StratumPlotCounts(
     }
   }
 
-  override fun equals(other: Any?) =
-      other is StratumPlotCounts &&
-          plotPrecisionLevel == other.plotPrecisionLevel &&
-          mode == other.mode &&
-          numPermanentPlots == other.numPermanentPlots &&
+  fun hasSameCountSettings(other: StratumPlotCounts) =
+      numPermanentPlots == other.numPermanentPlots &&
           numTemporaryPlots == other.numTemporaryPlots &&
           errorMargin.equalsIgnoreScale(other.errorMargin) &&
           studentsT.equalsIgnoreScale(other.studentsT) &&
           variance.equalsIgnoreScale(other.variance)
+
+  override fun equals(other: Any?) =
+      other is StratumPlotCounts &&
+          plotPrecisionLevel == other.plotPrecisionLevel &&
+          mode == other.mode &&
+          hasSameCountSettings(other)
 
   override fun hashCode() =
       Objects.hash(

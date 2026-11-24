@@ -526,7 +526,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.plot_count_recommendation_resolutions (id, name)
 VALUES (1, 'Accepted'),
-       (2, 'Dismissed')
+       (2, 'Dismissed'),
+       (3, 'Settings Changed')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.plot_precision_levels (id, name, target_margin_of_error)
