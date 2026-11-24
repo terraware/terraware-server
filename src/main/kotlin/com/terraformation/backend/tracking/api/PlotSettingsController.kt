@@ -4,8 +4,10 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
@@ -36,6 +38,19 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
+  @PostMapping("/{id}/plotSettings/recommendations/dismiss")
+  @Operation(summary = "Dismisses the current plot count recommendation for a stratum.")
+  @ApiResponse200
+  @ApiResponse404
+  @ApiResponse409
+  fun dismissPlotCountRecommendation(
+      @PathVariable id: PlantingSiteId,
+      @RequestBody payload: ResolvePlotCountRecommendationRequestPayload,
+  ): SuccessResponsePayload {
+    plantingSiteStore.dismissPlotCountRecommendation(id, payload.stratumId, payload.observationId)
+    return SimpleSuccessResponsePayload()
+  }
+
   @PostMapping("/{id}/plotSettings/preview")
   @Operation(summary = "Previews plot settings and precision levels without saving changes.")
   @ApiResponse200
@@ -78,6 +93,12 @@ class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
     return getPlotSettings(id)
   }
 }
+
+data class ResolvePlotCountRecommendationRequestPayload(
+    val stratumId: StratumId,
+    @Schema(description = "Observation that recorded the stratum's latest variability snapshot.")
+    val observationId: ObservationId,
+)
 
 data class UpdatePlotSettingsRequestPayload(
     val defaultPlotPrecisionLevel: PlotPrecisionLevel,

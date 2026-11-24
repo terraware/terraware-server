@@ -203,6 +203,14 @@ class SpeciesInWrongOrganizationException(val speciesId: SpeciesId) :
 class StratumNotFoundException(val stratumId: StratumId) :
     EntityNotFoundException("Stratum $stratumId not found")
 
+class PlotCountRecommendationNotAvailableException(
+    val stratumId: StratumId,
+    val observationId: ObservationId,
+) :
+    MismatchedStateException(
+        "No unresolved current plot count recommendation for stratum $stratumId and observation $observationId"
+    )
+
 class SubstratumNotFoundException(val substratumId: SubstratumId) :
     EntityNotFoundException("Substratum $substratumId not found")
 

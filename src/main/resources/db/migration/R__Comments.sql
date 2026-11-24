@@ -557,7 +557,10 @@ COMMENT ON COLUMN tracking.observation_stratum_variability.estimated_plot_count_
 COMMENT ON COLUMN tracking.observation_stratum_variability.measured_variability IS 'Sample standard deviation of live plant density divided by its mean, as a percentage. Null for fewer than two measured plots or mean density zero.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.plausible_variability_high IS 'Upper endpoint of the 90% interval for true variability, as a percentage.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.plausible_variability_low IS 'Lower endpoint of the 90% interval for true variability, as a percentage.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.recommendation_resolution_id IS 'Accepted or dismissed resolution of this snapshot recommendation; null while unresolved.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.recommended_plot_count IS 'Recommended deployable plot count, or null if there is no recommendation.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.resolved_by IS 'User who accepted or dismissed the recommendation.';
+COMMENT ON COLUMN tracking.observation_stratum_variability.resolved_time IS 'Time the recommendation was accepted or dismissed.';
 COMMENT ON COLUMN tracking.observation_stratum_variability.sampled_plot_count IS 'Number of completed assigned plots included in the measurement, including those with zero live plants.';
 
 COMMENT ON TABLE tracking.observation_substratum_results IS 'Observation results for a substratum.';
@@ -735,6 +738,8 @@ COMMENT ON COLUMN tracking.plantings.planting_site_id IS 'Which planting site ha
 COMMENT ON COLUMN tracking.plantings.planting_type_id IS 'Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.';
 COMMENT ON COLUMN tracking.plantings.substratum_id IS 'Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive.';
 COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
+
+COMMENT ON TABLE tracking.plot_count_recommendation_resolutions IS '(Enum) Ways a plot count recommendation has been resolved.';
 
 COMMENT ON TABLE tracking.plot_precision_levels IS '(Enum) Precision levels for plot selection.';
 COMMENT ON COLUMN tracking.plot_precision_levels.target_margin_of_error IS 'Target margin of error as a percentage for this precision level.';

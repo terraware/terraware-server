@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlotCountRecommendationResolution
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
@@ -40,6 +41,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationStratumVariabilityRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.StratumHistoriesRecord
@@ -1304,6 +1306,69 @@ class PlantingSiteStore(
             PlantingSitePlotCountsUpdatedEvent(plantingSiteId, changedStrata)
         )
       }
+    }
+  }
+
+  fun dismissPlotCountRecommendation(
+      plantingSiteId: PlantingSiteId,
+      stratumId: StratumId,
+      observationId: ObservationId,
+  ) {
+    entityLocker.withLockedPlantingSite(plantingSiteId) {
+      requirePlotSettingsEditable(plantingSiteId)
+
+      val snapshot = fetchCurrentPlotCountRecommendation(plantingSiteId, stratumId, observationId)
+      resolvePlotCountRecommendation(snapshot, PlotCountRecommendationResolution.Dismissed)
+    }
+  }
+
+  private fun fetchCurrentPlotCountRecommendation(
+      plantingSiteId: PlantingSiteId,
+      stratumId: StratumId,
+      observationId: ObservationId,
+  ): ObservationStratumVariabilityRecord {
+    if (
+        !dslContext.fetchExists(
+            STRATA,
+            STRATA.ID.eq(stratumId),
+            STRATA.PLANTING_SITE_ID.eq(plantingSiteId),
+        )
+    ) {
+      throw StratumNotFoundException(stratumId)
+    }
+    val snapshot =
+        with(OBSERVATION_STRATUM_VARIABILITY) {
+          dslContext
+              .selectFrom(this)
+              .where(stratumHistories.STRATUM_ID.eq(stratumId))
+              .orderBy(observations.COMPLETED_TIME.desc(), OBSERVATION_ID.desc())
+              .limit(1)
+              .fetchOne()
+        }
+    if (
+        snapshot == null ||
+            snapshot.observationId != observationId ||
+            snapshot.recommendedPlotCount == null ||
+            snapshot.recommendationResolutionId != null
+    ) {
+      throw PlotCountRecommendationNotAvailableException(stratumId, observationId)
+    }
+    return snapshot
+  }
+
+  private fun resolvePlotCountRecommendation(
+      snapshot: ObservationStratumVariabilityRecord,
+      resolution: PlotCountRecommendationResolution,
+  ) {
+    with(OBSERVATION_STRATUM_VARIABILITY) {
+      dslContext
+          .update(this)
+          .set(RECOMMENDATION_RESOLUTION_ID, resolution)
+          .set(RESOLVED_BY, currentUser().userId)
+          .set(RESOLVED_TIME, clock.instant())
+          .where(OBSERVATION_ID.eq(snapshot.observationId))
+          .and(STRATUM_HISTORY_ID.eq(snapshot.stratumHistoryId))
+          .execute()
     }
   }
 

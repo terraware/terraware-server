@@ -524,6 +524,11 @@ VALUES (1, 'Project Lead'),
        (11, 'Consultant')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.plot_count_recommendation_resolutions (id, name)
+VALUES (1, 'Accepted'),
+       (2, 'Dismissed')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.plot_precision_levels (id, name, target_margin_of_error)
 VALUES (1, 'Very Low', 22.5),
        (2, 'Low', 20),
