@@ -14,7 +14,9 @@ import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
@@ -38,25 +40,56 @@ class ReportIndicatorStore(
   fun createCommonIndicator(model: NewCommonIndicatorModel): CommonIndicatorId {
     requirePermissions { manageProjectReportConfigs() }
 
-    return with(COMMON_INDICATORS) {
-      dslContext
-          .insertInto(this)
-          .set(ACTIVE, model.active)
-          .set(CATEGORY_ID, model.category)
-          .set(CLASS_ID, model.classId)
-          .set(DESCRIPTION, model.description)
-          .set(FREQUENCY_ID, model.frequency)
-          .set(IS_PUBLISHABLE, model.isPublishable)
-          .set(LEVEL_ID, model.level)
-          .set(NAME, model.name)
-          .set(NOTES, model.notes)
-          .set(PRECISION, model.precision)
-          .set(PRIMARY_DATA_SOURCE, model.primaryDataSource)
-          .set(REF_ID, model.refId)
-          .set(TF_OWNER, model.tfOwner)
-          .set(UNIT, model.unit)
-          .returning(ID)
-          .fetchOne(ID)!!
+    return dslContext.transactionResult { _ ->
+      val indicatorId =
+          with(COMMON_INDICATORS) {
+            dslContext
+                .insertInto(this)
+                .set(ACTIVE, model.active)
+                .set(CATEGORY_ID, model.category)
+                .set(CLASS_ID, model.classId)
+                .set(DESCRIPTION, model.description)
+                .set(FREQUENCY_ID, model.frequency)
+                .set(IS_PUBLISHABLE, model.isPublishable)
+                .set(LEVEL_ID, model.level)
+                .set(NAME, model.name)
+                .set(NOTES, model.notes)
+                .set(PRECISION, model.precision)
+                .set(PRIMARY_DATA_SOURCE, model.primaryDataSource)
+                .set(REF_ID, model.refId)
+                .set(TF_OWNER, model.tfOwner)
+                .set(UNIT, model.unit)
+                .returning(ID)
+                .fetchOne(ID)!!
+          }
+      with(PROJECT_COMMON_INDICATORS) {
+        dslContext
+            .insertInto(
+                this,
+                PROJECT_ID,
+                COMMON_INDICATOR_ID,
+                REF_ID,
+                ACTIVE,
+                IS_PUBLISHABLE,
+                NOTES,
+                PRIMARY_DATA_SOURCE,
+            )
+            .select(
+                DSL.selectDistinct(
+                        PROJECT_REPORT_CONFIGS.PROJECT_ID,
+                        DSL.value(indicatorId),
+                        DSL.value(model.refId),
+                        DSL.value(model.active),
+                        DSL.value(model.isPublishable),
+                        DSL.value(model.notes),
+                        DSL.value(model.primaryDataSource),
+                    )
+                    .from(PROJECT_REPORT_CONFIGS)
+            )
+            .onConflictDoNothing()
+            .execute()
+      }
+      indicatorId
     }
   }
 
@@ -69,25 +102,38 @@ class ReportIndicatorStore(
     val existing = fetchOneCommonIndicator(indicatorId)
     val new = updateFunc(existing)
 
-    with(COMMON_INDICATORS) {
-      dslContext
-          .update(this)
-          .set(ACTIVE, new.active)
-          .set(CATEGORY_ID, new.category)
-          .set(CLASS_ID, new.classId)
-          .set(DESCRIPTION, new.description)
-          .set(FREQUENCY_ID, new.frequency)
-          .set(IS_PUBLISHABLE, new.isPublishable)
-          .set(LEVEL_ID, new.level)
-          .set(NAME, new.name)
-          .set(NOTES, new.notes)
-          .set(PRECISION, new.precision)
-          .set(PRIMARY_DATA_SOURCE, new.primaryDataSource)
-          .set(REF_ID, new.refId)
-          .set(TF_OWNER, new.tfOwner)
-          .set(UNIT, new.unit)
-          .where(ID.eq(indicatorId))
-          .execute()
+    dslContext.transaction { _ ->
+      with(COMMON_INDICATORS) {
+        dslContext
+            .update(this)
+            .set(ACTIVE, new.active)
+            .set(CATEGORY_ID, new.category)
+            .set(CLASS_ID, new.classId)
+            .set(DESCRIPTION, new.description)
+            .set(FREQUENCY_ID, new.frequency)
+            .set(IS_PUBLISHABLE, new.isPublishable)
+            .set(LEVEL_ID, new.level)
+            .set(NAME, new.name)
+            .set(NOTES, new.notes)
+            .set(PRECISION, new.precision)
+            .set(PRIMARY_DATA_SOURCE, new.primaryDataSource)
+            .set(REF_ID, new.refId)
+            .set(TF_OWNER, new.tfOwner)
+            .set(UNIT, new.unit)
+            .where(ID.eq(indicatorId))
+            .execute()
+      }
+      with(PROJECT_COMMON_INDICATORS) {
+        dslContext
+            .update(this)
+            .set(REF_ID, new.refId)
+            .set(ACTIVE, new.active)
+            .set(IS_PUBLISHABLE, new.isPublishable)
+            .set(NOTES, new.notes)
+            .set(PRIMARY_DATA_SOURCE, new.primaryDataSource)
+            .where(COMMON_INDICATOR_ID.eq(indicatorId))
+            .execute()
+      }
     }
   }
 

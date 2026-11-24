@@ -44,6 +44,8 @@ import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.records.AutoCalculatedIndicatorTargetsRecord
 import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorTargetsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectAutoCalculatedIndicatorsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorTargetsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportAchievementsRecord
@@ -3896,6 +3898,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class InsertProjectReportConfig {
+
     @Test
     fun `throws exception for non accelerator admin users`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -3914,6 +3917,34 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `inserts config record and creates reports`() {
+      val newIndicatorId =
+          insertCommonIndicator(
+              active = false,
+              isPublishable = true,
+              refId = "global",
+              notes = "Global notes",
+              primaryDataSource = "Global source",
+          )
+      val existingIndicatorId = insertCommonIndicator()
+      insertProjectCommonIndicator(
+          projectId = projectId,
+          commonIndicatorId = existingIndicatorId,
+          active = false,
+          isPublishable = true,
+          refId = "custom",
+          notes = "Notes",
+          primaryDataSource = "Source",
+      )
+      insertProjectAutoCalculatedIndicator(
+          projectId = projectId,
+          autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
+          active = false,
+          isPublishable = true,
+          refId = null,
+          notes = "Notes",
+          primaryDataSource = "Source",
+      )
+
       clock.instant = Instant.ofEpochSecond(9000)
 
       deleteProjectAcceleratorDetails(projectId)
@@ -4000,6 +4031,41 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               logframeUrl = URI("https://example.com"),
           ),
           "Project accelerator details table",
+      )
+      assertTableEquals(
+          listOf(
+              ProjectCommonIndicatorsRecord(
+                  active = true,
+                  commonIndicatorId = newIndicatorId,
+                  isPublishable = false,
+                  projectId = projectId,
+              ),
+              ProjectCommonIndicatorsRecord(
+                  active = false,
+                  commonIndicatorId = existingIndicatorId,
+                  isPublishable = true,
+                  notes = "Notes",
+                  primaryDataSource = "Source",
+                  projectId = projectId,
+                  refId = "custom",
+              ),
+          )
+      )
+      assertTableEquals(
+          AutoCalculatedIndicator.entries.map { indicator ->
+            ProjectAutoCalculatedIndicatorsRecord(
+                active = indicator != AutoCalculatedIndicator.SeedsCollected,
+                autoCalculatedIndicatorId = indicator,
+                isPublishable = indicator == AutoCalculatedIndicator.SeedsCollected,
+                notes = if (indicator == AutoCalculatedIndicator.SeedsCollected) "Notes" else null,
+                primaryDataSource =
+                    if (indicator == AutoCalculatedIndicator.SeedsCollected) "Source" else null,
+                projectId = projectId,
+                refId =
+                    if (indicator == AutoCalculatedIndicator.SeedsCollected) null
+                    else indicator.refId,
+            )
+          }
       )
     }
   }

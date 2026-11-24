@@ -46,6 +46,8 @@ import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULAT
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
@@ -368,6 +370,30 @@ class ReportStore(
                   ExistingProjectReportConfigModel.of(newModel, record[ID.asNonNullable()])
                 } ?: throw IllegalStateException("Failed to insert project report config.")
           }
+      with(PROJECT_COMMON_INDICATORS) {
+        dslContext
+            .insertInto(this, PROJECT_ID, COMMON_INDICATOR_ID)
+            .select(
+                DSL.select(DSL.value(newModel.projectId), COMMON_INDICATORS.ID)
+                    .from(COMMON_INDICATORS)
+            )
+            .onConflictDoNothing()
+            .execute()
+      }
+      with(PROJECT_AUTO_CALCULATED_INDICATORS) {
+        dslContext
+            .insertInto(this, PROJECT_ID, AUTO_CALCULATED_INDICATOR_ID, REF_ID)
+            .select(
+                DSL.select(
+                        DSL.value(newModel.projectId),
+                        AUTO_CALCULATED_INDICATORS.ID,
+                        AUTO_CALCULATED_INDICATORS.REF_ID,
+                    )
+                    .from(AUTO_CALCULATED_INDICATORS)
+            )
+            .onConflictDoNothing()
+            .execute()
+      }
       val reportRows = createReportRows(config)
       reportsDao.insert(reportRows)
       upsertProjectLogframeUrl(newModel.projectId, newModel.logframeUrl)
