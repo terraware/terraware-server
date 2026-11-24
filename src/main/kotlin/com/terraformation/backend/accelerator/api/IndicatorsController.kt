@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.ReportIndicatorStore
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.default_schema.ProjectId
 import io.swagger.v3.oas.annotations.Operation
@@ -49,6 +50,22 @@ class IndicatorsController(private val indicatorStore: ReportIndicatorStore) {
             ExistingCommonIndicatorPayload(it)
           }
       )
+
+  @ApiResponse200
+  @PutMapping("/projects/{projectId}/common/{indicatorId}")
+  @Operation(summary = "Update a common definition and one project's settings.")
+  fun updateProjectCommonIndicator(
+      @PathVariable projectId: ProjectId,
+      @PathVariable indicatorId: CommonIndicatorId,
+      @RequestBody @Valid payload: UpdateCommonIndicatorRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    indicatorStore.updateCommonIndicatorForProject(
+        projectId,
+        indicatorId,
+        payload.indicator.toModel(),
+    )
+    return SimpleSuccessResponsePayload()
+  }
 
   @ApiResponse200
   @GetMapping("/projects/{projectId}/project")
