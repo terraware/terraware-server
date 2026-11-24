@@ -15,6 +15,7 @@ import org.locationtech.jts.geom.MultiPolygon
 enum class PlantingSiteMapFormat(val extension: String, val mediaType: String) {
   GeoJson("zip", "application/zip"),
   Kml("kml", "application/vnd.google-earth.kml+xml"),
+  Shapefile("zip", "application/zip"),
 }
 
 @Named
@@ -100,6 +101,7 @@ class PlantingSiteMapExportService(
     when (format) {
       PlantingSiteMapFormat.GeoJson -> geoJsonWriter.write(layers, output)
       PlantingSiteMapFormat.Kml -> PlantingSiteKmlWriter.write(layers, output)
+      PlantingSiteMapFormat.Shapefile -> PlantingSiteShapefileWriter.write(layers, output)
     }
   }
 }
