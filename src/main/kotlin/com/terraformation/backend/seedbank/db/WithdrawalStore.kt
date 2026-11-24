@@ -113,17 +113,25 @@ class WithdrawalStore(
               WITHDRAWN_UNITS_ID,
               USERS.FIRST_NAME,
               USERS.LAST_NAME,
+              WITHDRAWAL_CUSTOM_PURPOSES.NAME,
           )
           .from(WITHDRAWALS)
           .leftJoin(USERS)
           .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
+          .leftJoin(WITHDRAWAL_CUSTOM_PURPOSES)
+          .on(WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(WITHDRAWALS.CUSTOM_PURPOSE_ID))
           .where(ACCESSION_ID.eq(accessionId))
           .orderBy(DATE, CREATED_TIME, ID)
           .fetch { record ->
             val quantity =
                 SeedQuantityModel.of(record[WITHDRAWN_QUANTITY], record[WITHDRAWN_UNITS_ID])
             val purpose = record[PURPOSE_ID]
-            val description = messages.historyAccessionWithdrawal(quantity, purpose)
+            val description =
+                messages.historyAccessionWithdrawal(
+                    quantity,
+                    purpose,
+                    record[WITHDRAWAL_CUSTOM_PURPOSES.NAME],
+                )
             val type =
                 if (purpose == WithdrawalPurpose.ViabilityTesting) {
                   AccessionHistoryType.ViabilityTesting
