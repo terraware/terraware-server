@@ -25,7 +25,7 @@ class PlantingSiteMapWritersTest {
           PlantingSiteMapLayer("strata", emptyList()),
           PlantingSiteMapLayer(
               "substrata",
-              listOf(PlantingSiteMapFeature.named(boundary, substratumName, BigDecimal("2.5"))),
+              listOf(PlantingSiteMapFeature(boundary, substratumName, BigDecimal("2.5"))),
           ),
           PlantingSiteMapLayer(
               "exclusions",
