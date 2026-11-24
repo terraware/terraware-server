@@ -26,7 +26,9 @@ import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
   private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
-  private val service by lazy { PlantingSiteMapExportService(PlantingSiteGeoJsonWriter(objectMapper), store) }
+  private val service by lazy {
+    PlantingSiteMapExportService(PlantingSiteGeoJsonWriter(objectMapper), store)
+  }
 
   @Test
   fun `exports the requested snapshot geometry and attributes with the current site name`() {
