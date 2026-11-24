@@ -62,6 +62,124 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `reads common indicator settings from the report's project`() {
+    val commonIndicatorId = insertCommonIndicator()
+    insertProjectCommonIndicator(
+        active = false,
+        commonIndicatorId = commonIndicatorId,
+        isPublishable = false,
+        projectId = projectId,
+        refId = "2",
+    )
+    insertReportCommonIndicator(indicatorId = commonIndicatorId, reportId = reportId)
+    val otherProjectId = insertProject()
+    insertProjectReportConfig(projectId = otherProjectId)
+    val otherReportId = insertReport(projectId = otherProjectId)
+    insertProjectCommonIndicator(
+        active = true,
+        commonIndicatorId = commonIndicatorId,
+        isPublishable = true,
+        projectId = otherProjectId,
+        refId = "1",
+    )
+    insertReportCommonIndicator(indicatorId = commonIndicatorId, reportId = otherReportId)
+    val missingSettingsProjectId = insertProject()
+    insertProjectReportConfig(projectId = missingSettingsProjectId)
+    val missingSettingsReportId = insertReport(projectId = missingSettingsProjectId)
+    insertReportCommonIndicator(indicatorId = commonIndicatorId, reportId = missingSettingsReportId)
+    val fields =
+        listOf("active", "publishable", "refId", "report.id").map { commonPrefix.resolve(it) }
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "active" to "true",
+                    "publishable" to "true",
+                    "refId" to "1",
+                    "report" to mapOf("id" to "$otherReportId"),
+                ),
+                mapOf(
+                    "active" to "false",
+                    "publishable" to "false",
+                    "refId" to "2",
+                    "report" to mapOf("id" to "$reportId"),
+                ),
+                mapOf("report" to mapOf("id" to "$missingSettingsReportId")),
+            )
+        )
+    assertJsonEquals(
+        expected,
+        searchService.search(commonPrefix, fields, mapOf(commonPrefix to NoConditionNode())),
+    )
+  }
+
+  @Test
+  fun `reads auto-calculated indicator settings from the report's project`() {
+    insertProjectAutoCalculatedIndicator(
+        active = false,
+        autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
+        isPublishable = false,
+        projectId = projectId,
+        refId = "2",
+    )
+    insertReportAutoCalculatedIndicator(
+        indicator = AutoCalculatedIndicator.SeedsCollected,
+        reportId = reportId,
+    )
+    val otherProjectId = insertProject()
+    insertProjectReportConfig(projectId = otherProjectId)
+    val otherReportId = insertReport(projectId = otherProjectId)
+    insertProjectAutoCalculatedIndicator(
+        active = true,
+        autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
+        isPublishable = true,
+        projectId = otherProjectId,
+        refId = "1",
+    )
+    insertReportAutoCalculatedIndicator(
+        indicator = AutoCalculatedIndicator.SeedsCollected,
+        reportId = otherReportId,
+    )
+    val missingSettingsProjectId = insertProject()
+    insertProjectReportConfig(projectId = missingSettingsProjectId)
+    val missingSettingsReportId = insertReport(projectId = missingSettingsProjectId)
+    insertReportAutoCalculatedIndicator(
+        indicator = AutoCalculatedIndicator.SeedsCollected,
+        reportId = missingSettingsReportId,
+    )
+    val fields =
+        listOf("active", "publishable", "refId", "report.id").map {
+          autoCalculatedPrefix.resolve(it)
+        }
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "active" to "true",
+                    "publishable" to "true",
+                    "refId" to "1",
+                    "report" to mapOf("id" to "$otherReportId"),
+                ),
+                mapOf(
+                    "active" to "false",
+                    "publishable" to "false",
+                    "refId" to "2",
+                    "report" to mapOf("id" to "$reportId"),
+                ),
+                mapOf("report" to mapOf("id" to "$missingSettingsReportId")),
+            )
+        )
+    assertJsonEquals(
+        expected,
+        searchService.search(
+            autoCalculatedPrefix,
+            fields,
+            mapOf(autoCalculatedPrefix to NoConditionNode()),
+        ),
+    )
+  }
+
+  @Test
   fun `returns common indicator details`() {
     val indicatorId = insertCommonIndicator()
     insertReportCommonIndicator(
@@ -191,7 +309,7 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns all three kinds of indicators as sublists of reports`() {
-    val commonIndicatorId = insertCommonIndicator(refId = "1.1")
+    val commonIndicatorId = insertCommonIndicator()
     insertReportCommonIndicator(indicatorId = commonIndicatorId, value = 1)
     val projectIndicatorId = insertProjectIndicator(refId = "2.1")
     insertReportProjectIndicator(indicatorId = projectIndicatorId, value = 2)
@@ -235,9 +353,11 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns indicators ordered by reference ID by default`() {
-    val secondIndicatorId = insertCommonIndicator(refId = "1.2")
+    val secondIndicatorId = insertCommonIndicator()
+    insertProjectCommonIndicator(commonIndicatorId = secondIndicatorId, refId = "2")
     insertReportCommonIndicator(indicatorId = secondIndicatorId)
-    val firstIndicatorId = insertCommonIndicator(refId = "1.1")
+    val firstIndicatorId = insertCommonIndicator()
+    insertProjectCommonIndicator(commonIndicatorId = firstIndicatorId, refId = "1")
     insertReportCommonIndicator(indicatorId = firstIndicatorId)
 
     val fields = listOf("id").map { commonPrefix.resolve(it) }
@@ -306,12 +426,12 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can filter by indicator fields without returning other indicators of the same report`() {
-    val offTrackIndicatorId = insertCommonIndicator(refId = "1.1")
+    val offTrackIndicatorId = insertCommonIndicator()
     insertReportCommonIndicator(
         indicatorId = offTrackIndicatorId,
         status = ReportIndicatorStatus.OffTrack,
     )
-    val achievedIndicatorId = insertCommonIndicator(refId = "1.2")
+    val achievedIndicatorId = insertCommonIndicator()
     insertReportCommonIndicator(
         indicatorId = achievedIndicatorId,
         status = ReportIndicatorStatus.Achieved,
@@ -399,7 +519,9 @@ class AcceleratorReportIndicatorSearchTest : DatabaseTest(), RunsAsUser {
     insertReportCommonIndicator(indicatorId = indicatorId)
 
     val fields =
-        listOf("id", "value", "status", "projectsComments").map { commonPrefix.resolve(it) }
+        listOf("id", "value", "status", "projectsComments", "active", "publishable", "refId").map {
+          commonPrefix.resolve(it)
+        }
 
     val expected = SearchResults(listOf(mapOf("id" to "$indicatorId")))
 
