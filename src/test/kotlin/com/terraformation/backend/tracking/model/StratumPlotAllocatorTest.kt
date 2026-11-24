@@ -22,19 +22,24 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                     StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 10)
             )
 
-    val allocation =
+    val allocator =
         StratumPlotAllocator(
-                stratum,
-                ObservationType.BaselineSurvey,
-                siteOrigin,
-                exclusion = null,
-                observedPermanentPlotIds = emptySet(),
-            )
-            .allocate(substrataIds(1))
+            stratum,
+            ObservationType.BaselineSurvey,
+            siteOrigin,
+            exclusion = null,
+            observedPermanentPlotIds = emptySet(),
+        )
+    val allocation = allocator.allocate(substrataIds(1))
 
     assertEquals(emptySet<MonitoringPlotId>(), allocation.permanentPlotIds, "Permanent assignments")
     assertEquals(3, allocation.temporaryPlotBoundaries.size, "Temporary assignments")
     assertTrue(allocation.isShortfall, "Shortfall")
+    assertEquals(
+        PlaceablePlotCounts(numPermanentPlots = 0, numTemporaryPlots = 3),
+        allocator.countPlaceable(),
+        "Placeable baseline counts exclude existing permanent plot",
+    )
     allocation.temporaryPlotBoundaries.forEach {
       assertEquals(
           0.0,
@@ -53,16 +58,20 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                 baselinePlotCounts = StratumPlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0)
             )
 
-    assertThrows<StratumFullException> {
-      StratumPlotAllocator(
-              stratum,
-              ObservationType.BaselineSurvey,
-              siteOrigin,
-              exclusion = null,
-              observedPermanentPlotIds = emptySet(),
-          )
-          .allocate(substrataIds(1))
-    }
+    val allocator =
+        StratumPlotAllocator(
+            stratum,
+            ObservationType.BaselineSurvey,
+            siteOrigin,
+            exclusion = null,
+            observedPermanentPlotIds = emptySet(),
+        )
+    assertThrows<StratumFullException> { allocator.allocate(substrataIds(1)) }
+    assertEquals(
+        PlaceablePlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0),
+        allocator.countPlaceable(),
+        "Zero configured plots has zero placeable plots",
+    )
   }
 
   private fun fullStratum(
@@ -99,21 +108,26 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                 ),
         )
 
-    val allocation =
+    val allocator =
         StratumPlotAllocator(
-                stratum,
-                ObservationType.Monitoring,
-                siteOrigin,
-                exclusion = null,
-                observedPermanentPlotIds = emptySet(),
-            )
-            .allocate(substrataIds(1))
+            stratum,
+            ObservationType.Monitoring,
+            siteOrigin,
+            exclusion = null,
+            observedPermanentPlotIds = emptySet(),
+        )
+    val allocation = allocator.allocate(substrataIds(1))
 
     assertEquals(2, allocation.numConfigured, "Configured plots")
     assertEquals(2, allocation.numAllocated, "Allocated plots")
     assertFalse(allocation.isShortfall, "Should not be a shortfall")
     assertEquals(setOf(MonitoringPlotId(10)), allocation.permanentPlotIds, "Permanent plots")
     assertEquals(1, allocation.temporaryPlotBoundaries.size, "Number of temporary plots")
+    assertEquals(
+        PlaceablePlotCounts(numPermanentPlots = 1, numTemporaryPlots = 1),
+        allocator.countPlaceable(),
+        "Placeable counts match configured counts when all plots fit",
+    )
   }
 
   @ParameterizedTest
@@ -125,15 +139,15 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
   ) {
     val stratum = fullStratum(capacity, configuredPermanent)
 
-    val allocation =
+    val allocator =
         StratumPlotAllocator(
-                stratum,
-                ObservationType.Monitoring,
-                siteOrigin,
-                exclusion = null,
-                observedPermanentPlotIds = emptySet(),
-            )
-            .allocate(substrataIds(1))
+            stratum,
+            ObservationType.Monitoring,
+            siteOrigin,
+            exclusion = null,
+            observedPermanentPlotIds = emptySet(),
+        )
+    val allocation = allocator.allocate(substrataIds(1))
 
     assertEquals(configuredPermanent + 2, allocation.numConfigured, "Configured plots")
     assertEquals(capacity, allocation.numAllocated, "Allocated plots")
@@ -147,6 +161,14 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
         capacity - expectedPermanent,
         allocation.temporaryPlotBoundaries.size,
         "Number of temporary plots",
+    )
+    assertEquals(
+        PlaceablePlotCounts(
+            numPermanentPlots = expectedPermanent,
+            numTemporaryPlots = capacity - expectedPermanent,
+        ),
+        allocator.countPlaceable(),
+        "Placeable counts match shortfall split",
     )
   }
 
@@ -198,15 +220,15 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
 
     val permanentPlotIds = listOf(10, 11, 13, 12).map { MonitoringPlotId(it.toLong()) }
     val requestedSubstratumIds = substrataIds(1, 2)
-    val allocation =
+    val allocator =
         StratumPlotAllocator(
-                stratum,
-                ObservationType.BiomassMeasurements,
-                siteOrigin,
-                exclusion = null,
-                observedPermanentPlotIds = permanentPlotIds.take(numObserved).toSet(),
-            )
-            .allocate(requestedSubstratumIds)
+            stratum,
+            ObservationType.BiomassMeasurements,
+            siteOrigin,
+            exclusion = null,
+            observedPermanentPlotIds = permanentPlotIds.take(numObserved).toSet(),
+        )
+    val allocation = allocator.allocate(requestedSubstratumIds)
 
     assertEquals(8, allocation.numConfigured, "Configured plots")
     assertEquals(
@@ -224,6 +246,14 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
         expectedAllocated - expectedPermanent,
         allocation.temporaryPlotBoundaries.size,
         "Number of temporary plots",
+    )
+    assertEquals(
+        PlaceablePlotCounts(
+            numPermanentPlots = expectedPermanent,
+            numTemporaryPlots = expectedAllocated - expectedPermanent,
+        ),
+        allocator.countPlaceable(),
+        "Placeable counts match cross-substratum demotion",
     )
   }
 
@@ -321,16 +351,20 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
                 ),
         )
 
-    assertThrows<StratumFullException> {
-      StratumPlotAllocator(
-              stratum,
-              ObservationType.Monitoring,
-              siteOrigin,
-              exclusion = null,
-              observedPermanentPlotIds = emptySet(),
-          )
-          .allocate(substrataIds(1))
-    }
+    val allocator =
+        StratumPlotAllocator(
+            stratum,
+            ObservationType.Monitoring,
+            siteOrigin,
+            exclusion = null,
+            observedPermanentPlotIds = emptySet(),
+        )
+    assertThrows<StratumFullException> { allocator.allocate(substrataIds(1)) }
+    assertEquals(
+        PlaceablePlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0),
+        allocator.countPlaceable(),
+        "Full stratum has zero placeable plots",
+    )
   }
 
   @Test
@@ -377,6 +411,60 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
         setOf(MonitoringPlotId(10), MonitoringPlotId(11)),
         allocation.permanentPlotIds,
         "Only plots in the requested substratum should be returned",
+    )
+  }
+
+  @Test
+  fun `countPlaceable simulates missing permanent plots when proposed count increases`() {
+    val stratum =
+        stratumModel(
+            plantNumPermanentPlots = 3,
+            plantNumTemporaryPlots = 1,
+            substrata =
+                listOf(
+                    substratumModel(
+                        id = 1,
+                        plots =
+                            listOf(
+                                monitoringPlotModel(10, permanentIndex = 1),
+                                monitoringPlotModel(11, permanentIndex = null),
+                            ),
+                        boundary = substratumBoundary(1, 4),
+                    )
+                ),
+        )
+
+    assertEquals(
+        PlaceablePlotCounts(numPermanentPlots = 3, numTemporaryPlots = 1),
+        StratumPlotAllocator(
+                stratum,
+                ObservationType.Monitoring,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = emptySet(),
+            )
+            .countPlaceable(),
+        "Simulates placing missing permanent plots when all requested plots fit",
+    )
+
+    val oversized =
+        stratum.withPlotCounts(
+            mapOf(
+                ObservationType.Monitoring to
+                    stratum.plantPlotCounts.copy(numPermanentPlots = 6, numTemporaryPlots = 2)
+            )
+        )
+    assertEquals(
+        PlaceablePlotCounts(numPermanentPlots = 3, numTemporaryPlots = 1),
+        StratumPlotAllocator(
+                oversized,
+                ObservationType.Monitoring,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = emptySet(),
+            )
+            .countPlaceable(),
+        "Demotes simulated permanent plots to 75/25 split when stratum cannot fit all requested plots",
     )
   }
 }

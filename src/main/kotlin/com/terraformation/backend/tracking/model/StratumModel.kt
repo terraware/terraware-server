@@ -217,6 +217,16 @@ data class StratumModel<
         ObservationType.BiomassMeasurements -> biomassPlotCounts
       }
 
+  fun withPlotCounts(
+      countsByType: Map<ObservationType, StratumPlotCounts>
+  ): StratumModel<SID, SSID, TIMESTAMP> =
+      copy(
+          baselinePlotCounts = countsByType[ObservationType.BaselineSurvey] ?: baselinePlotCounts,
+          biomassPlotCounts =
+              countsByType[ObservationType.BiomassMeasurements] ?: biomassPlotCounts,
+          plantPlotCounts = countsByType[ObservationType.Monitoring] ?: plantPlotCounts,
+      )
+
   /**
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
    * by [StratumPlotCounts.numPermanentPlots] for the specified observation type.
