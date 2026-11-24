@@ -7,7 +7,6 @@ set -euo pipefail
 
 JAVA_VERSION=27
 YQ_VERSION=4.54.3
-NODE_VERSION=26
 PYTHON_VERSION=3.13
 
 install_corretto() {
@@ -48,11 +47,14 @@ install_rsync() {
 }
 
 install_node() {
-    if command -v node &>/dev/null && node --version 2>&1 | grep -q "^v${NODE_VERSION}\."; then
+    local node_version
+    node_version=$(<"$(dirname "${BASH_SOURCE[0]}")/../../.nvmrc")
+    node_version=${node_version%%.*}
+    if command -v node &>/dev/null && node --version 2>&1 | grep -q "^v${node_version}\."; then
         return
     fi
-    echo "Installing Node.js ${NODE_VERSION}..."
-    curl -fsSL "https://rpm.nodesource.com/setup_${NODE_VERSION}.x" | sudo bash -
+    echo "Installing Node.js ${node_version}..."
+    curl -fsSL "https://rpm.nodesource.com/setup_${node_version}.x" | sudo bash -
     sudo dnf install -y libatomic nodejs
 }
 
