@@ -8,11 +8,25 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
+import java.io.OutputStream
 import java.math.BigDecimal
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.io.geojson.OrientationTransformer
+import tools.jackson.core.StreamWriteFeature
+import tools.jackson.databind.ObjectMapper
+
+enum class PlantingSiteMapFormat(val extension: String, val mediaType: String) {
+  GeoJson("zip", "application/zip"),
+}
 
 @Named
-class PlantingSiteMapExportService(private val plantingSiteStore: PlantingSiteStore) {
+class PlantingSiteMapExportService(
+    private val objectMapper: ObjectMapper,
+    private val plantingSiteStore: PlantingSiteStore,
+) {
   fun fetchLayers(
       siteId: PlantingSiteId,
       historyId: PlantingSiteHistoryId,
@@ -81,6 +95,40 @@ class PlantingSiteMapExportService(private val plantingSiteStore: PlantingSiteSt
               PlantingSiteMapFeature(geometry, mapOf("area_ha" to geometry.calculateAreaHectares()))
           add(PlantingSiteMapLayer("exclusions", listOf(feature)))
         }
+  }
+
+  fun write(
+      format: PlantingSiteMapFormat,
+      layers: List<PlantingSiteMapLayer>,
+      output: OutputStream,
+  ) {
+    when (format) {
+      PlantingSiteMapFormat.GeoJson -> writeGeoJson(layers, output)
+    }
+  }
+
+  private fun writeGeoJson(layers: List<PlantingSiteMapLayer>, output: OutputStream) {
+    val writer = objectMapper.writer().without(StreamWriteFeature.AUTO_CLOSE_TARGET)
+    ZipOutputStream(output).use { zip ->
+      layers.forEach { layer ->
+        zip.putNextEntry(ZipEntry("${layer.name}.geojson"))
+        val features =
+            layer.features.map {
+              val geometry =
+                  it.geometry.factory.createMultiPolygon(
+                      Array(it.geometry.numGeometries) { index ->
+                        OrientationTransformer.transformCCW(
+                            it.geometry.getGeometryN(index) as Polygon
+                        )
+                      }
+                  )
+              geometry.srid = it.geometry.srid
+              mapOf("type" to "Feature", "geometry" to geometry, "properties" to it.properties)
+            }
+        writer.writeValue(zip, mapOf("type" to "FeatureCollection", "features" to features))
+        zip.closeEntry()
+      }
+    }
   }
 }
 
