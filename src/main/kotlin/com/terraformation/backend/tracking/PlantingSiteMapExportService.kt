@@ -10,25 +10,13 @@ import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.math.BigDecimal
 import org.locationtech.jts.geom.MultiPolygon
-import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.TransactionDefinition
-import org.springframework.transaction.support.TransactionTemplate
 
 @Named
-class PlantingSiteMapExportService(
-    private val plantingSiteStore: PlantingSiteStore,
-    transactionManager: PlatformTransactionManager,
-) {
-  private val readTransaction =
-      TransactionTemplate(transactionManager).apply {
-        isReadOnly = true
-        isolationLevel = TransactionDefinition.ISOLATION_REPEATABLE_READ
-      }
-
+class PlantingSiteMapExportService(private val plantingSiteStore: PlantingSiteStore) {
   fun fetchLayers(
       siteId: PlantingSiteId,
       historyId: PlantingSiteHistoryId,
-  ): List<PlantingSiteMapLayer> = readTransaction.execute {
+  ): List<PlantingSiteMapLayer> {
     val history =
         plantingSiteStore.fetchSiteHistoryById(siteId, historyId, PlantingSiteDepth.Substratum)
     if (history.boundary.isEmpty) {
@@ -43,7 +31,7 @@ class PlantingSiteMapExportService(
             )
     val site = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Site)
 
-    layers(
+    return layers(
         boundary = PlantingSiteMapFeature(history.boundary, site.name, areaHa),
         exclusion = history.exclusion,
         strata = history.strata.map { PlantingSiteMapFeature(it.boundary, it.name, it.areaHa) },
@@ -56,28 +44,26 @@ class PlantingSiteMapExportService(
     )
   }
 
-  fun fetchCurrentLayers(siteId: PlantingSiteId): List<PlantingSiteMapLayer> =
-      readTransaction.execute {
-        val site = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Substratum)
-        val boundary =
-            site.boundary?.takeUnless { it.isEmpty }
-                ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no boundary")
-        val areaHa =
-            site.areaHa
-                ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no area")
+  fun fetchCurrentLayers(siteId: PlantingSiteId): List<PlantingSiteMapLayer> {
+    val site = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Substratum)
+    val boundary =
+        site.boundary?.takeUnless { it.isEmpty }
+            ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no boundary")
+    val areaHa =
+        site.areaHa ?: throw PlantingSiteMapIncompleteException("Planting site $siteId has no area")
 
-        layers(
-            boundary = PlantingSiteMapFeature(boundary, site.name, areaHa),
-            exclusion = site.exclusion,
-            strata = site.strata.map { PlantingSiteMapFeature(it.boundary, it.name, it.areaHa) },
-            substrata =
-                site.strata.flatMap { stratum ->
-                  stratum.substrata.map {
-                    PlantingSiteMapFeature(it.boundary, it.name, it.areaHa)
-                  }
-                },
-        )
-      }
+    return layers(
+        boundary = PlantingSiteMapFeature(boundary, site.name, areaHa),
+        exclusion = site.exclusion,
+        strata = site.strata.map { PlantingSiteMapFeature(it.boundary, it.name, it.areaHa) },
+        substrata =
+            site.strata.flatMap { stratum ->
+              stratum.substrata.map {
+                PlantingSiteMapFeature(it.boundary, it.name, it.areaHa)
+              }
+            },
+    )
+  }
 
   private fun layers(
       boundary: PlantingSiteMapFeature,

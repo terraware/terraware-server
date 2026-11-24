@@ -14,7 +14,7 @@ import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.MultiPolygon
 
 internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
-  private val service by lazy { PlantingSiteMapExportService(store, transactionManager) }
+  private val service by lazy { PlantingSiteMapExportService(store) }
 
   @Test
   fun `exports the requested snapshot geometry and attributes with the current site name`() {
