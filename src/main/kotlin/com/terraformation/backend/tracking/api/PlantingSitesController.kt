@@ -9,6 +9,7 @@ import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.PlantingSiteHasNoBoundaryException
 import com.terraformation.backend.db.UnvalidatedGeometryDeserializer
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -28,6 +29,7 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.MEDIA_TYPE_SVG
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.PlantingSiteMapEditService
 import com.terraformation.backend.tracking.PlantingSiteMapExportService
@@ -73,6 +75,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.BadRequestException
+import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -81,8 +84,8 @@ import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.springframework.core.io.InputStreamResource
 import org.springframework.http.ContentDisposition
-import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -95,7 +98,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import tools.jackson.databind.annotation.JsonDeserialize
 
 /** Largest thumbnail canvas the server will render, to keep a single request cheap. */
@@ -274,7 +276,7 @@ class PlantingSitesController(
       @PathVariable id: PlantingSiteId,
       @PathVariable historyId: PlantingSiteHistoryId,
       @RequestParam format: PlantingSiteMapFormat,
-  ): ResponseEntity<StreamingResponseBody> =
+  ): ResponseEntity<InputStreamResource> =
       plantingSiteMapDownload(
           "planting-site-$id-version-$historyId",
           format,
@@ -301,7 +303,7 @@ class PlantingSitesController(
   fun downloadCurrentPlantingSiteMap(
       @PathVariable id: PlantingSiteId,
       @RequestParam format: PlantingSiteMapFormat,
-  ): ResponseEntity<StreamingResponseBody> =
+  ): ResponseEntity<InputStreamResource> =
       plantingSiteMapDownload(
           "planting-site-$id",
           format,
@@ -312,17 +314,16 @@ class PlantingSitesController(
       basename: String,
       format: PlantingSiteMapFormat,
       layers: List<PlantingSiteMapLayer>,
-  ): ResponseEntity<StreamingResponseBody> {
+  ): ResponseEntity<InputStreamResource> {
     val filename = "$basename.${format.extension}"
-    val contentDisposition = ContentDisposition.attachment().filename(filename).build().toString()
     val contentType = MediaType.parseMediaType(format.mediaType)
-    val body = StreamingResponseBody { output ->
-      plantingSiteMapExportService.write(format, layers, output)
-    }
-    return ResponseEntity.ok()
-        .contentType(contentType)
-        .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
-        .body(body)
+    val output = ByteArrayOutputStream()
+    plantingSiteMapExportService.write(format, layers, output)
+    val bytes = output.toByteArray()
+    return SizedInputStream(bytes.inputStream(), bytes.size.toLong(), contentType)
+        .toResponseEntity {
+          contentDisposition = ContentDisposition.attachment().filename(filename).build()
+        }
   }
 
   @ApiResponse200Svg

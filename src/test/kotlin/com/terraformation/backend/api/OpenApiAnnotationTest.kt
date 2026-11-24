@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 
 /**
  * Verifies that all our controller methods have the expected set of annotations to generate a good
@@ -186,7 +185,6 @@ class OpenApiAnnotationTest {
             ByteArray::class.java,
             ByteArrayResource::class.java,
             InputStreamResource::class.java,
-            StreamingResponseBody::class.java,
             String::class.java,
         )
 
