@@ -26,7 +26,7 @@ import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
   private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
-  private val service by lazy { PlantingSiteMapExportService(objectMapper, store) }
+  private val service by lazy { PlantingSiteMapExportService(PlantingSiteGeoJsonWriter(objectMapper), store) }
 
   @Test
   fun `exports the requested snapshot geometry and attributes with the current site name`() {
@@ -189,13 +189,12 @@ internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
     val clockwiseBoundary =
         polygonWithHoles(polygon(200).reverse(), listOf(polygon(20, 20, 30, 30)))
     val exclusion = multiPolygon(10)
-    val siteId =
-        insertPlantingSite(
-            areaHa = BigDecimal(100),
-            boundary = multiPolygon(clockwiseBoundary),
-            exclusion = exclusion,
-            name = "Terraware",
-        )
+    insertPlantingSite(
+        areaHa = BigDecimal(100),
+        boundary = multiPolygon(clockwiseBoundary),
+        exclusion = exclusion,
+        name = "Terraware",
+    )
     val oldId = inserted.plantingSiteHistoryId
     insertStratum(name = "Old stratum", stableId = "stratum-key")
     insertSubstratum(name = "Old substratum", plantingCompletedTime = Instant.EPOCH)
@@ -209,7 +208,7 @@ internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
 
     fun download(historyId: PlantingSiteHistoryId) =
         ByteArrayOutputStream().let { output ->
-          val layers = service.fetchLayers(siteId, historyId)
+          val layers = service.fetchLayers(inserted.plantingSiteId, historyId)
           service.write(PlantingSiteMapFormat.GeoJson, layers, output)
           ZipInputStream(output.toByteArray().inputStream()).use { zip ->
             buildMap {
