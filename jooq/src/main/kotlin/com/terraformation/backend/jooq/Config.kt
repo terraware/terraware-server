@@ -361,6 +361,11 @@ val ENUM_TABLES =
                 EnumTable("planting_season_statuses", listOf("planting_seasons\\.status_id")),
                 EnumTable("planting_types"),
                 EnumTable(
+                    "plot_count_recommendation_resolutions",
+                    listOf("observation_stratum_variability\\.recommendation_resolution_id"),
+                    isLocalizable = false,
+                ),
+                EnumTable(
                     "plot_precision_levels",
                     listOf(".*\\.plot_precision_level_id", ".*\\.default_plot_precision_level_id"),
                     additionalColumns =

@@ -18,12 +18,18 @@ data class ObservationStratumVariabilityModel(
   companion object {
     fun of(record: ObservationStratumVariabilityRecord): ObservationStratumVariabilityModel =
         with(record) {
-          val recommendation = recommendedPlotCount?.let {
-            val type =
-                if (it > configuredPlotCountAtCompletion!!) PlotCountRecommendationType.Increase
-                else PlotCountRecommendationType.Decrease
-            ObservationPlotCountRecommendation(type, it)
-          }
+          val recommendation =
+              recommendedPlotCount
+                  ?.takeIf { recommendationResolutionId == null }
+                  ?.let { plotCount ->
+                    val type =
+                        if (plotCount > configuredPlotCountAtCompletion!!) {
+                          PlotCountRecommendationType.Increase
+                        } else {
+                          PlotCountRecommendationType.Decrease
+                        }
+                    ObservationPlotCountRecommendation(type, plotCount)
+                  }
 
           ObservationStratumVariabilityModel(
               observationId = observationId!!,

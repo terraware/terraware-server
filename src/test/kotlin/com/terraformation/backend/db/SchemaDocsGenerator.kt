@@ -474,6 +474,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "planting_types" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
                   "plot_precision_levels" to setOf(ALL, TRACKING),
+                  "plot_count_recommendation_resolutions" to setOf(ALL, TRACKING),
                   "plot_selection_modes" to setOf(ALL, TRACKING),
                   "plot_t0_densities" to setOf(ALL, TRACKING),
                   "plot_t0_observations" to setOf(ALL, TRACKING),
