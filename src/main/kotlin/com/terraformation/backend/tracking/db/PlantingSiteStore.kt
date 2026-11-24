@@ -29,6 +29,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlotCountRecommendationResolution
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
+import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -1252,6 +1253,10 @@ class PlantingSiteStore(
       plantingSiteId: PlantingSiteId,
       defaultPlotPrecisionLevel: PlotPrecisionLevel,
       settings: Map<StratumId, Map<ObservationType, (StratumPlotCounts) -> StratumPlotCounts>>,
+      source: StratumPlotSelectionSettingsChangedEventSource =
+          StratumPlotSelectionSettingsChangedEventSource.UserEdit,
+      observationId: ObservationId? = null,
+      measuredVariability: BigDecimal? = null,
   ) {
     entityLocker.withLockedPlantingSite(plantingSiteId) {
       requirePlotSettingsEditable(plantingSiteId)
@@ -1281,12 +1286,14 @@ class PlantingSiteStore(
         val edited = previous + parameters
         writePlotParameters(stratumId, edited)
         publishPlotSelectionSettingsChanged(
-            StratumPlotSelectionSettingsChangedEventSource.UserEdit,
+            source,
             stratumId,
             plantingSiteId,
             stratum.name,
             edited,
             previous,
+            observationId,
+            measuredVariability,
         )
         val changedTypes =
             parameters.keys
@@ -1319,6 +1326,51 @@ class PlantingSiteStore(
 
       val snapshot = fetchCurrentPlotCountRecommendation(plantingSiteId, stratumId, observationId)
       resolvePlotCountRecommendation(snapshot, PlotCountRecommendationResolution.Dismissed)
+    }
+  }
+
+  fun acceptPlotCountRecommendation(
+      plantingSiteId: PlantingSiteId,
+      stratumId: StratumId,
+      observationId: ObservationId,
+  ) {
+    entityLocker.withLockedPlantingSite(plantingSiteId) {
+      requirePlotSettingsEditable(plantingSiteId)
+
+      val snapshot = fetchCurrentPlotCountRecommendation(plantingSiteId, stratumId, observationId)
+      val measuredVariability = BigDecimal.valueOf(snapshot.measuredVariability!!)
+      val variability =
+          if (snapshot.recommendedPlotCount!! > snapshot.configuredPlotCountAtCompletion!!) {
+                measuredVariability
+              } else {
+                BigDecimal.valueOf(snapshot.plausibleVariabilityHigh!!)
+              }
+              .coerceIn(BigDecimal.ONE, BigDecimal("200"))
+      val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      val monitoringSettings =
+          mapOf(
+              ObservationType.Monitoring to
+                  { current: StratumPlotCounts ->
+                    if (current.mode == PlotSelectionMode.Direct) {
+                      throw PlotCountRecommendationNotAvailableException(stratumId, observationId)
+                    }
+                    current
+                        .copy(
+                            variance = variability.pow(2),
+                        )
+                        .recalculatePlotCounts(ObservationType.Monitoring)
+                  }
+          )
+      val settings = mapOf(stratumId to monitoringSettings)
+      updatePlotSelectionSettings(
+          plantingSiteId,
+          site.defaultPlotPrecisionLevel,
+          settings,
+          source = StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation,
+          observationId = observationId,
+          measuredVariability = measuredVariability,
+      )
+      resolvePlotCountRecommendation(snapshot, PlotCountRecommendationResolution.Accepted)
     }
   }
 
@@ -1635,8 +1687,14 @@ class PlantingSiteStore(
       stratumName: String,
       settings: Map<ObservationType, StratumPlotCounts>,
       previous: Map<ObservationType, StratumPlotCounts> = emptyMap(),
+      observationId: ObservationId? = null,
+      measuredVariability: BigDecimal? = null,
   ) {
-    val changed = settings.filter { (type, counts) -> counts != previous[type] }
+    val changed = settings.filter { (type, counts) ->
+      counts != previous[type] ||
+          (source == StratumPlotSelectionSettingsChangedEventSource.AcceptedRecommendation &&
+              type == ObservationType.Monitoring)
+    }
     if (changed.isEmpty()) {
       return
     }
@@ -1654,6 +1712,8 @@ class PlantingSiteStore(
                   observationType = type,
                   counts = counts,
                   previous = previous[type],
+                  observationId = observationId,
+                  measuredVariability = measuredVariability,
               )
           )
         }

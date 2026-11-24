@@ -38,6 +38,19 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class PlotSettingsController(private val plantingSiteStore: PlantingSiteStore) {
+  @PostMapping("/{id}/plotSettings/recommendations/accept")
+  @Operation(summary = "Accepts the current plot count recommendation for a stratum.")
+  @ApiResponse200
+  @ApiResponse404
+  @ApiResponse409
+  fun acceptPlotCountRecommendation(
+      @PathVariable id: PlantingSiteId,
+      @RequestBody payload: ResolvePlotCountRecommendationRequestPayload,
+  ): SuccessResponsePayload {
+    plantingSiteStore.acceptPlotCountRecommendation(id, payload.stratumId, payload.observationId)
+    return SimpleSuccessResponsePayload()
+  }
+
   @PostMapping("/{id}/plotSettings/recommendations/dismiss")
   @Operation(summary = "Dismisses the current plot count recommendation for a stratum.")
   @ApiResponse200
