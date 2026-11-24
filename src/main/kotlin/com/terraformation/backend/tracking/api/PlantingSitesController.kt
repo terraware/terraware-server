@@ -30,6 +30,9 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.MEDIA_TYPE_SVG
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.PlantingSiteMapEditService
+import com.terraformation.backend.tracking.PlantingSiteMapExporter
+import com.terraformation.backend.tracking.PlantingSiteMapFormat
+import com.terraformation.backend.tracking.PlantingSiteMapLayer
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -78,6 +81,8 @@ import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -90,6 +95,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import tools.jackson.databind.annotation.JsonDeserialize
 
 /** Largest thumbnail canvas the server will render, to keep a single request cheap. */
@@ -109,6 +115,7 @@ class PlantingSitesController(
     private val observationResultsRecalculator: ObservationResultsRecalculator,
     private val observationStore: ObservationStore,
     private val plantingSiteMapEditService: PlantingSiteMapEditService,
+    private val plantingSiteMapExporter: PlantingSiteMapExporter,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteService: PlantingSiteService,
 ) {
@@ -244,6 +251,78 @@ class PlantingSitesController(
             simplified ?: true,
         )
     return GetPlantingSiteHistoryResponsePayload(PlantingSiteHistoryPayload(model))
+  }
+
+  @ApiResponse(
+      content =
+          [
+              Content(
+                  mediaType = "application/zip",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+              Content(
+                  mediaType = "application/vnd.google-earth.kml+xml",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+          ],
+      responseCode = "200",
+  )
+  @GetMapping("/{id}/history/{historyId}/download")
+  @ApiResponse409("The planting site map version is incomplete.")
+  @Operation(summary = "Downloads a planting site map version.")
+  fun downloadPlantingSiteMap(
+      @PathVariable id: PlantingSiteId,
+      @PathVariable historyId: PlantingSiteHistoryId,
+      @RequestParam format: PlantingSiteMapFormat,
+  ): ResponseEntity<StreamingResponseBody> =
+      plantingSiteMapDownload(
+          "planting-site-$id-version-$historyId",
+          format,
+          plantingSiteMapExporter.fetchLayers(id, historyId),
+      )
+
+  @ApiResponse(
+      content =
+          [
+              Content(
+                  mediaType = "application/zip",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+              Content(
+                  mediaType = "application/vnd.google-earth.kml+xml",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+          ],
+      responseCode = "200",
+  )
+  @GetMapping("/{id}/download")
+  @ApiResponse409("The current planting site map is incomplete.")
+  @Operation(summary = "Downloads the current planting site map.")
+  fun downloadCurrentPlantingSiteMap(
+      @PathVariable id: PlantingSiteId,
+      @RequestParam format: PlantingSiteMapFormat,
+  ): ResponseEntity<StreamingResponseBody> =
+      plantingSiteMapDownload(
+          "planting-site-$id",
+          format,
+          plantingSiteMapExporter.fetchCurrentLayers(id),
+      )
+
+  private fun plantingSiteMapDownload(
+      basename: String,
+      format: PlantingSiteMapFormat,
+      layers: List<PlantingSiteMapLayer>,
+  ): ResponseEntity<StreamingResponseBody> {
+    val filename = "$basename.${format.extension}"
+    val contentDisposition = ContentDisposition.attachment().filename(filename).build().toString()
+    val contentType = MediaType.parseMediaType(format.mediaType)
+    val body = StreamingResponseBody { output ->
+      plantingSiteMapExporter.write(format, layers, output)
+    }
+    return ResponseEntity.ok()
+        .contentType(contentType)
+        .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+        .body(body)
   }
 
   @ApiResponse200Svg
