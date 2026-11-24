@@ -145,6 +145,28 @@ class ReportIndicatorStore(
         .fetch { CommonIndicatorModel.of(it) }
   }
 
+  fun fetchCommonIndicatorsForProject(projectId: ProjectId): List<ExistingCommonIndicatorModel> {
+    requirePermissions { readProjectIndicators(projectId) }
+
+    return dslContext
+        .select(COMMON_INDICATORS.asterisk(), PROJECT_COMMON_INDICATORS.asterisk())
+        .from(COMMON_INDICATORS)
+        .join(PROJECT_COMMON_INDICATORS)
+        .on(PROJECT_COMMON_INDICATORS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID))
+        .where(PROJECT_COMMON_INDICATORS.PROJECT_ID.eq(projectId))
+        .orderBy(PROJECT_COMMON_INDICATORS.REF_ID.asc().nullsLast(), COMMON_INDICATORS.ID)
+        .fetch { record ->
+          CommonIndicatorModel.of(record)
+              .copy(
+                  active = record[PROJECT_COMMON_INDICATORS.ACTIVE]!!,
+                  isPublishable = record[PROJECT_COMMON_INDICATORS.IS_PUBLISHABLE]!!,
+                  notes = record[PROJECT_COMMON_INDICATORS.NOTES],
+                  primaryDataSource = record[PROJECT_COMMON_INDICATORS.PRIMARY_DATA_SOURCE],
+                  refId = record[PROJECT_COMMON_INDICATORS.REF_ID],
+              )
+        }
+  }
+
   fun fetchOneProjectIndicator(indicatorId: ProjectIndicatorId): ExistingProjectIndicatorModel {
     val indicator = fetchProjectIndicators(PROJECT_INDICATORS.ID.eq(indicatorId)).firstOrNull()
 

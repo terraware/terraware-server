@@ -1071,4 +1071,79 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
     }
   }
+
+  @Nested
+  inner class ProjectSettings {
+
+    private lateinit var projectId: ProjectId
+    private lateinit var otherProjectId: ProjectId
+
+    @BeforeEach
+    fun setup() {
+      insertOrganization()
+      projectId = insertProject()
+      otherProjectId = insertProject()
+      insertOrganizationUser(role = Role.Admin)
+    }
+
+    @Test
+    fun `lists common settings for only the selected project including inactive rows`() {
+      insertCommonIndicator()
+      assertEquals(emptyList<Any>(), store.fetchCommonIndicatorsForProject(projectId))
+      val refs = listOf(null, "1", "1")
+      val models = refs.map { refId ->
+        val id =
+            insertCommonIndicator(
+                notes = "global",
+                primaryDataSource = "global",
+                refId = "global",
+            )
+        insertProjectCommonIndicator(
+            active = false,
+            commonIndicatorId = id,
+            isPublishable = true,
+            notes = "project",
+            primaryDataSource = "source",
+            projectId = projectId,
+            refId = refId,
+        )
+        insertProjectCommonIndicator(
+            commonIndicatorId = id,
+            projectId = otherProjectId,
+            refId = "other",
+        )
+        ExistingCommonIndicatorModel(
+            active = false,
+            category = IndicatorCategory.ProjectObjectives,
+            classId = IndicatorClass.NotCumulative,
+            description = null,
+            id = id,
+            isPublishable = true,
+            level = IndicatorLevel.Goal,
+            name = "Indicator name",
+            notes = "project",
+            precision = 0,
+            primaryDataSource = "source",
+            refId = refId,
+            tfOwner = "Carbon",
+        )
+      }
+      assertEquals(
+          listOf(models[1], models[2], models[0]),
+          store.fetchCommonIndicatorsForProject(projectId),
+      )
+      assertEquals(
+          models.map {
+            it.copy(
+                active = true,
+                isPublishable = false,
+                notes = null,
+                primaryDataSource = null,
+                refId = "other",
+            )
+          },
+          store.fetchCommonIndicatorsForProject(otherProjectId),
+      )
+    }
+  }
 }

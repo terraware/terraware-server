@@ -39,6 +39,18 @@ class IndicatorsController(private val indicatorStore: ReportIndicatorStore) {
       )
 
   @ApiResponse200
+  @GetMapping("/projects/{projectId}/common")
+  @Operation(summary = "List common indicators with project settings.")
+  fun listProjectCommonIndicators(
+      @PathVariable projectId: ProjectId
+  ): ListCommonIndicatorsResponsePayload =
+      ListCommonIndicatorsResponsePayload(
+          indicatorStore.fetchCommonIndicatorsForProject(projectId).map {
+            ExistingCommonIndicatorPayload(it)
+          }
+      )
+
+  @ApiResponse200
   @GetMapping("/projects/{projectId}/project")
   @Operation(summary = "List project-specific indicators.")
   fun listProjectSpecificIndicators(
