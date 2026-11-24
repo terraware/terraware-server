@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.model.ExistingCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.NewCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.NewProjectIndicatorModel
+import com.terraformation.backend.accelerator.model.ProjectAutoCalculatedIndicatorModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CommonIndicatorNotFoundException
 import com.terraformation.backend.db.DatabaseTest
@@ -17,8 +18,10 @@ import com.terraformation.backend.db.accelerator.IndicatorFrequency
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectAutoCalculatedIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
+import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -1148,6 +1151,45 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `lists auto-calculated settings ordered by project reference and indicator ID`() {
+      assertEquals(emptyList<Any>(), store.fetchAutoCalculatedIndicatorsForProject(projectId))
+      val indicators =
+          listOf(
+              AutoCalculatedIndicator.SeedsCollected,
+              AutoCalculatedIndicator.Seedlings,
+              AutoCalculatedIndicator.TreesPlanted,
+          )
+      val models = indicators.mapIndexed { index, indicator ->
+        val refId = if (index == 0) null else "1"
+        insertProjectAutoCalculatedIndicator(
+            active = false,
+            autoCalculatedIndicatorId = indicator,
+            isPublishable = true,
+            notes = "project",
+            primaryDataSource = "source",
+            projectId = projectId,
+            refId = refId,
+        )
+        ProjectAutoCalculatedIndicatorModel(
+            active = false,
+            indicator = indicator,
+            isPublishable = true,
+            notes = "project",
+            primaryDataSource = "source",
+            refId = refId,
+        )
+      }
+      insertProjectAutoCalculatedIndicator(
+          autoCalculatedIndicatorId = AutoCalculatedIndicator.HectaresPlanted,
+          projectId = otherProjectId,
+      )
+      assertEquals(
+          listOf(models[1], models[2], models[0]),
+          store.fetchAutoCalculatedIndicatorsForProject(projectId),
+      )
+    }
+
+    @Test
     fun `updates shared common fields and only one project's settings`() {
       insertCommonIndicator(
           active = false,
@@ -1246,6 +1288,66 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `updates only one project's auto-calculated settings and preserves the data source`() {
+      val indicator = AutoCalculatedIndicator.SeedsCollected
+      insertProjectAutoCalculatedIndicator(
+          autoCalculatedIndicatorId = indicator,
+          primaryDataSource = "Manual source",
+          projectId = projectId,
+          refId = "old",
+      )
+      insertProjectAutoCalculatedIndicator(
+          autoCalculatedIndicatorId = indicator,
+          primaryDataSource = "Other source",
+          projectId = otherProjectId,
+          refId = "other",
+      )
+      val expectedGlobal = dslContext.selectFrom(AUTO_CALCULATED_INDICATORS).fetch()
+      listOf(null to null, "2.0" to "2.0").forEach { (refId, expectedRefId) ->
+        store.updateAutoCalculatedIndicatorForProject(
+            projectId,
+            indicator,
+            active = false,
+            isPublishable = true,
+            notes = "New notes",
+            refId = refId,
+        )
+        assertTableEquals(
+            listOf(
+                ProjectAutoCalculatedIndicatorsRecord(
+                    active = false,
+                    autoCalculatedIndicatorId = indicator,
+                    isPublishable = true,
+                    notes = "New notes",
+                    primaryDataSource = "Manual source",
+                    projectId = projectId,
+                    refId = expectedRefId,
+                ),
+                ProjectAutoCalculatedIndicatorsRecord(
+                    active = true,
+                    autoCalculatedIndicatorId = indicator,
+                    isPublishable = false,
+                    primaryDataSource = "Other source",
+                    projectId = otherProjectId,
+                    refId = "other",
+                ),
+            )
+        )
+      }
+      assertTableEquals(expectedGlobal)
+      assertThrows<ProjectAutoCalculatedIndicatorNotFoundException> {
+        store.updateAutoCalculatedIndicatorForProject(
+            projectId,
+            AutoCalculatedIndicator.Seedlings,
+            active = true,
+            isPublishable = false,
+            notes = null,
+            refId = null,
+        )
+      }
+    }
+
+    @Test
     fun `requires read permission for project lists and manage permission for updates`() {
       insertCommonIndicator()
       val model = store.fetchOneCommonIndicator(inserted.commonIndicatorId)
@@ -1253,16 +1355,38 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
       assertThrows<AccessDeniedException> { store.fetchCommonIndicatorsForProject(projectId) }
-
+      assertThrows<AccessDeniedException> {
+        store.fetchAutoCalculatedIndicatorsForProject(projectId)
+      }
       assertThrows<AccessDeniedException> {
         store.updateCommonIndicatorForProject(projectId, inserted.commonIndicatorId, model)
       }
-
+      assertThrows<AccessDeniedException> {
+        store.updateAutoCalculatedIndicatorForProject(
+            projectId,
+            AutoCalculatedIndicator.SeedsCollected,
+            active = true,
+            isPublishable = false,
+            notes = null,
+            refId = null,
+        )
+      }
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Admin)
       assertEquals(emptyList<Any>(), store.fetchCommonIndicatorsForProject(projectId))
+      assertEquals(emptyList<Any>(), store.fetchAutoCalculatedIndicatorsForProject(projectId))
       assertThrows<AccessDeniedException> {
         store.updateCommonIndicatorForProject(projectId, inserted.commonIndicatorId, model)
+      }
+      assertThrows<AccessDeniedException> {
+        store.updateAutoCalculatedIndicatorForProject(
+            projectId,
+            AutoCalculatedIndicator.SeedsCollected,
+            active = true,
+            isPublishable = false,
+            notes = null,
+            refId = null,
+        )
       }
     }
   }
