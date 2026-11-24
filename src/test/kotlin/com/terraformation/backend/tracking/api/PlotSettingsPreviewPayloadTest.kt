@@ -7,6 +7,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.e
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -46,14 +47,14 @@ class PlotSettingsPreviewPayloadTest {
         "Observation type order",
     )
     assertEquals(
-        PlotCountsPreviewPayload(8, 3, current.expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(8, 3, 8, 3, current.expectedPrecision),
         monitoring.current,
-        "Current settings retain stored counts and precision",
+        "Current settings retain stored counts, placeable counts, and precision",
     )
     assertEquals(
-        PlotCountsPreviewPayload(7, 3, proposed.expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(7, 3, 7, 3, proposed.expectedPrecision),
         monitoring.proposed,
-        "Proposed settings use edited counts and variance",
+        "Proposed settings use edited counts, placeable counts, and variance",
     )
     val biomass = actual.single { it.observationType == ObservationType.BiomassMeasurements }
     assertEquals(biomass.current, biomass.proposed, "Omitted edits preserve current settings")
@@ -95,7 +96,13 @@ class PlotSettingsPreviewPayloadTest {
             .settings
             .first()
     assertEquals(
-        PlotCountsPreviewPayload(7, 3, counts.copy(numPermanentPlots = 7).expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(
+            7,
+            3,
+            7,
+            3,
+            counts.copy(numPermanentPlots = 7).expectedPrecision,
+        ),
         actual.proposed,
         "A valid Direct proposal remains available despite oversized alternatives",
     )
@@ -135,5 +142,57 @@ class PlotSettingsPreviewPayloadTest {
           )
           .toSettings(model)
     }
+  }
+
+  @Test
+  fun `preview reports placeable permanent and temporary counts for small and unmapped sites`() {
+    val smallSite =
+        existingSite(width = 60, height = 60) {
+          stratum(plantNumPermanent = 2, plantNumTemporary = 1) {
+            substratum {
+              plot(x = 0, y = 0, permanentIndex = 1)
+              plot(x = 30, y = 0, permanentIndex = 2)
+              plot(x = 0, y = 30, permanentIndex = 3)
+              plot(x = 30, y = 30, permanentIndex = 4)
+            }
+          }
+        }
+    val stratum = smallSite.strata.single()
+    val allObserved = stratum.substrata.single().monitoringPlots.map { it.id }.toSet()
+    val oversized =
+        mapOf(
+            stratum.id to
+                mapOf(
+                    ObservationType.Monitoring to
+                        stratum.plantPlotCounts.copy(numPermanentPlots = 6, numTemporaryPlots = 2)
+                )
+        )
+
+    val unobserved =
+        PlotSettingsPreviewResponsePayload(smallSite, oversized).strata.single().settings.first()
+    assertEquals(2, unobserved.current.numPlaceablePermanentPlots, "Current placeable permanent")
+    assertEquals(1, unobserved.current.numPlaceableTemporaryPlots, "Current placeable temporary")
+    assertEquals(3, unobserved.proposed.numPlaceablePermanentPlots, "Shortfall placeable permanent")
+    assertEquals(1, unobserved.proposed.numPlaceableTemporaryPlots, "Shortfall placeable temporary")
+
+    val observed =
+        PlotSettingsPreviewResponsePayload(smallSite, oversized, allObserved)
+            .strata
+            .single()
+            .settings
+            .first()
+    assertEquals(4, observed.proposed.numPlaceablePermanentPlots, "Observed plots stay permanent")
+    assertEquals(0, observed.proposed.numPlaceableTemporaryPlots, "No room for temporary plots")
+
+    val unmapped =
+        PlotSettingsPreviewResponsePayload(smallSite.copy(gridOrigin = null), oversized)
+            .strata
+            .single()
+            .settings
+            .first()
+    assertNull(unmapped.current.numPlaceablePermanentPlots, "Unmapped current permanent")
+    assertNull(unmapped.current.numPlaceableTemporaryPlots, "Unmapped current temporary")
+    assertNull(unmapped.proposed.numPlaceablePermanentPlots, "Unmapped proposed permanent")
+    assertNull(unmapped.proposed.numPlaceableTemporaryPlots, "Unmapped proposed temporary")
   }
 }

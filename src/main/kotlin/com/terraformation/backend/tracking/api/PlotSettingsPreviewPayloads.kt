@@ -1,22 +1,38 @@
 package com.terraformation.backend.tracking.api
 
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
+import com.terraformation.backend.tracking.model.PlaceablePlotCounts
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
+import com.terraformation.backend.tracking.model.StratumPlotAllocator
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 
 data class PlotSettingsPreviewResponsePayload(val strata: List<StratumPlotSettingsPreviewPayload>) :
     SuccessResponsePayload {
   constructor(
       site: ExistingPlantingSiteModel,
       settings: Map<StratumId, Map<ObservationType, StratumPlotCounts>>,
-  ) : this(site.strata.map { StratumPlotSettingsPreviewPayload(it, settings[it.id].orEmpty()) })
+      observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+  ) : this(
+      site.strata.map {
+        StratumPlotSettingsPreviewPayload(
+            it,
+            settings[it.id].orEmpty(),
+            site.gridOrigin,
+            site.exclusion,
+            observedPermanentPlotIds,
+        )
+      }
+  )
 }
 
 data class StratumPlotSettingsPreviewPayload(
@@ -27,21 +43,58 @@ data class StratumPlotSettingsPreviewPayload(
   constructor(
       model: ExistingStratumModel,
       proposed: Map<ObservationType, StratumPlotCounts>,
+      gridOrigin: Point? = null,
+      exclusion: MultiPolygon? = null,
+      observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
   ) : this(
       stratumId = model.id,
       name = model.name,
       settings =
-          ObservationType.entries.map {
-            val current = model.plotCounts(it)
-            PlotSettingPreviewPayload(it, current, proposed[it] ?: current)
+          run {
+            val proposedModel = if (proposed.isEmpty()) model else model.withPlotCounts(proposed)
+            val maxPermanentChanged = proposedModel.maxPermanentPlots != model.maxPermanentPlots
+            ObservationType.entries.map { type ->
+              val currentCounts = model.plotCounts(type)
+              val proposedCounts = proposed[type] ?: currentCounts
+              val currentPlaceable = gridOrigin?.let {
+                StratumPlotAllocator(model, type, it, exclusion, observedPermanentPlotIds)
+                    .countPlaceable()
+              }
+              val proposedPlaceable =
+                  if (
+                      proposedCounts.numPermanentPlots == currentCounts.numPermanentPlots &&
+                          proposedCounts.numTemporaryPlots == currentCounts.numTemporaryPlots &&
+                          !maxPermanentChanged
+                  ) {
+                    currentPlaceable
+                  } else {
+                    gridOrigin?.let {
+                      StratumPlotAllocator(
+                              proposedModel,
+                              type,
+                              it,
+                              exclusion,
+                              observedPermanentPlotIds,
+                          )
+                          .countPlaceable()
+                    }
+                  }
+              PlotSettingPreviewPayload(
+                  type,
+                  currentCounts,
+                  proposedCounts,
+                  currentPlaceable,
+                  proposedPlaceable,
+              )
+            }
           },
   )
 }
 
 data class PlotSettingPreviewPayload(
     val observationType: ObservationType,
-    val current: PlotCountsPreviewPayload,
-    val proposed: PlotCountsPreviewPayload,
+    val current: PlaceablePlotCountsPreviewPayload,
+    val proposed: PlaceablePlotCountsPreviewPayload,
     @ArraySchema(
         arraySchema =
             Schema(
@@ -63,10 +116,12 @@ data class PlotSettingPreviewPayload(
       type: ObservationType,
       current: StratumPlotCounts,
       proposed: StratumPlotCounts,
+      currentPlaceable: PlaceablePlotCounts? = null,
+      proposedPlaceable: PlaceablePlotCounts? = null,
   ) : this(
       observationType = type,
-      current = PlotCountsPreviewPayload(current),
-      proposed = PlotCountsPreviewPayload(proposed),
+      current = PlaceablePlotCountsPreviewPayload(current, currentPlaceable),
+      proposed = PlaceablePlotCountsPreviewPayload(proposed, proposedPlaceable),
       precisionLevels =
           PlotPrecisionLevel.entries
               .sortedBy { it.id }
@@ -89,6 +144,33 @@ data class PrecisionLevelPlotCountsPreviewPayload(
     val plotPrecisionLevel: PlotPrecisionLevel,
     val counts: PlotCountsPreviewPayload,
 )
+
+data class PlaceablePlotCountsPreviewPayload(
+    val numPermanentPlots: Int,
+    val numTemporaryPlots: Int,
+    @Schema(
+        description =
+            "Permanent plots that fit in the stratum, or null if the planting site has no map."
+    )
+    val numPlaceablePermanentPlots: Int?,
+    @Schema(
+        description =
+            "Temporary plots that fit in the stratum, or null if the planting site has no map."
+    )
+    val numPlaceableTemporaryPlots: Int?,
+    val expectedPrecision: Double?,
+) {
+  constructor(
+      counts: StratumPlotCounts,
+      placeable: PlaceablePlotCounts? = null,
+  ) : this(
+      numPermanentPlots = counts.numPermanentPlots,
+      numTemporaryPlots = counts.numTemporaryPlots,
+      numPlaceablePermanentPlots = placeable?.numPermanentPlots,
+      numPlaceableTemporaryPlots = placeable?.numTemporaryPlots,
+      expectedPrecision = counts.expectedPrecision,
+  )
+}
 
 data class PlotCountsPreviewPayload(
     val numPermanentPlots: Int?,
