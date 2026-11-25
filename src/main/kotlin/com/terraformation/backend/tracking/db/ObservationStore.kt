@@ -7,6 +7,7 @@ import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
@@ -719,27 +720,81 @@ class ObservationStore(
         updateSubstratumObservedTime(substratumId, observedTime)
       }
 
-      val allPlotsCompleted =
-          dslContext
-              .selectOne()
-              .from(OBSERVATION_PLOTS)
-              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-              .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
-              .limit(1)
-              .fetch()
-              .isEmpty()
-
-      if (allPlotsCompleted) {
-        if (
-            observationType == ObservationType.Monitoring &&
-                !isAdHoc &&
-                !parentFetcher.isProjectInAccelerator(plantingSite.projectId)
-        ) {
-          variabilityStore.recordVariability(observationId)
-        }
-        completeObservation(observationId, isAdHoc)
-      }
+      completeObservationIfAllPlotsCompleted(
+          observationId,
+          observationType,
+          isAdHoc,
+          plantingSite.projectId,
+      )
     }
+  }
+
+  /**
+   * Completes an in-progress or overdue observation if it has plots and all of them are completed.
+   * This happens when the last incomplete plot is completed, but can also happen when the last
+   * incomplete plot is removed, e.g., because it was replaced and there was nothing to replace it
+   * with.
+   *
+   * @return True if the observation was completed.
+   */
+  fun completeObservationIfAllPlotsCompleted(observationId: ObservationId): Boolean {
+    requirePermissions { updateObservation(observationId) }
+
+    val observation = fetchObservationById(observationId)
+    if (
+        observation.state != ObservationState.InProgress &&
+            observation.state != ObservationState.Overdue
+    ) {
+      return false
+    }
+
+    val projectId =
+        dslContext
+            .select(PLANTING_SITES.PROJECT_ID)
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.ID.eq(observation.plantingSiteId))
+            .fetchOne(PLANTING_SITES.PROJECT_ID)
+
+    return completeObservationIfAllPlotsCompleted(
+        observationId,
+        observation.observationType,
+        observation.isAdHoc,
+        projectId,
+    )
+  }
+
+  private fun completeObservationIfAllPlotsCompleted(
+      observationId: ObservationId,
+      observationType: ObservationType,
+      isAdHoc: Boolean,
+      projectId: ProjectId?,
+  ): Boolean {
+    val hasIncompletePlots =
+        dslContext.fetchExists(
+            OBSERVATION_PLOTS,
+            OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId),
+            OBSERVATION_PLOTS.COMPLETED_TIME.isNull,
+        )
+    val hasPlots =
+        dslContext.fetchExists(
+            OBSERVATION_PLOTS,
+            OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId),
+        )
+
+    if (hasIncompletePlots || !hasPlots) {
+      return false
+    }
+
+    if (
+        observationType == ObservationType.Monitoring &&
+            !isAdHoc &&
+            !parentFetcher.isProjectInAccelerator(projectId)
+    ) {
+      variabilityStore.recordVariability(observationId)
+    }
+    completeObservation(observationId, isAdHoc)
+
+    return true
   }
 
   /** Updates the observed time of a substratum if it wasn't already observed more recently. */

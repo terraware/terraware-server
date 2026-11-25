@@ -947,14 +947,23 @@ class ObservationService(
       // If no replacement could be found for the last plot of an in-progress observation, the
       // observation can no longer be conducted. It has no completed plots, so this deletes it. An
       // upcoming observation without plots is left alone; it gets plots when it starts, possibly
-      // from other requested substrata.
+      // from other requested substrata. If the plot was the last incomplete one, the observation
+      // is done.
       val isObservationDeleted =
           observation.state != ObservationState.Upcoming &&
               !observationPlotStore.hasPlots(observationId)
-      if (isObservationDeleted) {
-        log.info("Replacement left the observation without any plots")
-        abandonUnstartableObservation(observation)
-      }
+      val isObservationCompleted =
+          if (isObservationDeleted) {
+            log.info("Replacement left the observation without any plots")
+            abandonUnstartableObservation(observation)
+            false
+          } else {
+            observationStore.completeObservationIfAllPlotsCompleted(observationId).also {
+              if (it) {
+                log.info("Replacement left only completed plots; completed the observation")
+              }
+            }
+          }
 
       ReplacementResult(
           addedPlotIds,
@@ -964,6 +973,7 @@ class ObservationService(
           deletedObservationIds =
               upcomingOutcomes.filterValues { it == ReassignmentOutcome.Abandoned }.keys,
           isObservationDeleted = isObservationDeleted,
+          isObservationCompleted = isObservationCompleted,
       )
     }
   }

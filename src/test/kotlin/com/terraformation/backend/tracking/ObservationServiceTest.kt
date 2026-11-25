@@ -3240,6 +3240,38 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
+    @EnumSource(names = ["InProgress", "Overdue"])
+    @ParameterizedTest
+    fun `completes observation if no replacement is available for its last incomplete plot`(
+        state: ObservationState
+    ) {
+      observationsDao.update(observationsDao.fetchOneById(observationId)!!.copy(stateId = state))
+      insertSubstratum(width = 2, height = 1, plantingCompletedTime = Instant.EPOCH)
+      insertMonitoringPlot(x = 0)
+      insertObservationPlot(completedBy = user.userId)
+      val monitoringPlotId = insertMonitoringPlot(x = 1)
+      insertObservationPlot()
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId,
+              monitoringPlotId,
+              "Mudslide",
+              ReplacementDuration.Temporary,
+          )
+
+      assertEquals(
+          ReplacementResult(emptySet(), setOf(monitoringPlotId), isObservationCompleted = true),
+          result,
+      )
+      assertEquals(
+          ObservationState.Completed,
+          observationsDao.fetchOneById(observationId)!!.stateId,
+          "Observation state",
+      )
+      eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
+    }
+
     @Test
     fun `deletes observation if no replacement is available for its only plot`() {
       insertSubstratum(width = 2, height = 1, plantingCompletedTime = Instant.EPOCH)
