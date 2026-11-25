@@ -17,6 +17,11 @@ data class ReplacementResult(
      * deleted because they couldn't be given new plots.
      */
     val deletedObservationIds: Set<ObservationId> = emptySet(),
+    /**
+     * True if the observation whose plot was replaced was deleted because the replacement left it
+     * without any plots.
+     */
+    val isObservationDeleted: Boolean = false,
 ) {
   companion object {
     fun merge(results: Collection<ReplacementResult>): ReplacementResult {
@@ -25,6 +30,7 @@ data class ReplacementResult(
           results.flatMap { it.removedMonitoringPlotIds }.toSet(),
           results.flatMap { it.reassignedObservationIds }.toSet(),
           results.flatMap { it.deletedObservationIds }.toSet(),
+          results.any { it.isObservationDeleted },
       )
     }
   }

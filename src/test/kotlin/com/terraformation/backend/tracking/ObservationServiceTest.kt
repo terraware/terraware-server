@@ -153,6 +153,7 @@ import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ReplacementPreview
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
@@ -3240,7 +3241,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `does not return an unavailable plot even if there are no other options`() {
+    fun `deletes observation if no replacement is available for its only plot`() {
       insertSubstratum(width = 2, height = 1, plantingCompletedTime = Instant.EPOCH)
       val monitoringPlotId = insertMonitoringPlot(x = 0)
       insertObservationPlot()
@@ -3254,9 +3255,42 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ReplacementDuration.Temporary,
           )
 
-      assertEquals(ReplacementResult(emptySet(), setOf(monitoringPlotId)), result)
+      assertEquals(
+          ReplacementResult(emptySet(), setOf(monitoringPlotId), isObservationDeleted = true),
+          result,
+      )
 
       assertTableEmpty(OBSERVATION_PLOTS, "Observation should not have any plots")
+      assertTableEmpty(OBSERVATIONS, "Observation should have been deleted")
+      assertTrue(
+          monitoringPlotsDao.fetchOneById(monitoringPlotId)!!.isAvailable!!,
+          "Plot replaced temporarily should still be available",
+      )
+    }
+
+    @Test
+    fun `does not delete upcoming observation if no replacement is available for its only plot`() {
+      val upcomingObservationId = insertObservation(state = ObservationState.Upcoming)
+      insertSubstratum(width = 2, height = 1, plantingCompletedTime = Instant.EPOCH)
+      insertObservationRequestedSubstratum()
+      val monitoringPlotId = insertMonitoringPlot(x = 0)
+      insertObservationPlot()
+      insertMonitoringPlot(x = 1, isAvailable = false)
+
+      val result =
+          service.replaceMonitoringPlot(
+              upcomingObservationId,
+              monitoringPlotId,
+              "Mudslide",
+              ReplacementDuration.LongTerm,
+          )
+
+      assertEquals(ReplacementResult(emptySet(), setOf(monitoringPlotId)), result)
+      assertEquals(
+          ObservationState.Upcoming,
+          observationsDao.fetchOneById(upcomingObservationId)?.stateId,
+          "Observation should still be upcoming so it can be given plots when it starts",
+      )
     }
 
     @Test
@@ -3386,6 +3420,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ReplacementResult(
               addedMonitoringPlotIds = emptySet(),
               removedMonitoringPlotIds = setOf(plotId1),
+              isObservationDeleted = true,
           ),
           result,
       )
@@ -5567,13 +5602,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val plotId = fetchPermanentPlotId(observationId, editedStratumId)
 
       assertEquals(
-          listOf(
-              AffectedUpcomingObservation(
-                  observationId = upcomingObservationId,
-                  observationType = ObservationType.Monitoring,
-                  outcome = AffectedUpcomingObservationOutcome.PlotsReassigned,
-                  startDate = LocalDate.of(2023, 1, 1),
-              )
+          ReplacementPreview(
+              listOf(
+                  AffectedUpcomingObservation(
+                      observationId = upcomingObservationId,
+                      observationType = ObservationType.Monitoring,
+                      outcome = AffectedUpcomingObservationOutcome.PlotsReassigned,
+                      startDate = LocalDate.of(2023, 1, 1),
+                  )
+              ),
+              mayDeleteObservation = false,
           ),
           service.previewReplaceMonitoringPlot(observationId, plotId, ReplacementDuration.LongTerm),
       )
@@ -5589,13 +5627,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       excludeEntireSite()
 
       assertEquals(
-          listOf(
-              AffectedUpcomingObservation(
-                  observationId = upcomingObservationId,
-                  observationType = ObservationType.Monitoring,
-                  outcome = AffectedUpcomingObservationOutcome.ObservationDeleted,
-                  startDate = LocalDate.of(2023, 1, 1),
-              )
+          ReplacementPreview(
+              listOf(
+                  AffectedUpcomingObservation(
+                      observationId = upcomingObservationId,
+                      observationType = ObservationType.Monitoring,
+                      outcome = AffectedUpcomingObservationOutcome.ObservationDeleted,
+                      startDate = LocalDate.of(2023, 1, 1),
+                  )
+              ),
+              mayDeleteObservation = false,
           ),
           service.previewReplaceMonitoringPlot(observationId, plotId, ReplacementDuration.LongTerm),
       )
@@ -5609,10 +5650,46 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val plotId = fetchPermanentPlotId(observationId, editedStratumId)
 
       assertEquals(
-          emptyList<AffectedUpcomingObservation>(),
+          ReplacementPreview(emptyList(), mayDeleteObservation = false),
           service.previewReplaceMonitoringPlot(
               observationId,
               plotId,
+              ReplacementDuration.Temporary,
+          ),
+      )
+    }
+
+    @Test
+    fun `reports that replacing a started observation's only plot may delete it`() {
+      helper.insertPlantedSite(width = 2, height = 7, substratumCompletedTime = Instant.EPOCH)
+      val observationId = insertObservation()
+      insertObservationRequestedSubstratum()
+      val monitoringPlotId = insertMonitoringPlot()
+      insertObservationPlot()
+
+      assertEquals(
+          ReplacementPreview(emptyList(), mayDeleteObservation = true),
+          service.previewReplaceMonitoringPlot(
+              observationId,
+              monitoringPlotId,
+              ReplacementDuration.Temporary,
+          ),
+      )
+    }
+
+    @Test
+    fun `reports that replacing an upcoming observation's only plot does not delete it`() {
+      helper.insertPlantedSite(width = 2, height = 7, substratumCompletedTime = Instant.EPOCH)
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubstratum()
+      val monitoringPlotId = insertMonitoringPlot()
+      insertObservationPlot()
+
+      assertEquals(
+          ReplacementPreview(emptyList(), mayDeleteObservation = false),
+          service.previewReplaceMonitoringPlot(
+              observationId,
+              monitoringPlotId,
               ReplacementDuration.Temporary,
           ),
       )
