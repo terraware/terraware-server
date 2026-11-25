@@ -760,6 +760,19 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     // no quantity, no purpose
     insertSeedbankWithdrawal()
 
+    // custom purposes
+    val customPurposeId =
+        insertWithdrawalCustomPurpose(
+            name = "Sále",
+            type = WithdrawalCustomPurposeType.SeedBank,
+        )
+    insertSeedbankWithdrawal(
+        customPurposeId = customPurposeId,
+        purpose = WithdrawalPurpose.Other,
+        withdrawnQuantity = BigDecimal(6),
+    )
+    insertSeedbankWithdrawal(customPurposeId = customPurposeId, purpose = WithdrawalPurpose.Other)
+
     val accessionHistoryDefaults =
         AccessionHistoryModel(
             batchId = batchId,
@@ -811,6 +824,14 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             ),
             accessionHistoryDefaults.copy(
                 description = "withdrew seeds",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew 6 grams for other: Sále",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew seeds for other: Sále",
                 type = AccessionHistoryType.Withdrawal,
             ),
         )

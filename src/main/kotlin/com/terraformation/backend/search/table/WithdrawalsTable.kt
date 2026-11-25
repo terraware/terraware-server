@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -9,8 +10,10 @@ import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.column
 import org.jooq.Record
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -33,6 +36,17 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
+          textField("customPurpose") { table ->
+            DSL.field(
+                DSL.select(WITHDRAWAL_CUSTOM_PURPOSES.NAME.collate("default"))
+                    .from(WITHDRAWAL_CUSTOM_PURPOSES)
+                    .where(
+                        WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(
+                            table.column(WITHDRAWALS.CUSTOM_PURPOSE_ID)
+                        )
+                    )
+            )
+          },
           dateField("date", WITHDRAWALS.DATE),
           textField("destination", WITHDRAWALS.DESTINATION),
           longField("estimatedCount", WITHDRAWALS.ESTIMATED_COUNT),

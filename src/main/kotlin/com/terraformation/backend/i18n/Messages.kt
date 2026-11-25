@@ -615,14 +615,23 @@ class Messages {
   fun historyAccessionWithdrawal(
       quantity: SeedQuantityModel?,
       purpose: WithdrawalPurpose?,
+      customPurpose: String? = null,
   ): String {
     val quantityText = quantity?.let { seedQuantity(it) }
 
     // Use static message IDs so IDE can detect missing/misspelled ones
     return when {
+      quantityText != null && customPurpose != null ->
+          getMessage(
+              "historyAccessionQuantityWithdrawnForCustomPurpose",
+              quantityText,
+              customPurpose,
+          )
       quantityText != null && purpose != null ->
           getMessage("historyAccessionQuantityWithdrawnFor$purpose", quantityText)
       quantityText != null -> getMessage("historyAccessionQuantityWithdrawn", quantityText)
+      customPurpose != null ->
+          getMessage("historyAccessionWithdrawnForCustomPurpose", customPurpose)
       purpose != null -> getMessage("historyAccessionWithdrawnFor$purpose")
       else -> getMessage("historyAccessionWithdrawn")
     }
