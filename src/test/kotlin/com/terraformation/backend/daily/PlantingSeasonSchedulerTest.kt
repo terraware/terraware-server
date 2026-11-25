@@ -3,7 +3,7 @@ package com.terraformation.backend.daily
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
@@ -39,7 +39,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             clock,
             dslContext,
             eventPublisher,
-            ParentStore(dslContext),
+            ParentFetcher(dslContext),
             SeasonHelper(dslContext),
         ),
         PlantingSiteNotificationStore(clock, dslContext),

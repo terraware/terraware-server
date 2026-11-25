@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ReportId
@@ -26,7 +26,7 @@ data class FunderUser(
     override val cookiesConsentedTime: Instant? = null,
     override val locale: Locale? = null,
     override val timeZone: ZoneId? = null,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser {
   override val description: String
@@ -71,10 +71,10 @@ data class FunderUser(
   override fun canReadProjectFunderDetails(projectId: ProjectId) = projectId in projectIds
 
   override fun canReadPublishedActivity(activityId: ActivityId) =
-      parentStore.getProjectId(activityId) in projectIds
+      parentFetcher.getProjectId(activityId) in projectIds
 
   override fun canReadPublishedReport(reportId: ReportId) =
-      parentStore.getProjectId(reportId) in projectIds
+      parentFetcher.getProjectId(reportId) in projectIds
 
   override fun canReadPublishedReports(projectId: ProjectId) = projectId in projectIds
 

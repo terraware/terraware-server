@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.assertGeometryEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -286,7 +286,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               clock,
               dslContext,
               eventPublisher,
-              ParentStore(dslContext),
+              ParentFetcher(dslContext),
               SeasonHelper(dslContext),
           )
       eventPublisher.register<SubstratumDeletionStartedEvent> {

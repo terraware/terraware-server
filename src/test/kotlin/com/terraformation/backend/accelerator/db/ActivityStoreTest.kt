@@ -9,7 +9,7 @@ import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -43,7 +43,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val eventPublisher = TestEventPublisher()
   private val store: ActivityStore by lazy {
-    ActivityStore(clock, dslContext, eventPublisher, ParentStore(dslContext))
+    ActivityStore(clock, dslContext, eventPublisher, ParentFetcher(dslContext))
   }
 
   private lateinit var projectId: ProjectId

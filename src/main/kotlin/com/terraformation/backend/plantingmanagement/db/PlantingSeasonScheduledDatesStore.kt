@@ -1,7 +1,7 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
@@ -35,7 +35,7 @@ class PlantingSeasonScheduledDatesStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val seasonHelper: SeasonHelper,
 ) {
   fun fetchList(
@@ -368,10 +368,10 @@ class PlantingSeasonScheduledDatesStore(
     }
 
     val plantingSiteId =
-        parentStore.getPlantingSiteId(substratumId)
+        parentFetcher.getPlantingSiteId(substratumId)
             ?: throw SubstratumNotFoundException(substratumId)
     val organizationId =
-        parentStore.getOrganizationId(substratumId)
+        parentFetcher.getOrganizationId(substratumId)
             ?: throw SubstratumNotFoundException(substratumId)
     val substratumInfo =
         seasonHelper.fetchSubstrataInfo(listOf(substratumId)).getValue(substratumId)

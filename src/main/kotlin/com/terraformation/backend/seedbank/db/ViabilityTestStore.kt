@@ -1,6 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -29,7 +29,7 @@ import org.springframework.context.ApplicationEventPublisher
 @Named
 class ViabilityTestStore(
     private val dslContext: DSLContext,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
   fun fetchOneById(viabilityTestId: ViabilityTestId): ViabilityTestModel {
@@ -197,9 +197,10 @@ class ViabilityTestStore(
     calculatedTest.testResults?.forEach { insertTestResult(testId, it) }
 
     val facilityId =
-        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+        parentFetcher.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
     val organizationId =
-        parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+        parentFetcher.getOrganizationId(accessionId)
+            ?: throw AccessionNotFoundException(accessionId)
 
     eventPublisher.publishEvent(
         ViabilityTestCreatedEvent(
@@ -244,9 +245,10 @@ class ViabilityTestStore(
     val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id }.toSet())
 
     val facilityId =
-        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+        parentFetcher.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
     val organizationId =
-        parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+        parentFetcher.getOrganizationId(accessionId)
+            ?: throw AccessionNotFoundException(accessionId)
 
     if (deletedTestIds.isNotEmpty()) {
       dslContext

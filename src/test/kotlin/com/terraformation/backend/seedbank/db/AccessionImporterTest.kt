@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -71,7 +71,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val publisher = TestEventPublisher()
-  private val accessionHelper: AccessionHelper by lazy { AccessionHelper(parentStore) }
+  private val accessionHelper: AccessionHelper by lazy { AccessionHelper(parentFetcher) }
   private val accessionStore: AccessionStore by lazy {
     AccessionStore(
         accessionHelper,
@@ -79,9 +79,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         BagStore(dslContext),
         facilitiesDao,
         GeolocationStore(dslContext, clock),
-        ViabilityTestStore(dslContext, parentStore, publisher),
-        parentStore,
-        WithdrawalStore(dslContext, clock, messages, parentStore, publisher),
+        ViabilityTestStore(dslContext, parentFetcher, publisher),
+        parentFetcher,
+        WithdrawalStore(dslContext, clock, messages, parentFetcher, publisher),
         clock,
         publisher,
         messages,
@@ -109,7 +109,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         facilityStore,
         fileStore,
         messages,
-        parentStore,
+        parentFetcher,
         scheduler,
         speciesStore,
         uploadProblemsDao,
@@ -120,7 +120,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     )
   }
   private val messages: Messages = Messages()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val scheduler: JobScheduler = mockk()
   private val speciesStore: SpeciesStore by lazy {
     SpeciesStore(

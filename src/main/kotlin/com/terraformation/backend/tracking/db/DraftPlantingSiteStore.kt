@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -30,7 +30,7 @@ import org.springframework.security.access.AccessDeniedException
 class DraftPlantingSiteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
 ) {
   private val strataField: Field<List<DraftStratumModel>> = strataMultiset()
 
@@ -190,7 +190,7 @@ class DraftPlantingSiteStore(
   private fun requireProjectInOrganization(projectId: ProjectId?, organizationId: OrganizationId) {
     if (projectId != null) {
       requirePermissions { readProject(projectId) }
-      if (parentStore.getOrganizationId(projectId) != organizationId) {
+      if (parentFetcher.getOrganizationId(projectId) != organizationId) {
         throw ProjectInDifferentOrganizationException()
       }
     }

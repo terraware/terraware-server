@@ -7,7 +7,7 @@ import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
@@ -50,7 +50,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   @Autowired private lateinit var config: TerrawareServerConfig
   private val fundingEntityStore by lazy { FundingEntityStore(dslContext) }
   private val fundingEntityUserStore by lazy { FundingEntityUserStore(dslContext) }
-  private val parentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher by lazy { ParentFetcher(dslContext) }
   private val organizationStore by lazy {
     OrganizationStore(clock, dslContext, organizationsDao, publisher)
   }
@@ -64,7 +64,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
         InMemoryKeycloakAdminClient(),
         dummyKeycloakInfo(),
         organizationStore,
-        parentStore,
+        parentFetcher,
         PermissionStore(dslContext),
         publisher,
         usersDao,

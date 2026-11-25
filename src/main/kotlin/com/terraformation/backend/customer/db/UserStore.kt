@@ -84,7 +84,7 @@ class UserStore(
     private val keycloakAdminClient: KeycloakAdminClient,
     private val keycloakInfo: KeycloakInfo,
     private val organizationStore: OrganizationStore,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val permissionStore: PermissionStore,
     private val publisher: ApplicationEventPublisher,
     private val usersDao: UsersDao,
@@ -768,7 +768,7 @@ class UserStore(
         usersRow.locale,
         usersRow.timeZone,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
-        parentStore,
+        parentFetcher,
         permissionStore,
     )
   }
@@ -777,7 +777,7 @@ class UserStore(
     return DeviceManagerUser(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId ?: throw IllegalArgumentException("Auth ID should never be null"),
-        parentStore,
+        parentFetcher,
         permissionStore,
     )
   }
@@ -808,7 +808,7 @@ class UserStore(
         usersRow.cookiesConsentedTime,
         usersRow.locale,
         usersRow.timeZone,
-        parentStore,
+        parentFetcher,
         permissionStore,
     )
   }

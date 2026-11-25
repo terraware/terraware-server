@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertSetEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -47,7 +47,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val store: DeliveryStore by lazy {
-    DeliveryStore(clock, deliveriesDao, dslContext, ParentStore(dslContext), plantingsDao)
+    DeliveryStore(clock, deliveriesDao, dslContext, ParentFetcher(dslContext), plantingsDao)
   }
 
   private val plantingSiteId by lazy { insertPlantingSite() }

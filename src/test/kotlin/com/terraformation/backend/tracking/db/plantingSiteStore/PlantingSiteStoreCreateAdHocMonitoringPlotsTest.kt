@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertGeometryEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
@@ -43,7 +43,7 @@ class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDa
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,

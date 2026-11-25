@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -58,7 +58,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
   private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val geometrySimplifier: GeometrySimplifier = mockk()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, eventPublisher, filesDao, InMemoryFileStore())
   }
@@ -76,7 +76,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         }
   }
   private val observationPlotStore: ObservationPlotStore by lazy {
-    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentStore)
+    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentFetcher)
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
@@ -89,7 +89,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
-        parentStore,
+        parentFetcher,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
@@ -102,7 +102,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         geometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        parentStore,
+        parentFetcher,
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -117,7 +117,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
             entityLocker,
             eventPublisher,
             ObservationResultsInvalidator(dslContext),
-            parentStore,
+            parentFetcher,
         ),
         clock,
         dslContext,
@@ -132,7 +132,7 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
-        parentStore,
+        parentFetcher,
         eventPublisher,
         systemUser,
         mockk(),

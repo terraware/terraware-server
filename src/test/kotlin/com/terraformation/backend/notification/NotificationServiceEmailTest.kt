@@ -27,7 +27,7 @@ import com.terraformation.backend.customer.db.EmailNotificationSettingsStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
@@ -226,7 +226,7 @@ internal class NotificationServiceEmailTest {
   private val fundingEntityStore: FundingEntityStore = mockk()
   private val observationStore: ObservationStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
-  private val parentStore: ParentStore = mockk()
+  private val parentFetcher: ParentFetcher = mockk()
   private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore = mockk()
   private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore = mockk()
   private val plantingSeasonStore: PlantingSeasonStore = mockk()
@@ -275,7 +275,7 @@ internal class NotificationServiceEmailTest {
               config,
               emailNotificationSettingsStore,
               freeMarkerConfig,
-              parentStore,
+              parentFetcher,
               sender,
               userStore,
           )
@@ -300,7 +300,7 @@ internal class NotificationServiceEmailTest {
           notificationStore,
           observationStore,
           organizationStore,
-          parentStore,
+          parentFetcher,
           plantingSeasonScheduledDatesStore,
           plantingSeasonSpeciesTargetsStore,
           plantingSeasonStore,
@@ -636,19 +636,19 @@ internal class NotificationServiceEmailTest {
     every { organizationStore.fetchOneById(organization.id) } returns organization
     every { organizationStore.fetchOneById(nonAcceleratorOrganization.id) } returns
         nonAcceleratorOrganization
-    every { parentStore.getFacilityId(accessionId) } returns facility.id
-    every { parentStore.getFacilityName(accessionId) } returns facility.name
+    every { parentFetcher.getFacilityId(accessionId) } returns facility.id
+    every { parentFetcher.getFacilityName(accessionId) } returns facility.name
     every { emailNotificationSettingsStore.isOptedIn(any(), any()) } returns true
-    every { parentStore.getFundingEntityIds(project.id) } returns listOf(fundingEntity.id)
-    every { parentStore.getOrganizationId(accessionId) } returns organization.id
-    every { parentStore.getOrganizationId(applicationId) } returns organization.id
-    every { parentStore.getOrganizationId(facility.id) } returns organization.id
-    every { parentStore.getOrganizationId(upcomingObservation.id) } returns organization.id
-    every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
-    every { parentStore.getOrganizationId(project.id) } returns organization.id
-    every { parentStore.hasAcceleratorOrApplicationProjects(any()) } returns false
-    every { parentStore.hasAcceleratorOrApplicationProjects(organization.id) } returns true
-    every { parentStore.getPlantingSiteId(monitoringPlot.id) } returns plantingSite.id
+    every { parentFetcher.getFundingEntityIds(project.id) } returns listOf(fundingEntity.id)
+    every { parentFetcher.getOrganizationId(accessionId) } returns organization.id
+    every { parentFetcher.getOrganizationId(applicationId) } returns organization.id
+    every { parentFetcher.getOrganizationId(facility.id) } returns organization.id
+    every { parentFetcher.getOrganizationId(upcomingObservation.id) } returns organization.id
+    every { parentFetcher.getOrganizationId(plantingSite.id) } returns organization.id
+    every { parentFetcher.getOrganizationId(project.id) } returns organization.id
+    every { parentFetcher.hasAcceleratorOrApplicationProjects(any()) } returns false
+    every { parentFetcher.hasAcceleratorOrApplicationProjects(organization.id) } returns true
+    every { parentFetcher.getPlantingSiteId(monitoringPlot.id) } returns plantingSite.id
     every {
       plantingSiteStore.fetchMonitoringPlotNumbers(plantingSite.id, listOf(monitoringPlot.id))
     } returns mapOf(monitoringPlot.id to monitoringPlot.plotNumber)
@@ -2409,7 +2409,7 @@ internal class NotificationServiceEmailTest {
     every { userStore.getTerraformationContactUsers(any()) } returns
         listOf(tfContactUser1, tfContactUser2)
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser1)
-    every { parentStore.isProjectInAccelerator(plantingSite.projectId) } returns true
+    every { parentFetcher.isProjectInAccelerator(plantingSite.projectId) } returns true
 
     service.on(
         StratumDensityUpdatedEvent(
@@ -2453,7 +2453,7 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun `stratumDensityUpdated does not notify anyone for non-accelerator project`() {
-    every { parentStore.isProjectInAccelerator(plantingSite.projectId) } returns false
+    every { parentFetcher.isProjectInAccelerator(plantingSite.projectId) } returns false
 
     service.on(
         StratumDensityUpdatedEvent(

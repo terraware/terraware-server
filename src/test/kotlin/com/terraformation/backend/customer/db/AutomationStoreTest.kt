@@ -16,7 +16,7 @@ internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
 
   private val objectMapper = jacksonObjectMapper()
   private val store: AutomationStore by lazy {
-    AutomationStore(automationsDao, clock, dslContext, objectMapper, ParentStore(dslContext))
+    AutomationStore(automationsDao, clock, dslContext, objectMapper, ParentFetcher(dslContext))
   }
 
   @BeforeEach
