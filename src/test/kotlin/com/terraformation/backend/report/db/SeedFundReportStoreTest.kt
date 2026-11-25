@@ -3,7 +3,7 @@ package com.terraformation.backend.report.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -55,7 +55,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
         publisher,
         facilitiesDao,
         objectMapper,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         projectsDao,
         seedFundReportsDao,
     )

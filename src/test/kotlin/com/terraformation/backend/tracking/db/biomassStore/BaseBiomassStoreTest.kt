@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.db.biomassStore
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
@@ -24,7 +24,7 @@ abstract class BaseBiomassStoreTest : DatabaseTest(), RunsAsUser {
         EntityLocker(dslContext),
         eventPublisher,
         ObservationResultsInvalidator(dslContext),
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
     )
   }
 

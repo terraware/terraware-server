@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.SpeciesNotFoundException
@@ -106,7 +106,7 @@ class ObservationStore(
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubstrataDao: ObservationRequestedSubstrataDao,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
 ) {
   companion object {
     val requestedSubstratumIdsField: Field<Set<SubstratumId>> =
@@ -733,7 +733,7 @@ class ObservationStore(
         if (
             observationType == ObservationType.Monitoring &&
                 !isAdHoc &&
-                !parentStore.isProjectInAccelerator(plantingSite.projectId)
+                !parentFetcher.isProjectInAccelerator(plantingSite.projectId)
         ) {
           variabilityStore.recordVariability(observationId)
         }
@@ -917,7 +917,7 @@ class ObservationStore(
     requirePermissions { updateObservation(observationId) }
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { observation ->
@@ -1023,8 +1023,8 @@ class ObservationStore(
           }
               ?: if (
                   speciesId == null ||
-                      parentStore.getOrganizationId(speciesId) ==
-                          parentStore.getOrganizationId(observationId)
+                      parentFetcher.getOrganizationId(speciesId) ==
+                          parentFetcher.getOrganizationId(observationId)
               ) {
                 EditableMonitoringSpeciesModel(0, 0, 0)
               } else {
@@ -1106,10 +1106,10 @@ class ObservationStore(
     requirePermissions { updateObservation(observationId) }
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val plantingSiteId =
-        parentStore.getPlantingSiteId(monitoringPlotId)
+        parentFetcher.getPlantingSiteId(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
 
     dslContext.transaction { _ ->

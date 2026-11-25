@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
@@ -69,7 +69,7 @@ internal class PlantingSiteMapEditServiceTest : BasePlantingSiteStoreTest() {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
     )
   }
 

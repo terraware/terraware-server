@@ -28,7 +28,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
@@ -154,7 +154,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var moduleStore: ModuleStore
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
-  private lateinit var parentStore: ParentStore
+  private lateinit var parentFetcher: ParentFetcher
   private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore = mockk()
   private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore = mockk()
   private val plantingSeasonStore: PlantingSeasonStore = mockk()
@@ -181,24 +181,24 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     organizationId = insertOrganization()
     facilityId = insertFacility()
 
-    parentStore = ParentStore(dslContext)
+    parentFetcher = ParentFetcher(dslContext)
 
     accessionStore =
         AccessionStore(
-            AccessionHelper(parentStore),
+            AccessionHelper(parentFetcher),
             dslContext,
             BagStore(dslContext),
             facilitiesDao,
             GeolocationStore(dslContext, clock),
-            ViabilityTestStore(dslContext, parentStore, publisher),
-            parentStore,
-            WithdrawalStore(dslContext, clock, mockk(), parentStore, publisher),
+            ViabilityTestStore(dslContext, parentFetcher, publisher),
+            parentFetcher,
+            WithdrawalStore(dslContext, clock, mockk(), parentFetcher, publisher),
             clock,
             publisher,
             mockk(),
             IdentifierGenerator(clock, dslContext),
         )
-    activityStore = ActivityStore(clock, dslContext, publisher, parentStore)
+    activityStore = ActivityStore(clock, dslContext, publisher, parentFetcher)
     deliverableStore = DeliverableStore(dslContext)
     documentStore =
         DocumentStore(
@@ -233,13 +233,13 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
-            parentStore,
+            parentFetcher,
             plantingSitesDao,
             publisher,
             strataDao,
             substrataDao,
         )
-    projectStore = ProjectStore(clock, dslContext, publisher, parentStore, projectsDao)
+    projectStore = ProjectStore(clock, dslContext, publisher, parentFetcher, projectsDao)
     reportStore =
         ReportStore(
             clock,
@@ -269,7 +269,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             InMemoryKeycloakAdminClient(),
             dummyKeycloakInfo(),
             organizationStore,
-            ParentStore(dslContext),
+            ParentFetcher(dslContext),
             PermissionStore(dslContext),
             publisher,
             usersDao,
@@ -308,7 +308,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
                 ),
                 SystemUser(usersDao),
             ),
-            ProjectAcceleratorDetailsStore(clock, dslContext, publisher, ParentStore(dslContext)),
+            ProjectAcceleratorDetailsStore(clock, dslContext, publisher, ParentFetcher(dslContext)),
         )
 
     webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
@@ -333,7 +333,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             notificationStore,
             observationStore,
             organizationStore,
-            parentStore,
+            parentFetcher,
             plantingSeasonScheduledDatesStore,
             plantingSeasonSpeciesTargetsStore,
             plantingSeasonStore,

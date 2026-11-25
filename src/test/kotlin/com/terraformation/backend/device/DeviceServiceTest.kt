@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.AutomationModel.Companion.SENSOR_BOUNDS_TYPE
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -37,10 +37,10 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
   private val eventPublisher = TestEventPublisher()
   private val objectMapper = jacksonObjectMapper()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val service: DeviceService by lazy {
     DeviceService(
-        AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore),
+        AutomationStore(automationsDao, clock, dslContext, objectMapper, parentFetcher),
         DeviceStore(devicesDao),
         deviceTemplatesDao,
         dslContext,

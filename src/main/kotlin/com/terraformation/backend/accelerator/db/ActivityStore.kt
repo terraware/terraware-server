@@ -7,7 +7,7 @@ import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityStatus
@@ -34,12 +34,12 @@ class ActivityStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
 ) {
   fun create(model: NewActivityModel): ExistingActivityModel {
     requirePermissions { createActivity(model.projectId) }
 
-    if (!parentStore.isProjectInPhase(model.projectId)) {
+    if (!parentFetcher.isProjectInPhase(model.projectId)) {
       throw ProjectNotInAcceleratorPhaseException(model.projectId)
     }
 

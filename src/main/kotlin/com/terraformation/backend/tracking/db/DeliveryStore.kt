@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
@@ -42,7 +42,7 @@ class DeliveryStore(
     private val clock: InstantSource,
     private val deliveriesDao: DeliveriesDao,
     private val dslContext: DSLContext,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val plantingsDao: PlantingsDao,
 ) {
   private val log = perClassLogger()
@@ -107,9 +107,9 @@ class DeliveryStore(
     }
 
     val nurseryFacilityId =
-        parentStore.getFacilityId(withdrawalId) ?: throw WithdrawalNotFoundException(withdrawalId)
-    val nurseryOrganizationId = parentStore.getOrganizationId(nurseryFacilityId)
-    val plantingSiteOrganizationId = parentStore.getOrganizationId(plantingSiteId)
+        parentFetcher.getFacilityId(withdrawalId) ?: throw WithdrawalNotFoundException(withdrawalId)
+    val nurseryOrganizationId = parentFetcher.getOrganizationId(nurseryFacilityId)
+    val plantingSiteOrganizationId = parentFetcher.getOrganizationId(plantingSiteId)
 
     if (nurseryOrganizationId != plantingSiteOrganizationId) {
       throw CrossOrganizationDeliveryNotAllowedException(nurseryFacilityId, plantingSiteId)
@@ -168,7 +168,7 @@ class DeliveryStore(
         deliveriesDao.fetchOneById(deliveryId) ?: throw DeliveryNotFoundException(deliveryId)
     val plantingSiteId = delivery.plantingSiteId!!
     val withdrawalId = delivery.withdrawalId!!
-    val organizationId = parentStore.getOrganizationId(plantingSiteId)
+    val organizationId = parentFetcher.getOrganizationId(plantingSiteId)
 
     val originalPlantingIds = reassignments.map { it.fromPlantingId }
     val originalPlantings =
@@ -225,14 +225,14 @@ class DeliveryStore(
         }
 
         val destinationSiteId =
-            parentStore.getPlantingSiteId(reassignment.toSubstratumId)
+            parentFetcher.getPlantingSiteId(reassignment.toSubstratumId)
                 ?: throw SubstratumNotFoundException(reassignment.toSubstratumId)
         val crossSite = destinationSiteId != plantingSiteId
 
         if (crossSite) {
           requirePermissions { createDelivery(destinationSiteId) }
 
-          if (parentStore.getOrganizationId(destinationSiteId) != organizationId) {
+          if (parentFetcher.getOrganizationId(destinationSiteId) != organizationId) {
             throw CrossOrganizationReassignmentNotAllowedException(
                 fromPlantingId,
                 reassignment.toSubstratumId,

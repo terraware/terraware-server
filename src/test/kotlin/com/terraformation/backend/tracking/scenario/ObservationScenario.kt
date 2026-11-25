@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.scenario
 
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseBackedTest
 import com.terraformation.backend.db.EntityLocker
@@ -91,7 +91,7 @@ class ObservationScenario(
         identifierGenerator: IdentifierGenerator = IdentifierGenerator(clock, test.dslContext),
         observationResultsStoreV2: ObservationResultsStoreV2 =
             ObservationResultsStoreV2(test.dslContext),
-        parentStore: ParentStore = ParentStore(test.dslContext),
+        parentFetcher: ParentFetcher = ParentFetcher(test.dslContext),
         configuration: Configuration = test.dslContext.configuration(),
         observationResultsInvalidator: ObservationResultsInvalidator =
             ObservationResultsInvalidator(test.dslContext),
@@ -106,7 +106,7 @@ class ObservationScenario(
                 ObservationPlotConditionsDao(configuration),
                 ObservationPlotsDao(configuration),
                 ObservationRequestedSubstrataDao(configuration),
-                parentStore,
+                parentFetcher,
             ),
         plantingSiteStore: PlantingSiteStore =
             PlantingSiteStore(
@@ -118,7 +118,7 @@ class ObservationScenario(
                 geometrySimplifier,
                 identifierGenerator,
                 MonitoringPlotsDao(configuration),
-                parentStore,
+                parentFetcher,
                 PlantingSitesDao(configuration),
                 eventPublisher,
                 StrataDao(configuration),

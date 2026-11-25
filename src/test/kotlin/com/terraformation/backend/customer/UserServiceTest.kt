@@ -5,7 +5,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.AcceleratorAdminInvitedEvent
@@ -42,7 +42,7 @@ internal class UserServiceTest : DatabaseTest(), RunsAsUser {
         InMemoryKeycloakAdminClient(),
         dummyKeycloakInfo(),
         OrganizationStore(clock, dslContext, organizationsDao, publisher),
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         PermissionStore(dslContext),
         publisher,
         usersDao,

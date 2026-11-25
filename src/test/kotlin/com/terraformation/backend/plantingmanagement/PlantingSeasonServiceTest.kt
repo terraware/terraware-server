@@ -2,7 +2,7 @@ package com.terraformation.backend.plantingmanagement
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SpeciesNotFoundException
@@ -30,10 +30,16 @@ internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val eventPublisher = TestEventPublisher()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val seasonHelper: SeasonHelper by lazy { SeasonHelper(dslContext) }
   private val plantingSeasonScheduledDatesStore by lazy {
-    PlantingSeasonScheduledDatesStore(clock, dslContext, eventPublisher, parentStore, seasonHelper)
+    PlantingSeasonScheduledDatesStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        parentFetcher,
+        seasonHelper,
+    )
   }
   private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore by lazy {
     PlantingSeasonSpeciesTargetsStore(
@@ -45,7 +51,7 @@ internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
   private val plantingSeasonStore: PlantingSeasonStore by lazy {
-    PlantingSeasonStore(clock, dslContext, eventPublisher, parentStore, seasonHelper)
+    PlantingSeasonStore(clock, dslContext, eventPublisher, parentFetcher, seasonHelper)
   }
   private val service: PlantingSeasonService by lazy {
     PlantingSeasonService(

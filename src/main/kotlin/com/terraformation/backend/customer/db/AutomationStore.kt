@@ -24,7 +24,7 @@ class AutomationStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val objectMapper: ObjectMapper,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
 ) {
   private val log = perClassLogger()
 
@@ -79,7 +79,8 @@ class AutomationStore(
   }
 
   fun fetchByDeviceId(deviceId: DeviceId): List<AutomationModel> {
-    val facilityId = parentStore.getFacilityId(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val facilityId =
+        parentFetcher.getFacilityId(deviceId) ?: throw DeviceNotFoundException(deviceId)
 
     requirePermissions {
       listAutomations(facilityId)

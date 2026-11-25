@@ -8,7 +8,7 @@ import com.terraformation.backend.accelerator.model.IndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.assertSetEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.db.DatabaseTest
@@ -42,7 +42,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         eventPublisher,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
     )
   }
 

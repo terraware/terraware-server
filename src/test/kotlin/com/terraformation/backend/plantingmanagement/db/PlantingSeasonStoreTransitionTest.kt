@@ -2,7 +2,7 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -26,7 +26,7 @@ internal class PlantingSeasonStoreTransitionTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         eventPublisher,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         SeasonHelper(dslContext),
     )
   }

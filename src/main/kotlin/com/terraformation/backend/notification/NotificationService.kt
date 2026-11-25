@@ -20,7 +20,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
@@ -198,7 +198,7 @@ class NotificationService(
     private val notificationStore: NotificationStore,
     private val observationStore: ObservationStore,
     private val organizationStore: OrganizationStore,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore,
     private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore,
     private val plantingSeasonStore: PlantingSeasonStore,
@@ -235,7 +235,7 @@ class NotificationService(
   fun on(event: FacilityIdleEvent) {
     log.info("Creating notifications for facility \"${event.facilityId}\" idle event.")
     val facility = facilityStore.fetchOneById(event.facilityId)
-    val organizationId = parentStore.getOrganizationId(event.facilityId)!!
+    val organizationId = parentFetcher.getOrganizationId(event.facilityId)!!
 
     val appContent =
         AppContent(
@@ -368,11 +368,11 @@ class NotificationService(
   @EventListener
   fun on(event: AccessionDryingEndEvent) {
     log.info("Creating notifications for accession ${event.accessionNumber} ends drying.")
-    val facilityId = parentStore.getFacilityId(event.accessionId)!!
+    val facilityId = parentFetcher.getFacilityId(event.accessionId)!!
     val organizationId =
-        parentStore.getOrganizationId(event.accessionId)
+        parentFetcher.getOrganizationId(event.accessionId)
             ?: throw AccessionNotFoundException(event.accessionId)
-    val facilityName = parentStore.getFacilityName(event.accessionId)
+    val facilityName = parentFetcher.getFacilityName(event.accessionId)
 
     val appContent =
         AppContent(
@@ -395,8 +395,8 @@ class NotificationService(
   @EventListener
   fun on(event: NurserySeedlingBatchReadyEvent) {
     log.info("Creating notifications for batchId ${event.batchId.value} ready.")
-    val facilityId = parentStore.getFacilityId(event.batchId)!!
-    val organizationId = parentStore.getOrganizationId(facilityId)!!
+    val facilityId = parentFetcher.getFacilityId(event.batchId)!!
+    val organizationId = parentFetcher.getOrganizationId(facilityId)!!
 
     val appContent =
         AppContent(
@@ -858,7 +858,7 @@ class NotificationService(
     systemUser.run {
       val (plantingSite, organization) = fetchSiteAndOrg(event.plantingSiteId)
 
-      if (parentStore.isProjectInAccelerator(plantingSite.projectId)) {
+      if (parentFetcher.isProjectInAccelerator(plantingSite.projectId)) {
         sendToOrganizationContact(
             organization,
             StratumDensityUpdated(
@@ -956,7 +956,7 @@ class NotificationService(
       includeEmail: Boolean,
   ) {
     systemUser.run {
-      val organizationId = parentStore.getOrganizationId(projectId)!!
+      val organizationId = parentFetcher.getOrganizationId(projectId)!!
 
       val appContent =
           AppContent(
@@ -1084,7 +1084,7 @@ class NotificationService(
   @EventListener
   fun on(event: ApplicationSubmittedEvent) {
     systemUser.run {
-      val organizationId = parentStore.getOrganizationId(event.applicationId)
+      val organizationId = parentFetcher.getOrganizationId(event.applicationId)
       if (organizationId == null) {
         log.error("Organization for application ${event.applicationId} not found")
         return@run
@@ -1124,7 +1124,7 @@ class NotificationService(
         }
       }
       moduleEvent.projects.forEach { projectId ->
-        val organizationId = parentStore.getOrganizationId(projectId)!!
+        val organizationId = parentFetcher.getOrganizationId(projectId)!!
         val appContent =
             AppContent(
                 notificationType = NotificationType.EventReminder,
@@ -1211,7 +1211,7 @@ class NotificationService(
     systemUser.run {
       val report = reportStore.fetchOne(event.reportId)
       val project = projectStore.fetchOneById(report.projectId)
-      val fundingEntityIds = parentStore.getFundingEntityIds(report.projectId)
+      val fundingEntityIds = parentFetcher.getFundingEntityIds(report.projectId)
       val projectName = report.projectDealName ?: project.name
 
       val appContent =
@@ -1667,7 +1667,7 @@ class NotificationService(
       emailContent: EmailTemplateModel? = null,
       batchEmail: Boolean = false,
   ) {
-    val organizationId = parentStore.getOrganizationId(facilityId)!!
+    val organizationId = parentFetcher.getOrganizationId(facilityId)!!
     sendToOrganization(organizationId, appContent, emailContent, batchEmail = batchEmail)
   }
 
@@ -1896,7 +1896,7 @@ class NotificationService(
       emailContent: EmailTemplateModel,
       fallBackToSupport: Boolean = true,
   ) {
-    if (!parentStore.hasAcceleratorOrApplicationProjects(organization.id)) {
+    if (!parentFetcher.hasAcceleratorOrApplicationProjects(organization.id)) {
       log.info(
           "Organization ${organization.id} has no accelerator or application projects, so not sending TF contact notification"
       )

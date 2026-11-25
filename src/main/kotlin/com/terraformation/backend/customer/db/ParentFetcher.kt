@@ -107,7 +107,7 @@ internal fun acceleratorOrApplicationProjects(
  * if parent ID lookups in permission checks become a performance bottleneck.
  */
 @Named
-class ParentStore(private val dslContext: DSLContext) {
+class ParentFetcher(private val dslContext: DSLContext) {
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null

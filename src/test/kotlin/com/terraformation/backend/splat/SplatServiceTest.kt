@@ -3,7 +3,7 @@ package com.terraformation.backend.splat
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -76,7 +76,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         eventPublisher,
         fileStore,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         sqsTemplate,
     )
   }

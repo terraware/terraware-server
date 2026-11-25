@@ -7,7 +7,7 @@ import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdat
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.SystemUser
@@ -83,7 +83,7 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
         acceleratorProjectVariableValuesService,
         applicationStore,
         dslContext,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         SystemUser(usersDao),
         variableStore,
     )

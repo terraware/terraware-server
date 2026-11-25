@@ -4,7 +4,7 @@ import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
@@ -19,7 +19,7 @@ class AcceleratorVariablesUpdater(
     private val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService,
     private val applicationStore: ApplicationStore,
     private val dslContext: DSLContext,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val systemUser: SystemUser,
     private val variableStore: VariableStore,
 ) {
@@ -69,7 +69,7 @@ class AcceleratorVariablesUpdater(
       return
     }
 
-    if (!parentStore.isProjectInAccelerator(event.projectId)) {
+    if (!parentFetcher.isProjectInAccelerator(event.projectId)) {
       return
     }
 

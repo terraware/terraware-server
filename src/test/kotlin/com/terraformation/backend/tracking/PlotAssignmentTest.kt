@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
@@ -41,11 +41,11 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val jobScheduler: JobScheduler = mockk()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val observationPlotStore: ObservationPlotStore by lazy {
-    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentStore)
+    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentFetcher)
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
@@ -58,7 +58,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
-        parentStore,
+        parentFetcher,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
@@ -71,7 +71,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        parentStore,
+        parentFetcher,
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -97,7 +97,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
-        parentStore,
+        parentFetcher,
         eventPublisher,
         SystemUser(usersDao),
         mockk(),

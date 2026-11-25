@@ -3,7 +3,7 @@ package com.terraformation.backend.device.api
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.customer.db.FacilityStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -30,10 +30,10 @@ import org.springframework.http.ResponseEntity
 internal class TimeseriesControllerTest : RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private val facilityStore: FacilityStore = mockk()
-  private val parentStore: ParentStore = mockk()
+  private val parentFetcher: ParentFetcher = mockk()
   private val timeseriesStore: TimeseriesStore = mockk()
 
-  private val controller = TimeseriesController(facilityStore, parentStore, timeseriesStore)
+  private val controller = TimeseriesController(facilityStore, parentFetcher, timeseriesStore)
 
   private val deviceId1 = DeviceId(1)
   private val deviceId2 = DeviceId(2)
@@ -45,7 +45,7 @@ internal class TimeseriesControllerTest : RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { facilityStore.updateLastTimeseriesTimes(any()) } just runs
-    every { parentStore.getFacilityConnectionState(any()) } returns
+    every { parentFetcher.getFacilityConnectionState(any()) } returns
         FacilityConnectionState.Configured
     every { user.canCreateTimeseries(any()) } returns true
     every { user.canReadTimeseries(any()) } returns true
@@ -153,7 +153,7 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
   @Test
   fun `recordTimeseriesValues does not record values if facility is not configured`() {
-    every { parentStore.getFacilityConnectionState(any()) } returns
+    every { parentFetcher.getFacilityConnectionState(any()) } returns
         FacilityConnectionState.Connected
 
     val response =

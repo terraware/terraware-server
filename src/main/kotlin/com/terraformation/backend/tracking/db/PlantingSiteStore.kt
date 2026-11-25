@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -149,7 +149,7 @@ class PlantingSiteStore(
     private val geometrySimplifier: GeometrySimplifier,
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val plantingSitesDao: PlantingSitesDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val strataDao: StrataDao,
@@ -503,7 +503,7 @@ class PlantingSiteStore(
 
     if (
         newModel.projectId != null &&
-            newModel.organizationId != parentStore.getOrganizationId(newModel.projectId)
+            newModel.organizationId != parentFetcher.getOrganizationId(newModel.projectId)
     ) {
       throw ProjectInDifferentOrganizationException()
     }
@@ -577,13 +577,13 @@ class PlantingSiteStore(
       if (edited.projectId != null) {
         requirePermissions { readProject(edited.projectId) }
 
-        if (initial.organizationId != parentStore.getOrganizationId(edited.projectId)) {
+        if (initial.organizationId != parentFetcher.getOrganizationId(edited.projectId)) {
           throw ProjectInDifferentOrganizationException()
         }
       }
 
-      val initialTimeZone = initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
-      val editedTimeZone = edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
+      val initialTimeZone = initial.timeZone ?: parentFetcher.getEffectiveTimeZone(plantingSiteId)
+      val editedTimeZone = edited.timeZone ?: parentFetcher.getEffectiveTimeZone(plantingSiteId)
       val editedArea = edited.boundary?.calculateAreaHectares()
 
       val now = clock.instant()
@@ -1244,7 +1244,7 @@ class PlantingSiteStore(
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
     val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
-    if (parentStore.isProjectInAccelerator(site.projectId)) {
+    if (parentFetcher.isProjectInAccelerator(site.projectId)) {
       throw AcceleratorPlotSettingsNotEditableException(plantingSiteId)
     }
   }
@@ -1738,7 +1738,7 @@ class PlantingSiteStore(
     if (changed.isEmpty()) {
       return
     }
-    val organizationId = parentStore.getOrganizationId(plantingSiteId)!!
+    val organizationId = parentFetcher.getOrganizationId(plantingSiteId)!!
     changed.entries
         .sortedBy { it.key.id }
         .forEach { (type, counts) ->
@@ -1857,7 +1857,7 @@ class PlantingSiteStore(
     }
 
     val projectOrganizationId =
-        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+        parentFetcher.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
     val hasOtherOrganizationIds =
         dslContext
             .selectOne()
@@ -2005,7 +2005,7 @@ class PlantingSiteStore(
       observationId: ObservationId,
   ): ReplacementResult {
     val plantingSiteId =
-        parentStore.getPlantingSiteId(monitoringPlotId)
+        parentFetcher.getPlantingSiteId(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
 
     requirePermissions {
@@ -2131,7 +2131,7 @@ class PlantingSiteStore(
     val plotBoundary = Turtle(swCorner, crs).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
 
     val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
+        parentFetcher.getOrganizationId(plantingSiteId)
             ?: throw PlantingSiteNotFoundException(plantingSiteId)
     val plotNumber =
         identifierGenerator.generateNumericIdentifier(

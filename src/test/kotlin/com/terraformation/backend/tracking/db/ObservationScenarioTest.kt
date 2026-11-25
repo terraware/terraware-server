@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.opencsv.CSVReader
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -78,7 +78,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
     )
   }
   protected val observationResultsInvalidator by lazy { ObservationResultsInvalidator(dslContext) }

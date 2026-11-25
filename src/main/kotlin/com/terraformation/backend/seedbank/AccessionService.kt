@@ -1,6 +1,6 @@
 package com.terraformation.backend.seedbank
 
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
@@ -39,7 +39,7 @@ class AccessionService(
     private val accessionStore: AccessionStore,
     private val batchStore: BatchStore,
     private val dslContext: DSLContext,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val photoRepository: PhotoRepository,
     private val searchService: SearchService,
     tables: SearchTables,
@@ -110,8 +110,8 @@ class AccessionService(
     }
 
     if (
-        parentStore.getOrganizationId(accession.facilityId!!) !=
-            parentStore.getOrganizationId(batch.facilityId)
+        parentFetcher.getOrganizationId(accession.facilityId!!) !=
+            parentFetcher.getOrganizationId(batch.facilityId)
     ) {
       throw CrossOrganizationNurseryTransferNotAllowedException(
           accession.facilityId,

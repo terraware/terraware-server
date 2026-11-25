@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -31,7 +31,7 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
 
   private val accessionStore: AccessionStore by lazy {
     AccessionStore(
-        AccessionHelper(ParentStore(dslContext)),
+        AccessionHelper(ParentFetcher(dslContext)),
         dslContext,
         mockk(),
         mockk(),

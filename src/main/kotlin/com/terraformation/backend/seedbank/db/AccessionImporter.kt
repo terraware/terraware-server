@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.opencsv.CSVReader
 import com.terraformation.backend.customer.db.FacilityStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
@@ -50,7 +50,7 @@ class AccessionImporter(
     private val facilityStore: FacilityStore,
     fileStore: FileStore,
     private val messages: Messages,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     @Lazy private val scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
     uploadProblemsDao: UploadProblemsDao,
@@ -80,7 +80,7 @@ class AccessionImporter(
         inputStream,
         fileName,
         UploadType.AccessionCSV,
-        parentStore.getOrganizationId(facilityId),
+        parentFetcher.getOrganizationId(facilityId),
         facilityId,
     )
   }

@@ -1,7 +1,7 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.NotificationType
@@ -44,7 +44,7 @@ class PlantingSeasonStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val seasonHelper: SeasonHelper,
 ) {
   private val log = perClassLogger()
@@ -53,7 +53,7 @@ class PlantingSeasonStore(
     requirePermissions { createPlantingSeason(newModel.plantingSiteId) }
 
     val organizationId =
-        parentStore.getOrganizationId(newModel.plantingSiteId)
+        parentFetcher.getOrganizationId(newModel.plantingSiteId)
             ?: throw PlantingSiteNotFoundException(newModel.plantingSiteId)
     val userId = currentUser().userId
     val now = clock.instant()
@@ -140,7 +140,7 @@ class PlantingSeasonStore(
           fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
               ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
       val organizationId =
-          parentStore.getOrganizationId(plantingSeasonId)
+          parentFetcher.getOrganizationId(plantingSeasonId)
               ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
 
       if (existingSeason.status == PlantingSeasonStatus.Closed) {
@@ -223,7 +223,7 @@ class PlantingSeasonStore(
           fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
               ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
       val organizationId =
-          parentStore.getOrganizationId(plantingSeasonId)
+          parentFetcher.getOrganizationId(plantingSeasonId)
               ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
 
       with(PLANTING_SEASONS) {
@@ -254,9 +254,9 @@ class PlantingSeasonStore(
     requirePermissions { deletePlantingSeason(id) }
 
     val plantingSiteId =
-        parentStore.getPlantingSiteId(id) ?: throw PlantingSeasonNotFoundException(id)
+        parentFetcher.getPlantingSiteId(id) ?: throw PlantingSeasonNotFoundException(id)
     val organizationId =
-        parentStore.getOrganizationId(id) ?: throw PlantingSeasonNotFoundException(id)
+        parentFetcher.getOrganizationId(id) ?: throw PlantingSeasonNotFoundException(id)
 
     // Delete requests related to the season before the season to meet check constraint requirements
     dslContext
@@ -286,7 +286,7 @@ class PlantingSeasonStore(
       plantingSiteId: PlantingSiteId,
   ): PlantingSeasonStatus {
     val today =
-        clock.instant().atZone(parentStore.getEffectiveTimeZone(plantingSiteId)).toLocalDate()
+        clock.instant().atZone(parentFetcher.getEffectiveTimeZone(plantingSiteId)).toLocalDate()
     return when {
       today < startDate -> PlantingSeasonStatus.Upcoming
       today <= endDate -> PlantingSeasonStatus.Active

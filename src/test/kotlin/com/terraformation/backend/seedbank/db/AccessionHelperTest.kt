@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 internal class AccessionHelperTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private lateinit var parentStore: ParentStore
+  private lateinit var parentFetcher: ParentFetcher
   private lateinit var helper: AccessionHelper
   private lateinit var facilityId: FacilityId
 
@@ -28,8 +28,8 @@ internal class AccessionHelperTest : DatabaseTest(), RunsAsDatabaseUser {
     insertOrganization()
     facilityId = insertFacility()
     insertOrganizationUser(role = Role.Admin)
-    parentStore = ParentStore(dslContext)
-    helper = AccessionHelper(parentStore)
+    parentFetcher = ParentFetcher(dslContext)
+    helper = AccessionHelper(parentFetcher)
   }
 
   @Nested

@@ -7,7 +7,7 @@ import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsMod
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_INDICATORS
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.requirePermissions
@@ -35,7 +35,7 @@ class ProjectAcceleratorDetailsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
 ) {
   /**
    * Returns the accelerator details for a project. If the project doesn't have any details yet,
@@ -192,7 +192,7 @@ class ProjectAcceleratorDetailsStore(
                 changedFrom = ProjectUpdatedEventValues(countryCode = existing.countryCode),
                 changedTo = ProjectUpdatedEventValues(countryCode = updated.countryCode),
                 organizationId =
-                    parentStore.getOrganizationId(projectId)
+                    parentFetcher.getOrganizationId(projectId)
                         ?: throw ProjectNotFoundException(projectId),
                 projectId = projectId,
             )

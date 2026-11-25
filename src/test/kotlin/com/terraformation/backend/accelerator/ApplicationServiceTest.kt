@@ -13,7 +13,7 @@ import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariab
 import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -72,7 +72,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
             clock,
             dslContext,
             eventPublisher,
-            ParentStore(dslContext),
+            ParentFetcher(dslContext),
         ),
     )
   }

@@ -47,13 +47,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val eventPublisher = TestEventPublisher()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val store: ProjectStore by lazy {
     ProjectStore(
         clock,
         dslContext,
         eventPublisher,
-        parentStore,
+        parentFetcher,
         projectsDao,
     )
   }
