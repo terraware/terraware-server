@@ -89,6 +89,7 @@ import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ReplacementPreview
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.StratumFullException
 import com.terraformation.backend.tracking.model.StratumPlotAllocator
@@ -943,6 +944,18 @@ class ObservationService(
           ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId)
       )
 
+      // If no replacement could be found for the last plot of an in-progress observation, the
+      // observation can no longer be conducted. It has no completed plots, so this deletes it. An
+      // upcoming observation without plots is left alone; it gets plots when it starts, possibly
+      // from other requested substrata.
+      val isObservationDeleted =
+          observation.state != ObservationState.Upcoming &&
+              !observationPlotStore.hasPlots(observationId)
+      if (isObservationDeleted) {
+        log.info("Replacement left the observation without any plots")
+        abandonUnstartableObservation(observation)
+      }
+
       ReplacementResult(
           addedPlotIds,
           removedPlotIds,
@@ -950,14 +963,15 @@ class ObservationService(
               upcomingOutcomes.filterValues { it == ReassignmentOutcome.Reassigned }.keys,
           deletedObservationIds =
               upcomingOutcomes.filterValues { it == ReassignmentOutcome.Abandoned }.keys,
+          isObservationDeleted = isObservationDeleted,
       )
     }
   }
 
   /**
    * Returns the upcoming observations that would be affected if a plot in an observation were
-   * replaced, and what would happen to each of them. Only long-term replacements affect other
-   * observations.
+   * replaced, and what would happen to each of them, along with whether the replacement might
+   * delete the observation itself. Only long-term replacements affect other observations.
    *
    * The outcomes are predicted by running the plot allocator against the stratum as it would look
    * once the plot was unavailable, without changing anything. This is an approximation that doesn't
@@ -970,7 +984,7 @@ class ObservationService(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       duration: ReplacementDuration,
-  ): List<AffectedUpcomingObservation> {
+  ): ReplacementPreview {
     requirePermissions { replaceObservationPlot(observationId) }
 
     val observation = observationStore.fetchObservationById(observationId)
@@ -989,21 +1003,27 @@ class ObservationService(
     if (stratum?.findSubstratumWithMonitoringPlot(monitoringPlotId) == null) {
       throw PlotNotFoundException(monitoringPlotId)
     }
+    val observationPlots = observationPlotStore.fetchObservationPlotDetails(observationId)
     requireReplaceablePlot(
         observationId,
         monitoringPlotId,
-        observationPlotStore.fetchObservationPlotDetails(observationId),
+        observationPlots,
         allowCompleted = false,
     )
 
+    // A started observation is deleted if replacing its only plot leaves it without any plots.
+    // The plot can't be completed, so if it's the only plot, there are no completed plots.
+    val mayDeleteObservation =
+        observation.state != ObservationState.Upcoming && observationPlots.size == 1
+
     if (duration != ReplacementDuration.LongTerm) {
-      return emptyList()
+      return ReplacementPreview(emptyList(), mayDeleteObservation)
     }
 
     val upcomingObservationIds =
         observationPlotStore.fetchUpcomingObservationIdsWithPlot(monitoringPlotId, observationId)
     if (upcomingObservationIds.isEmpty()) {
-      return emptyList()
+      return ReplacementPreview(emptyList(), mayDeleteObservation)
     }
 
     val stratumAfterReplacement =
@@ -1023,7 +1043,7 @@ class ObservationService(
                 }
         )
 
-    return upcomingObservationIds.map { upcomingObservationId ->
+    val affectedObservations = upcomingObservationIds.map { upcomingObservationId ->
       val upcomingObservation = observationStore.fetchObservationById(upcomingObservationId)
 
       // Reassignment fails, and the observation is deleted, if the allocator can't find any plots
@@ -1061,6 +1081,8 @@ class ObservationService(
               },
       )
     }
+
+    return ReplacementPreview(affectedObservations, mayDeleteObservation)
   }
 
   /**

@@ -63,6 +63,7 @@ import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ReplacementPreview
 import com.terraformation.backend.tracking.model.ReplacementResult
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -531,7 +532,9 @@ class ObservationsController(
           "A long-term replacement makes the plot unavailable, so upcoming observations that " +
               "include it are given new plots, or deleted if no new plots can be found. The " +
               "outcomes are predictions; in rare cases the actual outcome may differ. Temporary " +
-              "replacements don't affect other observations.",
+              "replacements don't affect other observations. Also indicates whether the " +
+              "observation itself may be deleted, which happens if the plot is the only plot in " +
+              "a started observation and no replacement plot can be found.",
   )
   @PostMapping("/{observationId}/plots/{plotId}/replace/preview")
   fun previewReplaceObservationPlot(
@@ -539,12 +542,10 @@ class ObservationsController(
       @PathVariable plotId: MonitoringPlotId,
       @RequestBody payload: PreviewReplaceObservationPlotRequestPayload,
   ): PreviewReplaceObservationPlotResponsePayload {
-    val affected =
+    val preview =
         observationService.previewReplaceMonitoringPlot(observationId, plotId, payload.duration)
 
-    return PreviewReplaceObservationPlotResponsePayload(
-        affected.map { AffectedUpcomingObservationPayload(it) }
-    )
+    return PreviewReplaceObservationPlotResponsePayload(preview)
   }
 
   @ApiResponse200Photo
@@ -1125,6 +1126,12 @@ data class ReplaceObservationPlotResponsePayload(
                 "it was replaced long-term and they couldn't be given new plots."
     )
     val deletedObservationIds: Set<ObservationId>,
+    @Schema(
+        description =
+            "True if the observation was deleted because the plot was its only plot and no " +
+                "replacement plot could be found."
+    )
+    val observationDeleted: Boolean,
 ) : SuccessResponsePayload {
   constructor(
       result: ReplacementResult
@@ -1133,6 +1140,7 @@ data class ReplaceObservationPlotResponsePayload(
       removedMonitoringPlotIds = result.removedMonitoringPlotIds,
       reassignedObservationIds = result.reassignedObservationIds,
       deletedObservationIds = result.deletedObservationIds,
+      observationDeleted = result.isObservationDeleted,
   )
 }
 
@@ -1164,7 +1172,23 @@ data class PreviewReplaceObservationPlotResponsePayload(
                 "be affected by the replacement. Empty if no other observations would be affected."
     )
     val affectedObservations: List<AffectedUpcomingObservationPayload>,
-) : SuccessResponsePayload
+    @Schema(
+        description =
+            "True if the observation will be deleted if no replacement plot can be found. " +
+                "This is the case if the plot is the only plot in an observation that has " +
+                "started. Upcoming observations are not deleted; they are given new plots when " +
+                "they start."
+    )
+    val mayDeleteObservation: Boolean,
+) : SuccessResponsePayload {
+  constructor(
+      model: ReplacementPreview
+  ) : this(
+      affectedObservations =
+          model.affectedObservations.map { AffectedUpcomingObservationPayload(it) },
+      mayDeleteObservation = model.mayDeleteObservation,
+  )
+}
 
 data class RescheduleObservationRequestPayload(
     @Schema(
