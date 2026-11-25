@@ -1,3 +1,6 @@
+66da27d6 Rename ParentStore to ParentFetcher (#5522)
+cb316f9d Fold PreScreenBoundarySubmissionFetcher into ApplicationService (#5517)
+c95cfc84 Use real ApplicationStore in ApplicationServiceTest (#5518)
 680becb6 SW-9354 Clear pending recommendations when Monitoring settings change (#5507)
 255f41b5 SW-9354 Accept current plot count recommendations (#5499)
 ff860ffc SW-9354 Dismiss current plot count recommendations (#5498)
