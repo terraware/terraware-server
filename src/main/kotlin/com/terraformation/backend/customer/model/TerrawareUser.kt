@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
@@ -282,6 +283,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canCreateVariableManifest(): Boolean = defaultPermission
 
+  fun canCreateWithdrawalCustomPurpose(organizationId: OrganizationId): Boolean = defaultPermission
+
   fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = defaultPermission
 
   fun canDeleteAccession(accessionId: AccessionId): Boolean = defaultPermission
@@ -515,6 +518,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean = defaultPermission
 
+  fun canReadWithdrawalCustomPurposes(organizationId: OrganizationId): Boolean = defaultPermission
+
   fun canRegenerateAllDeviceManagerTokens(): Boolean = defaultPermission
 
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
@@ -661,6 +666,9 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdateUpload(uploadId: UploadId): Boolean = defaultPermission
 
   fun canUpdateUserInternalInterests(userId: UserId): Boolean = defaultPermission
+
+  fun canUpdateWithdrawalCustomPurpose(customPurposeId: WithdrawalCustomPurposeId): Boolean =
+      defaultPermission
 
   fun canUploadPhoto(accessionId: AccessionId): Boolean = defaultPermission
 

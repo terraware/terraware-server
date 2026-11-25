@@ -32,6 +32,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
@@ -140,6 +141,7 @@ internal class PermissionTest : DatabaseTest() {
   private val org1Id = OrganizationId(1)
   private val organizationIds =
       listOf(org1Id, OrganizationId(2), OrganizationId(3), OrganizationId(4))
+  private val customPurposeIds = organizationIds.map { WithdrawalCustomPurposeId(it.value) }
 
   // Org 2 is empty (no reports or species)
   private val seedFundReportIds = listOf(SeedFundReportId(1), SeedFundReportId(3))
@@ -239,6 +241,13 @@ internal class PermissionTest : DatabaseTest() {
     organizationIds.forEach { organizationId ->
       putDatabaseId(organizationId, insertOrganization(createdBy = userId))
       putDatabaseId(SpeciesId(organizationId.value), insertSpecies(createdBy = userId))
+      putDatabaseId(
+          WithdrawalCustomPurposeId(organizationId.value),
+          insertWithdrawalCustomPurpose(
+              createdBy = userId,
+              organizationId = getDatabaseId(organizationId),
+          ),
+      )
     }
 
     otherUserIds =
@@ -508,6 +517,11 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        WithdrawalCustomPurposeId(1),
+        updateWithdrawalCustomPurpose = true,
+    )
+
+    permissions.expect(
         org1Id,
         addOrganizationUser = true,
         createDraftPlantingSite = true,
@@ -516,6 +530,7 @@ internal class PermissionTest : DatabaseTest() {
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganization = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
@@ -527,6 +542,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
@@ -764,6 +780,11 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        WithdrawalCustomPurposeId(2),
+        updateWithdrawalCustomPurpose = true,
+    )
+
+    permissions.expect(
         OrganizationId(2),
         addOrganizationUser = true,
         createDraftPlantingSite = true,
@@ -772,6 +793,7 @@ internal class PermissionTest : DatabaseTest() {
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganization = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
@@ -783,6 +805,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
@@ -819,6 +842,11 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        WithdrawalCustomPurposeId(1),
+        updateWithdrawalCustomPurpose = true,
+    )
+
+    permissions.expect(
         org1Id,
         addOrganizationUser = true,
         createDraftPlantingSite = true,
@@ -827,6 +855,7 @@ internal class PermissionTest : DatabaseTest() {
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
@@ -837,6 +866,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
@@ -1071,6 +1101,7 @@ internal class PermissionTest : DatabaseTest() {
         org1Id,
         createOrganizationMedia = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
@@ -1080,6 +1111,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         updateOrganizationLocation = true,
         updateOrganizationMedia = true,
@@ -1266,6 +1298,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         createOrganizationMedia = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
@@ -1274,6 +1307,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         updateOrganizationMedia = true,
     )
@@ -1481,6 +1515,11 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        *customPurposeIds.toTypedArray(),
+        updateWithdrawalCustomPurpose = true,
+    )
+
+    permissions.expect(
         *organizationIds.toTypedArray(),
         addOrganizationUser = true,
         addTerraformationContact = true,
@@ -1491,6 +1530,7 @@ internal class PermissionTest : DatabaseTest() {
         createProject = true,
         createReport = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganization = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
@@ -1502,6 +1542,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
@@ -1830,6 +1871,17 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        WithdrawalCustomPurposeId(1),
+        updateWithdrawalCustomPurpose = true,
+    )
+
+    permissions.expect(
+        WithdrawalCustomPurposeId(2),
+        WithdrawalCustomPurposeId(3),
+        WithdrawalCustomPurposeId(4),
+    )
+
+    permissions.expect(
         *organizationIds.forOrg1(),
         addOrganizationUser = true,
         addTerraformationContact = true,
@@ -1840,6 +1892,7 @@ internal class PermissionTest : DatabaseTest() {
         createProject = true,
         createReport = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
@@ -1850,6 +1903,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
@@ -1941,6 +1995,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
@@ -2113,6 +2168,24 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        WithdrawalCustomPurposeId(1),
+        updateWithdrawalCustomPurpose = true,
+    )
+
+    permissions.expect(
+        WithdrawalCustomPurposeId(2),
+        WithdrawalCustomPurposeId(3),
+        WithdrawalCustomPurposeId(4),
+    )
+
+    permissions.expect(
+        OrganizationId(2),
+        addTerraformationContact = true,
+        readOrganizationDeliverables = true,
+        removeTerraformationContact = true,
+    )
+
+    permissions.expect(
         org1Id,
         addOrganizationUser = true,
         addTerraformationContact = true,
@@ -2122,6 +2195,7 @@ internal class PermissionTest : DatabaseTest() {
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
@@ -2132,6 +2206,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
@@ -2221,6 +2296,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationUser = true,
         readOrganizationDeliverables = true,
+        readWithdrawalCustomPurposes = true,
         removeTerraformationContact = true,
     )
 
@@ -2233,6 +2309,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeTerraformationContact = true,
     )
 
@@ -2388,6 +2465,24 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
+        WithdrawalCustomPurposeId(1),
+        updateWithdrawalCustomPurpose = true,
+    )
+
+    permissions.expect(
+        WithdrawalCustomPurposeId(2),
+        WithdrawalCustomPurposeId(3),
+        WithdrawalCustomPurposeId(4),
+    )
+
+    permissions.expect(
+        OrganizationId(2),
+        addTerraformationContact = true,
+        readOrganizationDeliverables = true,
+        removeTerraformationContact = true,
+    )
+
+    permissions.expect(
         org1Id,
         addOrganizationUser = true,
         addTerraformationContact = true,
@@ -2397,6 +2492,7 @@ internal class PermissionTest : DatabaseTest() {
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
@@ -2407,6 +2503,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
@@ -2509,6 +2606,7 @@ internal class PermissionTest : DatabaseTest() {
 
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
+        OrganizationId(3),
         OrganizationId(4),
         addTerraformationContact = true,
         listFacilities = true,
@@ -2516,6 +2614,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeTerraformationContact = true,
     )
 
@@ -2657,6 +2756,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         createOrganizationMedia = true,
+        createWithdrawalCustomPurpose = true,
         deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
@@ -2666,6 +2766,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
         removeOrganizationSelf = true,
         updateOrganizationMedia = true,
     )
@@ -2682,6 +2783,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
     )
 
     permissions.expect(
@@ -2709,6 +2811,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        readWithdrawalCustomPurposes = true,
     )
 
     permissions.expect(
@@ -3212,6 +3315,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedApplications = applicationIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedBatches = batchIds.toMutableSet()
+    private val uncheckedCustomPurposes = customPurposeIds.toMutableSet()
     private val uncheckedDeliveries = deliveryIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
@@ -3254,6 +3358,7 @@ internal class PermissionTest : DatabaseTest() {
         createProject: Boolean = false,
         createReport: Boolean = false,
         createSpecies: Boolean = false,
+        createWithdrawalCustomPurpose: Boolean = false,
         deleteOrganization: Boolean = false,
         deleteOrganizationMedia: Boolean = false,
         listFacilities: Boolean = false,
@@ -3265,6 +3370,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationMedia: Boolean = false,
         readOrganizationSelf: Boolean = false,
         readOrganizationUser: Boolean = false,
+        readWithdrawalCustomPurposes: Boolean = false,
         removeOrganizationSelf: Boolean = false,
         removeOrganizationUser: Boolean = false,
         removeTerraformationContact: Boolean = false,
@@ -3320,6 +3426,11 @@ internal class PermissionTest : DatabaseTest() {
             "Can create species in organization $organizationId",
         )
         assertEquals(
+            createWithdrawalCustomPurpose,
+            user.canCreateWithdrawalCustomPurpose(idInDatabase),
+            "Can create withdrawal custom purpose in organization $organizationId",
+        )
+        assertEquals(
             deleteOrganization,
             user.canDeleteOrganization(idInDatabase),
             "Can delete organization $organizationId",
@@ -3373,6 +3484,11 @@ internal class PermissionTest : DatabaseTest() {
             readOrganizationUser,
             user.canReadOrganizationUser(idInDatabase, otherUserIds[organizationId]!!),
             "Can read user in organization $organizationId",
+        )
+        assertEquals(
+            readWithdrawalCustomPurposes,
+            user.canReadWithdrawalCustomPurposes(idInDatabase),
+            "Can read withdrawal custom purposes in organization $organizationId",
         )
         assertEquals(
             removeOrganizationSelf,
@@ -4689,12 +4805,30 @@ internal class PermissionTest : DatabaseTest() {
           }
     }
 
+    fun expect(
+        vararg customPurposeIds: WithdrawalCustomPurposeId,
+        updateWithdrawalCustomPurpose: Boolean = false,
+    ) {
+      customPurposeIds.forEach { customPurposeId ->
+        val idInDatabase = getDatabaseId(customPurposeId)
+
+        assertEquals(
+            updateWithdrawalCustomPurpose,
+            user.canUpdateWithdrawalCustomPurpose(idInDatabase),
+            "Can update withdrawal custom purpose $customPurposeId",
+        )
+
+        uncheckedCustomPurposes.remove(customPurposeId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedActivities.toTypedArray())
       expect(*uncheckedApplications.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedBatches.toTypedArray())
+      expect(*uncheckedCustomPurposes.toTypedArray())
       expect(*uncheckedDeliveries.toTypedArray())
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())

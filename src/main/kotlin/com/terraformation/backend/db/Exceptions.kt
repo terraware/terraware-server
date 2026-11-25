@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
@@ -261,3 +262,6 @@ class WithdrawalNotFoundException(val withdrawalId: WithdrawalId) :
 
 class NotificationNotFoundException(val notificationId: NotificationId) :
     EntityNotFoundException("Notification $notificationId not found")
+
+class WithdrawalCustomPurposeNotFoundException(val customPurposeId: WithdrawalCustomPurposeId) :
+    EntityNotFoundException("Withdrawal custom purpose $customPurposeId not found")

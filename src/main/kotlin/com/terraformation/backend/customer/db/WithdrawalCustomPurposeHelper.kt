@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
 import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeType
@@ -21,12 +22,17 @@ class WithdrawalCustomPurposeHelper(
           .where(WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(customPurposeId))
           .fetchOne(WITHDRAWAL_CUSTOM_PURPOSES.NAME)
 
-  /** Caller must already have checked that the user may create the withdrawal. */
+  /**
+   * Resolves a saved purpose after checking permission to create custom purposes in the
+   * organization.
+   */
   fun findOrCreate(
       organizationId: OrganizationId,
       type: WithdrawalCustomPurposeType,
       name: String,
   ): WithdrawalCustomPurposeId {
+    requirePermissions { createWithdrawalCustomPurpose(organizationId) }
+
     val trimmedName = name.trim()
     val now = clock.instant()
     val userId = currentUser().userId

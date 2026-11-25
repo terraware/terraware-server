@@ -36,6 +36,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
@@ -48,6 +49,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
+import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
@@ -275,6 +277,13 @@ class ParentFetcher(private val dslContext: DSLContext) {
 
   fun getOrganizationId(deliveryId: DeliveryId): OrganizationId? =
       fetchFieldById(deliveryId, DELIVERIES.ID, DELIVERIES.plantingSites.ORGANIZATION_ID)
+
+  fun getOrganizationId(customPurposeId: WithdrawalCustomPurposeId): OrganizationId? =
+      fetchFieldById(
+          customPurposeId,
+          WITHDRAWAL_CUSTOM_PURPOSES.ID,
+          WITHDRAWAL_CUSTOM_PURPOSES.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(deviceManagerId: DeviceManagerId): OrganizationId? =
       fetchFieldById(
