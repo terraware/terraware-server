@@ -3,7 +3,9 @@ package com.terraformation.backend.tracking.api
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.PlotSelectionMode
+import com.terraformation.backend.tracking.model.PlaceablePlotCounts
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
+import com.terraformation.backend.tracking.model.PreviewPlaceablePlotCounts
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -46,12 +48,12 @@ class PlotSettingsPreviewPayloadTest {
         "Observation type order",
     )
     assertEquals(
-        PlotCountsPreviewPayload(8, 3, current.expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(8, 3, null, null, current.expectedPrecision),
         monitoring.current,
         "Current settings retain stored counts and precision",
     )
     assertEquals(
-        PlotCountsPreviewPayload(7, 3, proposed.expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(7, 3, null, null, proposed.expectedPrecision),
         monitoring.proposed,
         "Proposed settings use edited counts and variance",
     )
@@ -95,7 +97,13 @@ class PlotSettingsPreviewPayloadTest {
             .settings
             .first()
     assertEquals(
-        PlotCountsPreviewPayload(7, 3, counts.copy(numPermanentPlots = 7).expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(
+            7,
+            3,
+            null,
+            null,
+            counts.copy(numPermanentPlots = 7).expectedPrecision,
+        ),
         actual.proposed,
         "A valid Direct proposal remains available despite oversized alternatives",
     )
@@ -135,5 +143,99 @@ class PlotSettingsPreviewPayloadTest {
           )
           .toSettings(model)
     }
+  }
+
+  @Test
+  fun `preview payload copies placeable counts and leaves missing entries null`() {
+    val stratum = site.strata.single()
+    val proposedCounts = stratum.plantPlotCounts.copy(numPermanentPlots = 6, numTemporaryPlots = 2)
+    val proposed = mapOf(stratum.id to mapOf(ObservationType.Monitoring to proposedCounts))
+    val placeable =
+        mapOf(
+            stratum.id to
+                mapOf(
+                    ObservationType.Monitoring to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(2, 1),
+                            proposed = PlaceablePlotCounts(3, 1),
+                        ),
+                    ObservationType.BiomassMeasurements to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(2, 1),
+                            proposed = PlaceablePlotCounts(2, 0),
+                        ),
+                    ObservationType.BaselineSurvey to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(0, 2),
+                            proposed = PlaceablePlotCounts(0, 0),
+                        ),
+                )
+        )
+
+    fun expectedResponse(
+        monitoringCurrent: PlaceablePlotCounts?,
+        monitoringProposed: PlaceablePlotCounts?,
+        biomassCurrent: PlaceablePlotCounts?,
+        biomassProposed: PlaceablePlotCounts?,
+        baselineCurrent: PlaceablePlotCounts?,
+        baselineProposed: PlaceablePlotCounts?,
+    ) =
+        PlotSettingsPreviewResponsePayload(
+            listOf(
+                StratumPlotSettingsPreviewPayload(
+                    stratumId = stratum.id,
+                    name = stratum.name,
+                    settings =
+                        listOf(
+                            PlotSettingPreviewPayload(
+                                ObservationType.Monitoring,
+                                stratum.plantPlotCounts,
+                                proposedCounts,
+                                monitoringCurrent,
+                                monitoringProposed,
+                            ),
+                            PlotSettingPreviewPayload(
+                                ObservationType.BiomassMeasurements,
+                                stratum.biomassPlotCounts,
+                                stratum.biomassPlotCounts,
+                                biomassCurrent,
+                                biomassProposed,
+                            ),
+                            PlotSettingPreviewPayload(
+                                ObservationType.BaselineSurvey,
+                                stratum.baselinePlotCounts,
+                                stratum.baselinePlotCounts,
+                                baselineCurrent,
+                                baselineProposed,
+                            ),
+                        ),
+                )
+            )
+        )
+
+    assertEquals(
+        expectedResponse(
+            monitoringCurrent = PlaceablePlotCounts(2, 1),
+            monitoringProposed = PlaceablePlotCounts(3, 1),
+            biomassCurrent = PlaceablePlotCounts(2, 1),
+            biomassProposed = PlaceablePlotCounts(2, 0),
+            baselineCurrent = PlaceablePlotCounts(0, 2),
+            baselineProposed = PlaceablePlotCounts(0, 0),
+        ),
+        PlotSettingsPreviewResponsePayload(site, proposed, placeable),
+        "Provided placeable counts are copied onto current and proposed settings",
+    )
+    assertEquals(
+        expectedResponse(
+            monitoringCurrent = null,
+            monitoringProposed = null,
+            biomassCurrent = null,
+            biomassProposed = null,
+            baselineCurrent = null,
+            baselineProposed = null,
+        ),
+        PlotSettingsPreviewResponsePayload(site, proposed),
+        "Missing placeable counts stay null across all observation types",
+    )
   }
 }

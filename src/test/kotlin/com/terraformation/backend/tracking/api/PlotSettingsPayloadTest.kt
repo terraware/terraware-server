@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.api
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.PlotSelectionMode
+import com.terraformation.backend.tracking.model.PlaceablePlotCounts
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -144,6 +145,33 @@ class PlotSettingsPayloadTest {
         10000,
         boundary.getValue(ObservationType.BaselineSurvey).numTemporaryPlots,
         "An all-types Direct edit accepts a baseline sum exactly at the limit",
+    )
+  }
+
+  @Test
+  fun `get plot settings payload copies placeable counts and nulls missing entries`() {
+    val stratum = site.strata.single()
+    val expectedBase =
+        PlotSelectionSettingPayload(ObservationType.Monitoring, stratum.plantPlotCounts)
+
+    assertEquals(
+        expectedBase.copy(numPlaceablePermanentPlots = 3, numPlaceableTemporaryPlots = 1),
+        PlotSettingsResponsePayload(
+                site,
+                mapOf(stratum.id to mapOf(ObservationType.Monitoring to PlaceablePlotCounts(3, 1))),
+            )
+            .strata
+            .single()
+            .settings
+            .single { it.observationType == ObservationType.Monitoring },
+        "Provided placeable counts are copied onto the setting payload",
+    )
+    assertEquals(
+        expectedBase,
+        PlotSettingsResponsePayload(site).strata.single().settings.single {
+          it.observationType == ObservationType.Monitoring
+        },
+        "Missing placeable counts stay null",
     )
   }
 }
