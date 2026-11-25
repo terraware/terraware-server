@@ -41,6 +41,7 @@ data class BatchWithdrawalModel(
  */
 data class WithdrawalModel<ID : WithdrawalId?>(
     val batchWithdrawals: List<BatchWithdrawalModel>,
+    val customPurpose: String? = null,
     val deliveryId: DeliveryId? = null,
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
@@ -54,6 +55,12 @@ data class WithdrawalModel<ID : WithdrawalId?>(
     val undoneByWithdrawalId: WithdrawalId? = null,
 ) {
   init {
+    require(customPurpose == null || purpose == WithdrawalPurpose.Other) {
+      "Custom purpose is only allowed for Other withdrawals"
+    }
+    require((customPurpose?.trim()?.length ?: 0) <= 50) {
+      "Custom purpose must be at most 50 characters"
+    }
     if (batchWithdrawals.isEmpty()) {
       throw IllegalArgumentException("Withdrawals must come from at least one batch")
     }
@@ -102,9 +109,11 @@ fun BatchWithdrawalsRow.toModel(): BatchWithdrawalModel =
 fun WithdrawalsRow.toModel(
     batchWithdrawals: List<BatchWithdrawalsRow>,
     undoneByWithdrawalId: WithdrawalId? = null,
+    customPurpose: String? = null,
 ): ExistingWithdrawalModel =
     ExistingWithdrawalModel(
         batchWithdrawals = batchWithdrawals.map { it.toModel() },
+        customPurpose = customPurpose,
         destinationFacilityId = destinationFacilityId,
         facilityId = facilityId!!,
         id = id!!,

@@ -23,6 +23,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -252,8 +253,13 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if undoing a withdrawal that has already been undone`() {
-    val withdrawalId = makeInitialWithdrawal()
-    store.undoWithdrawal(withdrawalId)
+    val withdrawalId =
+        makeInitialWithdrawal(customPurpose = "Sale", purpose = WithdrawalPurpose.Other)
+    val undoWithdrawal = store.undoWithdrawal(withdrawalId)
+
+    val persisted = nurseryWithdrawalsDao.fetchOneById(undoWithdrawal.id)!!
+    assertNull(persisted.customPurposeId, "Undo custom purpose ID")
+    assertEquals(WithdrawalPurpose.Undo, persisted.purposeId, "Undo purpose")
 
     assertThrows<WithdrawalAlreadyUndoneException> { store.undoWithdrawal(withdrawalId) }
   }
@@ -286,6 +292,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                   hardeningOffQuantityWithdrawn = 4,
               )
           ),
+      customPurpose: String? = null,
       destinationFacilityId: FacilityId? = null,
       plantingSeasonId: PlantingSeasonId? = null,
       scheduledPlantingDateRequestId: ScheduledPlantingDateId? = null,
@@ -296,6 +303,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         .withdraw(
             NewWithdrawalModel(
                 batchWithdrawals = batchWithdrawals,
+                customPurpose = customPurpose,
                 destinationFacilityId = destinationFacilityId,
                 facilityId = facilityId,
                 id = null,

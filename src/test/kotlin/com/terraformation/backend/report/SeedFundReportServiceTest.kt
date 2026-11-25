@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
@@ -123,6 +124,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             projectsDao,
             SeasonHelper(dslContext),
             subLocationsDao,
+            WithdrawalCustomPurposeHelper(clock, dslContext),
             nurseryWithdrawalsDao,
         ),
         clock,

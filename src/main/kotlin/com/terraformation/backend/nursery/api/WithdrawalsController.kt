@@ -46,7 +46,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.Size
 import jakarta.ws.rs.QueryParam
 import java.time.Instant
 import java.time.InstantSource
@@ -98,7 +100,7 @@ class WithdrawalsController(
   @Operation(summary = "Withdraws seedlings from one or more seedling batches at a nursery.")
   @PostMapping
   fun createBatchWithdrawal(
-      @RequestBody payload: CreateNurseryWithdrawalRequestPayload
+      @RequestBody @Valid payload: CreateNurseryWithdrawalRequestPayload
   ): GetNurseryWithdrawalResponsePayload {
     val withdrawal =
         batchService.withdraw(
@@ -296,6 +298,14 @@ data class CreateNurseryWithdrawalRequestPayload(
     @ArraySchema(minItems = 1) val batchWithdrawals: List<BatchWithdrawalPayload>,
     @Schema(
         description =
+            "A user-defined name for what an Other withdrawal was used for, saved for reuse " +
+                "across the organization. Only allowed for purpose Other. Matched case- and " +
+                "accent-insensitively after trimming whitespace; created if new."
+    )
+    @field:Size(max = 50)
+    val customPurpose: String? = null,
+    @Schema(
+        description =
             "If purpose is \"Nursery Transfer\", the ID of the facility to transfer to. Must be " +
                 "in the same organization as the originating facility. Cannot be the same as " +
                 "facilityId. Not allowed for purposes other than \"Nursery Transfer\"."
@@ -343,6 +353,7 @@ data class CreateNurseryWithdrawalRequestPayload(
   fun toModel() =
       NewWithdrawalModel(
           batchWithdrawals = batchWithdrawals.map { it.toModel() },
+          customPurpose = customPurpose,
           destinationFacilityId = destinationFacilityId,
           facilityId = facilityId,
           id = null,

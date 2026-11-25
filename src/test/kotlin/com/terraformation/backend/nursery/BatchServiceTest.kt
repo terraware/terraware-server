@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentFetcher
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -52,6 +53,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             projectsDao,
             SeasonHelper(dslContext),
             subLocationsDao,
+            WithdrawalCustomPurposeHelper(clock, dslContext),
             nurseryWithdrawalsDao,
         ),
         DeliveryStore(clock, deliveriesDao, dslContext, parentFetcher, plantingsDao),

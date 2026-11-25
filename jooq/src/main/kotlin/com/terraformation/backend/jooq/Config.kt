@@ -278,6 +278,11 @@ val ENUM_TABLES =
                     isLocalizable = false,
                 ),
                 EnumTable("user_types", isLocalizable = false),
+                EnumTable(
+                    "withdrawal_custom_purpose_types",
+                    listOf("withdrawal_custom_purposes\\.type_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("wood_density_levels"),
             ),
         "seedbank" to
@@ -563,6 +568,10 @@ val ID_WRAPPERS =
                     ),
                 ),
                 IdWrapper("WcvpTaxonId", listOf("wcvp_.*\\.taxon_id", "wcvp_.*\\..*_usage_id")),
+                IdWrapper(
+                    "WithdrawalCustomPurposeId",
+                    listOf("withdrawal_custom_purposes\\.id", ".*\\.custom_purpose_id"),
+                ),
             ),
         "seedbank" to
             listOf(

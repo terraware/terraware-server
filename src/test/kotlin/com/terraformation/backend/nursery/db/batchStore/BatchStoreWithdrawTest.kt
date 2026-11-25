@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchStage
@@ -52,6 +53,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @BeforeEach
   fun insertInitialBatches() {
+    every { user.canReadWithdrawal(any()) } returns true
+
     speciesId2 = insertSpecies()
     species1Batch1Id =
         insertBatch(
@@ -86,6 +89,58 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             totalLost = 0,
             totalLossCandidates = 80 + 90 + 100,
         )
+  }
+
+  @Test
+  fun `links withdrawal to its custom purpose`() {
+    val purposeId = insertWithdrawalCustomPurpose(name = "Sale")
+    val withdrawal =
+        store.withdraw(
+            NewWithdrawalModel(
+                batchWithdrawals =
+                    listOf(
+                        BatchWithdrawalModel(
+                            activeGrowthQuantityWithdrawn = 1,
+                            batchId = species1Batch1Id,
+                        )
+                    ),
+                customPurpose = "Sale",
+                facilityId = facilityId,
+                id = null,
+                purpose = WithdrawalPurpose.Other,
+                withdrawnDate = LocalDate.EPOCH,
+            )
+        )
+    assertEquals(
+        purposeId,
+        nurseryWithdrawalsDao.fetchOneById(withdrawal.id)!!.customPurposeId,
+        "Custom purpose ID",
+    )
+  }
+
+  @Test
+  fun `rejects custom purpose for non-Other withdrawals and names over 50 characters`() {
+    val model =
+        NewWithdrawalModel(
+            batchWithdrawals = listOf(BatchWithdrawalModel(batchId = species1Batch1Id)),
+            facilityId = facilityId,
+            id = null,
+            purpose = WithdrawalPurpose.Other,
+            withdrawnDate = LocalDate.EPOCH,
+        )
+    assertAll(
+        {
+          assertThrows<IllegalArgumentException>("Non-Other purpose") {
+            model.copy(customPurpose = "Sale", purpose = WithdrawalPurpose.Dead)
+          }
+        },
+        {
+          assertThrows<IllegalArgumentException>("Name length") {
+            model.copy(customPurpose = "a".repeat(51))
+          }
+        },
+    )
+    assertTableEmpty(WITHDRAWAL_CUSTOM_PURPOSES)
   }
 
   @Test

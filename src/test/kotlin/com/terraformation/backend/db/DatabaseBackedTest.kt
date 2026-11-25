@@ -188,6 +188,8 @@ import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.WcvpTaxonId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeType
 import com.terraformation.backend.db.default_schema.keys.USERS_PKEY
 import com.terraformation.backend.db.default_schema.tables.daos.AutomationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.BirdnetResultsDao
@@ -264,6 +266,7 @@ import com.terraformation.backend.db.default_schema.tables.records.ProjectSpecie
 import com.terraformation.backend.db.default_schema.tables.records.SpeciesProblemsRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpTaxaRecord
+import com.terraformation.backend.db.default_schema.tables.records.WithdrawalCustomPurposesRecord
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -2556,9 +2559,36 @@ abstract class DatabaseBackedTest {
     return record.id!!.also { inserted.batchQuantityHistoryIds.add(it) }
   }
 
+  fun insertWithdrawalCustomPurpose(
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = clock.instant(),
+      isArchived: Boolean = false,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      name: String = "Sale",
+      type: WithdrawalCustomPurposeType = WithdrawalCustomPurposeType.Nursery,
+      organizationId: OrganizationId = inserted.organizationId,
+  ): WithdrawalCustomPurposeId {
+    val record =
+        WithdrawalCustomPurposesRecord(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            isArchived = isArchived,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            organizationId = organizationId,
+            typeId = type,
+        )
+    record.attach(dslContext)
+    record.insert()
+    return record.id!!.also { inserted.withdrawalCustomPurposeIds.add(it) }
+  }
+
   fun insertNurseryWithdrawal(
       createdBy: UserId = inserted.userId,
       createdTime: Instant = clock.instant(),
+      customPurposeId: WithdrawalCustomPurposeId? = null,
       destinationFacilityId: FacilityId? = null,
       facilityId: FacilityId = inserted.facilityId,
       modifiedBy: UserId = createdBy,
@@ -2573,6 +2603,7 @@ abstract class DatabaseBackedTest {
         WithdrawalsRow(
             createdBy = createdBy,
             createdTime = createdTime,
+            customPurposeId = customPurposeId,
             destinationFacilityId = destinationFacilityId,
             facilityId = facilityId,
             modifiedBy = modifiedBy,

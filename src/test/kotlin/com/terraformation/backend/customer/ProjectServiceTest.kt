@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -87,6 +88,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             projectsDao,
             SeasonHelper(dslContext),
             subLocationsDao,
+            WithdrawalCustomPurposeHelper(clock, dslContext),
             nurseryWithdrawalsDao,
         ),
         dslContext,

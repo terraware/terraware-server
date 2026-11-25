@@ -844,6 +844,11 @@ VALUES (6, 'Other'),
        (9, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO withdrawal_custom_purpose_types (id, name)
+VALUES (1, 'Nursery'),
+       (2, 'SeedBank')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO wood_density_levels (id, name)
 VALUES (1, 'Species'),
        (2, 'Genus'),
