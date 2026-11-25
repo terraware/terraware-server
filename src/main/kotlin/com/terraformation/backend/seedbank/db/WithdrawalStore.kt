@@ -312,6 +312,8 @@ class WithdrawalStore(
                         null
                       },
                   purpose = withdrawal.purpose,
+                  customPurpose =
+                      customPurposeId?.let { withdrawalCustomPurposeHelper.fetchNameById(it) },
                   date = withdrawal.date,
                   withdrawnQuantity = withdrawal.withdrawn,
                   batchId = withdrawal.batchId,
@@ -370,6 +372,12 @@ class WithdrawalStore(
               } else {
                 null
               }
+          val newCustomPurposeName =
+              if (customPurposeChanged) {
+                newCustomPurposeId?.let { withdrawalCustomPurposeHelper.fetchNameById(it) }
+              } else {
+                existing.customPurpose
+              }
 
           dslContext
               .update(WITHDRAWALS)
@@ -397,6 +405,7 @@ class WithdrawalStore(
 
           val changedFrom =
               WithdrawalUpdatedEventValues(
+                  customPurpose = existing.customPurpose.nullIfEquals(newCustomPurposeName),
                   date = existing.date.nullIfEquals(desired.date),
                   withdrawnQuantity = existing.withdrawn.nullIfEquals(desired.withdrawn),
                   purpose = existing.purpose.nullIfEquals(desired.purpose),
@@ -408,6 +417,7 @@ class WithdrawalStore(
               )
           val changedTo =
               WithdrawalUpdatedEventValues(
+                  customPurpose = newCustomPurposeName.nullIfEquals(existing.customPurpose),
                   date = desired.date.nullIfEquals(existing.date),
                   withdrawnQuantity = desired.withdrawn.nullIfEquals(existing.withdrawn),
                   purpose = desired.purpose.nullIfEquals(existing.purpose),

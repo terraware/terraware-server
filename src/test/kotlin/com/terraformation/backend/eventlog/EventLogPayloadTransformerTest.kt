@@ -543,6 +543,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             knownUserId,
             WithdrawalCreatedEvent(
                 purpose = WithdrawalPurpose.ViabilityTesting,
+                customPurpose = "Sále",
                 date = LocalDate.of(2021, 1, 1),
                 withdrawnQuantity = SeedQuantityModel(BigDecimal(300), SeedQuantityUnits.Seeds),
                 notes = "initial notes",
@@ -570,6 +571,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                     ),
                 changedTo =
                     WithdrawalUpdatedEventValues(
+                        customPurpose = "Sále",
                         notes = "b",
                         withdrawnQuantity =
                             SeedQuantityModel(BigDecimal(250), SeedQuantityUnits.Seeds),
@@ -607,6 +609,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                 action =
                     CreatedActionPayload(
                         listOf(
+                            CreatedFieldPayload("customPurpose", listOf("Sále")),
                             CreatedFieldPayload("date", listOf("2021-01-01")),
                             CreatedFieldPayload("destination", listOf("Lab")),
                             CreatedFieldPayload("estimatedCount", listOf("13 seeds")),
@@ -621,6 +624,18 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
                     ),
                 subject = subject,
                 timestamp = createEntry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            ),
+            EventLogEntryPayload(
+                action =
+                    FieldUpdatedActionPayload(
+                        fieldName = "custom purpose",
+                        changedFrom = null,
+                        changedTo = listOf("Sále"),
+                    ),
+                subject = subject,
+                timestamp = updateEntry.createdTime,
                 userId = knownUserId,
                 userName = "Known User",
             ),

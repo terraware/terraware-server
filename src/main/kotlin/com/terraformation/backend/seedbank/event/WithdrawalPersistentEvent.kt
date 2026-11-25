@@ -94,6 +94,7 @@ data class WithdrawalCreatedEventV3(
 data class WithdrawalCreatedEventV4(
     override val accessionId: AccessionId,
     val batchId: BatchId? = null,
+    val customPurpose: String? = null,
     val date: LocalDate,
     val destination: String? = null,
     val estimatedCount: Long? = null,
@@ -111,6 +112,7 @@ data class WithdrawalCreatedEventV4(
   override fun listInitialFields(messages: Messages) =
       listOfNotNull(
           createInitialField("batchId", batchId?.toString()),
+          createInitialField("customPurpose", customPurpose),
           createInitialField("date", date.toString()),
           createInitialField("destination", destination),
           createInitialField(
@@ -141,6 +143,7 @@ data class WithdrawalUpdatedEventV1(
     override val withdrawalId: WithdrawalId,
 ) : FieldsUpdatedPersistentEvent, WithdrawalPersistentEvent {
   data class Values(
+      val customPurpose: String? = null,
       val date: LocalDate? = null,
       val destination: String? = null,
       val notes: String? = null,
@@ -152,6 +155,11 @@ data class WithdrawalUpdatedEventV1(
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
+          createUpdatedField(
+              "customPurpose",
+              changedFrom.customPurpose,
+              changedTo.customPurpose,
+          ),
           createUpdatedField("date", changedFrom.date?.toString(), changedTo.date?.toString()),
           createUpdatedField("destination", changedFrom.destination, changedTo.destination),
           createUpdatedField("notes", changedFrom.notes, changedTo.notes),

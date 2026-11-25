@@ -843,8 +843,14 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `creating a withdrawal publishes WithdrawalCreatedEvent`() {
+    insertWithdrawalCustomPurpose(
+        name = "Sále",
+        type = WithdrawalCustomPurposeType.SeedBank,
+    )
+
     val newWithdrawal =
         WithdrawalModel(
+            customPurpose = "sale",
             date = LocalDate.of(2021, 3, 4),
             destination = "dest 1",
             estimatedWeight = grams(6),
@@ -861,6 +867,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     eventPublisher.assertEventPublished(
         WithdrawalCreatedEvent(
             purpose = WithdrawalPurpose.Other,
+            customPurpose = "Sále",
             date = LocalDate.of(2021, 3, 4),
             withdrawnQuantity = seeds(3),
             estimatedWeight = grams(6),
@@ -978,14 +985,37 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val withdrawalId = afterInsert[0].id!!
     eventPublisher.clear()
 
-    val desired = afterInsert[0].copy(notes = "updated notes")
+    val desired = afterInsert[0].copy(customPurpose = "Gift", notes = "updated notes")
 
     store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
 
     eventPublisher.assertEventPublished(
         WithdrawalUpdatedEvent(
             changedFrom = WithdrawalUpdatedEventValues(notes = "notes 1"),
-            changedTo = WithdrawalUpdatedEventValues(notes = "updated notes"),
+            changedTo =
+                WithdrawalUpdatedEventValues(customPurpose = "Gift", notes = "updated notes"),
+            withdrawalId = withdrawalId,
+            accessionId = accessionId,
+            facilityId = facilityId,
+            organizationId = organizationId,
+        )
+    )
+
+    // Retyping the custom purpose with different case resolves to the same saved
+    // purpose, so it isn't a change.
+    val afterGift = store.fetchWithdrawals(accessionId)
+    eventPublisher.clear()
+
+    store.updateWithdrawals(
+        accessionId,
+        afterGift,
+        listOf(afterGift[0].copy(customPurpose = "GIFT", notes = "final notes")),
+    )
+
+    eventPublisher.assertEventPublished(
+        WithdrawalUpdatedEvent(
+            changedFrom = WithdrawalUpdatedEventValues(notes = "updated notes"),
+            changedTo = WithdrawalUpdatedEventValues(notes = "final notes"),
             withdrawalId = withdrawalId,
             accessionId = accessionId,
             facilityId = facilityId,
