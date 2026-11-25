@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -19,6 +20,7 @@ data class WithdrawalModel(
     val accessionId: AccessionId? = null,
     val batchId: BatchId? = null,
     val createdTime: Instant? = null,
+    val customPurpose: String? = null,
     val date: LocalDate,
     val destination: String? = null,
     val estimatedCount: Long? = null,
@@ -41,6 +43,7 @@ data class WithdrawalModel(
       accessionId = record[WITHDRAWALS.ACCESSION_ID],
       batchId = record[WITHDRAWALS.BATCH_ID],
       createdTime = record[WITHDRAWALS.CREATED_TIME],
+      customPurpose = record[WITHDRAWAL_CUSTOM_PURPOSES.NAME],
       date = record[WITHDRAWALS.DATE]!!,
       destination = record[WITHDRAWALS.DESTINATION],
       estimatedCount = record[WITHDRAWALS.ESTIMATED_COUNT],
@@ -68,6 +71,13 @@ data class WithdrawalModel(
   }
 
   fun validate() {
+    require(customPurpose == null || purpose == WithdrawalPurpose.Other) {
+      "Custom purpose is only allowed for Other withdrawals"
+    }
+    require((customPurpose?.trim()?.length ?: 0) <= 50) {
+      "Custom purpose must be at most 50 characters"
+    }
+
     withdrawn?.quantity?.signum()?.let { signum ->
       if (signum <= 0) {
         throw IllegalArgumentException("Withdrawn quantity must be greater than 0")
@@ -81,6 +91,7 @@ data class WithdrawalModel(
    */
   fun fieldsEqual(other: WithdrawalModel): Boolean {
     return id == other.id &&
+        customPurpose == other.customPurpose &&
         date == other.date &&
         estimatedCount == other.estimatedCount &&
         estimatedWeight == other.estimatedWeight &&

@@ -375,6 +375,7 @@ COMMENT ON TABLE seedbank.viability_tests IS 'Information about a single batch o
 COMMENT ON TABLE seedbank.withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
 
 COMMENT ON TABLE seedbank.withdrawals IS 'Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here.';
+COMMENT ON COLUMN seedbank.withdrawals.custom_purpose_id IS 'Optional organization-wide custom purpose, only allowed when purpose_id is Other.';
 
 
 COMMENT ON TABLE nursery.batch_details_history IS 'Record of changes of user-editable attributes of each nursery batch.';

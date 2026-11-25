@@ -33,6 +33,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -192,7 +193,14 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext, parentFetcher, publisher),
             parentFetcher,
-            WithdrawalStore(dslContext, clock, mockk(), parentFetcher, publisher),
+            WithdrawalStore(
+                dslContext,
+                clock,
+                mockk(),
+                parentFetcher,
+                publisher,
+                WithdrawalCustomPurposeHelper(clock, dslContext, parentFetcher),
+            ),
             clock,
             publisher,
             mockk(),

@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentFetcher
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -64,7 +65,14 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser 
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext, parentFetcher, publisher),
             parentFetcher,
-            WithdrawalStore(dslContext, clock, messages, parentFetcher, publisher),
+            WithdrawalStore(
+                dslContext,
+                clock,
+                messages,
+                parentFetcher,
+                publisher,
+                WithdrawalCustomPurposeHelper(clock, dslContext, parentFetcher),
+            ),
             clock,
             publisher,
             messages,

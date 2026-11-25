@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentFetcher
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
@@ -10,6 +11,8 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeType
+import com.terraformation.backend.db.default_schema.tables.records.WithdrawalCustomPurposesRecord
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -35,6 +38,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -65,9 +69,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             Messages(),
             ParentFetcher(dslContext),
             eventPublisher,
+            WithdrawalCustomPurposeHelper(clock, dslContext, ParentFetcher(dslContext)),
         )
 
     clock.instant = Instant.ofEpochSecond(1000)
+    every { user.canCreateWithdrawalCustomPurpose(organizationId) } returns true
     every { user.canReadAccession(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadOrganizationUser(organizationId, any()) } returns true
@@ -81,14 +87,21 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val batchId1 = insertBatch(readyQuantity = 1, speciesId = speciesId)
     val batchId2 = insertBatch(readyQuantity = 1, speciesId = speciesId)
 
+    val purposeId =
+        insertWithdrawalCustomPurpose(
+            name = "Sale",
+            type = WithdrawalCustomPurposeType.SeedBank,
+        )
+
     val pojos =
         listOf(
             WithdrawalsRow(
                 accessionId = accessionId,
                 batchId = batchId1,
+                customPurposeId = purposeId,
                 date = LocalDate.of(2021, 1, 1),
                 notes = "notes 1",
-                purposeId = WithdrawalPurpose.Nursery,
+                purposeId = WithdrawalPurpose.Other,
                 staffResponsible = "staff 1",
                 destination = "dest 1",
                 createdTime = Instant.EPOCH,
@@ -121,6 +134,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = accessionId,
                 batchId = batchId1,
                 createdTime = Instant.EPOCH,
+                customPurpose = "Sale",
                 date = pojos[0].date!!,
                 destination = pojos[0].destination,
                 notes = pojos[0].notes,
@@ -467,6 +481,135 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val actual = store.fetchWithdrawals(accessionId)
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `creates new withdrawals with custom purposes, reusing and restoring saved ones`() {
+    insertWithdrawalCustomPurpose(
+        isArchived = true,
+        name = "Sále",
+        type = WithdrawalCustomPurposeType.SeedBank,
+    )
+    insertWithdrawalCustomPurpose(name = "Gift")
+
+    fun withdrawal(customPurpose: String?, date: LocalDate) =
+        WithdrawalModel(
+            customPurpose = customPurpose,
+            date = date,
+            purpose = WithdrawalPurpose.Other,
+            withdrawn = seeds(1),
+        )
+
+    store.updateWithdrawals(
+        accessionId,
+        emptyList(),
+        listOf(
+            withdrawal(" sale ", LocalDate.of(2021, 1, 3)),
+            withdrawal("Gift", LocalDate.of(2021, 1, 2)),
+            withdrawal(null, LocalDate.of(2021, 1, 1)),
+        ),
+    )
+
+    val withdrawals = store.fetchWithdrawals(accessionId)
+
+    assertEquals(
+        listOf("Sále", "Gift", null),
+        withdrawals.map { it.customPurpose },
+        "Custom purposes",
+    )
+
+    assertTableEquals(
+        listOf(
+            WithdrawalCustomPurposesRecord(
+                createdBy = user.userId,
+                createdTime = clock.instant(),
+                isArchived = false,
+                modifiedBy = user.userId,
+                modifiedTime = clock.instant(),
+                name = "Sále",
+                organizationId = organizationId,
+                typeId = WithdrawalCustomPurposeType.SeedBank,
+            ),
+            WithdrawalCustomPurposesRecord(
+                createdBy = user.userId,
+                createdTime = clock.instant(),
+                isArchived = false,
+                modifiedBy = user.userId,
+                modifiedTime = clock.instant(),
+                name = "Gift",
+                organizationId = organizationId,
+                typeId = WithdrawalCustomPurposeType.Nursery,
+            ),
+            WithdrawalCustomPurposesRecord(
+                createdBy = user.userId,
+                createdTime = clock.instant(),
+                isArchived = false,
+                modifiedBy = user.userId,
+                modifiedTime = clock.instant(),
+                name = "Gift",
+                organizationId = organizationId,
+                typeId = WithdrawalCustomPurposeType.SeedBank,
+            ),
+        )
+    )
+  }
+
+  @Test
+  fun `rejects custom purposes on non-Other withdrawals and names over 50 characters`() {
+    listOf(WithdrawalPurpose.Nursery, null).forEach { purpose ->
+      assertThrows<IllegalArgumentException>("Purpose $purpose") {
+        WithdrawalModel(
+            customPurpose = "Sale",
+            date = LocalDate.now(),
+            purpose = purpose,
+            withdrawn = seeds(1),
+        )
+      }
+    }
+
+    assertThrows<IllegalArgumentException>("Name over 50 characters") {
+      WithdrawalModel(
+          customPurpose = "a".repeat(51),
+          date = LocalDate.now(),
+          purpose = WithdrawalPurpose.Other,
+          withdrawn = seeds(1),
+      )
+    }
+  }
+
+  @Test
+  fun `updates change and clear custom purposes`() {
+    store.updateWithdrawals(
+        accessionId,
+        emptyList(),
+        listOf(
+            WithdrawalModel(
+                customPurpose = "Sale",
+                date = LocalDate.now(),
+                purpose = WithdrawalPurpose.Other,
+                withdrawn = grams(1),
+            )
+        ),
+    )
+    val afterInsert = store.fetchWithdrawals(accessionId)
+
+    store.updateWithdrawals(
+        accessionId,
+        afterInsert,
+        listOf(afterInsert[0].copy(customPurpose = "Gift")),
+    )
+    val afterChange = store.fetchWithdrawals(accessionId)
+    assertEquals("Gift", afterChange[0].customPurpose, "Custom purpose after change")
+
+    store.updateWithdrawals(
+        accessionId,
+        afterChange,
+        listOf(afterChange[0].copy(customPurpose = null)),
+    )
+    assertNull(
+        store.fetchWithdrawals(accessionId)[0].customPurpose,
+        "Custom purpose after clear",
+    )
   }
 
   @Test
