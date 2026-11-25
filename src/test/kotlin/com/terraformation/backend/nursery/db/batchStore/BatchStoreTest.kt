@@ -38,7 +38,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
         projectsDao,
         SeasonHelper(dslContext),
         subLocationsDao,
-        WithdrawalCustomPurposeHelper(clock, dslContext),
+        WithdrawalCustomPurposeHelper(clock, dslContext, ParentFetcher(dslContext)),
         nurseryWithdrawalsDao,
     )
   }

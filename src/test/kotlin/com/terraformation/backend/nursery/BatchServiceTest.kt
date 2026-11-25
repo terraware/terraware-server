@@ -53,7 +53,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             projectsDao,
             SeasonHelper(dslContext),
             subLocationsDao,
-            WithdrawalCustomPurposeHelper(clock, dslContext),
+            WithdrawalCustomPurposeHelper(clock, dslContext, ParentFetcher(dslContext)),
             nurseryWithdrawalsDao,
         ),
         DeliveryStore(clock, deliveriesDao, dslContext, parentFetcher, plantingsDao),
