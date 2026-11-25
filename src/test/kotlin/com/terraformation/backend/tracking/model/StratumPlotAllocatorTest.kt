@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toMultiPolygon
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -531,6 +532,91 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
             )
             .countPlaceable(),
         "200m permanent plot spacing leaves only the boundary-crossing cell, fitting no temporary plots",
+    )
+  }
+
+  @Test
+  fun `site placeable plot helpers compute per-stratum counts and return empty without a map`() {
+    val smallSite =
+        existingSite(width = 60, height = 60) {
+          stratum(plantNumPermanent = 2, plantNumTemporary = 1) {
+            substratum {
+              plot(x = 0, y = 0, permanentIndex = 1)
+              plot(x = 30, y = 0, permanentIndex = 2)
+              plot(x = 0, y = 30, permanentIndex = 3)
+              plot(x = 30, y = 30, permanentIndex = 4)
+            }
+          }
+        }
+    val stratum = smallSite.strata.single()
+    val allObserved = stratum.substrata.single().monitoringPlots.map { it.id }.toSet()
+    val proposed =
+        mapOf(
+            stratum.id to
+                mapOf(
+                    ObservationType.Monitoring to
+                        stratum.plantPlotCounts.copy(numPermanentPlots = 6, numTemporaryPlots = 2)
+                )
+        )
+
+    assertEquals(
+        mapOf(
+            stratum.id to
+                mapOf(
+                    ObservationType.Monitoring to PlaceablePlotCounts(2, 1),
+                    ObservationType.BiomassMeasurements to PlaceablePlotCounts(2, 1),
+                    ObservationType.BaselineSurvey to PlaceablePlotCounts(0, 2),
+                )
+        ),
+        StratumPlotAllocator.countPlaceablePlots(smallSite),
+        "Site placeable counts cover every observation type",
+    )
+    assertEquals(
+        mapOf(
+            stratum.id to
+                mapOf(
+                    ObservationType.Monitoring to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(2, 1),
+                            proposed = PlaceablePlotCounts(3, 1),
+                        ),
+                    ObservationType.BiomassMeasurements to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(2, 1),
+                            proposed = PlaceablePlotCounts(2, 0),
+                        ),
+                    ObservationType.BaselineSurvey to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(0, 2),
+                            proposed = PlaceablePlotCounts(0, 0),
+                        ),
+                )
+        ),
+        StratumPlotAllocator.countPlaceablePlotsForPreview(smallSite, proposed),
+        "Preview helper recomputes other types when maxPermanentPlots increases",
+    )
+    assertEquals(
+        PreviewPlaceablePlotCounts(
+            current = PlaceablePlotCounts(2, 1),
+            proposed = PlaceablePlotCounts(4, 0),
+        ),
+        StratumPlotAllocator.countPlaceablePlotsForPreview(smallSite, proposed, allObserved)
+            .getValue(stratum.id)
+            .getValue(ObservationType.Monitoring),
+        "Preview helper pins observed permanent plots",
+    )
+    assertEquals(
+        emptyMap<Any, Any>(),
+        StratumPlotAllocator.countPlaceablePlots(smallSite.copy(gridOrigin = null)),
+        "Unmapped site has no placeable counts",
+    )
+    assertEquals(
+        emptyMap<Any, Any>(),
+        StratumPlotAllocator.countPlaceablePlotsForPreview(
+            smallSite.copy(gridOrigin = null),
+            proposed,
+        ),
+        "Unmapped site has no preview placeable counts",
     )
   }
 }

@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.nearlyCoveredBy
 import kotlin.math.roundToInt
@@ -264,6 +265,79 @@ class StratumPlotAllocator(
     val isShortfall: Boolean
       get() = numAllocated < numConfigured
   }
+
+  companion object {
+    fun countPlaceablePlots(
+        site: ExistingPlantingSiteModel,
+        observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+    ): Map<StratumId, Map<ObservationType, PlaceablePlotCounts>> {
+      val gridOrigin = site.gridOrigin ?: return emptyMap()
+      return site.strata.associate { stratum ->
+        stratum.id to
+            ObservationType.entries.associateWith { type ->
+              StratumPlotAllocator(
+                      stratum,
+                      type,
+                      gridOrigin,
+                      site.exclusion,
+                      observedPermanentPlotIds,
+                  )
+                  .countPlaceable()
+            }
+      }
+    }
+
+    fun countPlaceablePlotsForPreview(
+        site: ExistingPlantingSiteModel,
+        proposed: Map<StratumId, Map<ObservationType, StratumPlotCounts>>,
+        observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+    ): Map<StratumId, Map<ObservationType, PreviewPlaceablePlotCounts>> {
+      val gridOrigin = site.gridOrigin ?: return emptyMap()
+      return site.strata.associate { stratum ->
+        val proposedByType = proposed[stratum.id].orEmpty()
+        val proposedStratum =
+            if (proposedByType.isEmpty()) stratum else stratum.withPlotCounts(proposedByType)
+        val maxPermanentChanged = proposedStratum.maxPermanentPlots != stratum.maxPermanentPlots
+        stratum.id to
+            ObservationType.entries.associateWith { type ->
+              val currentCounts = stratum.plotCounts(type)
+              val proposedCounts = proposedByType[type] ?: currentCounts
+              val currentPlaceable =
+                  StratumPlotAllocator(
+                          stratum,
+                          type,
+                          gridOrigin,
+                          site.exclusion,
+                          observedPermanentPlotIds,
+                      )
+                      .countPlaceable()
+              val proposedPlaceable =
+                  if (
+                      proposedCounts.numPermanentPlots == currentCounts.numPermanentPlots &&
+                          proposedCounts.numTemporaryPlots == currentCounts.numTemporaryPlots &&
+                          !maxPermanentChanged
+                  ) {
+                    currentPlaceable
+                  } else {
+                    StratumPlotAllocator(
+                            proposedStratum,
+                            type,
+                            gridOrigin,
+                            site.exclusion,
+                            observedPermanentPlotIds,
+                        )
+                        .countPlaceable()
+                  }
+              PreviewPlaceablePlotCounts(current = currentPlaceable, proposed = proposedPlaceable)
+            }
+      }
+    }
+  }
 }
 
 data class PlaceablePlotCounts(val numPermanentPlots: Int, val numTemporaryPlots: Int)
+
+data class PreviewPlaceablePlotCounts(
+    val current: PlaceablePlotCounts,
+    val proposed: PlaceablePlotCounts,
+)
