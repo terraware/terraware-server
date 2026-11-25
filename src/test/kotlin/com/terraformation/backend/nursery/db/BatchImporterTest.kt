@@ -3,7 +3,7 @@ package com.terraformation.backend.nursery.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -75,7 +75,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         facilitiesDao,
         IdentifierGenerator(clock, dslContext),
-        parentStore,
+        parentFetcher,
         projectsDao,
         SeasonHelper(dslContext),
         subLocationsDao,
@@ -83,7 +83,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     )
   }
   private val messages = Messages()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val speciesStore: SpeciesStore by lazy {
     SpeciesStore(
         clock,
@@ -106,7 +106,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         dslContext,
         fileStore,
         messages,
-        parentStore,
+        parentFetcher,
         scheduler,
         speciesStore,
         subLocationsDao,

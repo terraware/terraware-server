@@ -4,7 +4,7 @@ import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.CannotDeleteObservationActivityMediaException
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
@@ -35,7 +35,7 @@ class ActivityMediaService(
     private val dslContext: DSLContext,
     private val fileService: FileService,
     private val muxService: MuxService,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
@@ -156,7 +156,7 @@ class ActivityMediaService(
 
   /** Returns the current date in the time zone of the organization associated with an activity. */
   private fun getCurrentTime(activityId: ActivityId): LocalDateTime =
-      LocalDateTime.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(activityId))
+      LocalDateTime.ofInstant(clock.instant(), parentFetcher.getEffectiveTimeZone(activityId))
 
   private fun isObservation(activityId: ActivityId): Boolean =
       dslContext.fetchExists(

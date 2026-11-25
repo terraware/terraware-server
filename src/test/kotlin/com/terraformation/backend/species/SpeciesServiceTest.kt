@@ -3,7 +3,7 @@ package com.terraformation.backend.species
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.OrganizationLocationUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
@@ -62,7 +62,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     ProjectSpeciesStore(
         clock,
         dslContext,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         SpeciesNativityCalculator(dslContext),
     )
   }

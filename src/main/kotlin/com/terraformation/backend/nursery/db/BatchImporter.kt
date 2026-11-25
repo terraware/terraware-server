@@ -1,7 +1,7 @@
 package com.terraformation.backend.nursery.db
 
 import com.opencsv.CSVReader
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityTypeMismatchException
@@ -42,7 +42,7 @@ class BatchImporter(
     dslContext: DSLContext,
     fileStore: FileStore,
     private val messages: Messages,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     @Lazy private val scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
     private val subLocationsDao: SubLocationsDao,
@@ -67,11 +67,11 @@ class BatchImporter(
   fun receiveCsv(inputStream: InputStream, fileName: String, facilityId: FacilityId): UploadId {
     requirePermissions { createBatch(facilityId) }
 
-    if (parentStore.getFacilityType(facilityId) != FacilityType.Nursery) {
+    if (parentFetcher.getFacilityType(facilityId) != FacilityType.Nursery) {
       throw FacilityTypeMismatchException(facilityId, FacilityType.Nursery)
     }
 
-    val organizationId = parentStore.getOrganizationId(facilityId)
+    val organizationId = parentFetcher.getOrganizationId(facilityId)
     return doReceiveCsv(
         inputStream,
         fileName,
@@ -83,7 +83,7 @@ class BatchImporter(
 
   override fun getValidator(uploadsRow: UploadsRow): CsvValidator {
     val facilityId = uploadsRow.facilityId!!
-    val facilityTimeZone = parentStore.getEffectiveTimeZone(facilityId)
+    val facilityTimeZone = parentFetcher.getEffectiveTimeZone(facilityId)
     val subLocationNames = subLocationsDao.fetchByFacilityId(facilityId).map { it.name!! }.toSet()
 
     return BatchCsvValidator(

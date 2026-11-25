@@ -78,7 +78,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var httpClient: HttpClient
   private lateinit var organizationStore: OrganizationStore
-  private lateinit var parentStore: ParentStore
+  private lateinit var parentFetcher: ParentFetcher
   private lateinit var permissionStore: PermissionStore
   private lateinit var userStore: UserStore
 
@@ -131,7 +131,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     keycloakAdminClient.create(userRepresentation)
 
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
-    parentStore = ParentStore(dslContext)
+    parentFetcher = ParentFetcher(dslContext)
     permissionStore = PermissionStore(dslContext)
 
     userStore =
@@ -143,7 +143,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             keycloakAdminClient,
             dummyKeycloakInfo(),
             organizationStore,
-            parentStore,
+            parentFetcher,
             permissionStore,
             publisher,
             usersDao,
@@ -712,7 +712,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `device manager user cannot delete itself`() {
-      DeviceManagerUser(user.userId, authId, parentStore, permissionStore).run {
+      DeviceManagerUser(user.userId, authId, parentFetcher, permissionStore).run {
         assertThrows<AccessDeniedException> { userStore.deleteSelf() }
       }
     }
@@ -1097,7 +1097,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
               funderUser.userId,
               null,
               email.lowercase(),
-              parentStore = parentStore,
+              parentFetcher = parentFetcher,
               permissionStore = permissionStore,
           ),
           funderUser,

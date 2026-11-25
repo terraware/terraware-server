@@ -9,7 +9,7 @@ import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertSetEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -77,7 +77,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         fileService,
         muxService,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         thumbnailService,
     )
   }

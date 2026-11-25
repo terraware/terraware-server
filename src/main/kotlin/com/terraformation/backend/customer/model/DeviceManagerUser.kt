@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -27,7 +27,7 @@ import org.springframework.security.core.GrantedAuthority
 data class DeviceManagerUser(
     override val userId: UserId,
     override val authId: String,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser {
   companion object {
@@ -62,15 +62,15 @@ data class DeviceManagerUser(
   }
 
   private val deviceManagerId: DeviceManagerId by lazy {
-    parentStore.getDeviceManagerId(userId)
+    parentFetcher.getDeviceManagerId(userId)
         ?: throw IllegalStateException("No device manager ID found for user $userId")
   }
   private val organizationId: OrganizationId by lazy {
-    parentStore.getOrganizationId(deviceManagerId)
+    parentFetcher.getOrganizationId(deviceManagerId)
         ?: throw IllegalStateException("No organization found for device manager $deviceManagerId")
   }
   private val facilityId: FacilityId by lazy {
-    parentStore.getFacilityId(deviceManagerId)
+    parentFetcher.getFacilityId(deviceManagerId)
         ?: throw IllegalStateException("No facility found for device manager $deviceManagerId")
   }
 
@@ -87,13 +87,13 @@ data class DeviceManagerUser(
       deviceManagerId == this.deviceManagerId
 
   private fun canAccessDevice(deviceId: DeviceId) =
-      canAccessFacility(parentStore.getFacilityId(deviceId))
+      canAccessFacility(parentFetcher.getFacilityId(deviceId))
 
   private fun canAccessOrganization(organizationId: OrganizationId?) =
       organizationId == this.organizationId
 
   private fun canAccessAutomation(automationId: AutomationId) =
-      canAccessFacility(parentStore.getFacilityId(automationId))
+      canAccessFacility(parentFetcher.getFacilityId(automationId))
 
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = canAccessFacility(facilityId)
 

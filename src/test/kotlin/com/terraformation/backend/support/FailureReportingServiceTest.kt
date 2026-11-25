@@ -6,7 +6,7 @@ import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
@@ -37,14 +37,14 @@ class FailureReportingServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val supportService: SupportService = mockk()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
 
   private val organizationStore: OrganizationStore by lazy {
     OrganizationStore(clock, dslContext, organizationsDao, eventPublisher)
   }
 
   private val projectStore: ProjectStore by lazy {
-    ProjectStore(clock, dslContext, eventPublisher, ParentStore(dslContext), projectsDao)
+    ProjectStore(clock, dslContext, eventPublisher, ParentFetcher(dslContext), projectsDao)
   }
 
   private val userStore: UserStore by lazy {
@@ -56,7 +56,7 @@ class FailureReportingServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         InMemoryKeycloakAdminClient(),
         dummyKeycloakInfo(),
         organizationStore,
-        parentStore,
+        parentFetcher,
         PermissionStore(dslContext),
         eventPublisher,
         usersDao,

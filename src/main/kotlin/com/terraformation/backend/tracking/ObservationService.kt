@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
@@ -125,7 +125,7 @@ class ObservationService(
     private val observationStore: ObservationStore,
     private val plantingSiteNotificationStore: PlantingSiteNotificationStore,
     private val plantingSiteStore: PlantingSiteStore,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val systemUser: SystemUser,
     private val thumbnailService: ThumbnailService,
@@ -319,7 +319,7 @@ class ObservationService(
    */
   fun assignPlotsToNewObservation(observationId: ObservationId): NewObservationAssignment {
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     requirePermissions { createObservation(plantingSiteId) }
 
@@ -433,10 +433,10 @@ class ObservationService(
     observationPlotStore.requireObservationStarted(observationId)
 
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
+        parentFetcher.getOrganizationId(plantingSiteId)
             ?: throw ObservationNotFoundException(observationId)
 
     if (type == ObservationMediaType.Explanation) {
@@ -502,10 +502,10 @@ class ObservationService(
     requirePermissions { updateObservation(observationId) }
 
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
+        parentFetcher.getOrganizationId(plantingSiteId)
             ?: throw ObservationNotFoundException(observationId)
 
     val initialRow = fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
@@ -725,7 +725,9 @@ class ObservationService(
       updateObservation(observationId)
     }
 
-    if (parentStore.getOrganizationId(observationId) != parentStore.getOrganizationId(speciesId)) {
+    if (
+        parentFetcher.getOrganizationId(observationId) != parentFetcher.getOrganizationId(speciesId)
+    ) {
       throw SpeciesInWrongOrganizationException(speciesId)
     }
 
@@ -1197,7 +1199,7 @@ class ObservationService(
 
     validateObservationData(observationType, biomassDetails, plants)
 
-    val effectiveTimeZone = parentStore.getEffectiveTimeZone(plantingSiteId)
+    val effectiveTimeZone = parentFetcher.getEffectiveTimeZone(plantingSiteId)
     val date = LocalDate.ofInstant(observedTime, effectiveTimeZone)
 
     return dslContext.transactionResult { _ ->
@@ -1731,7 +1733,7 @@ class ObservationService(
       endDate: LocalDate,
   ) {
     val today =
-        LocalDate.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(plantingSiteId))
+        LocalDate.ofInstant(clock.instant(), parentFetcher.getEffectiveTimeZone(plantingSiteId))
 
     if (startDate.isBefore(today) || startDate.isAfter(today.plusYears(1))) {
       throw InvalidObservationStartDateException(startDate)

@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -87,7 +87,7 @@ class AccessionStore(
     private val facilitiesDao: FacilitiesDao,
     private val geolocationStore: GeolocationStore,
     private val viabilityTestStore: ViabilityTestStore,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val eventPublisher: ApplicationEventPublisher,
@@ -269,7 +269,7 @@ class AccessionStore(
 
     if (
         accession.projectId != null &&
-            organizationId != parentStore.getOrganizationId(accession.projectId)
+            organizationId != parentFetcher.getOrganizationId(accession.projectId)
     ) {
       throw ProjectInDifferentOrganizationException()
     }
@@ -454,7 +454,7 @@ class AccessionStore(
         existing.facilityId ?: throw IllegalStateException("Accession has no facility ID")
     val facilityId = updated.facilityId ?: existing.facilityId
     val organizationId =
-        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+        parentFetcher.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     if (!updated.state.isV2Compatible) {
       throw IllegalArgumentException("State must be v2-compatible")
@@ -462,7 +462,7 @@ class AccessionStore(
 
     if (
         facilityId != existingFacilityId &&
-            organizationId != parentStore.getOrganizationId(existingFacilityId)
+            organizationId != parentFetcher.getOrganizationId(existingFacilityId)
     ) {
       throw FacilityNotFoundException(facilityId)
     }
@@ -479,7 +479,7 @@ class AccessionStore(
 
     if (
         updated.projectId != null &&
-            organizationId != parentStore.getOrganizationId(updated.projectId)
+            organizationId != parentFetcher.getOrganizationId(updated.projectId)
     ) {
       throw ProjectInDifferentOrganizationException()
     }
@@ -653,7 +653,7 @@ class AccessionStore(
     val facilityId =
         accession.facilityId ?: throw IllegalStateException("Accession has no facility ID")
     val organizationId =
-        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+        parentFetcher.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     dslContext.transaction { _ ->
       // Child tables will be cleaned up by integrity constraints, except for accession_photos;
@@ -719,7 +719,7 @@ class AccessionStore(
   }
 
   private fun fetchStateHistory(accessionId: AccessionId): MutableList<AccessionHistoryModel> {
-    val timeZone = parentStore.getEffectiveTimeZone(accessionId)
+    val timeZone = parentFetcher.getEffectiveTimeZone(accessionId)
 
     return dslContext
         .select(
@@ -770,7 +770,7 @@ class AccessionStore(
   }
 
   private fun fetchQuantityObservations(accessionId: AccessionId): List<AccessionHistoryModel> {
-    val timeZone = parentStore.getEffectiveTimeZone(accessionId)
+    val timeZone = parentFetcher.getEffectiveTimeZone(accessionId)
 
     return dslContext
         .select(
@@ -1036,7 +1036,8 @@ class AccessionStore(
         val facilityId =
             accession.facilityId ?: throw IllegalStateException("Accession has no facility ID")
         val organizationId =
-            parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+            parentFetcher.getOrganizationId(facilityId)
+                ?: throw FacilityNotFoundException(facilityId)
         insertStateHistory(accession, checkedIn, facilityId, organizationId)
       }
     }
@@ -1052,7 +1053,7 @@ class AccessionStore(
     }
 
     val projectOrganizationId =
-        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+        parentFetcher.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
     val hasOtherOrganizationIds =
         dslContext
             .selectOne()
@@ -1262,7 +1263,7 @@ class AccessionStore(
   fun countActiveInSubLocation(subLocationId: SubLocationId): Int {
     requirePermissions { readSubLocation(subLocationId) }
 
-    val facilityId = parentStore.getFacilityId(subLocationId)
+    val facilityId = parentFetcher.getFacilityId(subLocationId)
 
     return dslContext
         .selectCount()
@@ -1432,7 +1433,7 @@ class AccessionStore(
   }
 
   fun getClock(accessionId: AccessionId): Clock {
-    return clock.withZone(parentStore.getEffectiveTimeZone(accessionId))
+    return clock.withZone(parentFetcher.getEffectiveTimeZone(accessionId))
   }
 
   /**

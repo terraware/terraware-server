@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
@@ -49,7 +49,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
-            ParentStore(dslContext),
+            ParentFetcher(dslContext),
             plantingSitesDao,
             eventPublisher,
             strataDao,

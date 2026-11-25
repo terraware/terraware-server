@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertIsEventListener
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
@@ -42,9 +42,9 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
-  private val parentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher by lazy { ParentFetcher(dslContext) }
   private val deliveryStore by lazy {
-    DeliveryStore(clock, deliveriesDao, dslContext, parentStore, plantingsDao)
+    DeliveryStore(clock, deliveriesDao, dslContext, parentFetcher, plantingsDao)
   }
   private val plantingSiteStore by lazy {
     PlantingSiteStore(
@@ -56,7 +56,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        parentStore,
+        parentFetcher,
         plantingSitesDao,
         eventPublisher,
         strataDao,

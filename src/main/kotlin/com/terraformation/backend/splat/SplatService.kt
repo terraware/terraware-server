@@ -2,7 +2,7 @@ package com.terraformation.backend.splat
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileBatchNotFoundException
@@ -59,7 +59,7 @@ class SplatService(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileStore: S3FileStore,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val sqsTemplate: SqsTemplate,
 ) {
   private val log = perClassLogger()
@@ -150,7 +150,7 @@ class SplatService(
     ensureObservationFile(observationId, fileId)
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     generateSplat(organizationId, fileId, force, params, runBirdnet)
@@ -205,7 +205,7 @@ class SplatService(
     ensureSplat(fileId)
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     setSplatNeedsAttention(organizationId, fileId, needsAttention)
@@ -229,7 +229,7 @@ class SplatService(
     ensureSplat(fileId)
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     deleteSplatRows(fileId, organizationId)

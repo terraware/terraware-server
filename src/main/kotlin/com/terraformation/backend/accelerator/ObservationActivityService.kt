@@ -4,7 +4,7 @@ import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.event.ActivityMediaUpdatedEvent
 import com.terraformation.backend.accelerator.model.NewActivityModel
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.ActivityMediaType
@@ -36,7 +36,7 @@ class ObservationActivityService(
     val observationResultsStore: ObservationResultsStoreV2,
     val observationService: ObservationService,
     val observationStore: ObservationStore,
-    val parentStore: ParentStore,
+    val parentFetcher: ParentFetcher,
     val plantingSiteStore: PlantingSiteStore,
     val projectStore: ProjectStore,
     val systemUser: SystemUser,
@@ -106,7 +106,7 @@ class ObservationActivityService(
           return@run
         }
 
-        val timeZone = plantingSite.timeZone ?: parentStore.getEffectiveTimeZone(plantingSite.id)
+        val timeZone = plantingSite.timeZone ?: parentFetcher.getEffectiveTimeZone(plantingSite.id)
 
         dslContext.transaction { _ ->
           val activity =

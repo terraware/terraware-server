@@ -1,7 +1,7 @@
 package com.terraformation.backend.report.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
@@ -66,7 +66,7 @@ class SeedFundReportStore(
     private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
     private val objectMapper: ObjectMapper,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val projectsDao: ProjectsDao,
     private val seedFundReportsDao: SeedFundReportsDao,
 ) {
@@ -95,7 +95,7 @@ class SeedFundReportStore(
 
   fun fetchMetadataByProject(projectId: ProjectId): List<SeedFundReportMetadata> {
     val organizationId =
-        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+        parentFetcher.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
 
     requirePermissions { listSeedFundReports(organizationId) }
 
@@ -373,7 +373,7 @@ class SeedFundReportStore(
     model.projects.forEach { project ->
       requirePermissions { updateProject(project.projectId) }
 
-      val projectOrganizationId = parentStore.getOrganizationId(project.projectId)
+      val projectOrganizationId = parentFetcher.getOrganizationId(project.projectId)
       if (projectOrganizationId != model.organizationId) {
         throw ProjectInDifferentOrganizationException()
       }

@@ -3,7 +3,7 @@ package com.terraformation.backend.report
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.SeedFundReportNotFoundException
@@ -57,7 +57,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         facilitiesDao,
         jacksonObjectMapper(),
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         projectsDao,
         seedFundReportsDao,
     )

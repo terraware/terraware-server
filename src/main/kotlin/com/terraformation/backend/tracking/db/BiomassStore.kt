@@ -1,6 +1,6 @@
 package com.terraformation.backend.tracking.db
 
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.SpeciesNotFoundException
@@ -69,7 +69,7 @@ class BiomassStore(
     private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
     private val observationResultsInvalidator: ObservationResultsInvalidator,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
 ) {
   private val log = perClassLogger()
 
@@ -114,9 +114,9 @@ class BiomassStore(
     requirePermissions { updateObservation(observationId) }
 
     val plantingSiteId =
-        parentStore.getPlantingSiteId(plotId) ?: throw PlotNotFoundException(plotId)
+        parentFetcher.getPlantingSiteId(plotId) ?: throw PlotNotFoundException(plotId)
     val organizationId =
-        parentStore.getOrganizationId(plantingSiteId) ?: throw PlotNotFoundException(plotId)
+        parentFetcher.getOrganizationId(plantingSiteId) ?: throw PlotNotFoundException(plotId)
 
     val (observationType, observationState) =
         with(OBSERVATION_PLOTS) {
@@ -413,10 +413,10 @@ class BiomassStore(
     }
 
     val plantingSiteId =
-        parentStore.getPlantingSiteId(monitoringPlotId)
+        parentFetcher.getPlantingSiteId(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
     val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
+        parentFetcher.getOrganizationId(plantingSiteId)
             ?: throw PlotNotFoundException(monitoringPlotId)
 
     entityLocker.withLockedObservation(observationId) { _ ->
@@ -794,10 +794,10 @@ class BiomassStore(
     }
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { _ ->
@@ -861,9 +861,9 @@ class BiomassStore(
       validateBiomassSpeciesPlot(observationId, monitoringPlotId)
 
       val organizationId =
-          parentStore.getOrganizationId(observationId)
+          parentFetcher.getOrganizationId(observationId)
               ?: throw ObservationNotFoundException(observationId)
-      if (speciesId != null && parentStore.getOrganizationId(speciesId) != organizationId) {
+      if (speciesId != null && parentFetcher.getOrganizationId(speciesId) != organizationId) {
         throw SpeciesNotFoundException(speciesId)
       }
 
@@ -947,7 +947,7 @@ class BiomassStore(
               observationId = observationId,
               organizationId = organizationId,
               plantingSiteId =
-                  parentStore.getPlantingSiteId(observationId)
+                  parentFetcher.getPlantingSiteId(observationId)
                       ?: throw ObservationNotFoundException(observationId),
               speciesId = speciesId,
               speciesName = getBiomassSpeciesName(speciesId, scientificName),
@@ -1008,10 +1008,10 @@ class BiomassStore(
                 monitoringPlotId = monitoringPlotId,
                 observationId = observationId,
                 organizationId =
-                    parentStore.getOrganizationId(observationId)
+                    parentFetcher.getOrganizationId(observationId)
                         ?: throw ObservationNotFoundException(observationId),
                 plantingSiteId =
-                    parentStore.getPlantingSiteId(observationId)
+                    parentFetcher.getPlantingSiteId(observationId)
                         ?: throw ObservationNotFoundException(observationId),
                 speciesId = biomassSpecies.speciesId,
                 speciesName =
@@ -1052,10 +1052,10 @@ class BiomassStore(
     requirePermissions { updateObservation(observationId) }
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { _ ->
@@ -1140,7 +1140,7 @@ class BiomassStore(
     }
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { observation ->
@@ -1218,7 +1218,7 @@ class BiomassStore(
     require(abundance in 0..25) { "Abundance must be between 0 and 25" }
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { observation ->
@@ -1330,7 +1330,7 @@ class BiomassStore(
     }
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     entityLocker.withLockedObservation(observationId) { observation ->
@@ -1464,7 +1464,7 @@ class BiomassStore(
           recordedTree.biomassSpeciesId
               ?: throw IllegalStateException("Recorded tree $recordedTreeId has no species")
       val organizationId =
-          parentStore.getOrganizationId(observationId)
+          parentFetcher.getOrganizationId(observationId)
               ?: throw ObservationNotFoundException(observationId)
       val newBiomassSpeciesId =
           getOrCreateMeasuredBiomassSpecies(
@@ -1559,10 +1559,10 @@ class BiomassStore(
                   "Biomass species ${recordedTree.biomassSpeciesId} not found"
               )
       val organizationId =
-          parentStore.getOrganizationId(observationId)
+          parentFetcher.getOrganizationId(observationId)
               ?: throw ObservationNotFoundException(observationId)
       val plantingSiteId =
-          parentStore.getPlantingSiteId(observationId)
+          parentFetcher.getPlantingSiteId(observationId)
               ?: throw ObservationNotFoundException(observationId)
 
       dslContext.deleteFrom(RECORDED_TREES).where(RECORDED_TREES.ID.eq(recordedTreeId)).execute()
@@ -1654,9 +1654,9 @@ class BiomassStore(
       scientificName: String?,
   ): BiomassSpeciesId {
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
-    if (speciesId != null && parentStore.getOrganizationId(speciesId) != organizationId) {
+    if (speciesId != null && parentFetcher.getOrganizationId(speciesId) != organizationId) {
       throw SpeciesNotFoundException(speciesId)
     }
 
@@ -1718,7 +1718,7 @@ class BiomassStore(
     record.insert()
 
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     eventPublisher.publishEvent(
         BiomassSpeciesCreatedEvent(
@@ -1778,10 +1778,10 @@ class BiomassStore(
     val biomassSpeciesId = record.id!!
     val observationId = record.observationId!!
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
     dslContext

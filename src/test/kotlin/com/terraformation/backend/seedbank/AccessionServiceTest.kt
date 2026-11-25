@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.WithdrawalNotFoundException
@@ -50,7 +50,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
   private val accessionStore: AccessionStore = mockk()
   private val batchStore: BatchStore = mockk()
-  private val parentStore: ParentStore = mockk()
+  private val parentFetcher: ParentFetcher = mockk()
   private val photoRepository: PhotoRepository = mockk()
 
   private val service: AccessionService by lazy {
@@ -58,7 +58,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
         accessionStore,
         batchStore,
         dslContext,
-        parentStore,
+        parentFetcher,
         photoRepository,
         mockk(),
         SearchTables(clock),
@@ -300,8 +300,8 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 version = 1,
             )
           }
-      every { parentStore.getOrganizationId(seedBankFacilityId) } returns organizationId
-      every { parentStore.getOrganizationId(nurseryFacilityId) } returns organizationId
+      every { parentFetcher.getOrganizationId(seedBankFacilityId) } returns organizationId
+      every { parentFetcher.getOrganizationId(nurseryFacilityId) } returns organizationId
 
       every { user.canCreateBatch(nurseryFacilityId) } returns true
       every { user.canReadFacility(nurseryFacilityId) } returns true
@@ -492,7 +492,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if seed bank and nursery are in different organizations`() {
-      every { parentStore.getOrganizationId(nurseryFacilityId) } returns OrganizationId(1000)
+      every { parentFetcher.getOrganizationId(nurseryFacilityId) } returns OrganizationId(1000)
 
       assertThrows<CrossOrganizationNurseryTransferNotAllowedException> {
         service.createNurseryTransfer(

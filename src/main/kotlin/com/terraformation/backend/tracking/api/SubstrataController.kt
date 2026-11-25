@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.species.db.SpeciesStore
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class SubstrataController(
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val plantingSiteStore: PlantingSiteStore,
     private val speciesStore: SpeciesStore,
 ) {

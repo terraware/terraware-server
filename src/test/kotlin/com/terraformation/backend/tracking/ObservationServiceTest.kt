@@ -5,7 +5,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertSetEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.SimpleUserStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -200,7 +200,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val fileStore = InMemoryFileStore()
   private val muxService: MuxService = mockk()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
@@ -211,7 +211,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         entityLocker,
         eventPublisher,
         observationResultsInvalidator,
-        parentStore,
+        parentFetcher,
     )
   }
   private val jobScheduler: JobScheduler = mockk()
@@ -220,7 +220,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     spyk(ObservationResultsInvalidator(dslContext))
   }
   private val observationPlotStore: ObservationPlotStore by lazy {
-    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentStore)
+    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentFetcher)
   }
   private val observationStore: ObservationStore by lazy {
     spyk(
@@ -234,7 +234,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             observationPlotConditionsDao,
             observationPlotsDao,
             observationRequestedSubstrataDao,
-            parentStore,
+            parentFetcher,
         )
     )
   }
@@ -248,7 +248,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        parentStore,
+        parentFetcher,
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -272,7 +272,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
-        parentStore,
+        parentFetcher,
         eventPublisher,
         SystemUser(usersDao),
         thumbnailService,
@@ -3707,7 +3707,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               spyStore,
               PlantingSiteNotificationStore(clock, dslContext),
               plantingSiteStore,
-              parentStore,
+              parentFetcher,
               eventPublisher,
               SystemUser(usersDao),
               thumbnailService,

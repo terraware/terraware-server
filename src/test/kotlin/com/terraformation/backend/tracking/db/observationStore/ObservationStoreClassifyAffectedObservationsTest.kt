@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.TestSingletons
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.EntityLocker
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -41,7 +41,7 @@ class ObservationStoreClassifyAffectedObservationsTest : BaseObservationStoreTes
         geometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         plantingSitesDao,
         eventPublisher,
         strataDao,
