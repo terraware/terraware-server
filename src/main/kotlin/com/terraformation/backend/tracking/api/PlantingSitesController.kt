@@ -9,6 +9,7 @@ import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.PlantingSiteHasNoBoundaryException
 import com.terraformation.backend.db.UnvalidatedGeometryDeserializer
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -28,8 +29,12 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.MEDIA_TYPE_SVG
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.tracking.ObservationResultsRecalculator
 import com.terraformation.backend.tracking.PlantingSiteMapEditService
+import com.terraformation.backend.tracking.PlantingSiteMapExportService
+import com.terraformation.backend.tracking.PlantingSiteMapFormat
+import com.terraformation.backend.tracking.PlantingSiteMapLayer
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -70,6 +75,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.BadRequestException
+import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -78,6 +84,8 @@ import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.ContentDisposition
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -109,6 +117,7 @@ class PlantingSitesController(
     private val observationResultsRecalculator: ObservationResultsRecalculator,
     private val observationStore: ObservationStore,
     private val plantingSiteMapEditService: PlantingSiteMapEditService,
+    private val plantingSiteMapExportService: PlantingSiteMapExportService,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteService: PlantingSiteService,
 ) {
@@ -244,6 +253,77 @@ class PlantingSitesController(
             simplified ?: true,
         )
     return GetPlantingSiteHistoryResponsePayload(PlantingSiteHistoryPayload(model))
+  }
+
+  @ApiResponse(
+      content =
+          [
+              Content(
+                  mediaType = "application/zip",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+              Content(
+                  mediaType = "application/vnd.google-earth.kml+xml",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+          ],
+      responseCode = "200",
+  )
+  @GetMapping("/{id}/history/{historyId}/download")
+  @ApiResponse409("The planting site map version is incomplete.")
+  @Operation(summary = "Downloads a planting site map version.")
+  fun downloadPlantingSiteMap(
+      @PathVariable id: PlantingSiteId,
+      @PathVariable historyId: PlantingSiteHistoryId,
+      @RequestParam format: PlantingSiteMapFormat,
+  ): ResponseEntity<InputStreamResource> =
+      plantingSiteMapDownload(
+          "planting-site-$id-version-$historyId",
+          format,
+          plantingSiteMapExportService.fetchLayers(id, historyId),
+      )
+
+  @ApiResponse(
+      content =
+          [
+              Content(
+                  mediaType = "application/zip",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+              Content(
+                  mediaType = "application/vnd.google-earth.kml+xml",
+                  schema = Schema(format = "binary", type = "string"),
+              ),
+          ],
+      responseCode = "200",
+  )
+  @GetMapping("/{id}/download")
+  @ApiResponse409("The current planting site map is incomplete.")
+  @Operation(summary = "Downloads the current planting site map.")
+  fun downloadCurrentPlantingSiteMap(
+      @PathVariable id: PlantingSiteId,
+      @RequestParam format: PlantingSiteMapFormat,
+  ): ResponseEntity<InputStreamResource> =
+      plantingSiteMapDownload(
+          "planting-site-$id",
+          format,
+          plantingSiteMapExportService.fetchCurrentLayers(id),
+      )
+
+  private fun plantingSiteMapDownload(
+      basename: String,
+      format: PlantingSiteMapFormat,
+      layers: List<PlantingSiteMapLayer>,
+  ): ResponseEntity<InputStreamResource> {
+    val filename = "$basename.${format.extension}"
+    val contentType = MediaType.parseMediaType(format.mediaType)
+    val output = ByteArrayOutputStream()
+    plantingSiteMapExportService.write(format, layers, output)
+    val bytes = output.toByteArray()
+    return SizedInputStream(bytes.inputStream(), bytes.size.toLong(), contentType)
+        .toResponseEntity {
+          contentDisposition = ContentDisposition.attachment().filename(filename).build()
+        }
   }
 
   @ApiResponse200Svg
