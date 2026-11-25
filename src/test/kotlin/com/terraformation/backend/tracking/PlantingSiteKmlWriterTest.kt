@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.w3c.dom.Node
 
-class PlantingSiteMapWritersTest {
+class PlantingSiteKmlWriterTest {
   @Test
   fun `writes KML folders with attributes and multipart polygons with holes`() {
     val expected = expectedFile("planting-site.kml").use(::normalizedXml)
