@@ -38,6 +38,8 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -78,10 +80,10 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     ApplicationService(
         applicationStore,
         applicationVariableValuesService,
+        boundaryDeliverableId,
         config,
         TestSingletons.countryDetector,
         hubSpotService,
-        PreScreenBoundarySubmissionFetcher(applicationStore, boundaryDeliverableId),
         projectAcceleratorDetailsService,
         SystemUser(usersDao),
     )
@@ -104,11 +106,10 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class Submit {
     @Test
-    fun `fetches variable values for pre-screen submissions`() {
+    fun `requires a completed boundary submission and uses variable values for pre-screening`() {
       val applicationId = insertApplication()
       val deliverableId = boundaryDeliverableId
       insertApplicationModule()
-      insertSubmission(deliverableId = deliverableId, submissionStatus = SubmissionStatus.Completed)
 
       every { applicationVariableValuesService.fetchValues(inserted.projectId) } returns
           ApplicationVariableValues(
@@ -120,6 +121,18 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       val initial = dslContext.fetch(APPLICATIONS).single()
+      val missingBoundary = messages.applicationPreScreenFailureNoBoundary()
+      assertEquals(listOf(missingBoundary), service.submit(applicationId).problems)
+      assertTableEquals(
+          initial.apply {
+            applicationStatusId = ApplicationStatus.FailedPreScreen
+            feedback = "<ul>\n<li>$missingBoundary</li>\n</ul>"
+          },
+      )
+
+      applicationStore.restart(applicationId)
+      insertSubmission(deliverableId = deliverableId, submissionStatus = SubmissionStatus.Completed)
+
       val problem = messages.applicationPreScreenFailureTooFewSpecies(10)
       assertEquals(listOf(problem), service.submit(applicationId).problems)
 
@@ -129,6 +142,18 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
             feedback = "<ul>\n<li>$problem</li>\n</ul>"
           },
       )
+    }
+
+    @Test
+    fun `throws exception if no permission to read project deliverables at pre-screen submission`() {
+      val applicationId = insertApplication()
+      val initial = dslContext.fetch(APPLICATIONS).single()
+      every { user.canReadProjectDeliverables(inserted.projectId) } returns false
+      every { applicationVariableValuesService.fetchValues(inserted.projectId) } returns mockk()
+
+      assertThrows<AccessDeniedException> { service.submit(applicationId) }
+
+      assertTableEquals(initial)
     }
 
     @Test

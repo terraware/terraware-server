@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
+import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -10,21 +11,25 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.net.URI
 import org.locationtech.jts.geom.Geometry
+import org.springframework.beans.factory.annotation.Value
 
 @Named
 class ApplicationService(
     private val applicationStore: ApplicationStore,
     private val applicationVariableValuesService: ApplicationVariableValuesService,
+    @param:Value("68") // From deliverables spreadsheet
+    private val boundaryDeliverableId: DeliverableId,
     private val config: TerrawareServerConfig,
     private val countryDetector: CountryDetector,
     private val hubSpotService: HubSpotService,
-    private val preScreenBoundarySubmissionFetcher: PreScreenBoundarySubmissionFetcher,
     private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val systemUser: SystemUser,
 ) {
@@ -46,7 +51,7 @@ class ApplicationService(
     val variableValues = applicationVariableValuesService.fetchValues(projectId)
 
     return if (existing.status == ApplicationStatus.NotSubmitted) {
-      val boundarySubmission = preScreenBoundarySubmissionFetcher.fetchSubmission(projectId)
+      val boundarySubmission = fetchPreScreenBoundarySubmission(projectId)
       val result = applicationStore.submit(applicationId, variableValues, boundarySubmission)
       if (result.isSuccessful) {
         createProjectAcceleratorDetails(result.application, variableValues)
@@ -107,6 +112,26 @@ class ApplicationService(
               "all in one country: $countries"
       )
     }
+  }
+
+  private fun fetchPreScreenBoundarySubmission(projectId: ProjectId): DeliverableSubmissionModel? {
+    requirePermissions { readProjectDeliverables(projectId) }
+
+    val submission =
+        applicationStore
+            .fetchApplicationDeliverables(
+                deliverableId = boundaryDeliverableId,
+                projectId = projectId,
+            )
+            .firstOrNull()
+
+    if (submission == null) {
+      log.error(
+          "Submission not found for deliverable $boundaryDeliverableId and project $projectId"
+      )
+    }
+
+    return submission
   }
 
   private fun updateHubSpotUrl(application: ExistingApplicationModel, url: URI) {

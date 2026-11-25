@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -23,6 +24,7 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -768,12 +770,42 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `filters by IDs`() {
+        val documentId1 =
+            insertSubmissionDocument(
+                projectId = org1ProjectId1,
+                submissionId = org1Project1PrescreenSubmission,
+            )
+        val documentId2 =
+            insertSubmissionDocument(
+                projectId = org1ProjectId1,
+                submissionId = org1Project1PrescreenSubmission,
+            )
         val org1Project1PrescreenModel =
             DeliverableSubmissionModel(
                 category = DeliverableCategory.Compliance,
                 deliverableId = prescreenDeliverableId,
                 descriptionHtml = "Pre-screen deliverable description",
-                documents = emptyList(),
+                documents =
+                    listOf(
+                        SubmissionDocumentModel(
+                            createdTime = clock.instant,
+                            description = null,
+                            documentStore = DocumentStore.Google,
+                            id = documentId1,
+                            location = "Location 1",
+                            name = "Submission Document 1",
+                            originalName = "Original Name 1",
+                        ),
+                        SubmissionDocumentModel(
+                            createdTime = clock.instant,
+                            description = null,
+                            documentStore = DocumentStore.Google,
+                            id = documentId2,
+                            location = "Location 2",
+                            name = "Submission Document 2",
+                            originalName = "Original Name 2",
+                        ),
+                    ),
                 dueDate = null,
                 feedback = "feedback 1",
                 internalComment = "comment 1",
@@ -801,6 +833,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 category = DeliverableCategory.CarbonEligibility,
                 deliverableId = applicationDeliverableId,
                 descriptionHtml = "Application deliverable description",
+                documents = emptyList(),
                 feedback = "feedback 2",
                 internalComment = "comment 2",
                 moduleId = applicationModuleId,
@@ -812,6 +845,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
         val org1Project2PrescreenModel =
             org1Project1PrescreenModel.copy(
+                documents = emptyList(),
                 feedback = "feedback 3",
                 internalComment = "comment 3",
                 projectDealName = "Internal Name 2",
@@ -834,6 +868,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
         val org2Project1PrescreenModel =
             org1Project1PrescreenModel.copy(
+                documents = emptyList(),
                 feedback = "feedback 5",
                 internalComment = "comment 5",
                 organizationId = organizationId2,
@@ -1054,6 +1089,27 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             ),
             store.fetchApplicationDeliverables().toSet(),
             "Fetch application deliverables by application deliverableId",
+        )
+
+        val projectWithoutApplication = insertProject()
+        assertEquals(
+            emptyList<DeliverableSubmissionModel>(),
+            store.fetchApplicationDeliverables(
+                deliverableId = prescreenDeliverableId,
+                projectId = projectWithoutApplication,
+            ),
+            "Fetch pre-screen deliverable for a project without an application",
+        )
+
+        val missingDeliverableId = insertDeliverable(moduleId = prescreenModuleId)
+        deliverablesDao.deleteById(missingDeliverableId)
+        assertEquals(
+            emptyList<DeliverableSubmissionModel>(),
+            store.fetchApplicationDeliverables(
+                deliverableId = missingDeliverableId,
+                projectId = org1ProjectId1,
+            ),
+            "Fetch missing pre-screen deliverable for a project with an application",
         )
       }
 
