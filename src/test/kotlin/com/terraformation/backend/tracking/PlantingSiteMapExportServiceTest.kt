@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.tracking.db.PlantingSiteHistoryIncompleteException
 import com.terraformation.backend.tracking.db.PlantingSiteMapIncompleteException
@@ -12,9 +13,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.MultiPolygon
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 internal class PlantingSiteMapExportServiceTest : BasePlantingSiteStoreTest() {
-  private val service by lazy { PlantingSiteMapExportService(store) }
+  private val objectMapper = jacksonMapperBuilder().addModule(GeometryModule()).build()
+  private val service by lazy {
+    PlantingSiteMapExportService(PlantingSiteGeoJsonWriter(objectMapper), store)
+  }
 
   @Test
   fun `exports the requested snapshot geometry and attributes with the current site name`() {

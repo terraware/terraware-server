@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [-138.115,26.9],
+              [-138.114,26.9],
+              [-138.114,26.901],
+              [-138.115,26.901],
+              [-138.115,26.9]
+            ]
+          ]
+        ]
+      },
+      "properties": {"area_ha": 1.5}
+    }
+  ]
+}

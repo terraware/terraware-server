@@ -8,11 +8,19 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
+import java.io.OutputStream
 import java.math.BigDecimal
 import org.locationtech.jts.geom.MultiPolygon
 
+enum class PlantingSiteMapFormat(val extension: String, val mediaType: String) {
+  GeoJson("zip", "application/zip"),
+}
+
 @Named
-class PlantingSiteMapExportService(private val plantingSiteStore: PlantingSiteStore) {
+class PlantingSiteMapExportService(
+    private val geoJsonWriter: PlantingSiteGeoJsonWriter,
+    private val plantingSiteStore: PlantingSiteStore,
+) {
   fun fetchLayers(
       siteId: PlantingSiteId,
       historyId: PlantingSiteHistoryId,
@@ -81,6 +89,16 @@ class PlantingSiteMapExportService(private val plantingSiteStore: PlantingSiteSt
               PlantingSiteMapFeature(geometry, mapOf("area_ha" to geometry.calculateAreaHectares()))
           add(PlantingSiteMapLayer("exclusions", listOf(feature)))
         }
+  }
+
+  fun write(
+      format: PlantingSiteMapFormat,
+      layers: List<PlantingSiteMapLayer>,
+      output: OutputStream,
+  ) {
+    when (format) {
+      PlantingSiteMapFormat.GeoJson -> geoJsonWriter.write(layers, output)
+    }
   }
 }
 
