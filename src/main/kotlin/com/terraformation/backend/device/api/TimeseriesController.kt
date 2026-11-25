@@ -11,7 +11,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.FacilityStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.TimeseriesType
@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class TimeseriesController(
     private val facilityStore: FacilityStore,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val timeSeriesStore: TimeseriesStore,
 ) {
   private val log = perClassLogger()
@@ -107,7 +107,7 @@ class TimeseriesController(
             .map { it.deviceId }
             .distinct()
             .any {
-              parentStore.getFacilityConnectionState(it) != FacilityConnectionState.Configured
+              parentFetcher.getFacilityConnectionState(it) != FacilityConnectionState.Configured
             }
     if (facilityNotConfigured) {
       return ResponseEntity.accepted().body(RecordTimeseriesValuesResponsePayload())

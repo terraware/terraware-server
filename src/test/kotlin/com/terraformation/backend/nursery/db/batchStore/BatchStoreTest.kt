@@ -2,7 +2,7 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -33,7 +33,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         facilitiesDao,
         IdentifierGenerator(clock, dslContext),
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         projectsDao,
         SeasonHelper(dslContext),
         subLocationsDao,

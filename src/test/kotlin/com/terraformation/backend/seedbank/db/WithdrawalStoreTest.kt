@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
@@ -63,7 +63,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             dslContext,
             clock,
             Messages(),
-            ParentStore(dslContext),
+            ParentFetcher(dslContext),
             eventPublisher,
         )
 

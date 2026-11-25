@@ -1,7 +1,7 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.asNonNullable
@@ -29,7 +29,7 @@ import org.jooq.impl.DSL
 class ProjectSpeciesStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val speciesNativityCalculator: SpeciesNativityCalculator,
 ) {
   private val log = perClassLogger()
@@ -306,7 +306,7 @@ class ProjectSpeciesStore(
     projectIds?.forEach { projectId ->
       requirePermissions { readProject(projectId) }
 
-      if (parentStore.getOrganizationId(projectId) != organizationId) {
+      if (parentFetcher.getOrganizationId(projectId) != organizationId) {
         throw ProjectInDifferentOrganizationException()
       }
     }

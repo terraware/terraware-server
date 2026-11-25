@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertSetEquals
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GeometryDeserializer
 import com.terraformation.backend.db.GeometryModule
@@ -50,7 +50,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val store: DraftPlantingSiteStore by lazy {
-    DraftPlantingSiteStore(clock, dslContext, ParentStore(dslContext))
+    DraftPlantingSiteStore(clock, dslContext, ParentFetcher(dslContext))
   }
 
   private val timeZone = ZoneId.of("Pacific/Honolulu")

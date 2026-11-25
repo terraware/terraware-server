@@ -1,7 +1,7 @@
 package com.terraformation.backend
 
 import com.terraformation.backend.auth.CurrentUserHolder
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.FunderUser
@@ -49,7 +49,7 @@ interface RunsAsDatabaseUser : RunsAsUser {
                 DeviceManagerUser(
                     record.id!!,
                     record.authId!!,
-                    ParentStore(dslContext),
+                    ParentFetcher(dslContext),
                     PermissionStore(dslContext),
                 )
             UserType.Individual ->
@@ -66,7 +66,7 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     record.locale,
                     record.timeZone,
                     record.userTypeId!!,
-                    ParentStore(dslContext),
+                    ParentFetcher(dslContext),
                     PermissionStore(dslContext),
                 )
             UserType.System -> SystemUser(UsersDao(dslContext.configuration()))
@@ -83,7 +83,7 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     record.cookiesConsentedTime,
                     record.locale,
                     record.timeZone,
-                    ParentStore(dslContext),
+                    ParentFetcher(dslContext),
                     PermissionStore(dslContext),
                 )
           }

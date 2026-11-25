@@ -2,7 +2,7 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
@@ -125,7 +125,7 @@ import org.springframework.beans.factory.annotation.Autowired
  *    permissions other than the ones the test specifically said they should.
  */
 internal class PermissionTest : DatabaseTest() {
-  private lateinit var parentStore: ParentStore
+  private lateinit var parentFetcher: ParentFetcher
   private lateinit var permissionStore: PermissionStore
   private lateinit var userStore: UserStore
 
@@ -212,7 +212,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @BeforeEach
   fun setUp() {
-    parentStore = ParentStore(dslContext)
+    parentFetcher = ParentFetcher(dslContext)
     permissionStore = PermissionStore(dslContext)
     userStore =
         UserStore(
@@ -223,7 +223,7 @@ internal class PermissionTest : DatabaseTest() {
             InMemoryKeycloakAdminClient(),
             dummyKeycloakInfo(),
             mockk(),
-            parentStore,
+            parentFetcher,
             permissionStore,
             mockk(),
             usersDao,

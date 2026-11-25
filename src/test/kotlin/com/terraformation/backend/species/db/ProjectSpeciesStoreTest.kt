@@ -1,7 +1,7 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
@@ -33,7 +33,7 @@ internal class ProjectSpeciesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     ProjectSpeciesStore(
         clock,
         dslContext,
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
         SpeciesNativityCalculator(dslContext),
     )
   }

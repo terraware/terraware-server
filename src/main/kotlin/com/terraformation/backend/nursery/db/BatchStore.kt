@@ -1,7 +1,7 @@
 package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
@@ -114,7 +114,7 @@ class BatchStore(
     private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
     private val identifierGenerator: IdentifierGenerator,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val projectsDao: ProjectsDao,
     private val seasonHelper: SeasonHelper,
     private val subLocationsDao: SubLocationsDao,
@@ -211,7 +211,7 @@ class BatchStore(
         newModel.projectId?.let { projectId ->
           projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
         }
-    val facilityTimeZone = parentStore.getEffectiveTimeZone(newModel.facilityId)
+    val facilityTimeZone = parentFetcher.getEffectiveTimeZone(newModel.facilityId)
     val now = clock.instant()
     val userId = currentUser().userId
 
@@ -224,7 +224,7 @@ class BatchStore(
       throw FacilityTypeMismatchException(newModel.facilityId, FacilityType.Nursery)
     }
 
-    if (organizationId != parentStore.getOrganizationId(speciesId)) {
+    if (organizationId != parentFetcher.getOrganizationId(speciesId)) {
       throw SpeciesNotFoundException(speciesId)
     }
 
@@ -481,7 +481,7 @@ class BatchStore(
           projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
         }
 
-    if (project != null && parentStore.getOrganizationId(batchId) != project.organizationId) {
+    if (project != null && parentFetcher.getOrganizationId(batchId) != project.organizationId) {
       throw ProjectInDifferentOrganizationException()
     }
 
@@ -748,7 +748,7 @@ class BatchStore(
     }
 
     val projectOrganizationId =
-        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+        parentFetcher.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
     val hasOtherOrganizationIds =
         dslContext
             .selectOne()
@@ -795,7 +795,7 @@ class BatchStore(
     withdrawal.batchWithdrawals.forEach { batchWithdrawal ->
       requirePermissions { updateBatch(batchWithdrawal.batchId) }
 
-      if (withdrawal.facilityId != parentStore.getFacilityId(batchWithdrawal.batchId)) {
+      if (withdrawal.facilityId != parentFetcher.getFacilityId(batchWithdrawal.batchId)) {
         throw IllegalArgumentException("All batches in a withdrawal must be from the same facility")
       }
     }
@@ -820,8 +820,8 @@ class BatchStore(
       requirePermissions { createBatch(withdrawal.destinationFacilityId) }
 
       if (
-          parentStore.getOrganizationId(withdrawal.facilityId) !=
-              parentStore.getOrganizationId(withdrawal.destinationFacilityId)
+          parentFetcher.getOrganizationId(withdrawal.facilityId) !=
+              parentFetcher.getOrganizationId(withdrawal.destinationFacilityId)
       ) {
         throw CrossOrganizationNurseryTransferNotAllowedException(
             withdrawal.facilityId,
@@ -903,7 +903,7 @@ class BatchStore(
                             batchWithdrawal.activeGrowthQuantityWithdrawn,
                         readyQuantityWithdrawn = batchWithdrawal.readyQuantityWithdrawn,
                     )
-                val nurseryTimeZone = parentStore.getEffectiveTimeZone(batchId)
+                val nurseryTimeZone = parentFetcher.getEffectiveTimeZone(batchId)
 
                 batchWithdrawalsDao.insert(batchWithdrawalsRow)
 
@@ -1011,7 +1011,7 @@ class BatchStore(
       throw WithdrawalAlreadyUndoneException(withdrawalId)
     }
 
-    val nurseryTimeZone = parentStore.getEffectiveTimeZone(withdrawalToUndo.facilityId)
+    val nurseryTimeZone = parentFetcher.getEffectiveTimeZone(withdrawalToUndo.facilityId)
     val todayAtNursery = LocalDate.ofInstant(clock.instant(), nurseryTimeZone)
 
     val batchWithdrawals =
@@ -1238,7 +1238,7 @@ class BatchStore(
         if (userSuppliedDate == null) {
           recorded
         } else {
-          val zone = parentStore.getEffectiveTimeZone(batchId)
+          val zone = parentFetcher.getEffectiveTimeZone(batchId)
           val previous =
               if (userSuppliedDate == LocalDate.ofInstant(recorded, zone)) {
                 null
@@ -1764,7 +1764,7 @@ class BatchStore(
                   .minOrNull()
           earliestDate?.let {
             minOf(
-                it.atStartOfDay(parentStore.getEffectiveTimeZone(batchId)).toInstant(),
+                it.atStartOfDay(parentFetcher.getEffectiveTimeZone(batchId)).toInstant(),
                 createdTime,
             )
           }
@@ -1853,7 +1853,7 @@ class BatchStore(
         return@transaction
       }
 
-      val zone by lazy { parentStore.getEffectiveTimeZone(batchId) }
+      val zone by lazy { parentFetcher.getEffectiveTimeZone(batchId) }
       var previous: Instant? = null
       var recompute = false
       historyRows.forEach { row ->

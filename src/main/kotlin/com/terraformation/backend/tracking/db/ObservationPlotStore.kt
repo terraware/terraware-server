@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EntityLocker
@@ -39,7 +39,7 @@ class ObservationPlotStore(
     private val dslContext: DSLContext,
     private val entityLocker: EntityLocker,
     private val eventPublisher: ApplicationEventPublisher,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
 ) {
   fun fetchObservationPlotDetails(observationId: ObservationId): List<AssignedPlotDetails> {
     requirePermissions { readObservation(observationId) }
@@ -628,10 +628,10 @@ class ObservationPlotStore(
     val createdTime = clock.instant()
 
     val organizationId =
-        parentStore.getOrganizationId(observationId)
+        parentFetcher.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
+        parentFetcher.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
     val historyIds =
         with(MONITORING_PLOT_HISTORIES) {

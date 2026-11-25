@@ -8,7 +8,7 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
@@ -76,7 +76,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   private val objectMapper = jacksonObjectMapper()
   private val publisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
-  private val parentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher by lazy { ParentFetcher(dslContext) }
   private val seedFundReportRenderer: SeedFundReportRenderer = mockk()
   private val seedFundReportStore by lazy {
     SeedFundReportStore(
@@ -85,7 +85,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
         publisher,
         facilitiesDao,
         objectMapper,
-        parentStore,
+        parentFetcher,
         projectsDao,
         seedFundReportsDao,
     )
@@ -101,7 +101,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             mockk(),
             mockk(),
             mockk(),
-            parentStore,
+            parentFetcher,
             mockk(),
             clock,
             publisher,
@@ -119,7 +119,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             publisher,
             facilitiesDao,
             mockk(),
-            parentStore,
+            parentFetcher,
             projectsDao,
             SeasonHelper(dslContext),
             subLocationsDao,
@@ -148,13 +148,13 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
-            parentStore,
+            parentFetcher,
             plantingSitesDao,
             publisher,
             strataDao,
             substrataDao,
         ),
-        ProjectStore(clock, dslContext, publisher, parentStore, projectsDao),
+        ProjectStore(clock, dslContext, publisher, parentFetcher, projectsDao),
         seedFundReportRenderer,
         seedFundReportStore,
         scheduler,

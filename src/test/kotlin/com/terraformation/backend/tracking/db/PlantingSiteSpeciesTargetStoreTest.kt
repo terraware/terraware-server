@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityLocker
@@ -28,7 +28,7 @@ internal class PlantingSiteSpeciesTargetStoreTest : DatabaseTest(), RunsAsDataba
     PlantingSiteSpeciesTargetStore(
         dslContext,
         EntityLocker(dslContext),
-        ParentStore(dslContext),
+        ParentFetcher(dslContext),
     )
   }
 

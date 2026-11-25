@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -36,7 +36,7 @@ class WithdrawalStore(
     private val dslContext: DSLContext,
     private val clock: Clock,
     private val messages: Messages,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
   private val log = perClassLogger()
@@ -163,9 +163,10 @@ class WithdrawalStore(
     val idsToUpdate = existingById.keys.intersect(desiredById.keys)
 
     val organizationId =
-        parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+        parentFetcher.getOrganizationId(accessionId)
+            ?: throw AccessionNotFoundException(accessionId)
     val facilityId =
-        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+        parentFetcher.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
     // For any withdrawals where withdrawnByUserId is being changed, the current user must have
     // permission to read the user in question in the organization.

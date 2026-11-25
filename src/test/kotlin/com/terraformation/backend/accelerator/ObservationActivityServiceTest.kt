@@ -5,7 +5,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.event.ActivityMediaUpdatedEvent
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -62,11 +62,11 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val entityLocker: EntityLocker by lazy { EntityLocker(dslContext) }
   private val eventPublisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val jobScheduler: JobScheduler = mockk()
   private val observationPlotStore: ObservationPlotStore by lazy {
-    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentStore)
+    ObservationPlotStore(clock, dslContext, entityLocker, eventPublisher, parentFetcher)
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
@@ -79,7 +79,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
-        parentStore,
+        parentFetcher,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
@@ -92,7 +92,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         mockGeometrySimplifier,
         mockk(),
         monitoringPlotsDao,
-        parentStore,
+        parentFetcher,
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -102,7 +102,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val service by lazy {
     ObservationActivityService(
         ActivityMediaStore(clock, dslContext, eventPublisher),
-        ActivityStore(clock, dslContext, eventPublisher, parentStore),
+        ActivityStore(clock, dslContext, eventPublisher, parentFetcher),
         dslContext,
         ObservationResultsStoreV2(dslContext),
         ObservationService(
@@ -111,7 +111,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 entityLocker,
                 eventPublisher,
                 ObservationResultsInvalidator(dslContext),
-                parentStore,
+                parentFetcher,
             ),
             clock,
             dslContext,
@@ -126,15 +126,15 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             observationStore,
             PlantingSiteNotificationStore(clock, dslContext),
             plantingSiteStore,
-            parentStore,
+            parentFetcher,
             eventPublisher,
             systemUser,
             mockk(),
         ),
         observationStore,
-        parentStore,
+        parentFetcher,
         plantingSiteStore,
-        ProjectStore(clock, dslContext, eventPublisher, parentStore, projectsDao),
+        ProjectStore(clock, dslContext, eventPublisher, parentFetcher, projectsDao),
         systemUser,
     )
   }

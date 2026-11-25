@@ -6,7 +6,7 @@ import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
@@ -52,21 +52,21 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     IdentifierGenerator(clock, dslContext)
   }
   private val messages = Messages()
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher: ParentFetcher by lazy { ParentFetcher(dslContext) }
   private val publisher = TestEventPublisher()
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
 
   private val service: ProjectService by lazy {
     ProjectService(
         AccessionStore(
-            AccessionHelper(parentStore),
+            AccessionHelper(parentFetcher),
             dslContext,
             BagStore(dslContext),
             facilitiesDao,
             GeolocationStore(dslContext, clock),
-            ViabilityTestStore(dslContext, parentStore, publisher),
-            parentStore,
-            WithdrawalStore(dslContext, clock, messages, parentStore, publisher),
+            ViabilityTestStore(dslContext, parentFetcher, publisher),
+            parentFetcher,
+            WithdrawalStore(dslContext, clock, messages, parentFetcher, publisher),
             clock,
             publisher,
             messages,
@@ -83,7 +83,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             publisher,
             facilitiesDao,
             identifierGenerator,
-            parentStore,
+            parentFetcher,
             projectsDao,
             SeasonHelper(dslContext),
             subLocationsDao,
@@ -99,13 +99,13 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
-            parentStore,
+            parentFetcher,
             plantingSitesDao,
             publisher,
             strataDao,
             substrataDao,
         ),
-        ProjectStore(clock, dslContext, publisher, parentStore, projectsDao),
+        ProjectStore(clock, dslContext, publisher, parentFetcher, projectsDao),
         UserStore(
             clock,
             config,
@@ -114,7 +114,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             InMemoryKeycloakAdminClient(),
             dummyKeycloakInfo(),
             mockk(),
-            parentStore,
+            parentFetcher,
             PermissionStore(dslContext),
             publisher,
             usersDao,

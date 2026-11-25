@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -39,7 +39,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser 
   protected val publisher = TestEventPublisher()
 
   protected lateinit var store: AccessionStore
-  protected lateinit var parentStore: ParentStore
+  protected lateinit var parentFetcher: ParentFetcher
   protected lateinit var speciesStore: SpeciesStore
 
   protected lateinit var facilityId: FacilityId
@@ -51,20 +51,20 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser 
     facilityId = insertFacility()
     insertOrganizationUser(role = Role.Admin)
 
-    parentStore = ParentStore(dslContext)
+    parentFetcher = ParentFetcher(dslContext)
 
     val messages = Messages()
 
     store =
         AccessionStore(
-            AccessionHelper(parentStore),
+            AccessionHelper(parentFetcher),
             dslContext,
             BagStore(dslContext),
             facilitiesDao,
             GeolocationStore(dslContext, clock),
-            ViabilityTestStore(dslContext, parentStore, publisher),
-            parentStore,
-            WithdrawalStore(dslContext, clock, messages, parentStore, publisher),
+            ViabilityTestStore(dslContext, parentFetcher, publisher),
+            parentFetcher,
+            WithdrawalStore(dslContext, clock, messages, parentFetcher, publisher),
             clock,
             publisher,
             messages,

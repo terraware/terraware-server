@@ -2,7 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.EmailNotificationSettingsStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -38,7 +38,7 @@ class EmailService(
     private val config: TerrawareServerConfig,
     private val emailNotificationSettingsStore: EmailNotificationSettingsStore,
     private val freeMarkerConfig: Configuration,
-    private val parentStore: ParentStore,
+    private val parentFetcher: ParentFetcher,
     private val sender: EmailSender,
     private val userStore: UserStore,
 ) {
@@ -65,7 +65,7 @@ class EmailService(
       requireOptIn: Boolean = true,
   ) {
     val organizationId =
-        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+        parentFetcher.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     sendOrganizationNotification(organizationId, model, requireOptIn)
   }

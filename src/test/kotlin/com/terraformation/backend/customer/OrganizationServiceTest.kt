@@ -7,7 +7,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
@@ -56,7 +56,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Autowired private lateinit var config: TerrawareServerConfig
 
   private lateinit var organizationStore: OrganizationStore
-  private lateinit var parentStore: ParentStore
+  private lateinit var parentFetcher: ParentFetcher
   private val publisher = TestEventPublisher()
   private val scheduler: JobScheduler = mockk()
   private lateinit var userStore: UserStore
@@ -65,7 +65,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    parentStore = ParentStore(dslContext)
+    parentFetcher = ParentFetcher(dslContext)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     userStore =
         UserStore(
@@ -76,7 +76,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             InMemoryKeycloakAdminClient(),
             dummyKeycloakInfo(),
             organizationStore,
-            parentStore,
+            parentFetcher,
             PermissionStore(dslContext),
             publisher,
             usersDao,

@@ -5,7 +5,7 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.TerraformationContactMissingEvent
@@ -38,7 +38,7 @@ class SupportServiceTest : DatabaseTest() {
   private val emailService: EmailService = mockk()
   private val messages = Messages()
   private val eventPublisher = TestEventPublisher()
-  private val parentStore by lazy { ParentStore(dslContext) }
+  private val parentFetcher by lazy { ParentFetcher(dslContext) }
   private val organizationStore by lazy {
     OrganizationStore(clock, dslContext, organizationsDao, eventPublisher)
   }
@@ -51,7 +51,7 @@ class SupportServiceTest : DatabaseTest() {
         InMemoryKeycloakAdminClient(),
         dummyKeycloakInfo(),
         organizationStore,
-        parentStore,
+        parentFetcher,
         PermissionStore(dslContext),
         eventPublisher,
         usersDao,

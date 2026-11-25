@@ -3,7 +3,7 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -117,7 +117,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             dslContext,
             eventPublisher,
             fileService,
-            ParentStore(dslContext),
+            ParentFetcher(dslContext),
             thumbnailService,
         )
 
