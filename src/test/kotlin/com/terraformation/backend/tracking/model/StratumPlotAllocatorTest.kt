@@ -495,13 +495,23 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
           east(MONITORING_PLOT_SIZE * 8)
           square(MONITORING_PLOT_SIZE)
         }
+    val existingPermanentPlot =
+        monitoringPlotModel(
+            id = 10,
+            boundary = Turtle(siteOrigin).makePolygon { square(MONITORING_PLOT_SIZE) },
+            permanentIndex = 1,
+        )
     val stratum =
         stratumModel(
             plantNumPermanentPlots = 2,
             plantNumTemporaryPlots = 1,
             substrata =
                 listOf(
-                    substratumModel(id = 1, plots = emptyList(), boundary = sub1),
+                    substratumModel(
+                        id = 1,
+                        plots = listOf(existingPermanentPlot),
+                        boundary = sub1,
+                    ),
                     substratumModel(
                         id = 2,
                         plots = emptyList(),
