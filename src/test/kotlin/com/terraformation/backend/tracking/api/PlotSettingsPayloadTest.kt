@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.api
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.PlotSelectionMode
+import com.terraformation.backend.tracking.model.PlaceablePlotCounts
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -148,45 +149,29 @@ class PlotSettingsPayloadTest {
   }
 
   @Test
-  fun `get plot settings payload includes placeable counts and nulls them without a map`() {
-    val smallSite =
-        existingSite(width = 60, height = 60) {
-          stratum(plantNumPermanent = 6, plantNumTemporary = 2) {
-            substratum {
-              plot(x = 0, y = 0, permanentIndex = 1)
-              plot(x = 30, y = 0, permanentIndex = 2)
-              plot(x = 0, y = 30, permanentIndex = 3)
-              plot(x = 30, y = 30, permanentIndex = 4)
-            }
-          }
-        }
-    val stratum = smallSite.strata.single()
-    val allObserved = stratum.substrata.single().monitoringPlots.map { it.id }.toSet()
+  fun `get plot settings payload copies placeable counts and nulls missing entries`() {
+    val stratum = site.strata.single()
     val expectedBase =
         PlotSelectionSettingPayload(ObservationType.Monitoring, stratum.plantPlotCounts)
 
     assertEquals(
         expectedBase.copy(numPlaceablePermanentPlots = 3, numPlaceableTemporaryPlots = 1),
-        PlotSettingsResponsePayload(smallSite).strata.single().settings.single {
-          it.observationType == ObservationType.Monitoring
-        },
-        "Shortfall site reports 75/25 placeable permanent and temporary counts",
-    )
-    assertEquals(
-        expectedBase.copy(numPlaceablePermanentPlots = 4, numPlaceableTemporaryPlots = 0),
-        PlotSettingsResponsePayload(smallSite, allObserved).strata.single().settings.single {
-          it.observationType == ObservationType.Monitoring
-        },
-        "Observed permanent plots stay pinned with no room for temporary plots",
-    )
-    assertEquals(
-        expectedBase,
-        PlotSettingsResponsePayload(smallSite.copy(gridOrigin = null))
+        PlotSettingsResponsePayload(
+                site,
+                mapOf(stratum.id to mapOf(ObservationType.Monitoring to PlaceablePlotCounts(3, 1))),
+            )
             .strata
             .single()
             .settings
             .single { it.observationType == ObservationType.Monitoring },
-        "Unmapped site leaves placeable counts null",
+        "Provided placeable counts are copied onto the setting payload",
+    )
+    assertEquals(
+        expectedBase,
+        PlotSettingsResponsePayload(site).strata.single().settings.single {
+          it.observationType == ObservationType.Monitoring
+        },
+        "Missing placeable counts stay null",
     )
   }
 }

@@ -5,6 +5,7 @@ import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.tracking.model.PlaceablePlotCounts
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
+import com.terraformation.backend.tracking.model.PreviewPlaceablePlotCounts
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -47,14 +48,14 @@ class PlotSettingsPreviewPayloadTest {
         "Observation type order",
     )
     assertEquals(
-        PlaceablePlotCountsPreviewPayload(8, 3, 8, 3, current.expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(8, 3, null, null, current.expectedPrecision),
         monitoring.current,
-        "Current settings retain stored counts, placeable counts, and precision",
+        "Current settings retain stored counts and precision",
     )
     assertEquals(
-        PlaceablePlotCountsPreviewPayload(7, 3, 7, 3, proposed.expectedPrecision),
+        PlaceablePlotCountsPreviewPayload(7, 3, null, null, proposed.expectedPrecision),
         monitoring.proposed,
-        "Proposed settings use edited counts, placeable counts, and variance",
+        "Proposed settings use edited counts and variance",
     )
     val biomass = actual.single { it.observationType == ObservationType.BiomassMeasurements }
     assertEquals(biomass.current, biomass.proposed, "Omitted edits preserve current settings")
@@ -99,8 +100,8 @@ class PlotSettingsPreviewPayloadTest {
         PlaceablePlotCountsPreviewPayload(
             7,
             3,
-            7,
-            3,
+            null,
+            null,
             counts.copy(numPermanentPlots = 7).expectedPrecision,
         ),
         actual.proposed,
@@ -145,22 +146,31 @@ class PlotSettingsPreviewPayloadTest {
   }
 
   @Test
-  fun `preview reports placeable permanent and temporary counts for small and unmapped sites`() {
-    val smallSite =
-        existingSite(width = 60, height = 60) {
-          stratum(plantNumPermanent = 2, plantNumTemporary = 1) {
-            substratum {
-              plot(x = 0, y = 0, permanentIndex = 1)
-              plot(x = 30, y = 0, permanentIndex = 2)
-              plot(x = 0, y = 30, permanentIndex = 3)
-              plot(x = 30, y = 30, permanentIndex = 4)
-            }
-          }
-        }
-    val stratum = smallSite.strata.single()
-    val allObserved = stratum.substrata.single().monitoringPlots.map { it.id }.toSet()
+  fun `preview payload copies placeable counts and leaves missing entries null`() {
+    val stratum = site.strata.single()
     val proposedCounts = stratum.plantPlotCounts.copy(numPermanentPlots = 6, numTemporaryPlots = 2)
-    val oversized = mapOf(stratum.id to mapOf(ObservationType.Monitoring to proposedCounts))
+    val proposed = mapOf(stratum.id to mapOf(ObservationType.Monitoring to proposedCounts))
+    val placeable =
+        mapOf(
+            stratum.id to
+                mapOf(
+                    ObservationType.Monitoring to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(2, 1),
+                            proposed = PlaceablePlotCounts(3, 1),
+                        ),
+                    ObservationType.BiomassMeasurements to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(2, 1),
+                            proposed = PlaceablePlotCounts(2, 0),
+                        ),
+                    ObservationType.BaselineSurvey to
+                        PreviewPlaceablePlotCounts(
+                            current = PlaceablePlotCounts(0, 2),
+                            proposed = PlaceablePlotCounts(0, 0),
+                        ),
+                )
+        )
 
     fun expectedResponse(
         monitoringCurrent: PlaceablePlotCounts?,
@@ -212,20 +222,8 @@ class PlotSettingsPreviewPayloadTest {
             baselineCurrent = PlaceablePlotCounts(0, 2),
             baselineProposed = PlaceablePlotCounts(0, 0),
         ),
-        PlotSettingsPreviewResponsePayload(smallSite, oversized),
-        "Shortfall proposal reports 75/25 placeable counts and excludes newly active permanent plots from other types",
-    )
-    assertEquals(
-        expectedResponse(
-            monitoringCurrent = PlaceablePlotCounts(2, 1),
-            monitoringProposed = PlaceablePlotCounts(4, 0),
-            biomassCurrent = PlaceablePlotCounts(2, 1),
-            biomassProposed = PlaceablePlotCounts(2, 0),
-            baselineCurrent = PlaceablePlotCounts(0, 2),
-            baselineProposed = PlaceablePlotCounts(0, 0),
-        ),
-        PlotSettingsPreviewResponsePayload(smallSite, oversized, allObserved),
-        "Observed permanent plots stay pinned with no room for temporary plots",
+        PlotSettingsPreviewResponsePayload(site, proposed, placeable),
+        "Provided placeable counts are copied onto current and proposed settings",
     )
     assertEquals(
         expectedResponse(
@@ -236,8 +234,8 @@ class PlotSettingsPreviewPayloadTest {
             baselineCurrent = null,
             baselineProposed = null,
         ),
-        PlotSettingsPreviewResponsePayload(smallSite.copy(gridOrigin = null), oversized),
-        "Unmapped site leaves all placeable counts null",
+        PlotSettingsPreviewResponsePayload(site, proposed),
+        "Missing placeable counts stay null across all observation types",
     )
   }
 }

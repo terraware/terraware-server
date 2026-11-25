@@ -7,7 +7,6 @@ import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -30,8 +29,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.math.RoundingMode
-import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Point
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -86,13 +83,12 @@ class PlotSettingsController(
     plantingSiteStore.requirePlotSettingsEditable(id)
 
     val site = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot)
+    val proposed = payload.toSettings(site)
     val observedPermanentPlotIds =
         site.gridOrigin?.let { observationPlotStore.fetchObservedPermanentPlotIds(id) }.orEmpty()
-    return PlotSettingsPreviewResponsePayload(
-        site,
-        payload.toSettings(site),
-        observedPermanentPlotIds,
-    )
+    val placeable =
+        StratumPlotAllocator.countPlaceablePlotsForPreview(site, proposed, observedPermanentPlotIds)
+    return PlotSettingsPreviewResponsePayload(site, proposed, placeable)
   }
 
   @GetMapping("/{id}/plotSettings")
@@ -103,7 +99,8 @@ class PlotSettingsController(
     val site = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot)
     val observedPermanentPlotIds =
         site.gridOrigin?.let { observationPlotStore.fetchObservedPermanentPlotIds(id) }.orEmpty()
-    return PlotSettingsResponsePayload(site, observedPermanentPlotIds)
+    val placeable = StratumPlotAllocator.countPlaceablePlots(site, observedPermanentPlotIds)
+    return PlotSettingsResponsePayload(site, placeable)
   }
 
   @PutMapping("/{id}/plotSettings")
@@ -284,17 +281,12 @@ data class PlotSettingsResponsePayload(
 ) : SuccessResponsePayload {
   constructor(
       model: ExistingPlantingSiteModel,
-      observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+      placeableByStratum: Map<StratumId, Map<ObservationType, PlaceablePlotCounts>> = emptyMap(),
   ) : this(
       defaultPlotPrecisionLevel = model.defaultPlotPrecisionLevel,
       strata =
           model.strata.map {
-            StratumPlotSettingsPayload(
-                it,
-                model.gridOrigin,
-                model.exclusion,
-                observedPermanentPlotIds,
-            )
+            StratumPlotSettingsPayload(it, placeableByStratum[it.id].orEmpty())
           },
   )
 }
@@ -306,19 +298,13 @@ data class StratumPlotSettingsPayload(
 ) {
   constructor(
       model: ExistingStratumModel,
-      gridOrigin: Point? = null,
-      exclusion: MultiPolygon? = null,
-      observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+      placeableByType: Map<ObservationType, PlaceablePlotCounts> = emptyMap(),
   ) : this(
       stratumId = model.id,
       name = model.name,
       settings =
           ObservationType.entries.map { type ->
-            val placeable = gridOrigin?.let {
-              StratumPlotAllocator(model, type, it, exclusion, observedPermanentPlotIds)
-                  .countPlaceable()
-            }
-            PlotSelectionSettingPayload(type, model.plotCounts(type), placeable)
+            PlotSelectionSettingPayload(type, model.plotCounts(type), placeableByType[type])
           },
   )
 }

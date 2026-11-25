@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.api
 
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlotPrecisionLevel
 import com.terraformation.backend.db.tracking.StratumId
@@ -9,27 +8,24 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.PlaceablePlotCounts
 import com.terraformation.backend.tracking.model.PlotSelectionSetting
-import com.terraformation.backend.tracking.model.StratumPlotAllocator
+import com.terraformation.backend.tracking.model.PreviewPlaceablePlotCounts
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
-import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Point
 
 data class PlotSettingsPreviewResponsePayload(val strata: List<StratumPlotSettingsPreviewPayload>) :
     SuccessResponsePayload {
   constructor(
       site: ExistingPlantingSiteModel,
       settings: Map<StratumId, Map<ObservationType, StratumPlotCounts>>,
-      observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+      placeableByStratum: Map<StratumId, Map<ObservationType, PreviewPlaceablePlotCounts>> =
+          emptyMap(),
   ) : this(
       site.strata.map {
         StratumPlotSettingsPreviewPayload(
             it,
             settings[it.id].orEmpty(),
-            site.gridOrigin,
-            site.exclusion,
-            observedPermanentPlotIds,
+            placeableByStratum[it.id].orEmpty(),
         )
       }
   )
@@ -43,50 +39,21 @@ data class StratumPlotSettingsPreviewPayload(
   constructor(
       model: ExistingStratumModel,
       proposed: Map<ObservationType, StratumPlotCounts>,
-      gridOrigin: Point? = null,
-      exclusion: MultiPolygon? = null,
-      observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+      placeableByType: Map<ObservationType, PreviewPlaceablePlotCounts> = emptyMap(),
   ) : this(
       stratumId = model.id,
       name = model.name,
       settings =
-          run {
-            val proposedModel = if (proposed.isEmpty()) model else model.withPlotCounts(proposed)
-            val maxPermanentChanged = proposedModel.maxPermanentPlots != model.maxPermanentPlots
-            ObservationType.entries.map { type ->
-              val currentCounts = model.plotCounts(type)
-              val proposedCounts = proposed[type] ?: currentCounts
-              val currentPlaceable = gridOrigin?.let {
-                StratumPlotAllocator(model, type, it, exclusion, observedPermanentPlotIds)
-                    .countPlaceable()
-              }
-              val proposedPlaceable =
-                  if (
-                      proposedCounts.numPermanentPlots == currentCounts.numPermanentPlots &&
-                          proposedCounts.numTemporaryPlots == currentCounts.numTemporaryPlots &&
-                          !maxPermanentChanged
-                  ) {
-                    currentPlaceable
-                  } else {
-                    gridOrigin?.let {
-                      StratumPlotAllocator(
-                              proposedModel,
-                              type,
-                              it,
-                              exclusion,
-                              observedPermanentPlotIds,
-                          )
-                          .countPlaceable()
-                    }
-                  }
-              PlotSettingPreviewPayload(
-                  type,
-                  currentCounts,
-                  proposedCounts,
-                  currentPlaceable,
-                  proposedPlaceable,
-              )
-            }
+          ObservationType.entries.map { type ->
+            val currentCounts = model.plotCounts(type)
+            val placeable = placeableByType[type]
+            PlotSettingPreviewPayload(
+                type,
+                currentCounts,
+                proposed[type] ?: currentCounts,
+                placeable?.current,
+                placeable?.proposed,
+            )
           },
   )
 }
