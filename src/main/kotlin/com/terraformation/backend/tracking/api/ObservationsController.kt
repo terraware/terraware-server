@@ -1132,6 +1132,12 @@ data class ReplaceObservationPlotResponsePayload(
                 "replacement plot could be found."
     )
     val observationDeleted: Boolean,
+    @Schema(
+        description =
+            "True if the observation was completed because the plot was its last incomplete plot " +
+                "and no replacement plot could be found."
+    )
+    val observationCompleted: Boolean,
 ) : SuccessResponsePayload {
   constructor(
       result: ReplacementResult
@@ -1141,6 +1147,7 @@ data class ReplaceObservationPlotResponsePayload(
       reassignedObservationIds = result.reassignedObservationIds,
       deletedObservationIds = result.deletedObservationIds,
       observationDeleted = result.isObservationDeleted,
+      observationCompleted = result.isObservationCompleted,
   )
 }
 
