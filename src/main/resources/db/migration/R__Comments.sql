@@ -471,6 +471,7 @@ COMMENT ON COLUMN nursery.withdrawals.purpose_id IS 'Purpose of the withdrawal (
 COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when the seedlings were withdrawn.';
 
 COMMENT ON VIEW nursery.withdrawal_summaries IS 'Withdrawal information including aggregated and calculated values that need to be made available as filter and sort keys.';
+COMMENT ON COLUMN nursery.withdrawal_summaries.custom_purpose IS 'Current custom-purpose name, including archived purposes, with deterministic collation to support text search.';
 
 COMMENT ON TABLE tracking.biomass_forest_types IS '(Enum) Types for forest in a biomass observation.';
 

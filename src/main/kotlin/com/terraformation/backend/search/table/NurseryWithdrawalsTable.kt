@@ -78,6 +78,7 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
   override val fields: List<SearchField> =
       listOf(
           timestampField("createdTime", WITHDRAWAL_SUMMARIES.CREATED_TIME),
+          textField("customPurpose", WITHDRAWAL_SUMMARIES.CUSTOM_PURPOSE),
           // This is exposed as an ID value rather than a sublist because the search code currently
           // doesn't support joining with the same child table twice from the same parent, and
           // there's already a "facility" sublist for the originating facility.
