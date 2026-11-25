@@ -7,7 +7,6 @@ import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.e
 import com.terraformation.backend.tracking.model.StratumPlotCounts
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -159,21 +158,21 @@ class PlotSettingsPreviewPayloadTest {
         }
     val stratum = smallSite.strata.single()
     val allObserved = stratum.substrata.single().monitoringPlots.map { it.id }.toSet()
-    val oversized =
-        mapOf(
-            stratum.id to
-                mapOf(
-                    ObservationType.Monitoring to
-                        stratum.plantPlotCounts.copy(numPermanentPlots = 6, numTemporaryPlots = 2)
-                )
-        )
+    val proposedCounts = stratum.plantPlotCounts.copy(numPermanentPlots = 6, numTemporaryPlots = 2)
+    val oversized = mapOf(stratum.id to mapOf(ObservationType.Monitoring to proposedCounts))
 
     val unobserved =
         PlotSettingsPreviewResponsePayload(smallSite, oversized).strata.single().settings.first()
-    assertEquals(2, unobserved.current.numPlaceablePermanentPlots, "Current placeable permanent")
-    assertEquals(1, unobserved.current.numPlaceableTemporaryPlots, "Current placeable temporary")
-    assertEquals(3, unobserved.proposed.numPlaceablePermanentPlots, "Shortfall placeable permanent")
-    assertEquals(1, unobserved.proposed.numPlaceableTemporaryPlots, "Shortfall placeable temporary")
+    assertEquals(
+        PlaceablePlotCountsPreviewPayload(2, 1, 2, 1, stratum.plantPlotCounts.expectedPrecision),
+        unobserved.current,
+        "Current settings fit all requested plots",
+    )
+    assertEquals(
+        PlaceablePlotCountsPreviewPayload(6, 2, 3, 1, proposedCounts.expectedPrecision),
+        unobserved.proposed,
+        "Shortfall proposal reports 75/25 placeable counts and keeps configured precision",
+    )
 
     val observed =
         PlotSettingsPreviewResponsePayload(smallSite, oversized, allObserved)
@@ -181,8 +180,11 @@ class PlotSettingsPreviewPayloadTest {
             .single()
             .settings
             .first()
-    assertEquals(4, observed.proposed.numPlaceablePermanentPlots, "Observed plots stay permanent")
-    assertEquals(0, observed.proposed.numPlaceableTemporaryPlots, "No room for temporary plots")
+    assertEquals(
+        PlaceablePlotCountsPreviewPayload(6, 2, 4, 0, proposedCounts.expectedPrecision),
+        observed.proposed,
+        "Observed permanent plots stay pinned with no room for temporary plots",
+    )
 
     val unmapped =
         PlotSettingsPreviewResponsePayload(smallSite.copy(gridOrigin = null), oversized)
@@ -190,9 +192,21 @@ class PlotSettingsPreviewPayloadTest {
             .single()
             .settings
             .first()
-    assertNull(unmapped.current.numPlaceablePermanentPlots, "Unmapped current permanent")
-    assertNull(unmapped.current.numPlaceableTemporaryPlots, "Unmapped current temporary")
-    assertNull(unmapped.proposed.numPlaceablePermanentPlots, "Unmapped proposed permanent")
-    assertNull(unmapped.proposed.numPlaceableTemporaryPlots, "Unmapped proposed temporary")
+    assertEquals(
+        PlaceablePlotCountsPreviewPayload(
+            2,
+            1,
+            null,
+            null,
+            stratum.plantPlotCounts.expectedPrecision,
+        ),
+        unmapped.current,
+        "Unmapped site leaves current placeable counts null",
+    )
+    assertEquals(
+        PlaceablePlotCountsPreviewPayload(6, 2, null, null, proposedCounts.expectedPrecision),
+        unmapped.proposed,
+        "Unmapped site leaves proposed placeable counts null",
+    )
   }
 }

@@ -6,7 +6,6 @@ import com.terraformation.backend.db.tracking.PlotSelectionMode
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -161,30 +160,33 @@ class PlotSettingsPayloadTest {
             }
           }
         }
-    val allObserved =
-        smallSite.strata.single().substrata.single().monitoringPlots.map { it.id }.toSet()
+    val stratum = smallSite.strata.single()
+    val allObserved = stratum.substrata.single().monitoringPlots.map { it.id }.toSet()
+    val expectedBase =
+        PlotSelectionSettingPayload(ObservationType.Monitoring, stratum.plantPlotCounts)
 
-    val monitoring =
+    assertEquals(
+        expectedBase.copy(numPlaceablePermanentPlots = 3, numPlaceableTemporaryPlots = 1),
         PlotSettingsResponsePayload(smallSite).strata.single().settings.single {
           it.observationType == ObservationType.Monitoring
-        }
-    assertEquals(3, monitoring.numPlaceablePermanentPlots, "Shortfall placeable permanent")
-    assertEquals(1, monitoring.numPlaceableTemporaryPlots, "Shortfall placeable temporary")
-
-    val monitoringObserved =
+        },
+        "Shortfall site reports 75/25 placeable permanent and temporary counts",
+    )
+    assertEquals(
+        expectedBase.copy(numPlaceablePermanentPlots = 4, numPlaceableTemporaryPlots = 0),
         PlotSettingsResponsePayload(smallSite, allObserved).strata.single().settings.single {
           it.observationType == ObservationType.Monitoring
-        }
-    assertEquals(4, monitoringObserved.numPlaceablePermanentPlots, "Observed plots stay permanent")
-    assertEquals(0, monitoringObserved.numPlaceableTemporaryPlots, "No room for temporary plots")
-
-    val unmapped =
+        },
+        "Observed permanent plots stay pinned with no room for temporary plots",
+    )
+    assertEquals(
+        expectedBase,
         PlotSettingsResponsePayload(smallSite.copy(gridOrigin = null))
             .strata
             .single()
             .settings
-            .single { it.observationType == ObservationType.Monitoring }
-    assertNull(unmapped.numPlaceablePermanentPlots, "Unmapped placeable permanent")
-    assertNull(unmapped.numPlaceableTemporaryPlots, "Unmapped placeable temporary")
+            .single { it.observationType == ObservationType.Monitoring },
+        "Unmapped site leaves placeable counts null",
+    )
   }
 }
