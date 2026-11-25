@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.ws.rs.core.Response
 import java.util.concurrent.ConcurrentHashMap
-import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
 import org.springframework.security.oauth2.client.registration.ClientRegistration
@@ -15,6 +14,7 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
@@ -87,8 +87,8 @@ class KeycloakAdminClientImpl(
         .get()
         .uri("/users/{id}", keycloakId)
         .retrieve()
-        .onStatus({ it == HttpStatus.NOT_FOUND }) { Mono.empty() }
         .bodyToMono<UserRepresentation>()
+        .onErrorResume(WebClientResponseException.NotFound::class.java) { Mono.empty() }
         .block()
   }
 
