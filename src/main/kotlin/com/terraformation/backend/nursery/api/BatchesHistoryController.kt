@@ -32,6 +32,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.seedbank.db.AccessionStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -52,6 +53,7 @@ class BatchesHistoryController(
     private val batchPhotosDao: BatchPhotosDao,
     private val batchQuantityHistoryDao: BatchQuantityHistoryDao,
     private val batchWithdrawalsDao: BatchWithdrawalsDao,
+    private val batchStore: BatchStore,
     private val withdrawalsDao: WithdrawalsDao,
 ) {
   private val log = perClassLogger()
@@ -91,9 +93,11 @@ class BatchesHistoryController(
     val outgoingBatchWithdrawals =
         batchWithdrawalsDao.fetchByBatchId(batchId).associateBy { it.withdrawalId!! }
     val outgoingWithdrawals =
-        withdrawalsDao.fetchById(*outgoingBatchWithdrawals.keys.toTypedArray()).associateBy {
-          it.id!!
-        }
+        batchStore
+            .fetchWithdrawalsWithCustomPurposes(batchId, outgoingBatchWithdrawals.keys)
+            .associateBy {
+              it.withdrawal.id!!
+            }
 
     val quantityHistory = batchQuantityHistoryDao.fetchByBatchId(batchId)
     val accessionNumbers =
@@ -128,7 +132,8 @@ class BatchesHistoryController(
           BatchHistoryOutgoingWithdrawalPayload(
               quantityHistoryRow,
               outgoingBatchWithdrawal,
-              outgoingWithdrawal,
+              outgoingWithdrawal.withdrawal,
+              outgoingWithdrawal.customPurpose,
           )
         }
         quantityHistoryRow.historyTypeId == BatchQuantityHistoryType.StatusChanged -> {
@@ -146,11 +151,12 @@ class BatchesHistoryController(
         outgoingWithdrawals
             .filterKeys { it !in quantityHistoryWithdrawalIds }
             .values
-            .map { withdrawalsRow ->
+            .map { outgoingWithdrawal ->
               BatchHistoryOutgoingWithdrawalPayload(
                   null,
-                  outgoingBatchWithdrawals.getValue(withdrawalsRow.id!!),
-                  withdrawalsRow,
+                  outgoingBatchWithdrawals.getValue(outgoingWithdrawal.withdrawal.id!!),
+                  outgoingWithdrawal.withdrawal,
+                  outgoingWithdrawal.customPurpose,
               )
             }
 
@@ -448,6 +454,8 @@ data class BatchHistoryOutgoingWithdrawalPayload(
     val activeGrowthQuantityWithdrawn: Int,
     override val createdBy: UserId,
     override val createdTime: Instant,
+    @Schema(description = "If purpose is Other, an optional custom purpose.")
+    val customPurpose: String?,
     val germinatingQuantityWithdrawn: Int,
     val hardeningOffQuantity: Int = 0,
     val purpose: WithdrawalPurpose,
@@ -460,10 +468,12 @@ data class BatchHistoryOutgoingWithdrawalPayload(
       historyRow: BatchQuantityHistoryRow?,
       batchWithdrawalsRow: BatchWithdrawalsRow,
       withdrawalsRow: WithdrawalsRow,
+      customPurpose: String?,
   ) : this(
       activeGrowthQuantityWithdrawn = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
       createdBy = historyRow?.createdBy ?: withdrawalsRow.createdBy!!,
       createdTime = historyRow?.createdTime ?: withdrawalsRow.createdTime!!,
+      customPurpose = customPurpose,
       germinatingQuantityWithdrawn = batchWithdrawalsRow.germinatingQuantityWithdrawn!!,
       hardeningOffQuantity = batchWithdrawalsRow.hardeningOffQuantityWithdrawn!!,
       purpose = withdrawalsRow.purposeId!!,
