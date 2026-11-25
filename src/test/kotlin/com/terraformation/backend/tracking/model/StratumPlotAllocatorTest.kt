@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toMultiPolygon
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -465,6 +466,61 @@ class StratumPlotAllocatorTest : BaseStratumModelTest() {
             )
             .countPlaceable(),
         "Demotes simulated permanent plots to 75/25 split when stratum cannot fit all requested plots",
+    )
+  }
+
+  @Test
+  fun `countPlaceable uses permanent plot spacing when simulating missing permanent plots`() {
+    val sub1 =
+        Turtle(siteOrigin)
+            .makePolygon {
+              startDrawing()
+              north(MONITORING_PLOT_SIZE)
+              east(MONITORING_PLOT_SIZE * 1.5)
+              south(MONITORING_PLOT_SIZE)
+              west(MONITORING_PLOT_SIZE * 1.5)
+            }
+            .toMultiPolygon()
+    val sub2Left =
+        Turtle(siteOrigin).makePolygon {
+          east(MONITORING_PLOT_SIZE * 1.5)
+          startDrawing()
+          north(MONITORING_PLOT_SIZE)
+          east(MONITORING_PLOT_SIZE * 0.5)
+          south(MONITORING_PLOT_SIZE)
+          west(MONITORING_PLOT_SIZE * 0.5)
+        }
+    val sub2Right =
+        Turtle(siteOrigin).makePolygon {
+          east(MONITORING_PLOT_SIZE * 8)
+          square(MONITORING_PLOT_SIZE)
+        }
+    val stratum =
+        stratumModel(
+            plantNumPermanentPlots = 2,
+            plantNumTemporaryPlots = 1,
+            substrata =
+                listOf(
+                    substratumModel(id = 1, plots = emptyList(), boundary = sub1),
+                    substratumModel(
+                        id = 2,
+                        plots = emptyList(),
+                        boundary = sub2Left.union(sub2Right).toMultiPolygon(),
+                    ),
+                ),
+        )
+
+    assertEquals(
+        PlaceablePlotCounts(numPermanentPlots = 2, numTemporaryPlots = 0),
+        StratumPlotAllocator(
+                stratum,
+                ObservationType.Monitoring,
+                siteOrigin,
+                exclusion = null,
+                observedPermanentPlotIds = emptySet(),
+            )
+            .countPlaceable(),
+        "200m permanent plot spacing leaves only the boundary-crossing cell, fitting no temporary plots",
     )
   }
 }

@@ -188,22 +188,20 @@ class StratumPlotAllocator(
       return stratum
     }
 
-    val squares =
-        stratum.findUnusedSquares(
-            count = missingIndexes.size,
-            excludeAllPermanentPlots = true,
-            exclusion = exclusion,
+    val placement =
+        stratum.placePermanentPlots(
             gridOrigin = gridOrigin,
-            searchBoundary = stratum.boundary,
+            exclusion = exclusion,
+            requests = listOf(PermanentPlotPlacementRequest(stratum.boundary, missingIndexes)),
         )
-    if (squares.isEmpty()) {
+    if (placement.plots.isEmpty()) {
       return stratum
     }
 
     val promotedByPlotId = mutableMapOf<MonitoringPlotId, Int>()
     val addedBySubstratumId = mutableMapOf<SubstratumId, MutableList<MonitoringPlotModel>>()
 
-    squares.zip(missingIndexes).forEach { (plotBoundary, permanentIndex) ->
+    placement.plots.forEach { (plotBoundary, permanentIndex) ->
       val existingPlot = stratum.findMonitoringPlot(plotBoundary)
       if (existingPlot != null && existingPlot.permanentIndex == null) {
         promotedByPlotId[existingPlot.id] = permanentIndex
