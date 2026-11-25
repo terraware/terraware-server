@@ -108,8 +108,12 @@ class ObservationRescheduleStateException(val observationId: ObservationId) :
 class PlantingNotFoundException(val plantingId: PlantingId) :
     EntityNotFoundException("Planting $plantingId not found")
 
+class PlantingSiteHistoryIncompleteException(message: String) : MismatchedStateException(message)
+
 class PlantingSiteHistoryNotFoundException(val plantingSiteHistoryId: PlantingSiteHistoryId) :
     EntityNotFoundException("Planting site history $plantingSiteHistoryId not found")
+
+class PlantingSiteMapIncompleteException(message: String) : MismatchedStateException(message)
 
 class PlantingSiteNotDetailedException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException("Planting site $plantingSiteId is not a detailed planting site")
