@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.nearlyCoveredBy
 import kotlin.math.roundToInt
@@ -41,36 +42,12 @@ class StratumPlotAllocator(
    * @throws StratumFullException The stratum has no room for any monitoring plots at all.
    */
   fun allocate(requestedSubstratumIds: Set<SubstratumId>): Allocation {
-    val plotCounts = stratum.plotCounts(observationType)
-    val numConfigured = plotCounts.numPermanentPlots + plotCounts.numTemporaryPlots
-
-    val existingPermanent =
-        stratum.substrata
-            .flatMap { it.monitoringPlots }
-            .filter { plot ->
-              plot.permanentIndex != null && plot.permanentIndex <= plotCounts.numPermanentPlots
-            }
-            .sortedBy { it.permanentIndex }
-
-    val numUnusedSquares =
-        stratum
-            .findUnusedSquares(
-                count = numConfigured - existingPermanent.size,
-                exclusion = exclusion,
-                gridOrigin = gridOrigin,
-                predicate = { squareBoundary ->
-                  stratum.substrata.any { squareBoundary.nearlyCoveredBy(it.boundary) }
-                },
-            )
-            .size
-
-    var numAllocated = existingPermanent.size + numUnusedSquares
-
-    if (numAllocated == 0) {
+    val plan = planAllocation(stratum)
+    if (plan.numAllocated == 0) {
       throw StratumFullException(stratum.id)
     }
 
-    if (numAllocated >= numConfigured) {
+    if (!plan.isShortfall) {
       return Allocation(
           permanentPlotIds = stratum.choosePermanentPlots(requestedSubstratumIds, observationType),
           temporaryPlotBoundaries =
@@ -80,8 +57,102 @@ class StratumPlotAllocator(
                   observationType,
                   exclusion,
               ),
+          numConfigured = plan.numConfigured,
+          numAllocated = plan.numAllocated,
+      )
+    }
+
+    val permanentPlotIds =
+        plan.availablePermanent
+            .take(plan.numPermanent)
+            .map { it.id }
+            .toSet()
+            .intersect(stratum.choosePermanentPlots(requestedSubstratumIds, observationType))
+
+    return Allocation(
+        permanentPlotIds = permanentPlotIds,
+        temporaryPlotBoundaries =
+            stratum.chooseTemporaryPlots(
+                requestedSubstratumIds,
+                gridOrigin,
+                observationType,
+                exclusion,
+                count = plan.numAllocated - plan.numPermanent,
+                permanentPlotIds =
+                    if (stratum.plotCounts(observationType).numPermanentPlots == 0) {
+                      null
+                    } else {
+                      permanentPlotIds
+                    },
+            ),
+        numConfigured = plan.numConfigured,
+        numAllocated = plan.numAllocated,
+    )
+  }
+
+  /**
+   * Returns how many permanent and temporary plots fit in the stratum for its configured counts,
+   * simulating placement of any missing permanent plots first.
+   */
+  fun countPlaceable(): PlaceablePlotCounts {
+    if (stratum.substrata.isEmpty()) {
+      return PlaceablePlotCounts(numPermanentPlots = 0, numTemporaryPlots = 0)
+    }
+
+    val targetStratum = withSimulatedPermanentPlots()
+    val plan = planAllocation(targetStratum)
+    return PlaceablePlotCounts(
+        numPermanentPlots = plan.numPermanent,
+        numTemporaryPlots = plan.numAllocated - plan.numPermanent,
+    )
+  }
+
+  private fun planAllocation(targetStratum: ExistingStratumModel): AllocationPlan {
+    val plotCounts = targetStratum.plotCounts(observationType)
+    val numConfigured = plotCounts.numPermanentPlots + plotCounts.numTemporaryPlots
+
+    val existingPermanent =
+        targetStratum.substrata
+            .flatMap { it.monitoringPlots }
+            .filter { plot ->
+              plot.permanentIndex != null && plot.permanentIndex <= plotCounts.numPermanentPlots
+            }
+            .sortedBy { it.permanentIndex }
+
+    val numUnusedSquares =
+        if (numConfigured > existingPermanent.size) {
+          targetStratum
+              .findUnusedSquares(
+                  count = numConfigured - existingPermanent.size,
+                  exclusion = exclusion,
+                  gridOrigin = gridOrigin,
+                  predicate = { squareBoundary ->
+                    targetStratum.substrata.any { squareBoundary.nearlyCoveredBy(it.boundary) }
+                  },
+              )
+              .size
+        } else {
+          0
+        }
+
+    var numAllocated = existingPermanent.size + numUnusedSquares
+    if (numAllocated == 0) {
+      return AllocationPlan(
+          availablePermanent = emptyList(),
+          isShortfall = numConfigured > 0,
+          numAllocated = 0,
           numConfigured = numConfigured,
+          numPermanent = 0,
+      )
+    }
+
+    if (numAllocated >= numConfigured) {
+      return AllocationPlan(
+          availablePermanent = existingPermanent,
+          isShortfall = false,
           numAllocated = numAllocated,
+          numConfigured = numConfigured,
+          numPermanent = existingPermanent.size,
       )
     }
 
@@ -97,34 +168,83 @@ class StratumPlotAllocator(
 
       // A permanent plot can cross substratum boundaries, but a temporary plot must fit within
       // one substratum. Losing such a plot reduces capacity and can require further demotions.
-      if (stratum.substrata.none { demotedPlot.boundary.nearlyCoveredBy(it.boundary) }) {
+      if (targetStratum.substrata.none { demotedPlot.boundary.nearlyCoveredBy(it.boundary) }) {
         numAllocated--
       }
     }
 
-    val permanentPlotIds =
-        availablePermanent
-            .take(numPermanent)
-            .map { it.id }
-            .toSet()
-            .intersect(stratum.choosePermanentPlots(requestedSubstratumIds, observationType))
-
-    return Allocation(
-        permanentPlotIds = permanentPlotIds,
-        temporaryPlotBoundaries =
-            stratum.chooseTemporaryPlots(
-                requestedSubstratumIds,
-                gridOrigin,
-                observationType,
-                exclusion,
-                count = numAllocated - numPermanent,
-                permanentPlotIds =
-                    if (plotCounts.numPermanentPlots == 0) null else permanentPlotIds,
-            ),
-        numConfigured = numConfigured,
+    return AllocationPlan(
+        availablePermanent = availablePermanent,
+        isShortfall = true,
         numAllocated = numAllocated,
+        numConfigured = numConfigured,
+        numPermanent = numPermanent,
     )
   }
+
+  private fun withSimulatedPermanentPlots(): ExistingStratumModel {
+    val numPermanentPlots = stratum.plotCounts(observationType).numPermanentPlots
+    val missingIndexes = (1..numPermanentPlots).filterNot { stratum.permanentIndexExists(it) }
+    if (missingIndexes.isEmpty()) {
+      return stratum
+    }
+
+    val placement =
+        stratum.placePermanentPlots(
+            gridOrigin = gridOrigin,
+            exclusion = exclusion,
+            requests = listOf(PermanentPlotPlacementRequest(stratum.boundary, missingIndexes)),
+        )
+    if (placement.plots.isEmpty()) {
+      return stratum
+    }
+
+    val promotedByPlotId = mutableMapOf<MonitoringPlotId, Int>()
+    val addedBySubstratumId = mutableMapOf<SubstratumId, MutableList<MonitoringPlotModel>>()
+
+    placement.plots.forEach { (plotBoundary, permanentIndex) ->
+      val existingPlot = stratum.findMonitoringPlot(plotBoundary)
+      if (existingPlot != null && existingPlot.permanentIndex == null) {
+        promotedByPlotId[existingPlot.id] = permanentIndex
+      } else if (existingPlot == null) {
+        val substratum = stratum.findSubstratum(plotBoundary) ?: return@forEach
+        addedBySubstratumId
+            .getOrPut(substratum.id) { mutableListOf() }
+            .add(
+                MonitoringPlotModel(
+                    boundary = plotBoundary,
+                    elevationMeters = null,
+                    id = MonitoringPlotId(-permanentIndex.toLong()),
+                    isAdHoc = false,
+                    isAvailable = true,
+                    permanentIndex = permanentIndex,
+                    plotNumber = -permanentIndex.toLong(),
+                    sizeMeters = MONITORING_PLOT_SIZE_INT,
+                )
+            )
+      }
+    }
+
+    return stratum.copy(
+        substrata =
+            stratum.substrata.map { substratum ->
+              val updatedPlots =
+                  substratum.monitoringPlots.map { plot ->
+                    val newIndex = promotedByPlotId[plot.id]
+                    if (newIndex != null) plot.copy(permanentIndex = newIndex) else plot
+                  } + addedBySubstratumId[substratum.id].orEmpty()
+              substratum.copy(monitoringPlots = updatedPlots)
+            }
+    )
+  }
+
+  private data class AllocationPlan(
+      val availablePermanent: List<MonitoringPlotModel>,
+      val isShortfall: Boolean,
+      val numAllocated: Int,
+      val numConfigured: Int,
+      val numPermanent: Int,
+  )
 
   /** The monitoring plots chosen for a stratum in an observation. */
   data class Allocation(
@@ -145,4 +265,79 @@ class StratumPlotAllocator(
     val isShortfall: Boolean
       get() = numAllocated < numConfigured
   }
+
+  companion object {
+    fun countPlaceablePlots(
+        site: ExistingPlantingSiteModel,
+        observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+    ): Map<StratumId, Map<ObservationType, PlaceablePlotCounts>> {
+      val gridOrigin = site.gridOrigin ?: return emptyMap()
+      return site.strata.associate { stratum ->
+        stratum.id to
+            ObservationType.entries.associateWith { type ->
+              StratumPlotAllocator(
+                      stratum,
+                      type,
+                      gridOrigin,
+                      site.exclusion,
+                      observedPermanentPlotIds,
+                  )
+                  .countPlaceable()
+            }
+      }
+    }
+
+    fun countPlaceablePlotsForPreview(
+        site: ExistingPlantingSiteModel,
+        proposed: Map<StratumId, Map<ObservationType, StratumPlotCounts>>,
+        observedPermanentPlotIds: Set<MonitoringPlotId> = emptySet(),
+    ): Map<StratumId, Map<ObservationType, PreviewPlaceablePlotCounts>> {
+      val gridOrigin = site.gridOrigin ?: return emptyMap()
+      return site.strata.associate { stratum ->
+        val proposedByType = proposed[stratum.id].orEmpty()
+        val proposedStratum =
+            if (proposedByType.isEmpty()) stratum else stratum.withPlotCounts(proposedByType)
+        val maxPermanentChanged = proposedStratum.maxPermanentPlots != stratum.maxPermanentPlots
+        stratum.id to
+            ObservationType.entries.associateWith { type ->
+              val currentCounts = stratum.plotCounts(type)
+              val proposedCounts = proposedByType[type] ?: currentCounts
+              val currentPlaceable =
+                  StratumPlotAllocator(
+                          stratum,
+                          type,
+                          gridOrigin,
+                          site.exclusion,
+                          observedPermanentPlotIds,
+                      )
+                      .countPlaceable()
+              val proposedPlaceable =
+                  if (
+                      proposedCounts.numPermanentPlots == currentCounts.numPermanentPlots &&
+                          proposedCounts.numTemporaryPlots == currentCounts.numTemporaryPlots &&
+                          !maxPermanentChanged
+                  ) {
+                    currentPlaceable
+                  } else {
+                    StratumPlotAllocator(
+                            proposedStratum,
+                            type,
+                            gridOrigin,
+                            site.exclusion,
+                            observedPermanentPlotIds,
+                        )
+                        .countPlaceable()
+                  }
+              PreviewPlaceablePlotCounts(current = currentPlaceable, proposed = proposedPlaceable)
+            }
+      }
+    }
+  }
 }
+
+data class PlaceablePlotCounts(val numPermanentPlots: Int, val numTemporaryPlots: Int)
+
+data class PreviewPlaceablePlotCounts(
+    val current: PlaceablePlotCounts,
+    val proposed: PlaceablePlotCounts,
+)
