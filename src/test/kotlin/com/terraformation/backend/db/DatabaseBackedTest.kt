@@ -2636,6 +2636,7 @@ abstract class DatabaseBackedTest {
   fun insertSeedbankWithdrawal(
       createdBy: UserId = inserted.userId,
       createdTime: Instant = clock.instant(),
+      customPurposeId: WithdrawalCustomPurposeId? = null,
       updatedTime: Instant = clock.instant(),
       withdrawnBy: UserId = inserted.userId,
       date: LocalDate = LocalDate.EPOCH,
@@ -2657,6 +2658,7 @@ abstract class DatabaseBackedTest {
         SeedbankWithdrawalsRow(
             createdBy = createdBy,
             createdTime = createdTime,
+            customPurposeId = customPurposeId,
             updatedTime = updatedTime,
             withdrawnBy = withdrawnBy,
             date = date,

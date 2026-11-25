@@ -2,11 +2,16 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentFetcher
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.WithdrawalNotFoundException
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeId
+import com.terraformation.backend.db.default_schema.WithdrawalCustomPurposeType
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.default_schema.tables.references.WITHDRAWAL_CUSTOM_PURPOSES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalId
@@ -38,16 +43,24 @@ class WithdrawalStore(
     private val messages: Messages,
     private val parentFetcher: ParentFetcher,
     private val eventPublisher: ApplicationEventPublisher,
+    private val withdrawalCustomPurposeHelper: WithdrawalCustomPurposeHelper,
 ) {
   private val log = perClassLogger()
 
   fun fetchOneById(withdrawalId: WithdrawalId): WithdrawalModel {
     val record =
         dslContext
-            .select(WITHDRAWALS.asterisk(), USERS.FIRST_NAME, USERS.LAST_NAME)
+            .select(
+                WITHDRAWALS.asterisk(),
+                USERS.FIRST_NAME,
+                USERS.LAST_NAME,
+                WITHDRAWAL_CUSTOM_PURPOSES.NAME,
+            )
             .from(WITHDRAWALS)
             .leftJoin(USERS)
             .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
+            .leftJoin(WITHDRAWAL_CUSTOM_PURPOSES)
+            .on(WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(WITHDRAWALS.CUSTOM_PURPOSE_ID))
             .where(WITHDRAWALS.ID.eq(withdrawalId))
             .fetchOne() ?: throw WithdrawalNotFoundException(withdrawalId)
 
@@ -63,10 +76,17 @@ class WithdrawalStore(
     requirePermissions { readAccession(accessionId) }
 
     return dslContext
-        .select(WITHDRAWALS.asterisk(), USERS.FIRST_NAME, USERS.LAST_NAME)
+        .select(
+            WITHDRAWALS.asterisk(),
+            USERS.FIRST_NAME,
+            USERS.LAST_NAME,
+            WITHDRAWAL_CUSTOM_PURPOSES.NAME,
+        )
         .from(WITHDRAWALS)
         .leftJoin(USERS)
         .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
+        .leftJoin(WITHDRAWAL_CUSTOM_PURPOSES)
+        .on(WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(WITHDRAWALS.CUSTOM_PURPOSE_ID))
         .where(WITHDRAWALS.ACCESSION_ID.eq(accessionId))
         .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc())
         .fetch()
@@ -131,10 +151,17 @@ class WithdrawalStore(
       idField: Field<AccessionId?> = ACCESSIONS.ID
   ): Field<List<WithdrawalModel>> {
     return DSL.multiset(
-            DSL.select(WITHDRAWALS.asterisk(), USERS.FIRST_NAME, USERS.LAST_NAME)
+            DSL.select(
+                    WITHDRAWALS.asterisk(),
+                    USERS.FIRST_NAME,
+                    USERS.LAST_NAME,
+                    WITHDRAWAL_CUSTOM_PURPOSES.NAME,
+                )
                 .from(WITHDRAWALS)
                 .leftJoin(USERS)
                 .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
+                .leftJoin(WITHDRAWAL_CUSTOM_PURPOSES)
+                .on(WITHDRAWAL_CUSTOM_PURPOSES.ID.eq(WITHDRAWALS.CUSTOM_PURPOSE_ID))
                 .where(WITHDRAWALS.ACCESSION_ID.eq(idField))
                 .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc())
         )
@@ -224,6 +251,9 @@ class WithdrawalStore(
               currentUser().userId
             }
 
+        val customPurposeId =
+            withdrawal.customPurpose?.let { findOrCreateCustomPurpose(organizationId, it) }
+
         val newId =
             dslContext
                 .insertInto(WITHDRAWALS)
@@ -231,6 +261,7 @@ class WithdrawalStore(
                 .set(BATCH_ID, withdrawal.batchId)
                 .set(CREATED_BY, currentUser().userId)
                 .set(CREATED_TIME, clock.instant())
+                .set(CUSTOM_PURPOSE_ID, customPurposeId)
                 .set(DATE, withdrawal.date)
                 .set(DESTINATION, withdrawal.destination)
                 .set(ESTIMATED_COUNT, withdrawal.estimatedCount)
@@ -324,9 +355,22 @@ class WithdrawalStore(
                 existing.withdrawnByUserId
               }
 
+          val customPurposeChanged = desired.customPurpose != existing.customPurpose
+          val newCustomPurposeId =
+              if (customPurposeChanged) {
+                desired.customPurpose?.let { findOrCreateCustomPurpose(organizationId, it) }
+              } else {
+                null
+              }
+
           dslContext
               .update(WITHDRAWALS)
               .set(DATE, desired.date)
+              .apply {
+                if (customPurposeChanged) {
+                  set(CUSTOM_PURPOSE_ID, newCustomPurposeId)
+                }
+              }
               .set(DESTINATION, desired.destination)
               .set(ESTIMATED_COUNT, desired.estimatedCount)
               .set(ESTIMATED_WEIGHT_QUANTITY, desired.estimatedWeight?.quantity)
@@ -388,4 +432,14 @@ class WithdrawalStore(
       }
     }
   }
+
+  private fun findOrCreateCustomPurpose(
+      organizationId: OrganizationId,
+      name: String,
+  ): WithdrawalCustomPurposeId =
+      withdrawalCustomPurposeHelper.findOrCreate(
+          organizationId,
+          WithdrawalCustomPurposeType.SeedBank,
+          name,
+      )
 }

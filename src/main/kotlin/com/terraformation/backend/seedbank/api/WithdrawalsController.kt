@@ -14,6 +14,8 @@ import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Size
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -57,7 +59,7 @@ class WithdrawalsController(
   @PostMapping
   fun createWithdrawal(
       @PathVariable accessionId: AccessionId,
-      @RequestBody payload: CreateWithdrawalRequestPayload,
+      @RequestBody @Valid payload: CreateWithdrawalRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.createWithdrawal(payload.toModel(accessionId))
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
@@ -71,7 +73,7 @@ class WithdrawalsController(
   fun updateWithdrawal(
       @PathVariable accessionId: AccessionId,
       @PathVariable withdrawalId: WithdrawalId,
-      @RequestBody payload: UpdateWithdrawalRequestPayload,
+      @RequestBody @Valid payload: UpdateWithdrawalRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession =
         accessionService.updateWithdrawal(accessionId, withdrawalId, payload::applyToModel)
@@ -94,6 +96,8 @@ class WithdrawalsController(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class GetWithdrawalPayload(
+    @Schema(description = "If purpose is Other, an optional custom purpose.")
+    val customPurpose: String? = null,
     val date: LocalDate,
     @Schema(
         description =
@@ -146,6 +150,7 @@ data class GetWithdrawalPayload(
   constructor(
       model: WithdrawalModel
   ) : this(
+      customPurpose = model.customPurpose,
       date = model.date,
       estimatedCount = model.estimatedCount,
       estimatedWeight = model.estimatedWeight?.toPayload(),
@@ -163,6 +168,14 @@ data class GetWithdrawalPayload(
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class CreateWithdrawalRequestPayload(
+    @Schema(
+        description =
+            "A user-defined name for what an Other withdrawal was used for, saved for reuse " +
+                "across the organization. Only allowed for purpose Other. Matched case- and " +
+                "accent-insensitively after trimming whitespace; created if new."
+    )
+    @field:Size(max = 50)
+    val customPurpose: String? = null,
     val date: LocalDate,
     val purpose: WithdrawalPurpose? = null,
     val notes: String? = null,
@@ -184,6 +197,7 @@ data class CreateWithdrawalRequestPayload(
   fun toModel(accessionId: AccessionId): WithdrawalModel =
       WithdrawalModel(
           accessionId = accessionId,
+          customPurpose = customPurpose,
           date = date,
           notes = notes,
           purpose = purpose,
@@ -195,6 +209,15 @@ data class CreateWithdrawalRequestPayload(
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class UpdateWithdrawalRequestPayload(
+    @Schema(
+        description =
+            "A user-defined name for what an Other withdrawal was used for, saved for reuse " +
+                "across the organization. Only allowed for purpose Other. Matched case- and " +
+                "accent-insensitively after trimming whitespace; created if new. Replaces the " +
+                "existing custom purpose; omit to clear it."
+    )
+    @field:Size(max = 50)
+    val customPurpose: String? = null,
     val date: LocalDate,
     val purpose: WithdrawalPurpose? = null,
     val notes: String? = null,
@@ -217,6 +240,7 @@ data class UpdateWithdrawalRequestPayload(
 ) {
   fun applyToModel(model: WithdrawalModel): WithdrawalModel =
       model.copy(
+          customPurpose = customPurpose,
           date = date,
           purpose = purpose,
           notes = notes,

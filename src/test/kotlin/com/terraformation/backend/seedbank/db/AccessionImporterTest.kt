@@ -6,6 +6,7 @@ import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentFetcher
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.db.WithdrawalCustomPurposeHelper
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.UploadNotAwaitingActionException
@@ -81,7 +82,14 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         GeolocationStore(dslContext, clock),
         ViabilityTestStore(dslContext, parentFetcher, publisher),
         parentFetcher,
-        WithdrawalStore(dslContext, clock, messages, parentFetcher, publisher),
+        WithdrawalStore(
+            dslContext,
+            clock,
+            messages,
+            parentFetcher,
+            publisher,
+            WithdrawalCustomPurposeHelper(clock, dslContext, parentFetcher),
+        ),
         clock,
         publisher,
         messages,
